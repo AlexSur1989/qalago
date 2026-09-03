@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { adminApi, aiApi, AuthUser, BusinessRow, EditorialDraft, TOKEN_KEY } from '@/lib/api';
+import { adminApi, aiApi, AdminReviewRow, AuthUser, BusinessRow, CategoryRow, EditorialDraft, TOKEN_KEY } from '@/lib/api';
 import { canManageUsers, getRoleDefinition } from '@/lib/rbac';
 
-type TabId = 'moderation' | 'featured' | 'users' | 'content';
+type TabId = 'moderation' | 'featured' | 'reviews' | 'categories' | 'users' | 'content';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -16,6 +16,10 @@ export default function DashboardPage() {
   const [pending, setPending] = useState<BusinessRow[]>([]);
   const [all, setAll] = useState<BusinessRow[]>([]);
   const [users, setUsers] = useState<AuthUser[]>([]);
+  const [reviews, setReviews] = useState<AdminReviewRow[]>([]);
+  const [categories, setCategories] = useState<CategoryRow[]>([]);
+  const [catTitle, setCatTitle] = useState('');
+  const [catSlug, setCatSlug] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [contentTopic, setContentTopic] = useState('weekend');
   const [contentDraft, setContentDraft] = useState<EditorialDraft | null>(null);
@@ -66,12 +70,28 @@ export default function DashboardPage() {
   }, [token, citySlug]);
 
   useEffect(() => {
-    if (!token || !showUsers || tab !== 'users') return;
+    if (!token || tab !== 'users' || !showUsers) return;
     adminApi
       .listUsers(token)
       .then(setUsers)
       .catch((err) => setError(String(err)));
   }, [token, showUsers, tab]);
+
+  useEffect(() => {
+    if (!token || tab !== 'reviews') return;
+    adminApi
+      .listReviews(token, citySlug)
+      .then(setReviews)
+      .catch((err) => setError(String(err)));
+  }, [token, citySlug, tab]);
+
+  useEffect(() => {
+    if (tab !== 'categories') return;
+    adminApi
+      .listCategories()
+      .then(setCategories)
+      .catch((err) => setError(String(err)));
+  }, [tab]);
 
   async function setStatus(id: string, status: string) {
     if (!token) return;
@@ -89,6 +109,37 @@ export default function DashboardPage() {
     if (!token) return;
     await adminApi.updateUserRole(token, userId, role);
     setUsers(await adminApi.listUsers(token));
+  }
+
+  async function removeReview(reviewId: string) {
+    if (!token) return;
+    await adminApi.deleteReview(token, reviewId);
+    setReviews(await adminApi.listReviews(token, citySlug));
+  }
+
+  async function createCategory(e: FormEvent) {
+    e.preventDefault();
+    if (!token || !catTitle.trim() || !catSlug.trim()) return;
+    await adminApi.createCategory(token, {
+      title: catTitle.trim(),
+      slug: catSlug.trim().toLowerCase(),
+      isActive: true,
+    });
+    setCatTitle('');
+    setCatSlug('');
+    setCategories(await adminApi.listCategories());
+  }
+
+  async function toggleCategoryActive(category: CategoryRow) {
+    if (!token) return;
+    await adminApi.updateCategory(token, category.id, { isActive: !category.isActive });
+    setCategories(await adminApi.listCategories());
+  }
+
+  async function removeCategory(id: string) {
+    if (!token) return;
+    await adminApi.deleteCategory(token, id);
+    setCategories(await adminApi.listCategories());
   }
 
   async function generateDraft() {
@@ -180,6 +231,20 @@ export default function DashboardPage() {
           onClick={() => setTab('featured')}
         >
           VIP / Топ ({featuredBusinesses.length})
+        </button>
+        <button
+          type="button"
+          className={`tab${tab === 'reviews' ? ' active' : ''}`}
+          onClick={() => setTab('reviews')}
+        >
+          Отзывы ({reviews.length || '…'})
+        </button>
+        <button
+          type="button"
+          className={`tab${tab === 'categories' ? ' active' : ''}`}
+          onClick={() => setTab('categories')}
+        >
+          Категории
         </button>
         <button
           type="button"
@@ -339,6 +404,116 @@ export default function DashboardPage() {
             </tbody>
           </table>
         </section>
+      )}
+
+      {tab === 'reviews' && (
+        <section className="card">
+          <h2>Отзывы · {cityLabel} ({reviews.length})</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14, marginTop: 0 }}>
+            Модерация отзывов в рамках выбранного города.
+          </p>
+          {reviews.length === 0 ? (
+            <p style={{ color: 'var(--text-muted)' }}>Нет отзывов</p>
+          ) : (
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Заведение</th>
+                  <th>Оценка</th>
+                  <th>Текст</th>
+                  <th>Автор</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {reviews.map((r) => (
+                  <tr key={r.id}>
+                    <td>{r.business?.title ?? '—'}</td>
+                    <td>{r.rating}★</td>
+                    <td style={{ maxWidth: 280 }}>{r.text ?? '—'}</td>
+                    <td>{r.user?.phone ?? '—'}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className="btn btn-danger btn-sm"
+                        onClick={() => removeReview(r.id)}
+                      >
+                        Удалить
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </section>
+      )}
+
+      {tab === 'categories' && (
+        <>
+          <section className="card">
+            <h2>Новая категория</h2>
+            <form onSubmit={createCategory} className="form-grid" style={{ maxWidth: 480 }}>
+              <input
+                value={catTitle}
+                onChange={(e) => setCatTitle(e.target.value)}
+                placeholder="Название, например Рестораны"
+              />
+              <input
+                value={catSlug}
+                onChange={(e) => setCatSlug(e.target.value)}
+                placeholder="slug, например food"
+              />
+              <button type="submit" className="btn btn-primary" disabled={!token}>
+                Добавить
+              </button>
+            </form>
+          </section>
+          <section className="card">
+            <h2>Категории каталога ({categories.length})</h2>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Название</th>
+                  <th>Slug</th>
+                  <th>Статус</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {categories.map((c) => (
+                  <tr key={c.id}>
+                    <td>{c.title}</td>
+                    <td>{c.slug}</td>
+                    <td>
+                      {c.isActive ? (
+                        <span className="tag tag-success">Активна</span>
+                      ) : (
+                        <span className="tag tag-muted">Скрыта</span>
+                      )}
+                    </td>
+                    <td style={{ display: 'flex', gap: 8 }}>
+                      <button
+                        type="button"
+                        className="btn btn-sm"
+                        onClick={() => toggleCategoryActive(c)}
+                      >
+                        {c.isActive ? 'Скрыть' : 'Показать'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-danger btn-sm"
+                        onClick={() => removeCategory(c.id)}
+                      >
+                        Удалить
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        </>
       )}
 
       {tab === 'content' && (

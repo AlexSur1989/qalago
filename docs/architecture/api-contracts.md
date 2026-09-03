@@ -136,6 +136,10 @@ Owner or admin. Body (all optional): `title`, `shortDesc`, `description`, `addre
 - `PATCH /admin/businesses/:id/status`
 - `PATCH /admin/businesses/:id/featured`
 - `PATCH /admin/businesses/:id/featured-slot`
+- `GET /admin/users` — ADMIN only
+- `PATCH /admin/users/:id/role` — ADMIN only
+- `GET /admin/reviews?citySlug=&limit=` — reviews scoped by admin city; includes user + business
+- `DELETE /admin/reviews/:id` — remove review (city-scoped for CITY_ADMIN)
 
 ---
 

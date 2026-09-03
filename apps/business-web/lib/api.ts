@@ -99,6 +99,15 @@ export type BusinessImageRow = {
   sortOrder: number;
 };
 
+export type NotificationRow = {
+  id: string;
+  type: string;
+  title: string;
+  body?: string | null;
+  isRead: boolean;
+  createdAt: string;
+};
+
 export const SELECTED_BUSINESS_KEY = 'qalago_business_id';
 
 async function api<T>(
@@ -308,6 +317,18 @@ export const ownerApi = {
       method: 'PATCH',
       token,
     }),
+
+  listNotifications: (token: string) =>
+    api<NotificationRow[]>('/notifications', { token }),
+
+  unreadNotificationCount: (token: string) =>
+    api<{ count: number }>('/notifications/unread-count', { token }),
+
+  markNotificationRead: (token: string, id: string) =>
+    api<void>(`/notifications/${id}/read`, { method: 'PATCH', token }),
+
+  markAllNotificationsRead: (token: string) =>
+    api<void>('/notifications/read-all', { method: 'PATCH', token }),
 };
 
 export const TOKEN_KEY = 'qalago_business_token';

@@ -77,6 +77,37 @@ export const adminApi = {
       token,
       body: JSON.stringify({ role }),
     }),
+
+  listCategories: () => api<CategoryRow[]>('/categories'),
+
+  createCategory: (
+    token: string,
+    data: { title: string; slug: string; icon?: string; sortOrder?: number; isActive?: boolean },
+  ) =>
+    api<CategoryRow>('/categories', {
+      method: 'POST',
+      token,
+      body: JSON.stringify(data),
+    }),
+
+  updateCategory: (token: string, id: string, data: Record<string, unknown>) =>
+    api<CategoryRow>(`/categories/${id}`, {
+      method: 'PATCH',
+      token,
+      body: JSON.stringify(data),
+    }),
+
+  deleteCategory: (token: string, id: string) =>
+    api<void>(`/categories/${id}`, { method: 'DELETE', token }),
+
+  listReviews: (token: string, citySlug?: string, limit = 50) => {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (citySlug) params.set('citySlug', citySlug);
+    return api<AdminReviewRow[]>(`/admin/reviews?${params}`, { token });
+  },
+
+  deleteReview: (token: string, id: string) =>
+    api<{ success: boolean }>(`/admin/reviews/${id}`, { method: 'DELETE', token }),
 };
 
 export type EditorialDraft = {
@@ -115,6 +146,26 @@ export type BusinessRow = {
   isFeatured: boolean;
   owner?: { phone: string; name: string | null };
   city?: { slug: string; nameRu: string };
+};
+
+export type CategoryRow = {
+  id: string;
+  title: string;
+  slug: string;
+  icon?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type AdminReviewRow = {
+  id: string;
+  businessId: string;
+  rating: number;
+  text?: string | null;
+  ownerReply?: string | null;
+  createdAt: string;
+  user?: { id: string; phone: string; name?: string | null };
+  business?: { id: string; title: string; city?: { slug: string; nameRu: string } };
 };
 
 export const TOKEN_KEY = 'qalago_admin_token';

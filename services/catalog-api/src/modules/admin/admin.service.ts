@@ -13,7 +13,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import {
 
   AdminListBusinessesQueryDto,
-
+  AdminListReviewsQueryDto,
   UpdateBusinessFeaturedDto,
 
   UpdateBusinessStatusDto,
@@ -225,6 +225,70 @@ export class AdminService {
       select: { id: true, phone: true, name: true, role: true },
 
     });
+
+  }
+
+
+
+  async listReviews(user: AuthUser, query: AdminListReviewsQueryDto) {
+
+    const limit = query.limit ?? 50;
+
+    const where: Prisma.ReviewWhereInput = {};
+
+    const scopedCityId = await this.cityScope.resolveAdminCityId(user, query.citySlug);
+
+    if (scopedCityId) {
+
+      where.business = { cityId: scopedCityId };
+
+    }
+
+
+
+    return this.prisma.review.findMany({
+
+      where,
+
+      include: {
+
+        user: { select: { id: true, phone: true, name: true } },
+
+        business: {
+
+          select: { id: true, title: true, city: { select: { slug: true, nameRu: true } } },
+
+        },
+
+      },
+
+      orderBy: { createdAt: 'desc' },
+
+      take: limit,
+
+    });
+
+  }
+
+
+
+  async deleteReview(user: AuthUser, id: string) {
+
+    const review = await this.prisma.review.findUnique({
+
+      where: { id },
+
+      include: { business: { select: { cityId: true, title: true } } },
+
+    });
+
+    if (!review) throw new NotFoundException('Review not found');
+
+    await this.cityScope.assertBusinessInAdminScope(user, review.business.cityId);
+
+    await this.prisma.review.delete({ where: { id } });
+
+    return { success: true, businessTitle: review.business.title };
 
   }
 

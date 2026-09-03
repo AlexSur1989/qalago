@@ -42,3 +42,14 @@ export class UpdateUserRoleDto {
   @IsEnum(UserRole)
   role!: UserRole;
 }
+
+export class AdminListReviewsQueryDto {
+  @IsOptional()
+  @IsString()
+  citySlug?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  limit?: number = 50;
+}

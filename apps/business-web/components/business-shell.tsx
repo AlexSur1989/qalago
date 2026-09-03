@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ReactNode, useEffect, useState } from 'react';
-import { BusinessRow, SELECTED_BUSINESS_KEY } from '@/lib/api';
+import { BusinessRow, SELECTED_BUSINESS_KEY, TOKEN_KEY, ownerApi } from '@/lib/api';
 import { businessInitials, statusLabel } from '@/lib/business-utils';
 
 export type NavId =
@@ -15,7 +15,8 @@ export type NavId =
   | 'stats'
   | 'messages'
   | 'settings'
-  | 'plan';
+  | 'plan'
+  | 'help';
 
 type NavItem = {
   id: NavId;
@@ -33,13 +34,13 @@ const NAV: NavItem[] = [
   { id: 'media', label: 'Фото и видео', icon: '📷', href: (id) => `/business/${id}/media` },
   { id: 'reviews', label: 'Отзывы', icon: '⭐', href: (id) => `/business/${id}/reviews` },
   { id: 'stats', label: 'Статистика', icon: '📊', href: () => '/dashboard' },
-  { id: 'messages', label: 'Сообщения', icon: '💬', soon: true },
+  { id: 'messages', label: 'Сообщения', icon: '💬', href: () => '/messages' },
   { id: 'settings', label: 'Настройки', icon: '⚙️', soon: true },
 ];
 
 const FOOTER_NAV: NavItem[] = [
-  { id: 'plan', label: 'Тариф и продвижение', icon: '💎', soon: true },
-  { id: 'settings', label: 'Помощь', icon: '❓', soon: true },
+  { id: 'plan', label: 'Тариф и продвижение', icon: '💎', href: () => '/plan' },
+  { id: 'help', label: 'Помощь', icon: '❓', href: () => '/help' },
 ];
 
 type BusinessShellProps = {
@@ -62,6 +63,16 @@ export function BusinessShell({
   children,
 }: BusinessShellProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) return;
+    ownerApi
+      .unreadNotificationCount(token)
+      .then((res) => setUnreadCount(res.count))
+      .catch(() => setUnreadCount(0));
+  }, [activeNav]);
 
   function selectBusiness(id: string) {
     localStorage.setItem(SELECTED_BUSINESS_KEY, id);
@@ -137,9 +148,9 @@ export function BusinessShell({
         <div className="sidebar-footer">
           {FOOTER_NAV.map((item) => (
             <NavLink
-              key={`footer-${item.label}`}
+              key={`footer-${item.id}`}
               item={item}
-              active={false}
+              active={activeNav === item.id}
               businessId={business?.id}
               collapsed={collapsed}
             />
@@ -160,9 +171,12 @@ export function BusinessShell({
             </div>
           </div>
           <div className="topbar-right">
-            <button type="button" className="icon-btn" aria-label="Уведомления">
+            <Link href="/messages" className="icon-btn" aria-label="Уведомления" title="Сообщения">
               🔔
-            </button>
+              {unreadCount > 0 && (
+                <span className="badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
+              )}
+            </Link>
             <div className="user-chip">
               <div className="user-avatar">
                 {business ? businessInitials(business.title) : 'Q'}
@@ -195,7 +209,9 @@ function NavLink({
   collapsed: boolean;
 }) {
   const className = `nav-item${active ? ' active' : ''}${item.soon ? ' disabled' : ''}`;
-  const needsBusiness = item.href && item.id !== 'home' && item.id !== 'stats';
+  const needsBusiness =
+    item.href &&
+    !['home', 'stats', 'messages', 'plan', 'help'].includes(item.id);
 
   if (item.soon || !item.href || (needsBusiness && !businessId)) {
     return (
