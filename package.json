@@ -17,7 +17,11 @@
     "dev:api": "npm run start:dev -w @qalago/catalog-api",
     "dev:api:seed": "npm run seed -w @qalago/catalog-api",
     "dev:admin": "npm run dev -w @qalago/admin-web",
-    "dev:business": "npm run dev -w @qalago/business-web"
+    "dev:business": "npm run dev -w @qalago/business-web",
+    "dev:ai": "npm run start:dev -w @qalago/ai-orchestrator",
+    "staging:up": "docker compose -f infra/docker/docker-compose.staging.yml --env-file infra/env/.env.staging.example up -d --build",
+    "staging:down": "docker compose -f infra/docker/docker-compose.staging.yml down",
+    "staging:seed": "docker compose -f infra/docker/docker-compose.staging.yml exec api npx prisma db push && docker compose -f infra/docker/docker-compose.staging.yml exec api npm run seed"
   },
   "engines": {
     "node": ">=20.0.0",

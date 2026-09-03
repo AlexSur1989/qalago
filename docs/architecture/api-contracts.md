@@ -348,6 +348,16 @@ Notification types: `GENERAL`, `NEW_REVIEW`, `REVIEW_REPLY`, `BUSINESS_APPROVED`
 
 ---
 
+## AI Orchestrator (Phase 4 scaffold)
+
+Base URL (separate service): `http://localhost:3004/api/v1`
+
+- `GET /health`
+- `GET /agents` — registered agent metadata
+- `POST /recommendations` — body `{ "citySlug": "uralsk", "limit": 10 }`, optional `Authorization` for personalized results via catalog-api read tools
+
+---
+
 ## Health
 
 - `GET /health` — `{ "status": "ok" }`

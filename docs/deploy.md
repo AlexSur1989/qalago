@@ -91,3 +91,15 @@ Use Nginx or Caddy in front of API:
 ## Local dev (without Docker)
 
 See [scripts/dev/SETUP.md](../scripts/dev/SETUP.md).
+
+## Local Docker staging
+
+If Docker Desktop is installed:
+
+```bash
+npm run staging:up
+npm run staging:seed
+curl http://localhost:3002/api/v1/health
+```
+
+See [infra/README.md](../infra/README.md).

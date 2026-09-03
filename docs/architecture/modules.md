@@ -13,7 +13,7 @@
 | Module | Path | Status | Responsibility |
 |--------|------|--------|----------------|
 | Catalog API | `services/catalog-api` | MVP implemented | REST API, auth, catalog, engagement, admin API, analytics ingest |
-| AI Orchestrator | `services/ai-orchestrator` | not started | Agent routing, tool execution, audit |
+| AI Orchestrator | `services/ai-orchestrator` | scaffold | Agent routing, rule-based recommendations |
 | Notifications | `services/notifications` | future | Push, SMS |
 | Analytics Worker | `services/analytics-worker` | future | Event aggregation |
 

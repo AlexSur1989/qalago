@@ -57,4 +57,4 @@ services/ai-orchestrator
 
 ## Status
 
-Scaffold only. Implement after `catalog-api` MVP + tests green.
+Scaffold active (Phase 4): `ai-orchestrator` exposes rule-based recommendations via catalog-api read tools. LLM agents — next iteration.

@@ -1,0 +1,50 @@
+# Local staging — API in Docker (production-like)
+# Usage from repo root:
+#   npm run staging:up
+#   npm run staging:seed
+#   curl http://localhost:3002/api/v1/health
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: qalago-staging-postgres
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: qalago
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-qalago_staging}
+      POSTGRES_DB: qalago
+    volumes:
+      - qalago_staging_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qalago -d qalago"]
+      interval: 5s
+      timeout: 5s
+      retries: 8
+
+  api:
+    build:
+      context: ../..
+      dockerfile: services/catalog-api/Dockerfile
+    container_name: qalago-staging-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "3002:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://qalago:${POSTGRES_PASSWORD:-qalago_staging}@postgres:5432/qalago?schema=public
+      JWT_SECRET: ${JWT_SECRET:-qalago-staging-jwt-secret-min-32-chars}
+      JWT_EXPIRES_IN: 7d
+      OTP_DEBUG: ${OTP_DEBUG:-true}
+      DEFAULT_CITY_SLUG: uralsk
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:8080}
+      UPLOAD_DIR: /app/services/catalog-api/uploads
+      MAX_UPLOAD_MB: 5
+
+volumes:
+  qalago_staging_pg:

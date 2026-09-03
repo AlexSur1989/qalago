@@ -1,0 +1,23 @@
+{
+  "name": "@qalago/ai-orchestrator",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "start:dev": "ts-node --transpile-only src/main.ts",
+    "test": "npm run build",
+    "lint": "echo \"ok\""
+  },
+  "dependencies": {
+    "@qalago/ai-core": "*",
+    "@qalago/agents": "*",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.0"
+  }
+}

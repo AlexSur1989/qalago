@@ -54,3 +54,17 @@ jobs:
       - run: npm run build -w @qalago/business-web
         env:
           NEXT_PUBLIC_API_URL: http://localhost:3002/api/v1
+
+  ai-orchestrator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - run: npm run build -w @qalago/ai-core
+      - run: npm run build -w @qalago/agents
+      - run: npm run build -w @qalago/ai-orchestrator
+      - run: npm test -w @qalago/ai-core
