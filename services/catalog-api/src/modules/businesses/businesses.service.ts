@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { BusinessStatus, Prisma, UserRole } from '@prisma/client';
 import { CityScopeService } from '../../common/services/city-scope.service';
+import { haversineMeters } from '../../common/utils/geo.utils';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ServiceMenuService } from '../service-items/service-menu.service';
@@ -110,21 +111,80 @@ export class BusinessesService {
       ];
     }
 
-    const [items, total] = await Promise.all([
-      this.prisma.business.findMany({
-        where,
-        select: businessListSelect,
-        skip,
-        take: limit,
-        orderBy: [{ isFeatured: 'desc' }, { title: 'asc' }],
-      }),
-      this.prisma.business.count({ where }),
-    ]);
+    const [items, total] = await this.findPagedItems(where, query, page, limit, skip);
 
     return {
       items,
       meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
     };
+  }
+
+  private async findPagedItems(
+    where: Prisma.BusinessWhereInput,
+    query: ListBusinessesQueryDto,
+    page: number,
+    limit: number,
+    skip: number,
+  ) {
+    const useGeo = query.latitude != null && query.longitude != null;
+    if (!useGeo) {
+      const [items, total] = await Promise.all([
+        this.prisma.business.findMany({
+          where,
+          select: businessListSelect,
+          skip,
+          take: limit,
+          orderBy: [{ isFeatured: 'desc' }, { title: 'asc' }],
+        }),
+        this.prisma.business.count({ where }),
+      ]);
+      return [items, total] as const;
+    }
+
+    const radiusMeters = (query.radiusKm ?? 15) * 1000;
+    const allItems = await this.prisma.business.findMany({
+      where,
+      select: businessListSelect,
+    });
+
+    const ranked = allItems
+      .map((item) => {
+        const lat = item.latitude != null ? Number(item.latitude) : null;
+        const lng = item.longitude != null ? Number(item.longitude) : null;
+        if (lat == null || lng == null) {
+          return { item, distanceMeters: null as number | null };
+        }
+        const distanceMeters = haversineMeters(
+          query.latitude!,
+          query.longitude!,
+          lat,
+          lng,
+        );
+        return { item, distanceMeters };
+      })
+      .filter(({ distanceMeters }) =>
+        distanceMeters == null ? true : distanceMeters <= radiusMeters,
+      )
+      .sort((a, b) => {
+        if (a.distanceMeters == null && b.distanceMeters == null) {
+          return a.item.title.localeCompare(b.item.title);
+        }
+        if (a.distanceMeters == null) return 1;
+        if (b.distanceMeters == null) return -1;
+        if (a.distanceMeters !== b.distanceMeters) {
+          return a.distanceMeters - b.distanceMeters;
+        }
+        return a.item.title.localeCompare(b.item.title);
+      });
+
+    const items = ranked.slice(skip, skip + limit).map(({ item, distanceMeters }) => ({
+      ...item,
+      ...(distanceMeters != null
+        ? { distanceMeters: Math.round(distanceMeters) }
+        : {}),
+    }));
+
+    return [items, ranked.length] as const;
   }
 
   async findOne(id: string) {

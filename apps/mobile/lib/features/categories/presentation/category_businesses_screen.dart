@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/providers/city_provider.dart';
+import '../../../core/location/user_location_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/widgets/business_card.dart';
@@ -12,9 +13,13 @@ import '../../auth/providers/auth_provider.dart';
 final categoryBusinessesProvider =
     FutureProvider.family<PaginatedBusinesses, String>((ref, categoryId) async {
   final city = ref.watch(cityProvider);
+  final userPosition = ref.watch(userLocationProvider).valueOrNull;
   return ref.watch(catalogRepositoryProvider).fetchBusinesses(
         citySlug: city.slug,
         categoryId: categoryId,
+        latitude: userPosition?.latitude,
+        longitude: userPosition?.longitude,
+        radiusKm: 15,
       );
 });
 

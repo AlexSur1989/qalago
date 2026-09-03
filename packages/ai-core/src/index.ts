@@ -25,8 +25,13 @@ export type CatalogBusiness = {
   id: string;
   title: string;
   isFeatured?: boolean;
-  category?: { title?: string };
+  category?: { title?: string; slug?: string };
 };
+
+export {
+  buildEditorialDraft,
+  type EditorialDraft,
+} from './content';
 
 /** Map catalog businesses to recommendation items (rule-based MVP). */
 export function toRecommendationItems(

@@ -64,6 +64,9 @@ class CatalogRepository {
     String? search,
     String? categoryId,
     bool? featured,
+    double? latitude,
+    double? longitude,
+    double? radiusKm,
   }) async {
     final response = await _dio.get(
       '/businesses',
@@ -72,6 +75,9 @@ class CatalogRepository {
         if (search != null && search.isNotEmpty) 'search': search,
         if (categoryId != null) 'categoryId': categoryId,
         if (featured == true) 'featured': 'true',
+        if (latitude != null) 'latitude': latitude,
+        if (longitude != null) 'longitude': longitude,
+        if (radiusKm != null) 'radiusKm': radiusKm,
         'limit': 50,
       },
     );

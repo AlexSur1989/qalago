@@ -6,10 +6,12 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/models/models.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../owner/presentation/widgets/service_menu_widgets.dart';
+import '../../recommendations/data/ai_repository.dart';
 
 class BusinessDetailsScreen extends ConsumerStatefulWidget {
   const BusinessDetailsScreen({super.key, required this.id});
@@ -22,15 +24,8 @@ class BusinessDetailsScreen extends ConsumerStatefulWidget {
 }
 
 class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
-  final _reviewController = TextEditingController();
   int _rating = 5;
   bool _viewTracked = false;
-
-  @override
-  void dispose() {
-    _reviewController.dispose();
-    super.dispose();
-  }
 
   Future<void> _launch(String? url) async {
     if (url == null || url.isEmpty) return;
@@ -62,19 +57,19 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
       unawaited(analytics.trackFavoriteAdd(widget.id));
     }
     ref.invalidate(favoritesProvider);
+    ref.invalidate(businessFavoriteProvider(widget.id));
   }
 
-  Future<void> _submitReview() async {
+  Future<void> _submitReview(String text) async {
     await ref
         .read(catalogRepositoryProvider)
         .createReview(
           businessId: widget.id,
           rating: _rating,
-          text: _reviewController.text,
+          text: text,
         );
     ref.invalidate(reviewsProvider(widget.id));
     ref.invalidate(myReviewsProvider);
-    _reviewController.clear();
     if (mounted) {
       ScaffoldMessenger.of(
         context,
@@ -87,7 +82,9 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
     final detailsAsync = ref.watch(businessDetailsProvider(widget.id));
     final menuAsync = ref.watch(serviceMenuProvider(widget.id));
     final reviewsAsync = ref.watch(reviewsProvider(widget.id));
+    final favoriteAsync = ref.watch(businessFavoriteProvider(widget.id));
     final user = ref.watch(authProvider).user;
+    final isAuthenticated = ref.watch(authProvider).isAuthenticated;
     final isOwner =
         user?.role == 'BUSINESS' ||
         user?.role == 'ADMIN' ||
@@ -134,6 +131,11 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
 
           _trackViewOnce();
 
+          final reviewStats = reviewsAsync.maybeWhen(
+            data: _reviewStats,
+            orElse: () => (null, 0),
+          );
+
           return ListView(
             padding: EdgeInsets.zero,
             physics: const BouncingScrollPhysics(),
@@ -141,6 +143,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
               _HeroPhoto(
                 imageUrl: coverUrl,
                 cityName: cityName,
+                isFavorite: favoriteAsync.value ?? false,
                 onBack: () {
                   if (context.canPop()) {
                     context.pop();
@@ -160,6 +163,8 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                         title: title,
                         categoryTitle: categoryTitle,
                         address: address,
+                        averageRating: reviewStats.$1,
+                        reviewCount: reviewStats.$2,
                       ),
                       const SizedBox(height: 20),
                       Row(
@@ -317,13 +322,17 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                       _ReviewsBlock(reviewsAsync: reviewsAsync),
                       if (!isOwner) ...[
                         const SizedBox(height: 16),
-                        _ReviewForm(
-                          controller: _reviewController,
-                          rating: _rating,
-                          onRatingChanged: (value) =>
-                              setState(() => _rating = value ?? 5),
-                          onSubmit: _submitReview,
-                        ),
+                        if (isAuthenticated)
+                          _ReviewForm(
+                            rating: _rating,
+                            onRatingChanged: (value) =>
+                                setState(() => _rating = value ?? 5),
+                            onSubmit: _submitReview,
+                          )
+                        else
+                          _LoginToReviewPrompt(
+                            onLogin: () => context.push('/login'),
+                          ),
                       ],
                       const SizedBox(height: 26),
                     ],
@@ -356,30 +365,66 @@ List<String> _galleryUrls(dynamic images, String coverUrl) {
       .toList();
 }
 
-String _formatHours(dynamic raw) {
+(String, String) _todayHoursInfo(dynamic raw) {
+  const keys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+  const labels = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
   final hours = _asMap(raw);
-  final value = hours?['mon'] ?? hours?['monday'];
-  if (value == null) return 'Уточняйте';
-  if (value is String) return value.replaceAll('-', ' – ');
+  if (hours == null) return ('Сегодня', 'Уточняйте');
+
+  final index = DateTime.now().weekday - 1;
+  final key = keys[index];
+  final value = hours[key];
+  if (value == null) return ('Сегодня', 'Уточняйте');
+  if (value is String) {
+    return (labels[index], value.replaceAll('-', ' – '));
+  }
   final map = _asMap(value);
-  if (map == null) return value.toString();
-  if (map['closed'] == true) return 'Выходной';
-  final open = map['open']?.toString();
-  final close = map['close']?.toString();
-  if (open == null || close == null) return 'Уточняйте';
-  return '$open – $close';
+  if (map?['closed'] == true) return (labels[index], 'Выходной');
+  final open = map?['open']?.toString();
+  final close = map?['close']?.toString();
+  if (open == null || close == null) return (labels[index], 'Уточняйте');
+  return (labels[index], '$open – $close');
+}
+
+List<(String, String)> _weeklyHoursRows(dynamic raw) {
+  const keys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+  const labels = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+  final hours = _asMap(raw);
+  if (hours == null) return const [];
+
+  return List.generate(keys.length, (index) {
+    final value = hours[keys[index]];
+    if (value == null) return (labels[index], '—');
+    if (value is String) {
+      return (labels[index], value.replaceAll('-', ' – '));
+    }
+    final map = _asMap(value);
+    if (map?['closed'] == true) return (labels[index], 'Выходной');
+    final open = map?['open']?.toString();
+    final close = map?['close']?.toString();
+    if (open == null || close == null) return (labels[index], '—');
+    return (labels[index], '$open – $close');
+  });
+}
+
+(double?, int) _reviewStats(List<ReviewModel> reviews) {
+  if (reviews.isEmpty) return (null, 0);
+  final sum = reviews.fold<int>(0, (total, review) => total + review.rating);
+  return (sum / reviews.length, reviews.length);
 }
 
 class _HeroPhoto extends StatelessWidget {
   const _HeroPhoto({
     required this.imageUrl,
     required this.cityName,
+    required this.isFavorite,
     required this.onBack,
     required this.onFavorite,
   });
 
   final String imageUrl;
   final String cityName;
+  final bool isFavorite;
   final VoidCallback onBack;
   final VoidCallback onFavorite;
 
@@ -421,7 +466,10 @@ class _HeroPhoto extends StatelessWidget {
                   _CityPill(cityName: cityName),
                   const SizedBox(width: 10),
                   _RoundIconButton(
-                    icon: Icons.favorite_border_rounded,
+                    icon: isFavorite
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
+                    iconColor: isFavorite ? AppTheme.kzGold : Colors.black,
                     onTap: onFavorite,
                   ),
                 ],
@@ -470,11 +518,15 @@ class _TitleBlock extends StatelessWidget {
     required this.title,
     required this.categoryTitle,
     required this.address,
+    required this.averageRating,
+    required this.reviewCount,
   });
 
   final String title;
   final String categoryTitle;
   final String address;
+  final double? averageRating;
+  final int reviewCount;
 
   @override
   Widget build(BuildContext context) {
@@ -496,7 +548,10 @@ class _TitleBlock extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            const _RatingPill(),
+            _RatingPill(
+              averageRating: averageRating,
+              reviewCount: reviewCount,
+            ),
           ],
         ),
         if (categoryTitle.isNotEmpty) ...[
@@ -538,25 +593,50 @@ class _TitleBlock extends StatelessWidget {
 }
 
 class _RatingPill extends StatelessWidget {
-  const _RatingPill();
+  const _RatingPill({
+    required this.averageRating,
+    required this.reviewCount,
+  });
+
+  final double? averageRating;
+  final int reviewCount;
 
   @override
   Widget build(BuildContext context) {
+    final label = reviewCount == 0
+        ? 'Новое'
+        : averageRating!.toStringAsFixed(1);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
         color: const Color(0xFFE9F8FC),
         borderRadius: BorderRadius.circular(16),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.star_rounded, color: AppTheme.kzGold, size: 20),
-          SizedBox(width: 4),
-          Text(
-            '4.8',
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+          Icon(
+            Icons.star_rounded,
+            color: reviewCount == 0 ? const Color(0xFF9AA1AD) : AppTheme.kzGold,
+            size: 20,
           ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+          ),
+          if (reviewCount > 0) ...[
+            const SizedBox(width: 4),
+            Text(
+              '($reviewCount)',
+              style: const TextStyle(
+                color: Color(0xFF7A8190),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -785,6 +865,9 @@ class _WorkHoursBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final today = _todayHoursInfo(hours);
+    final weekRows = _weeklyHoursRows(hours);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -797,30 +880,66 @@ class _WorkHoursBlock extends StatelessWidget {
             borderRadius: BorderRadius.circular(18),
             border: Border.all(color: const Color(0xFFE8EBF0)),
           ),
-          child: Row(
+          child: Column(
             children: [
-              const Icon(
-                Icons.schedule_rounded,
-                color: Color(0xFF808896),
-                size: 22,
+              Row(
+                children: [
+                  const Icon(
+                    Icons.schedule_rounded,
+                    color: Color(0xFF808896),
+                    size: 22,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      today.$1,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    today.$2,
+                    style: const TextStyle(
+                      color: Color(0xFF596170),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Text(
-                  'Ежедневно',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+              if (weekRows.isNotEmpty) ...[
+                const Divider(height: 24),
+                ...weekRows.map(
+                  (row) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 36,
+                          child: Text(
+                            row.$1,
+                            style: const TextStyle(
+                              color: Color(0xFF7A8190),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            row.$2,
+                            style: const TextStyle(
+                              color: Color(0xFF596170),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-              Text(
-                _formatHours(hours),
-                style: const TextStyle(
-                  color: Color(0xFF596170),
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(width: 4),
-              const Icon(Icons.chevron_right_rounded, color: Color(0xFF8A92A0)),
+              ],
             ],
           ),
         ),
@@ -948,18 +1067,107 @@ class _ReviewsBlock extends StatelessWidget {
   }
 }
 
-class _ReviewForm extends StatelessWidget {
+class _ReviewForm extends ConsumerStatefulWidget {
   const _ReviewForm({
-    required this.controller,
     required this.rating,
     required this.onRatingChanged,
     required this.onSubmit,
   });
 
-  final TextEditingController controller;
   final int rating;
   final ValueChanged<int?> onRatingChanged;
-  final VoidCallback onSubmit;
+  final Future<void> Function(String text) onSubmit;
+
+  @override
+  ConsumerState<_ReviewForm> createState() => _ReviewFormState();
+}
+
+class _ReviewFormState extends ConsumerState<_ReviewForm> {
+  final _controller = TextEditingController();
+  Timer? _debounce;
+  ModerationAnalysisModel? _analysis;
+  bool _checking = false;
+  int _requestId = 0;
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _queueModerationCheck() {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 450), () {
+      unawaited(_checkModeration());
+    });
+  }
+
+  Future<void> _checkModeration() async {
+    final text = _controller.text.trim();
+    if (text.length < 3) {
+      if (!mounted) return;
+      setState(() {
+        _analysis = null;
+        _checking = false;
+      });
+      return;
+    }
+
+    final requestId = ++_requestId;
+    setState(() => _checking = true);
+
+    final analysis = await ref.read(aiRepositoryProvider).analyzeModeration(
+          text: text,
+          rating: widget.rating,
+        );
+
+    if (!mounted || requestId != _requestId) return;
+    setState(() {
+      _analysis = analysis;
+      _checking = false;
+    });
+  }
+
+  Future<void> _handleSubmit() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Напишите текст отзыва')),
+      );
+      return;
+    }
+
+    if (_analysis?.suggestedAction == 'reject') {
+      final proceed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Проверьте отзыв'),
+          content: const Text(
+            'Текст может нарушать правила площадки. '
+            'Отредактируйте отзыв или отправьте как есть — '
+            'модератор проверит вручную.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Редактировать'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Отправить'),
+            ),
+          ],
+        ),
+      );
+      if (proceed != true) return;
+    }
+
+    await widget.onSubmit(text);
+    if (!mounted) return;
+    _controller.clear();
+    setState(() => _analysis = null);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -971,27 +1179,39 @@ class _ReviewForm extends StatelessWidget {
         border: Border.all(color: const Color(0xFFE8EBF0)),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           DropdownButtonFormField<int>(
-            initialValue: rating,
+            initialValue: widget.rating,
             decoration: const InputDecoration(labelText: 'Оценка'),
             items: List.generate(
               5,
               (i) => DropdownMenuItem(value: i + 1, child: Text('${i + 1}')),
             ),
-            onChanged: onRatingChanged,
+            onChanged: (value) {
+              widget.onRatingChanged(value);
+              _queueModerationCheck();
+            },
           ),
           const SizedBox(height: 10),
           TextField(
-            controller: controller,
+            controller: _controller,
             decoration: const InputDecoration(labelText: 'Ваш отзыв'),
             maxLines: 3,
+            onChanged: (_) => _queueModerationCheck(),
           ),
+          if (_checking) ...[
+            const SizedBox(height: 10),
+            const LinearProgressIndicator(minHeight: 2),
+          ] else if (_analysis != null) ...[
+            const SizedBox(height: 10),
+            _ModerationHint(analysis: _analysis!),
+          ],
           const SizedBox(height: 10),
           SizedBox(
             width: double.infinity,
             child: FilledButton(
-              onPressed: onSubmit,
+              onPressed: _handleSubmit,
               child: const Text('Оставить отзыв'),
             ),
           ),
@@ -1001,11 +1221,121 @@ class _ReviewForm extends StatelessWidget {
   }
 }
 
+class _ModerationHint extends StatelessWidget {
+  const _ModerationHint({required this.analysis});
+
+  final ModerationAnalysisModel analysis;
+
+  @override
+  Widget build(BuildContext context) {
+    final (color, icon, title) = switch (analysis.suggestedAction) {
+      'approve' => (
+          const Color(0xFF1B7F4A),
+          Icons.check_circle_outline,
+          'Отзыв выглядит нормально',
+        ),
+      'reject' => (
+          const Color(0xFFC0392B),
+          Icons.warning_amber_rounded,
+          'Возможные нарушения',
+        ),
+      _ => (
+          const Color(0xFFB7791F),
+          Icons.info_outline,
+          'Рекомендуем проверить текст',
+        ),
+    };
+
+    final detail = analysis.flags.isNotEmpty
+        ? analysis.flags.first.message
+        : 'Оценка качества: ${analysis.score}/100';
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  detail,
+                  style: const TextStyle(
+                    color: Color(0xFF596170),
+                    fontSize: 13,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoginToReviewPrompt extends StatelessWidget {
+  const _LoginToReviewPrompt({required this.onLogin});
+
+  final VoidCallback onLogin;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7FAFC),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE8EBF0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'Войдите, чтобы оставить отзыв',
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Отзывы доступны авторизованным пользователям.',
+            style: TextStyle(color: Color(0xFF596170), height: 1.35),
+          ),
+          const SizedBox(height: 12),
+          FilledButton(onPressed: onLogin, child: const Text('Войти')),
+        ],
+      ),
+    );
+  }
+}
+
 class _RoundIconButton extends StatelessWidget {
-  const _RoundIconButton({required this.icon, required this.onTap});
+  const _RoundIconButton({
+    required this.icon,
+    required this.onTap,
+    this.iconColor = Colors.black,
+  });
 
   final IconData icon;
   final VoidCallback onTap;
+  final Color iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -1018,7 +1348,7 @@ class _RoundIconButton extends StatelessWidget {
         child: SizedBox(
           width: 52,
           height: 52,
-          child: Icon(icon, color: Colors.black, size: 24),
+          child: Icon(icon, color: iconColor, size: 24),
         ),
       ),
     );

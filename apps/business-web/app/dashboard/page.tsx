@@ -1,103 +1,258 @@
 'use client';
 
-import type { CSSProperties } from 'react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { BusinessRow, ownerApi, TOKEN_KEY } from '@/lib/api';
+import {
+  AnalyticsSummary,
+  AnalyticsTrends,
+  BusinessRow,
+  PromotionRow,
+  ownerApi,
+} from '@/lib/api';
+import {
+  buildRecentActions,
+  comparePeriods,
+  deltaClass,
+  formatDelta,
+  formatNumber,
+  formatTodayHeader,
+  profileCompletion,
+} from '@/lib/business-utils';
+import { useAuth } from '@/lib/use-auth';
+import { BusinessShell, useSelectedBusiness } from '@/components/business-shell';
+import { ViewsChart, aggregateViewTrends } from '@/components/views-chart';
+
+const KPI_CONFIG = [
+  { key: 'VIEW_BUSINESS', label: 'Просмотры карточки' },
+  { key: 'CALL_CLICK', label: 'Клики по телефону' },
+  { key: 'WHATSAPP_CLICK', label: 'Клики по WhatsApp' },
+  { key: 'ROUTE_CLICK', label: 'Построения маршрута' },
+  { key: 'FAVORITE_ADD', label: 'Добавления в избранное' },
+] as const;
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const [token, setToken] = useState<string | null>(null);
+  const { token, user, ready, logout } = useAuth();
   const [businesses, setBusinesses] = useState<BusinessRow[]>([]);
-  const [stats, setStats] = useState<Record<string, number>>({});
+  const business = useSelectedBusiness(businesses);
+  const [summary7, setSummary7] = useState<AnalyticsSummary | null>(null);
+  const [summaryPrev, setSummaryPrev] = useState<AnalyticsSummary | null>(null);
+  const [trends, setTrends] = useState<AnalyticsTrends | null>(null);
+  const [promotions, setPromotions] = useState<PromotionRow[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const t = localStorage.getItem(TOKEN_KEY);
-    if (!t) {
-      router.replace('/login');
-      return;
-    }
-    setToken(t);
-  }, [router]);
+    if (!token) return;
+    ownerApi
+      .listMyBusinesses(token)
+      .then(setBusinesses)
+      .catch((err) => setError(String(err)));
+  }, [token]);
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || !business) return;
     (async () => {
       try {
-        const items = await ownerApi.listMyBusinesses(token);
-        setBusinesses(items);
-        const summaryEntries = await Promise.all(
-          items.map(async (b) => {
-            try {
-              const s = await ownerApi.analyticsSummary(token, b.id);
-              return [b.id, s.total] as const;
-            } catch {
-              return [b.id, 0] as const;
-            }
-          }),
-        );
-        setStats(Object.fromEntries(summaryEntries));
+        const [s7, s14, t, promos] = await Promise.all([
+          ownerApi.analyticsSummary(token, business.id, 7),
+          ownerApi.analyticsSummary(token, business.id, 14),
+          ownerApi.analyticsTrends(token, business.id, 7),
+          ownerApi.listPromotions(token, business.id),
+        ]);
+        setSummary7(s7);
+        setSummaryPrev({
+          ...s14,
+          byType: Object.fromEntries(
+            Object.entries(s14.byType).map(([k, v]) => [
+              k,
+              v - (s7.byType[k] ?? 0),
+            ]),
+          ),
+          total: s14.total - s7.total,
+        });
+        setTrends(t);
+        setPromotions(promos.items.filter((p) => p.status === 'ACTIVE'));
       } catch (err) {
         setError(String(err));
       }
     })();
-  }, [token]);
+  }, [token, business?.id]);
 
-  if (!token) return <p style={{ padding: 24 }}>Загрузка…</p>;
+  if (!ready || !token) {
+    return <p className="page-content">Загрузка…</p>;
+  }
+
+  const metrics =
+    summary7 && summaryPrev ? comparePeriods(summary7, summaryPrev) : null;
+  const viewSeries = trends ? aggregateViewTrends(trends.items) : [];
+  const actions = business ? buildRecentActions(business, promotions) : [];
+  const completion = business ? profileCompletion(business) : 0;
+  const totalActions = summary7?.total ?? 0;
 
   return (
-    <main style={{ maxWidth: 960, margin: '0 auto', padding: 24 }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1>Кабинет бизнеса · QalaGo</h1>
-        <button
-          onClick={() => {
-            localStorage.removeItem(TOKEN_KEY);
-            router.push('/login');
-          }}
-        >
-          Выйти
-        </button>
-      </header>
+    <BusinessShell
+      activeNav="home"
+      business={business}
+      businesses={businesses}
+      userName={user?.name ?? user?.phone ?? undefined}
+      onLogout={logout}
+    >
+      {error && <div className="alert alert-error">{error}</div>}
 
-      {error && <p style={{ color: 'crimson' }}>{error}</p>}
-
-      {businesses.length === 0 ? (
-        <p>Нет заведений. Создайте через мобильное приложение.</p>
+      {!business ? (
+        <div className="empty-state">
+          <h2>Нет заведений</h2>
+          <p>Создайте заведение через мобильное приложение QalaGo.</p>
+        </div>
       ) : (
-        <div style={{ display: 'grid', gap: 16 }}>
-          {businesses.map((b) => (
-            <section
-              key={b.id}
-              style={{ background: '#fff', borderRadius: 12, padding: 16 }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <div>
-                  <h2 style={{ margin: '0 0 8px' }}>{b.title}</h2>
-                  <div style={{ color: '#666', fontSize: 14 }}>{b.status} · {b.address}</div>
-                  <div style={{ marginTop: 8, fontSize: 14 }}>
-                    Просмотры за 30 дней: <strong>{stats[b.id] ?? '—'}</strong>
+        <>
+          <header className="page-header">
+            <div>
+              <h1>Добро пожаловать, {business.title}! 👋</h1>
+              <p className="page-header-meta">
+                {formatTodayHeader()} · У вас{' '}
+                <strong>{formatNumber(summary7?.byType.VIEW_BUSINESS ?? 0)}</strong> просмотров
+                и <strong>{formatNumber(totalActions)}</strong> действий за 7 дней
+              </p>
+            </div>
+            <div className="page-actions">
+              <Link href={`/business/${business.id}`} className="btn">
+                👁 Предпросмотр
+              </Link>
+              <Link href={`/business/${business.id}`} className="btn btn-primary">
+                ✏️ Редактировать профиль
+              </Link>
+            </div>
+          </header>
+
+          <section className="kpi-grid">
+            {KPI_CONFIG.map(({ key, label }) => {
+              const current = metrics?.[key]?.current ?? 0;
+              const previous = metrics?.[key]?.previous ?? 0;
+              const delta = formatDelta(current, previous);
+              return (
+                <article key={key} className="kpi-card">
+                  <div className="kpi-label">{label}</div>
+                  <div className="kpi-value">{formatNumber(current)}</div>
+                  {delta && (
+                    <div className={deltaClass(current, previous)}>{delta} за неделю</div>
+                  )}
+                </article>
+              );
+            })}
+          </section>
+
+          <div className="dashboard-grid">
+            <div className="dashboard-main">
+              <article className="card">
+                <div className="card-header">
+                  <h2>Просмотры за 7 дней</h2>
+                </div>
+                <ViewsChart items={viewSeries} days={7} />
+              </article>
+
+              <div className="bottom-row">
+                <article className="card">
+                  <div className="card-header">
+                    <h2>Недавние действия</h2>
+                  </div>
+                  {actions.length === 0 ? (
+                    <p style={{ color: 'var(--text-muted)', margin: 0 }}>Пока нет событий</p>
+                  ) : (
+                    <ul className="action-list">
+                      {actions.map((action) => (
+                        <li key={`${action.title}-${action.time}`} className="action-item">
+                          <div className="action-icon">{action.icon}</div>
+                          <div className="action-text">
+                            <strong>{action.title}</strong>
+                            <span>{action.time}</span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </article>
+
+                <article className="card">
+                  <div className="card-header">
+                    <h2>Активные акции</h2>
+                    <Link href={`/business/${business.id}/promotions`} className="card-link">
+                      Все акции
+                    </Link>
+                  </div>
+                  {promotions.length === 0 ? (
+                    <p style={{ color: 'var(--text-muted)', margin: 0 }}>Нет активных акций</p>
+                  ) : (
+                    promotions.slice(0, 3).map((p) => (
+                      <div key={p.id} className="promo-item">
+                        <div className="promo-thumb">🏷️</div>
+                        <div className="promo-body">
+                          <strong>{p.title}</strong>
+                          <p>{p.description ?? p.discountText ?? 'Без описания'}</p>
+                          <span className="tag tag-success">Активна</span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                  <Link
+                    href={`/business/${business.id}/promotions`}
+                    className="card-link"
+                    style={{ display: 'inline-block', marginTop: 12 }}
+                  >
+                    + Создать новую акцию
+                  </Link>
+                </article>
+              </div>
+            </div>
+
+            <aside className="dashboard-side">
+              <article className="card">
+                <h2 style={{ margin: '0 0 12px', fontSize: '1rem' }}>Статус заведения</h2>
+                <span className="tag tag-success">{business.status === 'ACTIVE' ? 'Активен' : business.status}</span>
+                <div className="progress-block">
+                  <div className="progress-label">
+                    <span>Заполненность профиля</span>
+                    <strong>{completion}%</strong>
+                  </div>
+                  <div className="progress-bar">
+                    <div className="progress-fill" style={{ width: `${completion}%` }} />
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-                  <Link href={`/business/${b.id}`} style={linkBtn}>Профиль</Link>
-                  <Link href={`/business/${b.id}/promotions`} style={linkBtn}>Акции</Link>
-                </div>
-              </div>
-            </section>
-          ))}
-        </div>
+                <Link href={`/business/${business.id}`} className="btn btn-sm" style={{ width: '100%' }}>
+                  Заполнить полностью
+                </Link>
+              </article>
+
+              <article className="card">
+                <h2 style={{ margin: '0 0 8px', fontSize: '1rem' }}>Ваш тариф</h2>
+                <strong style={{ fontSize: '1.1rem' }}>Базовый</strong>
+                <p style={{ margin: '6px 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  Бесплатный план для MVP
+                </p>
+                <ul className="plan-list">
+                  <li>Карточка в каталоге QalaGo</li>
+                  <li>До 10 фото</li>
+                  <li>Акции и аналитика</li>
+                </ul>
+                <button type="button" className="btn btn-sm" disabled style={{ width: '100%', opacity: 0.6 }}>
+                  Улучшить тариф — скоро
+                </button>
+              </article>
+
+              <article className="card">
+                <h2 style={{ margin: '0 0 12px', fontSize: '1rem' }}>Нужна помощь?</h2>
+                <ul className="help-links">
+                  <li><a href="#">Как добавить акцию?</a></li>
+                  <li><a href="#">Как заполнить профиль?</a></li>
+                  <li><a href="#">Как читать статистику?</a></li>
+                </ul>
+                <button type="button" className="btn btn-sm" style={{ width: '100%' }} disabled>
+                  🎧 Связаться с поддержкой — скоро
+                </button>
+              </article>
+            </aside>
+          </div>
+        </>
       )}
-    </main>
+    </BusinessShell>
   );
 }
-
-const linkBtn: CSSProperties = {
-  padding: '8px 14px',
-  borderRadius: 8,
-  background: '#1e6bd6',
-  color: '#fff',
-  textDecoration: 'none',
-  fontSize: 14,
-};

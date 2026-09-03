@@ -2,10 +2,24 @@ import express from 'express';
 import { agents } from '@qalago/agents';
 import { recommend } from './recommendation.service';
 import { analyzeModeration } from './moderation.service';
+import { createContentDraft } from './content.service';
 
 const port = Number(process.env.PORT ?? 3004);
 
 const app = express();
+
+app.use((_req, res, next) => {
+  const allowedOrigin = process.env.CORS_ORIGIN ?? '*';
+  res.header('Access-Control-Allow-Origin', allowedOrigin);
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (_req.method === 'OPTIONS') {
+    res.sendStatus(204);
+    return;
+  }
+  next();
+});
+
 app.use(express.json());
 
 app.get('/api/v1/health', (_req, res) => {
@@ -54,6 +68,23 @@ app.post('/api/v1/moderation/analyze', (req, res) => {
       reviewId,
     }),
   );
+});
+
+app.post('/api/v1/content/draft', async (req, res) => {
+  try {
+    const citySlug = String(req.body?.citySlug ?? 'uralsk');
+    const topic =
+      req.body?.topic != null ? String(req.body.topic) : undefined;
+    const limit = req.body?.limit ? Number(req.body.limit) : undefined;
+    if (limit != null && (Number.isNaN(limit) || limit < 1 || limit > 20)) {
+      res.status(400).json({ message: 'limit must be between 1 and 20' });
+      return;
+    }
+    const result = await createContentDraft({ citySlug, topic, limit });
+    res.json(result);
+  } catch (err) {
+    res.status(502).json({ message: String(err) });
+  }
 });
 
 app.listen(port, () => {

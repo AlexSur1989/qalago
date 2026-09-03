@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/location/user_location_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
@@ -12,15 +13,55 @@ import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
 
-class MapScreen extends ConsumerWidget {
+class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MapScreen> createState() => _MapScreenState();
+}
+
+class _MapScreenState extends ConsumerState<MapScreen> {
+  final _mapController = MapController();
+  LatLng? _lastUserCenter;
+
+  @override
+  void dispose() {
+    _mapController.dispose();
+    super.dispose();
+  }
+
+  void _followUser(UserPosition? userPosition) {
+    if (userPosition == null) return;
+    final next = LatLng(userPosition.latitude, userPosition.longitude);
+    if (_lastUserCenter != null &&
+        const Distance().as(
+              LengthUnit.Meter,
+              _lastUserCenter!,
+              next,
+            ) <
+            40) {
+      return;
+    }
+    _lastUserCenter = next;
+    _mapController.move(next, _mapController.camera.zoom);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final city = ref.watch(cityProvider);
+    final userPosition = ref.watch(userLocationProvider).valueOrNull;
     final businessesAsync = ref.watch(
-      businessesProvider(const BusinessesQuery()),
+      businessesProvider(
+        BusinessesQuery(
+          latitude: userPosition?.latitude,
+          longitude: userPosition?.longitude,
+        ),
+      ),
     );
+
+    ref.listen(userLocationProvider, (previous, next) {
+      next.whenData(_followUser);
+    });
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -35,39 +76,60 @@ class MapScreen extends ConsumerWidget {
               .where((b) => b.latitude != null && b.longitude != null)
               .toList();
 
-          final center = withCoords.isNotEmpty
-              ? LatLng(withCoords.first.latitude!, withCoords.first.longitude!)
-              : const LatLng(51.2278, 51.3865);
+          final center = userPosition != null
+              ? LatLng(userPosition.latitude, userPosition.longitude)
+              : withCoords.isNotEmpty
+                  ? LatLng(
+                      withCoords.first.latitude!,
+                      withCoords.first.longitude!,
+                    )
+                  : const LatLng(51.2278, 51.3865);
+
+          final markers = <Marker>[
+            if (userPosition != null)
+              Marker(
+                point: LatLng(userPosition.latitude, userPosition.longitude),
+                width: 28,
+                height: 28,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppTheme.kzBlue,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 3),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ...withCoords.map(
+              (business) => Marker(
+                point: LatLng(business.latitude!, business.longitude!),
+                width: 50,
+                height: 68,
+                child: _MapPin(
+                  business: business,
+                  onTap: () => context.push('/business/${business.id}'),
+                ),
+              ),
+            ),
+          ];
 
           return Stack(
             children: [
               FlutterMap(
-                options: MapOptions(initialCenter: center, initialZoom: 13),
+                mapController: _mapController,
+                options: MapOptions(initialCenter: center, initialZoom: 14),
                 children: [
                   TileLayer(
                     urlTemplate:
                         'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'kz.qalago.mobile',
                   ),
-                  MarkerLayer(
-                    markers: withCoords
-                        .map(
-                          (business) => Marker(
-                            point: LatLng(
-                              business.latitude!,
-                              business.longitude!,
-                            ),
-                            width: 50,
-                            height: 68,
-                            child: _MapPin(
-                              business: business,
-                              onTap: () =>
-                                  context.push('/business/${business.id}'),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ),
+                  MarkerLayer(markers: markers),
                 ],
               ),
               SafeArea(
@@ -107,7 +169,7 @@ class MapScreen extends ConsumerWidget {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                child: _NearbySheet(businesses: withCoords),
+                child: _NearbySheet(businesses: data.items),
               ),
             ],
           );
@@ -250,18 +312,20 @@ class _NearbySheet extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Expanded(
-                child: ListView.separated(
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: businesses.take(5).length,
-                  separatorBuilder: (_, _) => Divider(
-                    height: 18,
-                    color: Colors.black.withValues(alpha: 0.06),
-                  ),
-                  itemBuilder: (context, index) {
-                    final business = businesses[index];
-                    return _NearbyMapTile(business: business);
-                  },
-                ),
+                child: businesses.isEmpty
+                    ? const Center(child: Text('Нет заведений рядом'))
+                    : ListView.separated(
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: businesses.take(5).length,
+                        separatorBuilder: (_, _) => Divider(
+                          height: 18,
+                          color: Colors.black.withValues(alpha: 0.06),
+                        ),
+                        itemBuilder: (context, index) {
+                          final business = businesses[index];
+                          return _NearbyMapTile(business: business);
+                        },
+                      ),
               ),
             ],
           ),
@@ -279,6 +343,7 @@ class _NearbyMapTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final coverUrl = AppConstants.resolveMediaUrl(business.coverImageUrl);
+    final distanceLabel = formatDistanceMeters(business.distanceMeters);
 
     return InkWell(
       borderRadius: BorderRadius.circular(14),
@@ -323,38 +388,18 @@ class _NearbyMapTile extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 5),
-                Row(
-                  children: [
-                    Icon(Icons.star, color: AppTheme.kzGold, size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      business.isFeatured ? 'Топ' : 'Открыто',
-                      style: const TextStyle(
-                        color: Color(0xFF6F7683),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
+                if (distanceLabel.isNotEmpty) ...[
+                  const SizedBox(height: 5),
+                  Text(
+                    distanceLabel,
+                    style: const TextStyle(
+                      color: AppTheme.kzBlue,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ],
-            ),
-          ),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: AppTheme.kzBlue.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Text(
-                'Открыто',
-                style: TextStyle(
-                  color: AppTheme.kzBlue,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
             ),
           ),
         ],

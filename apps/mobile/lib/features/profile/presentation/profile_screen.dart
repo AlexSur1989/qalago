@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/rbac/role_permissions.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/qalago_logo.dart';
 import '../../auth/providers/auth_provider.dart';
-
-import 'profile_helpers.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -17,9 +16,8 @@ class ProfileScreen extends ConsumerWidget {
     final user = auth.user;
     final role = user?.role ?? 'USER';
     final city = ref.watch(cityProvider);
-    final canManageBusiness =
-        role == 'BUSINESS' || role == 'ADMIN' || role == 'CITY_ADMIN';
-    final canModerate = role == 'ADMIN' || role == 'CITY_ADMIN';
+    final canManageBusiness = canManageBusinessCabinet(role);
+    final canModerateRole = canModerate(role);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -45,7 +43,7 @@ class ProfileScreen extends ConsumerWidget {
               phone: user?.phone ?? '+7 (***) ***-**-**',
               cityName: city.nameRu,
               roleLabel: profileRoleLabel(role),
-              onTap: () => context.push('/profile/edit'),
+              onTap: () => context.push('/profile/permissions'),
             ),
             const SizedBox(height: 24),
             _ProfileMenu(
@@ -74,6 +72,11 @@ class ProfileScreen extends ConsumerWidget {
                   icon: Icons.notifications_none_rounded,
                   title: 'Уведомления',
                   onTap: () => context.push('/notifications'),
+                ),
+                _ProfileItem(
+                  icon: Icons.admin_panel_settings_outlined,
+                  title: 'Мои права',
+                  onTap: () => context.push('/profile/permissions'),
                 ),
                 _ProfileItem(
                   icon: Icons.help_outline,
@@ -111,7 +114,7 @@ class ProfileScreen extends ConsumerWidget {
                 canManageBusiness ? '/owner' : '/owner/create-business',
               ),
             ),
-            if (canModerate) ...[
+            if (canModerateRole) ...[
               const SizedBox(height: 12),
               _BusinessActionCard(
                 title: 'Модерация',

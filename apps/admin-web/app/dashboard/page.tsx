@@ -2,19 +2,30 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { adminApi, AuthUser, BusinessRow, TOKEN_KEY } from '@/lib/api';
+import { adminApi, aiApi, AuthUser, BusinessRow, EditorialDraft, TOKEN_KEY } from '@/lib/api';
+import { canManageUsers, getRoleDefinition } from '@/lib/rbac';
+
+type TabId = 'moderation' | 'featured' | 'users' | 'content';
 
 export default function DashboardPage() {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [citySlug, setCitySlug] = useState('uralsk');
+  const [tab, setTab] = useState<TabId>('moderation');
   const [pending, setPending] = useState<BusinessRow[]>([]);
   const [all, setAll] = useState<BusinessRow[]>([]);
+  const [users, setUsers] = useState<AuthUser[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [contentTopic, setContentTopic] = useState('weekend');
+  const [contentDraft, setContentDraft] = useState<EditorialDraft | null>(null);
+  const [contentLoading, setContentLoading] = useState(false);
+  const [contentError, setContentError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const isCityAdmin = user?.role === 'CITY_ADMIN';
   const cityLocked = isCityAdmin && !!user?.managedCity?.slug;
+  const showUsers = user ? canManageUsers(user.role) : false;
 
   useEffect(() => {
     const t = localStorage.getItem(TOKEN_KEY);
@@ -40,54 +51,102 @@ export default function DashboardPage() {
     })();
   }, [token]);
 
-  useEffect(() => {
-    if (!token) return;
-    (async () => {
-      try {
-        const [pendingRes, allRes] = await Promise.all([
-          adminApi.listBusinesses(token, citySlug, 'PENDING'),
-          adminApi.listBusinesses(token, citySlug),
-        ]);
-        setPending(pendingRes.items);
-        setAll(allRes.items);
-      } catch (err) {
-        setError(String(err));
-      }
-    })();
-  }, [token, citySlug]);
-
-  async function setStatus(id: string, status: string) {
-    if (!token) return;
-    await adminApi.updateStatus(token, id, status);
-    const pendingRes = await adminApi.listBusinesses(token, citySlug, 'PENDING');
-    const allRes = await adminApi.listBusinesses(token, citySlug);
+  async function reloadBusinesses(t: string, slug: string) {
+    const [pendingRes, allRes] = await Promise.all([
+      adminApi.listBusinesses(t, slug, 'PENDING'),
+      adminApi.listBusinesses(t, slug),
+    ]);
     setPending(pendingRes.items);
     setAll(allRes.items);
   }
 
-  if (!token) return <p style={{ padding: 24 }}>Загрузка…</p>;
+  useEffect(() => {
+    if (!token) return;
+    reloadBusinesses(token, citySlug).catch((err) => setError(String(err)));
+  }, [token, citySlug]);
+
+  useEffect(() => {
+    if (!token || !showUsers || tab !== 'users') return;
+    adminApi
+      .listUsers(token)
+      .then(setUsers)
+      .catch((err) => setError(String(err)));
+  }, [token, showUsers, tab]);
+
+  async function setStatus(id: string, status: string) {
+    if (!token) return;
+    await adminApi.updateStatus(token, id, status);
+    await reloadBusinesses(token, citySlug);
+  }
+
+  async function toggleFeatured(id: string, current: boolean) {
+    if (!token) return;
+    await adminApi.updateFeatured(token, id, !current);
+    await reloadBusinesses(token, citySlug);
+  }
+
+  async function changeUserRole(userId: string, role: string) {
+    if (!token) return;
+    await adminApi.updateUserRole(token, userId, role);
+    setUsers(await adminApi.listUsers(token));
+  }
+
+  async function generateDraft() {
+    setContentLoading(true);
+    setContentError(null);
+    setCopied(false);
+    try {
+      const draft = await aiApi.createContentDraft({
+        citySlug,
+        topic: contentTopic,
+        limit: 5,
+      });
+      setContentDraft(draft);
+    } catch (err) {
+      setContentError(String(err));
+      setContentDraft(null);
+    } finally {
+      setContentLoading(false);
+    }
+  }
+
+  async function copyDraft() {
+    if (!contentDraft) return;
+    const text = `# ${contentDraft.title}\n\n${contentDraft.bodyMarkdown}`;
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  if (!token) return <p className="page">Загрузка…</p>;
 
   const cityLabel =
-    user?.managedCity?.nameRu ??
-    (citySlug === 'aktobe' ? 'Актобе' : 'Уральск');
+    user?.managedCity?.nameRu ?? (citySlug === 'aktobe' ? 'Актобе' : 'Уральск');
+  const roleInfo = user ? getRoleDefinition(user.role) : null;
+  const activeBusinesses = all.filter((b) => b.status === 'ACTIVE');
+  const featuredBusinesses = all.filter((b) => b.isFeatured);
 
   return (
-    <main style={{ maxWidth: 960, margin: '0 auto', padding: 24 }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+    <main className="page">
+      <header className="page-header">
         <h1>
-          Модерация · QalaGo
+          Admin · QalaGo
           {isCityAdmin ? ` · ${cityLabel}` : ''}
         </h1>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
           {cityLocked ? (
-            <span style={{ fontSize: 14, color: '#666' }}>Город: {cityLabel}</span>
+            <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>
+              Город: {cityLabel}
+            </span>
           ) : (
-            <select value={citySlug} onChange={(e) => setCitySlug(e.target.value)} style={{ padding: 8 }}>
+            <select value={citySlug} onChange={(e) => setCitySlug(e.target.value)}>
               <option value="uralsk">Уральск</option>
               <option value="aktobe">Актобе</option>
             </select>
           )}
           <button
+            type="button"
+            className="btn"
             onClick={() => {
               localStorage.removeItem(TOKEN_KEY);
               router.push('/login');
@@ -98,58 +157,268 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+      {error && <div className="alert alert-error">{error}</div>}
 
-      <section style={{ background: '#fff', borderRadius: 12, padding: 16, marginBottom: 24 }}>
-        <h2>Ожидают модерации ({pending.length})</h2>
-        {pending.length === 0 ? (
-          <p>Нет заявок</p>
-        ) : (
-          pending.map((b) => (
-            <div key={b.id} style={{ borderTop: '1px solid #eee', padding: '12px 0', display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-              <div>
-                <strong>{b.title}</strong>
-                <div style={{ color: '#666', fontSize: 14 }}>{b.address}</div>
-                <div style={{ fontSize: 13 }}>Владелец: {b.owner?.phone}</div>
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => setStatus(b.id, 'ACTIVE')}>Одобрить</button>
-                <button onClick={() => setStatus(b.id, 'BLOCKED')}>Отклонить</button>
-              </div>
-            </div>
-          ))
+      {roleInfo && (
+        <section className="card card-muted">
+          <h2>Роль: {roleInfo.labelRu}</h2>
+          <p style={{ color: 'var(--text-muted)', marginTop: 0 }}>{roleInfo.summaryRu}</p>
+        </section>
+      )}
+
+      <nav className="tabs">
+        <button
+          type="button"
+          className={`tab${tab === 'moderation' ? ' active' : ''}`}
+          onClick={() => setTab('moderation')}
+        >
+          Модерация ({pending.length})
+        </button>
+        <button
+          type="button"
+          className={`tab${tab === 'featured' ? ' active' : ''}`}
+          onClick={() => setTab('featured')}
+        >
+          VIP / Топ ({featuredBusinesses.length})
+        </button>
+        <button
+          type="button"
+          className={`tab${tab === 'content' ? ' active' : ''}`}
+          onClick={() => setTab('content')}
+        >
+          AI-черновики
+        </button>
+        {showUsers && (
+          <button
+            type="button"
+            className={`tab${tab === 'users' ? ' active' : ''}`}
+            onClick={() => setTab('users')}
+          >
+            Пользователи
+          </button>
         )}
-      </section>
+      </nav>
 
-      <section style={{ background: '#fff', borderRadius: 12, padding: 16 }}>
-        <h2>Все заведения ({all.length})</h2>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-          <thead>
-            <tr style={{ textAlign: 'left', borderBottom: '1px solid #eee' }}>
-              <th style={{ padding: 8 }}>Название</th>
-              <th>Статус</th>
-              <th>Город</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {all.map((b) => (
-              <tr key={b.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                <td style={{ padding: 8 }}>{b.title}</td>
-                <td>{b.status}</td>
-                <td>{b.city?.nameRu}</td>
-                <td>
-                  {b.status === 'ACTIVE' ? (
-                    <button onClick={() => setStatus(b.id, 'BLOCKED')}>Блок</button>
-                  ) : (
-                    <button onClick={() => setStatus(b.id, 'ACTIVE')}>Активировать</button>
-                  )}
-                </td>
+      {tab === 'moderation' && (
+        <>
+          <section className="card">
+            <h2>Ожидают модерации ({pending.length})</h2>
+            {pending.length === 0 ? (
+              <p style={{ color: 'var(--text-muted)' }}>Нет заявок</p>
+            ) : (
+              pending.map((b) => (
+                <div
+                  key={b.id}
+                  style={{
+                    borderTop: '1px solid var(--border)',
+                    padding: '12px 0',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <div>
+                    <strong>{b.title}</strong>
+                    <div style={{ color: 'var(--text-muted)', fontSize: 14 }}>
+                      {b.address}
+                    </div>
+                    <div style={{ fontSize: 13 }}>Владелец: {b.owner?.phone}</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      onClick={() => setStatus(b.id, 'ACTIVE')}
+                    >
+                      Одобрить
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-danger btn-sm"
+                      onClick={() => setStatus(b.id, 'BLOCKED')}
+                    >
+                      Отклонить
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </section>
+
+          <section className="card">
+            <h2>Все заведения ({all.length})</h2>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Название</th>
+                  <th>Статус</th>
+                  <th>Город</th>
+                  <th>VIP</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {all.map((b) => (
+                  <tr key={b.id}>
+                    <td>{b.title}</td>
+                    <td>{b.status}</td>
+                    <td>{b.city?.nameRu}</td>
+                    <td>
+                      {b.isFeatured ? (
+                        <span className="tag tag-success">Топ</span>
+                      ) : (
+                        <span className="tag tag-muted">—</span>
+                      )}
+                    </td>
+                    <td>
+                      {b.status === 'ACTIVE' ? (
+                        <button
+                          type="button"
+                          className="btn btn-danger btn-sm"
+                          onClick={() => setStatus(b.id, 'BLOCKED')}
+                        >
+                          Блок
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="btn btn-sm"
+                          onClick={() => setStatus(b.id, 'ACTIVE')}
+                        >
+                          Активировать
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        </>
+      )}
+
+      {tab === 'featured' && (
+        <section className="card">
+          <h2>VIP / Топ — активные заведения ({activeBusinesses.length})</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14, marginTop: 0 }}>
+            Заведения с меткой «Топ» показываются в блоке «Рекомендуем» в приложении.
+          </p>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Название</th>
+                <th>Адрес</th>
+                <th>Статус VIP</th>
+                <th></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+            </thead>
+            <tbody>
+              {activeBusinesses.map((b) => (
+                <tr key={b.id}>
+                  <td>{b.title}</td>
+                  <td>{b.address}</td>
+                  <td>
+                    {b.isFeatured ? (
+                      <span className="tag tag-success">В Топе</span>
+                    ) : (
+                      <span className="tag tag-muted">Обычное</span>
+                    )}
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      className={`btn btn-sm${b.isFeatured ? '' : ' btn-primary'}`}
+                      onClick={() => toggleFeatured(b.id, b.isFeatured)}
+                    >
+                      {b.isFeatured ? 'Убрать из Топа' : 'Добавить в Топ'}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
+
+      {tab === 'content' && (
+        <section className="card">
+          <h2>Контент · черновик подборки</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14, marginTop: 0 }}>
+            AI сгенерирует markdown для города <strong>{cityLabel}</strong>.
+          </p>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 16 }}>
+            <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              Тема:
+              <select value={contentTopic} onChange={(e) => setContentTopic(e.target.value)}>
+                <option value="weekend">На выходных</option>
+                <option value="food">Еда</option>
+                <option value="bars">Бары</option>
+                <option value="beauty">Красота</option>
+                <option value="fitness">Фитнес</option>
+                <option value="fun">Развлечения</option>
+              </select>
+            </label>
+            <button type="button" className="btn btn-primary" onClick={generateDraft} disabled={contentLoading}>
+              {contentLoading ? 'Генерация…' : 'Сгенерировать'}
+            </button>
+            {contentDraft && (
+              <button type="button" className="btn" onClick={copyDraft}>
+                {copied ? 'Скопировано' : 'Копировать markdown'}
+              </button>
+            )}
+          </div>
+          {contentError && <div className="alert alert-error">{contentError}</div>}
+          {contentDraft && (
+            <>
+              <h3>{contentDraft.title}</h3>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                Заведений: {contentDraft.businessIds.length} · {contentDraft.source}
+              </p>
+              <textarea readOnly value={contentDraft.bodyMarkdown} rows={14} className="markdown-box" />
+            </>
+          )}
+        </section>
+      )}
+
+      {tab === 'users' && showUsers && (
+        <section className="card">
+          <h2>Пользователи ({users.length})</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14, marginTop: 0 }}>
+            Только ADMIN может менять роли.
+          </p>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Телефон</th>
+                <th>Имя</th>
+                <th>Роль</th>
+                <th>Новая роль</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((u) => (
+                <tr key={u.id}>
+                  <td>{u.phone}</td>
+                  <td>{u.name ?? '—'}</td>
+                  <td>{u.role}</td>
+                  <td>
+                    <select
+                      value={u.role}
+                      onChange={(e) => changeUserRole(u.id, e.target.value)}
+                    >
+                      <option value="USER">USER</option>
+                      <option value="BUSINESS">BUSINESS</option>
+                      <option value="CITY_ADMIN">CITY_ADMIN</option>
+                      <option value="ADMIN">ADMIN</option>
+                    </select>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
     </main>
   );
 }

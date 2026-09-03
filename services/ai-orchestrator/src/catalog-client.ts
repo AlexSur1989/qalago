@@ -33,3 +33,7 @@ export async function fetchFeaturedFallback(
   const data = await fetchJson<{ items: CatalogBusiness[] }>(`/businesses?${params}`);
   return data.items ?? [];
 }
+
+export async function fetchCity(citySlug: string): Promise<{ slug: string; nameRu: string }> {
+  return fetchJson<{ slug: string; nameRu: string }>(`/cities/${citySlug}`);
+}

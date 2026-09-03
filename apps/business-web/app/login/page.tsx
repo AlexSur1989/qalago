@@ -53,33 +53,33 @@ export default function LoginPage() {
   }
 
   return (
-    <main style={{ maxWidth: 400, margin: '80px auto', padding: 24, background: '#fff', borderRadius: 12 }}>
-      <h1>QalaGo Business</h1>
-      <p style={{ color: '#666' }}>Кабинет владельца · OTP (тест: +77000000002)</p>
-      <form onSubmit={sendCode} style={{ display: 'grid', gap: 12, marginBottom: 24 }}>
-        <input
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          placeholder="Телефон"
-          style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
-        />
-        <button type="submit" disabled={loading} style={{ padding: 10, borderRadius: 8 }}>
-          Отправить код
-        </button>
-      </form>
-      {debugCode && <p style={{ color: '#0a0' }}>Dev OTP: {debugCode}</p>}
-      <form onSubmit={verify} style={{ display: 'grid', gap: 12 }}>
-        <input
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          placeholder="Код из SMS"
-          style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
-        />
-        <button type="submit" disabled={loading} style={{ padding: 10, borderRadius: 8 }}>
-          Войти
-        </button>
-      </form>
-      {error && <p style={{ color: 'crimson', marginTop: 16 }}>{error}</p>}
+    <main className="login-page">
+      <div className="login-card">
+        <h1>QalaGo Business</h1>
+        <p>Кабинет владельца заведения · OTP (тест: +77000000002, код 1234)</p>
+        <form onSubmit={sendCode} className="form-grid" style={{ marginBottom: 24 }}>
+          <input
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="Телефон"
+          />
+          <button type="submit" disabled={loading} className="btn btn-primary">
+            Отправить код
+          </button>
+        </form>
+        {debugCode && <p style={{ color: 'var(--success)' }}>Dev OTP: {debugCode}</p>}
+        <form onSubmit={verify} className="form-grid">
+          <input
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="Код из SMS"
+          />
+          <button type="submit" disabled={loading} className="btn btn-primary">
+            Войти
+          </button>
+        </form>
+        {error && <div className="alert alert-error" style={{ marginTop: 16 }}>{error}</div>}
+      </div>
     </main>
   );
 }

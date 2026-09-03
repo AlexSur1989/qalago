@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/location/user_location_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
@@ -37,8 +38,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.dispose();
   }
 
-  BusinessesQuery get _businessesQuery => BusinessesQuery(
+  BusinessesQuery _businessesQuery(UserPosition? userPosition) => BusinessesQuery(
     search: _search.isEmpty ? null : _search,
+    latitude: userPosition?.latitude,
+    longitude: userPosition?.longitude,
   );
 
   void _queueSearch(String value) {
@@ -196,8 +199,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final city = ref.watch(cityProvider);
+    final userPosition = ref.watch(userLocationProvider).valueOrNull;
     final categoriesAsync = ref.watch(categoriesProvider);
-    final businessesAsync = ref.watch(businessesProvider(_businessesQuery));
+    final businessesAsync = ref.watch(
+      businessesProvider(_businessesQuery(userPosition)),
+    );
     final featuredAsync = ref.watch(recommendedBusinessesProvider);
     final promotionsAsync = ref.watch(promotionsProvider);
     final unreadAsync = ref.watch(unreadNotificationsProvider);
@@ -1171,7 +1177,9 @@ class _NearbyBusinessTile extends StatelessWidget {
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
-                            business.address,
+                            business.distanceMeters != null
+                                ? '${formatDistanceMeters(business.distanceMeters)} · ${business.address}'
+                                : business.address,
                             style: const TextStyle(
                               color: Color(0xFF8A919F),
                               fontSize: 12,

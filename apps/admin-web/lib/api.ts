@@ -1,10 +1,13 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3002/api/v1';
+const AI_BASE = process.env.NEXT_PUBLIC_AI_URL ?? 'http://localhost:3004/api/v1';
 
 export type AuthUser = {
   id: string;
   phone: string;
   name: string | null;
   role: string;
+  isActive?: boolean;
+  createdAt?: string;
   managedCityId?: string | null;
   managedCity?: { slug: string; nameRu: string } | null;
 };
@@ -58,8 +61,50 @@ export const adminApi = {
       body: JSON.stringify({ status }),
     }),
 
+  updateFeatured: (token: string, id: string, isFeatured: boolean) =>
+    api(`/admin/businesses/${id}/featured`, {
+      method: 'PATCH',
+      token,
+      body: JSON.stringify({ isFeatured }),
+    }),
+
   listUsers: (token: string) =>
     api<AuthUser[]>('/admin/users', { token }),
+
+  updateUserRole: (token: string, id: string, role: string) =>
+    api<AuthUser>(`/admin/users/${id}/role`, {
+      method: 'PATCH',
+      token,
+      body: JSON.stringify({ role }),
+    }),
+};
+
+export type EditorialDraft = {
+  agent: string;
+  citySlug: string;
+  title: string;
+  bodyMarkdown: string;
+  businessIds: string[];
+  source: string;
+};
+
+export const aiApi = {
+  createContentDraft: (params: {
+    citySlug: string;
+    topic?: string;
+    limit?: number;
+  }) =>
+    fetch(`${AI_BASE}/content/draft`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    }).then(async (res) => {
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || res.statusText);
+      }
+      return res.json() as Promise<EditorialDraft>;
+    }),
 };
 
 export type BusinessRow = {

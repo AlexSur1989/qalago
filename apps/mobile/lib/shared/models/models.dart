@@ -43,6 +43,7 @@ class BusinessModel {
     this.coverImageUrl,
     this.isFeatured = false,
     this.categoryTitle,
+    this.distanceMeters,
   });
 
   final String id;
@@ -57,11 +58,19 @@ class BusinessModel {
   final String? coverImageUrl;
   final bool isFeatured;
   final String? categoryTitle;
+  final int? distanceMeters;
 
   static double? _toDouble(dynamic value) {
     if (value == null) return null;
     if (value is num) return value.toDouble();
     return double.tryParse(value.toString());
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.round();
+    return int.tryParse(value.toString());
   }
 
   factory BusinessModel.fromJson(Map<String, dynamic> json) => BusinessModel(
@@ -78,6 +87,7 @@ class BusinessModel {
     isFeatured: json['isFeatured'] as bool? ?? false,
     categoryTitle:
         (json['category'] as Map<String, dynamic>?)?['title'] as String?,
+    distanceMeters: _toInt(json['distanceMeters']),
   );
 }
 

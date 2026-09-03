@@ -4,6 +4,8 @@
 **Base URL:** `/api/v1`  
 **Status:** Implemented in `services/catalog-api` (MVP scope).
 
+Roles and permissions: [rbac.md](./rbac.md).
+
 All list endpoints accept:
 
 | Param | Type | Required | Default |
@@ -109,6 +111,10 @@ Query:
 | featured | boolean |
 | status | ACTIVE (public default) |
 | citySlug / cityId | string |
+| latitude, longitude | number — user position; sorts by distance ascending |
+| radiusKm | number (default 15) — max distance in km when geo params set |
+
+When `latitude` and `longitude` are provided, each item may include `distanceMeters` (integer). Businesses without coordinates are listed after geo-sorted items.
 
 ### GET /businesses/:id
 
@@ -369,6 +375,20 @@ Response `200`:
 ```
 
 `suggestedAction`: `approve` | `review` | `reject` — hint for human moderator only; does not change review status.
+
+- `POST /content/draft` — body `{ "citySlug": "uralsk", "topic": "food|weekend|...", "limit": 5 }` → editorial markdown draft (rule-based, no publish)
+
+Response `200`:
+```json
+{
+  "agent": "content-agent",
+  "citySlug": "uralsk",
+  "title": "Где поесть в Уральске",
+  "bodyMarkdown": "...",
+  "businessIds": ["..."],
+  "source": "rule-based"
+}
+```
 
 ---
 

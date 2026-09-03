@@ -2,28 +2,28 @@
 
 import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { PromotionRow, ownerApi, TOKEN_KEY } from '@/lib/api';
+import { useParams } from 'next/navigation';
+import { BusinessRow, PromotionRow, ownerApi } from '@/lib/api';
+import { useAuth } from '@/lib/use-auth';
+import { BusinessShell } from '@/components/business-shell';
 
 export default function BusinessPromotionsPage() {
   const params = useParams<{ id: string }>();
-  const router = useRouter();
   const businessId = params.id;
-  const [token, setToken] = useState<string | null>(null);
+  const { token, user, ready, logout } = useAuth();
+  const [businesses, setBusinesses] = useState<BusinessRow[]>([]);
   const [items, setItems] = useState<PromotionRow[]>([]);
   const [title, setTitle] = useState('');
   const [discountText, setDiscountText] = useState('-20%');
   const [description, setDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
 
+  const business = businesses.find((b) => b.id === businessId) ?? null;
+
   useEffect(() => {
-    const t = localStorage.getItem(TOKEN_KEY);
-    if (!t) {
-      router.replace('/login');
-      return;
-    }
-    setToken(t);
-  }, [router]);
+    if (!token) return;
+    ownerApi.listMyBusinesses(token).then(setBusinesses).catch((err) => setError(String(err)));
+  }, [token]);
 
   async function load(t: string) {
     const res = await ownerApi.listPromotions(t, businessId);
@@ -63,70 +63,85 @@ export default function BusinessPromotionsPage() {
     await load(token);
   }
 
-  if (!token) return <p style={{ padding: 24 }}>Загрузка…</p>;
+  if (!ready || !token) return <p className="page-content">Загрузка…</p>;
 
   return (
-    <main style={{ maxWidth: 720, margin: '0 auto', padding: 24 }}>
-      <p>
-        <Link href="/dashboard">← Кабинет</Link>
-      </p>
-      <h1>Акции</h1>
+    <BusinessShell
+      activeNav="promotions"
+      business={business}
+      businesses={businesses}
+      userName={user?.name ?? user?.phone ?? undefined}
+      onLogout={logout}
+    >
+      <header className="page-header">
+        <div>
+          <h1>Акции</h1>
+          <p className="page-header-meta">Управление спецпредложениями для клиентов</p>
+        </div>
+        <Link href="/dashboard" className="btn">
+          ← На главную
+        </Link>
+      </header>
 
-      <form
-        onSubmit={create}
-        style={{ display: 'grid', gap: 10, background: '#fff', padding: 16, borderRadius: 12, marginBottom: 24 }}
-      >
+      <form onSubmit={create} className="form-card form-grid" style={{ maxWidth: 720, marginBottom: 24 }}>
         <h2 style={{ margin: 0 }}>Новая акция</h2>
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Название"
-          style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
         />
         <input
           value={discountText}
           onChange={(e) => setDiscountText(e.target.value)}
           placeholder="Скидка"
-          style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
         />
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Описание"
           rows={3}
-          style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
         />
-        <button type="submit" style={{ padding: 10, borderRadius: 8 }}>Создать</button>
+        <button type="submit" className="btn btn-primary">
+          Создать акцию
+        </button>
       </form>
 
-      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+      {error && <div className="alert alert-error">{error}</div>}
 
-      <section style={{ background: '#fff', borderRadius: 12, padding: 16 }}>
-        <h2>Список ({items.length})</h2>
+      <section className="form-card" style={{ maxWidth: 720 }}>
+        <h2 style={{ marginTop: 0 }}>Список ({items.length})</h2>
         {items.length === 0 ? (
-          <p>Пока нет акций</p>
+          <p style={{ color: 'var(--text-muted)' }}>Пока нет акций</p>
         ) : (
           items.map((p) => (
             <div
               key={p.id}
-              style={{ borderTop: '1px solid #eee', padding: '12px 0', display: 'flex', justifyContent: 'space-between', gap: 12 }}
+              className="promo-item"
+              style={{ alignItems: 'center' }}
             >
-              <div>
+              <div className="promo-thumb">🏷️</div>
+              <div className="promo-body">
                 <strong>{p.title}</strong>
-                {p.discountText && <div style={{ color: '#1e6bd6' }}>{p.discountText}</div>}
-                {p.description && <div style={{ fontSize: 14, color: '#666' }}>{p.description}</div>}
-                <div style={{ fontSize: 13 }}>Статус: {p.status}</div>
+                {p.discountText && (
+                  <p style={{ color: 'var(--primary)', margin: '4px 0' }}>{p.discountText}</p>
+                )}
+                {p.description && <p>{p.description}</p>}
+                <span className={`tag ${p.status === 'ACTIVE' ? 'tag-success' : ''}`}>
+                  {p.status === 'ACTIVE' ? 'Активна' : p.status}
+                </span>
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <button onClick={() => toggleStatus(p)}>
+                <button type="button" className="btn btn-sm" onClick={() => toggleStatus(p)}>
                   {p.status === 'ACTIVE' ? 'Завершить' : 'Активировать'}
                 </button>
-                <button onClick={() => remove(p.id)}>Удалить</button>
+                <button type="button" className="btn btn-sm" onClick={() => remove(p.id)}>
+                  Удалить
+                </button>
               </div>
             </div>
           ))
         )}
       </section>
-    </main>
+    </BusinessShell>
   );
 }

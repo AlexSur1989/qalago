@@ -74,6 +74,30 @@ export class ListBusinessesQueryDto {
   @IsOptional()
   @IsEnum(BusinessStatus)
   status?: BusinessStatus;
+
+  /** User latitude — enables distance sort when paired with longitude. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  latitude?: number;
+
+  /** User longitude — enables distance sort when paired with latitude. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  longitude?: number;
+
+  /** Max distance from user in km (default 15). Used only with latitude/longitude. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0.5)
+  @Max(100)
+  radiusKm?: number;
 }
 
 export class UpdateBusinessDto {

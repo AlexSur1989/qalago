@@ -170,19 +170,28 @@ final categoriesProvider = FutureProvider<List<CategoryModel>>((ref) async {
 });
 
 class BusinessesQuery {
-  const BusinessesQuery({this.search, this.categoryId});
+  const BusinessesQuery({
+    this.search,
+    this.categoryId,
+    this.latitude,
+    this.longitude,
+  });
 
   final String? search;
   final String? categoryId;
+  final double? latitude;
+  final double? longitude;
 
   @override
   bool operator ==(Object other) =>
       other is BusinessesQuery &&
       other.search == search &&
-      other.categoryId == categoryId;
+      other.categoryId == categoryId &&
+      other.latitude == latitude &&
+      other.longitude == longitude;
 
   @override
-  int get hashCode => Object.hash(search, categoryId);
+  int get hashCode => Object.hash(search, categoryId, latitude, longitude);
 }
 
 final businessesProvider = FutureProvider.family<PaginatedBusinesses, BusinessesQuery>(
@@ -192,6 +201,9 @@ final businessesProvider = FutureProvider.family<PaginatedBusinesses, Businesses
           citySlug: city.slug,
           search: query.search,
           categoryId: query.categoryId,
+          latitude: query.latitude,
+          longitude: query.longitude,
+          radiusKm: 15,
         );
   },
 );
@@ -262,6 +274,12 @@ final serviceMenuProvider = FutureProvider.family<Map<String, dynamic>, String>(
 
 final favoritesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   return ref.watch(favoritesRepositoryProvider).fetchFavorites();
+});
+
+final businessFavoriteProvider = FutureProvider.family<bool, String>((ref, businessId) async {
+  final auth = ref.watch(authProvider);
+  if (!auth.isAuthenticated) return false;
+  return ref.watch(favoritesRepositoryProvider).isFavorite(businessId);
 });
 
 final promotionsProvider = FutureProvider((ref) async {

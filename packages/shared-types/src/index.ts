@@ -136,3 +136,14 @@ export interface AnalyticsTrends {
 export const DEFAULT_CITY_SLUG = 'uralsk';
 
 export const API_PREFIX = '/api/v1';
+
+export {
+  ROLE_DEFINITIONS,
+  canAccessAdminWeb,
+  canAccessBusinessWeb,
+  canManageBusinessCabinet,
+  canManageUsers,
+  canModerate,
+  getRoleDefinition,
+  type RoleDefinition,
+} from './rbac';

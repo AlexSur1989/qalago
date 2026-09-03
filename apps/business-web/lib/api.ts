@@ -18,7 +18,11 @@ export type BusinessRow = {
   whatsapp?: string | null;
   instagram?: string | null;
   website?: string | null;
+  coverImageUrl?: string | null;
   workHours?: Record<string, string> | null;
+  createdAt?: string;
+  updatedAt?: string;
+  city?: { slug: string; nameRu: string } | null;
 };
 
 export type PromotionRow = {
@@ -26,14 +30,76 @@ export type PromotionRow = {
   title: string;
   description?: string | null;
   discountText?: string | null;
+  imageUrl?: string | null;
   status: string;
   businessId: string;
+  createdAt?: string;
 };
 
 export type AnalyticsSummary = {
+  businessId: string;
+  days: number;
   total: number;
   byType: Record<string, number>;
 };
+
+export type AnalyticsTrendItem = {
+  date: string;
+  type: string;
+  count: number;
+};
+
+export type AnalyticsTrends = {
+  businessId: string;
+  days: number;
+  items: AnalyticsTrendItem[];
+};
+
+export type ReviewRow = {
+  id: string;
+  businessId: string;
+  rating: number;
+  text?: string | null;
+  ownerReply?: string | null;
+  createdAt: string;
+  user?: { id: string; name?: string | null };
+};
+
+export type ServiceMenuItem = {
+  id: string;
+  businessId: string;
+  groupId?: string | null;
+  title: string;
+  description?: string | null;
+  price?: string | null;
+  imageUrl?: string | null;
+  sortOrder?: number;
+  isActive?: boolean;
+};
+
+export type ServiceMenuGroup = {
+  id: string;
+  businessId: string;
+  title: string;
+  description?: string | null;
+  sortOrder?: number;
+  isActive?: boolean;
+  items: ServiceMenuItem[];
+};
+
+export type ServiceMenuManage = {
+  groups: ServiceMenuGroup[];
+  ungrouped: ServiceMenuItem[];
+};
+
+export type BusinessImageRow = {
+  id: string;
+  businessId: string;
+  imageUrl: string;
+  sortOrder: number;
+};
+
+export const SELECTED_BUSINESS_KEY = 'qalago_business_id';
 
 async function api<T>(
   path: string,
@@ -54,6 +120,25 @@ async function api<T>(
     throw new Error(text || res.statusText);
   }
   if (res.status === 204) return undefined as T;
+  return res.json() as Promise<T>;
+}
+
+async function uploadApi<T>(
+  path: string,
+  token: string,
+  file: File,
+): Promise<T> {
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: form,
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || res.statusText);
+  }
   return res.json() as Promise<T>;
 }
 
@@ -126,6 +211,103 @@ export const ownerApi = {
       `/analytics/business/${businessId}/summary?days=${days}`,
       { token },
     ),
+
+  analyticsTrends: (token: string, businessId: string, days = 7) =>
+    api<AnalyticsTrends>(
+      `/analytics/business/${businessId}/trends?days=${days}`,
+      { token },
+    ),
+
+  listReviews: (token: string, businessId: string) =>
+    api<ReviewRow[]>(`/reviews?businessId=${encodeURIComponent(businessId)}`, {
+      token,
+    }),
+
+  replyReview: (token: string, reviewId: string, ownerReply: string) =>
+    api<ReviewRow>(`/reviews/${reviewId}/reply`, {
+      method: 'PATCH',
+      token,
+      body: JSON.stringify({ ownerReply }),
+    }),
+
+  getServiceMenu: (token: string, businessId: string) =>
+    api<ServiceMenuManage>(`/service-menu/manage/${businessId}`, { token }),
+
+  createMenuGroup: (
+    token: string,
+    data: { businessId: string; title: string; description?: string },
+  ) =>
+    api<ServiceMenuGroup>('/service-menu-groups', {
+      method: 'POST',
+      token,
+      body: JSON.stringify(data),
+    }),
+
+  updateMenuGroup: (token: string, id: string, data: Record<string, unknown>) =>
+    api<ServiceMenuGroup>(`/service-menu-groups/${id}`, {
+      method: 'PATCH',
+      token,
+      body: JSON.stringify(data),
+    }),
+
+  deleteMenuGroup: (token: string, id: string) =>
+    api<void>(`/service-menu-groups/${id}`, { method: 'DELETE', token }),
+
+  createMenuItem: (
+    token: string,
+    data: {
+      businessId: string;
+      groupId?: string;
+      title: string;
+      description?: string;
+      price?: string;
+    },
+  ) =>
+    api<ServiceMenuItem>('/service-items', {
+      method: 'POST',
+      token,
+      body: JSON.stringify(data),
+    }),
+
+  updateMenuItem: (token: string, id: string, data: Record<string, unknown>) =>
+    api<ServiceMenuItem>(`/service-items/${id}`, {
+      method: 'PATCH',
+      token,
+      body: JSON.stringify(data),
+    }),
+
+  deleteMenuItem: (token: string, id: string) =>
+    api<void>(`/service-items/${id}`, { method: 'DELETE', token }),
+
+  uploadImage: (token: string, file: File) =>
+    uploadApi<{ url: string }>('/uploads', token, file),
+
+  listBusinessImages: (token: string, businessId: string) =>
+    api<BusinessImageRow[]>(`/uploads/business/${businessId}/images`, { token }),
+
+  attachBusinessImage: (
+    token: string,
+    businessId: string,
+    imageUrl: string,
+    asCover = false,
+  ) =>
+    api<BusinessImageRow>(`/uploads/business/${businessId}`, {
+      method: 'POST',
+      token,
+      body: JSON.stringify({ imageUrl, asCover }),
+    }),
+
+  deleteBusinessImage: (token: string, businessId: string, imageId: string) =>
+    api<void>(`/uploads/business/${businessId}/images/${imageId}`, {
+      method: 'DELETE',
+      token,
+    }),
+
+  setBusinessCover: (token: string, businessId: string, imageId: string) =>
+    api<BusinessRow>(`/uploads/business/${businessId}/images/${imageId}/cover`, {
+      method: 'PATCH',
+      token,
+    }),
 };
 
 export const TOKEN_KEY = 'qalago_business_token';

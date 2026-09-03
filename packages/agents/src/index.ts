@@ -29,6 +29,24 @@ export const moderationAgent = {
   memoryPolicy: 'none' as const,
 };
 
-export const agents = [recommendationAgent, moderationAgent];
+export const contentAgent = {
+  name: 'content-agent',
+  version: '0.1.0',
+  status: 'active' as const,
+  purpose:
+    'Generate editorial draft markdown for a city topic from catalog featured businesses.',
+  allowedTools: ['search_businesses', 'get_business'] as const,
+  forbiddenActions: [
+    'create_editorial_draft',
+    'write_business',
+    'send_notification',
+  ] as const,
+  memoryPolicy: 'none' as const,
+};
 
-export type AgentSpec = typeof recommendationAgent | typeof moderationAgent;
+export const agents = [recommendationAgent, moderationAgent, contentAgent];
+
+export type AgentSpec =
+  | typeof recommendationAgent
+  | typeof moderationAgent
+  | typeof contentAgent;
