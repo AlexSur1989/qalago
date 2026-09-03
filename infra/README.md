@@ -18,7 +18,21 @@ npm run staging:seed    # prisma push + seed (first time)
 npm run staging:down    # stop containers
 ```
 
+Or one-shot (requires Docker Desktop running):
+
+```powershell
+.\scripts\dev\staging.ps1
+```
+
 Postgres host port **5433** (avoids conflict with dev Postgres on 5432).
+
+**Windows:** Docker Desktop install via winget needs **admin (UAC)** approval:
+
+```powershell
+winget install -e --id Docker.DockerDesktop
+```
+
+After install: restart terminal, start Docker Desktop, then `.\scripts\dev\staging.ps1`.
 
 Env template: `env/.env.staging.example`
 
