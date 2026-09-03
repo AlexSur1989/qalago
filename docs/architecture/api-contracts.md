@@ -355,6 +355,20 @@ Base URL (separate service): `http://localhost:3004/api/v1`
 - `GET /health`
 - `GET /agents` — registered agent metadata
 - `POST /recommendations` — body `{ "citySlug": "uralsk", "limit": 10 }`, optional `Authorization` for personalized results via catalog-api read tools
+- `POST /moderation/analyze` — body `{ "text": "string", "rating": 1-5?, "reviewId": "string?" }` → rule-based moderation assist (no side effects)
+
+Response `200`:
+```json
+{
+  "agent": "moderation-agent",
+  "source": "rule-based",
+  "score": 85,
+  "flags": [{ "code": "TOO_SHORT", "message": "...", "severity": "low" }],
+  "suggestedAction": "approve"
+}
+```
+
+`suggestedAction`: `approve` | `review` | `reject` — hint for human moderator only; does not change review status.
 
 ---
 

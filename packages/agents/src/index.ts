@@ -13,4 +13,22 @@ export const recommendationAgent = {
   memoryPolicy: 'none' as const,
 };
 
-export type AgentSpec = typeof recommendationAgent;
+export const moderationAgent = {
+  name: 'moderation-agent',
+  version: '0.1.0',
+  status: 'active' as const,
+  purpose:
+    'Screen review text for spam, links, and policy violations; suggest human action only.',
+  allowedTools: ['list_pending_reviews'] as const,
+  forbiddenActions: [
+    'delete_review',
+    'flag_review',
+    'write_business',
+    'send_notification',
+  ] as const,
+  memoryPolicy: 'none' as const,
+};
+
+export const agents = [recommendationAgent, moderationAgent];
+
+export type AgentSpec = typeof recommendationAgent | typeof moderationAgent;

@@ -18,6 +18,7 @@ Health: http://localhost:3004/api/v1/health
 | GET | `/api/v1/health` | Service health |
 | GET | `/api/v1/agents` | Registered agent specs |
 | POST | `/api/v1/recommendations` | Body: `{ "citySlug": "uralsk", "limit": 10 }`, optional `Authorization: Bearer` |
+| POST | `/api/v1/moderation/analyze` | Body: `{ "text": "...", "rating": 1-5?, "reviewId": "?" }` — rule-based review screening |
 
 ## Env
 

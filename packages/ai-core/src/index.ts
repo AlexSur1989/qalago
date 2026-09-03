@@ -1,3 +1,11 @@
+export {
+  analyzeReviewText,
+  type ModerationAction,
+  type ModerationFlag,
+  type ModerationResult,
+  type ModerationSeverity,
+} from './moderation';
+
 export interface RecommendationItem {
   businessId: string;
   reason: string;

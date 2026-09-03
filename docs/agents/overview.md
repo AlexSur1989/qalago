@@ -57,4 +57,4 @@ services/ai-orchestrator
 
 ## Status
 
-Scaffold active (Phase 4): `ai-orchestrator` exposes rule-based recommendations via catalog-api read tools. LLM agents — next iteration.
+Scaffold active (Phase 4): `ai-orchestrator` exposes rule-based recommendations and review moderation assist. LLM agents — next iteration.
