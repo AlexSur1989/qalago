@@ -19,6 +19,16 @@ class CategoryModel {
   );
 }
 
+class RecommendedBusiness {
+  const RecommendedBusiness({
+    required this.business,
+    required this.reason,
+  });
+
+  final BusinessModel business;
+  final String reason;
+}
+
 class BusinessModel {
   BusinessModel({
     required this.id,

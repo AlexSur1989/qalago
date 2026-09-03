@@ -4,6 +4,7 @@ import '../../../core/network/dio_provider.dart';
 import '../../../core/storage/auth_storage.dart';
 import '../../../shared/models/models.dart';
 import '../../catalog/data/catalog_repository.dart';
+import '../../recommendations/data/ai_repository.dart';
 
 final authRepositoryProvider = Provider(
   (ref) => AuthRepository(ref.watch(dioProvider)),
@@ -11,6 +12,10 @@ final authRepositoryProvider = Provider(
 
 final catalogRepositoryProvider = Provider(
   (ref) => CatalogRepository(ref.watch(dioProvider)),
+);
+
+final aiRepositoryProvider = Provider(
+  (ref) => AiRepository(ref.watch(aiDioProvider)),
 );
 
 final favoritesRepositoryProvider = Provider(
@@ -197,6 +202,45 @@ final featuredBusinessesProvider = FutureProvider((ref) async {
         citySlug: city.slug,
         featured: true,
       );
+});
+
+final recommendedBusinessesProvider = FutureProvider<List<RecommendedBusiness>>((ref) async {
+  final city = ref.watch(cityProvider);
+  final catalog = ref.watch(catalogRepositoryProvider);
+  final ai = ref.watch(aiRepositoryProvider);
+
+  try {
+    final items = await ai.fetchRecommendations(citySlug: city.slug, limit: 10);
+    if (items.isEmpty) {
+      throw StateError('empty recommendations');
+    }
+
+    final businesses = await Future.wait<RecommendedBusiness>(
+      items.map((item) async {
+        final details = await catalog.fetchBusinessDetails(item.businessId);
+        return RecommendedBusiness(
+          business: BusinessModel.fromJson(details),
+          reason: item.reason,
+        );
+      }),
+    );
+    return businesses;
+  } catch (_) {
+    final featured = await catalog.fetchBusinesses(
+      citySlug: city.slug,
+      featured: true,
+    );
+    return featured.items
+        .map(
+          (business) => RecommendedBusiness(
+            business: business,
+            reason: business.isFeatured
+                ? 'Топ'
+                : (business.categoryTitle ?? 'QalaGo'),
+          ),
+        )
+        .toList();
+  }
 });
 
 final businessDetailsProvider =

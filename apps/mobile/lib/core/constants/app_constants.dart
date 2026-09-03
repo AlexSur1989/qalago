@@ -21,6 +21,13 @@ class AppConstants {
     return 'http://127.0.0.1:3002';
   }
 
+  static String get aiOrchestratorBaseUrl {
+    if (kIsWeb) {
+      return 'http://localhost:3004/api/v1';
+    }
+    return 'http://127.0.0.1:3004/api/v1';
+  }
+
   static String resolveMediaUrl(String? path) {
     if (path == null || path.isEmpty) return '';
     if (path.startsWith('http')) return path;

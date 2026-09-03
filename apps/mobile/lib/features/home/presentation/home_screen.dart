@@ -170,7 +170,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       }
                     } else {
                       ref.invalidate(businessesProvider);
-                      ref.invalidate(featuredBusinessesProvider);
+                      ref.invalidate(recommendedBusinessesProvider);
                       ref.invalidate(promotionsProvider);
                     }
                     if (ctx.mounted) Navigator.pop(ctx);
@@ -198,7 +198,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final city = ref.watch(cityProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
     final businessesAsync = ref.watch(businessesProvider(_businessesQuery));
-    final featuredAsync = ref.watch(featuredBusinessesProvider);
+    final featuredAsync = ref.watch(recommendedBusinessesProvider);
     final promotionsAsync = ref.watch(promotionsProvider);
     final unreadAsync = ref.watch(unreadNotificationsProvider);
 
@@ -210,7 +210,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           onRefresh: () async {
             ref.invalidate(categoriesProvider);
             ref.invalidate(businessesProvider);
-            ref.invalidate(featuredBusinessesProvider);
+            ref.invalidate(recommendedBusinessesProvider);
             ref.invalidate(promotionsProvider);
             ref.invalidate(unreadNotificationsProvider);
           },
@@ -274,7 +274,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                       const SizedBox(height: 24),
                       _SectionHeader(
-                        title: 'Популярные места',
+                        title: 'Рекомендуем',
                         actionLabel: _featuredItemsCount > 1
                             ? '${_featuredIndex + 1} / $_featuredItemsCount'
                             : null,
@@ -286,10 +286,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         error: (e, _) => ErrorView(
                           message: '$e',
                           onRetry: () =>
-                              ref.invalidate(featuredBusinessesProvider),
+                              ref.invalidate(recommendedBusinessesProvider),
                         ),
-                        data: (data) {
-                          final items = data.items;
+                        data: (items) {
                           _syncFeaturedItemsCount(items.length);
                           return _PopularPlacesCarousel(
                             items: items,
@@ -851,7 +850,7 @@ class _PopularPlacesCarousel extends StatelessWidget {
     required this.onNext,
   });
 
-  final List<BusinessModel> items;
+  final List<RecommendedBusiness> items;
   final int index;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
@@ -899,7 +898,12 @@ class _PopularPlacesCarousel extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     for (var i = 0; i < visible.length; i++) ...[
-                      Expanded(child: _PopularPlaceCard(business: visible[i])),
+                      Expanded(
+                        child: _PopularPlaceCard(
+                          business: visible[i].business,
+                          subtitle: visible[i].reason,
+                        ),
+                      ),
                       if (i != visible.length - 1) const SizedBox(width: 12),
                     ],
                   ],
@@ -934,9 +938,13 @@ class _PopularPlacesCarousel extends StatelessWidget {
 }
 
 class _PopularPlaceCard extends StatelessWidget {
-  const _PopularPlaceCard({required this.business});
+  const _PopularPlaceCard({
+    required this.business,
+    required this.subtitle,
+  });
 
   final BusinessModel business;
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -1021,9 +1029,11 @@ class _PopularPlaceCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          business.isFeatured
-                              ? 'Топ'
-                              : business.categoryTitle ?? 'QalaGo',
+                          subtitle.isNotEmpty
+                              ? subtitle
+                              : (business.isFeatured
+                                  ? 'Топ'
+                                  : business.categoryTitle ?? 'QalaGo'),
                           style: const TextStyle(
                             color: Color(0xFF6F7683),
                             fontSize: 12,
