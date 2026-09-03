@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build
+dist/
+build/
+.next/
+.dart_tool/
+.packages
+*.tsbuildinfo
+
+# Env & secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+!infra/env/.env.example
+
+# Flutter
+apps/mobile/.flutter-plugins
+apps/mobile/.flutter-plugins-dependencies
+apps/mobile/.metadata
+apps/mobile/**/Generated.xcconfig
+apps/mobile/**/flutter_export_environment.sh
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Uploads & local storage
+uploads/
+services/**/uploads/
+
+# Test & coverage
+coverage/
+.nyc_output/
+
+# Prisma
+services/**/prisma/*.db
+services/**/prisma/*.db-journal
+
+# OS
+desktop.ini
+
+# Temp
+*.tmp
+_docx_extract.txt

@@ -1,0 +1,26 @@
+{
+  "name": "qalago",
+  "version": "0.0.0",
+  "private": true,
+  "description": "QalaGo — городской super-app для Казахстана",
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "dev:infra": "docker compose -f infra/docker/docker-compose.dev.yml up -d",
+    "dev:infra:down": "docker compose -f infra/docker/docker-compose.dev.yml down",
+    "dev:api": "npm run start:dev -w @qalago/catalog-api",
+    "dev:api:seed": "npm run seed -w @qalago/catalog-api",
+    "dev:admin": "npm run dev -w @qalago/admin-web",
+    "dev:business": "npm run dev -w @qalago/business-web"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=9.0.0"
+  }
+}

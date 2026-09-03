@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  catalog-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Generate Prisma client
+        run: npm run prisma:generate -w @qalago/catalog-api
+      - name: Build catalog-api
+        run: npm run build -w @qalago/catalog-api
+      - name: Test catalog-api
+        run: npm run test -w @qalago/catalog-api
+        env:
+          DATABASE_URL: postgresql://qalago:qalago@localhost:5432/qalago
+          JWT_SECRET: ci-test-secret-min-32-characters-long
+          OTP_DEBUG: "true"
+
+  flutter-analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Pub get
+        working-directory: apps/mobile
+        run: flutter pub get
+      - name: Analyze
+        working-directory: apps/mobile
+        run: flutter analyze
+
+  business-web-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - run: npm run build -w @qalago/business-web
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3002/api/v1

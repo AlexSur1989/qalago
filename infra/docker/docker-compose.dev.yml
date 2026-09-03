@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: qalago-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: qalago
+      POSTGRES_PASSWORD: qalago_dev
+      POSTGRES_DB: qalago_dev
+    volumes:
+      - qalago_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qalago -d qalago_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: qalago-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - qalago_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  qalago_pg_data:
+  qalago_redis_data:

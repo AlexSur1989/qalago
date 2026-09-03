@@ -1,0 +1,254 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  BUSINESS
+  CITY_ADMIN
+  ADMIN
+}
+
+enum BusinessStatus {
+  PENDING
+  ACTIVE
+  BLOCKED
+}
+
+enum PromotionStatus {
+  DRAFT
+  ACTIVE
+  EXPIRED
+  ARCHIVED
+}
+
+enum AnalyticsEventType {
+  VIEW_BUSINESS
+  CALL_CLICK
+  WHATSAPP_CLICK
+  ROUTE_CLICK
+  FAVORITE_ADD
+  FAVORITE_REMOVE
+  PROMOTION_VIEW
+}
+
+model City {
+  id           String     @id @default(cuid())
+  slug         String     @unique
+  nameRu       String
+  nameKk       String?
+  countryCode  String     @default("KZ")
+  centerLat    Decimal?   @db.Decimal(10, 7)
+  centerLng    Decimal?   @db.Decimal(10, 7)
+  timezone     String     @default("Asia/Oral")
+  isActive     Boolean    @default(true)
+  launchDate   DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  businesses   Business[]
+  users        User[]     @relation("PreferredCity")
+  cityAdmins   User[]     @relation("ManagedCity")
+}
+
+model User {
+  id              String     @id @default(cuid())
+  phone           String     @unique
+  name            String?
+  role            UserRole   @default(USER)
+  isActive        Boolean    @default(true)
+  preferredCityId String?
+  managedCityId   String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  preferredCity   City?      @relation("PreferredCity", fields: [preferredCityId], references: [id], onDelete: SetNull)
+  managedCity     City?      @relation("ManagedCity", fields: [managedCityId], references: [id], onDelete: SetNull)
+  ownedBusinesses Business[] @relation("BusinessOwner")
+  favorites       Favorite[]
+  reviews         Review[]
+  notifications   Notification[]
+  otps              OtpCode[]
+}
+
+enum NotificationType {
+  GENERAL
+  NEW_REVIEW
+  REVIEW_REPLY
+  BUSINESS_APPROVED
+  BUSINESS_BLOCKED
+  NEW_PROMOTION
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType @default(GENERAL)
+  title     String
+  body      String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  phone     String
+  codeHash  String
+  expiresAt DateTime
+  consumed  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([phone, expiresAt])
+}
+
+model Category {
+  id         String     @id @default(cuid())
+  title      String
+  slug       String     @unique
+  icon       String?
+  sortOrder  Int        @default(0)
+  isActive   Boolean    @default(true)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  businesses Business[]
+}
+
+model Business {
+  id            String          @id @default(cuid())
+  cityId        String
+  ownerId       String?
+  categoryId    String
+  title         String
+  slug          String          @unique
+  shortDesc     String?
+  description   String?
+  address       String
+  latitude      Decimal?        @db.Decimal(10, 7)
+  longitude     Decimal?        @db.Decimal(10, 7)
+  phone         String?
+  whatsapp      String?
+  instagram     String?
+  website       String?
+  coverImageUrl String?
+  workHours     Json?
+  status        BusinessStatus  @default(PENDING)
+  isFeatured    Boolean         @default(false)
+  featuredSlot  Int?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  city          City            @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  owner         User?           @relation("BusinessOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  category      Category        @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  images            BusinessImage[]
+  serviceMenuGroups ServiceMenuGroup[]
+  serviceItems      ServiceItem[]
+  promotions        Promotion[]
+  favorites     Favorite[]
+  reviews       Review[]
+  analytics     AnalyticsEvent[]
+
+  @@index([cityId, status])
+  @@index([categoryId])
+}
+
+model BusinessImage {
+  id         String   @id @default(cuid())
+  businessId String
+  imageUrl   String
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
+
+model ServiceMenuGroup {
+  id          String        @id @default(cuid())
+  businessId  String
+  title       String
+  description String?
+  isActive    Boolean       @default(true)
+  sortOrder   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  business    Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  items       ServiceItem[]
+
+  @@index([businessId, isActive])
+}
+
+model ServiceItem {
+  id          String            @id @default(cuid())
+  businessId  String
+  groupId     String?
+  title       String
+  description String?
+  price       Decimal?          @db.Decimal(10, 2)
+  imageUrl    String?
+  isActive    Boolean           @default(true)
+  sortOrder   Int               @default(0)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  business    Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  group       ServiceMenuGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  @@index([businessId, groupId])
+}
+
+model Promotion {
+  id           String           @id @default(cuid())
+  businessId   String
+  title        String
+  description  String?
+  imageUrl     String?
+  discountText String?
+  startDate    DateTime?
+  endDate      DateTime?
+  status       PromotionStatus  @default(DRAFT)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  business     Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
+
+model Favorite {
+  id         String   @id @default(cuid())
+  userId     String
+  businessId String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, businessId])
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  userId     String
+  businessId String
+  rating     Int
+  text       String?
+  ownerReply String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+}
+
+model AnalyticsEvent {
+  id         String              @id @default(cuid())
+  businessId String
+  userId     String?
+  type       AnalyticsEventType
+  createdAt  DateTime            @default(now())
+  business   Business            @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId, type])
+}
