@@ -27,6 +27,7 @@ import '../../features/owner/presentation/owner_edit_business_screen.dart';
 import '../../features/owner/presentation/owner_promotions_screen.dart';
 import '../../features/admin/presentation/admin_businesses_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
+import '../../features/owner/presentation/owner_reviews_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../theme/app_theme.dart';
 
@@ -187,6 +188,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/owner/promotions/:businessId',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => OwnerPromotionsScreen(
+          businessId: state.pathParameters['businessId']!,
+          businessTitle: state.uri.queryParameters['title'] ?? 'Заведение',
+        ),
+      ),
+      GoRoute(
+        path: '/owner/reviews/:businessId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => OwnerReviewsScreen(
           businessId: state.pathParameters['businessId']!,
           businessTitle: state.uri.queryParameters['title'] ?? 'Заведение',
         ),

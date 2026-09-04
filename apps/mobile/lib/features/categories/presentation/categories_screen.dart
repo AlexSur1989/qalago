@@ -1,21 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../core/constants/app_constants.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
+import '../../../shared/widgets/city_picker.dart';
 import '../../../shared/widgets/qalago_logo.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
 import 'category_businesses_screen.dart';
 
-class CategoriesScreen extends ConsumerWidget {
+class CategoriesScreen extends ConsumerStatefulWidget {
   const CategoriesScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CategoriesScreen> createState() => _CategoriesScreenState();
+}
+
+class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
+  final _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<CategoryModel> _filterCategories(List<CategoryModel> categories) {
+    final q = _query.trim().toLowerCase();
+    if (q.isEmpty) return categories;
+    return categories
+        .where(
+          (c) =>
+              c.title.toLowerCase().contains(q) ||
+              c.slug.toLowerCase().contains(q),
+        )
+        .toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final city = ref.watch(cityProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
     final unreadAsync = ref.watch(unreadNotificationsProvider);
@@ -38,17 +66,35 @@ class CategoriesScreen extends ConsumerWidget {
               _CategoriesHeader(
                 cityName: city.nameRu,
                 unreadAsync: unreadAsync,
+                onCityTap: () => showCityPickerSheet(context, ref),
                 onNotificationsTap: () => context.push('/notifications'),
               ),
               const SizedBox(height: 20),
               TextField(
+                controller: _searchController,
                 textInputAction: TextInputAction.search,
+                onChanged: (value) => setState(() => _query = value),
+                onSubmitted: (value) {
+                  final q = value.trim();
+                  if (q.isEmpty) return;
+                  context.push('/search?q=${Uri.encodeComponent(q)}');
+                },
                 decoration: InputDecoration(
                   hintText: 'Поиск категорий...',
                   prefixIcon: const Icon(
                     Icons.search,
                     color: Color(0xFF8A919F),
                   ),
+                  suffixIcon: _query.isNotEmpty
+                      ? IconButton(
+                          tooltip: 'Очистить',
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _query = '');
+                          },
+                          icon: const Icon(Icons.cancel, color: Color(0xFF8A919F)),
+                        )
+                      : null,
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide(
@@ -71,7 +117,16 @@ class CategoriesScreen extends ConsumerWidget {
                   message: '$e',
                   onRetry: () => ref.invalidate(categoriesProvider),
                 ),
-                data: (categories) => _CategoriesGrid(categories: categories),
+                data: (categories) {
+                  final filtered = _filterCategories(categories);
+                  if (filtered.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Center(child: Text('Категории не найдены')),
+                    );
+                  }
+                  return _CategoriesGrid(categories: filtered);
+                },
               ),
             ],
           ),
@@ -85,50 +140,22 @@ class _CategoriesHeader extends StatelessWidget {
   const _CategoriesHeader({
     required this.cityName,
     required this.unreadAsync,
+    required this.onCityTap,
     required this.onNotificationsTap,
   });
 
   final String cityName;
   final AsyncValue<int> unreadAsync;
+  final VoidCallback onCityTap;
   final VoidCallback onNotificationsTap;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(
-          child: const QalaGoLogo(fontSize: 38, fit: true),
-        ),
+        const Expanded(child: QalaGoLogo(fontSize: 38, fit: true)),
         const SizedBox(width: 12),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.black.withValues(alpha: 0.09)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
-              children: [
-                const Icon(Icons.location_on, color: AppTheme.kzBlue, size: 20),
-                const SizedBox(width: 6),
-                Text(
-                  cityName,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                  ),
-                ),
-                const SizedBox(width: 2),
-                const Icon(
-                  Icons.keyboard_arrow_down,
-                  color: Color(0xFF808796),
-                  size: 20,
-                ),
-              ],
-            ),
-          ),
-        ),
+        CityPill(cityName: cityName, onTap: onCityTap),
         const SizedBox(width: 10),
         unreadAsync.when(
           data: (count) =>
@@ -176,10 +203,6 @@ class _CategoriesGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (categories.isEmpty) {
-      return const Center(child: Text('Категории пока не добавлены'));
-    }
-
     return LayoutBuilder(
       builder: (context, constraints) {
         final columns = constraints.maxWidth >= 720 ? 4 : 3;
@@ -227,7 +250,7 @@ class _CategoriesGrid extends StatelessWidget {
                     child: Align(
                       alignment: Alignment.bottomLeft,
                       child: Text(
-                        _categoryShortTitle(category),
+                        category.title,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 17,
@@ -246,32 +269,5 @@ class _CategoriesGrid extends StatelessWidget {
         );
       },
     );
-  }
-}
-
-String _categoryShortTitle(CategoryModel category) {
-  switch (category.slug) {
-    case 'food':
-      return 'Еда';
-    case 'bars':
-      return 'Бары';
-    case 'fitness':
-      return 'Фитнес';
-    case 'beauty':
-      return 'Красота';
-    case 'shops':
-      return 'Магазины';
-    case 'medicine':
-      return 'Медицина';
-    case 'kids':
-      return 'Детям';
-    case 'services':
-      return 'Услуги';
-    case 'fun':
-      return 'Развлечения';
-    case 'auto':
-      return 'Авто';
-    default:
-      return category.title;
   }
 }

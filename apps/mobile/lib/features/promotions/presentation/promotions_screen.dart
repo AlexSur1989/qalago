@@ -8,6 +8,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
+import '../../../shared/widgets/city_picker.dart';
 import '../../../shared/widgets/qalago_logo.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
@@ -23,9 +24,7 @@ class PromotionsScreen extends ConsumerStatefulWidget {
 class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
   final _searchController = TextEditingController();
   String _search = '';
-  String _filter = 'Все';
-
-  static const _filters = ['Все', 'Еда', 'Кофе', 'Красота', 'Фитнес', 'Авто'];
+  String? _categoryFilterId;
 
   @override
   void dispose() {
@@ -51,17 +50,19 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
         promotion.discountText,
         promotion.business?.title,
         promotion.business?.shortDesc,
+        promotion.business?.categoryTitle,
       ].whereType<String>().join(' ').toLowerCase();
       final matchesSearch = search.isEmpty || haystack.contains(search);
-      final matchesFilter =
-          _filter == 'Все' || haystack.contains(_filter.toLowerCase());
-      return matchesSearch && matchesFilter;
+      final matchesCategory = _categoryFilterId == null ||
+          promotion.business?.categoryId == _categoryFilterId;
+      return matchesSearch && matchesCategory;
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     final promotionsAsync = ref.watch(promotionsProvider);
+    final categoriesAsync = ref.watch(categoriesProvider);
     final city = ref.watch(cityProvider);
 
     return Scaffold(
@@ -76,7 +77,10 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
               parent: BouncingScrollPhysics(),
             ),
             children: [
-              _PromotionsHeader(cityName: city.nameRu),
+              _PromotionsHeader(
+                cityName: city.nameRu,
+                onCityTap: () => showCityPickerSheet(context, ref),
+              ),
               const SizedBox(height: 24),
               const Text(
                 'Акции',
@@ -88,105 +92,99 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (value) => setState(() => _search = value),
-                      decoration: InputDecoration(
-                        hintText: 'Поиск акций...',
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          color: Color(0xFF8A919F),
-                        ),
-                        suffixIcon: _searchController.text.isNotEmpty
-                            ? IconButton(
-                                tooltip: 'Очистить',
-                                onPressed: () {
-                                  _searchController.clear();
-                                  setState(() => _search = '');
-                                },
-                                icon: const Icon(Icons.cancel),
-                              )
-                            : null,
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(
-                            color: Colors.black.withValues(alpha: 0.08),
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(
-                            color: AppTheme.kzBlue,
-                            width: 1.4,
-                          ),
-                        ),
-                      ),
+              TextField(
+                controller: _searchController,
+                onChanged: (value) => setState(() => _search = value),
+                decoration: InputDecoration(
+                  hintText: 'Поиск акций...',
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: Color(0xFF8A919F),
+                  ),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          tooltip: 'Очистить',
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _search = '');
+                          },
+                          icon: const Icon(Icons.cancel),
+                        )
+                      : null,
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: Colors.black.withValues(alpha: 0.08),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  OutlinedButton.icon(
-                    onPressed: () {},
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.black,
-                      minimumSize: const Size(116, 58),
-                      side: BorderSide(
-                        color: Colors.black.withValues(alpha: 0.08),
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(
+                      color: AppTheme.kzBlue,
+                      width: 1.4,
                     ),
-                    icon: const Icon(Icons.tune),
-                    label: const Text('Фильтры'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 44,
-                child: ScrollConfiguration(
-                  behavior: ScrollConfiguration.of(context).copyWith(
-                    dragDevices: {
-                      PointerDeviceKind.touch,
-                      PointerDeviceKind.mouse,
-                      PointerDeviceKind.trackpad,
-                      PointerDeviceKind.stylus,
-                      PointerDeviceKind.unknown,
-                    },
-                  ),
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _filters.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 10),
-                    itemBuilder: (context, index) {
-                      final filter = _filters[index];
-                      final selected = filter == _filter;
-                      return ChoiceChip(
-                        selected: selected,
-                        label: Text(filter),
-                        showCheckmark: false,
-                        onSelected: (_) => setState(() => _filter = filter),
-                        selectedColor: AppTheme.kzBlue,
-                        backgroundColor: Colors.white,
-                        labelStyle: TextStyle(
-                          color: selected ? Colors.white : Colors.black,
-                          fontWeight: FontWeight.w700,
-                        ),
-                        side: BorderSide(
-                          color: selected
-                              ? AppTheme.kzBlue
-                              : Colors.black.withValues(alpha: 0.1),
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      );
-                    },
                   ),
                 ),
+              ),
+              const SizedBox(height: 16),
+              categoriesAsync.when(
+                loading: () => const SizedBox(height: 44),
+                error: (_, __) => const SizedBox(height: 44),
+                data: (categories) {
+                  if (categories.isEmpty) return const SizedBox(height: 44);
+                  return SizedBox(
+                    height: 44,
+                    child: ScrollConfiguration(
+                      behavior: ScrollConfiguration.of(context).copyWith(
+                        dragDevices: {
+                          PointerDeviceKind.touch,
+                          PointerDeviceKind.mouse,
+                          PointerDeviceKind.trackpad,
+                          PointerDeviceKind.stylus,
+                          PointerDeviceKind.unknown,
+                        },
+                      ),
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: categories.length + 1,
+                        separatorBuilder: (_, __) => const SizedBox(width: 10),
+                        itemBuilder: (context, index) {
+                          if (index == 0) {
+                            final selected = _categoryFilterId == null;
+                            return ChoiceChip(
+                              selected: selected,
+                              label: const Text('Все'),
+                              showCheckmark: false,
+                              onSelected: (_) =>
+                                  setState(() => _categoryFilterId = null),
+                              selectedColor: AppTheme.kzBlue,
+                              labelStyle: TextStyle(
+                                color: selected ? Colors.white : Colors.black,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            );
+                          }
+                          final category = categories[index - 1];
+                          final selected = _categoryFilterId == category.id;
+                          return ChoiceChip(
+                            selected: selected,
+                            label: Text(category.title),
+                            showCheckmark: false,
+                            onSelected: (_) => setState(
+                              () => _categoryFilterId =
+                                  selected ? null : category.id,
+                            ),
+                            selectedColor: AppTheme.kzBlue,
+                            labelStyle: TextStyle(
+                              color: selected ? Colors.white : Colors.black,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 22),
               promotionsAsync.when(
@@ -238,46 +236,20 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
 }
 
 class _PromotionsHeader extends StatelessWidget {
-  const _PromotionsHeader({required this.cityName});
+  const _PromotionsHeader({
+    required this.cityName,
+    required this.onCityTap,
+  });
 
   final String cityName;
+  final VoidCallback onCityTap;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(
-          child: const QalaGoLogo(fontSize: 36),
-        ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.black.withValues(alpha: 0.09)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
-              children: [
-                const Icon(Icons.location_on, color: AppTheme.kzBlue, size: 20),
-                const SizedBox(width: 6),
-                Text(
-                  cityName,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                  ),
-                ),
-                const Icon(
-                  Icons.keyboard_arrow_down,
-                  color: Color(0xFF808796),
-                  size: 20,
-                ),
-              ],
-            ),
-          ),
-        ),
+        const Expanded(child: QalaGoLogo(fontSize: 36)),
+        CityPill(cityName: cityName, onTap: onCityTap),
         const SizedBox(width: 8),
         IconButton(
           onPressed: () => context.push('/notifications'),

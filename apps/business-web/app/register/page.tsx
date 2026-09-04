@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   CategoryRow,
+  CityRow,
   SELECTED_BUSINESS_KEY,
   ownerApi,
 } from '@/lib/api';
@@ -14,6 +15,8 @@ export default function RegisterPage() {
   const router = useRouter();
   const { token, user, ready, logout } = useAuth();
   const [categories, setCategories] = useState<CategoryRow[]>([]);
+  const [cities, setCities] = useState<CityRow[]>([]);
+  const [citySlug, setCitySlug] = useState('uralsk');
   const [title, setTitle] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [address, setAddress] = useState('');
@@ -31,6 +34,13 @@ export default function RegisterPage() {
         if (items.length > 0) setCategoryId(items[0].id);
       })
       .catch((err) => setError(String(err)));
+    ownerApi
+      .listCities()
+      .then((items) => {
+        setCities(items);
+        if (items.length > 0) setCitySlug(items[0].slug);
+      })
+      .catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -40,8 +50,8 @@ export default function RegisterPage() {
   async function submit(e: FormEvent) {
     e.preventDefault();
     if (!token) return;
-    if (!title.trim() || !categoryId || !address.trim()) {
-      setError('Заполните название, категорию и адрес');
+    if (!title.trim() || !categoryId || !address.trim() || !citySlug) {
+      setError('Заполните название, категорию, город и адрес');
       return;
     }
     setLoading(true);
@@ -51,7 +61,7 @@ export default function RegisterPage() {
       const business = await ownerApi.createBusiness(token, {
         title: title.trim(),
         categoryId,
-        citySlug: 'uralsk',
+        citySlug,
         address: address.trim(),
         phone: phone.trim() || undefined,
         shortDesc: shortDesc.trim() || undefined,
@@ -80,6 +90,21 @@ export default function RegisterPage() {
         {success && <div className="alert alert-success">{success}</div>}
 
         <form onSubmit={submit} className="form-grid">
+          <label>
+            Город *
+            <select
+              value={citySlug}
+              onChange={(e) => setCitySlug(e.target.value)}
+              required
+            >
+              {cities.map((city) => (
+                <option key={city.id} value={city.slug}>
+                  {city.nameRu}
+                </option>
+              ))}
+            </select>
+          </label>
+
           <label>
             Название заведения *
             <input

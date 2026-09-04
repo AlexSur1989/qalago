@@ -8,6 +8,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
+import '../../../shared/widgets/city_picker.dart';
 import '../../../shared/widgets/qalago_logo.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
@@ -47,7 +48,10 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
               parent: BouncingScrollPhysics(),
             ),
             children: [
-              _FavoritesHeader(cityName: city.nameRu),
+              _FavoritesHeader(
+                cityName: city.nameRu,
+                onCityTap: () => showCityPickerSheet(context, ref),
+              ),
               const SizedBox(height: 28),
               const Text(
                 'Избранное',
@@ -157,46 +161,20 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
 }
 
 class _FavoritesHeader extends StatelessWidget {
-  const _FavoritesHeader({required this.cityName});
+  const _FavoritesHeader({
+    required this.cityName,
+    required this.onCityTap,
+  });
 
   final String cityName;
+  final VoidCallback onCityTap;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(
-          child: const QalaGoLogo(fontSize: 36),
-        ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.black.withValues(alpha: 0.09)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
-              children: [
-                const Icon(Icons.location_on, color: AppTheme.kzBlue, size: 20),
-                const SizedBox(width: 6),
-                Text(
-                  cityName,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                  ),
-                ),
-                const Icon(
-                  Icons.keyboard_arrow_down,
-                  color: Color(0xFF808796),
-                  size: 20,
-                ),
-              ],
-            ),
-          ),
-        ),
+        const Expanded(child: QalaGoLogo(fontSize: 36)),
+        CityPill(cityName: cityName, onTap: onCityTap),
         const SizedBox(width: 8),
         IconButton(
           onPressed: () => context.push('/notifications'),

@@ -7,6 +7,12 @@ export type CategoryRow = {
   icon?: string | null;
 };
 
+export type CityRow = {
+  id: string;
+  slug: string;
+  nameRu: string;
+};
+
 export type CreateBusinessPayload = {
   title: string;
   categoryId: string;
@@ -190,6 +196,8 @@ export const ownerApi = {
     }),
 
   listCategories: () => api<CategoryRow[]>('/categories'),
+
+  listCities: () => api<CityRow[]>('/cities'),
 
   createBusiness: (token: string, data: CreateBusinessPayload) =>
     api<BusinessRow>('/businesses', {

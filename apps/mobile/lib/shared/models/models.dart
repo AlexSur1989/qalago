@@ -43,6 +43,7 @@ class BusinessModel {
     this.coverImageUrl,
     this.isFeatured = false,
     this.categoryTitle,
+    this.categoryId,
     this.distanceMeters,
   });
 
@@ -58,6 +59,7 @@ class BusinessModel {
   final String? coverImageUrl;
   final bool isFeatured;
   final String? categoryTitle;
+  final String? categoryId;
   final int? distanceMeters;
 
   static double? _toDouble(dynamic value) {
@@ -87,6 +89,9 @@ class BusinessModel {
     isFeatured: json['isFeatured'] as bool? ?? false,
     categoryTitle:
         (json['category'] as Map<String, dynamic>?)?['title'] as String?,
+    categoryId:
+        json['categoryId'] as String? ??
+        (json['category'] as Map<String, dynamic>?)?['id'] as String?,
     distanceMeters: _toInt(json['distanceMeters']),
   );
 }
