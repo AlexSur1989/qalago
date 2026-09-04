@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/location/user_location_provider.dart';
 import '../../shared/models/models.dart';
 
 class BusinessCard extends StatelessWidget {
@@ -29,24 +30,32 @@ class BusinessCard extends StatelessWidget {
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => _buildPlaceholder(),
                   ),
-                  if (business.isFeatured)
+                  if (business.planBadgeLabel != null)
                     Positioned(
                       top: 12,
                       right: 12,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFEC50C), // kzGold
+                          color: business.planTier == 'TOP_CITY'
+                              ? const Color(0xFFFEC50C)
+                              : const Color(0xFF00A8D6),
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.star, color: Colors.white, size: 16),
-                            SizedBox(width: 4),
+                            Icon(
+                              business.planTier == 'TOP_CITY'
+                                  ? Icons.emoji_events
+                                  : Icons.star,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
                             Text(
-                              'Топ',
-                              style: TextStyle(
+                              business.planBadgeLabel!,
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 12,
@@ -104,7 +113,9 @@ class BusinessCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          business.address,
+                          business.distanceMeters != null
+                              ? '${formatDistanceMeters(business.distanceMeters)} · ${business.address}'
+                              : business.address,
                           style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

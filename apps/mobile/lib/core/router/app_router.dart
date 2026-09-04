@@ -25,6 +25,10 @@ import '../../features/owner/presentation/owner_gallery_screen.dart';
 import '../../features/owner/presentation/owner_analytics_screen.dart';
 import '../../features/owner/presentation/owner_edit_business_screen.dart';
 import '../../features/owner/presentation/owner_promotions_screen.dart';
+import '../../features/owner/presentation/owner_plan_screen.dart';
+import '../../features/owner/presentation/owner_messages_screen.dart';
+import '../../features/owner/presentation/owner_settings_screen.dart';
+import '../../features/owner/presentation/owner_help_screen.dart';
 import '../../features/admin/presentation/admin_businesses_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/owner/presentation/owner_reviews_screen.dart';
@@ -60,7 +64,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isLoggingIn = state.matchedLocation == '/login';
       final isAuthed = authState.isAuthenticated;
       if (!isAuthed && !isLoggingIn) return '/login';
-      if (isAuthed && isLoggingIn) return '/home';
+      if (isAuthed && isLoggingIn) {
+        if (canManageBusinessCabinet(authState.user?.role)) {
+          return '/owner';
+        }
+        return '/home';
+      }
       if (state.matchedLocation.startsWith('/admin')) {
         if (!canModerate(authState.user?.role)) return '/profile';
       }
@@ -146,6 +155,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/owner',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const OwnerDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/owner/plan',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const OwnerPlanScreen(),
+      ),
+      GoRoute(
+        path: '/owner/messages',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const OwnerMessagesScreen(),
+      ),
+      GoRoute(
+        path: '/owner/settings',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const OwnerSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/owner/help',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const OwnerHelpScreen(),
       ),
       GoRoute(
         path: '/owner/create-business',

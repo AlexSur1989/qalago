@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 
-import { BusinessStatus, NotificationType, Prisma, UserRole } from '@prisma/client';
+import { BusinessStatus, BusinessPlanTier, NotificationType, Prisma, UserRole } from '@prisma/client';
 
 import { AuthUser } from '../../common/types/jwt-payload.type';
 
@@ -10,14 +10,27 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 import { NotificationsService } from '../notifications/notifications.service';
 
+import { CategoriesService } from '../categories/categories.service';
+
+import { CitiesService } from '../cities/cities.service';
+
+import { GeoService } from '../geo/geo.service';
+
+import { PlansService } from '../plans/plans.service';
+
+import { CreateCityDto, UpdateCityDto } from '../cities/dto/city.dto';
+
 import {
 
   AdminListBusinessesQueryDto,
   AdminListReviewsQueryDto,
   UpdateBusinessFeaturedDto,
 
+  UpdateBusinessPlanDto,
   UpdateBusinessStatusDto,
 
+  UpdateCategoryCityOrderDto,
+  UpdateCategoryCityVisibilityDto,
   UpdateUserRoleDto,
 
 } from './dto/admin.dto';
@@ -35,6 +48,14 @@ export class AdminService {
     private readonly cityScope: CityScopeService,
 
     private readonly notifications: NotificationsService,
+
+    private readonly categories: CategoriesService,
+
+    private readonly cities: CitiesService,
+
+    private readonly geo: GeoService,
+
+    private readonly plans: PlansService,
 
   ) {}
 
@@ -184,6 +205,18 @@ export class AdminService {
 
 
 
+  async updateBusinessPlan(user: AuthUser, id: string, dto: UpdateBusinessPlanDto) {
+
+    const business = await this.ensureBusiness(id);
+
+    await this.cityScope.assertBusinessInAdminScope(user, business.cityId);
+
+    return this.plans.adminSetTier(user, id, dto.tier);
+
+  }
+
+
+
   listUsers() {
 
     return this.prisma.user.findMany({
@@ -318,10 +351,58 @@ export class AdminService {
 
   }
 
-  listCategories() {
-    return this.prisma.category.findMany({
-      orderBy: [{ sortOrder: 'asc' }, { title: 'asc' }],
-    });
+  listCategories(user: AuthUser, citySlug?: string) {
+    return this.categories.findAllForAdmin(citySlug);
+  }
+
+  async updateCategoryCityOrder(
+    user: AuthUser,
+    categoryId: string,
+    dto: UpdateCategoryCityOrderDto,
+  ) {
+    if (user.role === UserRole.CITY_ADMIN) {
+      const managedCityId = await this.cityScope.resolveAdminCityId(user);
+      const targetCityId = await this.cityScope.resolveCityId({ citySlug: dto.citySlug });
+      if (managedCityId && managedCityId !== targetCityId) {
+        throw new ForbiddenException('Not allowed to manage categories in this city');
+      }
+    }
+
+    return this.categories.upsertCityOrder(categoryId, dto.citySlug, dto.sortOrder);
+  }
+
+  async updateCategoryCityVisibility(
+    user: AuthUser,
+    categoryId: string,
+    dto: UpdateCategoryCityVisibilityDto,
+  ) {
+    if (user.role === UserRole.CITY_ADMIN) {
+      const managedCityId = await this.cityScope.resolveAdminCityId(user);
+      const targetCityId = await this.cityScope.resolveCityId({ citySlug: dto.citySlug });
+      if (managedCityId && managedCityId !== targetCityId) {
+        throw new ForbiddenException('Not allowed to manage categories in this city');
+      }
+    }
+
+    return this.categories.setCityVisibility(categoryId, dto.citySlug, dto.isHidden);
+  }
+
+  listCitiesAdmin() {
+    return this.cities.findAllAdmin();
+  }
+
+  async createCity(dto: CreateCityDto) {
+    const city = await this.cities.create(dto);
+    await this.categories.bootstrapCityCategories(city.id);
+    return city;
+  }
+
+  updateCity(id: string, dto: UpdateCityDto) {
+    return this.cities.update(id, dto);
+  }
+
+  searchGeoPlaces(query: string, country = 'kz') {
+    return this.geo.searchCities(query, country);
   }
 
   private async ensureBusiness(id: string) {

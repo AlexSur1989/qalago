@@ -52,6 +52,7 @@ export function AdminShell({
     { id: 'categories', label: 'Категории', icon: '🗂️' },
     { id: 'content', label: 'AI-черновики', icon: '✨' },
     { id: 'users', label: 'Пользователи', icon: '👥', adminOnly: true },
+    { id: 'cities', label: 'Города', icon: '🏙️', adminOnly: true },
   ];
 
   const cityLabel =

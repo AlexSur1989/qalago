@@ -20,6 +20,17 @@ enum BusinessStatus {
   BLOCKED
 }
 
+enum BusinessPlanTier {
+  BASIC
+  PRO
+  TOP_CITY
+}
+
+enum PlanPaymentStatus {
+  COMPLETED
+  FAILED
+}
+
 enum PromotionStatus {
   DRAFT
   ACTIVE
@@ -37,22 +48,29 @@ enum AnalyticsEventType {
   PROMOTION_VIEW
 }
 
+enum CityLaunchStatus {
+  COMING_SOON
+  LIVE
+}
+
 model City {
-  id           String     @id @default(cuid())
-  slug         String     @unique
-  nameRu       String
-  nameKk       String?
-  countryCode  String     @default("KZ")
-  centerLat    Decimal?   @db.Decimal(10, 7)
-  centerLng    Decimal?   @db.Decimal(10, 7)
-  timezone     String     @default("Asia/Oral")
-  isActive     Boolean    @default(true)
-  launchDate   DateTime?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  businesses   Business[]
-  users        User[]     @relation("PreferredCity")
-  cityAdmins   User[]     @relation("ManagedCity")
+  id                 String              @id @default(cuid())
+  slug               String              @unique
+  nameRu             String
+  nameKk             String?
+  countryCode        String              @default("KZ")
+  centerLat          Decimal?            @db.Decimal(10, 7)
+  centerLng          Decimal?            @db.Decimal(10, 7)
+  timezone           String              @default("Asia/Oral")
+  isActive           Boolean             @default(true)
+  launchStatus       CityLaunchStatus    @default(LIVE)
+  launchDate         DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  businesses         Business[]
+  users              User[]              @relation("PreferredCity")
+  cityAdmins         User[]              @relation("ManagedCity")
+  categoryCityOrders CategoryCityOrder[]
 }
 
 model User {
@@ -81,6 +99,8 @@ enum NotificationType {
   BUSINESS_APPROVED
   BUSINESS_BLOCKED
   NEW_PROMOTION
+  PLAN_ACTIVATED
+  PLAN_EXPIRED
 }
 
 model Notification {
@@ -110,15 +130,31 @@ model OtpCode {
 }
 
 model Category {
-  id         String     @id @default(cuid())
-  title      String
-  slug       String     @unique
-  icon       String?
-  sortOrder  Int        @default(0)
-  isActive   Boolean    @default(true)
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  businesses Business[]
+  id                 String              @id @default(cuid())
+  title              String
+  slug               String              @unique
+  icon               String?
+  sortOrder          Int                 @default(0)
+  isActive           Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  businesses         Business[]
+  categoryCityOrders CategoryCityOrder[]
+}
+
+model CategoryCityOrder {
+  id         String   @id @default(cuid())
+  cityId     String
+  categoryId String
+  sortOrder  Int      @default(0)
+  isHidden   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  city       City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([cityId, categoryId])
+  @@index([cityId, sortOrder])
 }
 
 model Business {
@@ -142,6 +178,8 @@ model Business {
   status        BusinessStatus  @default(PENDING)
   isFeatured    Boolean         @default(false)
   featuredSlot  Int?
+  planTier      BusinessPlanTier @default(BASIC)
+  planExpiresAt DateTime?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   city          City            @relation(fields: [cityId], references: [id], onDelete: Restrict)
@@ -154,6 +192,7 @@ model Business {
   favorites     Favorite[]
   reviews       Review[]
   analytics     AnalyticsEvent[]
+  planPayments  PlanPayment[]
 
   @@index([cityId, status])
   @@index([categoryId])
@@ -251,4 +290,19 @@ model AnalyticsEvent {
   business   Business            @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
   @@index([businessId, type])
+}
+
+model PlanPayment {
+  id         String             @id @default(cuid())
+  businessId String
+  tier       BusinessPlanTier
+  amountKzt  Int                @default(0)
+  status     PlanPaymentStatus  @default(COMPLETED)
+  isMock     Boolean            @default(true)
+  paidAt     DateTime           @default(now())
+  expiresAt  DateTime?
+  createdAt  DateTime           @default(now())
+  business   Business           @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId, paidAt])
 }

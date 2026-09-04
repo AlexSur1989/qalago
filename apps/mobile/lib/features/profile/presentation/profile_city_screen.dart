@@ -66,6 +66,8 @@ class ProfileCityScreen extends ConsumerWidget {
                             cityId: id,
                             slug: slug,
                             nameRu: name,
+                            centerLat: _parseCityCoord(city['centerLat']),
+                            centerLng: _parseCityCoord(city['centerLng']),
                           );
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -89,4 +91,10 @@ class ProfileCityScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+double? _parseCityCoord(Object? value) {
+  if (value == null) return null;
+  if (value is num) return value.toDouble();
+  return double.tryParse(value.toString());
 }

@@ -85,11 +85,68 @@ export const adminApi = {
       body: JSON.stringify(data),
     }),
 
+  updateBusinessPlan: (token: string, id: string, tier: string) =>
+    api(`/admin/businesses/${id}/plan`, {
+      method: 'PATCH',
+      token,
+      body: JSON.stringify({ tier }),
+    }),
+
+  listPlans: () => api<PlanCatalogRow[]>('/plans'),
+
   listCities: () =>
     api<CityRow[]>('/cities'),
 
-  listCategoriesAdmin: (token: string) =>
-    api<CategoryRow[]>('/admin/categories', { token }),
+  listCitiesAdmin: (token: string) =>
+    api<CityRow[]>('/admin/cities', { token }),
+
+  createCity: (
+    token: string,
+    data: {
+      slug: string;
+      nameRu: string;
+      nameKk?: string;
+      centerLat?: number;
+      centerLng?: number;
+      timezone?: string;
+      isActive?: boolean;
+      launchStatus?: 'COMING_SOON' | 'LIVE';
+    },
+  ) =>
+    api<CityRow>('/admin/cities', {
+      method: 'POST',
+      token,
+      body: JSON.stringify(data),
+    }),
+
+  updateCity: (
+    token: string,
+    id: string,
+    data: {
+      nameRu?: string;
+      nameKk?: string;
+      centerLat?: number;
+      centerLng?: number;
+      timezone?: string;
+      isActive?: boolean;
+      launchStatus?: 'COMING_SOON' | 'LIVE';
+    },
+  ) =>
+    api<CityRow>(`/admin/cities/${id}`, {
+      method: 'PATCH',
+      token,
+      body: JSON.stringify(data),
+    }),
+
+  searchGeoPlaces: (token: string, q: string, country = 'kz') => {
+    const params = new URLSearchParams({ q, country });
+    return api<GeoPlaceSuggestion[]>(`/admin/geo/search?${params}`, { token });
+  },
+
+  listCategoriesAdmin: (token: string, citySlug = 'uralsk') => {
+    const params = new URLSearchParams({ citySlug });
+    return api<CategoryRow[]>(`/admin/categories?${params}`, { token });
+  },
 
   listUsers: (token: string) =>
     api<AuthUser[]>('/admin/users', { token }),
@@ -122,6 +179,28 @@ export const adminApi = {
 
   deleteCategory: (token: string, id: string) =>
     api<void>(`/categories/${id}`, { method: 'DELETE', token }),
+
+  updateCategoryCityOrder: (
+    token: string,
+    id: string,
+    data: { citySlug: string; sortOrder: number },
+  ) =>
+    api<{ success: boolean }>(`/admin/categories/${id}/city-order`, {
+      method: 'PATCH',
+      token,
+      body: JSON.stringify(data),
+    }),
+
+  updateCategoryCityVisibility: (
+    token: string,
+    id: string,
+    data: { citySlug: string; isHidden: boolean },
+  ) =>
+    api<{ success: boolean; isHidden: boolean }>(`/admin/categories/${id}/city-visibility`, {
+      method: 'PATCH',
+      token,
+      body: JSON.stringify(data),
+    }),
 
   listReviews: (token: string, citySlug?: string, limit = 50) => {
     const params = new URLSearchParams({ limit: String(limit) });
@@ -186,11 +265,29 @@ export type ListMeta = {
   total: number;
 };
 
+export type GeoPlaceSuggestion = {
+  nameRu: string;
+  nameKk?: string;
+  lat: number;
+  lng: number;
+  displayName: string;
+  slugSuggestion: string;
+  timezone: string;
+};
+
 export type CityRow = {
   id: string;
   slug: string;
   nameRu: string;
-  nameKk?: string;
+  nameKk?: string | null;
+  countryCode?: string;
+  centerLat?: string | number | null;
+  centerLng?: string | number | null;
+  timezone?: string;
+  isActive?: boolean;
+  launchStatus?: 'COMING_SOON' | 'LIVE';
+  launchDate?: string | null;
+  createdAt?: string;
 };
 
 export type BusinessRow = {
@@ -203,10 +300,21 @@ export type BusinessRow = {
   coverImageUrl?: string | null;
   isFeatured: boolean;
   featuredSlot?: number | null;
+  planTier?: string;
+  planExpiresAt?: string | null;
   category?: { id: string; title: string; slug: string } | null;
   owner?: { phone: string; name: string | null };
   city?: { slug: string; nameRu: string };
   createdAt?: string;
+};
+
+export type PlanCatalogRow = {
+  tier: string;
+  slug: string;
+  nameRu: string;
+  priceKzt: number;
+  periodDays: number | null;
+  features: string[];
 };
 
 export type CategoryRow = {
@@ -216,6 +324,9 @@ export type CategoryRow = {
   icon?: string | null;
   sortOrder: number;
   isActive: boolean;
+  citySortOrder?: number | null;
+  cityIsHidden?: boolean;
+  effectiveSortOrder?: number;
 };
 
 export type AdminReviewRow = {

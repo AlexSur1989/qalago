@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import '../providers/city_provider.dart';
 
 class UserPosition {
   const UserPosition({required this.latitude, required this.longitude});
@@ -72,6 +73,22 @@ final userLocationProvider = StreamProvider<UserPosition?>((ref) async* {
       longitude: position.longitude,
     ).snapped,
   );
+});
+
+/// User GPS or city center — always set so «Рядом с вами» uses geo + tier sort.
+final nearbySearchPositionProvider = Provider<UserPosition>((ref) {
+  final userPos = ref.watch(userLocationProvider).valueOrNull;
+  if (userPos != null) return userPos;
+
+  final city = ref.watch(cityProvider);
+  if (city.centerLat != null && city.centerLng != null) {
+    return UserPosition(
+      latitude: city.centerLat!,
+      longitude: city.centerLng!,
+    );
+  }
+
+  return const UserPosition(latitude: 51.2278, longitude: 51.3865);
 });
 
 Future<bool> _ensureWebGeolocation() async {

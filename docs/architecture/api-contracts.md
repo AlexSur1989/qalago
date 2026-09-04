@@ -35,8 +35,12 @@ Response `200`:
 
 Request:
 ```json
-{ "phone": "+77001234567", "code": "1234", "name": "Optional" }
+{ "phone": "+77001234567", "code": "1234", "name": "Optional", "accountType": "user" }
 ```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `accountType` | `"user"` \| `"business"` | no | При **первой** регистрации задаёт роль `USER` или `BUSINESS`. Для существующего `USER` значение `business` повышает роль до `BUSINESS`. Роли `ADMIN`, `CITY_ADMIN`, `BUSINESS` не понижаются. |
 
 Response `200`:
 ```json
@@ -81,19 +85,67 @@ Response: active cities list.
 
 Single city metadata (center, timezone, name ru/kk).
 
+### Admin (platform ADMIN only)
+
+- `GET /admin/cities` — all cities including inactive
+- `POST /admin/cities` — create city; auto-bootstraps category order from default city (`uralsk`)
+
+Body:
+```json
+{
+  "slug": "astana",
+  "nameRu": "Астана",
+  "nameKk": "Астана",
+  "centerLat": 51.1694,
+  "centerLng": 71.4491,
+  "timezone": "Asia/Almaty",
+  "isActive": true,
+  "launchStatus": "COMING_SOON"
+}
+```
+
+`launchStatus`: `COMING_SOON` | `LIVE` (default `LIVE` for active cities).
+
+- `PATCH /admin/cities/:id` — update `{ nameRu?, nameKk?, centerLat?, centerLng?, timezone?, isActive?, launchStatus? }`
+
+Slug: lowercase latin, digits, hyphens; unique. Inactive cities hidden from public `GET /cities`.
+
+### GET /admin/geo/search
+
+Query: `q` (min 2 chars), `country` (optional, default `kz`). **ADMIN only.**
+
+Geocoding via OpenStreetMap Nominatim. Returns city suggestions with coordinates and timezone guess:
+
+```json
+[
+  {
+    "nameRu": "Астана",
+    "nameKk": null,
+    "lat": 51.1694,
+    "lng": 71.4491,
+    "displayName": "Астана, Казахстан",
+    "slugSuggestion": "astana",
+    "timezone": "Asia/Almaty"
+  }
+]
+```
+
 ---
 
 ## Categories
 
 ### GET /categories
 
-Query: `citySlug` (optional display order per city later).
+Query: `citySlug` (optional, default `uralsk`). Returns active categories visible in the city, sorted by city-specific order when set.
 
 ### Admin
 
 - `POST /categories`
 - `PATCH /categories/:id`
 - `DELETE /categories/:id`
+- `GET /admin/categories?citySlug=` — all categories including hidden; each row includes `citySortOrder` and `effectiveSortOrder`
+- `PATCH /admin/categories/:id/city-order` — body `{ "citySlug", "sortOrder" }` (ADMIN, CITY_ADMIN scoped to managed city)
+- `PATCH /admin/categories/:id/city-visibility` — body `{ "citySlug", "isHidden" }` — hide category in one city only
 
 ---
 
@@ -116,6 +168,10 @@ Query:
 
 When `latitude` and `longitude` are provided, each item may include `distanceMeters` (integer). Businesses without coordinates are listed after geo-sorted items.
 
+**Catalog sort order (all list modes):** effective paid tier first — `TOP_CITY` → `PRO` → `BASIC` (expired paid treated as BASIC), then `featuredSlot` ascending within TOP, then `isFeatured`, then title. With geo params, tier rank applies before distance within the same tier.
+
+List items include `planTier`, `planExpiresAt`, `featuredSlot`, `isFeatured` when selected for catalog responses.
+
 ### GET /businesses/:id
 
 ### GET /businesses/my
@@ -135,11 +191,71 @@ Owner or admin. Body (all optional): `title`, `shortDesc`, `description`, `addre
 - `GET /admin/businesses?status=&citySlug=&page=&limit=` — pagination via `meta`; `CITY_ADMIN` scoped to `managedCityId`.
 - `PATCH /admin/businesses/:id/status`
 - `PATCH /admin/businesses/:id/featured` — body: `{ isFeatured, featuredSlot? }`
-- `GET /admin/categories` — all categories including hidden (ADMIN, CITY_ADMIN)
+- `PATCH /admin/businesses/:id/plan` — body: `{ tier: "BASIC"|"PRO"|"TOP_CITY" }` — назначить тариф без оплаты (30 дней для paid)
+- `GET /admin/categories?citySlug=` — all categories including hidden; includes `citySortOrder`, `effectiveSortOrder`
+- `PATCH /admin/categories/:id/city-order` — body `{ "citySlug", "sortOrder" }`
 - `GET /admin/users` — ADMIN only
 - `PATCH /admin/users/:id/role` — ADMIN only; body: `{ role, managedCityId? }` (required when role is CITY_ADMIN)
 - `GET /admin/reviews?citySlug=&limit=` — reviews scoped by admin city; includes user + business
 - `DELETE /admin/reviews/:id` — remove review (city-scoped for CITY_ADMIN)
+
+---
+
+## Business plans (tariffs)
+
+Tiers: `BASIC` (free), `PRO`, `TOP_CITY`. Limits enforced server-side (photos, promotions, analytics depth, city feed).
+
+### GET /plans
+
+Public catalog of tiers with prices, features, and limit matrix.
+
+### GET /businesses/:businessId/plan
+
+Auth: owner, ADMIN, CITY_ADMIN. Current tier, effective tier (expired paid → BASIC), usage vs limits.
+
+Response includes `usage.photos`, `usage.activePromotions`, `limits`, `expiresAt`.
+
+### POST /businesses/:businessId/plan/mock-checkout
+
+Auth: owner (or admin). **MVP test payment — no real charge.**
+
+Body:
+```json
+{ "tier": "PRO" }
+```
+
+`tier`: `BASIC` | `PRO` | `TOP_CITY`
+
+Response `200`:
+```json
+{
+  "success": true,
+  "mock": true,
+  "message": "Тариф подключён (тестовая оплата без списания)",
+  "business": { "planTier": "PRO", "planExpiresAt": "...", "isFeatured": true, "featuredSlot": null },
+  "plan": { "...": "full plan status" }
+}
+```
+
+On checkout:
+- **PRO** → `isFeatured=true`, 30 days validity
+- **TOP_CITY** → `isFeatured=true`, auto `featuredSlot` in city, 30 days
+- **BASIC** → clears featured flags (downgrade)
+
+| Limit | BASIC | PRO | TOP_CITY |
+|-------|-------|-----|----------|
+| Photos | 5 | unlimited | unlimited |
+| Active promotions | 1 | 5 | 10 |
+| Promotions in city feed (simultaneous) | 0 | 2 | 5 |
+| Max promotion duration | 14 days | 90 days | 90 days |
+| New promotions per day | 1 | 3 | 5 |
+| Analytics window | 7 days | 90 days | 90 days |
+
+When `activeNow=true` and no `businessId`, city feed shows only Pro/Top businesses; per business max `maxPromotionsInFeed` newest promotions. Top tier sorted with priority.
+
+On plan expiry/downgrade: excess active promotions move to `DRAFT`.
+
+Full guide: [docs/product/business-tariffs.md](../product/business-tariffs.md)
 
 ---
 
@@ -207,7 +323,9 @@ Body may include `groupId` to move item into another group.
 
 ### GET /promotions
 
-Query: `activeNow`, `page`, `limit`, `citySlug`
+Query: `activeNow`, `page`, `limit`, `citySlug`, `businessId`
+
+When `activeNow=true` and no `businessId`, only promotions from businesses on **PRO** or **TOP_CITY** with valid `planExpiresAt` appear in the city feed.
 
 Response item includes `{ id, businessId, title, description?, imageUrl?, discountText?, startDate?, endDate?, status, business }`.
 
@@ -354,7 +472,7 @@ Response: `{ "count": 3 }`
 
 ### PATCH /notifications/read-all
 
-Notification types: `GENERAL`, `NEW_REVIEW`, `REVIEW_REPLY`, `BUSINESS_APPROVED`, `BUSINESS_BLOCKED`, `NEW_PROMOTION`
+Notification types: `GENERAL`, `NEW_REVIEW`, `REVIEW_REPLY`, `BUSINESS_APPROVED`, `BUSINESS_BLOCKED`, `NEW_PROMOTION`, `PLAN_ACTIVATED`, `PLAN_EXPIRED`
 
 ---
 

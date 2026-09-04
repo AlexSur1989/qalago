@@ -81,8 +81,8 @@ Docs, rules, infra scaffold, monorepo, Git, CI.
 ### Phase 1 — MVP Uralsk (done)
 catalog-api + mobile + admin + business-web + seed Uralsk/Aktobe + geo-nearby + RBAC.
 
-### Phase 2 — multi-city hardening (partial)
-CITY_ADMIN city scope done. Next: city-specific content, category order per city.
+### Phase 2 — multi-city hardening (in progress)
+CITY_ADMIN scope, category order/visibility per city, admin city CRUD + bootstrap, empty-city mobile UX. Next: feature flags per city, launch notifications.
 
 ### Phase 3 — production readiness (current)
 Real SMS, Redis, S3 uploads, Docker staging verify, VPS deploy, FCM push.

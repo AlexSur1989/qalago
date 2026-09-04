@@ -1,4 +1,4 @@
-import { IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import { IsIn, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 
 export class SendCodeDto {
   @IsString()
@@ -20,4 +20,9 @@ export class VerifyCodeDto {
   @IsString()
   @MaxLength(100)
   name?: string;
+
+  /** Тип аккаунта при первой регистрации или апгрейд USER → BUSINESS */
+  @IsOptional()
+  @IsIn(['user', 'business'])
+  accountType?: 'user' | 'business';
 }

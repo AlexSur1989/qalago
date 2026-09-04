@@ -14,10 +14,16 @@ class AuthRepository {
     required String phone,
     required String code,
     String? name,
+    String? accountType,
   }) async {
     final response = await _dio.post(
       '/auth/verify-code',
-      data: {'phone': phone, 'code': code, if (name != null) 'name': name},
+      data: {
+        'phone': phone,
+        'code': code,
+        if (name != null) 'name': name,
+        if (accountType != null) 'accountType': accountType,
+      },
     );
     final data = response.data as Map<String, dynamic>;
     return (
@@ -52,8 +58,13 @@ class CatalogRepository {
     return (response.data as List<dynamic>).cast<Map<String, dynamic>>();
   }
 
-  Future<List<CategoryModel>> fetchCategories() async {
-    final response = await _dio.get('/categories');
+  Future<List<CategoryModel>> fetchCategories({String? citySlug}) async {
+    final response = await _dio.get(
+      '/categories',
+      queryParameters: {
+        if (citySlug != null && citySlug.isNotEmpty) 'citySlug': citySlug,
+      },
+    );
     return (response.data as List<dynamic>)
         .map((e) => CategoryModel.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -67,6 +78,7 @@ class CatalogRepository {
     double? latitude,
     double? longitude,
     double? radiusKm,
+    int? limit,
   }) async {
     final response = await _dio.get(
       '/businesses',
@@ -78,7 +90,7 @@ class CatalogRepository {
         if (latitude != null) 'latitude': latitude,
         if (longitude != null) 'longitude': longitude,
         if (radiusKm != null) 'radiusKm': radiusKm,
-        'limit': 50,
+        'limit': limit ?? 50,
       },
     );
     return PaginatedBusinesses.fromJson(response.data as Map<String, dynamic>);
@@ -329,6 +341,27 @@ class CatalogRepository {
     final response = await _dio.get(
       '/analytics/business/$businessId/trends',
       queryParameters: {'days': days},
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<List<Map<String, dynamic>>> fetchPlans() async {
+    final response = await _dio.get('/plans');
+    return (response.data as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>> fetchBusinessPlan(String businessId) async {
+    final response = await _dio.get('/businesses/$businessId/plan');
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> mockPlanCheckout(
+    String businessId,
+    String tier,
+  ) async {
+    final response = await _dio.post(
+      '/businesses/$businessId/plan/mock-checkout',
+      data: {'tier': tier},
     );
     return response.data as Map<String, dynamic>;
   }

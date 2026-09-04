@@ -7,6 +7,12 @@ import {
   Min,
 } from 'class-validator';
 
+export class ListCategoriesQueryDto {
+  @IsOptional()
+  @IsString()
+  citySlug?: string;
+}
+
 export class CreateCategoryDto {
   @IsString()
   @Length(2, 100)

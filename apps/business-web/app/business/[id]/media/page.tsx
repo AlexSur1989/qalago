@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { BusinessImageRow, ownerApi } from '@/lib/api';
+import { BusinessImageRow, BusinessPlanStatus, ownerApi } from '@/lib/api';
 import { mediaUrl } from '@/lib/media';
 import { useOwnerBusiness } from '@/lib/use-owner-business';
 import { BusinessShell } from '@/components/business-shell';
@@ -14,10 +14,16 @@ export default function BusinessMediaPage() {
   const { token, user, ready, logout, businesses, business, error, setError, reloadBusinesses } =
     useOwnerBusiness(businessId);
   const [images, setImages] = useState<BusinessImageRow[]>([]);
+  const [planStatus, setPlanStatus] = useState<BusinessPlanStatus | null>(null);
   const [uploading, setUploading] = useState(false);
 
   async function load(t: string) {
-    setImages(await ownerApi.listBusinessImages(t, businessId));
+    const [gallery, plan] = await Promise.all([
+      ownerApi.listBusinessImages(t, businessId),
+      ownerApi.getBusinessPlan(t, businessId),
+    ]);
+    setImages(gallery);
+    setPlanStatus(plan);
     await reloadBusinesses();
   }
 
@@ -26,9 +32,17 @@ export default function BusinessMediaPage() {
     load(token).catch((err) => setError(String(err)));
   }, [token, businessId]);
 
+  const maxPhotos = planStatus?.limits.maxPhotos;
+  const atPhotoLimit = maxPhotos != null && images.length >= maxPhotos;
+
   async function onFileSelected(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!token || !file) return;
+    if (atPhotoLimit) {
+      setError(`Лимит тарифа: не более ${maxPhotos} фото. Улучшите тариф в разделе «Тариф и продвижение».`);
+      e.target.value = '';
+      return;
+    }
     setUploading(true);
     setError(null);
     try {
@@ -65,18 +79,38 @@ export default function BusinessMediaPage() {
 
       {error && <div className="alert alert-error">{error}</div>}
 
+      {planStatus && (
+        <section className="form-card" style={{ maxWidth: 820, marginBottom: 18 }}>
+          <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+            Тариф «{planStatus.catalog.nameRu}»:{' '}
+            {maxPhotos != null
+              ? `${images.length} / ${maxPhotos} фото`
+              : `${images.length} фото · без лимита`}
+            {atPhotoLimit && (
+              <>
+                {' · '}
+                <Link href="/plan">Улучшить тариф</Link>
+              </>
+            )}
+          </p>
+        </section>
+      )}
+
       <section className="form-card" style={{ maxWidth: 820, marginBottom: 18 }}>
         <h2 style={{ marginTop: 0 }}>Загрузить фото</h2>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
           JPG/PNG до 5 МБ. Первое фото можно сделать обложкой автоматически.
         </p>
-        <label className="btn btn-primary" style={{ cursor: 'pointer', width: 'fit-content' }}>
-          {uploading ? 'Загрузка…' : 'Выбрать файл'}
+        <label
+          className={`btn btn-primary${atPhotoLimit ? ' btn-ghost' : ''}`}
+          style={{ cursor: atPhotoLimit ? 'not-allowed' : 'pointer', width: 'fit-content' }}
+        >
+          {uploading ? 'Загрузка…' : atPhotoLimit ? 'Лимит фото достигнут' : 'Выбрать файл'}
           <input
             type="file"
             accept="image/*"
             hidden
-            disabled={uploading}
+            disabled={uploading || atPhotoLimit}
             onChange={onFileSelected}
           />
         </label>

@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { User, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { resolveAccountRole } from './auth-role.util';
 import { SendCodeDto, VerifyCodeDto } from './dto/auth.dto';
 
 const OTP_TTL_SEC = 300;
@@ -64,21 +65,39 @@ export class AuthService {
       data: { consumed: true },
     });
 
-    const user = await this.prisma.user.upsert({
-      where: { phone },
-      update: dto.name ? { name: dto.name } : {},
-      create: {
-        phone,
-        name: dto.name,
-        role: UserRole.USER,
-      },
-      select: {
-        id: true,
-        phone: true,
-        name: true,
-        role: true,
-      },
-    });
+    const existing = await this.prisma.user.findUnique({ where: { phone } });
+    const targetRole = resolveAccountRole(existing?.role ?? null, dto.accountType);
+    const userSelect = {
+      id: true,
+      phone: true,
+      name: true,
+      role: true,
+    } as const;
+
+    let user;
+    if (!existing) {
+      user = await this.prisma.user.create({
+        data: {
+          phone,
+          name: dto.name,
+          role: targetRole,
+        },
+        select: userSelect,
+      });
+    } else {
+      const updateData: { name?: string; role?: UserRole } = {};
+      if (dto.name) {
+        updateData.name = dto.name;
+      }
+      if (existing.role === UserRole.USER && targetRole === UserRole.BUSINESS) {
+        updateData.role = UserRole.BUSINESS;
+      }
+      user = await this.prisma.user.update({
+        where: { phone },
+        data: updateData,
+        select: userSelect,
+      });
+    }
 
     const accessToken = await this.signToken(user);
     return { accessToken, user };

@@ -708,6 +708,45 @@ select {
   font-size: 0.92rem;
 }
 
+.account-type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.account-type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.account-type-card strong {
+  font-size: 0.95rem;
+}
+
+.account-type-card span {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.account-type-card.selected {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.account-type-card.selected span {
+  color: var(--primary);
+}
+
 .notification-item.unread {
   background: var(--primary-soft);
   border-radius: 10px;

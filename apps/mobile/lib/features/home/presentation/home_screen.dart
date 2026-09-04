@@ -6,10 +6,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/location/user_location_provider.dart';
+import '../../../core/providers/city_catalog_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
+import '../../../shared/utils/business_rank.dart';
 import '../../../shared/widgets/qalago_logo.dart';
+import '../../../shared/widgets/empty_city_view.dart';
 import '../../../shared/widgets/city_picker.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
@@ -34,10 +37,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.dispose();
   }
 
-  BusinessesQuery _businessesQuery(UserPosition? userPosition) => BusinessesQuery(
-    latitude: userPosition?.latitude,
-    longitude: userPosition?.longitude,
-  );
+  BusinessesQuery _businessesQuery(UserPosition userPosition) => BusinessesQuery(
+        latitude: userPosition.latitude,
+        longitude: userPosition.longitude,
+        radiusKm: nearbyRadiusKm,
+      );
 
   void _syncFeaturedItemsCount(int count) {
     final changed = count != _featuredItemsCount;
@@ -101,14 +105,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final city = ref.watch(cityProvider);
-    final userPosition = ref.watch(userLocationProvider).valueOrNull;
+    final nearbyPosition = ref.watch(nearbySearchPositionProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
     final businessesAsync = ref.watch(
-      businessesProvider(_businessesQuery(userPosition)),
+      businessesProvider(_businessesQuery(nearbyPosition)),
     );
     final featuredAsync = ref.watch(recommendedBusinessesProvider);
     final promotionsAsync = ref.watch(promotionsProvider);
     final unreadAsync = ref.watch(unreadNotificationsProvider);
+    final catalogTotalAsync = ref.watch(cityCatalogTotalProvider);
+    final isEmptyCity =
+        catalogTotalAsync.hasValue && catalogTotalAsync.value == 0;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -117,6 +124,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           color: AppTheme.kzBlue,
           onRefresh: () async {
             ref.invalidate(categoriesProvider);
+            ref.invalidate(cityCatalogTotalProvider);
             ref.invalidate(businessesProvider);
             ref.invalidate(recommendedBusinessesProvider);
             ref.invalidate(promotionsProvider);
@@ -145,6 +153,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         onTap: () => context.push('/search'),
                       ),
                       const SizedBox(height: 20),
+                      if (catalogTotalAsync.isLoading && !catalogTotalAsync.hasValue)
+                        const SizedBox(height: 280, child: LoadingView())
+                      else if (isEmptyCity)
+                        EmptyCityView(
+                          cityName: city.nameRu,
+                          isComingSoon: city.isComingSoon,
+                          onPickCity: _showCityPicker,
+                        )
+                      else ...[
                       categoriesAsync.when(
                         loading: () =>
                             const SizedBox(height: 130, child: LoadingView()),
@@ -204,7 +221,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         },
                       ),
                       const SizedBox(height: 24),
-                      _SectionHeader(title: 'Рядом с вами'),
+                      const _SectionHeader(
+                        title: 'Рядом с вами',
+                        subtitle: 'До 3 км · сначала TOP и VIP',
+                      ),
                       const SizedBox(height: 12),
                       businessesAsync.when(
                         loading: () => const LoadingView(),
@@ -214,6 +234,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                         data: (data) => _NearbyBusinessList(items: data.items),
                       ),
+                      ],
                     ],
                   ),
                 ),
@@ -338,35 +359,36 @@ class _CategoryPhotoStrip extends StatelessWidget {
       );
     }
 
-    final cardWidth = _homeCategoryCardWidth(context, categories);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final columns = width >= 900
+            ? 5
+            : width >= 720
+                ? 4
+                : width >= 520
+                    ? 3
+                    : 2;
+        const spacing = 8.0;
+        final itemWidth = (width - spacing * (columns - 1)) / columns;
+        final itemHeight = (itemWidth * 0.88).clamp(92.0, 118.0);
 
-    return SizedBox(
-      height: 138,
-      child: ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(
-          dragDevices: {
-            PointerDeviceKind.touch,
-            PointerDeviceKind.mouse,
-            PointerDeviceKind.trackpad,
-            PointerDeviceKind.stylus,
-            PointerDeviceKind.unknown,
-          },
-        ),
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          itemCount: categories.length,
-          separatorBuilder: (_, _) => const SizedBox(width: 8),
-          itemBuilder: (context, index) {
-            final category = categories[index];
-            return _CategoryPhotoCard(
-              category: category,
-              width: cardWidth,
-              onTap: () => onSelected(category),
-            );
-          },
-        ),
-      ),
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            for (final category in categories)
+              SizedBox(
+                width: itemWidth,
+                height: itemHeight,
+                child: _CategoryPhotoCard(
+                  category: category,
+                  onTap: () => onSelected(category),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }
@@ -374,12 +396,10 @@ class _CategoryPhotoStrip extends StatelessWidget {
 class _CategoryPhotoCard extends StatelessWidget {
   const _CategoryPhotoCard({
     required this.category,
-    required this.width,
     required this.onTap,
   });
 
   final CategoryModel category;
-  final double width;
   final VoidCallback onTap;
 
   @override
@@ -393,7 +413,6 @@ class _CategoryPhotoCard extends StatelessWidget {
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          width: width,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: const Color(0xFFF0F2F5),
@@ -432,20 +451,16 @@ class _CategoryPhotoCard extends StatelessWidget {
               Positioned(
                 left: 9,
                 right: 9,
-                bottom: 12,
-                child: FittedBox(
-                  alignment: Alignment.centerLeft,
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    _categoryShortTitle(category),
-                    maxLines: 1,
-                    softWrap: false,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                      height: 1.05,
-                    ),
+                bottom: 10,
+                child: Text(
+                  category.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    height: 1.1,
                   ),
                 ),
               ),
@@ -460,53 +475,67 @@ class _CategoryPhotoCard extends StatelessWidget {
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader({
     required this.title,
+    this.subtitle,
     this.actionLabel = 'Смотреть все',
     this.onAction,
   });
 
   final String title;
+  final String? subtitle;
   final String? actionLabel;
   final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: Colors.black,
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: Colors.black,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0,
+                ),
+              ),
             ),
-          ),
+            if (actionLabel != null)
+              if (onAction != null)
+                TextButton.icon(
+                  onPressed: onAction,
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppTheme.kzBlue,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                  iconAlignment: IconAlignment.end,
+                  label: Text(
+                    actionLabel!,
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                  icon: const Icon(Icons.chevron_right, size: 22),
+                )
+              else
+                Text(
+                  actionLabel!,
+                  style: const TextStyle(
+                    color: AppTheme.kzBlue,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+          ],
         ),
-        if (actionLabel != null)
-          if (onAction != null)
-            TextButton.icon(
-              onPressed: onAction,
-              style: TextButton.styleFrom(
-                foregroundColor: AppTheme.kzBlue,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-              ),
-              iconAlignment: IconAlignment.end,
-              label: Text(
-                actionLabel!,
-                style: const TextStyle(fontWeight: FontWeight.w800),
-              ),
-              icon: const Icon(Icons.chevron_right, size: 22),
-            )
-          else
-            Text(
-              actionLabel!,
-              style: const TextStyle(
-                color: AppTheme.kzBlue,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
+        if (subtitle != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            subtitle!,
+            style: TextStyle(color: Colors.black.withValues(alpha: 0.55)),
+          ),
+        ],
       ],
     );
   }
@@ -834,9 +863,11 @@ class _PopularPlaceCard extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.star,
-                        color: business.isFeatured
+                        color: business.isTopCity
                             ? AppTheme.kzGold
-                            : AppTheme.kzBlue,
+                            : business.isVipPro
+                                ? AppTheme.kzBlue
+                                : AppTheme.kzBlue,
                         size: 17,
                       ),
                       const SizedBox(width: 4),
@@ -844,9 +875,9 @@ class _PopularPlaceCard extends StatelessWidget {
                         child: Text(
                           subtitle.isNotEmpty
                               ? subtitle
-                              : (business.isFeatured
-                                  ? 'Топ'
-                                  : business.categoryTitle ?? 'QalaGo'),
+                              : (business.planBadgeLabel ??
+                                  business.categoryTitle ??
+                                  'QalaGo'),
                           style: const TextStyle(
                             color: Color(0xFF6F7683),
                             fontSize: 12,
@@ -873,44 +904,142 @@ class _NearbyBusinessList extends StatelessWidget {
 
   final List<BusinessModel> items;
 
+  static const _maxPreviewItems = 12;
+
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(24),
-        child: Center(child: Text('Нет заведений')),
+        child: Center(
+          child: Text(
+            'В радиусе 3 км от вас пока нет заведений',
+            textAlign: TextAlign.center,
+          ),
+        ),
       );
     }
 
+    final tiers = splitBusinessesByTier(items);
+    final preview = <BusinessModel>[];
+    for (final group in [tiers.top, tiers.pro, tiers.regular]) {
+      for (final business in group) {
+        if (preview.length >= _maxPreviewItems) break;
+        preview.add(business);
+      }
+      if (preview.length >= _maxPreviewItems) break;
+    }
+
+    final previewTop = preview.where(isTopBusiness).toList();
+    final previewPro = preview.where(isProBusiness).toList();
+    final previewRegular = preview
+        .where((b) => !isTopBusiness(b) && !isProBusiness(b))
+        .toList();
+
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final business in items.take(8)) ...[
-          _NearbyBusinessTile(business: business),
-          const SizedBox(height: 12),
+        if (previewTop.isNotEmpty) ...[
+          const _NearbySubheader(
+            title: 'Топ города',
+            icon: Icons.emoji_events_outlined,
+          ),
+          const SizedBox(height: 8),
+          for (final business in previewTop) ...[
+            _NearbyBusinessTile(business: business, emphasizePlan: true),
+            const SizedBox(height: 12),
+          ],
+        ],
+        if (previewPro.isNotEmpty) ...[
+          if (previewTop.isNotEmpty) const SizedBox(height: 4),
+          const _NearbySubheader(
+            title: 'VIP · Pro',
+            icon: Icons.workspace_premium_outlined,
+          ),
+          const SizedBox(height: 8),
+          for (final business in previewPro) ...[
+            _NearbyBusinessTile(business: business, emphasizePlan: true),
+            const SizedBox(height: 12),
+          ],
+        ],
+        if (previewRegular.isNotEmpty) ...[
+          if (previewTop.isNotEmpty || previewPro.isNotEmpty)
+            const SizedBox(height: 4),
+          _NearbySubheader(
+            title: previewTop.isEmpty && previewPro.isEmpty
+                ? 'Заведения'
+                : 'Все остальные',
+            icon: Icons.near_me_outlined,
+          ),
+          const SizedBox(height: 8),
+          for (final business in previewRegular) ...[
+            _NearbyBusinessTile(business: business),
+            const SizedBox(height: 12),
+          ],
         ],
       ],
     );
   }
 }
 
+class _NearbySubheader extends StatelessWidget {
+  const _NearbySubheader({required this.title, required this.icon});
+
+  final String title;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: AppTheme.kzBlue),
+        const SizedBox(width: 6),
+        Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 15,
+            color: AppTheme.kzBlue,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _NearbyBusinessTile extends StatelessWidget {
-  const _NearbyBusinessTile({required this.business});
+  const _NearbyBusinessTile({
+    required this.business,
+    this.emphasizePlan = false,
+  });
 
   final BusinessModel business;
+  final bool emphasizePlan;
 
   @override
   Widget build(BuildContext context) {
     final coverUrl = AppConstants.resolveMediaUrl(business.coverImageUrl);
 
     return Material(
-      color: Colors.white,
-      elevation: 2,
+      color: emphasizePlan ? AppTheme.kzBlue.withValues(alpha: 0.03) : Colors.white,
+      elevation: emphasizePlan ? 3 : 2,
       shadowColor: Colors.black.withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () => context.push('/business/${business.id}'),
-        child: Padding(
+        child: DecoratedBox(
+          decoration: emphasizePlan
+              ? BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: business.isTopCity
+                        ? AppTheme.kzGold.withValues(alpha: 0.7)
+                        : AppTheme.kzBlue.withValues(alpha: 0.35),
+                  ),
+                )
+              : const BoxDecoration(),
+          child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
@@ -945,8 +1074,8 @@ class _NearbyBusinessTile extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (business.isFeatured)
-                          const _SmallStatusPill(text: 'Топ'),
+                        if (business.planBadgeLabel != null)
+                          _SmallStatusPill(text: business.planBadgeLabel!),
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -1002,6 +1131,7 @@ class _NearbyBusinessTile extends StatelessWidget {
               ),
             ],
           ),
+        ),
         ),
       ),
     );
@@ -1098,54 +1228,4 @@ Widget _imagePlaceholder(double? height, {double? width}) {
       child: Icon(Icons.storefront, color: Color(0xFF9AA1AD)),
     ),
   );
-}
-
-double _homeCategoryCardWidth(
-  BuildContext context,
-  List<CategoryModel> categories,
-) {
-  final longestLabel = categories.map(_categoryShortTitle).fold<String>('', (
-    longest,
-    label,
-  ) {
-    return label.length > longest.length ? label : longest;
-  });
-  final painter = TextPainter(
-    text: TextSpan(
-      text: longestLabel,
-      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
-    ),
-    maxLines: 1,
-    textDirection: TextDirection.ltr,
-    textScaler: MediaQuery.textScalerOf(context),
-  )..layout();
-
-  return (painter.width + 18).clamp(94.0, 104.0);
-}
-
-String _categoryShortTitle(CategoryModel category) {
-  switch (category.slug) {
-    case 'food':
-      return 'Еда';
-    case 'bars':
-      return 'Бары';
-    case 'fitness':
-      return 'Фитнес';
-    case 'beauty':
-      return 'Красота';
-    case 'shops':
-      return 'Магазины';
-    case 'medicine':
-      return 'Медицина';
-    case 'kids':
-      return 'Детям';
-    case 'services':
-      return 'Услуги';
-    case 'fun':
-      return 'Развлечения';
-    case 'auto':
-      return 'Авто';
-    default:
-      return category.title;
-  }
 }

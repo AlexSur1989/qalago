@@ -1,5 +1,6 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { AnalyticsEventType, UserRole } from '@prisma/client';
+import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AnalyticsService } from './analytics.service';
@@ -39,9 +40,17 @@ describe('AnalyticsService', () => {
       },
     };
 
+    const planLimits = {
+      capAnalyticsDays: jest.fn((_businessId: string, days: number) => Promise.resolve(days)),
+    } as unknown as PlanLimitsService;
+
     return {
       prisma,
-      service: new AnalyticsService(prisma as unknown as PrismaService),
+      planLimits,
+      service: new AnalyticsService(
+        prisma as unknown as PrismaService,
+        planLimits,
+      ),
     };
   }
 

@@ -42,9 +42,50 @@ export type BusinessRow = {
   website?: string | null;
   coverImageUrl?: string | null;
   workHours?: Record<string, string> | null;
+  planTier?: string;
+  planExpiresAt?: string | null;
+  isFeatured?: boolean;
+  featuredSlot?: number | null;
   createdAt?: string;
   updatedAt?: string;
   city?: { slug: string; nameRu: string } | null;
+};
+
+export type PlanLimitsRow = {
+  maxPhotos: number | null;
+  maxActivePromotions: number;
+  maxPromotionsInFeed: number;
+  maxPromotionDurationDays: number;
+  maxPromotionsCreatedPerDay: number;
+  maxAnalyticsDays: number;
+  vipBadge: boolean;
+  topCitySlot: boolean;
+  feedPriority: number;
+};
+
+export type PlanCatalogRow = {
+  tier: string;
+  slug: string;
+  nameRu: string;
+  priceKzt: number;
+  periodDays: number | null;
+  features: string[];
+  limits: PlanLimitsRow;
+};
+
+export type BusinessPlanStatus = {
+  businessId: string;
+  tier: string;
+  effectiveTier: string;
+  expiresAt: string | null;
+  isFeatured: boolean;
+  featuredSlot: number | null;
+  catalog: PlanCatalogRow;
+  limits: PlanLimitsRow;
+  usage: {
+    photos: number;
+    activePromotions: number;
+  };
 };
 
 export type PromotionRow = {
@@ -180,10 +221,10 @@ export const ownerApi = {
       body: JSON.stringify({ phone }),
     }),
 
-  verifyCode: (phone: string, code: string) =>
+  verifyCode: (phone: string, code: string, accountType?: 'user' | 'business') =>
     api<{ accessToken: string; user: AuthUser }>('/auth/verify-code', {
       method: 'POST',
-      body: JSON.stringify({ phone, code }),
+      body: JSON.stringify({ phone, code, ...(accountType ? { accountType } : {}) }),
     }),
 
   getMe: (token: string) => api<AuthUser>('/users/me', { token }),
@@ -369,6 +410,23 @@ export const ownerApi = {
 
   markAllNotificationsRead: (token: string) =>
     api<void>('/notifications/read-all', { method: 'PATCH', token }),
+
+  listPlans: () => api<PlanCatalogRow[]>('/plans'),
+
+  getBusinessPlan: (token: string, businessId: string) =>
+    api<BusinessPlanStatus>(`/businesses/${businessId}/plan`, { token }),
+
+  mockPlanCheckout: (token: string, businessId: string, tier: string) =>
+    api<{
+      success: boolean;
+      mock: boolean;
+      message: string;
+      plan: BusinessPlanStatus;
+    }>(`/businesses/${businessId}/plan/mock-checkout`, {
+      method: 'POST',
+      token,
+      body: JSON.stringify({ tier }),
+    }),
 };
 
 export const TOKEN_KEY = 'qalago_business_token';

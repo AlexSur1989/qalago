@@ -8,10 +8,11 @@ import '../../../core/location/user_location_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
+import '../../../shared/utils/business_rank.dart';
 import '../../../shared/widgets/city_picker.dart';
+import '../../../shared/widgets/empty_city_view.dart';
 import '../../../shared/widgets/qalago_logo.dart';
 import '../../../shared/widgets/error_view.dart';
-import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
@@ -24,11 +25,33 @@ class MapScreen extends ConsumerStatefulWidget {
 class _MapScreenState extends ConsumerState<MapScreen> {
   final _mapController = MapController();
   LatLng? _lastUserCenter;
+  String? _trackedCitySlug;
 
   @override
   void dispose() {
     _mapController.dispose();
     super.dispose();
+  }
+
+  LatLng _cityCenter(CityState city, UserPosition? userPosition, List<BusinessModel> businesses) {
+    if (city.centerLat != null && city.centerLng != null) {
+      return LatLng(city.centerLat!, city.centerLng!);
+    }
+    if (userPosition != null) {
+      return LatLng(userPosition.latitude, userPosition.longitude);
+    }
+    final withCoords = businesses
+        .where((b) => b.latitude != null && b.longitude != null)
+        .toList();
+    if (withCoords.isNotEmpty) {
+      return LatLng(withCoords.first.latitude!, withCoords.first.longitude!);
+    }
+    return const LatLng(51.2278, 51.3865);
+  }
+
+  void _moveToCity(CityState city, UserPosition? userPosition, List<BusinessModel> businesses) {
+    final next = _cityCenter(city, userPosition, businesses);
+    _mapController.move(next, 12);
   }
 
   void _followUser(UserPosition? userPosition) {
@@ -51,11 +74,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   Widget build(BuildContext context) {
     final city = ref.watch(cityProvider);
     final userPosition = ref.watch(userLocationProvider).valueOrNull;
+    final nearbyPosition = ref.watch(nearbySearchPositionProvider);
     final businessesAsync = ref.watch(
       businessesProvider(
         BusinessesQuery(
-          latitude: userPosition?.latitude,
-          longitude: userPosition?.longitude,
+          latitude: nearbyPosition.latitude,
+          longitude: nearbyPosition.longitude,
+          radiusKm: 15,
         ),
       ),
     );
@@ -64,66 +89,90 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       next.whenData(_followUser);
     });
 
+    ref.listen(cityProvider, (previous, next) {
+      if (previous?.slug == next.slug) return;
+      businessesAsync.whenData((data) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          _moveToCity(next, userPosition, data.items);
+        });
+      });
+    });
+
     return Scaffold(
       backgroundColor: Colors.white,
-      body: businessesAsync.when(
-        loading: () => const LoadingView(),
-        error: (e, _) => ErrorView(
-          message: '$e',
-          onRetry: () => ref.invalidate(businessesProvider),
-        ),
-        data: (data) {
-          final withCoords = data.items
-              .where((b) => b.latitude != null && b.longitude != null)
-              .toList();
+      body: Stack(
+        children: [
+          businessesAsync.when(
+            loading: () => FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(
+                initialCenter: _cityCenter(city, userPosition, const []),
+                initialZoom: 12,
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'kz.qalago.mobile',
+                ),
+              ],
+            ),
+            error: (e, _) => ErrorView(
+              message: '$e',
+              onRetry: () => ref.invalidate(businessesProvider),
+            ),
+            data: (data) {
+              if (_trackedCitySlug != city.slug) {
+                _trackedCitySlug = city.slug;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!mounted) return;
+                  _moveToCity(city, userPosition, data.items);
+                });
+              }
 
-          final center = userPosition != null
-              ? LatLng(userPosition.latitude, userPosition.longitude)
-              : withCoords.isNotEmpty
-                  ? LatLng(
-                      withCoords.first.latitude!,
-                      withCoords.first.longitude!,
-                    )
-                  : const LatLng(51.2278, 51.3865);
+              final withCoords = data.items
+                  .where((b) => b.latitude != null && b.longitude != null)
+                  .toList();
 
-          final markers = <Marker>[
-            if (userPosition != null)
-              Marker(
-                point: LatLng(userPosition.latitude, userPosition.longitude),
-                width: 28,
-                height: 28,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppTheme.kzBlue,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 3),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 8,
+              final center = _cityCenter(city, userPosition, data.items);
+
+              final markers = <Marker>[
+                if (userPosition != null)
+                  Marker(
+                    point: LatLng(userPosition.latitude, userPosition.longitude),
+                    width: 28,
+                    height: 28,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppTheme.kzBlue,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 3),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 8,
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
+                  ),
+                ...withCoords.map(
+                  (business) => Marker(
+                    point: LatLng(business.latitude!, business.longitude!),
+                    width: 50,
+                    height: 68,
+                    child: _MapPin(
+                      business: business,
+                      onTap: () => context.push('/business/${business.id}'),
+                    ),
                   ),
                 ),
-              ),
-            ...withCoords.map(
-              (business) => Marker(
-                point: LatLng(business.latitude!, business.longitude!),
-                width: 50,
-                height: 68,
-                child: _MapPin(
-                  business: business,
-                  onTap: () => context.push('/business/${business.id}'),
-                ),
-              ),
-            ),
-          ];
+              ];
 
-          return Stack(
-            children: [
-              FlutterMap(
+              return FlutterMap(
+                key: ValueKey('map-${city.slug}'),
                 mapController: _mapController,
-                options: MapOptions(initialCenter: center, initialZoom: 14),
+                options: MapOptions(initialCenter: center, initialZoom: 12),
                 children: [
                   TileLayer(
                     urlTemplate:
@@ -132,60 +181,74 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   ),
                   MarkerLayer(markers: markers),
                 ],
-              ),
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
-                  child: Column(
-                    children: [
-                      _MapHeader(
-                        cityName: city.nameRu,
-                        onCityTap: () => showCityPickerSheet(context, ref),
-                      ),
-                      const SizedBox(height: 12),
-                      GestureDetector(
-                        onTap: () => context.push('/search'),
-                        child: AbsorbPointer(
-                          child: TextField(
-                            readOnly: true,
-                            decoration: InputDecoration(
-                              hintText: 'Поиск заведений и услуг...',
-                              prefixIcon: const Icon(
-                                Icons.search,
-                                color: Color(0xFF8A919F),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide(
-                                  color: Colors.black.withValues(alpha: 0.08),
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(
-                                  color: AppTheme.kzBlue,
-                                  width: 1.4,
-                                ),
-                              ),
-                              filled: true,
-                              fillColor: Colors.white,
+              );
+            },
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _MapHeader(
+                    cityName: city.nameRu,
+                    onCityTap: () => showCityPickerSheet(context, ref),
+                  ),
+                  const SizedBox(height: 12),
+                  GestureDetector(
+                    onTap: () => context.push('/search'),
+                    child: AbsorbPointer(
+                      child: TextField(
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          hintText: 'Поиск заведений и услуг...',
+                          prefixIcon: const Icon(
+                            Icons.search,
+                            color: Color(0xFF8A919F),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(
+                              color: Colors.black.withValues(alpha: 0.08),
                             ),
                           ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(
+                              color: AppTheme.kzBlue,
+                              width: 1.4,
+                            ),
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: _NearbySheet(businesses: data.items),
-              ),
-            ],
-          );
-        },
+            ),
+          ),
+          businessesAsync.maybeWhen(
+            data: (data) => Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: data.total == 0
+                  ? Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                      child: EmptyCityView(
+                        cityName: city.nameRu,
+                        compact: true,
+                        isComingSoon: city.isComingSoon,
+                        onPickCity: () => showCityPickerSheet(context, ref),
+                      ),
+                    )
+                  : _NearbySheet(businesses: data.items),
+            ),
+            orElse: () => const SizedBox.shrink(),
+          ),
+        ],
       ),
     );
   }
@@ -264,13 +327,18 @@ class _NearbySheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final split = splitNearbyBusinesses(businesses);
+    final priority = split.priority.take(3).toList();
+    final regular = split.regular.take(5 - priority.length).toList();
+    final visible = [...priority, ...regular];
+
     return Material(
       color: Colors.white,
       elevation: 8,
       shadowColor: Colors.black.withValues(alpha: 0.16),
       borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       child: SizedBox(
-        height: 286,
+        height: priority.isNotEmpty ? 320 : 286,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 10, 20, 18),
           child: Column(
@@ -296,20 +364,36 @@ class _NearbySheet extends StatelessWidget {
                   letterSpacing: 0,
                 ),
               ),
+              if (priority.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  'Приоритетные: ${priority.map((b) => b.planBadgeLabel ?? b.title).join(', ')}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppTheme.kzBlue.withValues(alpha: 0.9),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
               Expanded(
-                child: businesses.isEmpty
+                child: visible.isEmpty
                     ? const Center(child: Text('Нет заведений рядом'))
                     : ListView.separated(
                         physics: const BouncingScrollPhysics(),
-                        itemCount: businesses.take(5).length,
+                        itemCount: visible.length,
                         separatorBuilder: (_, _) => Divider(
                           height: 18,
                           color: Colors.black.withValues(alpha: 0.06),
                         ),
                         itemBuilder: (context, index) {
-                          final business = businesses[index];
-                          return _NearbyMapTile(business: business);
+                          final business = visible[index];
+                          return _NearbyMapTile(
+                            business: business,
+                            emphasizePlan: isPriorityBusiness(business),
+                          );
                         },
                       ),
               ),
@@ -322,9 +406,13 @@ class _NearbySheet extends StatelessWidget {
 }
 
 class _NearbyMapTile extends StatelessWidget {
-  const _NearbyMapTile({required this.business});
+  const _NearbyMapTile({
+    required this.business,
+    this.emphasizePlan = false,
+  });
 
   final BusinessModel business;
+  final bool emphasizePlan;
 
   @override
   Widget build(BuildContext context) {
@@ -353,15 +441,39 @@ class _NearbyMapTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  business.title,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        business.title,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (business.planBadgeLabel != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: business.isTopCity
+                              ? AppTheme.kzGold
+                              : AppTheme.kzBlue,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          business.planBadgeLabel!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(

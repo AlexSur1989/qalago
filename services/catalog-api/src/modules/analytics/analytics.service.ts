@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { AnalyticsEventType, BusinessStatus, UserRole } from '@prisma/client';
+import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AnalyticsWindowQueryDto, CreateAnalyticsEventDto } from './dto/analytics.dto';
@@ -8,7 +9,10 @@ const EVENT_TYPES = Object.values(AnalyticsEventType);
 
 @Injectable()
 export class AnalyticsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly planLimits: PlanLimitsService,
+  ) {}
 
   async track(dto: CreateAnalyticsEventDto) {
     const business = await this.prisma.business.findFirst({
@@ -32,7 +36,8 @@ export class AnalyticsService {
   async summary(user: AuthUser, businessId: string, query: AnalyticsWindowQueryDto) {
     await this.assertCanViewBusinessAnalytics(user, businessId);
 
-    const days = query.days ?? 30;
+    const requestedDays = query.days ?? 30;
+    const days = await this.planLimits.capAnalyticsDays(businessId, requestedDays);
     const createdAt = { gte: this.windowStart(days) };
     const grouped = await this.prisma.analyticsEvent.groupBy({
       by: ['type'],
@@ -56,7 +61,8 @@ export class AnalyticsService {
   async trends(user: AuthUser, businessId: string, query: AnalyticsWindowQueryDto) {
     await this.assertCanViewBusinessAnalytics(user, businessId);
 
-    const days = query.days ?? 30;
+    const requestedDays = query.days ?? 30;
+    const days = await this.planLimits.capAnalyticsDays(businessId, requestedDays);
     const events = await this.prisma.analyticsEvent.findMany({
       where: { businessId, createdAt: { gte: this.windowStart(days) } },
       select: { type: true, createdAt: true },

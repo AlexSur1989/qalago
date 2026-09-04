@@ -21,6 +21,7 @@ import { UploadsModule } from './modules/uploads/uploads.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ServiceItemsModule } from './modules/service-items/service-items.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { PlansModule } from './modules/plans/plans.module';
 import { HealthController } from './modules/health/health.controller';
 
 @Module({
@@ -54,6 +55,7 @@ import { HealthController } from './modules/health/health.controller';
     NotificationsModule,
     ServiceItemsModule,
     AnalyticsModule,
+    PlansModule,
   ],
   controllers: [HealthController],
   providers: [

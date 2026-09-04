@@ -4,7 +4,8 @@ export type AdminTabId =
   | 'reviews'
   | 'categories'
   | 'content'
-  | 'users';
+  | 'users'
+  | 'cities';
 
 export function statusLabel(status: string): string {
   switch (status) {
@@ -34,4 +35,15 @@ export function statusClass(status: string): string {
 
 export function confirmAction(message: string): boolean {
   return window.confirm(message);
+}
+
+export function planTierLabel(tier?: string | null): string {
+  switch (tier) {
+    case 'PRO':
+      return 'Pro';
+    case 'TOP_CITY':
+      return 'Топ города';
+    default:
+      return 'Базовый';
+  }
 }

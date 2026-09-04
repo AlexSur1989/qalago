@@ -42,6 +42,8 @@ class BusinessModel {
     this.whatsapp,
     this.coverImageUrl,
     this.isFeatured = false,
+    this.planTier,
+    this.featuredSlot,
     this.categoryTitle,
     this.categoryId,
     this.distanceMeters,
@@ -58,6 +60,8 @@ class BusinessModel {
   final String? whatsapp;
   final String? coverImageUrl;
   final bool isFeatured;
+  final String? planTier;
+  final int? featuredSlot;
   final String? categoryTitle;
   final String? categoryId;
   final int? distanceMeters;
@@ -87,6 +91,8 @@ class BusinessModel {
     whatsapp: json['whatsapp'] as String?,
     coverImageUrl: json['coverImageUrl'] as String?,
     isFeatured: json['isFeatured'] as bool? ?? false,
+    planTier: json['planTier'] as String?,
+    featuredSlot: _toInt(json['featuredSlot']),
     categoryTitle:
         (json['category'] as Map<String, dynamic>?)?['title'] as String?,
     categoryId:
@@ -94,6 +100,16 @@ class BusinessModel {
         (json['category'] as Map<String, dynamic>?)?['id'] as String?,
     distanceMeters: _toInt(json['distanceMeters']),
   );
+
+  bool get isTopCity => planTier == 'TOP_CITY';
+
+  bool get isVipPro => planTier == 'PRO' || (isFeatured && !isTopCity);
+
+  String? get planBadgeLabel {
+    if (planTier == 'TOP_CITY') return 'Топ';
+    if (planTier == 'PRO' || isFeatured) return 'VIP';
+    return null;
+  }
 }
 
 class UserModel {

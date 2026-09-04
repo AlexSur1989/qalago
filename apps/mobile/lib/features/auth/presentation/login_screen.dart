@@ -15,6 +15,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _codeController = TextEditingController();
   bool _codeSent = false;
   String? _debugCode;
+  String _accountType = 'user';
 
   @override
   void dispose() {
@@ -53,11 +54,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _verify() async {
     try {
-      await ref
-          .read(authProvider.notifier)
-          .verifyCode(
+      await ref.read(authProvider.notifier).verifyCode(
             _phoneController.text.trim(),
             _codeController.text.trim(),
+            accountType: _accountType,
           );
     } catch (e) {
       if (mounted) {
@@ -83,7 +83,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         }
         return;
       }
-      await ref.read(authProvider.notifier).verifyCode(demoPhone, debug);
+      await ref.read(authProvider.notifier).verifyCode(
+            demoPhone,
+            debug,
+            accountType: 'user',
+          );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -139,6 +143,49 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 30),
+                    const Text(
+                      'Тип аккаунта',
+                      style: TextStyle(
+                        color: Color(0xFF5A6270),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _AccountTypeCard(
+                            selected: _accountType == 'user',
+                            icon: Icons.person_outline,
+                            title: 'Пользователь',
+                            subtitle: 'Каталог, карта, избранное',
+                            onTap: () => setState(() {
+                              _accountType = 'user';
+                              if (_phoneController.text == '+77000000002') {
+                                _phoneController.text = '+77000000003';
+                              }
+                            }),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _AccountTypeCard(
+                            selected: _accountType == 'business',
+                            icon: Icons.storefront_outlined,
+                            title: 'Бизнес',
+                            subtitle: 'Кабинет владельца заведения',
+                            onTap: () => setState(() {
+                              _accountType = 'business';
+                              if (_phoneController.text == '+77000000003') {
+                                _phoneController.text = '+77000000002';
+                              }
+                            }),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
                     TextField(
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
@@ -240,6 +287,75 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _AccountTypeCard extends StatelessWidget {
+  const _AccountTypeCard({
+    required this.selected,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final bool selected;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: selected
+                ? AppTheme.kzBlue.withValues(alpha: 0.08)
+                : Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: selected
+                  ? AppTheme.kzBlue
+                  : Colors.black.withValues(alpha: 0.09),
+              width: selected ? 1.5 : 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                icon,
+                color: selected ? AppTheme.kzBlue : const Color(0xFF7B8291),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  color: selected ? AppTheme.kzBlue : Colors.black,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: Color(0xFF8A919F),
+                  fontSize: 12,
+                  height: 1.25,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,9 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CategoriesService } from './categories.service';
-import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
+import { CreateCategoryDto, ListCategoriesQueryDto, UpdateCategoryDto } from './dto/category.dto';
 
 @Controller('categories')
 export class CategoriesController {
@@ -11,8 +11,8 @@ export class CategoriesController {
 
   @Public()
   @Get()
-  findAll() {
-    return this.categoriesService.findAll();
+  findAll(@Query() query: ListCategoriesQueryDto) {
+    return this.categoriesService.findAll({ citySlug: query.citySlug });
   }
 
   @Roles(UserRole.ADMIN, UserRole.CITY_ADMIN)

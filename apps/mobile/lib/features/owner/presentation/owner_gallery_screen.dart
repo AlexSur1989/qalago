@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -7,6 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../providers/owner_providers.dart';
 
 class OwnerGalleryScreen extends ConsumerWidget {
   const OwnerGalleryScreen({
@@ -24,7 +26,29 @@ class OwnerGalleryScreen extends ConsumerWidget {
     ref.invalidate(myBusinessesProvider);
   }
 
-  Future<void> _addPhoto(BuildContext context, WidgetRef ref, {bool asCover = false}) async {
+  Future<void> _addPhoto(
+    BuildContext context,
+    WidgetRef ref, {
+    bool asCover = false,
+    int? maxPhotos,
+    int currentCount = 0,
+  }) async {
+    if (!asCover && maxPhotos != null && currentCount >= maxPhotos) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Лимит тарифа: не более $maxPhotos фото. Улучшите тариф в разделе «Тариф».',
+            ),
+            action: SnackBarAction(
+              label: 'Тариф',
+              onPressed: () => context.push('/owner/plan'),
+            ),
+          ),
+        );
+      }
+      return;
+    }
     final picker = ImagePicker();
     final file = await picker.pickImage(source: ImageSource.gallery, maxWidth: 1920);
     if (file == null) return;
@@ -39,6 +63,7 @@ class OwnerGalleryScreen extends ConsumerWidget {
         asCover: asCover,
       );
       _invalidate(ref);
+      ref.invalidate(businessPlanProvider(businessId));
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(asCover ? 'Обложка обновлена' : 'Фото добавлено')),
@@ -57,7 +82,10 @@ class OwnerGalleryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final galleryAsync = ref.watch(businessGalleryProvider(businessId));
     final detailsAsync = ref.watch(businessDetailsProvider(businessId));
+    final planAsync = ref.watch(businessPlanProvider(businessId));
     final coverUrl = detailsAsync.valueOrNull?['coverImageUrl'] as String?;
+    final maxPhotos = planAsync.valueOrNull?['limits']?['maxPhotos'] as int?;
+    final photoUsage = planAsync.valueOrNull?['usage']?['photos'] as int?;
 
     return Scaffold(
       appBar: AppBar(title: Text('Галерея · $businessTitle')),
@@ -68,102 +96,133 @@ class OwnerGalleryScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(businessGalleryProvider(businessId)),
         ),
         data: (images) {
-          if (images.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.screen),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.photo_library_outlined, size: 64, color: Colors.grey.shade400),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Галерея пустая',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          final atLimit = maxPhotos != null && images.length >= maxPhotos;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (maxPhotos != null)
+                Material(
+                  color: atLimit ? Colors.orange.shade50 : AppTheme.kzBlue.withValues(alpha: 0.08),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    child: Text(
+                      'Фото: ${photoUsage ?? images.length} / $maxPhotos'
+                      '${atLimit ? ' · лимит достигнут' : ''}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: atLimit ? Colors.orange.shade900 : AppTheme.kzBlue,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Добавьте фото интерьера, блюд или услуг',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.black54),
-                    ),
-                  ],
+                  ),
                 ),
+              Expanded(
+                child: images.isEmpty
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppSpacing.screen),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.photo_library_outlined,
+                                  size: 64, color: Colors.grey.shade400),
+                              const SizedBox(height: 16),
+                              const Text(
+                                'Галерея пустая',
+                                style:
+                                    TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Добавьте фото интерьера, блюд или услуг',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: Colors.black54),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : GridView.builder(
+                        padding: const EdgeInsets.all(AppSpacing.screen),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 1,
+                        ),
+                        itemCount: images.length,
+                        itemBuilder: (context, i) {
+                          final image = images[i];
+                          final imageUrl =
+                              AppConstants.resolveMediaUrl(image['imageUrl'] as String?);
+                          final isCover =
+                              coverUrl != null && image['imageUrl'] == coverUrl;
+
+                          return Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.network(
+                                  imageUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    color: Colors.grey.shade200,
+                                    child: const Icon(Icons.broken_image_outlined),
+                                  ),
+                                ),
+                              ),
+                              if (isCover)
+                                Positioned(
+                                  top: 8,
+                                  left: 8,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.kzGold,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Text(
+                                      'Обложка',
+                                      style: TextStyle(
+                                          fontSize: 11, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ),
+                              Positioned(
+                                top: 4,
+                                right: 4,
+                                child: PopupMenuButton<String>(
+                                  icon: const Icon(Icons.more_vert, color: Colors.white),
+                                  color: Colors.white,
+                                  onSelected: (action) async {
+                                    final repo = ref.read(catalogRepositoryProvider);
+                                    final id = image['id'] as String;
+                                    if (action == 'cover') {
+                                      await repo.setBusinessCover(businessId, id);
+                                      _invalidate(ref);
+                                      ref.invalidate(businessPlanProvider(businessId));
+                                    } else if (action == 'delete') {
+                                      await repo.deleteBusinessImage(businessId, id);
+                                      _invalidate(ref);
+                                      ref.invalidate(businessPlanProvider(businessId));
+                                    }
+                                  },
+                                  itemBuilder: (_) => [
+                                    if (!isCover)
+                                      const PopupMenuItem(
+                                          value: 'cover', child: Text('Сделать обложкой')),
+                                    const PopupMenuItem(value: 'delete', child: Text('Удалить')),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
               ),
-            );
-          }
-
-          return GridView.builder(
-            padding: const EdgeInsets.all(AppSpacing.screen),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1,
-            ),
-            itemCount: images.length,
-            itemBuilder: (context, i) {
-              final image = images[i];
-              final imageUrl = AppConstants.resolveMediaUrl(image['imageUrl'] as String?);
-              final isCover = coverUrl != null && image['imageUrl'] == coverUrl;
-
-              return Stack(
-                fit: StackFit.expand,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: Colors.grey.shade200,
-                        child: const Icon(Icons.broken_image_outlined),
-                      ),
-                    ),
-                  ),
-                  if (isCover)
-                    Positioned(
-                      top: 8,
-                      left: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppTheme.kzGold,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          'Обложка',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                  Positioned(
-                    top: 4,
-                    right: 4,
-                    child: PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_vert, color: Colors.white),
-                      color: Colors.white,
-                      onSelected: (action) async {
-                        final repo = ref.read(catalogRepositoryProvider);
-                        final id = image['id'] as String;
-                        if (action == 'cover') {
-                          await repo.setBusinessCover(businessId, id);
-                          _invalidate(ref);
-                        } else if (action == 'delete') {
-                          await repo.deleteBusinessImage(businessId, id);
-                          _invalidate(ref);
-                        }
-                      },
-                      itemBuilder: (_) => [
-                        if (!isCover)
-                          const PopupMenuItem(value: 'cover', child: Text('Сделать обложкой')),
-                        const PopupMenuItem(value: 'delete', child: Text('Удалить')),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
+            ],
           );
         },
       ),
@@ -173,14 +232,29 @@ class OwnerGalleryScreen extends ConsumerWidget {
         children: [
           FloatingActionButton.extended(
             heroTag: 'gallery_cover',
-            onPressed: () => _addPhoto(context, ref, asCover: true),
+            onPressed: () => galleryAsync.whenOrNull(
+              data: (images) => _addPhoto(
+                context,
+                ref,
+                asCover: true,
+                maxPhotos: maxPhotos,
+                currentCount: images.length,
+              ),
+            ),
             icon: const Icon(Icons.photo_camera_front_outlined),
             label: const Text('Обложка'),
           ),
           const SizedBox(height: 12),
           FloatingActionButton.extended(
             heroTag: 'gallery_add',
-            onPressed: () => _addPhoto(context, ref),
+            onPressed: () => galleryAsync.whenOrNull(
+              data: (images) => _addPhoto(
+                context,
+                ref,
+                maxPhotos: maxPhotos,
+                currentCount: images.length,
+              ),
+            ),
             icon: const Icon(Icons.add_photo_alternate_outlined),
             label: const Text('Фото'),
           ),

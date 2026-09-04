@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../providers/owner_providers.dart';
 
 final ownerPromotionsProvider =
     FutureProvider.family<List<PromotionModel>, String>((ref, businessId) async {
@@ -31,7 +33,25 @@ class OwnerPromotionsScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref, {
     PromotionModel? existing,
+    int? maxActive,
+    int activeCount = 0,
   }) async {
+    if (existing == null && maxActive != null && activeCount >= maxActive) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Лимит активных акций: $maxActive. Улучшите тариф.',
+            ),
+            action: SnackBarAction(
+              label: 'Тариф',
+              onPressed: () => context.push('/owner/plan'),
+            ),
+          ),
+        );
+      }
+      return;
+    }
     final titleController = TextEditingController(text: existing?.title ?? '');
     final discountController =
         TextEditingController(text: existing?.discountText ?? '-20%');
@@ -190,13 +210,33 @@ class OwnerPromotionsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final promotionsAsync = ref.watch(ownerPromotionsProvider(businessId));
+    final planAsync = ref.watch(businessPlanProvider(businessId));
+    final limits = planAsync.valueOrNull?['limits'] as Map<String, dynamic>?;
+    final maxActive = limits?['maxActivePromotions'] as int?;
+    final maxInFeed = limits?['maxPromotionsInFeed'] as int?;
 
     return Scaffold(
       appBar: AppBar(title: Text('Акции · $businessTitle')),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showPromotionDialog(context, ref),
-        icon: const Icon(Icons.add),
-        label: const Text('Новая акция'),
+      floatingActionButton: promotionsAsync.maybeWhen(
+        data: (promotions) {
+          final activeCount =
+              promotions.where((p) => p.status == 'ACTIVE').length;
+          return FloatingActionButton.extended(
+            onPressed: () => _showPromotionDialog(
+              context,
+              ref,
+              maxActive: maxActive,
+              activeCount: activeCount,
+            ),
+            icon: const Icon(Icons.add),
+            label: const Text('Новая акция'),
+          );
+        },
+        orElse: () => FloatingActionButton.extended(
+          onPressed: null,
+          icon: const Icon(Icons.add),
+          label: const Text('Новая акция'),
+        ),
       ),
       body: promotionsAsync.when(
         loading: () => const LoadingView(),
@@ -205,6 +245,8 @@ class OwnerPromotionsScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(ownerPromotionsProvider(businessId)),
         ),
         data: (promotions) {
+          final activeCount =
+              promotions.where((p) => p.status == 'ACTIVE').length;
           if (promotions.isEmpty) {
             return Center(
               child: Padding(
@@ -239,71 +281,100 @@ class OwnerPromotionsScreen extends ConsumerWidget {
             );
           }
 
-          return ListView.separated(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.screen,
-              AppSpacing.screen,
-              AppSpacing.screen,
-              96,
-            ),
-            itemCount: promotions.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 10),
-            itemBuilder: (context, index) {
-              final promo = promotions[index];
-              final isActive = promo.status == 'ACTIVE';
-              return Material(
-                color: Colors.white,
-                elevation: 1,
-                shadowColor: Colors.black.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(16),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
-                  title: Text(
-                    promo.title,
-                    style: const TextStyle(fontWeight: FontWeight.w800),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (promo.discountText != null &&
-                          promo.discountText!.isNotEmpty)
-                        Text(
-                          promo.discountText!,
-                          style: const TextStyle(
-                            color: AppTheme.kzBlue,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      if (promo.description != null &&
-                          promo.description!.isNotEmpty)
-                        Text(promo.description!),
-                      const SizedBox(height: 4),
-                      Text(
-                        _statusLabel(promo.status),
-                        style: TextStyle(
-                          color: isActive ? Colors.green.shade700 : Colors.black54,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (maxActive != null)
+                Material(
+                  color: AppTheme.kzBlue.withValues(alpha: 0.08),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    child: Text(
+                      'Активных: $activeCount / $maxActive'
+                      '${maxInFeed != null ? ' · в ленте до $maxInFeed' : ''}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppTheme.kzBlue,
+                        fontWeight: FontWeight.w600,
                       ),
-                    ],
-                  ),
-                  trailing: PopupMenuButton<String>(
-                    onSelected: (value) {
-                      if (value == 'edit') {
-                        _showPromotionDialog(context, ref, existing: promo);
-                      } else if (value == 'delete') {
-                        _confirmDelete(context, ref, promo);
-                      }
-                    },
-                    itemBuilder: (context) => const [
-                      PopupMenuItem(value: 'edit', child: Text('Редактировать')),
-                      PopupMenuItem(value: 'delete', child: Text('Удалить')),
-                    ],
+                    ),
                   ),
                 ),
-              );
-            },
+              Expanded(
+                child: ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.screen,
+                    AppSpacing.screen,
+                    AppSpacing.screen,
+                    96,
+                  ),
+                  itemCount: promotions.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    final promo = promotions[index];
+                    final isActive = promo.status == 'ACTIVE';
+                    return Material(
+                      color: Colors.white,
+                      elevation: 1,
+                      shadowColor: Colors.black.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(16),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
+                        title: Text(
+                          promo.title,
+                          style: const TextStyle(fontWeight: FontWeight.w800),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (promo.discountText != null &&
+                                promo.discountText!.isNotEmpty)
+                              Text(
+                                promo.discountText!,
+                                style: const TextStyle(
+                                  color: AppTheme.kzBlue,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            if (promo.description != null &&
+                                promo.description!.isNotEmpty)
+                              Text(promo.description!),
+                            const SizedBox(height: 4),
+                            Text(
+                              _statusLabel(promo.status),
+                              style: TextStyle(
+                                color: isActive ? Colors.green.shade700 : Colors.black54,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                        trailing: PopupMenuButton<String>(
+                          onSelected: (value) {
+                            if (value == 'edit') {
+                              _showPromotionDialog(
+                                context,
+                                ref,
+                                existing: promo,
+                                maxActive: maxActive,
+                                activeCount: activeCount,
+                              );
+                            } else if (value == 'delete') {
+                              _confirmDelete(context, ref, promo);
+                            }
+                          },
+                          itemBuilder: (context) => const [
+                            PopupMenuItem(value: 'edit', child: Text('Редактировать')),
+                            PopupMenuItem(value: 'delete', child: Text('Удалить')),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           );
         },
       ),

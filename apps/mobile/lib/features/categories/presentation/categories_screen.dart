@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/providers/city_catalog_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
+import '../../../shared/widgets/empty_city_view.dart';
 import '../../../shared/widgets/city_picker.dart';
 import '../../../shared/widgets/qalago_logo.dart';
 import '../../../shared/widgets/error_view.dart';
@@ -47,6 +49,9 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     final city = ref.watch(cityProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
     final unreadAsync = ref.watch(unreadNotificationsProvider);
+    final catalogTotalAsync = ref.watch(cityCatalogTotalProvider);
+    final isEmptyCity =
+        catalogTotalAsync.hasValue && catalogTotalAsync.value == 0;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -55,6 +60,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
           color: AppTheme.kzBlue,
           onRefresh: () async {
             ref.invalidate(categoriesProvider);
+            ref.invalidate(cityCatalogTotalProvider);
             ref.invalidate(unreadNotificationsProvider);
           },
           child: ListView(
@@ -111,7 +117,16 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              categoriesAsync.when(
+              if (catalogTotalAsync.isLoading && !catalogTotalAsync.hasValue)
+                const LoadingView()
+              else if (isEmptyCity)
+                EmptyCityView(
+                  cityName: city.nameRu,
+                  isComingSoon: city.isComingSoon,
+                  onPickCity: () => showCityPickerSheet(context, ref),
+                )
+              else
+                categoriesAsync.when(
                 loading: () => const LoadingView(),
                 error: (e, _) => ErrorView(
                   message: '$e',

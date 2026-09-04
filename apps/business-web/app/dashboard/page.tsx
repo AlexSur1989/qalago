@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import {
   AnalyticsSummary,
   AnalyticsTrends,
+  BusinessPlanStatus,
   BusinessRow,
   PromotionRow,
   ownerApi,
@@ -38,6 +39,7 @@ export default function DashboardPage() {
   const [summaryPrev, setSummaryPrev] = useState<AnalyticsSummary | null>(null);
   const [trends, setTrends] = useState<AnalyticsTrends | null>(null);
   const [promotions, setPromotions] = useState<PromotionRow[]>([]);
+  const [planStatus, setPlanStatus] = useState<BusinessPlanStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -52,11 +54,12 @@ export default function DashboardPage() {
     if (!token || !business) return;
     (async () => {
       try {
-        const [s7, s14, t, promos] = await Promise.all([
+        const [s7, s14, t, promos, plan] = await Promise.all([
           ownerApi.analyticsSummary(token, business.id, 7),
           ownerApi.analyticsSummary(token, business.id, 14),
           ownerApi.analyticsTrends(token, business.id, 7),
           ownerApi.listPromotions(token, business.id),
+          ownerApi.getBusinessPlan(token, business.id),
         ]);
         setSummary7(s7);
         setSummaryPrev({
@@ -71,6 +74,7 @@ export default function DashboardPage() {
         });
         setTrends(t);
         setPromotions(promos.items.filter((p) => p.status === 'ACTIVE'));
+        setPlanStatus(plan);
       } catch (err) {
         setError(String(err));
       }
@@ -227,14 +231,22 @@ export default function DashboardPage() {
 
               <article className="card">
                 <h2 style={{ margin: '0 0 8px', fontSize: '1rem' }}>Ваш тариф</h2>
-                <strong style={{ fontSize: '1.1rem' }}>Базовый</strong>
+                <strong style={{ fontSize: '1.1rem' }}>
+                  {planStatus?.catalog.nameRu ?? 'Базовый'}
+                </strong>
                 <p style={{ margin: '6px 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  Бесплатный план для MVP
+                  {planStatus?.expiresAt
+                    ? `До ${new Date(planStatus.expiresAt).toLocaleDateString('ru-RU')}`
+                    : 'Бесплатный план'}
                 </p>
                 <ul className="plan-list">
-                  <li>Карточка в каталоге QalaGo</li>
-                  <li>До 10 фото</li>
-                  <li>Акции и аналитика</li>
+                  {(planStatus?.catalog.features ?? [
+                    'Карточка в каталоге QalaGo',
+                    'До 5 фото',
+                    '1 акция',
+                  ]).slice(0, 3).map((feature) => (
+                    <li key={feature}>{feature}</li>
+                  ))}
                 </ul>
                 <Link href="/plan" className="btn btn-sm" style={{ width: '100%' }}>
                   Улучшить тариф

@@ -1,25 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/providers/city_provider.dart';
 import '../../../core/location/user_location_provider.dart';
+import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
+import '../../../shared/utils/business_rank.dart';
 import '../../../shared/widgets/business_card.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
 
+const _categoryRadiusKm = nearbyRadiusKm;
+
 final categoryBusinessesProvider =
     FutureProvider.family<PaginatedBusinesses, String>((ref, categoryId) async {
   final city = ref.watch(cityProvider);
-  final userPosition = ref.watch(userLocationProvider).valueOrNull;
+  final position = ref.watch(nearbySearchPositionProvider);
   return ref.watch(catalogRepositoryProvider).fetchBusinesses(
         citySlug: city.slug,
         categoryId: categoryId,
-        latitude: userPosition?.latitude,
-        longitude: userPosition?.longitude,
-        radiusKm: 15,
+        latitude: position.latitude,
+        longitude: position.longitude,
+        radiusKm: _categoryRadiusKm,
+        limit: 100,
       );
 });
 
@@ -69,19 +73,24 @@ class CategoryBusinessesScreen extends ConsumerWidget {
             ],
           ),
           data: (data) {
-            final featured = data.items.where((b) => b.isFeatured).toList();
-            final regular = data.items.where((b) => !b.isFeatured).toList();
-
             if (data.items.isEmpty) {
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(24),
                 children: const [
                   SizedBox(height: 80),
-                  Center(child: Text('В этой категории пока нет заведений')),
+                  Center(
+                    child: Text(
+                      'В радиусе 3 км от вас пока нет заведений\nв этой категории',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 ],
               );
             }
+
+            final tiers = splitBusinessesByTier(data.items);
+            final total = data.items.length;
 
             return ListView(
               physics: const AlwaysScrollableScrollPhysics(
@@ -89,52 +98,60 @@ class CategoryBusinessesScreen extends ConsumerWidget {
               ),
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
               children: [
-                if (featured.isNotEmpty) ...[
+                _SectionTitle(
+                  title: 'Рядом с вами',
+                  subtitle:
+                      'До 3 км · $total ${_pluralPlaces(total)} · сначала TOP и VIP',
+                ),
+                const SizedBox(height: 16),
+                if (tiers.top.isNotEmpty) ...[
                   const _SectionTitle(
-                    title: 'VIP · Топ',
-                    subtitle: 'Рекомендуемые заведения',
+                    title: 'Топ города',
+                    subtitle: 'Закреплённые заведения',
                   ),
                   const SizedBox(height: 12),
-                  ...featured.map(
-                    (business) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: BusinessCard(
-                        business: business,
-                        onTap: () => context.push('/business/${business.id}'),
-                      ),
-                    ),
-                  ),
+                  ..._businessCards(context, tiers.top),
                   const SizedBox(height: 8),
                 ],
-                _SectionTitle(
-                  title: featured.isEmpty ? 'Заведения' : 'Все заведения',
-                  subtitle: '${data.items.length} ${_pluralPlaces(data.items.length)}',
-                ),
-                const SizedBox(height: 12),
-                if (regular.isEmpty && featured.isNotEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8),
-                    child: Text(
-                      'Других заведений в этой категории пока нет',
-                      style: TextStyle(color: Colors.black54),
-                    ),
-                  )
-                else
-                  ...regular.map(
-                    (business) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: BusinessCard(
-                        business: business,
-                        onTap: () => context.push('/business/${business.id}'),
-                      ),
-                    ),
+                if (tiers.pro.isNotEmpty) ...[
+                  const _SectionTitle(
+                    title: 'VIP · Pro',
+                    subtitle: 'Платный тариф',
                   ),
+                  const SizedBox(height: 12),
+                  ..._businessCards(context, tiers.pro),
+                  const SizedBox(height: 8),
+                ],
+                if (tiers.regular.isNotEmpty) ...[
+                  _SectionTitle(
+                    title: tiers.top.isEmpty && tiers.pro.isEmpty
+                        ? 'Заведения'
+                        : 'Все остальные',
+                    subtitle: 'По расстоянию от вас',
+                  ),
+                  const SizedBox(height: 12),
+                  ..._businessCards(context, tiers.regular),
+                ],
               ],
             );
           },
         ),
       ),
     );
+  }
+
+  static List<Widget> _businessCards(BuildContext context, List<BusinessModel> items) {
+    return items
+        .map(
+          (business) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: BusinessCard(
+              business: business,
+              onTap: () => context.push('/business/${business.id}'),
+            ),
+          ),
+        )
+        .toList();
   }
 
   static String _pluralPlaces(int count) {
@@ -180,30 +197,7 @@ class _SectionTitle extends StatelessWidget {
 }
 
 String categoryDisplayTitle(CategoryModel category) {
-  switch (category.slug) {
-    case 'food':
-      return 'Рестораны и кафе';
-    case 'bars':
-      return 'Бары и караоке';
-    case 'fitness':
-      return 'Фитнес';
-    case 'beauty':
-      return 'Красота';
-    case 'shops':
-      return 'Магазины';
-    case 'medicine':
-      return 'Медицина';
-    case 'kids':
-      return 'Детям';
-    case 'services':
-      return 'Услуги';
-    case 'fun':
-      return 'Развлечения';
-    case 'auto':
-      return 'Авто';
-    default:
-      return category.title;
-  }
+  return category.title;
 }
 
 void openCategory(BuildContext context, CategoryModel category) {

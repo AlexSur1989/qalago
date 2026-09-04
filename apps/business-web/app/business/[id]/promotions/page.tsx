@@ -3,7 +3,12 @@
 import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { BusinessRow, PromotionRow, ownerApi } from '@/lib/api';
+import {
+  BusinessPlanStatus,
+  BusinessRow,
+  PromotionRow,
+  ownerApi,
+} from '@/lib/api';
 import { useAuth } from '@/lib/use-auth';
 import { BusinessShell } from '@/components/business-shell';
 
@@ -13,12 +18,16 @@ export default function BusinessPromotionsPage() {
   const { token, user, ready, logout } = useAuth();
   const [businesses, setBusinesses] = useState<BusinessRow[]>([]);
   const [items, setItems] = useState<PromotionRow[]>([]);
+  const [planStatus, setPlanStatus] = useState<BusinessPlanStatus | null>(null);
   const [title, setTitle] = useState('');
   const [discountText, setDiscountText] = useState('-20%');
   const [description, setDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const business = businesses.find((b) => b.id === businessId) ?? null;
+  const activeCount = items.filter((p) => p.status === 'ACTIVE').length;
+  const atActiveLimit =
+    planStatus != null && activeCount >= planStatus.limits.maxActivePromotions;
 
   useEffect(() => {
     if (!token) return;
@@ -26,8 +35,12 @@ export default function BusinessPromotionsPage() {
   }, [token]);
 
   async function load(t: string) {
-    const res = await ownerApi.listPromotions(t, businessId);
-    setItems(res.items);
+    const [promos, plan] = await Promise.all([
+      ownerApi.listPromotions(t, businessId),
+      ownerApi.getBusinessPlan(t, businessId),
+    ]);
+    setItems(promos.items);
+    setPlanStatus(plan);
   }
 
   useEffect(() => {
@@ -38,23 +51,33 @@ export default function BusinessPromotionsPage() {
   async function create(e: FormEvent) {
     e.preventDefault();
     if (!token || !title.trim()) return;
-    await ownerApi.createPromotion(token, {
-      businessId,
-      title: title.trim(),
-      discountText,
-      description,
-      status: 'ACTIVE',
-    });
-    setTitle('');
-    setDescription('');
-    await load(token);
+    setError(null);
+    try {
+      await ownerApi.createPromotion(token, {
+        businessId,
+        title: title.trim(),
+        discountText,
+        description,
+        status: 'ACTIVE',
+      });
+      setTitle('');
+      setDescription('');
+      await load(token);
+    } catch (err) {
+      setError(String(err));
+    }
   }
 
   async function toggleStatus(p: PromotionRow) {
     if (!token) return;
-    const next = p.status === 'ACTIVE' ? 'EXPIRED' : 'ACTIVE';
-    await ownerApi.updatePromotion(token, p.id, { status: next });
-    await load(token);
+    setError(null);
+    try {
+      const next = p.status === 'ACTIVE' ? 'EXPIRED' : 'ACTIVE';
+      await ownerApi.updatePromotion(token, p.id, { status: next });
+      await load(token);
+    } catch (err) {
+      setError(String(err));
+    }
   }
 
   async function remove(id: string) {
@@ -83,26 +106,48 @@ export default function BusinessPromotionsPage() {
         </Link>
       </header>
 
+      {planStatus && (
+        <section className="form-card" style={{ maxWidth: 720, marginBottom: 16 }}>
+          <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+            Тариф «{planStatus.catalog.nameRu}»: активных {activeCount} /{' '}
+            {planStatus.limits.maxActivePromotions}
+            {planStatus.limits.maxPromotionsInFeed > 0
+              ? ` · в ленте города до ${planStatus.limits.maxPromotionsInFeed} одновременно`
+              : ' · в ленте города не показываются'}
+            {' · '}срок акции до {planStatus.limits.maxPromotionDurationDays} дн.
+          </p>
+          {atActiveLimit && (
+            <p style={{ margin: '8px 0 0', fontSize: '0.9rem' }}>
+              Лимит активных акций достигнут.{' '}
+              <Link href="/plan">Улучшить тариф</Link>
+            </p>
+          )}
+        </section>
+      )}
+
       <form onSubmit={create} className="form-card form-grid" style={{ maxWidth: 720, marginBottom: 24 }}>
         <h2 style={{ margin: 0 }}>Новая акция</h2>
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Название"
+          disabled={atActiveLimit}
         />
         <input
           value={discountText}
           onChange={(e) => setDiscountText(e.target.value)}
           placeholder="Скидка"
+          disabled={atActiveLimit}
         />
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Описание"
           rows={3}
+          disabled={atActiveLimit}
         />
-        <button type="submit" className="btn btn-primary">
-          Создать акцию
+        <button type="submit" className="btn btn-primary" disabled={atActiveLimit}>
+          {atActiveLimit ? 'Лимит активных акций' : 'Создать акцию'}
         </button>
       </form>
 

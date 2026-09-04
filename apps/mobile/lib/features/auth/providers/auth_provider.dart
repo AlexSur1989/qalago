@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/providers/city_provider.dart';
 import '../../../core/network/dio_provider.dart';
+import '../../../core/providers/city_catalog_provider.dart';
+import '../../../core/providers/city_provider.dart';
 import '../../../core/storage/auth_storage.dart';
 import '../../../shared/models/models.dart';
 import '../../catalog/data/catalog_repository.dart';
@@ -29,6 +30,24 @@ final adminRepositoryProvider = Provider(
 final notificationsRepositoryProvider = Provider(
   (ref) => NotificationsRepository(ref.watch(dioProvider)),
 );
+
+void invalidateCityScopedProviders(Ref ref) {
+  ref.invalidate(cityCatalogTotalProvider);
+  ref.invalidate(categoriesProvider);
+  ref.invalidate(businessesProvider);
+  ref.invalidate(featuredBusinessesProvider);
+  ref.invalidate(recommendedBusinessesProvider);
+  ref.invalidate(promotionsProvider);
+  ref.invalidate(adminPendingBusinessesProvider);
+}
+
+/// Сбрасывает city-scoped провайдеры при смене slug в [cityProvider].
+final cityChangeInvalidatorProvider = Provider<void>((ref) {
+  ref.listen(cityProvider, (previous, next) {
+    if (previous != null && previous.slug == next.slug) return;
+    invalidateCityScopedProviders(ref);
+  });
+});
 
 class AuthState {
   const AuthState({
@@ -93,10 +112,22 @@ class AuthNotifier extends Notifier<AuthState> {
 
     final slug = user.preferredCitySlug;
     if (slug == null || slug.isEmpty) return;
-    await ref.read(cityProvider.notifier).selectCity(
-          slug,
-          user.preferredCityName ?? slug,
-        );
+    try {
+      final cities = await ref.read(citiesProvider.future);
+      final match = cities.firstWhere(
+        (c) => c['slug'] == slug,
+        orElse: () => {
+          'slug': slug,
+          'nameRu': user.preferredCityName ?? slug,
+        },
+      );
+      await ref.read(cityProvider.notifier).selectCityFromApi(match);
+    } catch (_) {
+      await ref.read(cityProvider.notifier).selectCity(
+            slug,
+            user.preferredCityName ?? slug,
+          );
+    }
   }
 
   Future<void> refreshUser() async {
@@ -118,9 +149,16 @@ class AuthNotifier extends Notifier<AuthState> {
     required String cityId,
     required String slug,
     required String nameRu,
+    double? centerLat,
+    double? centerLng,
   }) async {
     final user = await _repo.updateMe(preferredCityId: cityId);
-    await ref.read(cityProvider.notifier).selectCity(slug, nameRu);
+    await ref.read(cityProvider.notifier).selectCity(
+          slug,
+          nameRu,
+          centerLat: centerLat,
+          centerLng: centerLng,
+        );
     state = state.copyWith(
       user: user.copyWith(
         preferredCityId: cityId,
@@ -128,14 +166,6 @@ class AuthNotifier extends Notifier<AuthState> {
         preferredCityName: nameRu,
       ),
     );
-    _invalidateCityScopedData();
-  }
-
-  void _invalidateCityScopedData() {
-    ref.invalidate(businessesProvider);
-    ref.invalidate(featuredBusinessesProvider);
-    ref.invalidate(promotionsProvider);
-    ref.invalidate(adminPendingBusinessesProvider);
   }
 
   Future<String?> sendCode(String phone) async {
@@ -150,11 +180,25 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  Future<void> verifyCode(String phone, String code) async {
+  Future<void> verifyCode(
+    String phone,
+    String code, {
+    String accountType = 'user',
+  }) async {
     state = state.copyWith(isLoading: true);
-    final result = await _repo.verifyCode(phone: phone, code: code);
-    await _storage.saveToken(result.token);
-    state = AuthState(user: result.user, isAuthenticated: true);
+    try {
+      final result = await _repo.verifyCode(
+        phone: phone,
+        code: code,
+        accountType: accountType,
+      );
+      await _storage.saveToken(result.token);
+      await _applyPreferredCity(result.user);
+      state = AuthState(user: result.user, isAuthenticated: true);
+    } catch (e) {
+      state = state.copyWith(isLoading: false);
+      rethrow;
+    }
   }
 
   Future<void> logout() async {
@@ -166,7 +210,8 @@ class AuthNotifier extends Notifier<AuthState> {
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);
 
 final categoriesProvider = FutureProvider<List<CategoryModel>>((ref) async {
-  return ref.watch(catalogRepositoryProvider).fetchCategories();
+  final city = ref.watch(cityProvider);
+  return ref.watch(catalogRepositoryProvider).fetchCategories(citySlug: city.slug);
 });
 
 class BusinessesQuery {
@@ -175,12 +220,14 @@ class BusinessesQuery {
     this.categoryId,
     this.latitude,
     this.longitude,
+    this.radiusKm,
   });
 
   final String? search;
   final String? categoryId;
   final double? latitude;
   final double? longitude;
+  final double? radiusKm;
 
   @override
   bool operator ==(Object other) =>
@@ -188,10 +235,12 @@ class BusinessesQuery {
       other.search == search &&
       other.categoryId == categoryId &&
       other.latitude == latitude &&
-      other.longitude == longitude;
+      other.longitude == longitude &&
+      other.radiusKm == radiusKm;
 
   @override
-  int get hashCode => Object.hash(search, categoryId, latitude, longitude);
+  int get hashCode =>
+      Object.hash(search, categoryId, latitude, longitude, radiusKm);
 }
 
 final businessesProvider = FutureProvider.family<PaginatedBusinesses, BusinessesQuery>(
@@ -203,7 +252,7 @@ final businessesProvider = FutureProvider.family<PaginatedBusinesses, Businesses
           categoryId: query.categoryId,
           latitude: query.latitude,
           longitude: query.longitude,
-          radiusKm: 15,
+          radiusKm: query.radiusKm,
         );
   },
 );

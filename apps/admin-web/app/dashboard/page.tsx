@@ -10,12 +10,15 @@ import {
   CategoryRow,
   CityRow,
   EditorialDraft,
+  GeoPlaceSuggestion,
   ModerationAnalysis,
 } from '@/lib/api';
 import { AdminShell } from '@/components/admin-shell';
+import { CityNameAutocomplete } from '@/components/city-name-autocomplete';
 import {
   AdminTabId,
   confirmAction,
+  planTierLabel,
   statusClass,
   statusLabel,
 } from '@/lib/admin-utils';
@@ -47,6 +50,15 @@ export default function DashboardPage() {
   const [businessMeta, setBusinessMeta] = useState({ page: 1, limit: 20, total: 0 });
   const [userCityDraft, setUserCityDraft] = useState<Record<string, string>>({});
   const [activeForFeatured, setActiveForFeatured] = useState<BusinessRow[]>([]);
+  const [adminCities, setAdminCities] = useState<CityRow[]>([]);
+  const [cityNameRu, setCityNameRu] = useState('');
+  const [cityNameKk, setCityNameKk] = useState('');
+  const [citySlugDraft, setCitySlugDraft] = useState('');
+  const [cityLat, setCityLat] = useState('');
+  const [cityLng, setCityLng] = useState('');
+  const [cityTimezone, setCityTimezone] = useState('Asia/Almaty');
+  const [cityActive, setCityActive] = useState(true);
+  const [cityLaunchStatus, setCityLaunchStatus] = useState<'COMING_SOON' | 'LIVE'>('COMING_SOON');
 
   const isCityAdmin = user?.role === 'CITY_ADMIN';
   const cityLocked = isCityAdmin && !!user?.managedCity?.slug;
@@ -114,10 +126,24 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!token || tab !== 'categories') return;
     adminApi
-      .listCategoriesAdmin(token)
+      .listCategoriesAdmin(token, citySlug)
       .then(setCategories)
       .catch((err) => setError(String(err)));
-  }, [token, tab]);
+  }, [token, tab, citySlug]);
+
+  async function reloadCityLists(t: string) {
+    const [publicCities, allCities] = await Promise.all([
+      adminApi.listCities(),
+      adminApi.listCitiesAdmin(t),
+    ]);
+    setCities(publicCities);
+    setAdminCities(allCities);
+  }
+
+  useEffect(() => {
+    if (!token || tab !== 'cities' || !showUsers) return;
+    reloadCityLists(token).catch((err) => setError(String(err)));
+  }, [token, tab, showUsers]);
 
   async function setStatus(id: string, status: string, title: string) {
     if (!token) return;
@@ -156,6 +182,18 @@ export default function DashboardPage() {
       isFeatured: true,
       featuredSlot: slot,
     });
+    await reloadBusinesses(token, citySlug, businessPage, businessStatusFilter);
+    if (tab === 'featured') {
+      const res = await adminApi.listBusinesses(token, citySlug, 'ACTIVE', 1, 100);
+      setActiveForFeatured(res.items);
+    }
+  }
+
+  async function setBusinessPlan(b: BusinessRow, tier: string) {
+    if (!token || b.planTier === tier) return;
+    const label = planTierLabel(tier);
+    if (!confirmAction(`Назначить тариф «${label}» для «${b.title}»?`)) return;
+    await adminApi.updateBusinessPlan(token, b.id, tier);
     await reloadBusinesses(token, citySlug, businessPage, businessStatusFilter);
     if (tab === 'featured') {
       const res = await adminApi.listBusinesses(token, citySlug, 'ACTIVE', 1, 100);
@@ -231,20 +269,20 @@ export default function DashboardPage() {
     });
     setCatTitle('');
     setCatSlug('');
-    setCategories(await adminApi.listCategoriesAdmin(token));
+    setCategories(await adminApi.listCategoriesAdmin(token, citySlug));
   }
 
   async function toggleCategoryActive(category: CategoryRow) {
     if (!token) return;
     await adminApi.updateCategory(token, category.id, { isActive: !category.isActive });
-    setCategories(await adminApi.listCategoriesAdmin(token));
+    setCategories(await adminApi.listCategoriesAdmin(token, citySlug));
   }
 
   async function removeCategory(category: CategoryRow) {
     if (!token) return;
     if (!confirmAction(`Удалить категорию «${category.title}»?`)) return;
     await adminApi.deleteCategory(token, category.id);
-    setCategories(await adminApi.listCategoriesAdmin(token));
+    setCategories(await adminApi.listCategoriesAdmin(token, citySlug));
   }
 
   async function updateCategoryField(
@@ -252,8 +290,88 @@ export default function DashboardPage() {
     data: { title?: string; sortOrder?: number },
   ) {
     if (!token) return;
-    await adminApi.updateCategory(token, category.id, data);
-    setCategories(await adminApi.listCategoriesAdmin(token));
+    if (data.sortOrder !== undefined) {
+      await adminApi.updateCategoryCityOrder(token, category.id, {
+        citySlug,
+        sortOrder: data.sortOrder,
+      });
+    } else {
+      await adminApi.updateCategory(token, category.id, data);
+    }
+    setCategories(await adminApi.listCategoriesAdmin(token, citySlug));
+  }
+
+  async function toggleCategoryCityVisibility(category: CategoryRow) {
+    if (!token) return;
+    const nextHidden = !category.cityIsHidden;
+    const msg = nextHidden
+      ? `Скрыть «${category.title}» в городе ${cityLabel}?`
+      : `Показать «${category.title}» в городе ${cityLabel}?`;
+    if (!confirmAction(msg)) return;
+    await adminApi.updateCategoryCityVisibility(token, category.id, {
+      citySlug,
+      isHidden: nextHidden,
+    });
+    setCategories(await adminApi.listCategoriesAdmin(token, citySlug));
+  }
+
+  function applyGeoPlace(place: GeoPlaceSuggestion) {
+    setCityNameRu(place.nameRu);
+    if (place.nameKk) setCityNameKk(place.nameKk);
+    setCitySlugDraft(place.slugSuggestion);
+    setCityLat(String(place.lat));
+    setCityLng(String(place.lng));
+    setCityTimezone(place.timezone);
+  }
+
+  async function createCity(e: FormEvent) {
+    e.preventDefault();
+    if (!token || !cityNameRu.trim() || !citySlugDraft.trim()) return;
+
+    const slug = citySlugDraft.trim().toLowerCase();
+    if (adminCities.some((city) => city.slug === slug)) {
+      setError(`Город со slug «${slug}» уже существует`);
+      return;
+    }
+
+    const lat = cityLat.trim() ? Number.parseFloat(cityLat) : undefined;
+    const lng = cityLng.trim() ? Number.parseFloat(cityLng) : undefined;
+    await adminApi.createCity(token, {
+      slug,
+      nameRu: cityNameRu.trim(),
+      nameKk: cityNameKk.trim() || undefined,
+      centerLat: Number.isFinite(lat) ? lat : undefined,
+      centerLng: Number.isFinite(lng) ? lng : undefined,
+      timezone: cityTimezone,
+      isActive: cityActive,
+      launchStatus: cityLaunchStatus,
+    });
+    setCityNameRu('');
+    setCityNameKk('');
+    setCitySlugDraft('');
+    setCityLat('');
+    setCityLng('');
+    setCityTimezone('Asia/Almaty');
+    setCityActive(true);
+    setCityLaunchStatus('COMING_SOON');
+    await reloadCityLists(token);
+  }
+
+  async function setCityLaunchStatusRow(city: CityRow, launchStatus: 'COMING_SOON' | 'LIVE') {
+    if (!token || city.launchStatus === launchStatus) return;
+    await adminApi.updateCity(token, city.id, { launchStatus });
+    await reloadCityLists(token);
+  }
+
+  async function toggleCityActive(city: CityRow) {
+    if (!token) return;
+    const next = !city.isActive;
+    const msg = next
+      ? `Активировать город «${city.nameRu}»? Он появится в приложении.`
+      : `Скрыть город «${city.nameRu}»? Пользователи не смогут его выбрать.`;
+    if (!confirmAction(msg)) return;
+    await adminApi.updateCity(token, city.id, { isActive: next });
+    await reloadCityLists(token);
   }
 
   async function generateDraft() {
@@ -414,6 +532,7 @@ export default function DashboardPage() {
                   <th>Название</th>
                   <th>Категория</th>
                   <th>Статус</th>
+                  <th>Тариф</th>
                   <th>Город</th>
                   <th>VIP</th>
                   <th></th>
@@ -426,6 +545,22 @@ export default function DashboardPage() {
                     <td>{b.category?.title ?? '—'}</td>
                     <td>
                       <span className={statusClass(b.status)}>{statusLabel(b.status)}</span>
+                    </td>
+                    <td>
+                      <select
+                        className="filter-select"
+                        value={b.planTier ?? 'BASIC'}
+                        onChange={(e) => setBusinessPlan(b, e.target.value)}
+                        title={
+                          b.planExpiresAt
+                            ? `До ${new Date(b.planExpiresAt).toLocaleDateString('ru-RU')}`
+                            : undefined
+                        }
+                      >
+                        <option value="BASIC">Базовый</option>
+                        <option value="PRO">Pro</option>
+                        <option value="TOP_CITY">Топ города</option>
+                      </select>
                     </td>
                     <td>{b.city?.nameRu}</td>
                     <td>
@@ -638,19 +773,25 @@ export default function DashboardPage() {
           </section>
           <section className="card">
             <h2>Категории каталога ({categories.length})</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: 14, marginTop: 0 }}>
+              Порядок и видимость для города <strong>{cityLabel}</strong>. Скрытые категории не
+              показываются в приложении.
+            </p>
             <table className="table">
               <thead>
                 <tr>
                   <th>Название</th>
                   <th>Slug</th>
-                  <th>Порядок</th>
-                  <th>Статус</th>
+                  <th>Порядок ({cityLabel})</th>
+                  <th>Глобальный</th>
+                  <th>В городе</th>
+                  <th>Глоб. статус</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
                 {categories.map((c) => (
-                  <tr key={c.id}>
+                  <tr key={c.id} style={c.cityIsHidden ? { opacity: 0.65 } : undefined}>
                     <td>
                       <input
                         className="slot-input table-input"
@@ -669,14 +810,24 @@ export default function DashboardPage() {
                         type="number"
                         min={0}
                         className="slot-input"
-                        defaultValue={c.sortOrder}
+                        defaultValue={c.citySortOrder ?? c.sortOrder}
+                        key={`${c.id}-${citySlug}-${c.citySortOrder ?? c.sortOrder}`}
                         onBlur={(e) => {
                           const next = Number.parseInt(e.target.value, 10) || 0;
-                          if (next !== c.sortOrder) {
+                          const current = c.citySortOrder ?? c.sortOrder;
+                          if (next !== current) {
                             updateCategoryField(c, { sortOrder: next });
                           }
                         }}
                       />
+                    </td>
+                    <td>{c.sortOrder}</td>
+                    <td>
+                      {c.cityIsHidden ? (
+                        <span className="tag tag-muted">Скрыта</span>
+                      ) : (
+                        <span className="tag tag-success">Видна</span>
+                      )}
                     </td>
                     <td>
                       {c.isActive ? (
@@ -685,7 +836,14 @@ export default function DashboardPage() {
                         <span className="tag tag-muted">Скрыта</span>
                       )}
                     </td>
-                    <td style={{ display: 'flex', gap: 8 }}>
+                    <td style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        className="btn btn-sm"
+                        onClick={() => toggleCategoryCityVisibility(c)}
+                      >
+                        {c.cityIsHidden ? 'Показать' : 'Скрыть'}
+                      </button>
                       <button
                         type="button"
                         className="btn btn-sm"
@@ -823,6 +981,143 @@ export default function DashboardPage() {
             </tbody>
           </table>
         </section>
+      )}
+
+      {tab === 'cities' && showUsers && (
+        <>
+          <section className="card">
+            <h2>Новый город</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: 14, marginTop: 0 }}>
+              Начните вводить название — подсказки появятся автоматически. При выборе заполнятся
+              slug, широта, долгота и timezone.
+            </p>
+            <form onSubmit={createCity} className="form-grid" style={{ maxWidth: 640 }}>
+              {token && (
+                <CityNameAutocomplete
+                  token={token}
+                  value={cityNameRu}
+                  onChange={setCityNameRu}
+                  onSelect={applyGeoPlace}
+                  placeholder="Начните вводить: Астана, Шымкент…"
+                  required
+                />
+              )}
+              <input
+                value={cityNameKk}
+                onChange={(e) => setCityNameKk(e.target.value)}
+                placeholder="Название (KK), опционально"
+              />
+              <input
+                value={citySlugDraft}
+                onChange={(e) => setCitySlugDraft(e.target.value.toLowerCase())}
+                placeholder="slug, например astana"
+                pattern="[a-z0-9-]+"
+                required
+              />
+              <input
+                value={cityLat}
+                onChange={(e) => setCityLat(e.target.value)}
+                placeholder="Широта центра, например 51.1694"
+              />
+              <input
+                value={cityLng}
+                onChange={(e) => setCityLng(e.target.value)}
+                placeholder="Долгота центра, например 71.4491"
+              />
+              <select value={cityTimezone} onChange={(e) => setCityTimezone(e.target.value)}>
+                <option value="Asia/Almaty">Asia/Almaty</option>
+                <option value="Asia/Aqtobe">Asia/Aqtobe</option>
+                <option value="Asia/Oral">Asia/Oral</option>
+                <option value="Asia/Qyzylorda">Asia/Qyzylorda</option>
+                <option value="Asia/Aqtau">Asia/Aqtau</option>
+              </select>
+              <select
+                value={cityLaunchStatus}
+                onChange={(e) =>
+                  setCityLaunchStatus(e.target.value as 'COMING_SOON' | 'LIVE')
+                }
+              >
+                <option value="COMING_SOON">Скоро откроется</option>
+                <option value="LIVE">Запущен</option>
+              </select>
+              <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input
+                  type="checkbox"
+                  checked={cityActive}
+                  onChange={(e) => setCityActive(e.target.checked)}
+                />
+                Активен сразу после создания
+              </label>
+              <button type="submit" className="btn btn-primary">
+                Добавить город
+              </button>
+            </form>
+          </section>
+
+          <section className="card">
+            <h2>Города платформы ({adminCities.length})</h2>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Название</th>
+                  <th>KK</th>
+                  <th>Slug</th>
+                  <th>Центр</th>
+                  <th>Timezone</th>
+                  <th>Запуск</th>
+                  <th>Статус</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {adminCities.map((city) => (
+                  <tr key={city.id}>
+                    <td>{city.nameRu}</td>
+                    <td>{city.nameKk ?? '—'}</td>
+                    <td>{city.slug}</td>
+                    <td>
+                      {city.centerLat != null && city.centerLng != null
+                        ? `${city.centerLat}, ${city.centerLng}`
+                        : '—'}
+                    </td>
+                    <td>{city.timezone ?? '—'}</td>
+                    <td>
+                      <select
+                        className="filter-select"
+                        value={city.launchStatus ?? 'LIVE'}
+                        onChange={(e) =>
+                          setCityLaunchStatusRow(
+                            city,
+                            e.target.value as 'COMING_SOON' | 'LIVE',
+                          )
+                        }
+                      >
+                        <option value="COMING_SOON">Скоро</option>
+                        <option value="LIVE">Live</option>
+                      </select>
+                    </td>
+                    <td>
+                      {city.isActive ? (
+                        <span className="tag tag-success">Активен</span>
+                      ) : (
+                        <span className="tag tag-muted">Скрыт</span>
+                      )}
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        className="btn btn-sm"
+                        onClick={() => toggleCityActive(city)}
+                      >
+                        {city.isActive ? 'Скрыть' : 'Активировать'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        </>
       )}
     </AdminShell>
   );
