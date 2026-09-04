@@ -132,12 +132,12 @@ Owner or admin. Body (all optional): `title`, `shortDesc`, `description`, `addre
 
 ### Admin
 
-- `GET /admin/businesses?status=&citySlug=` — `CITY_ADMIN` is scoped to `managedCityId`; `ADMIN` may filter by city or see all.
+- `GET /admin/businesses?status=&citySlug=&page=&limit=` — pagination via `meta`; `CITY_ADMIN` scoped to `managedCityId`.
 - `PATCH /admin/businesses/:id/status`
-- `PATCH /admin/businesses/:id/featured`
-- `PATCH /admin/businesses/:id/featured-slot`
+- `PATCH /admin/businesses/:id/featured` — body: `{ isFeatured, featuredSlot? }`
+- `GET /admin/categories` — all categories including hidden (ADMIN, CITY_ADMIN)
 - `GET /admin/users` — ADMIN only
-- `PATCH /admin/users/:id/role` — ADMIN only
+- `PATCH /admin/users/:id/role` — ADMIN only; body: `{ role, managedCityId? }` (required when role is CITY_ADMIN)
 - `GET /admin/reviews?citySlug=&limit=` — reviews scoped by admin city; includes user + business
 - `DELETE /admin/reviews/:id` — remove review (city-scoped for CITY_ADMIN)
 

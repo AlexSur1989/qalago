@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { BusinessStatus, NotificationType, Prisma } from '@prisma/client';
+import { BusinessStatus, NotificationType, Prisma, UserRole } from '@prisma/client';
 
 import { AuthUser } from '../../common/types/jwt-payload.type';
 
@@ -202,6 +202,10 @@ export class AdminService {
 
         createdAt: true,
 
+        managedCityId: true,
+
+        managedCity: { select: { id: true, slug: true, nameRu: true } },
+
       },
 
       orderBy: { createdAt: 'desc' },
@@ -220,9 +224,31 @@ export class AdminService {
 
       where: { id },
 
-      data: { role: dto.role },
+      data: {
 
-      select: { id: true, phone: true, name: true, role: true },
+        role: dto.role,
+
+        managedCityId:
+
+          dto.role === UserRole.CITY_ADMIN ? dto.managedCityId ?? null : null,
+
+      },
+
+      select: {
+
+        id: true,
+
+        phone: true,
+
+        name: true,
+
+        role: true,
+
+        managedCityId: true,
+
+        managedCity: { select: { id: true, slug: true, nameRu: true } },
+
+      },
 
     });
 
@@ -292,7 +318,11 @@ export class AdminService {
 
   }
 
-
+  listCategories() {
+    return this.prisma.category.findMany({
+      orderBy: [{ sortOrder: 'asc' }, { title: 'asc' }],
+    });
+  }
 
   private async ensureBusiness(id: string) {
 

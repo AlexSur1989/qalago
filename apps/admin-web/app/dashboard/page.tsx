@@ -1,18 +1,32 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { adminApi, aiApi, AdminReviewRow, AuthUser, BusinessRow, CategoryRow, EditorialDraft, ModerationAnalysis, TOKEN_KEY } from '@/lib/api';
-import { canManageUsers, getRoleDefinition } from '@/lib/rbac';
-
-type TabId = 'moderation' | 'featured' | 'reviews' | 'categories' | 'users' | 'content';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
+import {
+  adminApi,
+  aiApi,
+  AdminReviewRow,
+  AuthUser,
+  BusinessRow,
+  CategoryRow,
+  CityRow,
+  EditorialDraft,
+  ModerationAnalysis,
+} from '@/lib/api';
+import { AdminShell } from '@/components/admin-shell';
+import {
+  AdminTabId,
+  confirmAction,
+  statusClass,
+  statusLabel,
+} from '@/lib/admin-utils';
+import { canManageUsers } from '@/lib/rbac';
+import { useAuth } from '@/lib/use-auth';
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const { token, user, ready, logout } = useAuth();
   const [citySlug, setCitySlug] = useState('uralsk');
-  const [tab, setTab] = useState<TabId>('moderation');
+  const [cities, setCities] = useState<CityRow[]>([]);
+  const [tab, setTab] = useState<AdminTabId>('moderation');
   const [pending, setPending] = useState<BusinessRow[]>([]);
   const [all, setAll] = useState<BusinessRow[]>([]);
   const [users, setUsers] = useState<AuthUser[]>([]);
@@ -28,47 +42,57 @@ export default function DashboardPage() {
   const [copied, setCopied] = useState(false);
   const [reviewAnalysis, setReviewAnalysis] = useState<Record<string, ModerationAnalysis>>({});
   const [reviewCheckingId, setReviewCheckingId] = useState<string | null>(null);
+  const [businessPage, setBusinessPage] = useState(1);
+  const [businessStatusFilter, setBusinessStatusFilter] = useState('');
+  const [businessMeta, setBusinessMeta] = useState({ page: 1, limit: 20, total: 0 });
+  const [userCityDraft, setUserCityDraft] = useState<Record<string, string>>({});
+  const [activeForFeatured, setActiveForFeatured] = useState<BusinessRow[]>([]);
 
   const isCityAdmin = user?.role === 'CITY_ADMIN';
   const cityLocked = isCityAdmin && !!user?.managedCity?.slug;
   const showUsers = user ? canManageUsers(user.role) : false;
 
   useEffect(() => {
-    const t = localStorage.getItem(TOKEN_KEY);
-    if (!t) {
-      router.replace('/login');
-      return;
-    }
-    setToken(t);
-  }, [router]);
+    adminApi.listCities().then(setCities).catch(() => undefined);
+  }, []);
 
   useEffect(() => {
-    if (!token) return;
-    (async () => {
-      try {
-        const me = await adminApi.getMe(token);
-        setUser(me);
-        if (me.role === 'CITY_ADMIN' && me.managedCity?.slug) {
-          setCitySlug(me.managedCity.slug);
-        }
-      } catch (err) {
-        setError(String(err));
-      }
-    })();
-  }, [token]);
+    if (!user) return;
+    if (user.role === 'CITY_ADMIN' && user.managedCity?.slug) {
+      setCitySlug(user.managedCity.slug);
+    }
+  }, [user]);
 
-  async function reloadBusinesses(t: string, slug: string) {
+  useEffect(() => {
+    setBusinessPage(1);
+  }, [citySlug, businessStatusFilter]);
+
+  async function reloadBusinesses(
+    t: string,
+    slug: string,
+    page = businessPage,
+    statusFilter = businessStatusFilter,
+  ) {
     const [pendingRes, allRes] = await Promise.all([
-      adminApi.listBusinesses(t, slug, 'PENDING'),
-      adminApi.listBusinesses(t, slug),
+      adminApi.listBusinesses(t, slug, 'PENDING', 1, 50),
+      adminApi.listBusinesses(t, slug, statusFilter || undefined, page, 20),
     ]);
     setPending(pendingRes.items);
     setAll(allRes.items);
+    setBusinessMeta(allRes.meta);
   }
 
   useEffect(() => {
     if (!token) return;
     reloadBusinesses(token, citySlug).catch((err) => setError(String(err)));
+  }, [token, citySlug, businessPage, businessStatusFilter]);
+
+  useEffect(() => {
+    if (!token) return;
+    adminApi
+      .listReviews(token, citySlug)
+      .then(setReviews)
+      .catch(() => undefined);
   }, [token, citySlug]);
 
   useEffect(() => {
@@ -80,46 +104,98 @@ export default function DashboardPage() {
   }, [token, showUsers, tab]);
 
   useEffect(() => {
-    if (!token || tab !== 'reviews') return;
+    if (!token) return;
     adminApi
-      .listReviews(token, citySlug)
-      .then(setReviews)
-      .catch((err) => setError(String(err)));
-  }, [token, citySlug, tab]);
+      .listBusinesses(token, citySlug, 'ACTIVE', 1, 100)
+      .then((res) => setActiveForFeatured(res.items))
+      .catch(() => undefined);
+  }, [token, citySlug]);
 
   useEffect(() => {
-    if (tab !== 'categories') return;
+    if (!token || tab !== 'categories') return;
     adminApi
-      .listCategories()
+      .listCategoriesAdmin(token)
       .then(setCategories)
       .catch((err) => setError(String(err)));
-  }, [tab]);
+  }, [token, tab]);
 
-  async function setStatus(id: string, status: string) {
+  async function setStatus(id: string, status: string, title: string) {
     if (!token) return;
+    const msg =
+      status === 'BLOCKED'
+        ? `Заблокировать «${title}»?`
+        : status === 'ACTIVE'
+          ? `Активировать «${title}»?`
+          : `Изменить статус «${title}» на ${status}?`;
+    if (!confirmAction(msg)) return;
     await adminApi.updateStatus(token, id, status);
-    await reloadBusinesses(token, citySlug);
+    await reloadBusinesses(token, citySlug, businessPage, businessStatusFilter);
   }
 
-  async function toggleFeatured(id: string, current: boolean) {
+  async function toggleFeatured(b: BusinessRow) {
     if (!token) return;
-    await adminApi.updateFeatured(token, id, !current);
-    await reloadBusinesses(token, citySlug);
+    const next = !b.isFeatured;
+    const msg = next
+      ? `Добавить «${b.title}» в блок «Рекомендуем»?`
+      : `Убрать «${b.title}» из Топа?`;
+    if (!confirmAction(msg)) return;
+    await adminApi.updateFeatured(token, b.id, {
+      isFeatured: next,
+      featuredSlot: next ? b.featuredSlot ?? 0 : null,
+    });
+    await reloadBusinesses(token, citySlug, businessPage, businessStatusFilter);
+    if (tab === 'featured') {
+      const res = await adminApi.listBusinesses(token, citySlug, 'ACTIVE', 1, 100);
+      setActiveForFeatured(res.items);
+    }
   }
 
-  async function changeUserRole(userId: string, role: string) {
+  async function updateFeaturedSlot(b: BusinessRow, slot: number) {
+    if (!token || !b.isFeatured) return;
+    await adminApi.updateFeatured(token, b.id, {
+      isFeatured: true,
+      featuredSlot: slot,
+    });
+    await reloadBusinesses(token, citySlug, businessPage, businessStatusFilter);
+    if (tab === 'featured') {
+      const res = await adminApi.listBusinesses(token, citySlug, 'ACTIVE', 1, 100);
+      setActiveForFeatured(res.items);
+    }
+  }
+
+  async function changeUserRole(u: AuthUser, role: string) {
     if (!token) return;
-    await adminApi.updateUserRole(token, userId, role);
+    if (role === 'CITY_ADMIN') {
+      const cityId = userCityDraft[u.id] ?? u.managedCityId ?? cities[0]?.id;
+      if (!cityId) {
+        setError('Выберите город для CITY_ADMIN');
+        return;
+      }
+      if (!confirmAction(`Назначить ${u.phone} модератором города?`)) return;
+      await adminApi.updateUserRole(token, u.id, role, cityId);
+    } else {
+      if (!confirmAction(`Сменить роль ${u.phone} на ${role}?`)) return;
+      await adminApi.updateUserRole(token, u.id, role, null);
+    }
     setUsers(await adminApi.listUsers(token));
   }
 
-  async function removeReview(reviewId: string) {
+  async function changeUserManagedCity(userId: string, managedCityId: string, phone: string) {
     if (!token) return;
-    await adminApi.deleteReview(token, reviewId);
+    if (!confirmAction(`Сменить город модератора ${phone}?`)) return;
+    await adminApi.updateUserRole(token, userId, 'CITY_ADMIN', managedCityId);
+    setUsers(await adminApi.listUsers(token));
+  }
+
+  async function removeReview(review: AdminReviewRow) {
+    if (!token) return;
+    const title = review.business?.title ?? 'заведение';
+    if (!confirmAction(`Удалить отзыв к «${title}»?`)) return;
+    await adminApi.deleteReview(token, review.id);
     setReviews(await adminApi.listReviews(token, citySlug));
     setReviewAnalysis((prev) => {
       const next = { ...prev };
-      delete next[reviewId];
+      delete next[review.id];
       return next;
     });
   }
@@ -155,19 +231,29 @@ export default function DashboardPage() {
     });
     setCatTitle('');
     setCatSlug('');
-    setCategories(await adminApi.listCategories());
+    setCategories(await adminApi.listCategoriesAdmin(token));
   }
 
   async function toggleCategoryActive(category: CategoryRow) {
     if (!token) return;
     await adminApi.updateCategory(token, category.id, { isActive: !category.isActive });
-    setCategories(await adminApi.listCategories());
+    setCategories(await adminApi.listCategoriesAdmin(token));
   }
 
-  async function removeCategory(id: string) {
+  async function removeCategory(category: CategoryRow) {
     if (!token) return;
-    await adminApi.deleteCategory(token, id);
-    setCategories(await adminApi.listCategories());
+    if (!confirmAction(`Удалить категорию «${category.title}»?`)) return;
+    await adminApi.deleteCategory(token, category.id);
+    setCategories(await adminApi.listCategoriesAdmin(token));
+  }
+
+  async function updateCategoryField(
+    category: CategoryRow,
+    data: { title?: string; sortOrder?: number },
+  ) {
+    if (!token) return;
+    await adminApi.updateCategory(token, category.id, data);
+    setCategories(await adminApi.listCategoriesAdmin(token));
   }
 
   async function generateDraft() {
@@ -197,100 +283,65 @@ export default function DashboardPage() {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  if (!token) return <p className="page">Загрузка…</p>;
+  const activeBusinesses = useMemo(
+    () => (tab === 'featured' ? activeForFeatured : all.filter((b) => b.status === 'ACTIVE')),
+    [tab, activeForFeatured, all],
+  );
+  const featuredBusinesses = useMemo(
+    () =>
+      [...activeForFeatured.filter((b) => b.isFeatured)].sort(
+        (a, b) => (a.featuredSlot ?? 999) - (b.featuredSlot ?? 999),
+      ),
+    [activeForFeatured],
+  );
 
   const cityLabel =
-    user?.managedCity?.nameRu ?? (citySlug === 'aktobe' ? 'Актобе' : 'Уральск');
-  const roleInfo = user ? getRoleDefinition(user.role) : null;
-  const activeBusinesses = all.filter((b) => b.status === 'ACTIVE');
-  const featuredBusinesses = all.filter((b) => b.isFeatured);
+    user?.managedCity?.nameRu ??
+    cities.find((c) => c.slug === citySlug)?.nameRu ??
+    citySlug;
+
+  const businessPageCount = Math.max(1, Math.ceil(businessMeta.total / businessMeta.limit));
+
+  if (!ready || !token || !user) {
+    return <p className="page-content">Загрузка…</p>;
+  }
 
   return (
-    <main className="page">
-      <header className="page-header">
-        <h1>
-          Admin · QalaGo
-          {isCityAdmin ? ` · ${cityLabel}` : ''}
-        </h1>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          {cityLocked ? (
-            <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>
-              Город: {cityLabel}
-            </span>
-          ) : (
-            <select value={citySlug} onChange={(e) => setCitySlug(e.target.value)}>
-              <option value="uralsk">Уральск</option>
-              <option value="aktobe">Актобе</option>
-            </select>
-          )}
-          <button
-            type="button"
-            className="btn"
-            onClick={() => {
-              localStorage.removeItem(TOKEN_KEY);
-              router.push('/login');
-            }}
-          >
-            Выйти
-          </button>
-        </div>
-      </header>
-
+    <AdminShell
+      activeTab={tab}
+      onTabChange={setTab}
+      user={user}
+      citySlug={citySlug}
+      cities={cities.length > 0 ? cities : [{ slug: citySlug, nameRu: cityLabel }]}
+      cityLocked={cityLocked}
+      onCityChange={setCitySlug}
+      badges={{
+        pending: pending.length,
+        featured: featuredBusinesses.length,
+        reviews: reviews.length,
+      }}
+      onLogout={logout}
+    >
       {error && <div className="alert alert-error">{error}</div>}
 
-      {roleInfo && (
-        <section className="card card-muted">
-          <h2>Роль: {roleInfo.labelRu}</h2>
-          <p style={{ color: 'var(--text-muted)', marginTop: 0 }}>{roleInfo.summaryRu}</p>
-        </section>
-      )}
-
-      <nav className="tabs">
-        <button
-          type="button"
-          className={`tab${tab === 'moderation' ? ' active' : ''}`}
-          onClick={() => setTab('moderation')}
-        >
-          Модерация ({pending.length})
-        </button>
-        <button
-          type="button"
-          className={`tab${tab === 'featured' ? ' active' : ''}`}
-          onClick={() => setTab('featured')}
-        >
-          VIP / Топ ({featuredBusinesses.length})
-        </button>
-        <button
-          type="button"
-          className={`tab${tab === 'reviews' ? ' active' : ''}`}
-          onClick={() => setTab('reviews')}
-        >
-          Отзывы ({reviews.length || '…'})
-        </button>
-        <button
-          type="button"
-          className={`tab${tab === 'categories' ? ' active' : ''}`}
-          onClick={() => setTab('categories')}
-        >
-          Категории
-        </button>
-        <button
-          type="button"
-          className={`tab${tab === 'content' ? ' active' : ''}`}
-          onClick={() => setTab('content')}
-        >
-          AI-черновики
-        </button>
-        {showUsers && (
-          <button
-            type="button"
-            className={`tab${tab === 'users' ? ' active' : ''}`}
-            onClick={() => setTab('users')}
-          >
-            Пользователи
-          </button>
-        )}
-      </nav>
+      <div className="kpi-grid">
+        <div className="kpi-card">
+          <div className="kpi-label">На модерации</div>
+          <div className="kpi-value">{pending.length}</div>
+        </div>
+        <div className="kpi-card">
+          <div className="kpi-label">Активных</div>
+          <div className="kpi-value">{activeBusinesses.length}</div>
+        </div>
+        <div className="kpi-card">
+          <div className="kpi-label">В Топе</div>
+          <div className="kpi-value">{featuredBusinesses.length}</div>
+        </div>
+        <div className="kpi-card">
+          <div className="kpi-label">Отзывов</div>
+          <div className="kpi-value">{reviews.length}</div>
+        </div>
+      </div>
 
       {tab === 'moderation' && (
         <>
@@ -300,36 +351,40 @@ export default function DashboardPage() {
               <p style={{ color: 'var(--text-muted)' }}>Нет заявок</p>
             ) : (
               pending.map((b) => (
-                <div
-                  key={b.id}
-                  style={{
-                    borderTop: '1px solid var(--border)',
-                    padding: '12px 0',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    gap: 12,
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  <div>
-                    <strong>{b.title}</strong>
-                    <div style={{ color: 'var(--text-muted)', fontSize: 14 }}>
-                      {b.address}
+                <div key={b.id} className="moderation-card">
+                  {b.coverImageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={b.coverImageUrl} alt="" className="moderation-thumb" />
+                  ) : (
+                    <div className="moderation-thumb placeholder">
+                      {b.title.slice(0, 1).toUpperCase()}
                     </div>
-                    <div style={{ fontSize: 13 }}>Владелец: {b.owner?.phone}</div>
+                  )}
+                  <div className="moderation-body">
+                    <strong>{b.title}</strong>
+                    <div className="moderation-meta">
+                      {b.category?.title ?? 'Категория'} · {b.address}
+                    </div>
+                    {b.shortDesc && (
+                      <div className="moderation-meta">{b.shortDesc}</div>
+                    )}
+                    <div className="moderation-meta">
+                      Владелец: {b.owner?.phone}
+                      {b.phone ? ` · ${b.phone}` : ''}
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div className="moderation-actions">
                     <button
                       type="button"
                       className="btn btn-primary btn-sm"
-                      onClick={() => setStatus(b.id, 'ACTIVE')}
+                      onClick={() => setStatus(b.id, 'ACTIVE', b.title)}
                     >
                       Одобрить
                     </button>
                     <button
                       type="button"
                       className="btn btn-danger btn-sm"
-                      onClick={() => setStatus(b.id, 'BLOCKED')}
+                      onClick={() => setStatus(b.id, 'BLOCKED', b.title)}
                     >
                       Отклонить
                     </button>
@@ -340,11 +395,24 @@ export default function DashboardPage() {
           </section>
 
           <section className="card">
-            <h2>Все заведения ({all.length})</h2>
+            <div className="table-toolbar">
+              <h2>Все заведения ({businessMeta.total})</h2>
+              <select
+                value={businessStatusFilter}
+                onChange={(e) => setBusinessStatusFilter(e.target.value)}
+                className="filter-select"
+              >
+                <option value="">Все статусы</option>
+                <option value="ACTIVE">Активные</option>
+                <option value="PENDING">На модерации</option>
+                <option value="BLOCKED">Заблокированные</option>
+              </select>
+            </div>
             <table className="table">
               <thead>
                 <tr>
                   <th>Название</th>
+                  <th>Категория</th>
                   <th>Статус</th>
                   <th>Город</th>
                   <th>VIP</th>
@@ -355,7 +423,10 @@ export default function DashboardPage() {
                 {all.map((b) => (
                   <tr key={b.id}>
                     <td>{b.title}</td>
-                    <td>{b.status}</td>
+                    <td>{b.category?.title ?? '—'}</td>
+                    <td>
+                      <span className={statusClass(b.status)}>{statusLabel(b.status)}</span>
+                    </td>
                     <td>{b.city?.nameRu}</td>
                     <td>
                       {b.isFeatured ? (
@@ -369,7 +440,7 @@ export default function DashboardPage() {
                         <button
                           type="button"
                           className="btn btn-danger btn-sm"
-                          onClick={() => setStatus(b.id, 'BLOCKED')}
+                          onClick={() => setStatus(b.id, 'BLOCKED', b.title)}
                         >
                           Блок
                         </button>
@@ -377,7 +448,7 @@ export default function DashboardPage() {
                         <button
                           type="button"
                           className="btn btn-sm"
-                          onClick={() => setStatus(b.id, 'ACTIVE')}
+                          onClick={() => setStatus(b.id, 'ACTIVE', b.title)}
                         >
                           Активировать
                         </button>
@@ -387,6 +458,29 @@ export default function DashboardPage() {
                 ))}
               </tbody>
             </table>
+            {businessPageCount > 1 && (
+              <div className="pagination">
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  disabled={businessPage <= 1}
+                  onClick={() => setBusinessPage((p) => p - 1)}
+                >
+                  ← Назад
+                </button>
+                <span className="pagination-meta">
+                  Стр. {businessPage} из {businessPageCount}
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  disabled={businessPage >= businessPageCount}
+                  onClick={() => setBusinessPage((p) => p + 1)}
+                >
+                  Вперёд →
+                </button>
+              </div>
+            )}
           </section>
         </>
       )}
@@ -395,13 +489,14 @@ export default function DashboardPage() {
         <section className="card">
           <h2>VIP / Топ — активные заведения ({activeBusinesses.length})</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: 14, marginTop: 0 }}>
-            Заведения с меткой «Топ» показываются в блоке «Рекомендуем» в приложении.
+            Меньший номер слота — выше в блоке «Рекомендуем» в приложении.
           </p>
           <table className="table">
             <thead>
               <tr>
                 <th>Название</th>
                 <th>Адрес</th>
+                <th>Слот</th>
                 <th>Статус VIP</th>
                 <th></th>
               </tr>
@@ -413,6 +508,22 @@ export default function DashboardPage() {
                   <td>{b.address}</td>
                   <td>
                     {b.isFeatured ? (
+                      <input
+                        type="number"
+                        min={0}
+                        max={99}
+                        className="slot-input"
+                        defaultValue={b.featuredSlot ?? 0}
+                        onBlur={(e) =>
+                          updateFeaturedSlot(b, Number.parseInt(e.target.value, 10) || 0)
+                        }
+                      />
+                    ) : (
+                      '—'
+                    )}
+                  </td>
+                  <td>
+                    {b.isFeatured ? (
                       <span className="tag tag-success">В Топе</span>
                     ) : (
                       <span className="tag tag-muted">Обычное</span>
@@ -422,7 +533,7 @@ export default function DashboardPage() {
                     <button
                       type="button"
                       className={`btn btn-sm${b.isFeatured ? '' : ' btn-primary'}`}
-                      onClick={() => toggleFeatured(b.id, b.isFeatured)}
+                      onClick={() => toggleFeatured(b)}
                     >
                       {b.isFeatured ? 'Убрать из Топа' : 'Добавить в Топ'}
                     </button>
@@ -437,9 +548,6 @@ export default function DashboardPage() {
       {tab === 'reviews' && (
         <section className="card">
           <h2>Отзывы · {cityLabel} ({reviews.length})</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: 14, marginTop: 0 }}>
-            Модерация отзывов в рамках выбранного города.
-          </p>
           {reviews.length === 0 ? (
             <p style={{ color: 'var(--text-muted)' }}>Нет отзывов</p>
           ) : (
@@ -475,11 +583,7 @@ export default function DashboardPage() {
                             const m = moderationLabel(reviewAnalysis[r.id].suggestedAction);
                             return (
                               <span
-                                style={{
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  color: m.color,
-                                }}
+                                style={{ fontSize: 12, fontWeight: 600, color: m.color }}
                                 title={
                                   reviewAnalysis[r.id].flags[0]?.message ??
                                   `Score ${reviewAnalysis[r.id].score}`
@@ -499,7 +603,7 @@ export default function DashboardPage() {
                       <button
                         type="button"
                         className="btn btn-danger btn-sm"
-                        onClick={() => removeReview(r.id)}
+                        onClick={() => removeReview(r)}
                       >
                         Удалить
                       </button>
@@ -527,7 +631,7 @@ export default function DashboardPage() {
                 onChange={(e) => setCatSlug(e.target.value)}
                 placeholder="slug, например food"
               />
-              <button type="submit" className="btn btn-primary" disabled={!token}>
+              <button type="submit" className="btn btn-primary">
                 Добавить
               </button>
             </form>
@@ -539,6 +643,7 @@ export default function DashboardPage() {
                 <tr>
                   <th>Название</th>
                   <th>Slug</th>
+                  <th>Порядок</th>
                   <th>Статус</th>
                   <th></th>
                 </tr>
@@ -546,8 +651,33 @@ export default function DashboardPage() {
               <tbody>
                 {categories.map((c) => (
                   <tr key={c.id}>
-                    <td>{c.title}</td>
+                    <td>
+                      <input
+                        className="slot-input table-input"
+                        defaultValue={c.title}
+                        onBlur={(e) => {
+                          const next = e.target.value.trim();
+                          if (next && next !== c.title) {
+                            updateCategoryField(c, { title: next });
+                          }
+                        }}
+                      />
+                    </td>
                     <td>{c.slug}</td>
+                    <td>
+                      <input
+                        type="number"
+                        min={0}
+                        className="slot-input"
+                        defaultValue={c.sortOrder}
+                        onBlur={(e) => {
+                          const next = Number.parseInt(e.target.value, 10) || 0;
+                          if (next !== c.sortOrder) {
+                            updateCategoryField(c, { sortOrder: next });
+                          }
+                        }}
+                      />
+                    </td>
                     <td>
                       {c.isActive ? (
                         <span className="tag tag-success">Активна</span>
@@ -566,7 +696,7 @@ export default function DashboardPage() {
                       <button
                         type="button"
                         className="btn btn-danger btn-sm"
-                        onClick={() => removeCategory(c.id)}
+                        onClick={() => removeCategory(c)}
                       >
                         Удалить
                       </button>
@@ -622,15 +752,13 @@ export default function DashboardPage() {
       {tab === 'users' && showUsers && (
         <section className="card">
           <h2>Пользователи ({users.length})</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: 14, marginTop: 0 }}>
-            Только ADMIN может менять роли.
-          </p>
           <table className="table">
             <thead>
               <tr>
                 <th>Телефон</th>
                 <th>Имя</th>
                 <th>Роль</th>
+                <th>Город (CITY_ADMIN)</th>
                 <th>Новая роль</th>
               </tr>
             </thead>
@@ -641,15 +769,54 @@ export default function DashboardPage() {
                   <td>{u.name ?? '—'}</td>
                   <td>{u.role}</td>
                   <td>
-                    <select
-                      value={u.role}
-                      onChange={(e) => changeUserRole(u.id, e.target.value)}
-                    >
-                      <option value="USER">USER</option>
-                      <option value="BUSINESS">BUSINESS</option>
-                      <option value="CITY_ADMIN">CITY_ADMIN</option>
-                      <option value="ADMIN">ADMIN</option>
-                    </select>
+                    {u.role === 'CITY_ADMIN' ? (
+                      <select
+                        value={u.managedCityId ?? ''}
+                        onChange={(e) =>
+                          changeUserManagedCity(u.id, e.target.value, u.phone)
+                        }
+                      >
+                        <option value="">—</option>
+                        {cities.map((city) => (
+                          <option key={city.id} value={city.id}>
+                            {city.nameRu}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      '—'
+                    )}
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <select
+                        value={u.role}
+                        onChange={(e) => changeUserRole(u, e.target.value)}
+                      >
+                        <option value="USER">USER</option>
+                        <option value="BUSINESS">BUSINESS</option>
+                        <option value="CITY_ADMIN">CITY_ADMIN</option>
+                        <option value="ADMIN">ADMIN</option>
+                      </select>
+                      {u.role !== 'CITY_ADMIN' && (
+                        <select
+                          value={userCityDraft[u.id] ?? cities[0]?.id ?? ''}
+                          onChange={(e) =>
+                            setUserCityDraft((prev) => ({
+                              ...prev,
+                              [u.id]: e.target.value,
+                            }))
+                          }
+                          title="Город при назначении CITY_ADMIN"
+                        >
+                          {cities.map((city) => (
+                            <option key={city.id} value={city.id}>
+                              {city.nameRu}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -657,6 +824,6 @@ export default function DashboardPage() {
           </table>
         </section>
       )}
-    </main>
+    </AdminShell>
   );
 }

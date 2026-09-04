@@ -67,5 +67,10 @@ export class AdminController {
   deleteReview(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.adminService.deleteReview(user, id);
   }
+
+  @Get('categories')
+  listCategories() {
+    return this.adminService.listCategories();
+  }
 }
 

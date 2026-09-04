@@ -5,7 +5,7 @@
 | Module | Path | Status | Responsibility |
 |--------|------|--------|----------------|
 | Mobile | `apps/mobile` | MVP implemented | Users, map, catalog, favorites, owner/admin MVP screens |
-| Admin Web | `apps/admin-web` | MVP implemented | Moderation, VIP, users, reviews, categories, AI drafts |
+| Admin Web | `apps/admin-web` | MVP implemented | Sidebar shell, moderation, VIP slots, users, reviews, categories, AI drafts |
 | Business Web | `apps/business-web` | MVP implemented | Owner dashboard, profile, menu, media, reviews, messages |
 
 ## Services

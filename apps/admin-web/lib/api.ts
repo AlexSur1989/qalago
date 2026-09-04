@@ -48,10 +48,23 @@ export const adminApi = {
 
   getMe: (token: string) => api<AuthUser>('/users/me', { token }),
 
-  listBusinesses: (token: string, citySlug = 'uralsk', status?: string) => {
-    const params = new URLSearchParams({ citySlug });
+  listBusinesses: (
+    token: string,
+    citySlug = 'uralsk',
+    status?: string,
+    page = 1,
+    limit = 20,
+  ) => {
+    const params = new URLSearchParams({
+      citySlug,
+      page: String(page),
+      limit: String(limit),
+    });
     if (status) params.set('status', status);
-    return api<{ items: BusinessRow[] }>(`/admin/businesses?${params}`, { token });
+    return api<{ items: BusinessRow[]; meta: ListMeta }>(
+      `/admin/businesses?${params}`,
+      { token },
+    );
   },
 
   updateStatus: (token: string, id: string, status: string) =>
@@ -61,21 +74,31 @@ export const adminApi = {
       body: JSON.stringify({ status }),
     }),
 
-  updateFeatured: (token: string, id: string, isFeatured: boolean) =>
+  updateFeatured: (
+    token: string,
+    id: string,
+    data: { isFeatured: boolean; featuredSlot?: number | null },
+  ) =>
     api(`/admin/businesses/${id}/featured`, {
       method: 'PATCH',
       token,
-      body: JSON.stringify({ isFeatured }),
+      body: JSON.stringify(data),
     }),
+
+  listCities: () =>
+    api<CityRow[]>('/cities'),
+
+  listCategoriesAdmin: (token: string) =>
+    api<CategoryRow[]>('/admin/categories', { token }),
 
   listUsers: (token: string) =>
     api<AuthUser[]>('/admin/users', { token }),
 
-  updateUserRole: (token: string, id: string, role: string) =>
+  updateUserRole: (token: string, id: string, role: string, managedCityId?: string | null) =>
     api<AuthUser>(`/admin/users/${id}/role`, {
       method: 'PATCH',
       token,
-      body: JSON.stringify({ role }),
+      body: JSON.stringify({ role, managedCityId }),
     }),
 
   listCategories: () => api<CategoryRow[]>('/categories'),
@@ -157,14 +180,33 @@ export const aiApi = {
     }),
 };
 
+export type ListMeta = {
+  page: number;
+  limit: number;
+  total: number;
+};
+
+export type CityRow = {
+  id: string;
+  slug: string;
+  nameRu: string;
+  nameKk?: string;
+};
+
 export type BusinessRow = {
   id: string;
   title: string;
   status: string;
   address: string;
+  shortDesc?: string | null;
+  phone?: string | null;
+  coverImageUrl?: string | null;
   isFeatured: boolean;
+  featuredSlot?: number | null;
+  category?: { id: string; title: string; slug: string } | null;
   owner?: { phone: string; name: string | null };
   city?: { slug: string; nameRu: string };
+  createdAt?: string;
 };
 
 export type CategoryRow = {

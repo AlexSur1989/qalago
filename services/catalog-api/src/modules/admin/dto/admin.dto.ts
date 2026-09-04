@@ -41,6 +41,10 @@ export class UpdateBusinessFeaturedDto {
 export class UpdateUserRoleDto {
   @IsEnum(UserRole)
   role!: UserRole;
+
+  @IsOptional()
+  @IsString()
+  managedCityId?: string | null;
 }
 
 export class AdminListReviewsQueryDto {
