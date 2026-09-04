@@ -139,24 +139,32 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                     children: [
                       _MapHeader(cityName: city.nameRu),
                       const SizedBox(height: 12),
-                      TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Поиск заведений и услуг...',
-                          prefixIcon: const Icon(
-                            Icons.search,
-                            color: Color(0xFF8A919F),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(
-                              color: Colors.black.withValues(alpha: 0.08),
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(
-                              color: AppTheme.kzBlue,
-                              width: 1.4,
+                      GestureDetector(
+                        onTap: () => context.push('/search'),
+                        child: AbsorbPointer(
+                          child: TextField(
+                            readOnly: true,
+                            decoration: InputDecoration(
+                              hintText: 'Поиск заведений и услуг...',
+                              prefixIcon: const Icon(
+                                Icons.search,
+                                color: Color(0xFF8A919F),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide(
+                                  color: Colors.black.withValues(alpha: 0.08),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: const BorderSide(
+                                  color: AppTheme.kzBlue,
+                                  width: 1.4,
+                                ),
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
                             ),
                           ),
                         ),

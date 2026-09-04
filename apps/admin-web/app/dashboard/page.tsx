@@ -140,9 +140,9 @@ export default function DashboardPage() {
   }
 
   function moderationLabel(action: string) {
-    if (action === 'approve') return { text: 'OK', color: '#1b7f4a' };
-    if (action === 'reject') return { text: 'Риск', color: '#c0392b' };
-    return { text: 'Проверить', color: '#b7791f' };
+    if (action === 'approve') return { text: 'OK', color: 'var(--success)' };
+    if (action === 'reject') return { text: 'Риск', color: 'var(--danger)' };
+    return { text: 'Проверить', color: 'var(--warning)' };
   }
 
   async function createCategory(e: FormEvent) {

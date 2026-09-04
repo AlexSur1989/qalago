@@ -27,6 +27,7 @@ import '../../features/owner/presentation/owner_edit_business_screen.dart';
 import '../../features/owner/presentation/owner_promotions_screen.dart';
 import '../../features/admin/presentation/admin_businesses_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
+import '../../features/search/presentation/search_screen.dart';
 import '../theme/app_theme.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -125,6 +126,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/notifications',
             builder: (context, state) => const NotificationsScreen(),
+          ),
+          GoRoute(
+            path: '/search',
+            builder: (context, state) => SearchScreen(
+              initialQuery: state.uri.queryParameters['q'],
+              categoryId: state.uri.queryParameters['categoryId'],
+            ),
           ),
           GoRoute(
             path: '/business/:id',

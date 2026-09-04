@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ownerApi, TOKEN_KEY } from '@/lib/api';
@@ -38,9 +39,10 @@ export default function LoginPage() {
       if (
         res.user.role !== 'BUSINESS' &&
         res.user.role !== 'ADMIN' &&
-        res.user.role !== 'CITY_ADMIN'
+        res.user.role !== 'CITY_ADMIN' &&
+        res.user.role !== 'USER'
       ) {
-        setError('Доступ для владельцев бизнеса (BUSINESS)');
+        setError('Нет доступа к кабинету');
         return;
       }
       localStorage.setItem(TOKEN_KEY, res.accessToken);
@@ -79,6 +81,12 @@ export default function LoginPage() {
           </button>
         </form>
         {error && <div className="alert alert-error" style={{ marginTop: 16 }}>{error}</div>}
+        <p style={{ marginTop: 20, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+          Нет заведения?{' '}
+          <Link href="/register" style={{ color: 'var(--primary)' }}>
+            Зарегистрировать
+          </Link>
+        </p>
       </div>
     </main>
   );

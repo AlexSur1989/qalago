@@ -35,7 +35,7 @@ const NAV: NavItem[] = [
   { id: 'reviews', label: 'Отзывы', icon: '⭐', href: (id) => `/business/${id}/reviews` },
   { id: 'stats', label: 'Статистика', icon: '📊', href: () => '/dashboard' },
   { id: 'messages', label: 'Сообщения', icon: '💬', href: () => '/messages' },
-  { id: 'settings', label: 'Настройки', icon: '⚙️', soon: true },
+  { id: 'settings', label: 'Настройки', icon: '⚙️', href: () => '/settings' },
 ];
 
 const FOOTER_NAV: NavItem[] = [
@@ -211,7 +211,7 @@ function NavLink({
   const className = `nav-item${active ? ' active' : ''}${item.soon ? ' disabled' : ''}`;
   const needsBusiness =
     item.href &&
-    !['home', 'stats', 'messages', 'plan', 'help'].includes(item.id);
+    !['home', 'stats', 'messages', 'plan', 'help', 'settings'].includes(item.id);
 
   if (item.soon || !item.href || (needsBusiness && !businessId)) {
     return (

@@ -1,16 +1,4 @@
-:root {
-  --bg: #f0f4f8;
-  --surface: #ffffff;
-  --border: #e2e8f0;
-  --text: #0f172a;
-  --text-muted: #64748b;
-  --primary: #1e40af;
-  --primary-soft: #eff6ff;
-  --danger: #dc2626;
-  --success: #16a34a;
-  --radius: 12px;
-  --shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-}
+@import '../../../packages/brand/qalago-theme.css';
 
 *,
 *::before,
@@ -26,7 +14,7 @@ body {
 }
 
 body {
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--font-sans), 'Montserrat', system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
   line-height: 1.5;
@@ -61,6 +49,7 @@ select {
 .page-header h1 {
   margin: 0;
   font-size: 1.5rem;
+  color: var(--text);
 }
 
 .card {
@@ -84,12 +73,14 @@ select {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
-  border-radius: 8px;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--surface);
   cursor: pointer;
   font-size: 0.88rem;
+  font-weight: 500;
+  transition: background 0.15s, border-color 0.15s;
 }
 
 .btn:hover {
@@ -100,6 +91,11 @@ select {
   background: var(--primary);
   border-color: var(--primary);
   color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
 }
 
 .btn-danger {
@@ -114,7 +110,7 @@ select {
 
 .alert {
   padding: 12px 14px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   margin-bottom: 16px;
 }
 
@@ -137,6 +133,12 @@ select {
   background: var(--surface);
   cursor: pointer;
   font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tab:hover {
+  background: var(--primary-soft);
 }
 
 .tab.active {
@@ -172,7 +174,7 @@ select {
 }
 
 .tag-success {
-  background: #ecfdf3;
+  background: var(--success-soft);
   color: var(--success);
 }
 
@@ -186,14 +188,24 @@ select {
   display: grid;
   place-items: center;
   padding: 24px;
+  background: linear-gradient(135deg, var(--primary-soft) 0%, var(--accent-soft) 100%);
 }
 
 .login-card {
   width: min(400px, 100%);
   background: var(--surface);
-  border-radius: 16px;
-  box-shadow: var(--shadow);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
   padding: 28px;
+}
+
+.login-card h1 {
+  margin-top: 0;
+  color: var(--primary);
+}
+
+.login-card p {
+  color: var(--text-muted);
 }
 
 .form-grid {
@@ -204,9 +216,16 @@ select {
 .form-grid input,
 .form-grid select,
 .form-grid textarea {
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  padding: 12px 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+}
+
+.form-grid input:focus,
+.form-grid select:focus,
+.form-grid textarea:focus {
+  outline: 2px solid rgba(0, 168, 214, 0.35);
 }
 
 .markdown-box {
@@ -214,7 +233,7 @@ select {
   font-family: ui-monospace, monospace;
   font-size: 13px;
   padding: 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   box-sizing: border-box;
 }

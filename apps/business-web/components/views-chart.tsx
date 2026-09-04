@@ -5,6 +5,9 @@ type ViewsChartProps = {
   days?: number;
 };
 
+const BRAND_BLUE = '#00A8D6';
+const BRAND_BLUE_FILL = 'rgba(0, 168, 214, 0.12)';
+
 export function ViewsChart({ items, days = 7 }: ViewsChartProps) {
   const dates = buildDateRange(days);
   const byDate = new Map(items.map((i) => [i.date, i.count]));
@@ -43,18 +46,18 @@ export function ViewsChart({ items, days = 7 }: ViewsChartProps) {
           />
         );
       })}
-      <polygon points={area} fill="rgba(30, 107, 214, 0.12)" />
+      <polygon points={area} fill={BRAND_BLUE_FILL} />
       <polyline
         points={line}
         fill="none"
-        stroke="#1e6bd6"
+        stroke={BRAND_BLUE}
         strokeWidth={2.5}
         strokeLinejoin="round"
         strokeLinecap="round"
       />
       {points.map((p) => (
         <g key={p.date}>
-          <circle cx={p.x} cy={p.y} r={4} fill="#1e6bd6" />
+          <circle cx={p.x} cy={p.y} r={4} fill={BRAND_BLUE} />
           <title>{`${formatChartDate(p.date)}: ${p.v} просмотров`}</title>
         </g>
       ))}

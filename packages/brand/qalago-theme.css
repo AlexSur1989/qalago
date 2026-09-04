@@ -1,0 +1,35 @@
+/**
+ * QalaGo design tokens — sync with apps/mobile/lib/core/theme/app_theme.dart
+ */
+:root {
+  --qz-blue: #00a8d6;
+  --qz-gold: #fec50c;
+  --qz-blue-dark: #0090b8;
+  --qz-gold-dark: #e0ad00;
+
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --border: #e8ecf1;
+  --text: #1a1a1a;
+  --text-muted: #64748b;
+
+  --primary: var(--qz-blue);
+  --primary-hover: var(--qz-blue-dark);
+  --primary-soft: #e6f7fc;
+
+  --accent: var(--qz-gold);
+  --accent-soft: #fff8e1;
+
+  --success: #16a34a;
+  --success-soft: #ecfdf3;
+  --danger: #dc2626;
+  --warning: #d97706;
+
+  --radius: 16px;
+  --radius-sm: 12px;
+  --shadow: 0 2px 8px rgba(26, 26, 26, 0.06);
+  --shadow-lg: 0 4px 20px rgba(26, 26, 26, 0.08);
+
+  --gradient-brand: linear-gradient(135deg, var(--qz-blue) 0%, #33bce0 100%);
+  --gradient-brand-gold: linear-gradient(135deg, var(--qz-blue) 0%, var(--qz-gold) 100%);
+}

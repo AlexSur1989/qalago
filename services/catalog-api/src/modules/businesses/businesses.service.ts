@@ -51,7 +51,7 @@ export class BusinessesService {
 
   async create(user: AuthUser, dto: CreateBusinessDto) {
     const cityId = await this.cityScope.resolveCityId({ citySlug: dto.citySlug });
-    
+
     const category = await this.prisma.category.findUnique({
       where: { id: dto.categoryId },
     });
@@ -59,7 +59,6 @@ export class BusinessesService {
       throw new NotFoundException('Category not found');
     }
 
-    // Генерируем уникальный slug
     const baseSlug = dto.title
       .toLowerCase()
       .replace(/[^a-z0-9а-яё]/g, '-')
@@ -67,18 +66,29 @@ export class BusinessesService {
       .replace(/^-|-$/g, '');
     const slug = `${baseSlug}-${randomBytes(3).toString('hex')}`;
 
-    return this.prisma.business.create({
-      data: {
-        title: dto.title,
-        slug,
-        categoryId: dto.categoryId,
-        cityId,
-        address: dto.address,
-        shortDesc: dto.shortDesc,
-        phone: dto.phone,
-        ownerId: user.id,
-        status: BusinessStatus.PENDING,
-      },
+    return this.prisma.$transaction(async (tx) => {
+      const business = await tx.business.create({
+        data: {
+          title: dto.title,
+          slug,
+          categoryId: dto.categoryId,
+          cityId,
+          address: dto.address,
+          shortDesc: dto.shortDesc,
+          phone: dto.phone,
+          ownerId: user.id,
+          status: BusinessStatus.PENDING,
+        },
+      });
+
+      if (user.role === UserRole.USER) {
+        await tx.user.update({
+          where: { id: user.id },
+          data: { role: UserRole.BUSINESS },
+        });
+      }
+
+      return business;
     });
   }
 

@@ -23,50 +23,20 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  final _searchController = TextEditingController();
-  String _search = '';
-  Timer? _searchDebounce;
   Timer? _featuredTimer;
   int _featuredIndex = 0;
   int _featuredItemsCount = 0;
 
   @override
   void dispose() {
-    _searchDebounce?.cancel();
     _featuredTimer?.cancel();
-    _searchController.dispose();
     super.dispose();
   }
 
   BusinessesQuery _businessesQuery(UserPosition? userPosition) => BusinessesQuery(
-    search: _search.isEmpty ? null : _search,
     latitude: userPosition?.latitude,
     longitude: userPosition?.longitude,
   );
-
-  void _queueSearch(String value) {
-    _searchDebounce?.cancel();
-    _searchDebounce = Timer(const Duration(milliseconds: 320), () {
-      if (!mounted) return;
-      final next = value.trim();
-      if (next == _search) return;
-      setState(() => _search = next);
-    });
-  }
-
-  void _submitSearch(String value) {
-    _searchDebounce?.cancel();
-    final next = value.trim();
-    if (next == _search) return;
-    setState(() => _search = next);
-  }
-
-  void _clearSearch() {
-    _searchDebounce?.cancel();
-    _searchController.clear();
-    if (_search.isEmpty) return;
-    setState(() => _search = '');
-  }
 
   void _syncFeaturedItemsCount(int count) {
     final changed = count != _featuredItemsCount;
@@ -240,10 +210,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                       const SizedBox(height: 20),
                       _SearchBox(
-                        controller: _searchController,
-                        onChanged: _queueSearch,
-                        onSubmitted: _submitSearch,
-                        onClear: _clearSearch,
+                        onTap: () => context.push('/search'),
                       ),
                       const SizedBox(height: 20),
                       categoriesAsync.when(
@@ -305,11 +272,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         },
                       ),
                       const SizedBox(height: 24),
-                      _SectionHeader(
-                        title: _search.isEmpty ? 'Рядом с вами' : 'Найденные места',
-                        actionLabel: _search.isNotEmpty ? 'Сбросить' : null,
-                        onAction: _search.isNotEmpty ? _clearSearch : null,
-                      ),
+                      _SectionHeader(title: 'Рядом с вами'),
                       const SizedBox(height: 12),
                       businessesAsync.when(
                         loading: () => const LoadingView(),
@@ -438,75 +401,33 @@ class _NotificationIcon extends StatelessWidget {
   }
 }
 
-class _SearchBox extends StatefulWidget {
-  const _SearchBox({
-    required this.controller,
-    required this.onChanged,
-    required this.onSubmitted,
-    required this.onClear,
-  });
+class _SearchBox extends StatelessWidget {
+  const _SearchBox({required this.onTap});
 
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
-  final ValueChanged<String> onSubmitted;
-  final VoidCallback onClear;
-
-  @override
-  State<_SearchBox> createState() => _SearchBoxState();
-}
-
-class _SearchBoxState extends State<_SearchBox> {
-  @override
-  void initState() {
-    super.initState();
-    widget.controller.addListener(_refresh);
-  }
-
-  @override
-  void didUpdateWidget(covariant _SearchBox oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.controller == widget.controller) return;
-    oldWidget.controller.removeListener(_refresh);
-    widget.controller.addListener(_refresh);
-  }
-
-  @override
-  void dispose() {
-    widget.controller.removeListener(_refresh);
-    super.dispose();
-  }
-
-  void _refresh() => setState(() {});
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final hasText = widget.controller.text.isNotEmpty;
-
-    return TextField(
-      controller: widget.controller,
-      textInputAction: TextInputAction.search,
-      onChanged: widget.onChanged,
-      onSubmitted: widget.onSubmitted,
-      decoration: InputDecoration(
-        hintText: 'Поиск заведений и услуг...',
-        prefixIcon: const Icon(Icons.search, color: Color(0xFF8A919F)),
-        suffixIcon: hasText
-            ? IconButton(
-                tooltip: 'Очистить',
-                onPressed: widget.onClear,
-                icon: const Icon(Icons.cancel, color: Color(0xFF8A919F)),
-              )
-            : null,
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(vertical: 18),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.08)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppTheme.kzBlue, width: 1.4),
+    return GestureDetector(
+      onTap: onTap,
+      child: AbsorbPointer(
+        child: TextField(
+          readOnly: true,
+          decoration: InputDecoration(
+            hintText: 'Поиск заведений и услуг...',
+            prefixIcon: const Icon(Icons.search, color: Color(0xFF8A919F)),
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(vertical: 18),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.08)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: AppTheme.kzBlue, width: 1.4),
+            ),
+          ),
         ),
       ),
     );

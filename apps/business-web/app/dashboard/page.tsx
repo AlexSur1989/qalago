@@ -101,7 +101,10 @@ export default function DashboardPage() {
       {!business ? (
         <div className="empty-state">
           <h2>Нет заведений</h2>
-          <p>Создайте заведение через мобильное приложение QalaGo.</p>
+          <p>Зарегистрируйте заведение — после модерации оно появится в приложении QalaGo.</p>
+          <Link href="/register" className="btn btn-primary" style={{ marginTop: 16 }}>
+            Зарегистрировать заведение
+          </Link>
         </div>
       ) : (
         <>

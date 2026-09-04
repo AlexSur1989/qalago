@@ -1,5 +1,21 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3002/api/v1';
 
+export type CategoryRow = {
+  id: string;
+  title: string;
+  slug: string;
+  icon?: string | null;
+};
+
+export type CreateBusinessPayload = {
+  title: string;
+  categoryId: string;
+  citySlug: string;
+  address: string;
+  shortDesc?: string;
+  phone?: string;
+};
+
 export type AuthUser = {
   id: string;
   phone: string;
@@ -165,6 +181,22 @@ export const ownerApi = {
     }),
 
   getMe: (token: string) => api<AuthUser>('/users/me', { token }),
+
+  updateMe: (token: string, data: { name?: string; preferredCityId?: string }) =>
+    api<AuthUser>('/users/me', {
+      method: 'PATCH',
+      token,
+      body: JSON.stringify(data),
+    }),
+
+  listCategories: () => api<CategoryRow[]>('/categories'),
+
+  createBusiness: (token: string, data: CreateBusinessPayload) =>
+    api<BusinessRow>('/businesses', {
+      method: 'POST',
+      token,
+      body: JSON.stringify(data),
+    }),
 
   listMyBusinesses: (token: string) =>
     api<BusinessRow[]>('/businesses/my', { token }),
