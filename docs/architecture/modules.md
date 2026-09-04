@@ -5,15 +5,15 @@
 | Module | Path | Status | Responsibility |
 |--------|------|--------|----------------|
 | Mobile | `apps/mobile` | MVP implemented | Users, map, catalog, favorites, owner/admin MVP screens |
-| Admin Web | `apps/admin-web` | MVP implemented | Platform/city moderation, businesses, users |
-| Business Web | `apps/business-web` | MVP implemented | Owner profile, promotions, stats (web) |
+| Admin Web | `apps/admin-web` | MVP implemented | Moderation, VIP, users, reviews, categories, AI drafts |
+| Business Web | `apps/business-web` | MVP implemented | Owner dashboard, profile, menu, media, reviews, messages |
 
 ## Services
 
 | Module | Path | Status | Responsibility |
 |--------|------|--------|----------------|
 | Catalog API | `services/catalog-api` | MVP implemented | REST API, auth, catalog, engagement, admin API, analytics ingest |
-| AI Orchestrator | `services/ai-orchestrator` | scaffold | Agent routing, rule-based recommendations |
+| AI Orchestrator | `services/ai-orchestrator` | MVP scaffold | Rule-based recommendations, moderation assist, content drafts |
 | Notifications | `services/notifications` | future | Push, SMS |
 | Analytics Worker | `services/analytics-worker` | future | Event aggregation |
 
@@ -21,11 +21,11 @@
 
 | Module | Path | Status | Responsibility |
 |--------|------|--------|----------------|
-| shared-types | `packages/shared-types` | ready | DTOs, enums, Zod schemas |
+| shared-types | `packages/shared-types` | ready | DTOs, enums, RBAC |
 | api-client | `packages/api-client` | not started | Typed HTTP (TS; Dart codegen optional) |
 | geo-core | `packages/geo-core` | future | Distance, bounds, district helpers |
-| ai-core | `packages/ai-core` | not started | LLM adapters, prompt utils |
-| agents | `packages/agents` | not started | Agent specs + policies |
+| ai-core | `packages/ai-core` | MVP scaffold | Rule-based recommendations, moderation, editorial drafts |
+| agents | `packages/agents` | MVP scaffold | Agent specs + policies |
 
 ## Catalog API — domain modules
 
@@ -63,7 +63,7 @@ uploads ──► businesses (images)
 | Feature | Depends on API |
 |---------|----------------|
 | auth | auth, users |
-| home | categories, businesses |
+| home | categories, businesses, AI recommendations |
 | search | businesses (filters) |
 | map | businesses (lat/lng) |
 | business_details | businesses, promotions, reviews |
@@ -76,22 +76,22 @@ uploads ──► businesses (images)
 ## Phase plan
 
 ### Phase 0 — foundation (done)
-Docs, rules, infra scaffold, monorepo.
+Docs, rules, infra scaffold, monorepo, Git, CI.
 
-### Phase 1 — MVP Uralsk (current)
-catalog-api + mobile + admin moderation + seed Uralsk/Aktobe.
+### Phase 1 — MVP Uralsk (done)
+catalog-api + mobile + admin + business-web + seed Uralsk/Aktobe + geo-nearby + RBAC.
 
-### Phase 2 — multi-city hardening (next)
-CITY_ADMIN city scope, city content ops, no code fork.
+### Phase 2 — multi-city hardening (partial)
+CITY_ADMIN city scope done. Next: city-specific content, category order per city.
 
-### Phase 3 — web panels
-Extract owner/admin from mobile if needed.
+### Phase 3 — production readiness (current)
+Real SMS, Redis, S3 uploads, Docker staging verify, VPS deploy, FCM push.
 
-### Phase 4 — AI
-Orchestrator + recommendation/moderation agents.
+### Phase 4 — AI (scaffold done)
+Rule-based agents live. Next: LLM integration, editorial publish flow.
 
 ## Module ownership rules
 
 - One Nest module per domain folder under `services/catalog-api/src/modules/`.
-- Shared enums live in `packages/shared-types` once package exists.
+- Shared enums live in `packages/shared-types`.
 - Cross-module calls via exported services, not direct Prisma from foreign modules.

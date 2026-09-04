@@ -233,21 +233,21 @@ export default function DashboardPage() {
                   <li>До 10 фото</li>
                   <li>Акции и аналитика</li>
                 </ul>
-                <button type="button" className="btn btn-sm" disabled style={{ width: '100%', opacity: 0.6 }}>
-                  Улучшить тариф — скоро
-                </button>
+                <Link href="/plan" className="btn btn-sm" style={{ width: '100%' }}>
+                  Улучшить тариф
+                </Link>
               </article>
 
               <article className="card">
                 <h2 style={{ margin: '0 0 12px', fontSize: '1rem' }}>Нужна помощь?</h2>
                 <ul className="help-links">
-                  <li><a href="#">Как добавить акцию?</a></li>
-                  <li><a href="#">Как заполнить профиль?</a></li>
-                  <li><a href="#">Как читать статистику?</a></li>
+                  <li><Link href="/help">Как добавить акцию?</Link></li>
+                  <li><Link href="/help">Как заполнить профиль?</Link></li>
+                  <li><Link href="/help">Как читать статистику?</Link></li>
                 </ul>
-                <button type="button" className="btn btn-sm" style={{ width: '100%' }} disabled>
-                  🎧 Связаться с поддержкой — скоро
-                </button>
+                <Link href="/help" className="btn btn-sm" style={{ width: '100%' }}>
+                  🎧 Связаться с поддержкой
+                </Link>
               </article>
             </aside>
           </div>

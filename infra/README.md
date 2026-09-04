@@ -24,6 +24,14 @@ Or one-shot (requires Docker Desktop running):
 .\scripts\dev\staging.ps1
 ```
 
+## Local dev — all services
+
+```powershell
+npm run dev:all
+```
+
+Opens API, AI, admin, business, and mobile in separate PowerShell windows.
+
 Postgres host port **5433** (avoids conflict with dev Postgres on 5432).
 
 **Windows:** Docker Desktop install via winget needs **admin (UAC)** approval:

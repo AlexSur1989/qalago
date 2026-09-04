@@ -119,6 +119,12 @@ export type EditorialDraft = {
   source: string;
 };
 
+export type ModerationAnalysis = {
+  score: number;
+  suggestedAction: 'approve' | 'review' | 'reject' | string;
+  flags: { code: string; message: string; severity: string }[];
+};
+
 export const aiApi = {
   createContentDraft: (params: {
     citySlug: string;
@@ -135,6 +141,19 @@ export const aiApi = {
         throw new Error(text || res.statusText);
       }
       return res.json() as Promise<EditorialDraft>;
+    }),
+
+  analyzeModeration: (params: { text: string; rating: number }) =>
+    fetch(`${AI_BASE}/moderation/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    }).then(async (res) => {
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || res.statusText);
+      }
+      return res.json() as Promise<ModerationAnalysis>;
     }),
 };
 

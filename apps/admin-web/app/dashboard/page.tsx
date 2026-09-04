@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { adminApi, aiApi, AdminReviewRow, AuthUser, BusinessRow, CategoryRow, EditorialDraft, TOKEN_KEY } from '@/lib/api';
+import { adminApi, aiApi, AdminReviewRow, AuthUser, BusinessRow, CategoryRow, EditorialDraft, ModerationAnalysis, TOKEN_KEY } from '@/lib/api';
 import { canManageUsers, getRoleDefinition } from '@/lib/rbac';
 
 type TabId = 'moderation' | 'featured' | 'reviews' | 'categories' | 'users' | 'content';
@@ -26,6 +26,8 @@ export default function DashboardPage() {
   const [contentLoading, setContentLoading] = useState(false);
   const [contentError, setContentError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [reviewAnalysis, setReviewAnalysis] = useState<Record<string, ModerationAnalysis>>({});
+  const [reviewCheckingId, setReviewCheckingId] = useState<string | null>(null);
 
   const isCityAdmin = user?.role === 'CITY_ADMIN';
   const cityLocked = isCityAdmin && !!user?.managedCity?.slug;
@@ -115,6 +117,32 @@ export default function DashboardPage() {
     if (!token) return;
     await adminApi.deleteReview(token, reviewId);
     setReviews(await adminApi.listReviews(token, citySlug));
+    setReviewAnalysis((prev) => {
+      const next = { ...prev };
+      delete next[reviewId];
+      return next;
+    });
+  }
+
+  async function analyzeReview(review: AdminReviewRow) {
+    const text = review.text?.trim();
+    if (!text) return;
+    setReviewCheckingId(review.id);
+    setError(null);
+    try {
+      const result = await aiApi.analyzeModeration({ text, rating: review.rating });
+      setReviewAnalysis((prev) => ({ ...prev, [review.id]: result }));
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setReviewCheckingId(null);
+    }
+  }
+
+  function moderationLabel(action: string) {
+    if (action === 'approve') return { text: 'OK', color: '#1b7f4a' };
+    if (action === 'reject') return { text: 'Риск', color: '#c0392b' };
+    return { text: 'Проверить', color: '#b7791f' };
   }
 
   async function createCategory(e: FormEvent) {
@@ -421,6 +449,7 @@ export default function DashboardPage() {
                   <th>Заведение</th>
                   <th>Оценка</th>
                   <th>Текст</th>
+                  <th>AI</th>
                   <th>Автор</th>
                   <th></th>
                 </tr>
@@ -431,6 +460,40 @@ export default function DashboardPage() {
                     <td>{r.business?.title ?? '—'}</td>
                     <td>{r.rating}★</td>
                     <td style={{ maxWidth: 280 }}>{r.text ?? '—'}</td>
+                    <td>
+                      {r.text?.trim() ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 100 }}>
+                          <button
+                            type="button"
+                            className="btn btn-sm"
+                            disabled={reviewCheckingId === r.id}
+                            onClick={() => analyzeReview(r)}
+                          >
+                            {reviewCheckingId === r.id ? '…' : 'AI'}
+                          </button>
+                          {reviewAnalysis[r.id] && (() => {
+                            const m = moderationLabel(reviewAnalysis[r.id].suggestedAction);
+                            return (
+                              <span
+                                style={{
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  color: m.color,
+                                }}
+                                title={
+                                  reviewAnalysis[r.id].flags[0]?.message ??
+                                  `Score ${reviewAnalysis[r.id].score}`
+                                }
+                              >
+                                {m.text} · {reviewAnalysis[r.id].score}
+                              </span>
+                            );
+                          })()}
+                        </div>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
                     <td>{r.user?.phone ?? '—'}</td>
                     <td>
                       <button
