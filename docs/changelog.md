@@ -5,7 +5,21 @@
 
 ---
 
-## 2026-09-05 — Mobile owner: исправлен показ акций в кабинете
+## 2026-09-05 — Этап 1: campaign-based monetization schema (additive)
+
+**Сделано**
+- Новые модели: `AdPlacement`, `MonetizationProduct`, `ProductPrice`, `Order`, `OrderItem`, `Payment`, `AdCreative`, `AdCampaign`, `AdCampaignPlacement`, `PromotionPackage`, `PromotionPackageItem`
+- `AnalyticsEvent`: nullable `campaignId`, `placementId`, `sessionId`; enum AD_* values
+- Migration `20260905120000_monetization_campaign_architecture` (create-only, не применена автоматически)
+- Seed catalog: placements, products, Uralsk prices, packages (`seed-monetization.ts`)
+
+**Сохранено без изменений**
+- `Business.planTier`, `planExpiresAt`, `isFeatured`, `featuredSlot`, `PlanPayment`, `PlanLimitsService`
+
+**Заложить на будущее**
+- Этап 2: backend services/API для orders/campaigns
+
+---
 
 **Причина**
 - Дашборд owner фильтровал акции как `Map`, API возвращает `PromotionModel` → всегда «Нет активных акций»

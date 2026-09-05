@@ -1,4 +1,5 @@
 import { BusinessStatus, PrismaClient, PromotionStatus, UserRole } from '@prisma/client';
+import { seedMonetizationCatalog } from './seed-monetization';
 
 const prisma = new PrismaClient();
 
@@ -1026,6 +1027,8 @@ async function main() {
       },
     });
   }
+
+  await seedMonetizationCatalog({ prisma, uralskCityId: city.id });
 
   console.log('Seed OK:', {
     cities: [city.slug, aktobe.slug],
