@@ -376,6 +376,91 @@ Based on audit findings only:
 
 ---
 
+## Addendum — Home «Рекомендуем» duplication (Stage 5.0)
+
+### Verdict: **B — organic recommendations + HOME_FEATURED paid advertising**
+
+Two adjacent blocks share the **same visible title** («Рекомендуем») but use **different providers, endpoints, and purpose**. This is **not** duplicate rendering of one provider (F), **not** two organic sections (A), **not** nearby (D).
+
+### Block 1 — Organic «Рекомендуем»
+
+| Field | Value |
+|-------|-------|
+| Visible title | «Рекомендуем» (+ «1 / N» pager when >1 item) |
+| Widget | `_SectionHeader` → `_PopularPlacesCarousel` → `_PopularPlaceCard` |
+| File | `apps/mobile/lib/features/home/presentation/home_screen.dart` |
+| Provider | `recommendedBusinessesProvider` (`auth_provider.dart`) |
+| Primary API | `POST /recommendations` via `AiRepository` → ai-orchestrator :3004 |
+| Fallback API | `GET /businesses?citySlug&limit=10` (catalog-api) |
+| Personal path | If auth token present: ai-orchestrator → `GET /businesses/recommended/me` (favorite-category filter) |
+| Detail fetch | N+1 × `GET /businesses/:id` per recommended ID |
+| City | `cityProvider.slug` |
+| Category filter | None |
+| Count | Up to 10 |
+| Organic vs paid | **Organic** (rule-based MVP; `source: rule-based`) |
+| Ranking | Backend `compareBusinessCatalogRank` — **title only**; no planTier / isFeatured / featuredSlot |
+| Reason text | ai-core: `Популярное: {title}` (widget empty state says «Нет популярных заведений» — naming mismatch) |
+| Loading | `LoadingView` height 194 |
+| Error | `ErrorView` + retry; catch → catalog fallback |
+| Empty | «Нет популярных заведений» |
+
+**Legacy note:** State vars `_featuredTimer` / `_featuredIndex` / `featuredAsync` name this block «featured» in code but it is **not** HOME_FEATURED ads.
+
+### Block 2 — Paid HOME_FEATURED
+
+| Field | Value |
+|-------|-------|
+| Visible title | «Рекомендуем» (hardcoded in `HomeFeaturedAdSlot`) |
+| Widget | `HomeFeaturedAdSlot` → `SponsoredBusinessSection` → `BusinessCard(sponsored: true)` |
+| File | `apps/mobile/lib/features/ads/widgets/home_ad_slots.dart` |
+| Provider | `homeFeaturedAdsProvider` → `serveAdsProvider(HOME_FEATURED)` |
+| API | `GET /monetization/ads/serve?placementCode=HOME_FEATURED&sessionId&citySlug` |
+| City | `cityProvider.slug` |
+| Count | All active campaigns for placement (dev: 4 items) |
+| Organic vs paid | **Paid** (`productType: FEATURED_BUSINESS`, `sponsored: true`) |
+| Ad label | `SponsoredLabel` — default «Реклама» (`displayLabel` from API) on section header **and** each card |
+| Loading / error / empty | `SizedBox.shrink()` (silent hide) |
+
+**UX issue:** Paid block uses the same section title as organic («Рекомендуем») despite having «Реклама» badge — reads like one algorithmic feed split in two.
+
+### Data overlap (dev Uralsk, 2026-09-06)
+
+| Source | Endpoint | Business IDs (sample) |
+|--------|----------|------------------------|
+| Organic | `POST /recommendations` | Same 10 as `GET /businesses?limit=10` (title sort): AutoDrive, Bar Code 51, Beauty Studio Elite, **Coffee House Uralsk**, Family Market, **FitLife Gym**, … |
+| HOME_FEATURED | `GET …/ads/serve` | **Coffee House Uralsk** (×3 campaigns), **FitLife Gym** |
+
+**2 of 10** organic recommendations also appear in paid HOME_FEATURED on current seed. Home has **no dedupe** (category screen dedupes via `collectPaidBusinessIds`).
+
+Same business can appear **twice on one scroll** under identical section titles — once organic carousel, once sponsored list.
+
+### Legacy checks
+
+| Artifact | Used on Home? |
+|----------|---------------|
+| `featuredBusinessesProvider` | **No** (admin/owner invalidation only) |
+| `isFeatured` / `featuredSlot` in models | Parsed, **not** used for home ranking or display |
+| `featured=true` query param | Sent by provider definition; **backend ignores** (Stage 4C.1) |
+| `compareBusinessTierRank` | Returns 0 everywhere (Stage 4C) |
+
+No legacy isFeatured recommendation block remains alongside the AI block — the confusion is **title collision with paid HOME_FEATURED**, not dual legacy organic paths.
+
+### «Популярные» vs «Рекомендуем»
+
+No separate user-facing «Популярные места» section exists. Internal widgets use `_PopularPlacesCarousel`; ai-core reasons prefix «Популярное:». Only one organic discovery block — redundant **naming** (Popular vs Recommended), not redundant **sections**.
+
+### Stage 5A recommendation
+
+**RENAME** (primary) + **dedupe** paid IDs from organic list (secondary):
+
+1. Rename paid HOME_FEATURED section title to something distinct (e.g. «Рекламные места», «Продвигается на главной») — keep «Реклама» label.
+2. Optionally rename organic to «Популярное в городе» to match ai-core reason text, or keep «Рекомендуем» for organic only.
+3. Apply home dedupe pattern from `category_businesses_screen.dart` so paid businesses don’t repeat in organic carousel.
+
+Do **not** REMOVE ONE — both placements are intentional (organic discovery + paid inventory). Do **not** MERGE — different pipelines and compliance (ad labeling).
+
+---
+
 ## Stash cleanup (Step 0)
 
 Stash `WIP business-web monetization (pre Stage 4C.1 cleanup)` **dropped** — contents confirmed superseded by Stage 4D+4E:
