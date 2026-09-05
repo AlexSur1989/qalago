@@ -121,12 +121,15 @@ class SponsoredPromotionStrip extends ConsumerWidget {
 
     final sessionId = ref.watch(adSessionIdProvider);
     final tracking = ref.read(adTrackingServiceProvider);
-    final promotions = items
-        .map((item) => item.toPromotionModel())
-        .whereType<PromotionModel>()
-        .toList();
+    final entries = <({AdItemModel item, PromotionModel promotion})>[];
+    for (final item in items) {
+      final promotion = item.toPromotionModel();
+      if (promotion != null) {
+        entries.add((item: item, promotion: promotion));
+      }
+    }
 
-    if (promotions.isEmpty) return const SizedBox.shrink();
+    if (entries.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,11 +154,12 @@ class SponsoredPromotionStrip extends ConsumerWidget {
           height: 210,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            itemCount: promotions.length,
+            itemCount: entries.length,
             separatorBuilder: (_, _) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
-              final item = items[index];
-              final promotion = promotions[index];
+              final entry = entries[index];
+              final item = entry.item;
+              final promotion = entry.promotion;
               return AdViewabilityTracker(
                 key: ValueKey('promo-ad-${item.campaignId}'),
                 onQualifiedImpression: () {

@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qalago_mobile/features/ads/providers/ad_serve_provider.dart';
 import 'package:qalago_mobile/features/ads/data/ad_models.dart';
@@ -57,6 +56,38 @@ void main() {
         'items': [],
       });
       expect(response.items, isEmpty);
+    });
+
+    test('HOME_PROMOTIONS subset business parses without crash', () {
+      final item = AdItemModel.fromJson({
+        'campaignId': 'camp-promo',
+        'placementId': 'pl-promo',
+        'placementCode': 'HOME_PROMOTIONS',
+        'position': 1,
+        'sponsored': true,
+        'displayLabel': 'Реклама',
+        'productType': 'PROMOTED_PROMOTION',
+        'promotion': {
+          'id': 'promo-1',
+          'title': 'Demo promo -20%',
+          'description': null,
+          'imageUrl': null,
+          'discountText': '-20%',
+          'startDate': '2026-09-05T09:15:20.411Z',
+          'endDate': '2026-09-19T09:15:20.411Z',
+        },
+        'business': {
+          'id': 'biz-1',
+          'slug': 'beauty-studio',
+          'title': 'Beauty Studio Elite',
+        },
+      });
+
+      final promotion = item.toPromotionModel();
+      expect(promotion, isNotNull);
+      expect(promotion!.title, 'Demo promo -20%');
+      expect(promotion.business?.title, 'Beauty Studio Elite');
+      expect(promotion.business?.address, '');
     });
   });
 

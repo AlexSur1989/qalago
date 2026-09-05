@@ -103,16 +103,28 @@ class AdItemModel {
 
   BusinessModel? toBusinessModel() {
     if (business == null) return null;
-    return mapAdBusinessToModel(business!);
+    try {
+      return mapAdBusinessToModel(business!);
+    } catch (_) {
+      return null;
+    }
   }
 
   PromotionModel? toPromotionModel() {
     if (promotion == null) return null;
     final promo = Map<String, dynamic>.from(promotion!);
     if (business != null && promo['business'] == null) {
-      promo['business'] = business;
+      promo['business'] = normalizeAdBusinessJson(business!);
+    } else if (promo['business'] is Map<String, dynamic>) {
+      promo['business'] = normalizeAdBusinessJson(
+        promo['business'] as Map<String, dynamic>,
+      );
     }
-    return PromotionModel.fromJson(promo);
+    try {
+      return PromotionModel.fromJson(promo);
+    } catch (_) {
+      return null;
+    }
   }
 }
 
@@ -136,8 +148,17 @@ class AdServeResponse {
   }
 }
 
+/// Ad serve API may return a minimal business subset (id/title/slug only).
+Map<String, dynamic> normalizeAdBusinessJson(Map<String, dynamic> json) {
+  return {
+    ...json,
+    'slug': json['slug'] as String? ?? '',
+    'address': json['address'] as String? ?? '',
+  };
+}
+
 BusinessModel mapAdBusinessToModel(Map<String, dynamic> json) {
-  return BusinessModel.fromJson(json);
+  return BusinessModel.fromJson(normalizeAdBusinessJson(json));
 }
 
 Set<String> collectPaidBusinessIds(Iterable<AdItemModel> items) {

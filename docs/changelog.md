@@ -7,6 +7,25 @@
 
 ---
 
+## 2026-09-05 — Этап 3C: Flutter cross-platform build & QA prep
+
+**Сделано**
+- Environment audit: Flutter 3.41.7, Dart 3.11.5; Android SDK/JDK absent on audit machine
+- `docs/mobile/ANDROID_BUILD.md` — SDK setup, API matrix, build commands, DEV localhost notes
+- `docs/mobile/IOS_BUILD_CHECKLIST.md` — Mac/Xcode checklist (static audit only)
+- Real HTTP smoke: all 5 ad placements + event POST against DEV backend
+- `flutter clean` → analyze (0 errors) → test (17/17) → `flutter build web` OK
+- Backend regression: 109 tests + monorepo build OK
+- Minor fix: unused import in `test/ads/ad_models_test.dart`
+
+**Заложить на будущее**
+- Install Android Studio + SDK; run `flutter build apk --debug` on device/emulator
+- Mac/Xcode iOS build verification; add `INTERNET` to main AndroidManifest before release
+- DEV cleartext ATS/network config for Android/iOS physical devices
+- `--dart-define` API URL for emulator (`10.0.2.2`) without code edits
+
+---
+
 ## 2026-09-05 — Этап 3B: Flutter ad integration
 
 **Сделано**
