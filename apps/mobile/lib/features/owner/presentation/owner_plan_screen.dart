@@ -105,6 +105,8 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
             );
             final limits = planStatus['limits'] as Map<String, dynamic>? ?? {};
             final usage = planStatus['usage'] as Map<String, dynamic>? ?? {};
+            final entitlements =
+                planStatus['entitlements'] as Map<String, dynamic>? ?? {};
             final catalogInfo = planStatus['catalog'] as Map<String, dynamic>? ?? {};
             final maxPhotos = limits['maxPhotos'] as int?;
             final maxServiceItems = limits['maxServiceItems'] as int?;
@@ -137,10 +139,23 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                         const SizedBox(height: 8),
                         Text(
                           'Фото: ${usage['photos'] ?? 0}${maxPhotos != null ? ' / $maxPhotos' : ''}'
+                          '${entitlements['photos']?['overLimit'] == true ? ' (публ. ${entitlements['photos']?['published']})' : ''}'
                           ' · Товары/услуги: ${usage['serviceItems'] ?? 0}${maxServiceItems != null ? ' / $maxServiceItems' : ''}'
-                          ' · Акции: ${usage['activePromotions'] ?? 0} / ${limits['maxActivePromotions'] ?? 1}',
+                          '${entitlements['serviceItems']?['overLimit'] == true ? ' (публ. ${entitlements['serviceItems']?['published']})' : ''}'
+                          ' · Акции: ${usage['activePromotions'] ?? 0} / ${limits['maxActivePromotions'] ?? 1}'
+                          '${entitlements['activePromotions']?['overLimit'] == true ? ' (публ. ${entitlements['activePromotions']?['published']})' : ''}',
                           style: TextStyle(color: Colors.grey.shade700),
                         ),
+                        if (entitlements['overLimitNotice'] != null) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            entitlements['overLimitNotice'] as String,
+                            style: TextStyle(
+                              color: Colors.orange.shade900,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
                         if (expiresAt != null) ...[
                           const SizedBox(height: 4),
                           Text(

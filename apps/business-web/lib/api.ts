@@ -49,6 +49,8 @@ export type BusinessRow = {
   createdAt?: string;
   updatedAt?: string;
   city?: { slug: string; nameRu: string } | null;
+  categoryId?: string;
+  category?: { id: string; slug: string; title: string } | null;
 };
 
 export type PlanLimitsRow = {
@@ -75,6 +77,13 @@ export type PlanCatalogRow = {
   limits: PlanLimitsRow;
 };
 
+export type PlanEntitlements = {
+  photos: { total: number; published: number; limit: number; overLimit: boolean };
+  serviceItems: { total: number; published: number; limit: number; overLimit: boolean };
+  activePromotions: { total: number; published: number; limit: number; overLimit: boolean };
+  overLimitNotice: string | null;
+};
+
 export type BusinessPlanStatus = {
   businessId: string;
   tier: string;
@@ -89,6 +98,7 @@ export type BusinessPlanStatus = {
     serviceItems: number;
     activePromotions: number;
   };
+  entitlements?: PlanEntitlements;
 };
 
 export type PromotionRow = {
@@ -172,6 +182,91 @@ export type NotificationRow = {
   body?: string | null;
   isRead: boolean;
   createdAt: string;
+};
+
+export type MonetizationDurationOption = {
+  durationHours?: number | null;
+  durationDays?: number | null;
+  basePrice: number;
+  discountPercent?: number | null;
+  finalPrice: number;
+  currency: string;
+};
+
+export type MonetizationProduct = {
+  code: string;
+  name: string;
+  description?: string | null;
+  type: string;
+  durations: MonetizationDurationOption[];
+};
+
+export type MonetizationPackage = {
+  code: string;
+  name: string;
+  description?: string | null;
+  price: number;
+  currency: string;
+  durationDays: number;
+  discountPercent?: number | null;
+  items: Array<{
+    productCode: string;
+    productName: string;
+    productType: string;
+    durationDays?: number | null;
+    durationHours?: number | null;
+    quantity: number;
+  }>;
+};
+
+export type MonetizationQuote = {
+  product?: { code: string; name: string; type: string } | null;
+  package?: { code: string; name: string } | null;
+  duration?: { durationDays?: number; durationHours?: number } | null;
+  basePrice: number;
+  discountPercent: number;
+  discountAmount: number;
+  finalPrice: number;
+  currency: string;
+  requestedStartAt?: string | null;
+  calculatedEndAt?: string | null;
+  availability: { available: boolean; reason?: string | null; nextAvailableAt?: string | null };
+};
+
+export type MonetizationOrder = {
+  id: string;
+  orderNumber: string;
+  status: string;
+  subtotal: number;
+  discountAmount: number;
+  totalAmount: number;
+  currency: string;
+  createdAt: string;
+  paidAt?: string | null;
+  items: Array<{
+    id: string;
+    productCode: string;
+    productName: string;
+    productType: string;
+    finalPrice: number;
+    durationDays?: number | null;
+    durationHours?: number | null;
+  }>;
+  payments: Array<{ id: string; status: string; provider: string; amount: number }>;
+};
+
+export type MonetizationCampaign = {
+  id: string;
+  businessId: string;
+  businessTitle?: string | null;
+  status: string;
+  effectiveStatus?: string | null;
+  startAt?: string | null;
+  endAt?: string | null;
+  product?: { code: string; name: string; type: string } | null;
+  creative?: { id: string; moderationStatus: string } | null;
+  placements?: Array<{ code: string; nameRu?: string }>;
+  metrics?: { servedCount: number; qualifiedImpressions: number; clickCount: number };
 };
 
 export const SELECTED_BUSINESS_KEY = 'qalago_business_id';
@@ -430,6 +525,47 @@ export const ownerApi = {
       token,
       body: JSON.stringify({ tier }),
     }),
+
+  listMonetizationProducts: (
+    token: string,
+    params: { businessId: string; citySlug?: string; categoryId?: string },
+  ) => {
+    const q = new URLSearchParams({ businessId: params.businessId });
+    if (params.citySlug) q.set('citySlug', params.citySlug);
+    if (params.categoryId) q.set('categoryId', params.categoryId);
+    return api<MonetizationProduct[]>(`/monetization/products?${q}`, { token });
+  },
+
+  listMonetizationPackages: (token: string) =>
+    api<MonetizationPackage[]>('/monetization/packages', { token }),
+
+  monetizationQuote: (token: string, body: Record<string, unknown>) =>
+    api<MonetizationQuote>('/monetization/quote', {
+      method: 'POST',
+      token,
+      body: JSON.stringify(body),
+    }),
+
+  createMonetizationOrder: (token: string, body: Record<string, unknown>) =>
+    api<MonetizationOrder>('/monetization/orders', {
+      method: 'POST',
+      token,
+      body: JSON.stringify(body),
+    }),
+
+  listMonetizationOrders: (token: string, businessId: string) =>
+    api<MonetizationOrder[]>(`/monetization/orders?businessId=${encodeURIComponent(businessId)}`, {
+      token,
+    }),
+
+  getMonetizationOrder: (token: string, orderId: string) =>
+    api<MonetizationOrder>(`/monetization/orders/${orderId}`, { token }),
+
+  listMonetizationCampaigns: (token: string, businessId: string) =>
+    api<MonetizationCampaign[]>(
+      `/monetization/campaigns?businessId=${encodeURIComponent(businessId)}`,
+      { token },
+    ),
 };
 
 export const TOKEN_KEY = 'qalago_business_token';

@@ -2,6 +2,7 @@ import { BusinessPlanTier, BusinessStatus } from '@prisma/client';
 import { BusinessesService } from './businesses.service';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { ServiceMenuService } from '../service-items/service-menu.service';
 
 describe('BusinessesService.findAll', () => {
@@ -17,7 +18,8 @@ describe('BusinessesService.findAll', () => {
   } as unknown as PrismaService;
 
   const serviceMenuService = {} as ServiceMenuService;
-  const service = new BusinessesService(prisma, cityScope, serviceMenuService);
+  const planLimits = {} as PlanLimitsService;
+  const service = new BusinessesService(prisma, cityScope, serviceMenuService, planLimits);
 
   const category = { id: 'cat-1', title: 'Кафе', slug: 'cafe', icon: null };
 

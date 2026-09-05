@@ -111,6 +111,7 @@ describe('PlanLimitsService', () => {
     expect(notifications.create).toHaveBeenCalledWith(
       expect.objectContaining({ type: 'PLAN_EXPIRED', userId: 'owner-1' }),
     );
+    expect(prisma.promotion.updateMany).not.toHaveBeenCalled();
   });
 
   it('rejects photo at limit', async () => {

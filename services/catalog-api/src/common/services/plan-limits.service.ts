@@ -6,6 +6,12 @@ import {
 import { BusinessPlanTier, NotificationType, PromotionStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationsService } from '../../modules/notifications/notifications.service';
+import {
+  buildEntitlementSummary,
+  isPromotionLiveNow,
+  selectPublicPromotions,
+  sliceToPublicLimit,
+} from '../utils/plan-entitlements.util';
 
 export type AnalyticsTier = 'BASIC' | 'EXTENDED' | 'FULL';
 export type SupportPriority = 'STANDARD' | 'PRIORITY' | 'HIGHEST';
@@ -222,6 +228,18 @@ export class PlanLimitsService {
     const limits = this.getLimits(effectiveTier);
     const catalogItem = this.getCatalogItem(effectiveTier);
 
+    const totals = {
+      photos: business._count.images,
+      serviceItems: business._count.serviceItems,
+      activePromotions: business._count.promotions,
+    };
+
+    const published = {
+      photos: Math.min(totals.photos, limits.maxPhotos),
+      serviceItems: Math.min(totals.serviceItems, limits.maxServiceItems),
+      activePromotions: Math.min(totals.activePromotions, limits.maxActivePromotions),
+    };
+
     return {
       businessId,
       tier: business.planTier,
@@ -231,12 +249,35 @@ export class PlanLimitsService {
       featuredSlot: business.featuredSlot,
       catalog: catalogItem,
       limits,
-      usage: {
-        photos: business._count.images,
-        serviceItems: business._count.serviceItems,
-        activePromotions: business._count.promotions,
-      },
+      usage: totals,
+      entitlements: buildEntitlementSummary(totals, limits, published),
     };
+  }
+
+  applyPublicPhotoLimit<T>(images: readonly T[], maxPhotos: number): T[] {
+    return sliceToPublicLimit(images, maxPhotos);
+  }
+
+  applyPublicPromotionLimit<
+    T extends {
+      status: PromotionStatus | string;
+      startDate?: Date | null;
+      endDate?: Date | null;
+      createdAt: Date | string;
+    },
+  >(promotions: readonly T[], maxActivePromotions: number, now = new Date()): T[] {
+    return selectPublicPromotions(promotions, maxActivePromotions, now);
+  }
+
+  countLiveActivePromotions(
+    promotions: Array<{
+      status: PromotionStatus | string;
+      startDate?: Date | null;
+      endDate?: Date | null;
+    }>,
+    now = new Date(),
+  ) {
+    return promotions.filter((p) => isPromotionLiveNow(p, now)).length;
   }
 
   async assertCanAddPhoto(businessId: string) {
@@ -322,25 +363,6 @@ export class PlanLimitsService {
     return { startDate: start, endDate: end };
   }
 
-  async archiveExcessPromotions(businessId: string) {
-    const ctx = await this.getBusinessPlanContext(businessId);
-    const max = ctx.limits.maxActivePromotions;
-
-    const active = await this.prisma.promotion.findMany({
-      where: { businessId, status: PromotionStatus.ACTIVE },
-      orderBy: { createdAt: 'desc' },
-      select: { id: true },
-    });
-
-    if (active.length <= max) return;
-
-    const excessIds = active.slice(max).map((p) => p.id);
-    await this.prisma.promotion.updateMany({
-      where: { id: { in: excessIds } },
-      data: { status: PromotionStatus.DRAFT },
-    });
-  }
-
   async capAnalyticsDays(businessId: string, requestedDays: number): Promise<number> {
     const ctx = await this.getBusinessPlanContext(businessId);
     return Math.min(requestedDays, ctx.limits.maxAnalyticsDays);
@@ -393,8 +415,6 @@ export class PlanLimitsService {
         planExpiresAt: null,
       },
     });
-
-    await this.archiveExcessPromotions(businessId);
 
     if (business.ownerId) {
       await this.notifications.create({

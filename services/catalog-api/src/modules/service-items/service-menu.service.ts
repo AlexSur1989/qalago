@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { PlanLimitsService } from '../../common/services/plan-limits.service';
+import { applyPublicServiceMenuLimit } from '../../common/utils/plan-entitlements.util';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MenuAccessService } from './menu-access.service';
@@ -14,10 +16,13 @@ export class ServiceMenuService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly menuAccess: MenuAccessService,
+    private readonly planLimits: PlanLimitsService,
   ) {}
 
-  findPublicMenu(businessId: string) {
-    return this.buildMenu(businessId, false);
+  async findPublicMenu(businessId: string) {
+    const menu = await this.buildMenu(businessId, false);
+    const ctx = await this.planLimits.getBusinessPlanContext(businessId);
+    return applyPublicServiceMenuLimit(menu, ctx.limits.maxServiceItems);
   }
 
   async findManageMenu(user: AuthUser, businessId: string) {

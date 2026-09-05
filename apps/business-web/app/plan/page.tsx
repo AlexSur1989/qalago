@@ -93,14 +93,19 @@ export default function PlanPage() {
     >
       <header className="page-header">
         <div>
-          <h1>Тариф и продвижение</h1>
+          <h1>Тариф</h1>
           <p className="page-header-meta">
-            Выберите план для роста видимости {business?.title ?? 'заведения'}
+            Подписка для лимитов и скидки на рекламу — {business?.title ?? 'заведения'}
           </p>
         </div>
-        <Link href="/dashboard" className="btn">
-          ← На главную
-        </Link>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <Link href="/promote" className="btn">
+            Реклама и продвижение
+          </Link>
+          <Link href="/dashboard" className="btn btn-ghost">
+            ← На главную
+          </Link>
+        </div>
       </header>
 
       {loading && <p style={{ color: 'var(--text-muted)' }}>Загрузка тарифов…</p>}
@@ -112,11 +117,25 @@ export default function PlanPage() {
           <h3 style={{ marginTop: 0 }}>Текущий тариф: {planStatus.catalog.nameRu}</h3>
           <p style={{ color: 'var(--text-muted)', marginBottom: 8 }}>
             Фото: {planStatus.usage.photos} / {planStatus.limits.maxPhotos}
+            {planStatus.entitlements?.photos.overLimit && planStatus.entitlements.photos.published != null
+              ? ` (публикуется ${planStatus.entitlements.photos.published})`
+              : ''}
             {' · '}
             Товары/услуги: {planStatus.usage.serviceItems} / {planStatus.limits.maxServiceItems}
+            {planStatus.entitlements?.serviceItems.overLimit && planStatus.entitlements.serviceItems.published != null
+              ? ` (публикуется ${planStatus.entitlements.serviceItems.published})`
+              : ''}
             {' · '}
             Акции: {planStatus.usage.activePromotions} / {planStatus.limits.maxActivePromotions}
+            {planStatus.entitlements?.activePromotions.overLimit && planStatus.entitlements.activePromotions.published != null
+              ? ` (публикуется ${planStatus.entitlements.activePromotions.published})`
+              : ''}
           </p>
+          {planStatus.entitlements?.overLimitNotice && (
+            <p className="alert" style={{ marginBottom: 8, fontSize: '0.9rem' }}>
+              {planStatus.entitlements.overLimitNotice}
+            </p>
+          )}
           {planStatus.expiresAt && (
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
               Действует до {new Date(planStatus.expiresAt).toLocaleDateString('ru-RU')}

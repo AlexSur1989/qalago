@@ -133,8 +133,6 @@ export class PlansService {
       return business;
     });
 
-    await this.planLimits.archiveExcessPromotions(businessId);
-
     if (this.planLimits.isPaidTier(tier)) {
       await this.notifyPlanActivated(businessId, tier, expiresAt);
     }

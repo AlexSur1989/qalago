@@ -26,8 +26,8 @@ export class PromotionsController {
 
   @Public()
   @Get()
-  findAll(@Query() query: ListPromotionsQueryDto) {
-    return this.promotionsService.findAll(query);
+  findAll(@Query() query: ListPromotionsQueryDto, @CurrentUser() user?: AuthUser) {
+    return this.promotionsService.findAll(query, user);
   }
 
   @Roles(UserRole.BUSINESS, UserRole.ADMIN, UserRole.CITY_ADMIN)

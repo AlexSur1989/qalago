@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { BusinessStatus, Prisma, UserRole } from '@prisma/client';
 import { CityScopeService } from '../../common/services/city-scope.service';
+import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { haversineMeters } from '../../common/utils/geo.utils';
 import { compareBusinessCatalogRank } from '../../common/utils/business-rank.util';
 import { AuthUser } from '../../common/types/jwt-payload.type';
@@ -51,6 +52,7 @@ export class BusinessesService {
     private readonly prisma: PrismaService,
     private readonly cityScope: CityScopeService,
     private readonly serviceMenuService: ServiceMenuService,
+    private readonly planLimits: PlanLimitsService,
   ) {}
 
   async create(user: AuthUser, dto: CreateBusinessDto) {
@@ -201,8 +203,32 @@ export class BusinessesService {
     if (!business) {
       throw new NotFoundException('Business not found');
     }
+
+    const ctx = await this.planLimits.getBusinessPlanContext(id);
+    const publicImages = this.planLimits.applyPublicPhotoLimit(
+      business.images,
+      ctx.limits.maxPhotos,
+    );
+    const publicPromotions = this.planLimits.applyPublicPromotionLimit(
+      business.promotions,
+      ctx.limits.maxActivePromotions,
+    );
+
+    const publishedImageUrls = new Set(publicImages.map((image) => image.imageUrl));
+    const coverImageUrl =
+      business.coverImageUrl && publishedImageUrls.has(business.coverImageUrl)
+        ? business.coverImageUrl
+        : publicImages[0]?.imageUrl ?? business.coverImageUrl;
+
     const menu = await this.serviceMenuService.findPublicMenu(id);
-    return { ...business, menu };
+
+    return {
+      ...business,
+      coverImageUrl,
+      images: publicImages,
+      promotions: publicPromotions,
+      menu,
+    };
   }
 
   async findMy(user: AuthUser) {

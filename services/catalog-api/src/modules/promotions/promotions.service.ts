@@ -44,7 +44,7 @@ export class PromotionsService {
     private readonly planLimits: PlanLimitsService,
   ) {}
 
-  async findAll(query: ListPromotionsQueryDto) {
+  async findAll(query: ListPromotionsQueryDto, user?: AuthUser) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
     const skip = (page - 1) * limit;
@@ -98,7 +98,7 @@ export class PromotionsService {
         take: 500,
       });
 
-      const filtered = this.sortCityFeedPromotions(rawItems);
+      const filtered = await this.applyFeedEntitlements(rawItems, now);
       const items = filtered.slice(skip, skip + limit);
 
       return {
@@ -112,28 +112,68 @@ export class PromotionsService {
       };
     }
 
-    const [items, total] = await Promise.all([
-      this.prisma.promotion.findMany({
-        where,
-        include: {
-          business: {
-            select: {
-              id: true,
-              title: true,
-              slug: true,
-              address: true,
-              coverImageUrl: true,
+    const ownerView =
+      query.businessId != null &&
+      (await this.canManageBusiness(user, query.businessId));
+
+    if (ownerView || !query.businessId) {
+      const [items, total] = await Promise.all([
+        this.prisma.promotion.findMany({
+          where,
+          include: {
+            business: {
+              select: {
+                id: true,
+                title: true,
+                slug: true,
+                address: true,
+                coverImageUrl: true,
+              },
             },
           },
-        },
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-      }),
-      this.prisma.promotion.count({ where }),
-    ]);
+          skip,
+          take: limit,
+          orderBy: { createdAt: 'desc' },
+        }),
+        this.prisma.promotion.count({ where }),
+      ]);
 
-    return { items, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+      return { items, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+    }
+
+    const allItems = await this.prisma.promotion.findMany({
+      where,
+      include: {
+        business: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            address: true,
+            coverImageUrl: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const ctx = await this.planLimits.getBusinessPlanContext(query.businessId);
+    const publicItems = this.planLimits.applyPublicPromotionLimit(
+      allItems,
+      ctx.limits.maxActivePromotions,
+      now,
+    );
+    const pageItems = publicItems.slice(skip, skip + limit);
+
+    return {
+      items: pageItems,
+      meta: {
+        page,
+        limit,
+        total: publicItems.length,
+        totalPages: Math.ceil(publicItems.length / limit),
+      },
+    };
   }
 
   async create(user: AuthUser, dto: CreatePromotionDto) {
@@ -203,6 +243,40 @@ export class PromotionsService {
     await this.assertCanManage(user, promo.businessId);
     await this.prisma.promotion.delete({ where: { id } });
     return { success: true };
+  }
+
+  /** City promotion feed: cap visible promotions per business plan entitlement. */
+  private async applyFeedEntitlements(items: FeedPromotion[], now: Date) {
+    const byBusiness = new Map<string, FeedPromotion[]>();
+    for (const item of items) {
+      const bucket = byBusiness.get(item.businessId) ?? [];
+      bucket.push(item);
+      byBusiness.set(item.businessId, bucket);
+    }
+
+    const filtered: FeedPromotion[] = [];
+    for (const [businessId, promos] of byBusiness) {
+      const ctx = await this.planLimits.getBusinessPlanContext(businessId);
+      filtered.push(
+        ...this.planLimits.applyPublicPromotionLimit(
+          promos,
+          ctx.limits.maxActivePromotions,
+          now,
+        ),
+      );
+    }
+
+    return this.sortCityFeedPromotions(filtered);
+  }
+
+  private async canManageBusiness(user: AuthUser | undefined, businessId: string) {
+    if (!user) return false;
+    if (user.role === UserRole.ADMIN || user.role === UserRole.CITY_ADMIN) return true;
+    const business = await this.prisma.business.findUnique({
+      where: { id: businessId },
+      select: { ownerId: true },
+    });
+    return business?.ownerId === user.id;
   }
 
   /** City promotion feed: subscription tier does not affect ordering (Stage 4C). */

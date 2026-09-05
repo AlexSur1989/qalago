@@ -9,6 +9,21 @@
 
 ---
 
+## 2026-09-06 — Stage 4C.1: preserve content on downgrade / expiry
+
+**Сделано**
+- Удалён `archiveExcessPromotions` — downgrade/expiry больше не меняет status акций
+- Entitlement layer: public API ограничивает photos, service menu, promotions по текущему тарифу; DB records сохраняются
+- `GET /businesses/:id`, public menu, promotion feed/list — server-side caps
+- Optional JWT на `@Public` routes для owner bypass в promotion list
+- Owner plan API/UI: `entitlements` (total / published / overLimitNotice) — Flutter + business-web
+- Tests: `plan-downgrade-entitlements.spec.ts`, расширен `plan-entitlements.util.spec.ts`
+
+**Заложить на будущее**
+- Stage 4B.1 без изменений
+
+---
+
 ## 2026-09-06 — Этап 4C: FREE / BASIC / PREMIUM / VIP subscriptions
 
 **Сделано**

@@ -25,41 +25,58 @@ export class JwtAuthGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    if (isPublic) {
-      return true;
-    }
 
     const request = context.switchToHttp().getRequest<{
       headers: { authorization?: string };
       user?: AuthUser;
     }>();
+
+    if (isPublic) {
+      await this.tryAttachUser(request);
+      return true;
+    }
+
     const authHeader = request.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) {
       throw new UnauthorizedException('Missing bearer token');
     }
 
-    const token = authHeader.slice(7);
+    await this.attachUserFromToken(request, authHeader.slice(7));
+    return true;
+  }
+
+  private async tryAttachUser(request: {
+    headers: { authorization?: string };
+    user?: AuthUser;
+  }) {
+    const authHeader = request.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) return;
     try {
-      const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
-        secret: this.configService.get<string>('app.jwtSecret'),
-      });
-      const dbUser = await this.prisma.user.findUnique({
-        where: { id: payload.sub },
-        select: { id: true, phone: true, role: true, isActive: true },
-      });
-      if (!dbUser?.isActive) {
-        throw new UnauthorizedException('User inactive');
-      }
-      request.user = {
-        sub: dbUser.id,
-        id: dbUser.id,
-        phone: dbUser.phone,
-        role: dbUser.role,
-      };
-      return true;
-    } catch (error) {
-      if (error instanceof UnauthorizedException) throw error;
-      throw new UnauthorizedException('Invalid or expired token');
+      await this.attachUserFromToken(request, authHeader.slice(7));
+    } catch {
+      // Public routes stay public when token is missing/invalid.
     }
+  }
+
+  private async attachUserFromToken(
+    request: { user?: AuthUser },
+    token: string,
+  ) {
+    const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
+      secret: this.configService.get<string>('app.jwtSecret'),
+    });
+    const dbUser = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: { id: true, phone: true, role: true, isActive: true },
+    });
+    if (!dbUser?.isActive) {
+      throw new UnauthorizedException('User inactive');
+    }
+    request.user = {
+      sub: dbUser.id,
+      id: dbUser.id,
+      phone: dbUser.phone,
+      role: dbUser.role,
+    };
   }
 }
