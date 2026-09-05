@@ -178,9 +178,10 @@ class _DashboardContent extends StatelessWidget {
     final byType7 = ownerByType(summary7);
     final trendsRaw = data['trends'] as Map<String, dynamic>;
     final trendItems = aggregateViewTrends(trendsRaw['items'] as List<dynamic>? ?? []);
-    final activePromotions = data['activePromotions'] as List<Map<String, dynamic>>;
+    final activePromotions = data['activePromotions'] as List<PromotionModel>;
     final plan = data['plan'] as Map<String, dynamic>;
     final catalog = plan['catalog'] as Map<String, dynamic>? ?? {};
+    final feedHint = ownerPromotionFeedHint(plan);
     final completion = ownerProfileCompletion(business);
     final totalActions = (summary7['total'] as num?)?.toInt() ?? 0;
     final views = byType7['VIEW_BUSINESS'] ?? 0;
@@ -325,14 +326,29 @@ class _DashboardContent extends StatelessWidget {
                 ),
                 if (activePromotions.isEmpty)
                   Text('Нет активных акций', style: TextStyle(color: Colors.grey.shade600))
-                else
+                else ...[
+                  Text(
+                    feedHint,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   ...activePromotions.take(3).map(
                         (p) => ListTile(
                           contentPadding: EdgeInsets.zero,
-                          title: Text(p['title'] as String? ?? ''),
-                          subtitle: Text(p['discountText'] as String? ?? ''),
+                          title: Text(p.title),
+                          subtitle: Text(
+                            [
+                              if (p.discountText != null && p.discountText!.isNotEmpty)
+                                p.discountText!,
+                              ownerPromotionStatusLabel(p),
+                            ].join(' · '),
+                          ),
                         ),
                       ),
+                ],
               ],
             ),
           ),

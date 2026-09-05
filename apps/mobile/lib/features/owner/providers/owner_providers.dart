@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../shared/models/models.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../owner_utils.dart';
 
@@ -54,10 +55,10 @@ final ownerDashboardProvider =
     for (final key in {...byType7.keys, ...byType14.keys}) {
       prevByType[key] = (byType14[key] ?? 0) - (byType7[key] ?? 0);
     }
-    final promotions = results[3] as List<dynamic>;
+    final promotions = results[3] as List<PromotionModel>;
     final activePromotions = promotions
-        .where((p) => p is Map && p['status'] == 'ACTIVE')
-        .cast<Map<String, dynamic>>()
+        .where((p) => ownerIsPromotionActiveStatus(p.status))
+        .where(ownerIsPromotionLiveNow)
         .toList();
     return {
       'summary7': summary7,

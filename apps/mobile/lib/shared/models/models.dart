@@ -204,6 +204,8 @@ class PromotionModel {
     this.imageUrl,
     this.discountText,
     this.status,
+    this.startDate,
+    this.endDate,
     this.businessId,
     this.business,
   });
@@ -214,6 +216,8 @@ class PromotionModel {
   final String? imageUrl;
   final String? discountText;
   final String? status;
+  final DateTime? startDate;
+  final DateTime? endDate;
   final String? businessId;
   final BusinessModel? business;
 
@@ -226,12 +230,22 @@ class PromotionModel {
       imageUrl: json['imageUrl'] as String?,
       discountText: json['discountText'] as String?,
       status: json['status'] as String?,
+      startDate: _parseDate(json['startDate']),
+      endDate: _parseDate(json['endDate']),
       businessId: json['businessId'] as String? ?? businessJson?['id'] as String?,
       business: businessJson != null
           ? BusinessModel.fromJson(businessJson)
           : null,
     );
   }
+}
+
+DateTime? _parseDate(Object? value) {
+  if (value == null) return null;
+  if (value is String && value.isNotEmpty) {
+    return DateTime.tryParse(value);
+  }
+  return null;
 }
 
 class PaginatedPromotions {

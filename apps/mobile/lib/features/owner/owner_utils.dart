@@ -1,3 +1,5 @@
+import '../../shared/models/models.dart';
+
 int ownerProfileCompletion(Map<String, dynamic> business) {
   const fields = [
     'title',
@@ -83,6 +85,43 @@ String ownerStatusLabel(String status) {
     default:
       return status;
   }
+}
+
+bool ownerIsPromotionActiveStatus(String? status) => status == 'ACTIVE';
+
+bool ownerIsPromotionLiveNow(PromotionModel promotion, {DateTime? now}) {
+  if (!ownerIsPromotionActiveStatus(promotion.status)) return false;
+  final current = now ?? DateTime.now();
+  if (promotion.startDate != null && current.isBefore(promotion.startDate!)) {
+    return false;
+  }
+  if (promotion.endDate != null && current.isAfter(promotion.endDate!)) {
+    return false;
+  }
+  return true;
+}
+
+int ownerMaxPromotionsInFeed(Map<String, dynamic> plan) {
+  final limits = plan['limits'] as Map<String, dynamic>? ?? {};
+  return (limits['maxPromotionsInFeed'] as num?)?.toInt() ?? 0;
+}
+
+String ownerPromotionFeedHint(Map<String, dynamic> plan) {
+  final feedLimit = ownerMaxPromotionsInFeed(plan);
+  if (feedLimit <= 0) {
+    return 'Видна на карточке · не в ленте города (Базовый тариф)';
+  }
+  return 'До $feedLimit акций в ленте города';
+}
+
+String ownerPromotionStatusLabel(PromotionModel promotion) {
+  if (!ownerIsPromotionActiveStatus(promotion.status)) {
+    return promotion.status ?? '—';
+  }
+  if (!ownerIsPromotionLiveNow(promotion)) {
+    return 'Истекла';
+  }
+  return 'Активна';
 }
 
 String ownerNotificationTypeLabel(String type) {

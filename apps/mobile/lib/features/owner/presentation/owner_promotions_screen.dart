@@ -7,6 +7,7 @@ import '../../../shared/models/models.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../owner_utils.dart';
 import '../providers/owner_providers.dart';
 
 final ownerPromotionsProvider =
@@ -26,6 +27,7 @@ class OwnerPromotionsScreen extends ConsumerWidget {
 
   void _invalidate(WidgetRef ref) {
     ref.invalidate(ownerPromotionsProvider(businessId));
+    ref.invalidate(ownerDashboardProvider(businessId));
     ref.invalidate(promotionsProvider);
   }
 
@@ -194,33 +196,25 @@ class OwnerPromotionsScreen extends ConsumerWidget {
     }
   }
 
-  String _statusLabel(String? status) {
-    switch (status) {
-      case 'ACTIVE':
-        return 'Активна';
-      case 'DRAFT':
-        return 'Черновик';
-      case 'EXPIRED':
-        return 'Завершена';
-      default:
-        return status ?? '—';
-    }
-  }
+  String _statusLabel(PromotionModel promo) => ownerPromotionStatusLabel(promo);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final promotionsAsync = ref.watch(ownerPromotionsProvider(businessId));
     final planAsync = ref.watch(businessPlanProvider(businessId));
-    final limits = planAsync.valueOrNull?['limits'] as Map<String, dynamic>?;
+    final plan = planAsync.valueOrNull ?? {};
+    final limits = plan['limits'] as Map<String, dynamic>?;
     final maxActive = limits?['maxActivePromotions'] as int?;
-    final maxInFeed = limits?['maxPromotionsInFeed'] as int?;
+    final feedHint = planAsync.hasValue ? ownerPromotionFeedHint(plan) : null;
 
     return Scaffold(
       appBar: AppBar(title: Text('Акции · $businessTitle')),
       floatingActionButton: promotionsAsync.maybeWhen(
         data: (promotions) {
-          final activeCount =
-              promotions.where((p) => p.status == 'ACTIVE').length;
+          final activeCount = promotions
+              .where((p) => ownerIsPromotionActiveStatus(p.status))
+              .where(ownerIsPromotionLiveNow)
+              .length;
           return FloatingActionButton.extended(
             onPressed: () => _showPromotionDialog(
               context,
@@ -245,8 +239,10 @@ class OwnerPromotionsScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(ownerPromotionsProvider(businessId)),
         ),
         data: (promotions) {
-          final activeCount =
-              promotions.where((p) => p.status == 'ACTIVE').length;
+          final activeCount = promotions
+              .where((p) => ownerIsPromotionActiveStatus(p.status))
+              .where(ownerIsPromotionLiveNow)
+              .length;
           if (promotions.isEmpty) {
             return Center(
               child: Padding(
@@ -284,14 +280,27 @@ class OwnerPromotionsScreen extends ConsumerWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (feedHint != null)
+                Material(
+                  color: AppTheme.kzBlue.withValues(alpha: 0.08),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    child: Text(
+                      feedHint,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppTheme.kzBlue,
+                      ),
+                    ),
+                  ),
+                ),
               if (maxActive != null)
                 Material(
                   color: AppTheme.kzBlue.withValues(alpha: 0.08),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     child: Text(
-                      'Активных: $activeCount / $maxActive'
-                      '${maxInFeed != null ? ' · в ленте до $maxInFeed' : ''}',
+                      'Активных: $activeCount / $maxActive',
                       style: const TextStyle(
                         fontSize: 13,
                         color: AppTheme.kzBlue,
@@ -312,7 +321,6 @@ class OwnerPromotionsScreen extends ConsumerWidget {
                   separatorBuilder: (_, _) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
                     final promo = promotions[index];
-                    final isActive = promo.status == 'ACTIVE';
                     return Material(
                       color: Colors.white,
                       elevation: 1,
@@ -341,9 +349,11 @@ class OwnerPromotionsScreen extends ConsumerWidget {
                               Text(promo.description!),
                             const SizedBox(height: 4),
                             Text(
-                              _statusLabel(promo.status),
+                              _statusLabel(promo),
                               style: TextStyle(
-                                color: isActive ? Colors.green.shade700 : Colors.black54,
+                                color: ownerIsPromotionLiveNow(promo)
+                                    ? Colors.green.shade700
+                                    : Colors.black54,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 13,
                               ),
