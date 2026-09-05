@@ -118,6 +118,9 @@ class BusinessModel {
     }
   }
 
+  /// Maps legacy API/cache tier strings to Stage 4C tiers.
+  /// PRO → PREMIUM and TOP_CITY → VIP remain for stale client payloads only;
+  /// backend is source of truth and never emits these values post-migration.
   static String normalizePlanTier(String? tier) {
     switch (tier) {
       case 'FREE':

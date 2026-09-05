@@ -188,3 +188,85 @@ describe('BusinessesService.findAll', () => {
     expect(first.distanceMeters!).toBeLessThan(second.distanceMeters!);
   });
 });
+
+describe('BusinessesService.recommended', () => {
+  const cityScope = {
+    resolveCityId: jest.fn().mockResolvedValue('city-uralsk'),
+  } as unknown as CityScopeService;
+
+  const prisma = {
+    favorite: { findMany: jest.fn() },
+    business: { findMany: jest.fn() },
+  } as unknown as PrismaService;
+
+  const service = new BusinessesService(
+    prisma,
+    cityScope,
+    {} as ServiceMenuService,
+    {} as PlanLimitsService,
+  );
+
+  const category = { id: 'cat-1', title: 'Кафе', slug: 'cafe', icon: null };
+  const user = { id: 'user-1', sub: 'user-1', phone: '+7', role: 'USER' as never };
+
+  const makeBusiness = (id: string, title: string, isFeatured: boolean, planTier: BusinessPlanTier) => ({
+    id,
+    title,
+    slug: id,
+    cityId: 'city-uralsk',
+    categoryId: 'cat-1',
+    address: 'Street',
+    latitude: null,
+    longitude: null,
+    status: BusinessStatus.ACTIVE,
+    isFeatured,
+    planTier,
+    planExpiresAt: null,
+    featuredSlot: isFeatured ? 1 : null,
+    category,
+  });
+
+  beforeEach(() => jest.clearAllMocks());
+
+  it('cold start does not filter by isFeatured', async () => {
+    prisma.favorite.findMany = jest.fn().mockResolvedValue([]);
+    prisma.business.findMany = jest.fn().mockResolvedValue([
+      makeBusiness('a', 'Alpha Cafe', false, BusinessPlanTier.FREE),
+      makeBusiness('b', 'Beta VIP', true, BusinessPlanTier.VIP),
+    ]);
+
+    await service.recommended(user, 'uralsk');
+
+    const findMany = prisma.business.findMany as jest.Mock;
+    const where = findMany.mock.calls[0][0].where;
+    expect(where.isFeatured).toBeUndefined();
+  });
+
+  it('cold start order does not depend on planTier or isFeatured', async () => {
+    prisma.favorite.findMany = jest.fn().mockResolvedValue([]);
+    prisma.business.findMany = jest.fn().mockResolvedValue([
+      makeBusiness('vip', 'Zulu VIP', true, BusinessPlanTier.VIP),
+      makeBusiness('free', 'Alpha Free', false, BusinessPlanTier.FREE),
+    ]);
+
+    const result = await service.recommended(user, 'uralsk');
+    expect(result.map((b) => b.id)).toEqual(['free', 'vip']);
+  });
+
+  it('with favorites uses category filter only', async () => {
+    prisma.favorite.findMany = jest.fn().mockResolvedValue([
+      { business: { categoryId: 'cat-food' } },
+    ]);
+    prisma.business.findMany = jest.fn().mockResolvedValue([]);
+
+    await service.recommended(user, 'uralsk');
+
+    expect(prisma.business.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          categoryId: { in: ['cat-food'] },
+        }),
+      }),
+    );
+  });
+});

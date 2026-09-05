@@ -9,6 +9,22 @@
 
 ---
 
+## 2026-09-06 — Stage 4C.1: subscription / organic visibility cleanup
+
+**Сделано**
+- `recommended()` cold start: organic title order, no `isFeatured` filter
+- Public `GET /businesses?featured=true` ignored (legacy param deprecated)
+- AI orchestrator + ai-core: neutral recommendation reasons, organic fallback
+- Flutter fallback: no `featured: true`, no isFeatured-based reason
+- Plan activation regression tests (no isFeatured/featuredSlot/AdCampaign)
+- Deprecated `isFeatured` / `featuredSlot` documented in schema + api-contracts
+- PostgreSQL backup procedure: `docs/infra/postgresql-backup.md`
+
+**Заложить на будущее**
+- Stage 4B.1 unchanged
+
+---
+
 ## 2026-09-06 — Stage 4C.1: preserve content on downgrade / expiry
 
 **Сделано**

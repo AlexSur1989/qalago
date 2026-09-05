@@ -85,7 +85,11 @@ Use Nginx or Caddy in front of API:
 
 ## 7. Backup
 
-- Daily `pg_dump` of PostgreSQL volume
+**Before STAGING/PROD migrations:** follow [docs/infra/postgresql-backup.md](infra/postgresql-backup.md) — custom-format `pg_dump`, verify file size > 0, record environment and timestamp.
+
+Ongoing:
+
+- Daily `pg_dump` of PostgreSQL (custom format) to off-server storage
 - Sync `uploads` volume to object storage (S3) for production
 
 ## Local dev (without Docker)

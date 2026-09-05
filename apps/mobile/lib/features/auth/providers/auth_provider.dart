@@ -263,7 +263,6 @@ final featuredBusinessesProvider = FutureProvider((ref) async {
   final city = ref.watch(cityProvider);
   return ref.watch(catalogRepositoryProvider).fetchBusinesses(
         citySlug: city.slug,
-        featured: true,
       );
 });
 
@@ -289,17 +288,15 @@ final recommendedBusinessesProvider = FutureProvider<List<RecommendedBusiness>>(
     );
     return businesses;
   } catch (_) {
-    final featured = await catalog.fetchBusinesses(
+    final organic = await catalog.fetchBusinesses(
       citySlug: city.slug,
-      featured: true,
+      limit: 10,
     );
-    return featured.items
+    return organic.items
         .map(
           (business) => RecommendedBusiness(
             business: business,
-            reason: business.isFeatured
-                ? 'Топ'
-                : (business.categoryTitle ?? 'QalaGo'),
+            reason: business.categoryTitle ?? 'QalaGo',
           ),
         )
         .toList();

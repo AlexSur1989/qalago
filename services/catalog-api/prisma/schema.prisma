@@ -258,7 +258,9 @@ model Business {
   coverImageUrl     String?
   workHours         Json?
   status            BusinessStatus     @default(PENDING)
+  /// @deprecated Legacy manual featured flag — not used for consumer catalog ranking (Stage 4C.1). Admin-only via PATCH /admin/businesses/:id/featured.
   isFeatured        Boolean            @default(false)
+  /// @deprecated Legacy city slot — not used for consumer catalog ranking (Stage 4C.1). Admin-only.
   featuredSlot      Int?
   planTier          BusinessPlanTier   @default(FREE)
   planExpiresAt     DateTime?

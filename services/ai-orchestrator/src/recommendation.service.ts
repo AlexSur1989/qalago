@@ -1,6 +1,6 @@
 import { recommendationAgent } from '@qalago/agents';
 import { toRecommendationItems, type RecommendationResult } from '@qalago/ai-core';
-import { fetchFeaturedFallback, fetchPersonalRecommendations } from './catalog-client';
+import { fetchOrganicFallback, fetchPersonalRecommendations } from './catalog-client';
 
 export async function recommend(params: {
   citySlug: string;
@@ -17,10 +17,10 @@ export async function recommend(params: {
         params.authorization.replace(/^Bearer\s+/i, ''),
       );
     } catch {
-      businesses = await fetchFeaturedFallback(params.citySlug, limit);
+      businesses = await fetchOrganicFallback(params.citySlug, limit);
     }
   } else {
-    businesses = await fetchFeaturedFallback(params.citySlug, limit);
+    businesses = await fetchOrganicFallback(params.citySlug, limit);
   }
 
   return {

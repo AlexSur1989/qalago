@@ -168,9 +168,9 @@ Query:
 
 When `latitude` and `longitude` are provided, each item may include `distanceMeters` (integer). Businesses without coordinates are listed after geo-sorted items.
 
-**Catalog sort order (all list modes):** effective paid tier first — `TOP_CITY` → `PRO` → `BASIC` (expired paid treated as BASIC), then `featuredSlot` ascending within TOP, then `isFeatured`, then title. With geo params, tier rank applies before distance within the same tier.
+**Catalog sort order (all list modes):** organic only — title ascending (locale `ru`). With geo params: distance ascending, then title. Subscription tier, `isFeatured`, and `featuredSlot` do **not** affect order (Stage 4C.1). Consumer paid visibility comes from AdCampaign ad serving only.
 
-List items include `planTier`, `planExpiresAt`, `featuredSlot`, `isFeatured` when selected for catalog responses.
+List items may include `planTier`, `planExpiresAt`, `featuredSlot`, `isFeatured` for display; these fields are deprecated for catalog ranking. Query param `featured` is ignored on public catalog.
 
 ### GET /businesses/:id
 
@@ -180,7 +180,7 @@ Owner: own businesses.
 
 ### GET /businesses/recommended/me
 
-Auth user recommendations (rule-based MVP; AI later).
+Auth user recommendations (rule-based MVP; AI later). Cold start (no favorites): active businesses in city, organic title order — **not** filtered by `isFeatured`. With favorites: same-category businesses, organic title order.
 
 ### PATCH /businesses/:id
 
@@ -203,7 +203,7 @@ Owner or admin. Body (all optional): `title`, `shortDesc`, `description`, `addre
 
 ## Business plans (tariffs)
 
-Tiers: `BASIC` (free), `PRO`, `TOP_CITY`. Limits enforced server-side (photos, promotions, analytics depth, city feed).
+Tiers: `FREE`, `BASIC`, `PREMIUM`, `VIP`. Limits enforced server-side (photos, service items, promotions, analytics depth). Subscription activation does **not** set `isFeatured`, `featuredSlot`, or create AdCampaigns.
 
 ### GET /plans
 
@@ -211,9 +211,9 @@ Public catalog of tiers with prices, features, and limit matrix.
 
 ### GET /businesses/:businessId/plan
 
-Auth: owner, ADMIN, CITY_ADMIN. Current tier, effective tier (expired paid → BASIC), usage vs limits.
+Auth: owner, ADMIN, CITY_ADMIN. Current tier, effective tier (expired paid → FREE), usage vs limits, entitlements.
 
-Response includes `usage.photos`, `usage.activePromotions`, `limits`, `expiresAt`.
+Response includes `usage.photos`, `usage.activePromotions`, `limits`, `expiresAt`, `entitlements`.
 
 ### POST /businesses/:businessId/plan/mock-checkout
 
@@ -221,10 +221,10 @@ Auth: owner (or admin). **MVP test payment — no real charge.**
 
 Body:
 ```json
-{ "tier": "PRO" }
+{ "tier": "PREMIUM" }
 ```
 
-`tier`: `BASIC` | `PRO` | `TOP_CITY`
+`tier`: `FREE` | `BASIC` | `PREMIUM` | `VIP`
 
 Response `200`:
 ```json

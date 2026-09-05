@@ -33,8 +33,7 @@ function filterByTopic(
 
 function businessLine(business: CatalogBusiness, index: number): string {
   const category = business.category?.title ?? 'заведение';
-  const badge = business.isFeatured ? 'VIP' : 'популярное место';
-  return `${index}. **${business.title}** — ${category}, ${badge}`;
+  return `${index}. **${business.title}** — ${category}`;
 }
 
 /** Rule-based editorial draft from catalog businesses (MVP). */
@@ -54,7 +53,7 @@ export function buildEditorialDraft(params: {
       title,
       bodyMarkdown:
         `Подборка для **${params.cityName}** пока пуста.\n\n` +
-        'Добавьте VIP-заведения в каталог или выберите другую тему.',
+        'Добавьте заведения в каталог или выберите другую тему.',
       businessIds: [],
       source: 'rule-based',
     };

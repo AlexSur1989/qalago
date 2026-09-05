@@ -40,8 +40,6 @@ export function toRecommendationItems(
 ): RecommendationItem[] {
   return businesses.slice(0, limit).map((b) => ({
     businessId: b.id,
-    reason: b.isFeatured
-      ? `VIP в ${b.category?.title ?? 'категории'}`
-      : `Популярное: ${b.title}`,
+    reason: `Популярное: ${b.title}`,
   }));
 }

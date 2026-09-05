@@ -21,13 +21,13 @@ export async function fetchPersonalRecommendations(
   return fetchJson<CatalogBusiness[]>(`/businesses/recommended/me?${params}`, token);
 }
 
-export async function fetchFeaturedFallback(
+/** Organic catalog fallback — title order, no legacy isFeatured filter (Stage 4C.1). */
+export async function fetchOrganicFallback(
   citySlug: string,
   limit = 10,
 ): Promise<CatalogBusiness[]> {
   const params = new URLSearchParams({
     citySlug,
-    featured: 'true',
     limit: String(limit),
   });
   const data = await fetchJson<{ items: CatalogBusiness[] }>(`/businesses?${params}`);

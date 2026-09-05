@@ -116,9 +116,7 @@ export class BusinessesService {
     if (query.categoryId) {
       where.categoryId = query.categoryId;
     }
-    if (query.featured !== undefined) {
-      where.isFeatured = query.featured;
-    }
+    // Legacy `featured` query param ignored — paid visibility via AdCampaign only (Stage 4C.1).
     if (query.search) {
       where.OR = [
         { title: { contains: query.search, mode: 'insensitive' } },
@@ -256,15 +254,15 @@ export class BusinessesService {
     };
     if (categoryIds.length) {
       where.categoryId = { in: categoryIds };
-    } else {
-      where.isFeatured = true;
     }
 
-    return this.prisma.business.findMany({
-      where,
-      select: businessListSelect,
-      take: 10,
-    }).then((items) => [...items].sort(compareBusinessCatalogRank));
+    return this.prisma.business
+      .findMany({
+        where,
+        select: businessListSelect,
+        take: 50,
+      })
+      .then((items) => [...items].sort(compareBusinessCatalogRank).slice(0, 10));
   }
 
   async update(id: string, user: AuthUser, dto: UpdateBusinessDto) {

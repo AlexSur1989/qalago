@@ -69,6 +69,7 @@ export class ListBusinessesQueryDto {
   @IsOptional()
   @Transform(({ value }) => value === true || value === 'true')
   @IsBoolean()
+  /** @deprecated Ignored on public catalog — legacy admin field; use AdCampaign for paid visibility. */
   featured?: boolean;
 
   @IsOptional()
