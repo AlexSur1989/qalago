@@ -36,6 +36,7 @@ void invalidateCityScopedProviders(Ref ref) {
   ref.invalidate(cityCatalogTotalProvider);
   ref.invalidate(categoriesProvider);
   ref.invalidate(businessesProvider);
+  ref.invalidate(mapBusinessesProvider);
   ref.invalidate(featuredBusinessesProvider);
   ref.invalidate(recommendedBusinessesProvider);
   ref.invalidate(promotionsProvider);
@@ -258,6 +259,15 @@ final businessesProvider = FutureProvider.family<PaginatedBusinesses, Businesses
         );
   },
 );
+
+/// City-wide businesses for map markers (no geo radius filter). Limit 100 per MVP.
+final mapBusinessesProvider = FutureProvider<PaginatedBusinesses>((ref) async {
+  final city = ref.watch(cityProvider);
+  return ref.watch(catalogRepositoryProvider).fetchBusinesses(
+        citySlug: city.slug,
+        limit: 100,
+      );
+});
 
 final featuredBusinessesProvider = FutureProvider((ref) async {
   final city = ref.watch(cityProvider);

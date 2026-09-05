@@ -11,6 +11,22 @@
 
 ---
 
+## 2026-09-06 — Stage 5D: promotions, favorites & map
+
+**Сделано**
+- `/promotions`: city-scoped active feed, real expiry labels, differentiated empty/error states, client-side active guard
+- Favorites: filter by selected city (client-side on complete user list), real «Недавние»/«По названию» sort, three empty states, BusinessCard + remove sync
+- Map: city-wide businesses (`mapBusinessesProvider`, limit 100), marker preview sheet with «Подробнее», GPS/city camera fallback, OSM attribution, error banner without hiding map
+- Backend: favorites response includes `business.city` for city filtering
+- Tests: consumer_discovery_utils + promotions/favorites/map widget tests
+
+**Заложить на будущее**
+- Server-side favorites `citySlug` filter if user lists grow large
+- Map pagination beyond 100 markers per city
+- Map clustering if marker density becomes unusable
+
+---
+
 ## 2026-09-06 — Stage 5C: consumer business detail
 
 **Сделано**

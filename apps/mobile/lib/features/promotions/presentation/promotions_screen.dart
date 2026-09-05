@@ -8,6 +8,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
+import '../../../shared/utils/consumer_discovery_utils.dart';
 import '../../../shared/widgets/city_picker.dart';
 import '../../../shared/widgets/qalago_logo.dart';
 import '../../../shared/widgets/error_view.dart';
@@ -189,17 +190,20 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
               const SizedBox(height: 22),
               promotionsAsync.when(
                 loading: () => const LoadingView(),
-                error: (e, _) => ErrorView(
-                  message: '$e',
+                error: (_, __) => ErrorView(
+                  message: 'Не удалось загрузить акции. Проверьте подключение.',
                   onRetry: () => ref.invalidate(promotionsProvider),
                 ),
                 data: (paginated) {
-                  final items = _filtered(paginated.items);
+                  final active = filterActivePromotionModels(paginated.items);
+                  final items = _filtered(active);
+
+                  if (active.isEmpty) {
+                    return _PromotionsEmptyCity(cityName: city.nameRu);
+                  }
+
                   if (items.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Center(child: Text('Акций пока нет')),
-                    );
+                    return const _PromotionsEmptyFilter();
                   }
 
                   return Column(
@@ -230,6 +234,79 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _PromotionsEmptyCity extends StatelessWidget {
+  const _PromotionsEmptyCity({required this.cityName});
+
+  final String cityName;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 48),
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 42,
+            backgroundColor: AppTheme.kzBlue.withValues(alpha: 0.1),
+            child: const Icon(
+              Icons.local_offer_outlined,
+              color: AppTheme.kzBlue,
+              size: 42,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'В $cityName пока нет активных акций',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Загляните позже — заведения регулярно добавляют новые предложения.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Color(0xFF7B8291), height: 1.35),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PromotionsEmptyFilter extends StatelessWidget {
+  const _PromotionsEmptyFilter();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 48),
+      child: Column(
+        children: [
+          Icon(Icons.search_off, size: 48, color: Color(0xFF8A919F)),
+          SizedBox(height: 16),
+          Text(
+            'Ничего не найдено',
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Попробуйте изменить поиск или категорию.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Color(0xFF7B8291), height: 1.35),
+          ),
+        ],
       ),
     );
   }
@@ -271,6 +348,8 @@ class _PromotionListCard extends StatelessWidget {
     final imageUrl = AppConstants.resolveMediaUrl(
       promotion.imageUrl ?? promotion.business?.coverImageUrl,
     );
+    final validity = formatPromotionValidity(promotion);
+    final benefit = promotion.description ?? promotion.discountText;
 
     return Material(
       color: Colors.white,
@@ -363,10 +442,10 @@ class _PromotionListCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (promotion.description != null) ...[
+                    if (benefit != null) ...[
                       const SizedBox(height: 8),
                       Text(
-                        promotion.description!,
+                        benefit,
                         style: const TextStyle(
                           color: Color(0xFF6F7683),
                           fontSize: 13,
@@ -377,17 +456,17 @@ class _PromotionListCard extends StatelessWidget {
                       ),
                     ],
                     const SizedBox(height: 10),
-                    const Row(
+                    Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.calendar_month_outlined,
                           color: Color(0xFF8A919F),
                           size: 17,
                         ),
-                        SizedBox(width: 5),
+                        const SizedBox(width: 5),
                         Text(
-                          'Активно сейчас',
-                          style: TextStyle(
+                          validity,
+                          style: const TextStyle(
                             color: Color(0xFF6F7683),
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
