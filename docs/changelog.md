@@ -7,6 +7,24 @@
 
 ---
 
+## 2026-09-05 — Этап 3B: Flutter ad integration
+
+**Сделано**
+- Mobile: `features/ads/` — sessionId, serve providers, viewability tracker, VIP banner, sponsored business/promotion blocks
+- Home: HOME_VIP_BANNER, HOME_PROMOTIONS, HOME_FEATURED (отдельно от organic)
+- Category: CATEGORY_TOP, CATEGORY_BOOST + dedup organic list
+- `CatalogRepository.serveAds` / `sendAdEvent` (best-effort, failure isolation)
+- `BusinessCard.sponsored` optional label; `visibility_detector` for >=50%/1s impressions
+- 16 Flutter tests (ads/)
+
+**Сохранено без изменений**
+- Organic `GET /businesses`, backend schema/API, admin/business web, go_router structure
+
+**Заложить на будущее**
+- Owner campaign analytics screen; widget tests for VIP/sponsored UI with demo seed
+
+---
+
 ## 2026-09-05 — Этап 3A: ad serving, fair rotation, analytics
 
 **Сделано**

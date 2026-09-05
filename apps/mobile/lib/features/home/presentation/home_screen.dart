@@ -18,6 +18,8 @@ import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../categories/presentation/category_businesses_screen.dart';
+import '../../ads/providers/ad_serve_provider.dart';
+import '../../ads/widgets/home_ad_slots.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -129,6 +131,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ref.invalidate(recommendedBusinessesProvider);
             ref.invalidate(promotionsProvider);
             ref.invalidate(unreadNotificationsProvider);
+            invalidateAdProviders(ref);
           },
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(
@@ -175,6 +178,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ),
                       const SizedBox(height: 24),
+                      const HomeVipBannerSlot(),
                       _SectionHeader(
                         title: 'Акции и предложения',
                         onAction: () => context.push('/promotions'),
@@ -195,6 +199,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ),
                       const SizedBox(height: 24),
+                      HomePromotionsAdSlot(onPromotionTap: _openPromotion),
                       _SectionHeader(
                         title: 'Рекомендуем',
                         actionLabel: _featuredItemsCount > 1
@@ -221,6 +226,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         },
                       ),
                       const SizedBox(height: 24),
+                      const HomeFeaturedAdSlot(),
                       const _SectionHeader(
                         title: 'Рядом с вами',
                         subtitle: 'До 3 км · сначала TOP и VIP',

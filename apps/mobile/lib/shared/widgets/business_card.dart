@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/location/user_location_provider.dart';
+import '../../features/ads/widgets/sponsored_label.dart';
 import '../../shared/models/models.dart';
 
 class BusinessCard extends StatelessWidget {
-  const BusinessCard({super.key, required this.business, this.onTap});
+  const BusinessCard({
+    super.key,
+    required this.business,
+    this.onTap,
+    this.sponsored = false,
+    this.sponsoredLabel = 'Реклама',
+  });
 
   final BusinessModel business;
   final VoidCallback? onTap;
+  final bool sponsored;
+  final String sponsoredLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +83,10 @@ class BusinessCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (sponsored) ...[
+                    SponsoredLabel(label: sponsoredLabel),
+                    const SizedBox(height: 8),
+                  ],
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

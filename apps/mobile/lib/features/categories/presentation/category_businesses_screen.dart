@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../core/location/user_location_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -9,6 +10,10 @@ import '../../../shared/utils/business_rank.dart';
 import '../../../shared/widgets/business_card.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
+import '../../ads/data/ad_models.dart';
+import '../../ads/data/ad_placement_codes.dart';
+import '../../ads/providers/ad_serve_provider.dart';
+import '../../ads/widgets/sponsored_business_section.dart';
 import '../../auth/providers/auth_provider.dart';
 
 const _categoryRadiusKm = nearbyRadiusKm;
@@ -40,6 +45,22 @@ class CategoryBusinessesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final businessesAsync = ref.watch(categoryBusinessesProvider(categoryId));
+    final topAdsAsync = ref.watch(
+      serveAdsProvider(
+        AdServeScope(
+          placementCode: AdPlacementCodes.categoryTop,
+          categoryId: categoryId,
+        ),
+      ),
+    );
+    final boostAdsAsync = ref.watch(
+      serveAdsProvider(
+        AdServeScope(
+          placementCode: AdPlacementCodes.categoryBoost,
+          categoryId: categoryId,
+        ),
+      ),
+    );
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -60,6 +81,7 @@ class CategoryBusinessesScreen extends ConsumerWidget {
         color: AppTheme.kzBlue,
         onRefresh: () async {
           ref.invalidate(categoryBusinessesProvider(categoryId));
+          invalidateAdProviders(ref);
         },
         child: businessesAsync.when(
           loading: () => const LoadingView(),
@@ -68,12 +90,23 @@ class CategoryBusinessesScreen extends ConsumerWidget {
             children: [
               ErrorView(
                 message: '$e',
-                onRetry: () => ref.invalidate(categoryBusinessesProvider(categoryId)),
+                onRetry: () =>
+                    ref.invalidate(categoryBusinessesProvider(categoryId)),
               ),
             ],
           ),
           data: (data) {
-            if (data.items.isEmpty) {
+            final topAds = topAdsAsync.valueOrNull ?? const [];
+            final boostAds = boostAdsAsync.valueOrNull ?? const [];
+            final paidIds = collectPaidBusinessIds([...topAds, ...boostAds]);
+
+            final organicItems = data.items
+                .where((b) => !paidIds.contains(b.id))
+                .toList();
+
+            if (data.items.isEmpty &&
+                topAds.isEmpty &&
+                boostAds.isEmpty) {
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(24),
@@ -89,48 +122,34 @@ class CategoryBusinessesScreen extends ConsumerWidget {
               );
             }
 
-            final tiers = splitBusinessesByTier(data.items);
-            final total = data.items.length;
-
             return ListView(
               physics: const AlwaysScrollableScrollPhysics(
                 parent: BouncingScrollPhysics(),
               ),
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
               children: [
-                _SectionTitle(
-                  title: 'Рядом с вами',
-                  subtitle:
-                      'До 3 км · $total ${_pluralPlaces(total)} · сначала TOP и VIP',
-                ),
-                const SizedBox(height: 16),
-                if (tiers.top.isNotEmpty) ...[
-                  const _SectionTitle(
-                    title: 'Топ города',
-                    subtitle: 'Закреплённые заведения',
+                if (topAds.isNotEmpty) ...[
+                  SponsoredBusinessSection(
+                    title: 'Рекомендуемые',
+                    items: topAds,
                   ),
-                  const SizedBox(height: 12),
-                  ..._businessCards(context, tiers.top),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 20),
                 ],
-                if (tiers.pro.isNotEmpty) ...[
-                  const _SectionTitle(
-                    title: 'VIP · Pro',
-                    subtitle: 'Платный тариф',
+                if (boostAds.isNotEmpty) ...[
+                  SponsoredBusinessSection(
+                    title: 'Продвигаются',
+                    items: boostAds,
                   ),
-                  const SizedBox(height: 12),
-                  ..._businessCards(context, tiers.pro),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 20),
                 ],
-                if (tiers.regular.isNotEmpty) ...[
+                if (organicItems.isNotEmpty) ...[
                   _SectionTitle(
-                    title: tiers.top.isEmpty && tiers.pro.isEmpty
-                        ? 'Заведения'
-                        : 'Все остальные',
-                    subtitle: 'По расстоянию от вас',
+                    title: 'Все места',
+                    subtitle:
+                        'До 3 км · ${organicItems.length} ${_pluralPlaces(organicItems.length)}',
                   ),
                   const SizedBox(height: 12),
-                  ..._businessCards(context, tiers.regular),
+                  ..._organicBusinessCards(context, organicItems),
                 ],
               ],
             );
@@ -140,18 +159,39 @@ class CategoryBusinessesScreen extends ConsumerWidget {
     );
   }
 
-  static List<Widget> _businessCards(BuildContext context, List<BusinessModel> items) {
-    return items
-        .map(
-          (business) => Padding(
+  static List<Widget> _organicBusinessCards(
+    BuildContext context,
+    List<BusinessModel> items,
+  ) {
+    final tiers = splitBusinessesByTier(items);
+    final widgets = <Widget>[];
+
+    void addGroup(String title, List<BusinessModel> group) {
+      if (group.isEmpty) return;
+      widgets.add(_SectionTitle(title: title));
+      widgets.add(const SizedBox(height: 12));
+      for (final business in group) {
+        widgets.add(
+          Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: BusinessCard(
               business: business,
               onTap: () => context.push('/business/${business.id}'),
             ),
           ),
-        )
-        .toList();
+        );
+      }
+      widgets.add(const SizedBox(height: 8));
+    }
+
+    addGroup('Топ города', tiers.top);
+    addGroup('VIP · Pro', tiers.pro);
+    addGroup(
+      tiers.top.isEmpty && tiers.pro.isEmpty ? 'Заведения' : 'Все остальные',
+      tiers.regular,
+    );
+
+    return widgets;
   }
 
   static String _pluralPlaces(int count) {

@@ -4,6 +4,7 @@ import '../../../core/providers/city_catalog_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/storage/auth_storage.dart';
 import '../../../shared/models/models.dart';
+import '../../ads/providers/ad_serve_provider.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../../recommendations/data/ai_repository.dart';
 
@@ -39,6 +40,7 @@ void invalidateCityScopedProviders(Ref ref) {
   ref.invalidate(recommendedBusinessesProvider);
   ref.invalidate(promotionsProvider);
   ref.invalidate(adminPendingBusinessesProvider);
+  ref.invalidate(serveAdsProvider);
 }
 
 /// Сбрасывает city-scoped провайдеры при смене slug в [cityProvider].

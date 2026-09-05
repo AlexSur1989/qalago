@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../../features/ads/data/ad_models.dart';
 import '../../../shared/models/models.dart';
 
 class AuthRepository {
@@ -364,6 +365,53 @@ class CatalogRepository {
       data: {'tier': tier},
     );
     return response.data as Map<String, dynamic>;
+  }
+
+  Future<AdServeResponse?> serveAds({
+    required String placementCode,
+    required String sessionId,
+    required String citySlug,
+    String? categoryId,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/monetization/ads/serve',
+        queryParameters: {
+          'placementCode': placementCode,
+          'sessionId': sessionId,
+          'citySlug': citySlug,
+          if (categoryId != null) 'categoryId': categoryId,
+        },
+      );
+      return AdServeResponse.fromJson(response.data as Map<String, dynamic>);
+    } on DioException {
+      return null;
+    }
+  }
+
+  /// Best-effort ad event. Returns true if request completed (incl. duplicate).
+  Future<bool> sendAdEvent({
+    required String campaignId,
+    required String placementCode,
+    required String sessionId,
+    required String type,
+    int? position,
+  }) async {
+    try {
+      await _dio.post(
+        '/monetization/ads/events',
+        data: {
+          'campaignId': campaignId,
+          'placementCode': placementCode,
+          'sessionId': sessionId,
+          'type': type,
+          if (position != null) 'position': position,
+        },
+      );
+      return true;
+    } on DioException {
+      return false;
+    }
   }
 }
 
