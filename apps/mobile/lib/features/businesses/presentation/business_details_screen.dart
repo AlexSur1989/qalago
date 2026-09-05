@@ -1,15 +1,18 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:latlong2/latlong.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
+import '../../../shared/utils/business_detail_utils.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../../core/auth/auth_prompt.dart';
+import '../../ads/utils/ad_url_utils.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../owner/presentation/widgets/service_menu_widgets.dart';
 import '../../recommendations/data/ai_repository.dart';
@@ -28,21 +31,47 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
   int _rating = 5;
   bool _viewTracked = false;
 
-  Future<void> _launch(String? url) async {
-    if (url == null || url.isEmpty) return;
-    final uri = Uri.parse(url.startsWith('http') ? url : 'tel:$url');
-    if (await canLaunchUrl(uri)) await launchUrl(uri);
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _trackViewOnce());
   }
 
   void _trackViewOnce() {
-    if (_viewTracked) return;
+    if (_viewTracked || !mounted) return;
     _viewTracked = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      unawaited(
-        ref.read(catalogRepositoryProvider).trackBusinessView(widget.id),
-      );
-    });
+    unawaited(
+      ref.read(catalogRepositoryProvider).trackBusinessView(widget.id),
+    );
+  }
+
+  Future<void> _launchExternal(String? url) async {
+    if (url == null) return;
+    await launchSafeHttpUrl(url);
+  }
+
+  Future<void> _launchPhone(String? phone) async {
+    final tel = normalizeTelUri(phone);
+    if (tel == null) return;
+    await launchPhone(tel);
+  }
+
+  Future<void> _launchWhatsApp(String? whatsapp) async {
+    await launchWhatsApp(whatsapp);
+  }
+
+  Future<void> _launchRoute({
+    required double? latitude,
+    required double? longitude,
+    required String? address,
+  }) async {
+    final url = buildRouteUrl(
+      latitude: latitude,
+      longitude: longitude,
+      address: address,
+    );
+    if (url == null) return;
+    await launchSafeHttpUrl(url);
   }
 
   Future<void> _toggleFavorite() async {
@@ -95,22 +124,24 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
     final menuAsync = ref.watch(serviceMenuProvider(widget.id));
     final reviewsAsync = ref.watch(reviewsProvider(widget.id));
     final favoriteAsync = ref.watch(businessFavoriteProvider(widget.id));
-    final user = ref.watch(authProvider).user;
     final isAuthenticated = ref.watch(authProvider).isAuthenticated;
-    final isOwner =
-        user?.role == 'BUSINESS' ||
-        user?.role == 'ADMIN' ||
-        user?.role == 'CITY_ADMIN';
+    final canManageMenu = isAuthenticated &&
+        ref.watch(myBusinessesProvider).maybeWhen(
+              data: (businesses) =>
+                  businesses.any((b) => b['id'] == widget.id),
+              orElse: () => false,
+            );
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: detailsAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
-          message: '$e',
+          message: _consumerErrorMessage('$e'),
           onRetry: () {
             ref.invalidate(businessDetailsProvider(widget.id));
             ref.invalidate(serviceMenuProvider(widget.id));
+            ref.invalidate(reviewsProvider(widget.id));
           },
         ),
         data: (data) {
@@ -119,32 +150,40 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
           final title = data['title'] as String? ?? '';
           final categoryTitle = category?['title'] as String? ?? '';
           final cityName = city?['nameRu'] as String? ?? 'Уральск';
+          final cityTimezone =
+              city?['timezone'] as String? ?? kDefaultBusinessTimezone;
           final address = data['address'] as String? ?? '';
-          final desc =
-              data['description'] as String? ??
-              data['shortDesc'] as String? ??
-              '';
+          final desc = sanitizeDescription(
+            data['description'] as String? ?? data['shortDesc'] as String?,
+          );
           final phone = data['phone'] as String?;
           final whatsapp = data['whatsapp'] as String?;
-          final instagram = data['instagram'] as String?;
-          final website = data['website'] as String?;
-          final latitude = data['latitude']?.toString();
-          final longitude = data['longitude']?.toString();
-          final routeUrl = latitude != null && longitude != null
-              ? 'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude'
-              : null;
-          final promotions = (data['promotions'] as List<dynamic>?) ?? [];
+          final instagramUrl = normalizeInstagramUrl(data['instagram'] as String?);
+          final websiteUrl = normalizeWebsiteUrl(data['website'] as String?);
+          final latitude = (data['latitude'] as num?)?.toDouble();
+          final longitude = (data['longitude'] as num?)?.toDouble();
+          final routeAvailable = buildRouteUrl(
+                latitude: latitude,
+                longitude: longitude,
+                address: address,
+              ) !=
+              null;
+          final promotions =
+              filterActivePromotions((data['promotions'] as List<dynamic>?) ?? []);
           final embeddedMenu = _asMap(data['menu']);
           final coverUrl = AppConstants.resolveMediaUrl(
             data['coverImageUrl'] as String?,
           );
           final galleryUrls = _galleryUrls(data['images'], coverUrl);
           final photoUrls = [if (coverUrl.isNotEmpty) coverUrl, ...galleryUrls];
-
-          _trackViewOnce();
+          final openStatus =
+              computeOpenStatus(data['workHours'], timezone: cityTimezone);
+          final openLabel = openStatusLabel(openStatus);
+          final hasHours = hasWorkHours(data['workHours']);
+          final weekRows = weeklyHoursRows(data['workHours']);
 
           final reviewStats = reviewsAsync.maybeWhen(
-            data: _reviewStats,
+            data: (reviews) => _reviewStats(reviews),
             orElse: () => (null, 0),
           );
 
@@ -164,6 +203,9 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                   }
                 },
                 onFavorite: () => unawaited(_toggleFavorite()),
+                onImageTap: photoUrls.isEmpty
+                    ? null
+                    : () => _openGallery(context, photoUrls, 0),
               ),
               Transform.translate(
                 offset: const Offset(0, -28),
@@ -177,109 +219,116 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                         address: address,
                         averageRating: reviewStats.$1,
                         reviewCount: reviewStats.$2,
+                        openLabel: openLabel,
+                        openStatus: openStatus,
                       ),
                       const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          if (phone != null)
-                            Expanded(
-                              child: _PrimaryAction(
-                                icon: Icons.phone_rounded,
-                                label: 'Позвонить',
-                                onTap: () {
-                                  unawaited(
-                                    ref
-                                        .read(catalogRepositoryProvider)
-                                        .trackCallClick(widget.id),
-                                  );
-                                  unawaited(_launch(phone));
-                                },
-                              ),
+                      _PrimaryActionsRow(
+                        phone: phone,
+                        whatsapp: whatsapp,
+                        routeAvailable: routeAvailable,
+                        onCall: () {
+                          unawaited(
+                            ref
+                                .read(catalogRepositoryProvider)
+                                .trackCallClick(widget.id),
+                          );
+                          unawaited(_launchPhone(phone));
+                        },
+                        onWhatsApp: () {
+                          unawaited(
+                            ref
+                                .read(catalogRepositoryProvider)
+                                .trackWhatsappClick(widget.id),
+                          );
+                          unawaited(_launchWhatsApp(whatsapp));
+                        },
+                        onRoute: () {
+                          unawaited(
+                            ref
+                                .read(catalogRepositoryProvider)
+                                .trackRouteClick(widget.id),
+                          );
+                          unawaited(
+                            _launchRoute(
+                              latitude: latitude,
+                              longitude: longitude,
+                              address: address,
                             ),
-                          if (phone != null && whatsapp != null)
-                            const SizedBox(width: 10),
-                          if (whatsapp != null)
-                            Expanded(
-                              child: _PrimaryAction(
-                                icon: Icons.chat_bubble_outline_rounded,
-                                label: 'WhatsApp',
-                                onTap: () {
-                                  unawaited(
-                                    ref
-                                        .read(catalogRepositoryProvider)
-                                        .trackWhatsappClick(widget.id),
-                                  );
-                                  unawaited(
-                                    _launch(
-                                      'https://wa.me/${whatsapp.replaceAll('+', '')}',
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          if ((phone != null || whatsapp != null) &&
-                              routeUrl != null)
-                            const SizedBox(width: 10),
-                          if (routeUrl != null)
-                            Expanded(
-                              child: _PrimaryAction(
-                                icon: Icons.assistant_direction_rounded,
-                                label: 'Маршрут',
-                                onTap: () {
-                                  unawaited(
-                                    ref
-                                        .read(catalogRepositoryProvider)
-                                        .trackRouteClick(widget.id),
-                                  );
-                                  unawaited(_launch(routeUrl));
-                                },
-                              ),
-                            ),
-                        ],
+                          );
+                        },
                       ),
-                      if (website != null || instagram != null) ...[
+                      if (websiteUrl != null || instagramUrl != null) ...[
                         const SizedBox(height: 12),
                         Wrap(
                           spacing: 10,
                           runSpacing: 10,
                           children: [
-                            if (website != null)
+                            if (websiteUrl != null)
                               _MiniLinkButton(
                                 icon: Icons.language_rounded,
                                 label: 'Сайт',
-                                onTap: () => unawaited(_launch(website)),
+                                onTap: () {
+                                  unawaited(
+                                    ref
+                                        .read(catalogRepositoryProvider)
+                                        .trackWebsiteClick(widget.id),
+                                  );
+                                  unawaited(_launchExternal(websiteUrl));
+                                },
                               ),
-                            if (instagram != null)
+                            if (instagramUrl != null)
                               _MiniLinkButton(
                                 icon: Icons.camera_alt_outlined,
                                 label: 'Instagram',
-                                onTap: () => unawaited(_launch(instagram)),
+                                onTap: () {
+                                  unawaited(
+                                    ref
+                                        .read(catalogRepositoryProvider)
+                                        .trackInstagramClick(widget.id),
+                                  );
+                                  unawaited(_launchExternal(instagramUrl));
+                                },
                               ),
-                            _MiniLinkButton(
-                              icon: Icons.favorite_border_rounded,
-                              label: 'В избранное',
-                              onTap: () => unawaited(_toggleFavorite()),
-                            ),
                           ],
                         ),
                       ],
-                      const SizedBox(height: 26),
-                      const _SectionTitle(title: 'О заведении'),
-                      const SizedBox(height: 8),
-                      Text(
-                        desc.isEmpty ? 'Описание скоро появится.' : desc,
-                        style: const TextStyle(
-                          color: Color(0xFF596170),
-                          fontSize: 15,
-                          height: 1.45,
+                      if (desc.isNotEmpty) ...[
+                        const SizedBox(height: 26),
+                        const _SectionTitle(title: 'О заведении'),
+                        const SizedBox(height: 8),
+                        Text(
+                          desc,
+                          style: const TextStyle(
+                            color: Color(0xFF596170),
+                            fontSize: 15,
+                            height: 1.45,
+                          ),
                         ),
-                      ),
+                      ],
+                      if (promotions.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        const _SectionTitle(title: 'Акции'),
+                        const SizedBox(height: 10),
+                        ...promotions.map(
+                          (promo) => _PromotionTile(
+                            promo: promo,
+                            onTap: () {
+                              unawaited(
+                                ref
+                                    .read(catalogRepositoryProvider)
+                                    .trackPromotionView(widget.id),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 24),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const _SectionTitle(title: 'Меню и услуги'),
-                          if (isOwner)
+                          if (canManageMenu)
                             TextButton(
                               onPressed: () => context.push(
                                 '/owner/menu/${widget.id}?title=${Uri.encodeComponent(title)}',
@@ -303,7 +352,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                             return PublicMenuView(menu: embeddedMenu);
                           }
                           return Text(
-                            'Не удалось загрузить меню: $e',
+                            'Не удалось загрузить меню',
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.error,
                             ),
@@ -311,28 +360,66 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                         },
                         data: (menu) => PublicMenuView(menu: menu),
                       ),
-                      if (promotions.isNotEmpty) ...[
+                      if (hasHours) ...[
                         const SizedBox(height: 24),
-                        const _SectionTitle(title: 'Акции'),
-                        const SizedBox(height: 10),
-                        ...promotions.map((raw) {
-                          final promo = _asMap(raw) ?? {};
-                          return _PromotionTile(promo: promo);
-                        }),
+                        _WorkHoursBlock(
+                          today: todayHoursLabel(
+                            data['workHours'],
+                            timezone: cityTimezone,
+                          ),
+                          weekRows: weekRows,
+                        ),
                       ],
-                      const SizedBox(height: 24),
-                      _WorkHoursBlock(hours: data['workHours']),
-                      if (photoUrls.isNotEmpty) ...[
+                      if (phone != null ||
+                          whatsapp != null ||
+                          websiteUrl != null ||
+                          instagramUrl != null) ...[
+                        const SizedBox(height: 24),
+                        _ContactsSection(
+                          phone: phone,
+                          whatsapp: whatsapp,
+                          websiteUrl: websiteUrl,
+                          instagramUrl: instagramUrl,
+                        ),
+                      ],
+                      if (latitude != null && longitude != null) ...[
+                        const SizedBox(height: 24),
+                        _MiniMapSection(
+                          latitude: latitude,
+                          longitude: longitude,
+                          onRoute: routeAvailable
+                              ? () {
+                                  unawaited(
+                                    ref
+                                        .read(catalogRepositoryProvider)
+                                        .trackRouteClick(widget.id),
+                                  );
+                                  unawaited(
+                                    _launchRoute(
+                                      latitude: latitude,
+                                      longitude: longitude,
+                                      address: address,
+                                    ),
+                                  );
+                                }
+                              : null,
+                        ),
+                      ],
+                      if (photoUrls.length > 1) ...[
                         const SizedBox(height: 24),
                         const _SectionTitle(title: 'Фотографии'),
                         const SizedBox(height: 10),
-                        _PhotosStrip(urls: photoUrls),
+                        _PhotosStrip(
+                          urls: photoUrls,
+                          onTap: (index) =>
+                              _openGallery(context, photoUrls, index),
+                        ),
                       ],
                       const SizedBox(height: 24),
                       const _SectionTitle(title: 'Отзывы'),
                       const SizedBox(height: 8),
                       _ReviewsBlock(reviewsAsync: reviewsAsync),
-                      if (!isOwner) ...[
+                      if (!canManageMenu) ...[
                         const SizedBox(height: 16),
                         if (isAuthenticated)
                           _ReviewForm(
@@ -343,7 +430,13 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                           )
                         else
                           _LoginToReviewPrompt(
-                            onLogin: () => context.push('/login'),
+                            onLogin: () => showAuthRequiredDialog(
+                              context,
+                              title: 'Войдите в QalaGo',
+                              message:
+                                  'Чтобы оставить отзыв, войдите по номеру телефона.',
+                              returnPath: '/business/${widget.id}',
+                            ),
                           ),
                       ],
                       const SizedBox(height: 26),
@@ -377,52 +470,26 @@ List<String> _galleryUrls(dynamic images, String coverUrl) {
       .toList();
 }
 
-(String, String) _todayHoursInfo(dynamic raw) {
-  const keys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-  const labels = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
-  final hours = _asMap(raw);
-  if (hours == null) return ('Сегодня', 'Уточняйте');
-
-  final index = DateTime.now().weekday - 1;
-  final key = keys[index];
-  final value = hours[key];
-  if (value == null) return ('Сегодня', 'Уточняйте');
-  if (value is String) {
-    return (labels[index], value.replaceAll('-', ' – '));
-  }
-  final map = _asMap(value);
-  if (map?['closed'] == true) return (labels[index], 'Выходной');
-  final open = map?['open']?.toString();
-  final close = map?['close']?.toString();
-  if (open == null || close == null) return (labels[index], 'Уточняйте');
-  return (labels[index], '$open – $close');
-}
-
-List<(String, String)> _weeklyHoursRows(dynamic raw) {
-  const keys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-  const labels = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-  final hours = _asMap(raw);
-  if (hours == null) return const [];
-
-  return List.generate(keys.length, (index) {
-    final value = hours[keys[index]];
-    if (value == null) return (labels[index], '—');
-    if (value is String) {
-      return (labels[index], value.replaceAll('-', ' – '));
-    }
-    final map = _asMap(value);
-    if (map?['closed'] == true) return (labels[index], 'Выходной');
-    final open = map?['open']?.toString();
-    final close = map?['close']?.toString();
-    if (open == null || close == null) return (labels[index], '—');
-    return (labels[index], '$open – $close');
-  });
-}
-
 (double?, int) _reviewStats(List<ReviewModel> reviews) {
   if (reviews.isEmpty) return (null, 0);
   final sum = reviews.fold<int>(0, (total, review) => total + review.rating);
   return (sum / reviews.length, reviews.length);
+}
+
+String _consumerErrorMessage(String raw) {
+  final lower = raw.toLowerCase();
+  if (lower.contains('404') || lower.contains('not found')) {
+    return 'Заведение не найдено или недоступно';
+  }
+  return 'Не удалось загрузить информацию о заведении';
+}
+
+void _openGallery(BuildContext context, List<String> urls, int initialIndex) {
+  showDialog<void>(
+    context: context,
+    barrierColor: Colors.black87,
+    builder: (ctx) => _GalleryViewer(urls: urls, initialIndex: initialIndex),
+  );
 }
 
 class _HeroPhoto extends StatelessWidget {
@@ -432,6 +499,7 @@ class _HeroPhoto extends StatelessWidget {
     required this.isFavorite,
     required this.onBack,
     required this.onFavorite,
+    this.onImageTap,
   });
 
   final String imageUrl;
@@ -439,6 +507,7 @@ class _HeroPhoto extends StatelessWidget {
   final bool isFavorite;
   final VoidCallback onBack;
   final VoidCallback onFavorite;
+  final VoidCallback? onImageTap;
 
   @override
   Widget build(BuildContext context) {
@@ -447,14 +516,16 @@ class _HeroPhoto extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          if (imageUrl.isNotEmpty)
-            Image.network(
-              imageUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => _HeroPlaceholder(),
-            )
-          else
-            _HeroPlaceholder(),
+          GestureDetector(
+            onTap: onImageTap,
+            child: imageUrl.isNotEmpty
+                ? Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => _HeroPlaceholder(),
+                  )
+                : _HeroPlaceholder(),
+          ),
           const DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -532,6 +603,8 @@ class _TitleBlock extends StatelessWidget {
     required this.address,
     required this.averageRating,
     required this.reviewCount,
+    required this.openLabel,
+    required this.openStatus,
   });
 
   final String title;
@@ -539,6 +612,8 @@ class _TitleBlock extends StatelessWidget {
   final String address;
   final double? averageRating;
   final int reviewCount;
+  final String openLabel;
+  final BusinessOpenStatus openStatus;
 
   @override
   Widget build(BuildContext context) {
@@ -574,6 +649,28 @@ class _TitleBlock extends StatelessWidget {
               color: Color(0xFF7A8190),
               fontSize: 16,
               fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+        if (openLabel.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: openStatus == BusinessOpenStatus.open
+                  ? const Color(0xFFE8F8EE)
+                  : const Color(0xFFFCEFEE),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              openLabel,
+              style: TextStyle(
+                color: openStatus == BusinessOpenStatus.open
+                    ? const Color(0xFF1B7F4A)
+                    : const Color(0xFFC0392B),
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+              ),
             ),
           ),
         ],
@@ -616,7 +713,7 @@ class _RatingPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = reviewCount == 0
-        ? 'Новое'
+        ? 'Нет отзывов'
         : averageRating!.toStringAsFixed(1);
 
     return Container(
@@ -628,15 +725,23 @@ class _RatingPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.star_rounded,
-            color: reviewCount == 0 ? const Color(0xFF9AA1AD) : AppTheme.kzGold,
-            size: 20,
-          ),
-          const SizedBox(width: 4),
+          if (reviewCount > 0) ...[
+            const Icon(
+              Icons.star_rounded,
+              color: AppTheme.kzGold,
+              size: 20,
+            ),
+            const SizedBox(width: 4),
+          ],
           Text(
             label,
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: reviewCount == 0 ? 13 : 15,
+              color: reviewCount == 0
+                  ? const Color(0xFF7A8190)
+                  : Colors.black,
+            ),
           ),
           if (reviewCount > 0) ...[
             const SizedBox(width: 4),
@@ -655,6 +760,66 @@ class _RatingPill extends StatelessWidget {
   }
 }
 
+class _PrimaryActionsRow extends StatelessWidget {
+  const _PrimaryActionsRow({
+    required this.phone,
+    required this.whatsapp,
+    required this.routeAvailable,
+    required this.onCall,
+    required this.onWhatsApp,
+    required this.onRoute,
+  });
+
+  final String? phone;
+  final String? whatsapp;
+  final bool routeAvailable;
+  final VoidCallback? onCall;
+  final VoidCallback? onWhatsApp;
+  final VoidCallback? onRoute;
+
+  @override
+  Widget build(BuildContext context) {
+    final children = <Widget>[];
+    if (phone != null && normalizeTelUri(phone) != null) {
+      children.add(
+        Expanded(
+          child: _PrimaryAction(
+            icon: Icons.phone_rounded,
+            label: 'Позвонить',
+            onTap: onCall,
+          ),
+        ),
+      );
+    }
+    if (whatsapp != null && normalizeWhatsAppUrl(whatsapp) != null) {
+      if (children.isNotEmpty) children.add(const SizedBox(width: 10));
+      children.add(
+        Expanded(
+          child: _PrimaryAction(
+            icon: Icons.chat_bubble_outline_rounded,
+            label: 'WhatsApp',
+            onTap: onWhatsApp,
+          ),
+        ),
+      );
+    }
+    if (routeAvailable) {
+      if (children.isNotEmpty) children.add(const SizedBox(width: 10));
+      children.add(
+        Expanded(
+          child: _PrimaryAction(
+            icon: Icons.assistant_direction_rounded,
+            label: 'Маршрут',
+            onTap: onRoute,
+          ),
+        ),
+      );
+    }
+    if (children.isEmpty) return const SizedBox.shrink();
+    return Row(children: children);
+  }
+}
+
 class _PrimaryAction extends StatelessWidget {
   const _PrimaryAction({
     required this.icon,
@@ -664,7 +829,7 @@ class _PrimaryAction extends StatelessWidget {
 
   final IconData icon;
   final String label;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -749,9 +914,10 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _PromotionTile extends StatelessWidget {
-  const _PromotionTile({required this.promo});
+  const _PromotionTile({required this.promo, this.onTap});
 
   final Map<String, dynamic> promo;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -759,8 +925,20 @@ class _PromotionTile extends StatelessWidget {
     final title = promo['title'] as String? ?? '';
     final desc = promo['description'] as String? ?? '';
     final discount = promo['discountText'] as String? ?? 'Акция';
+    final endDateRaw = promo['endDate'];
+    String? expiryLabel;
+    if (endDateRaw != null) {
+      final end = DateTime.tryParse(endDateRaw.toString());
+      if (end != null) {
+        expiryLabel =
+            'до ${end.toLocal().day}.${end.toLocal().month}.${end.toLocal().year}';
+      }
+    }
 
-    return Container(
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -844,6 +1022,17 @@ class _PromotionTile extends StatelessWidget {
                       ),
                     ),
                   ],
+                  if (expiryLabel != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      expiryLabel,
+                      style: const TextStyle(
+                        color: Color(0xFF9AA1AD),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -853,6 +1042,7 @@ class _PromotionTile extends StatelessWidget {
             child: Icon(Icons.chevron_right_rounded, color: AppTheme.kzBlue),
           ),
         ],
+      ),
       ),
     );
   }
@@ -871,15 +1061,16 @@ class _OfferPlaceholder extends StatelessWidget {
 }
 
 class _WorkHoursBlock extends StatelessWidget {
-  const _WorkHoursBlock({required this.hours});
+  const _WorkHoursBlock({
+    required this.today,
+    required this.weekRows,
+  });
 
-  final dynamic hours;
+  final (String, String) today;
+  final List<(String, String)> weekRows;
 
   @override
   Widget build(BuildContext context) {
-    final today = _todayHoursInfo(hours);
-    final weekRows = _weeklyHoursRows(hours);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -928,17 +1119,20 @@ class _WorkHoursBlock extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Row(
                       children: [
-                        SizedBox(
-                          width: 36,
+                        Expanded(
+                          flex: 2,
                           child: Text(
                             row.$1,
-                            style: const TextStyle(
-                              color: Color(0xFF7A8190),
+                            style: TextStyle(
+                              color: row.$1.contains('сегодня')
+                                  ? AppTheme.kzBlue
+                                  : const Color(0xFF7A8190),
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
                         Expanded(
+                          flex: 3,
                           child: Text(
                             row.$2,
                             style: const TextStyle(
@@ -961,9 +1155,10 @@ class _WorkHoursBlock extends StatelessWidget {
 }
 
 class _PhotosStrip extends StatelessWidget {
-  const _PhotosStrip({required this.urls});
+  const _PhotosStrip({required this.urls, required this.onTap});
 
   final List<String> urls;
+  final ValueChanged<int> onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -973,18 +1168,21 @@ class _PhotosStrip extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         itemCount: urls.length,
         separatorBuilder: (_, _) => const SizedBox(width: 10),
-        itemBuilder: (context, index) => ClipRRect(
-          borderRadius: BorderRadius.circular(14),
-          child: Image.network(
-            urls[index],
-            width: 128,
-            height: 94,
-            fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => Container(
+        itemBuilder: (context, index) => GestureDetector(
+          onTap: () => onTap(index),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: Image.network(
+              urls[index],
               width: 128,
               height: 94,
-              color: const Color(0xFFEAF8FC),
-              child: const Icon(Icons.image_outlined, color: AppTheme.kzBlue),
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => Container(
+                width: 128,
+                height: 94,
+                color: const Color(0xFFEAF8FC),
+                child: const Icon(Icons.image_outlined, color: AppTheme.kzBlue),
+              ),
             ),
           ),
         ),
@@ -1398,6 +1596,190 @@ class _CityPill extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ContactsSection extends StatelessWidget {
+  const _ContactsSection({
+    required this.phone,
+    required this.whatsapp,
+    required this.websiteUrl,
+    required this.instagramUrl,
+  });
+
+  final String? phone;
+  final String? whatsapp;
+  final String? websiteUrl;
+  final String? instagramUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionTitle(title: 'Контакты'),
+        const SizedBox(height: 10),
+        if (phone != null && phone!.trim().isNotEmpty)
+          _ContactRow(icon: Icons.phone_outlined, label: phone!),
+        if (whatsapp != null && whatsapp!.trim().isNotEmpty)
+          _ContactRow(icon: Icons.chat_bubble_outline, label: whatsapp!),
+        if (websiteUrl != null)
+          _ContactRow(icon: Icons.language_outlined, label: websiteUrl!),
+        if (instagramUrl != null)
+          _ContactRow(icon: Icons.camera_alt_outlined, label: instagramUrl!),
+      ],
+    );
+  }
+}
+
+class _ContactRow extends StatelessWidget {
+  const _ContactRow({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: const Color(0xFF808896)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Color(0xFF596170),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniMapSection extends StatelessWidget {
+  const _MiniMapSection({
+    required this.latitude,
+    required this.longitude,
+    required this.onRoute,
+  });
+
+  final double latitude;
+  final double longitude;
+  final VoidCallback? onRoute;
+
+  @override
+  Widget build(BuildContext context) {
+    final point = LatLng(latitude, longitude);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionTitle(title: 'На карте'),
+        const SizedBox(height: 10),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: SizedBox(
+            height: 160,
+            child: FlutterMap(
+              options: MapOptions(
+                initialCenter: point,
+                initialZoom: 15,
+                interactionOptions: const InteractionOptions(
+                  flags: InteractiveFlag.none,
+                ),
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'kz.qalago.mobile',
+                ),
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: point,
+                      width: 36,
+                      height: 36,
+                      child: const Icon(
+                        Icons.location_on,
+                        color: AppTheme.kzBlue,
+                        size: 36,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (onRoute != null) ...[
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            onPressed: onRoute,
+            icon: const Icon(Icons.directions_rounded),
+            label: const Text('Построить маршрут'),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _GalleryViewer extends StatefulWidget {
+  const _GalleryViewer({required this.urls, required this.initialIndex});
+
+  final List<String> urls;
+  final int initialIndex;
+
+  @override
+  State<_GalleryViewer> createState() => _GalleryViewerState();
+}
+
+class _GalleryViewerState extends State<_GalleryViewer> {
+  late final PageController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: PageView.builder(
+        controller: _controller,
+        itemCount: widget.urls.length,
+        itemBuilder: (context, index) => InteractiveViewer(
+          child: Center(
+            child: Image.network(
+              widget.urls[index],
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => const Icon(
+                Icons.broken_image_outlined,
+                color: Colors.white54,
+                size: 64,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

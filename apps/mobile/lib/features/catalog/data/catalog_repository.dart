@@ -119,6 +119,12 @@ class CatalogRepository {
   Future<void> trackRouteClick(String businessId) =>
       _trackAnalyticsEvent(businessId: businessId, type: 'ROUTE_CLICK');
 
+  Future<void> trackWebsiteClick(String businessId) =>
+      _trackAnalyticsEvent(businessId: businessId, type: 'WEBSITE_CLICK');
+
+  Future<void> trackInstagramClick(String businessId) =>
+      _trackAnalyticsEvent(businessId: businessId, type: 'INSTAGRAM_CLICK');
+
   Future<void> trackFavoriteAdd(String businessId) =>
       _trackAnalyticsEvent(businessId: businessId, type: 'FAVORITE_ADD');
 

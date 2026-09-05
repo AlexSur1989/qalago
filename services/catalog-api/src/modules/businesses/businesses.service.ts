@@ -38,7 +38,7 @@ const businessListSelect = {
 
 const businessDetailInclude = {
   category: true,
-  city: { select: { id: true, slug: true, nameRu: true } },
+  city: { select: { id: true, slug: true, nameRu: true, timezone: true } },
   images: { orderBy: { sortOrder: 'asc' as const } },
   promotions: {
     where: { status: 'ACTIVE' as const },

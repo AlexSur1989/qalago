@@ -11,6 +11,26 @@
 
 ---
 
+## 2026-09-06 — Stage 5C: consumer business detail
+
+**Сделано**
+- Business Detail: IA reorder (identity → actions → description → promotions → menu → hours → contacts → mini-map → gallery → reviews)
+- Safe URL helpers: phone, WhatsApp (KZ 8→7), website, Instagram, route (coords or address)
+- WEBSITE_CLICK / INSTAGRAM_CLICK organic analytics (Prisma enum + Flutter tracking)
+- VIEW_BUSINESS once-per-open via initState guard
+- Open/closed badge from workHours + city timezone (Asia/Oral UTC+5); hours hidden when absent
+- Promotions: active filter, expiry label, PROMOTION_VIEW on tap
+- Gallery fullscreen viewer; mini-map (flutter_map, OSM)
+- No plan tier badges; «Нет отзывов» instead of fake rating; owner edit only for own business
+- Public detail enforces plan limits via existing backend findOne (photos/promotions/menu)
+
+**Заложить на будуще**
+- Full IANA timezone library for multi-city expansion beyond KZ UTC+5
+- Favorites city filter (Stage 5A P1)
+- Similar businesses / booking (Stage 5D+)
+
+---
+
 ## 2026-09-06 — Stage 5B: consumer categories, search & filters
 
 **Сделано**

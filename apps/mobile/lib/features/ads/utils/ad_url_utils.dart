@@ -24,8 +24,12 @@ Future<bool> launchPhone(String? phone) async {
 
 Future<bool> launchWhatsApp(String? whatsapp) async {
   if (whatsapp == null || whatsapp.isEmpty) return false;
-  final digits = whatsapp.replaceAll(RegExp(r'\D'), '');
+  var digits = whatsapp.replaceAll(RegExp(r'\D'), '');
   if (digits.isEmpty) return false;
+  if (digits.length == 11 && digits.startsWith('8')) {
+    digits = '7${digits.substring(1)}';
+  }
+  if (digits.length < 10) return false;
   final uri = Uri.parse('https://wa.me/$digits');
   if (!await canLaunchUrl(uri)) return false;
   return launchUrl(uri, mode: LaunchMode.externalApplication);
