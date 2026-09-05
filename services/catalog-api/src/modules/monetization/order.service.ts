@@ -339,8 +339,58 @@ export class OrderService {
   }
 
   async getOrder(user: AuthUser, orderId: string) {
-    const order = await this.access.assertOrderAccess(user, orderId);
-    return this.formatOrder(order);
+    await this.access.assertOrderAccess(user, orderId);
+    const order = await this.prisma.order.findUniqueOrThrow({
+      where: { id: orderId },
+      include: {
+        items: {
+          include: {
+            product: true,
+            adCampaigns: {
+              include: {
+                product: true,
+                creative: {
+                  select: {
+                    id: true,
+                    title: true,
+                    moderationStatus: true,
+                  },
+                },
+                campaignPlacements: { include: { placement: true } },
+              },
+            },
+          },
+        },
+        payments: true,
+      },
+    });
+
+    return {
+      ...this.formatOrder(order),
+      campaigns: order.items.flatMap((item) => {
+        const meta =
+          item.metadata && typeof item.metadata === 'object' && !Array.isArray(item.metadata)
+            ? (item.metadata as { desiredStartAt?: string })
+            : {};
+        const requestedStartAt = meta.desiredStartAt ?? null;
+        return item.adCampaigns.map((c) => ({
+          id: c.id,
+          status: c.status,
+          startAt: c.startAt,
+          endAt: c.endAt,
+          requestedStartAt,
+          product: { code: c.product.code, name: c.product.name },
+          creative: c.creative
+            ? {
+                id: c.creative.id,
+                title: c.creative.title,
+                moderationStatus: c.creative.moderationStatus,
+              }
+            : null,
+          placements: c.campaignPlacements.map((cp) => cp.placement),
+        }));
+      }),
+    };
   }
 
   async getAdminOrder(user: AuthUser, orderId: string) {

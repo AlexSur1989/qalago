@@ -101,9 +101,14 @@ export default function BusinessPromotionsPage() {
           <h1>Акции</h1>
           <p className="page-header-meta">Управление спецпредложениями для клиентов</p>
         </div>
-        <Link href="/dashboard" className="btn">
-          ← На главную
-        </Link>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <Link href="/dashboard" className="btn">
+            ← На главную
+          </Link>
+          <Link href="/monetization/products/PROMOTED_PROMOTION" className="btn btn-primary">
+            Продвинуть акцию
+          </Link>
+        </div>
       </header>
 
       {planStatus && (

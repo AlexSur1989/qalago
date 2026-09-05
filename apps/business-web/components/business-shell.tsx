@@ -16,6 +16,7 @@ export type NavId =
   | 'messages'
   | 'settings'
   | 'plan'
+  | 'monetization'
   | 'help';
 
 type NavItem = {
@@ -39,7 +40,13 @@ const NAV: NavItem[] = [
 ];
 
 const FOOTER_NAV: NavItem[] = [
-  { id: 'plan', label: 'Тариф и продвижение', icon: '💎', href: () => '/plan' },
+  { id: 'plan', label: 'Тариф', icon: '💎', href: () => '/plan' },
+  {
+    id: 'monetization',
+    label: 'Реклама и продвижение',
+    icon: '📣',
+    href: () => '/monetization',
+  },
   { id: 'help', label: 'Помощь', icon: '❓', href: () => '/help' },
 ];
 
@@ -211,7 +218,7 @@ function NavLink({
   const className = `nav-item${active ? ' active' : ''}${item.soon ? ' disabled' : ''}`;
   const needsBusiness =
     item.href &&
-    !['home', 'stats', 'messages', 'plan', 'help', 'settings'].includes(item.id);
+    !['home', 'stats', 'messages', 'plan', 'monetization', 'help', 'settings'].includes(item.id);
 
   if (item.soon || !item.href || (needsBusiness && !businessId)) {
     return (

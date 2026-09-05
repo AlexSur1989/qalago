@@ -9,6 +9,21 @@
 
 ---
 
+## 2026-09-06 — Stage 4D: business-web monetization UI
+
+**Сделано**
+- `apps/business-web`: полный owner-flow монетизации — обзор, каталог продуктов/пакетов, VIP-креатив, checkout (manual payment), заказы и кампании с analytics
+- Расширен `ownerApi`: product/campaign/creative endpoints, типы `MonetizationOrder.campaigns`, campaign analytics
+- `lib/monetization-utils.ts` + vitest: owner-facing RU labels, formatters, `packageHasVip`
+- Навигация: footer «Реклама и продвижение» → `/monetization`; plan label → «Тариф»; CTA «Продвинуть акцию» на promotions
+- Цены только через `POST /monetization/quote`; без fake payment success
+
+**Заложить на будущее**
+- Online payment provider (Kaspi/Stripe) в checkout
+- Owner pause/resume campaigns (сейчас только admin)
+
+---
+
 ## 2026-09-06 — Stage 4B.1: package VIP creative activation
 
 **Сделано**

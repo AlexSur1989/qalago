@@ -233,6 +233,17 @@ export type MonetizationQuote = {
   availability: { available: boolean; reason?: string | null; nextAvailableAt?: string | null };
 };
 
+export type MonetizationOrderCampaign = {
+  id: string;
+  status: string;
+  startAt: string;
+  endAt: string;
+  requestedStartAt?: string | null;
+  product: { code: string; name: string };
+  creative?: { id: string; title: string; moderationStatus: string } | null;
+  placements: Array<{ code: string; name: string; nameRu?: string }>;
+};
+
 export type MonetizationOrder = {
   id: string;
   orderNumber: string;
@@ -253,6 +264,7 @@ export type MonetizationOrder = {
     durationHours?: number | null;
   }>;
   payments: Array<{ id: string; status: string; provider: string; amount: number }>;
+  campaigns?: MonetizationOrderCampaign[];
 };
 
 export type MonetizationCampaign = {
@@ -263,10 +275,50 @@ export type MonetizationCampaign = {
   effectiveStatus?: string | null;
   startAt?: string | null;
   endAt?: string | null;
+  requestedStartAt?: string | null;
   product?: { code: string; name: string; type: string } | null;
-  creative?: { id: string; moderationStatus: string } | null;
-  placements?: Array<{ code: string; nameRu?: string }>;
+  creative?: { id: string; title?: string; moderationStatus: string } | null;
+  placements?: Array<{ code: string; name: string; nameRu?: string }>;
   metrics?: { servedCount: number; qualifiedImpressions: number; clickCount: number };
+};
+
+export type MonetizationCreative = {
+  id: string;
+  businessId: string;
+  type: string;
+  imageUrl: string | null;
+  title: string;
+  description: string | null;
+  buttonText: string | null;
+  targetType: string;
+  targetId: string | null;
+  targetUrl: string | null;
+  moderationStatus: string;
+  moderationComment: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type MonetizationCampaignAnalytics = {
+  campaignId: string;
+  period: { from: string | null; to: string | null };
+  served: number;
+  qualifiedImpressions: number;
+  clicks: number;
+  ctr: number;
+  actions: Record<string, number>;
+};
+
+export type CreateMonetizationCreativePayload = {
+  businessId: string;
+  type?: string;
+  imageUrl?: string;
+  title: string;
+  description?: string;
+  buttonText?: string;
+  targetType?: string;
+  targetId?: string;
+  targetUrl?: string;
 };
 
 export const SELECTED_BUSINESS_KEY = 'qalago_business_id';
@@ -536,6 +588,19 @@ export const ownerApi = {
     return api<MonetizationProduct[]>(`/monetization/products?${q}`, { token });
   },
 
+  getMonetizationProduct: (
+    token: string,
+    code: string,
+    params: { businessId: string; citySlug?: string; categoryId?: string },
+  ) => {
+    const q = new URLSearchParams({ businessId: params.businessId });
+    if (params.citySlug) q.set('citySlug', params.citySlug);
+    if (params.categoryId) q.set('categoryId', params.categoryId);
+    return api<MonetizationProduct>(`/monetization/products/${encodeURIComponent(code)}?${q}`, {
+      token,
+    });
+  },
+
   listMonetizationPackages: (token: string) =>
     api<MonetizationPackage[]>('/monetization/packages', { token }),
 
@@ -566,6 +631,51 @@ export const ownerApi = {
       `/monetization/campaigns?businessId=${encodeURIComponent(businessId)}`,
       { token },
     ),
+
+  getMonetizationCampaign: (token: string, campaignId: string) =>
+    api<MonetizationCampaign>(`/monetization/campaigns/${campaignId}`, { token }),
+
+  getMonetizationCampaignAnalytics: (
+    token: string,
+    campaignId: string,
+    params?: { from?: string; to?: string },
+  ) => {
+    const q = new URLSearchParams();
+    if (params?.from) q.set('from', params.from);
+    if (params?.to) q.set('to', params.to);
+    const qs = q.toString();
+    return api<MonetizationCampaignAnalytics>(
+      `/monetization/campaigns/${campaignId}/analytics${qs ? `?${qs}` : ''}`,
+      { token },
+    );
+  },
+
+  createMonetizationCreative: (token: string, body: CreateMonetizationCreativePayload) =>
+    api<MonetizationCreative>('/monetization/creatives', {
+      method: 'POST',
+      token,
+      body: JSON.stringify(body),
+    }),
+
+  listMonetizationCreatives: (token: string, businessId: string) =>
+    api<MonetizationCreative[]>(
+      `/monetization/creatives?businessId=${encodeURIComponent(businessId)}`,
+      { token },
+    ),
+
+  getMonetizationCreative: (token: string, creativeId: string) =>
+    api<MonetizationCreative>(`/monetization/creatives/${creativeId}`, { token }),
+
+  updateMonetizationCreative: (
+    token: string,
+    creativeId: string,
+    body: Partial<CreateMonetizationCreativePayload>,
+  ) =>
+    api<MonetizationCreative>(`/monetization/creatives/${creativeId}`, {
+      method: 'PATCH',
+      token,
+      body: JSON.stringify(body),
+    }),
 };
 
 export const TOKEN_KEY = 'qalago_business_token';

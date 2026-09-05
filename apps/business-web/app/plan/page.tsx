@@ -99,7 +99,7 @@ export default function PlanPage() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Link href="/promote" className="btn">
+          <Link href="/monetization" className="btn">
             Реклама и продвижение
           </Link>
           <Link href="/dashboard" className="btn btn-ghost">
