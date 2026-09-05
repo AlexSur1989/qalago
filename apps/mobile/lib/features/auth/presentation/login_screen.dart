@@ -1,7 +1,12 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/auth_utils.dart';
 import '../providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -12,61 +17,112 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _phoneController = TextEditingController(text: '+77000000003');
+  final _phoneController = TextEditingController();
   final _codeController = TextEditingController();
+  final _codeFocusNode = FocusNode();
   bool _codeSent = false;
-  String? _debugCode;
+  String? _normalizedPhone;
   String _accountType = 'user';
+  int _resendCooldownSec = 0;
+  Timer? _resendTimer;
+
+  static const _resendCooldownTotal = 60;
 
   @override
   void dispose() {
+    _resendTimer?.cancel();
     _phoneController.dispose();
     _codeController.dispose();
+    _codeFocusNode.dispose();
     super.dispose();
   }
 
-  Future<void> _sendCode() async {
+  void _startResendCooldown() {
+    _resendTimer?.cancel();
+    setState(() => _resendCooldownSec = _resendCooldownTotal);
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      if (_resendCooldownSec <= 1) {
+        timer.cancel();
+        setState(() => _resendCooldownSec = 0);
+      } else {
+        setState(() => _resendCooldownSec -= 1);
+      }
+    });
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  Future<void> _sendCode({bool isResend = false}) async {
+    final normalized = normalizeKazakhstanPhone(_phoneController.text);
+    if (normalized == null) {
+      _showError('Проверьте номер телефона');
+      return;
+    }
+
     try {
-      final debug = await ref
-          .read(authProvider.notifier)
-          .sendCode(_phoneController.text.trim());
+      await ref.read(authProvider.notifier).sendCode(normalized);
       setState(() {
         _codeSent = true;
-        _debugCode = debug;
-        if (debug != null) _codeController.text = debug;
+        _normalizedPhone = normalized;
+        _codeController.clear();
       });
+      _startResendCooldown();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              debug != null ? 'Код (dev): $debug' : 'Код отправлен',
+              isResend
+                  ? 'Код отправлен повторно'
+                  : 'Код отправлен на ${formatKazakhstanPhone(normalized)}',
             ),
           ),
         );
+        FocusScope.of(context).requestFocus(_codeFocusNode);
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Ошибка: $e')));
-      }
+      _showError(mapAuthError(e));
     }
   }
 
   Future<void> _verify() async {
+    final phone = _normalizedPhone ??
+        normalizeKazakhstanPhone(_phoneController.text);
+    if (phone == null) {
+      _showError('Проверьте номер телефона');
+      return;
+    }
+
+    final code = _codeController.text.trim();
+    if (!isValidOtpCode(code)) {
+      _showError('Введите код из SMS');
+      return;
+    }
+
     try {
       await ref.read(authProvider.notifier).verifyCode(
-            _phoneController.text.trim(),
-            _codeController.text.trim(),
+            phone,
+            code,
             accountType: _accountType,
           );
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Неверный код или ошибка API: $e')),
-        );
-      }
+      _showError(mapAuthError(e));
     }
+  }
+
+  void _changePhone() {
+    setState(() {
+      _codeSent = false;
+      _codeController.clear();
+    });
   }
 
   void _continueAsGuest() {
@@ -76,6 +132,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = ref.watch(authProvider);
+    final isBusy = auth.isLoading;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -109,7 +166,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      'Сохраняйте любимые места, получайте рекомендации и открывайте город по-новому.',
+                      'Войдите по номеру телефона, чтобы сохранять избранное и оставлять отзывы.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Color(0xFF7B8291),
@@ -136,12 +193,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             icon: Icons.person_outline,
                             title: 'Пользователь',
                             subtitle: 'Каталог, карта, избранное',
-                            onTap: () => setState(() {
-                              _accountType = 'user';
-                              if (_phoneController.text == '+77000000002') {
-                                _phoneController.text = '+77000000003';
-                              }
-                            }),
+                            onTap: isBusy
+                                ? null
+                                : () => setState(() => _accountType = 'user'),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -151,12 +205,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             icon: Icons.storefront_outlined,
                             title: 'Бизнес',
                             subtitle: 'Кабинет владельца заведения',
-                            onTap: () => setState(() {
-                              _accountType = 'business';
-                              if (_phoneController.text == '+77000000003') {
-                                _phoneController.text = '+77000000002';
-                              }
-                            }),
+                            onTap: isBusy
+                                ? null
+                                : () =>
+                                    setState(() => _accountType = 'business'),
                           ),
                         ),
                       ],
@@ -164,7 +216,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 20),
                     TextField(
                       controller: _phoneController,
+                      enabled: !isBusy && !_codeSent,
                       keyboardType: TextInputType.phone,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[\d+\s()-]')),
+                      ],
                       decoration: InputDecoration(
                         hintText: '+7 (777) 123-45-67',
                         prefixIcon: Padding(
@@ -208,43 +264,68 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       const SizedBox(height: 12),
                       TextField(
                         controller: _codeController,
+                        focusNode: _codeFocusNode,
+                        enabled: !isBusy,
                         keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(6),
+                        ],
+                        decoration: const InputDecoration(
                           labelText: 'Код из SMS',
-                          helperText: _debugCode != null
-                              ? 'Dev OTP: $_debugCode'
-                              : null,
+                          hintText: '••••',
                         ),
+                        onSubmitted: (_) {
+                          if (!isBusy) _verify();
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          TextButton(
+                            onPressed: isBusy ? null : _changePhone,
+                            child: const Text('Изменить номер'),
+                          ),
+                          const Spacer(),
+                          TextButton(
+                            onPressed: isBusy ||
+                                    _resendCooldownSec > 0
+                                ? null
+                                : () => _sendCode(isResend: true),
+                            child: Text(
+                              _resendCooldownSec > 0
+                                  ? 'Повтор через $_resendCooldownSec с'
+                                  : 'Отправить снова',
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                     const SizedBox(height: 20),
                     FilledButton(
-                      onPressed: auth.isLoading
+                      onPressed: isBusy
                           ? null
-                          : (_codeSent ? _verify : _sendCode),
+                          : (_codeSent ? _verify : () => _sendCode()),
                       style: FilledButton.styleFrom(
                         minimumSize: const Size.fromHeight(62),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(18),
                         ),
                       ),
-                      child: Text(_codeSent ? 'Войти' : 'Получить код'),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      _debugCode != null
-                          ? 'Код для demo уже подставлен'
-                          : 'Для demo код подставится автоматически',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Color(0xFF8A919F),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      child: isBusy
+                          ? const SizedBox(
+                              height: 22,
+                              width: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(_codeSent ? 'Войти' : 'Получить код'),
                     ),
                     const SizedBox(height: 20),
                     OutlinedButton.icon(
-                      onPressed: auth.isLoading ? null : _continueAsGuest,
+                      onPressed: isBusy ? null : _continueAsGuest,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.black,
                         minimumSize: const Size.fromHeight(58),
@@ -255,9 +336,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           borderRadius: BorderRadius.circular(18),
                         ),
                       ),
-                      icon: const Icon(Icons.person_outline),
-                      label: const Text('Продолжить как гость'),
+                      icon: const Icon(Icons.explore_outlined),
+                      label: const Text('Продолжить без аккаунта'),
                     ),
+                    if (kDebugMode) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        'Локальная разработка: OTP может приходить через backend debug.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.black.withValues(alpha: 0.45),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -282,7 +374,7 @@ class _AccountTypeCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {

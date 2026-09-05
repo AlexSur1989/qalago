@@ -11,6 +11,23 @@
 
 ---
 
+## 2026-09-06 — Stage 5E: guest, auth & profile polish
+
+**Сделано**
+- Login: KZ phone normalization, production copy, resend cooldown, guest CTA, no demo OTP UI
+- Safe login redirect validation (`sanitizeLoginRedirect`) — blocks open redirects
+- Session: logout → `/home`, user-scoped provider invalidation, 401 → guest mode
+- City across login: preserve session city, sync to profile on login
+- Profile guest: city picker, help/about; profile/city works for guest + auth
+- Help: removed dev/placeholder contacts; permissions test accounts debug-only
+
+**Заложить на будущее (Stage 6)**
+- Real production SMS provider integration
+- OTP rate limiting on backend
+- Legal/privacy documents in About
+
+---
+
 ## 2026-09-06 — Stage 5D: promotions, favorites & map
 
 **Сделано**

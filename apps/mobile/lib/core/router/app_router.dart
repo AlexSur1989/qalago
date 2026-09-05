@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../auth/route_access.dart';
+import '../../shared/utils/auth_utils.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/businesses/presentation/business_details_screen.dart';
@@ -84,7 +85,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       if (isAuthed && isLoggingIn) {
         final redirect = state.uri.queryParameters['redirect'];
-        if (redirect != null && redirect.isNotEmpty) return redirect;
+        if (redirect != null && redirect.isNotEmpty) {
+          return sanitizeLoginRedirect(redirect);
+        }
         if (canManageBusinessCabinet(authState.user?.role)) {
           return '/owner';
         }

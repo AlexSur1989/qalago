@@ -17,10 +17,11 @@ bool isPublicConsumerRoute(String location) {
 }
 
 bool isAuthOnlyConsumerRoute(String location) {
-  if (location == '/notifications') return true;
-  if (location == '/profile/edit') return true;
-  if (location == '/profile/reviews') return true;
-  if (location == '/profile/permissions') return true;
+  final path = Uri.parse(location).path;
+  if (path == '/notifications') return true;
+  if (path == '/profile/edit') return true;
+  if (path == '/profile/reviews') return true;
+  if (path == '/profile/permissions') return true;
   return false;
 }
 

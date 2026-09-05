@@ -10,6 +10,7 @@ class QalaGoApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(cityChangeInvalidatorProvider);
+    ref.watch(authSessionGuardProvider);
     final router = ref.watch(appRouterProvider);
     return MaterialApp.router(
       title: 'QalaGo',

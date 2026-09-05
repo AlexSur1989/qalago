@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/rbac/role_permissions.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/city_picker.dart';
 import '../../../shared/widgets/qalago_logo.dart';
 import '../../auth/providers/auth_provider.dart';
 
@@ -14,7 +15,10 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authProvider);
     if (!auth.isAuthenticated) {
-      return _GuestProfileScreen(cityName: ref.watch(cityProvider).nameRu);
+      return _GuestProfileScreen(
+        cityName: ref.watch(cityProvider).nameRu,
+        onCityTap: () => showCityPickerSheet(context, ref),
+      );
     }
 
     final user = auth.user;
@@ -30,7 +34,10 @@ class ProfileScreen extends ConsumerWidget {
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
           children: [
-            _ProfileHeader(cityName: city.nameRu),
+            _ProfileHeader(
+              cityName: city.nameRu,
+              onCityTap: () => showCityPickerSheet(context, ref),
+            ),
             const SizedBox(height: 28),
             const Text(
               'Профиль',
@@ -131,7 +138,7 @@ class ProfileScreen extends ConsumerWidget {
             OutlinedButton.icon(
               onPressed: () async {
                 await ref.read(authProvider.notifier).logout();
-                if (context.mounted) context.go('/login');
+                if (context.mounted) context.go('/home');
               },
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppTheme.kzBlue,
@@ -152,9 +159,13 @@ class ProfileScreen extends ConsumerWidget {
 }
 
 class _GuestProfileScreen extends StatelessWidget {
-  const _GuestProfileScreen({required this.cityName});
+  const _GuestProfileScreen({
+    required this.cityName,
+    required this.onCityTap,
+  });
 
   final String cityName;
+  final VoidCallback onCityTap;
 
   @override
   Widget build(BuildContext context) {
@@ -165,7 +176,7 @@ class _GuestProfileScreen extends StatelessWidget {
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
           children: [
-            _ProfileHeader(cityName: cityName),
+            _ProfileHeader(cityName: cityName, onCityTap: onCityTap),
             const SizedBox(height: 28),
             const Text(
               'Профиль',
@@ -193,7 +204,7 @@ class _GuestProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             const Text(
-              'Сохраняйте избранное, оставляйте отзывы и управляйте профилем.',
+              'Сохраняйте избранное, оставляйте отзывы и используйте персональные функции.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Color(0xFF7B8291),
@@ -212,7 +223,19 @@ class _GuestProfileScreen extends StatelessWidget {
               ),
               child: const Text('Войти'),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
+            OutlinedButton.icon(
+              onPressed: onCityTap,
+              icon: const Icon(Icons.location_on_outlined),
+              label: Text('Город: $cityName'),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(52),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
             OutlinedButton(
               onPressed: () => context.push('/profile/help'),
               style: OutlinedButton.styleFrom(
@@ -242,9 +265,13 @@ class _GuestProfileScreen extends StatelessWidget {
 }
 
 class _ProfileHeader extends StatelessWidget {
-  const _ProfileHeader({required this.cityName});
+  const _ProfileHeader({
+    required this.cityName,
+    this.onCityTap,
+  });
 
   final String cityName;
+  final VoidCallback? onCityTap;
 
   @override
   Widget build(BuildContext context) {
@@ -259,26 +286,33 @@ class _ProfileHeader extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: Colors.black.withValues(alpha: 0.09)),
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
-              children: [
-                const Icon(Icons.location_on, color: AppTheme.kzBlue, size: 20),
-                const SizedBox(width: 6),
-                Text(
-                  cityName,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                  ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: onCityTap,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                child: Row(
+                  children: [
+                    const Icon(Icons.location_on, color: AppTheme.kzBlue, size: 20),
+                    const SizedBox(width: 6),
+                    Text(
+                      cityName,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const Icon(
+                      Icons.keyboard_arrow_down,
+                      color: Color(0xFF808796),
+                      size: 20,
+                    ),
+                  ],
                 ),
-                const Icon(
-                  Icons.keyboard_arrow_down,
-                  color: Color(0xFF808796),
-                  size: 20,
-                ),
-              ],
+              ),
             ),
           ),
         ),

@@ -32,6 +32,16 @@ final notificationsRepositoryProvider = Provider(
   (ref) => NotificationsRepository(ref.watch(dioProvider)),
 );
 
+void invalidateUserScopedProviders(Ref ref) {
+  ref.invalidate(favoritesProvider);
+  ref.invalidate(myReviewsProvider);
+  ref.invalidate(myBusinessesProvider);
+  ref.invalidate(notificationsProvider);
+  ref.invalidate(unreadNotificationsProvider);
+  ref.invalidate(businessFavoriteProvider);
+  ref.invalidate(adminPendingBusinessesProvider);
+}
+
 void invalidateCityScopedProviders(Ref ref) {
   ref.invalidate(cityCatalogTotalProvider);
   ref.invalidate(categoriesProvider);
@@ -49,6 +59,14 @@ final cityChangeInvalidatorProvider = Provider<void>((ref) {
   ref.listen(cityProvider, (previous, next) {
     if (previous != null && previous.slug == next.slug) return;
     invalidateCityScopedProviders(ref);
+  });
+});
+
+/// Clears auth on global 401 from API (expired/invalid JWT).
+final authSessionGuardProvider = Provider<void>((ref) {
+  ref.listen<int>(sessionExpiredProvider, (previous, next) {
+    if (previous == null || next == previous) return;
+    ref.read(authProvider.notifier).handleUnauthorized();
   });
 });
 
@@ -93,7 +111,7 @@ class AuthNotifier extends Notifier<AuthState> {
     }
     try {
       final user = await _repo.getMe();
-      await _applyPreferredCity(user);
+      await _applyPreferredCityFromServer(user);
       state = AuthState(user: user, isAuthenticated: true);
     } catch (_) {
       await _storage.clear();
@@ -101,7 +119,7 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  Future<void> _applyPreferredCity(UserModel user) async {
+  Future<void> _applyPreferredCityFromServer(UserModel user) async {
     if (user.role == 'CITY_ADMIN') {
       final slug = user.managedCitySlug;
       if (slug != null && slug.isNotEmpty) {
@@ -133,10 +151,47 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
+  Future<void> _syncSessionCityToProfile(UserModel user) async {
+    if (user.role == 'CITY_ADMIN') {
+      await _applyPreferredCityFromServer(user);
+      return;
+    }
+
+    final sessionCity = ref.read(cityProvider);
+    try {
+      final cities = await ref.read(citiesProvider.future);
+      Map<String, dynamic>? match;
+      for (final city in cities) {
+        if (city['slug'] == sessionCity.slug) {
+          match = city;
+          break;
+        }
+      }
+      if (match == null) return;
+      final cityId = match['id'] as String?;
+      if (cityId == null || cityId.isEmpty) return;
+
+      final updated = await _repo.updateMe(preferredCityId: cityId);
+      state = state.copyWith(
+        user: updated.copyWith(
+          preferredCitySlug: sessionCity.slug,
+          preferredCityName: sessionCity.nameRu,
+        ),
+      );
+    } catch (_) {
+      // Session city stays local even if sync fails.
+    }
+  }
+
+  /// Clears authenticated session. User-scoped providers react via [authProvider] watch.
+  void clearSession() {
+    state = const AuthState(isLoading: false);
+  }
+
   Future<void> refreshUser() async {
     final user = await _repo.getMe();
     state = state.copyWith(user: user);
-    await _applyPreferredCity(user);
+    await _applyPreferredCityFromServer(user);
   }
 
   Future<void> updateName(String name) async {
@@ -196,8 +251,8 @@ class AuthNotifier extends Notifier<AuthState> {
         accountType: accountType,
       );
       await _storage.saveToken(result.token);
-      await _applyPreferredCity(result.user);
       state = AuthState(user: result.user, isAuthenticated: true);
+      await _syncSessionCityToProfile(result.user);
     } catch (e) {
       state = state.copyWith(isLoading: false);
       rethrow;
@@ -206,7 +261,12 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> logout() async {
     await _storage.clear();
-    state = const AuthState();
+    clearSession();
+  }
+
+  Future<void> handleUnauthorized() async {
+    await _storage.clear();
+    clearSession();
   }
 }
 
@@ -351,10 +411,12 @@ final reviewsProvider = FutureProvider.family<List<ReviewModel>, String>((ref, b
 });
 
 final myReviewsProvider = FutureProvider<List<ReviewModel>>((ref) async {
+  if (!ref.watch(authProvider).isAuthenticated) return [];
   return ref.watch(catalogRepositoryProvider).fetchMyReviews();
 });
 
 final myBusinessesProvider = FutureProvider((ref) async {
+  if (!ref.watch(authProvider).isAuthenticated) return [];
   return ref.watch(catalogRepositoryProvider).fetchMyBusinesses();
 });
 
@@ -375,6 +437,7 @@ final adminModerationCityNameProvider = Provider<String>((ref) {
 });
 
 final adminPendingBusinessesProvider = FutureProvider((ref) async {
+  if (!ref.watch(authProvider).isAuthenticated) return [];
   final citySlug = ref.watch(adminModerationCitySlugProvider);
   return ref.watch(adminRepositoryProvider).fetchBusinesses(
         status: 'PENDING',
@@ -383,6 +446,7 @@ final adminPendingBusinessesProvider = FutureProvider((ref) async {
 });
 
 final notificationsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  if (!ref.watch(authProvider).isAuthenticated) return [];
   return ref.watch(notificationsRepositoryProvider).fetchAll();
 });
 

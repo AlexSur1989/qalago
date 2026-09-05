@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/rbac/role_permissions.dart';
@@ -39,7 +40,7 @@ class ProfilePermissionsScreen extends ConsumerWidget {
             items: definition.cannot,
           ),
           const SizedBox(height: 24),
-          const _TestAccountsCard(),
+          if (kDebugMode) const _TestAccountsCard(),
         ],
       ),
     );
