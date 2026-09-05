@@ -75,12 +75,31 @@ final userLocationProvider = StreamProvider<UserPosition?>((ref) async* {
   );
 });
 
+/// If user GPS is far from the selected city, search from city center instead.
+/// Otherwise «Рядом с вами» returns 0 while admin still lists all city businesses.
+const maxUserDistanceFromCityMeters = 25000;
+
 /// User GPS or city center — always set so «Рядом с вами» uses geo + tier sort.
 final nearbySearchPositionProvider = Provider<UserPosition>((ref) {
-  final userPos = ref.watch(userLocationProvider).valueOrNull;
-  if (userPos != null) return userPos;
-
   final city = ref.watch(cityProvider);
+  final userPos = ref.watch(userLocationProvider).valueOrNull;
+
+  if (userPos != null &&
+      city.centerLat != null &&
+      city.centerLng != null) {
+    final distanceFromCity = Geolocator.distanceBetween(
+      userPos.latitude,
+      userPos.longitude,
+      city.centerLat!,
+      city.centerLng!,
+    );
+    if (distanceFromCity <= maxUserDistanceFromCityMeters) {
+      return userPos;
+    }
+  } else if (userPos != null) {
+    return userPos;
+  }
+
   if (city.centerLat != null && city.centerLng != null) {
     return UserPosition(
       latitude: city.centerLat!,

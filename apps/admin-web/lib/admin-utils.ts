@@ -33,6 +33,18 @@ export function statusClass(status: string): string {
   }
 }
 
+export function isPublicVisible(status: string): boolean {
+  return status === 'ACTIVE';
+}
+
+export function publicVisibilityLabel(status: string): string {
+  return isPublicVisible(status) ? 'В приложении' : 'Не в приложении';
+}
+
+export function publicVisibilityClass(status: string): string {
+  return isPublicVisible(status) ? 'tag tag-success' : 'tag tag-muted';
+}
+
 export function confirmAction(message: string): boolean {
   return window.confirm(message);
 }

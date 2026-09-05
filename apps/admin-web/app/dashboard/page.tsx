@@ -21,6 +21,8 @@ import {
   planTierLabel,
   statusClass,
   statusLabel,
+  publicVisibilityClass,
+  publicVisibilityLabel,
 } from '@/lib/admin-utils';
 import { canManageUsers } from '@/lib/rbac';
 import { useAuth } from '@/lib/use-auth';
@@ -490,6 +492,11 @@ export default function DashboardPage() {
                       Владелец: {b.owner?.phone}
                       {b.phone ? ` · ${b.phone}` : ''}
                     </div>
+                    <div className="moderation-meta">
+                      <span className={publicVisibilityClass(b.status)}>
+                        {publicVisibilityLabel(b.status)}
+                      </span>
+                    </div>
                   </div>
                   <div className="moderation-actions">
                     <button
@@ -532,6 +539,7 @@ export default function DashboardPage() {
                   <th>Название</th>
                   <th>Категория</th>
                   <th>Статус</th>
+                  <th>Приложение</th>
                   <th>Тариф</th>
                   <th>Город</th>
                   <th>VIP</th>
@@ -545,6 +553,11 @@ export default function DashboardPage() {
                     <td>{b.category?.title ?? '—'}</td>
                     <td>
                       <span className={statusClass(b.status)}>{statusLabel(b.status)}</span>
+                    </td>
+                    <td>
+                      <span className={publicVisibilityClass(b.status)}>
+                        {publicVisibilityLabel(b.status)}
+                      </span>
                     </td>
                     <td>
                       <select

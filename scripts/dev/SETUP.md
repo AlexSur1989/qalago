@@ -31,7 +31,25 @@ npm run seed
 npm run start:dev
 ```
 
-Проверка: http://127.0.0.1:3000/api/v1/health
+Проверка: http://localhost:3002/api/v1/health
+
+## Порты (localhost)
+
+| Сервис | URL |
+|--------|-----|
+| API (catalog-api) | http://localhost:3002/api/v1 |
+| Admin web | http://localhost:3001 |
+| Business web | http://localhost:3003 |
+| AI orchestrator | http://localhost:3004/api/v1 |
+| Mobile (Flutter web) | http://localhost:8080 |
+
+Полный стек одной командой из корня репозитория:
+
+```powershell
+npm run dev:all
+# или перезапуск:
+.\scripts\dev\restart-all.ps1
+```
 
 ## 3. Mobile
 
