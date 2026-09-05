@@ -4,6 +4,7 @@ import {
   PaymentProvider,
   PaymentStatus,
   UserRole,
+  AdModerationStatus,
 } from '@prisma/client';
 import { AvailabilityService } from './availability.service';
 import { CampaignProvisioningService } from './campaign-provisioning.service';
@@ -18,6 +19,8 @@ describe('OrderService', () => {
     business: { findUnique: jest.fn(), findUniqueOrThrow: jest.fn() },
     monetizationProduct: { findUnique: jest.fn() },
     promotionPackage: { findUnique: jest.fn() },
+    promotion: { findFirst: jest.fn() },
+    adCreative: { findFirst: jest.fn() },
     order: { findMany: jest.fn(), findUnique: jest.fn(), findUniqueOrThrow: jest.fn() },
     payment: { findUnique: jest.fn(), findUniqueOrThrow: jest.fn(), create: jest.fn() },
   } as unknown as PrismaService;
@@ -236,6 +239,11 @@ describe('OrderService', () => {
       type: MonetizationProductType.VIP_BANNER,
       isActive: true,
     });
+    prisma.adCreative.findFirst = jest.fn().mockResolvedValue({
+      id: 'cr-1',
+      businessId: 'biz-1',
+      moderationStatus: AdModerationStatus.DRAFT,
+    });
     pricing.priceProductLine = jest.fn().mockResolvedValue({
       basePrice: 12900,
       discountPercent: 0,
@@ -249,7 +257,7 @@ describe('OrderService', () => {
     await expect(
       service.createOrder(user, {
         businessId: 'biz-1',
-        items: [{ productCode: 'VIP_BANNER', durationDays: 7 }],
+        items: [{ productCode: 'VIP_BANNER', durationDays: 7, creativeId: 'cr-1' }],
       }),
     ).rejects.toMatchObject({ response: { code: 'PLACEMENT_UNAVAILABLE' } });
   });

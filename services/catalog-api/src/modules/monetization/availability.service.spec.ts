@@ -74,7 +74,7 @@ describe('AvailabilityService', () => {
   it('36. cancelled campaigns are not counted (via status filter in query)', async () => {
     prisma.adPlacement.findUnique = jest.fn().mockResolvedValue({
       id: 'pl-1',
-      code: 'HOME_VIP_BANNER',
+      code: 'CATEGORY_TOP',
       isActive: true,
       maxActiveCampaigns: 1,
     });
@@ -84,13 +84,36 @@ describe('AvailabilityService', () => {
     });
 
     const result = await service.checkAvailability({
+      productType: MonetizationProductType.TOP_CATEGORY,
+      cityId: 'city-1',
+      categoryId: 'cat-1',
+      desiredStartAt: new Date('2026-09-05'),
+      desiredEndAt: new Date('2026-09-12'),
+    });
+
+    expect(result.available).toBe(true);
+  });
+
+  it('4B.2 VIP PENDING_MODERATION counts toward HOME_VIP_BANNER capacity', async () => {
+    prisma.adPlacement.findUnique = jest.fn().mockResolvedValue({
+      id: 'pl-1',
+      code: 'HOME_VIP_BANNER',
+      isActive: true,
+      maxActiveCampaigns: 2,
+    });
+    prisma.adCampaign.count = jest.fn().mockImplementation(({ where }) => {
+      expect(where.status.in).toEqual(['ACTIVE', 'SCHEDULED', 'PENDING_MODERATION']);
+      return Promise.resolve(2);
+    });
+
+    const result = await service.checkAvailability({
       productType: MonetizationProductType.VIP_BANNER,
       cityId: 'city-1',
       desiredStartAt: new Date('2026-09-05'),
       desiredEndAt: new Date('2026-09-12'),
     });
 
-    expect(result.available).toBe(true);
+    expect(result.available).toBe(false);
   });
 
   it('37. city/category isolation for CATEGORY_TOP', async () => {

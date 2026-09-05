@@ -5,6 +5,8 @@ import {
   CAPACITY_CAMPAIGN_STATUSES,
   PRODUCT_PLACEMENT_MAP,
   SCOPED_AVAILABILITY_PLACEMENTS,
+  VIP_CAPACITY_CAMPAIGN_STATUSES,
+  VIP_CAPACITY_PLACEMENT_CODE,
 } from './constants/monetization.constants';
 import {
   MonetizationErrorCode,
@@ -44,6 +46,14 @@ export class AvailabilityService {
     return PRODUCT_PLACEMENT_MAP[productType as keyof typeof PRODUCT_PLACEMENT_MAP];
   }
 
+  /** Placement-specific statuses that consume inventory capacity. */
+  resolveCapacityStatuses(placementCode: string): readonly AdCampaignStatus[] {
+    if (placementCode === VIP_CAPACITY_PLACEMENT_CODE) {
+      return [...VIP_CAPACITY_CAMPAIGN_STATUSES];
+    }
+    return [...CAPACITY_CAMPAIGN_STATUSES];
+  }
+
   async getPlacementByCode(code: string) {
     return this.prisma.adPlacement.findUnique({ where: { code } });
   }
@@ -71,8 +81,10 @@ export class AvailabilityService {
       };
     }
 
+    const capacityStatuses = this.resolveCapacityStatuses(placementCode);
+
     const where: Prisma.AdCampaignWhereInput = {
-      status: { in: [...CAPACITY_CAMPAIGN_STATUSES] },
+      status: { in: [...capacityStatuses] },
       startAt: { lt: params.desiredEndAt },
       endAt: { gt: params.desiredStartAt },
       campaignPlacements: { some: { placementId: placement.id } },

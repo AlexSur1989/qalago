@@ -27,8 +27,17 @@ export const SCOPED_AVAILABILITY_PLACEMENTS = new Set([
   'HOME_FEATURED',
 ]);
 
-/** Campaign statuses that consume placement capacity. */
+/** Campaign statuses that consume placement capacity (default placements). */
 export const CAPACITY_CAMPAIGN_STATUSES = ['ACTIVE', 'SCHEDULED'] as const;
+
+/** HOME_VIP_BANNER also reserves capacity while paid creative awaits moderation. */
+export const VIP_CAPACITY_CAMPAIGN_STATUSES = [
+  'ACTIVE',
+  'SCHEDULED',
+  'PENDING_MODERATION',
+] as const;
+
+export const VIP_CAPACITY_PLACEMENT_CODE = 'HOME_VIP_BANNER';
 
 /** Monetization product code used for package order line items. */
 export const PACKAGE_PRODUCT_CODE = 'PACKAGE';

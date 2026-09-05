@@ -111,6 +111,13 @@ export class OrderService {
       }
     }
 
+    const hasVipBanner = pkg!.items.some(
+      (item) => item.product.type === MonetizationProductType.VIP_BANNER,
+    );
+    if (hasVipBanner) {
+      await this.assertOwnedVipCreative(dto.businessId, dto.creativeId);
+    }
+
     const desiredStartAt = dto.desiredStartAt
       ? new Date(dto.desiredStartAt)
       : new Date();
@@ -183,6 +190,10 @@ export class OrderService {
       }
 
       this.assertDuration(item.durationHours, item.durationDays);
+
+      if (product!.type === MonetizationProductType.VIP_BANNER) {
+        await this.assertOwnedVipCreative(businessId, item.creativeId);
+      }
 
       const categoryId = item.categoryId ?? business.categoryId;
       const priced = await this.pricing.priceProductLine(businessId, {
@@ -684,6 +695,27 @@ export class OrderService {
       },
     });
     return this.formatAdminPayment(full);
+  }
+
+  private async assertOwnedVipCreative(
+    businessId: string,
+    creativeId?: string | null,
+  ) {
+    if (!creativeId) {
+      monetizationBadRequest(
+        MonetizationErrorCode.CREATIVE_REQUIRED,
+        'creativeId required for VIP_BANNER',
+      );
+    }
+    const creative = await this.prisma.adCreative.findFirst({
+      where: { id: creativeId, businessId },
+    });
+    if (!creative) {
+      monetizationBadRequest(
+        MonetizationErrorCode.CREATIVE_NOT_OWNED,
+        'Creative not found or not owned by business',
+      );
+    }
   }
 
   private assertDuration(durationHours?: number, durationDays?: number) {

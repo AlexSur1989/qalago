@@ -216,6 +216,13 @@ export class CampaignProvisioningService {
     const creativeId =
       requiresCreative && ctx.metadata.creativeId ? ctx.metadata.creativeId : null;
 
+    if (requiresCreative && !creativeId) {
+      monetizationBadRequest(
+        MonetizationErrorCode.CREATIVE_REQUIRED,
+        'creativeId required for VIP_BANNER campaign provisioning',
+      );
+    }
+
     const desiredStartAt = ctx.metadata.desiredStartAt
       ? new Date(ctx.metadata.desiredStartAt)
       : ctx.paidAt;
@@ -225,17 +232,13 @@ export class CampaignProvisioningService {
       ctx.durationDays,
     );
 
-    // VIP waiting for creative approval does not reserve inventory (PENDING_MODERATION
-    // is excluded from CAPACITY_CAMPAIGN_STATUSES). Non-VIP items assert availability.
-    if (!requiresCreative || creativeId) {
-      await this.availability.assertAvailableInTransaction(tx, {
-        productType: ctx.product.type,
-        cityId: ctx.cityId,
-        categoryId: ctx.categoryId,
-        desiredStartAt,
-        desiredEndAt,
-      });
-    }
+    await this.availability.assertAvailableInTransaction(tx, {
+      productType: ctx.product.type,
+      cityId: ctx.cityId,
+      categoryId: ctx.categoryId,
+      desiredStartAt,
+      desiredEndAt,
+    });
 
     let creativeModerationStatus: AdModerationStatus | null = null;
     if (creativeId) {

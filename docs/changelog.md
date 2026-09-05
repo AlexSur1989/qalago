@@ -9,6 +9,22 @@
 
 ---
 
+## 2026-09-06 — Stage 4B.2: VIP inventory reservation + order validation
+
+**Сделано**
+- `HOME_VIP_BANNER`: capacity учитывает `ACTIVE`, `SCHEDULED`, `PENDING_MODERATION` (paid VIP на модерации резервирует слот)
+- Остальные placements: capacity без изменений (`ACTIVE`, `SCHEDULED`)
+- Order creation: `creativeId` обязателен для direct `VIP_BANNER` и пакетов с VIP (`MAX`, `NEW_PLACE`); `START` / `BUSINESS` без creative
+- Provisioning VIP: всегда проверка availability + owned creative; `CREATIVE_REQUIRED` / `CREATIVE_NOT_OWNED`
+- REJECTED creative → campaign `REJECTED` → слот освобождается (без refund-логики)
+- Serve без изменений: только `ACTIVE` + approved creative
+- Тесты `stage-4b2-vip-inventory.spec.ts`; DEV E2E `scripts/stage-4b2-e2e.ts`
+
+**Заложить на будущее**
+- Явная политика resubmit после REJECTED (edit creative → повторная модерация vs новый заказ)
+
+---
+
 ## 2026-09-06 — Stage 4D: business-web monetization UI
 
 **Сделано**
