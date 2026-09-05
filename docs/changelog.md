@@ -7,6 +7,25 @@
 
 ---
 
+## 2026-09-05 — Этап 4A: Business monetization UI (owner)
+
+**Сделано**
+- Owner flow: «Продвинуть бизнес» → products/packages → quote → order → campaigns → analytics
+- `features/owner/monetization/` — models, labels, formatters, providers, 8 screens
+- `CatalogRepository` — monetization API methods (products, quote, orders, campaigns, creatives)
+- Dashboard CTA + «Мои продвижения»; plan screen link to monetization
+- VIP creative editor + preview (`VipBannerAd.previewMode`)
+- Business switcher invalidates monetization providers
+- 12 monetization unit tests (29 total Flutter tests)
+
+**Сохранено без изменений**
+- Backend schema, Stage 3B consumer ads, organic API, legacy plan mock-checkout
+
+**Заложить на будущее**
+- Stage 4B admin payment confirm UI; widget tests for promote flow screens
+
+---
+
 ## 2026-09-05 — Этап 3C: Flutter cross-platform build & QA prep
 
 **Сделано**

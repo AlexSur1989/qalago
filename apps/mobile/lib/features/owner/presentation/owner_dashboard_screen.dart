@@ -76,7 +76,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
                         .toList(),
                     onChanged: (id) {
                       if (id != null) {
-                        ref.read(selectedOwnerBusinessIdProvider.notifier).select(id);
+                        onOwnerBusinessSelected(ref, id);
                       }
                     },
                   ),
@@ -349,6 +349,38 @@ class _DashboardContent extends StatelessWidget {
                         ),
                       ),
                 ],
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Card(
+          color: AppTheme.kzBlue.withValues(alpha: 0.08),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Продвинуть бизнес',
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Больше просмотров и клиентов в QalaGo',
+                  style: TextStyle(color: Colors.grey.shade800),
+                ),
+                const SizedBox(height: 12),
+                FilledButton(
+                  onPressed: () => context.push('/owner/promote'),
+                  style: FilledButton.styleFrom(backgroundColor: AppTheme.kzBlue),
+                  child: const Text('Продвинуть'),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () => context.push('/owner/monetization/campaigns'),
+                  child: const Text('Мои продвижения'),
+                ),
               ],
             ),
           ),

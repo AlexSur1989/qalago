@@ -144,6 +144,16 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.campaign_outlined, color: AppTheme.kzBlue),
+                    title: const Text('Реклама и продвижение'),
+                    subtitle: const Text('TOP, VIP-баннер, пакеты и статистика'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push('/owner/promote'),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 ...catalog.map((plan) {
                   final tier = plan['tier'] as String? ?? '';
                   final isCurrent = effectiveTier == tier;

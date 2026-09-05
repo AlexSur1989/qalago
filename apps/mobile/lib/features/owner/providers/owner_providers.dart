@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/models/models.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../owner_utils.dart';
+import '../monetization/providers/monetization_providers.dart';
 
 final selectedOwnerBusinessIdProvider =
     NotifierProvider<SelectedOwnerBusinessIdNotifier, String?>(
@@ -15,6 +16,11 @@ class SelectedOwnerBusinessIdNotifier extends Notifier<String?> {
   void select(String? businessId) {
     state = businessId;
   }
+}
+
+void onOwnerBusinessSelected(WidgetRef ref, String businessId) {
+  ref.read(selectedOwnerBusinessIdProvider.notifier).select(businessId);
+  invalidateOwnerMonetizationOnBusinessSwitch(ref, businessId);
 }
 
 final ownerSelectedBusinessProvider = Provider<Map<String, dynamic>?>((ref) {

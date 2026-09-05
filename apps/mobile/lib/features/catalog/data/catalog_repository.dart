@@ -413,6 +413,130 @@ class CatalogRepository {
       return false;
     }
   }
+
+  // --- Owner monetization (Stage 4A) ---
+
+  Future<List<Map<String, dynamic>>> fetchMonetizationProducts({
+    required String businessId,
+    String? citySlug,
+    String? categoryId,
+  }) async {
+    final response = await _dio.get(
+      '/monetization/products',
+      queryParameters: {
+        'businessId': businessId,
+        if (citySlug != null) 'citySlug': citySlug,
+        if (categoryId != null) 'categoryId': categoryId,
+      },
+    );
+    return (response.data as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>> fetchMonetizationProduct({
+    required String code,
+    required String businessId,
+    String? citySlug,
+    String? categoryId,
+  }) async {
+    final response = await _dio.get(
+      '/monetization/products/$code',
+      queryParameters: {
+        'businessId': businessId,
+        if (citySlug != null) 'citySlug': citySlug,
+        if (categoryId != null) 'categoryId': categoryId,
+      },
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<List<Map<String, dynamic>>> fetchMonetizationPackages() async {
+    final response = await _dio.get('/monetization/packages');
+    return (response.data as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>> fetchMonetizationQuote(
+    Map<String, dynamic> body,
+  ) async {
+    final response = await _dio.post('/monetization/quote', data: body);
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> createMonetizationOrder(
+    Map<String, dynamic> body,
+  ) async {
+    final response = await _dio.post('/monetization/orders', data: body);
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<List<Map<String, dynamic>>> fetchMonetizationOrders(
+    String businessId,
+  ) async {
+    final response = await _dio.get(
+      '/monetization/orders',
+      queryParameters: {'businessId': businessId},
+    );
+    return (response.data as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>> fetchMonetizationOrder(String orderId) async {
+    final response = await _dio.get('/monetization/orders/$orderId');
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<List<Map<String, dynamic>>> fetchMonetizationCampaigns(
+    String businessId,
+  ) async {
+    final response = await _dio.get(
+      '/monetization/campaigns',
+      queryParameters: {'businessId': businessId},
+    );
+    return (response.data as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>> fetchMonetizationCampaign(String id) async {
+    final response = await _dio.get('/monetization/campaigns/$id');
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> fetchCampaignAnalytics(
+    String campaignId, {
+    String? from,
+    String? to,
+  }) async {
+    final response = await _dio.get(
+      '/monetization/campaigns/$campaignId/analytics',
+      queryParameters: {
+        if (from != null) 'from': from,
+        if (to != null) 'to': to,
+      },
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> createMonetizationCreative(
+    Map<String, dynamic> body,
+  ) async {
+    final response = await _dio.post('/monetization/creatives', data: body);
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<List<Map<String, dynamic>>> fetchMonetizationCreatives(
+    String businessId,
+  ) async {
+    final response = await _dio.get(
+      '/monetization/creatives',
+      queryParameters: {'businessId': businessId},
+    );
+    return (response.data as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>> updateMonetizationCreative(
+    String id,
+    Map<String, dynamic> body,
+  ) async {
+    final response = await _dio.patch('/monetization/creatives/$id', data: body);
+    return response.data as Map<String, dynamic>;
+  }
 }
 
 class FavoritesRepository {

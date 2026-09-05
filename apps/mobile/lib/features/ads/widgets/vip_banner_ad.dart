@@ -15,9 +15,14 @@ import 'ad_viewability_tracker.dart';
 import 'sponsored_label.dart';
 
 class VipBannerAd extends ConsumerWidget {
-  const VipBannerAd({super.key, required this.item});
+  const VipBannerAd({
+    super.key,
+    required this.item,
+    this.previewMode = false,
+  });
 
   final AdItemModel item;
+  final bool previewMode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,12 +34,7 @@ class VipBannerAd extends ConsumerWidget {
     final tracking = ref.read(adTrackingServiceProvider);
     final imageUrl = AppConstants.resolveMediaUrl(creative.imageUrl);
 
-    return AdViewabilityTracker(
-      key: ValueKey('vip-${item.campaignId}'),
-      onQualifiedImpression: () {
-        unawaited(tracking.trackImpression(context_));
-      },
-      child: Semantics(
+    final banner = Semantics(
         label: 'Реклама: ${creative.title}',
         button: true,
         child: Material(
@@ -44,7 +44,9 @@ class VipBannerAd extends ConsumerWidget {
           borderRadius: BorderRadius.circular(16),
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
-            onTap: () => _handleTap(context, ref, context_, creative),
+            onTap: previewMode
+                ? null
+                : () => _handleTap(context, ref, context_, creative),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -101,8 +103,10 @@ class VipBannerAd extends ConsumerWidget {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: FilledButton(
-                          onPressed: () =>
-                              _handleTap(context, ref, context_, creative),
+                          onPressed: previewMode
+                              ? null
+                              : () =>
+                                  _handleTap(context, ref, context_, creative),
                           style: FilledButton.styleFrom(
                             backgroundColor: AppTheme.kzBlue,
                             foregroundColor: Colors.white,
@@ -127,7 +131,16 @@ class VipBannerAd extends ConsumerWidget {
             ),
           ),
         ),
-      ),
+    );
+
+    if (previewMode) return banner;
+
+    return AdViewabilityTracker(
+      key: ValueKey('vip-${item.campaignId}'),
+      onQualifiedImpression: () {
+        unawaited(tracking.trackImpression(context_));
+      },
+      child: banner,
     );
   }
 

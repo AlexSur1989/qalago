@@ -32,6 +32,13 @@ import '../../features/owner/presentation/owner_help_screen.dart';
 import '../../features/admin/presentation/admin_businesses_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/owner/presentation/owner_reviews_screen.dart';
+import '../../features/owner/monetization/presentation/promote_business_screen.dart';
+import '../../features/owner/monetization/presentation/promote_product_screen.dart';
+import '../../features/owner/monetization/presentation/promote_package_screen.dart';
+import '../../features/owner/monetization/presentation/vip_creative_screen.dart';
+import '../../features/owner/monetization/presentation/monetization_order_confirm_screen.dart';
+import '../../features/owner/monetization/presentation/monetization_orders_screen.dart';
+import '../../features/owner/monetization/presentation/monetization_campaigns_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../theme/app_theme.dart';
 
@@ -227,6 +234,63 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => OwnerReviewsScreen(
           businessId: state.pathParameters['businessId']!,
           businessTitle: state.uri.queryParameters['title'] ?? 'Заведение',
+        ),
+      ),
+      GoRoute(
+        path: '/owner/promote',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const PromoteBusinessScreen(),
+      ),
+      GoRoute(
+        path: '/owner/promote/package/:packageCode',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => PromotePackageScreen(
+          packageCode: state.pathParameters['packageCode']!,
+        ),
+      ),
+      GoRoute(
+        path: '/owner/promote/vip-creative',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => VipCreativeScreen(
+          checkoutExtra: state.extra as Map<String, dynamic>? ?? {},
+        ),
+      ),
+      GoRoute(
+        path: '/owner/promote/:productCode',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => PromoteProductScreen(
+          productCode: state.pathParameters['productCode']!,
+        ),
+      ),
+      GoRoute(
+        path: '/owner/monetization/confirm',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => MonetizationOrderConfirmScreen(
+          extra: state.extra as Map<String, dynamic>? ?? {},
+        ),
+      ),
+      GoRoute(
+        path: '/owner/monetization/orders',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const MonetizationOrdersScreen(),
+      ),
+      GoRoute(
+        path: '/owner/monetization/orders/:orderId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => MonetizationOrderDetailScreen(
+          orderId: state.pathParameters['orderId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/owner/monetization/campaigns',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const MonetizationCampaignsScreen(),
+      ),
+      GoRoute(
+        path: '/owner/monetization/campaigns/:campaignId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => MonetizationCampaignDetailScreen(
+          campaignId: state.pathParameters['campaignId']!,
         ),
       ),
       GoRoute(
