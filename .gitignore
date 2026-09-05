@@ -47,6 +47,9 @@ coverage/
 services/**/prisma/*.db
 services/**/prisma/*.db-journal
 
+# Local DB backups (dev only)
+services/catalog-api/backups/
+
 # OS
 desktop.ini
 

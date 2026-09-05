@@ -5,6 +5,27 @@
 
 ---
 
+## 2026-09-05 — Этап 2: backend monetization core
+
+**Сделано**
+- NestJS module `src/modules/monetization/` — catalog, pricing, availability, orders, manual payments, campaign provisioning, creatives
+- Public API: products, packages; owner API: quote, orders, campaigns, creatives
+- Admin API: orders, payments (manual confirm), campaigns (pause/resume/cancel), creative moderation
+- Pricing precedence (city/category/placement/global), legacy plan discounts (BASIC 0%, PRO 10%, TOP_CITY 15%)
+- Package pricing without plan discount; idempotent manual payment confirm
+- PostgreSQL advisory lock for placement race protection
+- Seed: `PromotionPackageItem` for START/BUSINESS/MAX/NEW_PLACE, `PACKAGE` product
+- 42 unit tests (pricing, orders, payments, campaigns, availability, RBAC)
+- Docs: `docs/MONETIZATION.md`, `api-contracts.md`
+
+**Сохранено без изменений**
+- `PlanPayment`, mock checkout, `/plans`, `business-rank.util.ts`, schema (no new migration)
+
+**Заложить на будущее**
+- Этап 3: ad serving, fair rotation, impression/click analytics
+
+---
+
 ## 2026-09-05 — Этап 1: campaign-based monetization schema (additive)
 
 **Сделано**

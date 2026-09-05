@@ -514,6 +514,105 @@ Response `200`:
 
 ---
 
+## Monetization (Stage 2)
+
+Campaign-based advertising catalog, orders, manual payments, and campaign management.  
+Legacy plan APIs (`/plans`, `PlanPayment`, `Business.planTier`) remain unchanged.
+
+See also: [MONETIZATION.md](../MONETIZATION.md).
+
+### Public catalog
+
+- `GET /monetization/products?citySlug&cityId&categoryId&businessId?`
+- `GET /monetization/products/:code?citySlug&cityId&categoryId&businessId?`
+- `GET /monetization/packages`
+
+Returns products with available durations and `basePrice`. When `businessId` is provided with auth, also returns `discountPercent` and `finalPrice` (server-calculated).
+
+### Business owner (`BUSINESS`, `ADMIN`, `CITY_ADMIN`)
+
+- `POST /monetization/quote` — price quote (does not create order)
+- `POST /monetization/orders` — create order (`AWAITING_PAYMENT`) + auto `Payment` `PENDING`/`MANUAL`
+- `GET /monetization/orders?businessId`
+- `GET /monetization/orders/:id`
+- `GET /monetization/campaigns?businessId`
+- `GET /monetization/campaigns/:id`
+- `POST /monetization/creatives`
+- `GET /monetization/creatives?businessId`
+- `GET /monetization/creatives/:id`
+- `PATCH /monetization/creatives/:id` — only `DRAFT`/`REJECTED`
+
+**Quote body:**
+```json
+{
+  "businessId": "...",
+  "productCode": "TOP_CATEGORY",
+  "durationDays": 7,
+  "desiredStartAt": "2026-09-10T00:00:00Z",
+  "packageCode": null
+}
+```
+
+**Order body (products):**
+```json
+{
+  "businessId": "...",
+  "items": [
+    {
+      "productCode": "TOP_CATEGORY",
+      "durationDays": 7,
+      "desiredStartAt": "2026-09-10T00:00:00Z",
+      "promotionId": null,
+      "creativeId": null
+    }
+  ]
+}
+```
+
+**Order body (package):**
+```json
+{ "businessId": "...", "packageCode": "START" }
+```
+
+### Admin (`ADMIN`, `CITY_ADMIN` — city-scoped)
+
+- `GET /admin/monetization/orders?citySlug&status&page&limit`
+- `GET /admin/monetization/orders/:id`
+- `GET /admin/monetization/payments?citySlug&page&limit`
+- `GET /admin/monetization/payments/:id`
+- `POST /admin/monetization/payments/:id/confirm` — manual payment confirm (idempotent)
+- `GET /admin/monetization/campaigns?citySlug&businessId&page&limit`
+- `GET /admin/monetization/campaigns/:id`
+- `POST /admin/monetization/campaigns/:id/pause`
+- `POST /admin/monetization/campaigns/:id/resume`
+- `POST /admin/monetization/campaigns/:id/cancel`
+- `POST /admin/monetization/creatives/:id/approve`
+- `POST /admin/monetization/creatives/:id/reject`
+
+**Confirm payment response (idempotent):**
+```json
+{
+  "alreadyPaid": false,
+  "order": { "orderNumber": "QLG-20260905-ABC123", "status": "PAID", "...": "..." }
+}
+```
+
+### Monetization error codes
+
+Domain errors include stable `code` in body:
+
+| code | Meaning |
+|------|---------|
+| `PRODUCT_NOT_FOUND` | Unknown/inactive product |
+| `PRICE_NOT_FOUND` | No matching active ProductPrice |
+| `PLACEMENT_UNAVAILABLE` | Slot full for dates |
+| `INVALID_DURATION` | Missing/invalid duration |
+| `BUSINESS_NOT_OWNED` | Ownership/RBAC failure |
+| `PAYMENT_AMOUNT_MISMATCH` | Confirm amount ≠ order total |
+| `ORDER_NOT_FOUND` | Unknown order |
+
+---
+
 ## Health
 
 - `GET /health` — `{ "status": "ok" }`

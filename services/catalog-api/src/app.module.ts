@@ -22,6 +22,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { ServiceItemsModule } from './modules/service-items/service-items.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { PlansModule } from './modules/plans/plans.module';
+import { MonetizationModule } from './modules/monetization/monetization.module';
 import { HealthController } from './modules/health/health.controller';
 
 @Module({
@@ -56,6 +57,7 @@ import { HealthController } from './modules/health/health.controller';
     ServiceItemsModule,
     AnalyticsModule,
     PlansModule,
+    MonetizationModule,
   ],
   controllers: [HealthController],
   providers: [

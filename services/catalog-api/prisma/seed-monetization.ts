@@ -85,6 +85,7 @@ const PRODUCTS: Array<{
     sortOrder: 40,
   },
   { code: 'VIP_BANNER', name: 'VIP баннер', type: 'VIP_BANNER', sortOrder: 50 },
+  { code: 'PACKAGE', name: 'Пакет', type: 'PACKAGE', sortOrder: 60 },
 ];
 
 type PriceSeed = {
@@ -144,6 +145,36 @@ const PACKAGES = [
     durationDays: 14,
   },
 ] as const;
+
+type PackageItemSeed = {
+  productCode: string;
+  durationDays?: number;
+  durationHours?: number;
+};
+
+const PACKAGE_ITEMS: Record<string, PackageItemSeed[]> = {
+  START: [
+    { productCode: 'TOP_CATEGORY', durationDays: 7 },
+    { productCode: 'PROMOTED_PROMOTION', durationDays: 7 },
+  ],
+  BUSINESS: [
+    { productCode: 'TOP_CATEGORY', durationDays: 7 },
+    { productCode: 'FEATURED_BUSINESS', durationDays: 7 },
+    { productCode: 'PROMOTED_PROMOTION', durationDays: 7 },
+  ],
+  MAX: [
+    { productCode: 'VIP_BANNER', durationDays: 7 },
+    { productCode: 'TOP_CATEGORY', durationDays: 7 },
+    { productCode: 'FEATURED_BUSINESS', durationDays: 7 },
+    { productCode: 'PROMOTED_PROMOTION', durationDays: 7 },
+  ],
+  NEW_PLACE: [
+    { productCode: 'VIP_BANNER', durationDays: 7 },
+    { productCode: 'TOP_CATEGORY', durationDays: 14 },
+    { productCode: 'FEATURED_BUSINESS', durationDays: 14 },
+    { productCode: 'PROMOTED_PROMOTION', durationDays: 14 },
+  ],
+};
 
 export async function seedMonetizationCatalog(ctx: SeedCtx) {
   const { prisma, uralskCityId } = ctx;
@@ -225,7 +256,7 @@ export async function seedMonetizationCatalog(ctx: SeedCtx) {
   }
 
   for (const pkg of PACKAGES) {
-    await prisma.promotionPackage.upsert({
+    const packageRow = await prisma.promotionPackage.upsert({
       where: { code: pkg.code },
       update: {
         name: pkg.name,
@@ -245,5 +276,37 @@ export async function seedMonetizationCatalog(ctx: SeedCtx) {
         isActive: true,
       },
     });
+
+    const items = PACKAGE_ITEMS[pkg.code] ?? [];
+    for (const item of items) {
+      const productId = productIds.get(item.productCode);
+      if (!productId) continue;
+
+      const existingItem = await prisma.promotionPackageItem.findFirst({
+        where: {
+          packageId: packageRow.id,
+          productId,
+          durationDays: item.durationDays ?? null,
+          durationHours: item.durationHours ?? null,
+        },
+      });
+
+      if (existingItem) {
+        await prisma.promotionPackageItem.update({
+          where: { id: existingItem.id },
+          data: { quantity: 1 },
+        });
+      } else {
+        await prisma.promotionPackageItem.create({
+          data: {
+            packageId: packageRow.id,
+            productId,
+            durationDays: item.durationDays,
+            durationHours: item.durationHours,
+            quantity: 1,
+          },
+        });
+      }
+    }
   }
 }
