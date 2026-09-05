@@ -48,6 +48,80 @@ export class CreativeService {
     return creatives.map((c) => this.formatCreative(c));
   }
 
+  async listAdminCreatives(
+    user: AuthUser,
+    params: {
+      citySlug?: string;
+      moderationStatus?: string;
+      page?: number;
+      limit?: number;
+    },
+  ) {
+    const cityId = await this.access.resolveAdminCityFilter(user, params.citySlug);
+    const page = params.page ?? 1;
+    const limit = params.limit ?? 20;
+
+    const where: {
+      business?: { cityId: string };
+      moderationStatus?: AdModerationStatus;
+    } = {};
+    if (cityId) {
+      where.business = { cityId };
+    }
+    if (params.moderationStatus) {
+      where.moderationStatus = params.moderationStatus as AdModerationStatus;
+    }
+
+    const [items, total] = await Promise.all([
+      this.prisma.adCreative.findMany({
+        where,
+        include: {
+          business: {
+            select: {
+              id: true,
+              title: true,
+              city: { select: { slug: true, nameRu: true } },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.adCreative.count({ where }),
+    ]);
+
+    return {
+      items: items.map((c) => ({
+        ...this.formatCreative(c),
+        business: c.business,
+      })),
+      total,
+      page,
+      limit,
+    };
+  }
+
+  async getAdminCreative(user: AuthUser, id: string) {
+    const creative = await this.access.assertCreativeAccess(user, id);
+    const full = await this.prisma.adCreative.findUniqueOrThrow({
+      where: { id: creative.id },
+      include: {
+        business: {
+          select: {
+            id: true,
+            title: true,
+            city: { select: { slug: true, nameRu: true } },
+          },
+        },
+      },
+    });
+    return {
+      ...this.formatCreative(full),
+      business: full.business,
+    };
+  }
+
   async get(user: AuthUser, id: string) {
     const creative = await this.access.assertCreativeAccess(user, id);
     return this.formatCreative(creative);

@@ -1,9 +1,12 @@
 'use client';
 
 import { ReactNode } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { AuthUser } from '@/lib/api';
 import { AdminTabId } from '@/lib/admin-utils';
 import { getRoleDefinition } from '@/lib/rbac';
+import type { MonetizationSubNavId } from '@/lib/monetization-utils';
 
 type NavItem = {
   id: AdminTabId;
@@ -26,6 +29,7 @@ type AdminShellProps = {
     featured: number;
     reviews: number;
   };
+  monetizationBadges?: Partial<Record<MonetizationSubNavId, number>>;
   onLogout: () => void;
   children: ReactNode;
 };
@@ -39,16 +43,22 @@ export function AdminShell({
   cityLocked,
   onCityChange,
   badges,
+  monetizationBadges,
   onLogout,
   children,
 }: AdminShellProps) {
+  const pathname = usePathname();
   const roleInfo = getRoleDefinition(user.role);
   const showUsers = user.role === 'ADMIN';
+
+  const monetizationBadgeTotal =
+    (monetizationBadges?.orders ?? 0) + (monetizationBadges?.creatives ?? 0);
 
   const nav: NavItem[] = [
     { id: 'moderation', label: 'Модерация', icon: '📋', badge: badges.pending || null },
     { id: 'featured', label: 'VIP / Топ', icon: '⭐', badge: badges.featured || null },
     { id: 'reviews', label: 'Отзывы', icon: '💬', badge: badges.reviews || null },
+    { id: 'monetization', label: 'Монетизация', icon: '💰', badge: monetizationBadgeTotal || null },
     { id: 'categories', label: 'Категории', icon: '🗂️' },
     { id: 'content', label: 'AI-черновики', icon: '✨' },
     { id: 'users', label: 'Пользователи', icon: '👥', adminOnly: true },
@@ -76,20 +86,38 @@ export function AdminShell({
         <nav className="sidebar-nav">
           {nav
             .filter((item) => !item.adminOnly || showUsers)
-            .map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className={`nav-item${activeTab === item.id ? ' active' : ''}`}
-                onClick={() => onTabChange(item.id)}
-              >
-                <span className="nav-icon">{item.icon}</span>
-                <span>{item.label}</span>
-                {item.badge != null && item.badge !== 0 && (
-                  <span className="nav-badge">{item.badge}</span>
-                )}
-              </button>
-            ))}
+            .map((item) =>
+              item.id === 'monetization' ? (
+                <Link
+                  key={item.id}
+                  href="/monetization"
+                  className={`nav-item${
+                    activeTab === 'monetization' || pathname.startsWith('/monetization')
+                      ? ' active'
+                      : ''
+                  }`}
+                >
+                  <span className="nav-icon">{item.icon}</span>
+                  <span>{item.label}</span>
+                  {item.badge != null && item.badge !== 0 && (
+                    <span className="nav-badge">{item.badge}</span>
+                  )}
+                </Link>
+              ) : (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`nav-item${activeTab === item.id ? ' active' : ''}`}
+                  onClick={() => onTabChange(item.id)}
+                >
+                  <span className="nav-icon">{item.icon}</span>
+                  <span>{item.label}</span>
+                  {item.badge != null && item.badge !== 0 && (
+                    <span className="nav-badge">{item.badge}</span>
+                  )}
+                </button>
+              ),
+            )}
         </nav>
       </aside>
 

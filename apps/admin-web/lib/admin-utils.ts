@@ -5,7 +5,8 @@ export type AdminTabId =
   | 'categories'
   | 'content'
   | 'users'
-  | 'cities';
+  | 'cities'
+  | 'monetization';
 
 export function statusLabel(status: string): string {
   switch (status) {

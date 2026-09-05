@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   adminApi,
   aiApi,
@@ -28,6 +29,7 @@ import { canManageUsers } from '@/lib/rbac';
 import { useAuth } from '@/lib/use-auth';
 
 export default function DashboardPage() {
+  const router = useRouter();
   const { token, user, ready, logout } = useAuth();
   const [citySlug, setCitySlug] = useState('uralsk');
   const [cities, setCities] = useState<CityRow[]>([]);
@@ -429,7 +431,13 @@ export default function DashboardPage() {
   return (
     <AdminShell
       activeTab={tab}
-      onTabChange={setTab}
+      onTabChange={(nextTab) => {
+        if (nextTab === 'monetization') {
+          router.push('/monetization');
+          return;
+        }
+        setTab(nextTab);
+      }}
       user={user}
       citySlug={citySlug}
       cities={cities.length > 0 ? cities : [{ slug: citySlug, nameRu: cityLabel }]}

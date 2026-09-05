@@ -6,6 +6,7 @@ import { AuthUser } from '../../common/types/jwt-payload.type';
 import { CreativeService } from './creative.service';
 import {
   AdminListCampaignsQueryDto,
+  AdminListCreativesQueryDto,
   AdminListOrdersQueryDto,
   AdminListPaymentsQueryDto,
   CampaignAnalyticsQueryDto,
@@ -36,7 +37,7 @@ export class MonetizationAdminController {
 
   @Get('orders/:id')
   getOrder(@CurrentUser() user: AuthUser, @Param('id') id: string) {
-    return this.orderService.getOrder(user, id);
+    return this.orderService.getAdminOrder(user, id);
   }
 
   @Get('payments')
@@ -113,5 +114,23 @@ export class MonetizationAdminController {
     @Body() dto: RejectCreativeDto,
   ) {
     return this.creativeService.reject(user, id, dto.moderationComment);
+  }
+
+  @Get('creatives')
+  listCreatives(
+    @CurrentUser() user: AuthUser,
+    @Query() query: AdminListCreativesQueryDto,
+  ) {
+    return this.creativeService.listAdminCreatives(user, query);
+  }
+
+  @Get('creatives/:id')
+  getCreative(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.creativeService.getAdminCreative(user, id);
+  }
+
+  @Get('placements')
+  listPlacements(@CurrentUser() user: AuthUser) {
+    return this.monetizationService.listAdminPlacements(user);
   }
 }

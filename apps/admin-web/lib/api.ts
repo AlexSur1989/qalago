@@ -1,4 +1,5 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3002/api/v1';
+import { api } from './api-core';
+
 const AI_BASE = process.env.NEXT_PUBLIC_AI_URL ?? 'http://localhost:3004/api/v1';
 
 export type AuthUser = {
@@ -11,27 +12,6 @@ export type AuthUser = {
   managedCityId?: string | null;
   managedCity?: { slug: string; nameRu: string } | null;
 };
-
-async function api<T>(
-  path: string,
-  options: RequestInit & { token?: string } = {},
-): Promise<T> {
-  const { token, ...init } = options;
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    ...(init.headers ?? {}),
-  };
-  if (token) {
-    (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
-  }
-
-  const res = await fetch(`${API_BASE}${path}`, { ...init, headers });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || res.statusText);
-  }
-  return res.json() as Promise<T>;
-}
 
 export const adminApi = {
   sendCode: (phone: string) =>
@@ -341,3 +321,14 @@ export type AdminReviewRow = {
 };
 
 export const TOKEN_KEY = 'qalago_admin_token';
+
+export { monetizationApi } from './monetization-api';
+export type {
+  MonetizationOrderRow,
+  MonetizationOrderDetail,
+  MonetizationPaymentRow,
+  MonetizationCampaignRow,
+  CampaignAnalytics,
+  MonetizationCreativeRow,
+  AdPlacementRow,
+} from './monetization-api';

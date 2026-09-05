@@ -7,6 +7,25 @@
 
 ---
 
+---
+
+## 2026-09-05 — Этап 4B: Admin monetization UI
+
+**Сделано**
+- `apps/admin-web` — раздел «Монетизация»: обзор, заказы, оплаты, кампании, креативы, placements
+- Manual payment confirm с idempotency (`alreadyPaid`), VIP preview, campaign pause/resume/cancel
+- Read-only каталог цен и пакетов на странице placements
+- Backend (без schema): `GET /admin/monetization/creatives`, `GET /admin/monetization/placements`, enriched admin order/payment responses
+- Vitest: `monetization-utils.test.ts` (labels, formatters, action matrix)
+
+**Сохранено без изменений**
+- Prisma schema, payment gateway, consumer Flutter, owner monetization flow
+
+**Заложить на будущее**
+- Stage 4C: price editor; backend filters for campaign status; audit trail; campaign analytics charts
+
+---
+
 ## 2026-09-05 — Этап 4A: Business monetization UI (owner)
 
 **Сделано**

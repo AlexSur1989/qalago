@@ -107,6 +107,21 @@ export class MonetizationService {
     );
   }
 
+  async listAdminPlacements(_user: AuthUser) {
+    const placements = await this.prisma.adPlacement.findMany({
+      orderBy: { code: 'asc' },
+    });
+    return placements.map((p) => ({
+      id: p.id,
+      code: p.code,
+      name: p.name,
+      description: p.description,
+      maxVisible: p.maxVisible,
+      maxActiveCampaigns: p.maxActiveCampaigns,
+      isActive: p.isActive,
+    }));
+  }
+
   async listPackages() {
     const packages = await this.prisma.promotionPackage.findMany({
       where: { isActive: true },

@@ -314,6 +314,51 @@ export class OrderService {
     return this.formatOrder(order);
   }
 
+  async getAdminOrder(user: AuthUser, orderId: string) {
+    await this.access.assertOrderAccess(user, orderId);
+    const order = await this.prisma.order.findUniqueOrThrow({
+      where: { id: orderId },
+      include: {
+        items: {
+          include: {
+            product: true,
+            adCampaigns: {
+              include: {
+                product: true,
+                campaignPlacements: { include: { placement: true } },
+              },
+            },
+          },
+        },
+        payments: true,
+        business: {
+          select: {
+            id: true,
+            title: true,
+            city: { select: { slug: true, nameRu: true } },
+            category: { select: { id: true, title: true, slug: true } },
+          },
+        },
+      },
+    });
+
+    return {
+      ...this.formatOrder(order),
+      businessId: order.businessId,
+      business: order.business,
+      campaigns: order.items.flatMap((item) =>
+        item.adCampaigns.map((c) => ({
+          id: c.id,
+          status: c.status,
+          startAt: c.startAt,
+          endAt: c.endAt,
+          product: { code: c.product.code, name: c.product.name },
+          placements: c.campaignPlacements.map((cp) => cp.placement),
+        })),
+      ),
+    };
+  }
+
   async confirmManualPayment(user: AuthUser, paymentId: string) {
     const payment = await this.access.assertAdminPaymentAccess(user, paymentId);
 
@@ -418,7 +463,13 @@ export class OrderService {
         include: {
           items: { include: { product: true } },
           payments: true,
-          business: { select: { id: true, title: true, cityId: true } },
+          business: {
+            select: {
+              id: true,
+              title: true,
+              city: { select: { slug: true, nameRu: true } },
+            },
+          },
         },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
@@ -428,7 +479,11 @@ export class OrderService {
     ]);
 
     return {
-      items: items.map((o) => this.formatOrder(o)),
+      items: items.map((o) => ({
+        ...this.formatOrder(o),
+        businessId: o.businessId,
+        business: o.business,
+      })),
       total,
       page,
       limit,
@@ -454,7 +509,13 @@ export class OrderService {
         include: {
           order: {
             include: {
-              business: { select: { id: true, title: true, cityId: true } },
+              business: {
+                select: {
+                  id: true,
+                  title: true,
+                  city: { select: { slug: true, nameRu: true } },
+                },
+              },
             },
           },
         },
@@ -465,12 +526,65 @@ export class OrderService {
       this.prisma.payment.count({ where }),
     ]);
 
-    return { items, total, page, limit };
+    return {
+      items: items.map((p) => this.formatAdminPayment(p)),
+      total,
+      page,
+      limit,
+    };
+  }
+
+  private formatAdminPayment(payment: {
+    id: string;
+    orderId: string;
+    provider: PaymentProvider;
+    amount: number;
+    currency: string;
+    status: PaymentStatus;
+    createdAt: Date;
+    paidAt: Date | null;
+    order: {
+      orderNumber: string;
+      business: {
+        id: string;
+        title: string;
+        city: { slug: string; nameRu: string };
+      };
+    };
+  }) {
+    return {
+      id: payment.id,
+      orderId: payment.orderId,
+      orderNumber: payment.order.orderNumber,
+      provider: payment.provider,
+      amount: payment.amount,
+      currency: payment.currency,
+      status: payment.status,
+      createdAt: payment.createdAt,
+      paidAt: payment.paidAt,
+      business: payment.order.business,
+    };
   }
 
   async getAdminPayment(user: AuthUser, paymentId: string) {
     const payment = await this.access.assertAdminPaymentAccess(user, paymentId);
-    return payment;
+    const full = await this.prisma.payment.findUniqueOrThrow({
+      where: { id: payment.id },
+      include: {
+        order: {
+          include: {
+            business: {
+              select: {
+                id: true,
+                title: true,
+                city: { select: { slug: true, nameRu: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+    return this.formatAdminPayment(full);
   }
 
   private assertDuration(durationHours?: number, durationDays?: number) {

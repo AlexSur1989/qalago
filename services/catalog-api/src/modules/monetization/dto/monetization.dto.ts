@@ -248,6 +248,28 @@ export class AdminListCampaignsQueryDto extends AdminListOrdersQueryDto {
   businessId?: string;
 }
 
+export class AdminListCreativesQueryDto {
+  @IsOptional()
+  @IsString()
+  citySlug?: string;
+
+  @IsOptional()
+  @IsString()
+  moderationStatus?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  limit?: number = 20;
+}
+
 export class ConfirmPaymentDto {
   @IsOptional()
   @IsString()
