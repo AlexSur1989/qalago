@@ -49,19 +49,23 @@ final ownerDashboardProvider =
     final results = await Future.wait([
       catalog.fetchAnalyticsSummary(businessId, days: 7),
       catalog.fetchAnalyticsSummary(businessId, days: 14),
-      catalog.fetchAnalyticsTrends(businessId, days: 7),
       catalog.fetchBusinessPromotions(businessId),
       catalog.fetchBusinessPlan(businessId),
     ]);
     final summary7 = results[0] as Map<String, dynamic>;
     final summary14 = results[1] as Map<String, dynamic>;
+    final capabilities = summary7['capabilities'] as Map<String, dynamic>? ?? {};
+    final trendsAvailable = capabilities['trends'] == true;
+    final trends = trendsAvailable
+        ? await catalog.fetchAnalyticsTrends(businessId, days: 7)
+        : <String, dynamic>{'items': <dynamic>[], 'trendsUnavailable': true};
     final byType7 = ownerByType(summary7);
     final byType14 = ownerByType(summary14);
     final prevByType = <String, int>{};
     for (final key in {...byType7.keys, ...byType14.keys}) {
       prevByType[key] = (byType14[key] ?? 0) - (byType7[key] ?? 0);
     }
-    final promotions = results[3] as List<PromotionModel>;
+    final promotions = results[2] as List<PromotionModel>;
     final activePromotions = promotions
         .where((p) => ownerIsPromotionActiveStatus(p.status))
         .where(ownerIsPromotionLiveNow)
@@ -69,9 +73,10 @@ final ownerDashboardProvider =
     return {
       'summary7': summary7,
       'prevByType': prevByType,
-      'trends': results[2],
+      'trends': trends,
+      'trendsAvailable': trendsAvailable,
       'activePromotions': activePromotions,
-      'plan': results[4],
+      'plan': results[3],
     };
   },
 );

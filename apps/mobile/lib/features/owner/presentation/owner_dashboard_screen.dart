@@ -177,6 +177,7 @@ class _DashboardContent extends StatelessWidget {
     final prevByType = data['prevByType'] as Map<String, int>;
     final byType7 = ownerByType(summary7);
     final trendsRaw = data['trends'] as Map<String, dynamic>;
+    final trendsAvailable = data['trendsAvailable'] as bool? ?? true;
     final trendItems = aggregateViewTrends(trendsRaw['items'] as List<dynamic>? ?? []);
     final activePromotions = data['activePromotions'] as List<PromotionModel>;
     final plan = data['plan'] as Map<String, dynamic>;
@@ -252,6 +253,14 @@ class _DashboardContent extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 12),
+                if (!trendsAvailable)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      'График по дням доступен на тарифе Basic и выше.',
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                    ),
+                  ),
                 OwnerViewsChart(items: trendItems),
               ],
             ),
