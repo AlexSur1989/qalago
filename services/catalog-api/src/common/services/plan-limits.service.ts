@@ -1,17 +1,28 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { BusinessPlanTier, NotificationType, PromotionStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationsService } from '../../modules/notifications/notifications.service';
+
+export type AnalyticsTier = 'BASIC' | 'EXTENDED' | 'FULL';
+export type SupportPriority = 'STANDARD' | 'PRIORITY' | 'HIGHEST';
+export type ModerationPriority = 'STANDARD' | 'PRIORITY' | 'HIGHEST';
+
 export interface PlanLimits {
-  maxPhotos: number | null;
+  maxPhotos: number;
+  maxServiceItems: number;
   maxActivePromotions: number;
-  maxPromotionsInFeed: number;
   maxPromotionDurationDays: number;
   maxPromotionsCreatedPerDay: number;
   maxAnalyticsDays: number;
-  vipBadge: boolean;
-  topCitySlot: boolean;
-  feedPriority: number;
+  advertisingDiscountPercent: number;
+  analyticsTier: AnalyticsTier;
+  supportPriority: SupportPriority;
+  moderationPriority: ModerationPriority;
+  showPlanBadge: boolean;
 }
 
 export interface PlanCatalogItem {
@@ -26,78 +37,113 @@ export interface PlanCatalogItem {
 
 export const PLAN_CATALOG: PlanCatalogItem[] = [
   {
-    tier: BusinessPlanTier.BASIC,
-    slug: 'basic',
-    nameRu: 'Базовый',
+    tier: BusinessPlanTier.FREE,
+    slug: 'free',
+    nameRu: 'Free',
     priceKzt: 0,
     periodDays: null,
     features: [
       'Карточка заведения в каталоге',
       'До 5 фото',
-      '1 активная акция (до 14 дней)',
-      'Акция только на карточке, не в ленте города',
-      'Статистика за 7 дней',
+      'До 10 товаров и услуг',
+      '1 активная акция',
+      'Базовая статистика',
     ],
     limits: {
       maxPhotos: 5,
+      maxServiceItems: 10,
       maxActivePromotions: 1,
-      maxPromotionsInFeed: 0,
       maxPromotionDurationDays: 14,
       maxPromotionsCreatedPerDay: 1,
       maxAnalyticsDays: 7,
-      vipBadge: false,
-      topCitySlot: false,
-      feedPriority: 0,
+      advertisingDiscountPercent: 0,
+      analyticsTier: 'BASIC',
+      supportPriority: 'STANDARD',
+      moderationPriority: 'STANDARD',
+      showPlanBadge: false,
     },
   },
   {
-    tier: BusinessPlanTier.PRO,
-    slug: 'pro',
-    nameRu: 'Pro',
+    tier: BusinessPlanTier.BASIC,
+    slug: 'basic',
+    nameRu: 'Basic',
+    priceKzt: 4900,
+    periodDays: 30,
+    features: [
+      'До 15 фото',
+      'До 30 товаров и услуг',
+      '3 активные акции',
+      'Расширенная статистика',
+      '5% скидка на рекламу',
+    ],
+    limits: {
+      maxPhotos: 15,
+      maxServiceItems: 30,
+      maxActivePromotions: 3,
+      maxPromotionDurationDays: 30,
+      maxPromotionsCreatedPerDay: 2,
+      maxAnalyticsDays: 30,
+      advertisingDiscountPercent: 5,
+      analyticsTier: 'EXTENDED',
+      supportPriority: 'STANDARD',
+      moderationPriority: 'STANDARD',
+      showPlanBadge: true,
+    },
+  },
+  {
+    tier: BusinessPlanTier.PREMIUM,
+    slug: 'premium',
+    nameRu: 'Premium',
     priceKzt: 9900,
     periodDays: 30,
     features: [
-      'VIP-метка в выдаче',
-      'Неограниченные фото',
-      'До 5 активных акций (до 90 дней)',
-      'До 2 акций одновременно в ленте города',
-      'Расширенная аналитика (90 дней)',
+      'До 40 фото',
+      'До 100 товаров и услуг',
+      '10 активных акций',
+      'Полная статистика',
+      '10% скидка на рекламу',
+      'Приоритетная поддержка',
     ],
     limits: {
-      maxPhotos: null,
-      maxActivePromotions: 5,
-      maxPromotionsInFeed: 2,
+      maxPhotos: 40,
+      maxServiceItems: 100,
+      maxActivePromotions: 10,
       maxPromotionDurationDays: 90,
-      maxPromotionsCreatedPerDay: 3,
-      maxAnalyticsDays: 90,
-      vipBadge: true,
-      topCitySlot: false,
-      feedPriority: 1,
+      maxPromotionsCreatedPerDay: 5,
+      maxAnalyticsDays: 365,
+      advertisingDiscountPercent: 10,
+      analyticsTier: 'FULL',
+      supportPriority: 'PRIORITY',
+      moderationPriority: 'PRIORITY',
+      showPlanBadge: true,
     },
   },
   {
-    tier: BusinessPlanTier.TOP_CITY,
-    slug: 'top-city',
-    nameRu: 'Топ города',
+    tier: BusinessPlanTier.VIP,
+    slug: 'vip',
+    nameRu: 'VIP',
     priceKzt: 19900,
     periodDays: 30,
     features: [
-      'Всё из Pro',
-      'Закрепление в топе категории',
-      'До 10 активных акций',
-      'До 5 акций в ленте города с приоритетом',
-      'Приоритет в выдаче города',
+      'До 100 фото',
+      'До 300 товаров и услуг',
+      '25 активных акций',
+      'Полная статистика',
+      '15% скидка на рекламу',
+      'Максимальный приоритет поддержки и модерации',
     ],
     limits: {
-      maxPhotos: null,
-      maxActivePromotions: 10,
-      maxPromotionsInFeed: 5,
+      maxPhotos: 100,
+      maxServiceItems: 300,
+      maxActivePromotions: 25,
       maxPromotionDurationDays: 90,
-      maxPromotionsCreatedPerDay: 5,
-      maxAnalyticsDays: 90,
-      vipBadge: true,
-      topCitySlot: true,
-      feedPriority: 2,
+      maxPromotionsCreatedPerDay: 10,
+      maxAnalyticsDays: 365,
+      advertisingDiscountPercent: 15,
+      analyticsTier: 'FULL',
+      supportPriority: 'HIGHEST',
+      moderationPriority: 'HIGHEST',
+      showPlanBadge: true,
     },
   },
 ];
@@ -125,17 +171,25 @@ export class PlanLimitsService {
     planTier: BusinessPlanTier;
     planExpiresAt: Date | null;
   }): BusinessPlanTier {
-    if (business.planTier === BusinessPlanTier.BASIC) {
-      return BusinessPlanTier.BASIC;
+    if (business.planTier === BusinessPlanTier.FREE) {
+      return BusinessPlanTier.FREE;
     }
     if (business.planExpiresAt && business.planExpiresAt < new Date()) {
-      return BusinessPlanTier.BASIC;
+      return BusinessPlanTier.FREE;
     }
     return business.planTier;
   }
 
   getLimits(tier: BusinessPlanTier): PlanLimits {
     return this.getCatalogItem(tier).limits;
+  }
+
+  getAdvertisingDiscountPercent(tier: BusinessPlanTier): number {
+    return this.getLimits(tier).advertisingDiscountPercent;
+  }
+
+  hasFullAnalytics(tier: BusinessPlanTier): boolean {
+    return this.getLimits(tier).analyticsTier === 'FULL';
   }
 
   async getBusinessPlanContext(businessId: string) {
@@ -152,6 +206,7 @@ export class PlanLimitsService {
         _count: {
           select: {
             images: true,
+            serviceItems: true,
             promotions: {
               where: { status: PromotionStatus.ACTIVE },
             },
@@ -178,6 +233,7 @@ export class PlanLimitsService {
       limits,
       usage: {
         photos: business._count.images,
+        serviceItems: business._count.serviceItems,
         activePromotions: business._count.promotions,
       },
     };
@@ -186,9 +242,19 @@ export class PlanLimitsService {
   async assertCanAddPhoto(businessId: string) {
     const ctx = await this.getBusinessPlanContext(businessId);
     const max = ctx.limits.maxPhotos;
-    if (max != null && ctx.usage.photos >= max) {
+    if (ctx.usage.photos >= max) {
       throw new ForbiddenException(
-        `Лимит тарифа «${ctx.catalog.nameRu}»: не более ${max} фото. Улучшите тариф в кабинете.`,
+        `Лимит тарифа «${ctx.catalog.nameRu}»: не более ${max} фото. Посмотрите тарифы в кабинете.`,
+      );
+    }
+  }
+
+  async assertCanAddServiceItem(businessId: string) {
+    const ctx = await this.getBusinessPlanContext(businessId);
+    const max = ctx.limits.maxServiceItems;
+    if (ctx.usage.serviceItems >= max) {
+      throw new ForbiddenException(
+        `Лимит тарифа «${ctx.catalog.nameRu}»: не более ${max} товаров и услуг. Посмотрите тарифы в кабинете.`,
       );
     }
   }
@@ -224,7 +290,7 @@ export class PlanLimitsService {
 
     if (activeCount >= plan.limits.maxActivePromotions) {
       throw new ForbiddenException(
-        `Лимит тарифа «${plan.catalog.nameRu}»: не более ${plan.limits.maxActivePromotions} активных акций. Улучшите тариф в кабинете.`,
+        `Лимит тарифа «${plan.catalog.nameRu}»: не более ${plan.limits.maxActivePromotions} активных акций. Посмотрите тарифы в кабинете.`,
       );
     }
   }
@@ -280,16 +346,23 @@ export class PlanLimitsService {
     return Math.min(requestedDays, ctx.limits.maxAnalyticsDays);
   }
 
+  getAnalyticsTier(tier: BusinessPlanTier): AnalyticsTier {
+    return this.getLimits(tier).analyticsTier;
+  }
+
+  getAnalyticsCapabilities(tier: BusinessPlanTier) {
+    const analyticsTier = this.getAnalyticsTier(tier);
+    const maxDays = this.getLimits(tier).maxAnalyticsDays;
+    return {
+      tier: analyticsTier,
+      maxDays,
+      summary: true,
+      trends: analyticsTier !== 'BASIC',
+    };
+  }
+
   isPaidTier(tier: BusinessPlanTier): boolean {
-    return tier === BusinessPlanTier.PRO || tier === BusinessPlanTier.TOP_CITY;
-  }
-
-  getFeedPriority(tier: BusinessPlanTier): number {
-    return this.getLimits(tier).feedPriority;
-  }
-
-  getMaxPromotionsInFeed(tier: BusinessPlanTier): number {
-    return this.getLimits(tier).maxPromotionsInFeed;
+    return tier !== BusinessPlanTier.FREE;
   }
 
   async syncExpiredPlan(businessId: string) {
@@ -305,7 +378,7 @@ export class PlanLimitsService {
     if (!business) return;
 
     const expired =
-      business.planTier !== BusinessPlanTier.BASIC &&
+      business.planTier !== BusinessPlanTier.FREE &&
       business.planExpiresAt != null &&
       business.planExpiresAt < new Date();
     if (!expired) return;
@@ -316,10 +389,8 @@ export class PlanLimitsService {
     await this.prisma.business.update({
       where: { id: businessId },
       data: {
-        planTier: BusinessPlanTier.BASIC,
+        planTier: BusinessPlanTier.FREE,
         planExpiresAt: null,
-        isFeatured: false,
-        featuredSlot: null,
       },
     });
 
@@ -330,7 +401,7 @@ export class PlanLimitsService {
         userId: business.ownerId,
         type: NotificationType.PLAN_EXPIRED,
         title: 'Тариф истёк',
-        body: `Тариф «${planName}» для «${business.title}» завершён. Заведение переведено на Базовый.`,
+        body: `Тариф «${planName}» для «${business.title}» завершён. Заведение переведено на Free.`,
       });
     }
   }

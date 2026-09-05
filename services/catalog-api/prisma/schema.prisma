@@ -21,9 +21,10 @@ enum BusinessStatus {
 }
 
 enum BusinessPlanTier {
+  FREE
   BASIC
-  PRO
-  TOP_CITY
+  PREMIUM
+  VIP
 }
 
 enum PlanPaymentStatus {
@@ -259,7 +260,7 @@ model Business {
   status            BusinessStatus     @default(PENDING)
   isFeatured        Boolean            @default(false)
   featuredSlot      Int?
-  planTier          BusinessPlanTier   @default(BASIC)
+  planTier          BusinessPlanTier   @default(FREE)
   planExpiresAt     DateTime?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt

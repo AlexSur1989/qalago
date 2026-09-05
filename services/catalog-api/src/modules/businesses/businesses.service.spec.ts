@@ -25,10 +25,10 @@ describe('BusinessesService.findAll', () => {
     jest.clearAllMocks();
   });
 
-  it('sorts paid tiers before basic: TOP → PRO → BASIC', async () => {
+  it('sorts catalog by title only (plan-neutral)', async () => {
     prisma.business.findMany = jest.fn().mockResolvedValue([
       {
-        id: 'basic',
+        id: 'free',
         title: 'Basic Cafe',
         slug: 'basic-cafe',
         cityId: 'city-uralsk',
@@ -38,13 +38,13 @@ describe('BusinessesService.findAll', () => {
         longitude: null,
         status: BusinessStatus.ACTIVE,
         isFeatured: false,
-        planTier: BusinessPlanTier.BASIC,
+        planTier: BusinessPlanTier.FREE,
         planExpiresAt: null,
         featuredSlot: null,
         category,
       },
       {
-        id: 'pro',
+        id: 'premium',
         title: 'Pro Cafe',
         slug: 'pro-cafe',
         cityId: 'city-uralsk',
@@ -54,13 +54,13 @@ describe('BusinessesService.findAll', () => {
         longitude: null,
         status: BusinessStatus.ACTIVE,
         isFeatured: true,
-        planTier: BusinessPlanTier.PRO,
+        planTier: BusinessPlanTier.PREMIUM,
         planExpiresAt: new Date(Date.now() + 86400000),
         featuredSlot: null,
         category,
       },
       {
-        id: 'top',
+        id: 'vip',
         title: 'Top Cafe',
         slug: 'top-cafe',
         cityId: 'city-uralsk',
@@ -70,7 +70,7 @@ describe('BusinessesService.findAll', () => {
         longitude: null,
         status: BusinessStatus.ACTIVE,
         isFeatured: true,
-        planTier: BusinessPlanTier.TOP_CITY,
+        planTier: BusinessPlanTier.VIP,
         planExpiresAt: new Date(Date.now() + 86400000),
         featuredSlot: 1,
         category,
@@ -83,13 +83,13 @@ describe('BusinessesService.findAll', () => {
       limit: 20,
     });
 
-    expect(result.items.map((item) => item.id)).toEqual(['top', 'pro', 'basic']);
+    expect(result.items.map((item) => item.id)).toEqual(['free', 'premium', 'vip']);
   });
 
-  it('sorts by tier before distance when geo is provided', async () => {
+  it('sorts by distance when geo is provided (no tier priority)', async () => {
     prisma.business.findMany = jest.fn().mockResolvedValue([
       {
-        id: 'near-basic',
+        id: 'near-free',
         title: 'Near Basic',
         slug: 'near-basic',
         cityId: 'city-uralsk',
@@ -99,13 +99,13 @@ describe('BusinessesService.findAll', () => {
         longitude: 51.387,
         status: BusinessStatus.ACTIVE,
         isFeatured: false,
-        planTier: BusinessPlanTier.BASIC,
+        planTier: BusinessPlanTier.FREE,
         planExpiresAt: null,
         featuredSlot: null,
         category,
       },
       {
-        id: 'far-pro',
+        id: 'far-premium',
         title: 'Far Pro',
         slug: 'far-pro',
         cityId: 'city-uralsk',
@@ -115,7 +115,7 @@ describe('BusinessesService.findAll', () => {
         longitude: 51.39,
         status: BusinessStatus.ACTIVE,
         isFeatured: true,
-        planTier: BusinessPlanTier.PRO,
+        planTier: BusinessPlanTier.PREMIUM,
         planExpiresAt: new Date(Date.now() + 86400000),
         featuredSlot: null,
         category,
@@ -131,7 +131,7 @@ describe('BusinessesService.findAll', () => {
       limit: 20,
     });
 
-    expect(result.items.map((item) => item.id)).toEqual(['far-pro', 'near-basic']);
+    expect(result.items.map((item) => item.id)).toEqual(['near-free', 'far-premium']);
   });
 
   it('sorts by distance within same tier when geo is provided', async () => {
@@ -147,7 +147,7 @@ describe('BusinessesService.findAll', () => {
         longitude: 51.39,
         status: BusinessStatus.ACTIVE,
         isFeatured: false,
-        planTier: BusinessPlanTier.BASIC,
+        planTier: BusinessPlanTier.FREE,
         planExpiresAt: null,
         featuredSlot: null,
         category,
@@ -163,7 +163,7 @@ describe('BusinessesService.findAll', () => {
         longitude: 51.387,
         status: BusinessStatus.ACTIVE,
         isFeatured: false,
-        planTier: BusinessPlanTier.BASIC,
+        planTier: BusinessPlanTier.FREE,
         planExpiresAt: null,
         featuredSlot: null,
         category,

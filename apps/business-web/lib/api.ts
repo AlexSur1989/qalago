@@ -52,15 +52,17 @@ export type BusinessRow = {
 };
 
 export type PlanLimitsRow = {
-  maxPhotos: number | null;
+  maxPhotos: number;
+  maxServiceItems: number;
   maxActivePromotions: number;
-  maxPromotionsInFeed: number;
   maxPromotionDurationDays: number;
   maxPromotionsCreatedPerDay: number;
   maxAnalyticsDays: number;
-  vipBadge: boolean;
-  topCitySlot: boolean;
-  feedPriority: number;
+  advertisingDiscountPercent: number;
+  analyticsTier: 'BASIC' | 'EXTENDED' | 'FULL';
+  supportPriority: 'STANDARD' | 'PRIORITY' | 'HIGHEST';
+  moderationPriority: 'STANDARD' | 'PRIORITY' | 'HIGHEST';
+  showPlanBadge: boolean;
 };
 
 export type PlanCatalogRow = {
@@ -84,6 +86,7 @@ export type BusinessPlanStatus = {
   limits: PlanLimitsRow;
   usage: {
     photos: number;
+    serviceItems: number;
     activePromotions: number;
   };
 };

@@ -101,14 +101,42 @@ class BusinessModel {
     distanceMeters: _toInt(json['distanceMeters']),
   );
 
-  bool get isTopCity => planTier == 'TOP_CITY';
+  bool get isTopCity => false;
 
-  bool get isVipPro => planTier == 'PRO' || (isFeatured && !isTopCity);
+  bool get isVipPro => planTier == 'VIP';
 
   String? get planBadgeLabel {
-    if (planTier == 'TOP_CITY') return 'Топ';
-    if (planTier == 'PRO' || isFeatured) return 'VIP';
-    return null;
+    switch (planTier) {
+      case 'BASIC':
+        return 'BASIC';
+      case 'PREMIUM':
+        return 'PREMIUM';
+      case 'VIP':
+        return 'VIP';
+      default:
+        return null;
+    }
+  }
+
+  static String normalizePlanTier(String? tier) {
+    switch (tier) {
+      case 'FREE':
+      case 'BASIC':
+      case 'PREMIUM':
+      case 'VIP':
+        return tier!;
+      case 'PRO':
+        return 'PREMIUM';
+      case 'TOP_CITY':
+        return 'VIP';
+      default:
+        assert(() {
+          // ignore: avoid_print
+          print('Unknown planTier "$tier", fallback to FREE');
+          return true;
+        }());
+        return 'FREE';
+    }
   }
 }
 

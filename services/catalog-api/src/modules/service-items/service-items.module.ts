@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { PlansModule } from '../plans/plans.module';
 import { MenuAccessService } from './menu-access.service';
 import { ServiceItemsController } from './service-items.controller';
 import { ServiceItemsService } from './service-items.service';
@@ -8,6 +9,7 @@ import { ServiceMenuGroupsService } from './service-menu-groups.service';
 import { ServiceMenuService } from './service-menu.service';
 
 @Module({
+  imports: [PlansModule],
   controllers: [
     ServiceItemsController,
     ServiceMenuController,

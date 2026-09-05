@@ -869,11 +869,9 @@ class _PopularPlaceCard extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.star,
-                        color: business.isTopCity
+                        color: business.planTier == 'VIP'
                             ? AppTheme.kzGold
-                            : business.isVipPro
-                                ? AppTheme.kzBlue
-                                : AppTheme.kzBlue,
+                            : AppTheme.kzBlue,
                         size: 17,
                       ),
                       const SizedBox(width: 4),

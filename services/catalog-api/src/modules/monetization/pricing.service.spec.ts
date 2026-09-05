@@ -122,23 +122,30 @@ describe('PricingService', () => {
     });
   });
 
-  it('6. BASIC discount = 0%', async () => {
+  it('6. FREE discount = 0%', async () => {
     planLimits.getBusinessPlanContext = jest.fn().mockResolvedValue({
-      effectiveTier: BusinessPlanTier.BASIC,
+      effectiveTier: BusinessPlanTier.FREE,
     });
     expect(await service.resolvePlanDiscountPercent('biz-1')).toBe(0);
   });
 
-  it('7. PRO discount = 10%', async () => {
+  it('7. BASIC discount = 5%', async () => {
     planLimits.getBusinessPlanContext = jest.fn().mockResolvedValue({
-      effectiveTier: BusinessPlanTier.PRO,
+      effectiveTier: BusinessPlanTier.BASIC,
+    });
+    expect(await service.resolvePlanDiscountPercent('biz-1')).toBe(5);
+  });
+
+  it('8. PREMIUM discount = 10%', async () => {
+    planLimits.getBusinessPlanContext = jest.fn().mockResolvedValue({
+      effectiveTier: BusinessPlanTier.PREMIUM,
     });
     expect(await service.resolvePlanDiscountPercent('biz-1')).toBe(10);
   });
 
-  it('8. TOP_CITY discount = 15%', async () => {
+  it('9. VIP discount = 15%', async () => {
     planLimits.getBusinessPlanContext = jest.fn().mockResolvedValue({
-      effectiveTier: BusinessPlanTier.TOP_CITY,
+      effectiveTier: BusinessPlanTier.VIP,
     });
     expect(await service.resolvePlanDiscountPercent('biz-1')).toBe(15);
   });

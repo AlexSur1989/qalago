@@ -81,7 +81,7 @@ export default function PlanPage() {
 
   if (!ready || !token) return <p className="page-content">Загрузка…</p>;
 
-  const effectiveTier = planStatus?.effectiveTier ?? 'BASIC';
+  const effectiveTier = planStatus?.effectiveTier ?? 'FREE';
 
   return (
     <BusinessShell
@@ -111,11 +111,11 @@ export default function PlanPage() {
         <section className="form-card" style={{ marginBottom: 16, maxWidth: 720 }}>
           <h3 style={{ marginTop: 0 }}>Текущий тариф: {planStatus.catalog.nameRu}</h3>
           <p style={{ color: 'var(--text-muted)', marginBottom: 8 }}>
-            Фото: {planStatus.usage.photos}
-            {planStatus.limits.maxPhotos != null ? ` / ${planStatus.limits.maxPhotos}` : ' · без лимита'}
+            Фото: {planStatus.usage.photos} / {planStatus.limits.maxPhotos}
+            {' · '}
+            Товары/услуги: {planStatus.usage.serviceItems} / {planStatus.limits.maxServiceItems}
             {' · '}
             Акции: {planStatus.usage.activePromotions} / {planStatus.limits.maxActivePromotions}
-            {' · '}в ленте до {planStatus.limits.maxPromotionsInFeed}
           </p>
           {planStatus.expiresAt && (
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
@@ -129,7 +129,7 @@ export default function PlanPage() {
         {catalog.map((plan) => {
           const isCurrent = effectiveTier === plan.tier;
           const isDowngrade =
-            plan.tier === 'BASIC' && effectiveTier !== 'BASIC';
+            plan.tier === 'FREE' && effectiveTier !== 'FREE';
           return (
             <section
               key={plan.tier}
@@ -160,7 +160,7 @@ export default function PlanPage() {
                   {checkoutTier === plan.tier
                     ? 'Подключение…'
                     : isDowngrade
-                      ? 'Вернуться на Базовый'
+                      ? 'Вернуться на Free'
                       : plan.priceKzt === 0
                         ? 'Выбрать'
                         : 'Подключить (тест)'}
@@ -172,10 +172,14 @@ export default function PlanPage() {
       </div>
 
       <section className="form-card" style={{ marginTop: 16, maxWidth: 720 }}>
-        <h3 style={{ marginTop: 0 }}>Тестовая оплата</h3>
+        <h3 style={{ marginTop: 0 }}>Рекламные размещения</h3>
         <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
-          Сейчас оплата имитируется без списания денег. После нажатия «Подключить (тест)» тариф
-          активируется на 30 дней и применяются его ограничения и бонусы (VIP, топ, лимиты).
+          Рекламные размещения приобретаются отдельно. Скидка тарифа применяется к отдельным
+          рекламным продуктам согласно условиям.
+        </p>
+        <h3>Тестовая оплата</h3>
+        <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
+          Сейчас оплата имитируется без списания денег. Платные тарифы активируются на 30 дней.
         </p>
         <Link href="/help" className="btn btn-ghost">
           Перейти в раздел «Помощь»

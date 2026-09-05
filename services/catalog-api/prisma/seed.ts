@@ -1,4 +1,4 @@
-import { BusinessStatus, PrismaClient, PromotionStatus, UserRole } from '@prisma/client';
+import { BusinessStatus, BusinessPlanTier, PrismaClient, PromotionStatus, UserRole } from '@prisma/client';
 import { seedMonetizationCatalog } from './seed-monetization';
 
 const prisma = new PrismaClient();
@@ -1029,6 +1029,46 @@ async function main() {
   }
 
   await seedMonetizationCatalog({ prisma, uralskCityId: city.id });
+
+  const qaPlanTiers: Array<{ slug: string; title: string; tier: BusinessPlanTier }> = [
+    { slug: 'qa-plan-free', title: 'QA Plan Free', tier: BusinessPlanTier.FREE },
+    { slug: 'qa-plan-basic', title: 'QA Plan Basic', tier: BusinessPlanTier.BASIC },
+    { slug: 'qa-plan-premium', title: 'QA Plan Premium', tier: BusinessPlanTier.PREMIUM },
+    { slug: 'qa-plan-vip', title: 'QA Plan VIP', tier: BusinessPlanTier.VIP },
+  ];
+
+  const qaExpiresAt = new Date();
+  qaExpiresAt.setDate(qaExpiresAt.getDate() + 30);
+
+  for (const qa of qaPlanTiers) {
+    await prisma.business.upsert({
+      where: { slug: qa.slug },
+      update: {
+        title: qa.title,
+        planTier: qa.tier,
+        planExpiresAt: qa.tier === BusinessPlanTier.FREE ? null : qaExpiresAt,
+        status: BusinessStatus.ACTIVE,
+        cityId: city.id,
+        categoryId: categoryRecords['food'],
+        ownerId: owner.id,
+      },
+      create: {
+        slug: qa.slug,
+        title: qa.title,
+        shortDesc: `DEV seed: ${qa.tier} tier QA`,
+        address: 'ул. QA, 1, Уральск',
+        latitude: 51.229,
+        longitude: 51.385,
+        phone: '+77112249999',
+        planTier: qa.tier,
+        planExpiresAt: qa.tier === BusinessPlanTier.FREE ? null : qaExpiresAt,
+        status: BusinessStatus.ACTIVE,
+        cityId: city.id,
+        categoryId: categoryRecords['food'],
+        ownerId: owner.id,
+      },
+    });
+  }
 
   console.log('Seed OK:', {
     cities: [city.slug, aktobe.slug],

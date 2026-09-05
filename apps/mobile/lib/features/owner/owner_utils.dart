@@ -101,17 +101,8 @@ bool ownerIsPromotionLiveNow(PromotionModel promotion, {DateTime? now}) {
   return true;
 }
 
-int ownerMaxPromotionsInFeed(Map<String, dynamic> plan) {
-  final limits = plan['limits'] as Map<String, dynamic>? ?? {};
-  return (limits['maxPromotionsInFeed'] as num?)?.toInt() ?? 0;
-}
-
 String ownerPromotionFeedHint(Map<String, dynamic> plan) {
-  final feedLimit = ownerMaxPromotionsInFeed(plan);
-  if (feedLimit <= 0) {
-    return 'Видна на карточке · не в ленте города (Базовый тариф)';
-  }
-  return 'До $feedLimit акций в ленте города';
+  return 'Продвижение в ленте города — через рекламные продукты';
 }
 
 String ownerPromotionStatusLabel(PromotionModel promotion) {

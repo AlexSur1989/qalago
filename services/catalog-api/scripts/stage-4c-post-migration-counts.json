@@ -1,0 +1,20 @@
+{
+  "capturedAt": "post-migration-before-seed",
+  "businessByPlan": [
+    { "planTier": "FREE", "count": 12 },
+    { "planTier": "PREMIUM", "count": 1 }
+  ],
+  "planPaymentByTier": [
+    { "tier": "PREMIUM", "count": 5 },
+    { "tier": "VIP", "count": 3 }
+  ],
+  "totals": {
+    "business": 13,
+    "planPayment": 8,
+    "order": 1,
+    "payment": 0,
+    "adCampaign": 6,
+    "adCreative": 1,
+    "analyticsEvent": 221
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "capturedAt": "pre-migration",
+  "citySlug": "uralsk",
+  "legacyTierSort": [
+    "FitLife Gym (PRO)",
+    "AutoDrive Service (BASIC)",
+    "Bar Code 51 (BASIC)",
+    "Beauty Studio Elite (BASIC)",
+    "Coffee House Uralsk (BASIC)",
+    "Family Market (BASIC)",
+    "Kids Planet (BASIC)",
+    "MedLine Uralsk (BASIC)"
+  ],
+  "titleOnlySort": [
+    "AutoDrive Service (BASIC)",
+    "Bar Code 51 (BASIC)",
+    "Beauty Studio Elite (BASIC)",
+    "Coffee House Uralsk (BASIC)",
+    "Family Market (BASIC)",
+    "FitLife Gym (PRO)",
+    "Kids Planet (BASIC)",
+    "MedLine Uralsk (BASIC)"
+  ],
+  "note": "After Stage 4C API uses title-only organic ranking; PRO no longer jumps to top."
+}

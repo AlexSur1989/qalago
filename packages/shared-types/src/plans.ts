@@ -1,19 +1,24 @@
 export enum BusinessPlanTier {
+  FREE = 'FREE',
   BASIC = 'BASIC',
-  PRO = 'PRO',
-  TOP_CITY = 'TOP_CITY',
+  PREMIUM = 'PREMIUM',
+  VIP = 'VIP',
 }
 
+export type AnalyticsTier = 'BASIC' | 'EXTENDED' | 'FULL';
+
 export interface PlanLimitsDto {
-  maxPhotos: number | null;
+  maxPhotos: number;
+  maxServiceItems: number;
   maxActivePromotions: number;
-  maxPromotionsInFeed: number;
   maxPromotionDurationDays: number;
   maxPromotionsCreatedPerDay: number;
   maxAnalyticsDays: number;
-  vipBadge: boolean;
-  topCitySlot: boolean;
-  feedPriority: number;
+  advertisingDiscountPercent: number;
+  analyticsTier: AnalyticsTier;
+  supportPriority: 'STANDARD' | 'PRIORITY' | 'HIGHEST';
+  moderationPriority: 'STANDARD' | 'PRIORITY' | 'HIGHEST';
+  showPlanBadge: boolean;
 }
 
 export interface PlanCatalogItemDto {
@@ -37,6 +42,7 @@ export interface BusinessPlanStatusDto {
   limits: PlanLimitsDto;
   usage: {
     photos: number;
+    serviceItems: number;
     activePromotions: number;
   };
 }

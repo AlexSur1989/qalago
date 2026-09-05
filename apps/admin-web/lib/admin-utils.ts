@@ -52,11 +52,15 @@ export function confirmAction(message: string): boolean {
 
 export function planTierLabel(tier?: string | null): string {
   switch (tier) {
-    case 'PRO':
-      return 'Pro';
-    case 'TOP_CITY':
-      return 'Топ города';
+    case 'FREE':
+      return 'Free';
+    case 'BASIC':
+      return 'Basic';
+    case 'PREMIUM':
+      return 'Premium';
+    case 'VIP':
+      return 'VIP';
     default:
-      return 'Базовый';
+      return 'Free';
   }
 }

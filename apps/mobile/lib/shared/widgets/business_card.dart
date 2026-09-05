@@ -46,31 +46,20 @@ class BusinessCard extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: business.planTier == 'TOP_CITY'
-                              ? const Color(0xFFFEC50C)
-                              : const Color(0xFF00A8D6),
+                          color: switch (business.planTier) {
+                            'VIP' => const Color(0xFFFEC50C),
+                            'PREMIUM' => const Color(0xFF00A8D6),
+                            _ => const Color(0xFF64748B),
+                          },
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              business.planTier == 'TOP_CITY'
-                                  ? Icons.emoji_events
-                                  : Icons.star,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              business.planBadgeLabel!,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          business.planBadgeLabel!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ),

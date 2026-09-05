@@ -37,7 +37,8 @@ export class AnalyticsService {
     await this.assertCanViewBusinessAnalytics(user, businessId);
 
     const requestedDays = query.days ?? 30;
-    const days = await this.planLimits.capAnalyticsDays(businessId, requestedDays);
+    const ctx = await this.planLimits.getBusinessPlanContext(businessId);
+    const days = Math.min(requestedDays, ctx.limits.maxAnalyticsDays);
     const createdAt = { gte: this.windowStart(days) };
     const grouped = await this.prisma.analyticsEvent.groupBy({
       by: ['type'],
@@ -53,6 +54,8 @@ export class AnalyticsService {
     return {
       businessId,
       days,
+      analyticsTier: ctx.limits.analyticsTier,
+      capabilities: this.planLimits.getAnalyticsCapabilities(ctx.effectiveTier),
       total: Object.values(byType).reduce((sum, count) => sum + count, 0),
       byType,
     };
@@ -61,8 +64,16 @@ export class AnalyticsService {
   async trends(user: AuthUser, businessId: string, query: AnalyticsWindowQueryDto) {
     await this.assertCanViewBusinessAnalytics(user, businessId);
 
+    const ctx = await this.planLimits.getBusinessPlanContext(businessId);
+    const caps = this.planLimits.getAnalyticsCapabilities(ctx.effectiveTier);
+    if (!caps.trends) {
+      throw new ForbiddenException(
+        'Динамика по дням доступна на тарифах Basic и выше. Обновите тариф в кабинете.',
+      );
+    }
+
     const requestedDays = query.days ?? 30;
-    const days = await this.planLimits.capAnalyticsDays(businessId, requestedDays);
+    const days = Math.min(requestedDays, ctx.limits.maxAnalyticsDays);
     const events = await this.prisma.analyticsEvent.findMany({
       where: { businessId, createdAt: { gte: this.windowStart(days) } },
       select: { type: true, createdAt: true },
@@ -85,7 +96,7 @@ export class AnalyticsService {
       };
     });
 
-    return { businessId, days, items };
+    return { businessId, days, analyticsTier: ctx.limits.analyticsTier, items };
   }
 
   private async assertCanViewBusinessAnalytics(user: AuthUser, businessId: string) {

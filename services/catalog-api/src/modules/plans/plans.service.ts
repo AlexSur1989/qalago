@@ -78,7 +78,7 @@ export class PlansService {
   ) {
     const catalog = this.planLimits.getCatalogItem(tier);
 
-    if (tier === BusinessPlanTier.BASIC) {
+    if (tier === BusinessPlanTier.FREE) {
       return this.applyTier(businessId, tier, null, 0, options);
     }
 
@@ -101,16 +101,12 @@ export class PlansService {
       message?: string;
     } = {},
   ) {
-    const featured = await this.resolveFeaturedFields(businessId, tier);
-
     const updated = await this.prisma.$transaction(async (tx) => {
       const business = await tx.business.update({
         where: { id: businessId },
         data: {
           planTier: tier,
           planExpiresAt: expiresAt,
-          isFeatured: featured.isFeatured,
-          featuredSlot: featured.featuredSlot,
         },
         select: {
           id: true,
@@ -150,38 +146,6 @@ export class PlansService {
       business: updated,
       plan: await this.planLimits.getBusinessPlanContext(businessId),
     };
-  }
-
-  private async resolveFeaturedFields(businessId: string, tier: BusinessPlanTier) {
-    if (tier === BusinessPlanTier.BASIC) {
-      return { isFeatured: false, featuredSlot: null };
-    }
-
-    if (tier === BusinessPlanTier.PRO) {
-      return { isFeatured: true, featuredSlot: null };
-    }
-
-    const business = await this.prisma.business.findUnique({
-      where: { id: businessId },
-      select: { cityId: true },
-    });
-    if (!business) {
-      throw new NotFoundException('Business not found');
-    }
-
-    const topSlots = await this.prisma.business.findMany({
-      where: {
-        cityId: business.cityId,
-        planTier: BusinessPlanTier.TOP_CITY,
-        featuredSlot: { not: null },
-      },
-      select: { featuredSlot: true },
-      orderBy: { featuredSlot: 'desc' },
-      take: 1,
-    });
-
-    const nextSlot = (topSlots[0]?.featuredSlot ?? 0) + 1;
-    return { isFeatured: true, featuredSlot: nextSlot };
   }
 
   private async assertCanView(user: AuthUser, businessId: string) {
@@ -245,7 +209,7 @@ export class PlansService {
       userId: business.ownerId,
       type: NotificationType.PLAN_ACTIVATED,
       title: `Тариф «${planName}» подключён`,
-      body: `«${business.title}»: тариф активен до ${until}. VIP и лимиты уже применены.`,
+      body: `«${business.title}»: тариф активен до ${until}. Лимиты и скидка на рекламу применены.`,
     });
   }
 }

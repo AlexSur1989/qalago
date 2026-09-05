@@ -1,0 +1,22 @@
+{
+  "capturedAt": "2026-09-06T00:00:00+05:00",
+  "stage": "4C-pre-migration",
+  "businessByPlan": [
+    { "planTier": "PRO", "count": 1 },
+    { "planTier": "BASIC", "count": 12 }
+  ],
+  "planPaymentByTier": [
+    { "tier": "PRO", "count": 5 },
+    { "tier": "TOP_CITY", "count": 3 }
+  ],
+  "totals": {
+    "business": 13,
+    "planPayment": 8,
+    "order": 1,
+    "payment": 0,
+    "adCampaign": 6,
+    "adCreative": 1,
+    "analyticsEvent": 221
+  },
+  "note": "pg_dump not available on PATH; row totals captured via Prisma for post-migration validation."
+}

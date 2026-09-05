@@ -570,7 +570,7 @@ export default function DashboardPage() {
                     <td>
                       <select
                         className="filter-select"
-                        value={b.planTier ?? 'BASIC'}
+                        value={b.planTier ?? 'FREE'}
                         onChange={(e) => setBusinessPlan(b, e.target.value)}
                         title={
                           b.planExpiresAt
@@ -578,9 +578,10 @@ export default function DashboardPage() {
                             : undefined
                         }
                       >
-                        <option value="BASIC">Базовый</option>
-                        <option value="PRO">Pro</option>
-                        <option value="TOP_CITY">Топ города</option>
+                        <option value="FREE">Free</option>
+                        <option value="BASIC">Basic</option>
+                        <option value="PREMIUM">Premium</option>
+                        <option value="VIP">VIP</option>
                       </select>
                     </td>
                     <td>{b.city?.nameRu}</td>

@@ -1,10 +1,11 @@
 import { BusinessPlanTier, MonetizationProductType } from '@prisma/client';
 
-/** Legacy plan tier → monetization discount percent (Stage 2 temporary mapping). */
-export const LEGACY_PLAN_DISCOUNT_PERCENT: Record<BusinessPlanTier, number> = {
-  [BusinessPlanTier.BASIC]: 0,
-  [BusinessPlanTier.PRO]: 10,
-  [BusinessPlanTier.TOP_CITY]: 15,
+/** Plan tier → monetization advertising discount percent (Stage 4C). */
+export const PLAN_ADVERTISING_DISCOUNT_PERCENT: Record<BusinessPlanTier, number> = {
+  [BusinessPlanTier.FREE]: 0,
+  [BusinessPlanTier.BASIC]: 5,
+  [BusinessPlanTier.PREMIUM]: 10,
+  [BusinessPlanTier.VIP]: 15,
 };
 
 /** Package orders never receive plan-tier discounts on Stage 2. */

@@ -1,0 +1,23 @@
+{
+  "capturedAt": "post-seed",
+  "businessByPlan": [
+    { "planTier": "FREE", "count": 13 },
+    { "planTier": "BASIC", "count": 1 },
+    { "planTier": "PREMIUM", "count": 2 },
+    { "planTier": "VIP", "count": 1 }
+  ],
+  "planPaymentByTier": [
+    { "tier": "PREMIUM", "count": 5 },
+    { "tier": "VIP", "count": 3 }
+  ],
+  "totals": {
+    "business": 17,
+    "planPayment": 8,
+    "order": 1,
+    "payment": 0,
+    "adCampaign": 6,
+    "adCreative": 1,
+    "analyticsEvent": 228
+  },
+  "note": "Seed adds 4 QA tier businesses (+4 business rows). Core entity totals before seed validated unchanged."
+}

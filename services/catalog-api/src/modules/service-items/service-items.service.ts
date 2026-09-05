@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -13,6 +14,7 @@ export class ServiceItemsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly menuAccess: MenuAccessService,
+    private readonly planLimits: PlanLimitsService,
   ) {}
 
   findByBusiness(query: ListServiceItemsQueryDto) {
@@ -32,6 +34,7 @@ export class ServiceItemsService {
 
   async create(user: AuthUser, dto: CreateServiceItemDto) {
     await this.menuAccess.assertCanManage(user, dto.businessId);
+    await this.planLimits.assertCanAddServiceItem(dto.businessId);
     if (dto.groupId) {
       await this.menuAccess.assertGroupForBusiness(dto.groupId, dto.businessId);
     }

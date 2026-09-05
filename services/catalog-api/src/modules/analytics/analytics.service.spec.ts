@@ -41,7 +41,16 @@ describe('AnalyticsService', () => {
     };
 
     const planLimits = {
-      capAnalyticsDays: jest.fn((_businessId: string, days: number) => Promise.resolve(days)),
+      getBusinessPlanContext: jest.fn().mockResolvedValue({
+        effectiveTier: 'PREMIUM',
+        limits: { maxAnalyticsDays: 365, analyticsTier: 'FULL' },
+      }),
+      getAnalyticsCapabilities: jest.fn().mockReturnValue({
+        tier: 'FULL',
+        maxDays: 365,
+        summary: true,
+        trends: true,
+      }),
     } as unknown as PlanLimitsService;
 
     return {
@@ -99,6 +108,7 @@ describe('AnalyticsService', () => {
     expect(result).toMatchObject({
       businessId: 'business-1',
       days: 14,
+      analyticsTier: 'FULL',
       total: 9,
       byType: {
         [AnalyticsEventType.VIEW_BUSINESS]: 7,
@@ -129,11 +139,31 @@ describe('AnalyticsService', () => {
     await expect(service.trends(admin, 'business-1', { days: 7 })).resolves.toEqual({
       businessId: 'business-1',
       days: 7,
+      analyticsTier: 'FULL',
       items: [
         { date: '2026-08-29', type: AnalyticsEventType.VIEW_BUSINESS, count: 2 },
         { date: '2026-08-30', type: AnalyticsEventType.ROUTE_CLICK, count: 1 },
       ],
     });
+  });
+
+  it('blocks trends for FREE/basic analytics tier', async () => {
+    const { prisma, planLimits, service } = createService();
+    prisma.business.findUnique.mockResolvedValue({ ownerId: owner.id });
+    planLimits.getBusinessPlanContext = jest.fn().mockResolvedValue({
+      effectiveTier: 'FREE',
+      limits: { maxAnalyticsDays: 7, analyticsTier: 'BASIC' },
+    });
+    planLimits.getAnalyticsCapabilities = jest.fn().mockReturnValue({
+      tier: 'BASIC',
+      maxDays: 7,
+      summary: true,
+      trends: false,
+    });
+
+    await expect(service.trends(owner, 'business-1', { days: 7 })).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
   });
 
   it('blocks regular users from business analytics', async () => {

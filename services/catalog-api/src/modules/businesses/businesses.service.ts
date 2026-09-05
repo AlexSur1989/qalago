@@ -6,7 +6,7 @@ import {
 import { BusinessStatus, Prisma, UserRole } from '@prisma/client';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { haversineMeters } from '../../common/utils/geo.utils';
-import { compareBusinessCatalogRank, compareBusinessTierRank } from '../../common/utils/business-rank.util';
+import { compareBusinessCatalogRank } from '../../common/utils/business-rank.util';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ServiceMenuService } from '../service-items/service-menu.service';
@@ -172,10 +172,6 @@ export class BusinessesService {
         distanceMeters == null ? true : distanceMeters <= radiusMeters,
       )
       .sort((a, b) => {
-        const rankDiff = compareBusinessTierRank(a.item, b.item);
-        if (rankDiff !== 0) {
-          return rankDiff;
-        }
         if (a.distanceMeters == null && b.distanceMeters == null) {
           return a.item.title.localeCompare(b.item.title, 'ru');
         }

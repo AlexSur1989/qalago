@@ -111,9 +111,6 @@ export default function BusinessPromotionsPage() {
           <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>
             Тариф «{planStatus.catalog.nameRu}»: активных {activeCount} /{' '}
             {planStatus.limits.maxActivePromotions}
-            {planStatus.limits.maxPromotionsInFeed > 0
-              ? ` · в ленте города до ${planStatus.limits.maxPromotionsInFeed} одновременно`
-              : ' · в ленте города не показываются'}
             {' · '}срок акции до {planStatus.limits.maxPromotionDurationDays} дн.
           </p>
           {atActiveLimit && (

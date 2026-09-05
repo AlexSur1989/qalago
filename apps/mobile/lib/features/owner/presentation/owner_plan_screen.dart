@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/models/models.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -23,6 +24,11 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
   String _formatPrice(int price) {
     if (price == 0) return '0 ₸';
     return '${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]} ')} ₸';
+  }
+
+  String _periodLabel(int? periodDays) {
+    if (periodDays == null) return 'месяц';
+    return '$periodDays дн.';
   }
 
   Future<void> _checkout(String businessId, String tier) async {
@@ -94,11 +100,14 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
             onRetry: () => ref.invalidate(businessPlanProvider(businessId)),
           ),
           data: (planStatus) {
-            final effectiveTier = planStatus['effectiveTier'] as String? ?? 'BASIC';
+            final effectiveTier = BusinessModel.normalizePlanTier(
+              planStatus['effectiveTier'] as String?,
+            );
             final limits = planStatus['limits'] as Map<String, dynamic>? ?? {};
             final usage = planStatus['usage'] as Map<String, dynamic>? ?? {};
             final catalogInfo = planStatus['catalog'] as Map<String, dynamic>? ?? {};
             final maxPhotos = limits['maxPhotos'] as int?;
+            final maxServiceItems = limits['maxServiceItems'] as int?;
             final expiresAt = planStatus['expiresAt'] as String?;
 
             return ListView(
@@ -119,7 +128,7 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Текущий: ${catalogInfo['nameRu'] ?? 'Базовый'}',
+                          'Текущий: ${catalogInfo['nameRu'] ?? effectiveTier}',
                           style: const TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 18,
@@ -127,9 +136,9 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Фото: ${usage['photos'] ?? 0}${maxPhotos != null ? ' / $maxPhotos' : ' · без лимита'}'
-                          ' · Акции: ${usage['activePromotions'] ?? 0} / ${limits['maxActivePromotions'] ?? 1}'
-                          ' · в ленте до ${limits['maxPromotionsInFeed'] ?? 0}',
+                          'Фото: ${usage['photos'] ?? 0}${maxPhotos != null ? ' / $maxPhotos' : ''}'
+                          ' · Товары/услуги: ${usage['serviceItems'] ?? 0}${maxServiceItems != null ? ' / $maxServiceItems' : ''}'
+                          ' · Акции: ${usage['activePromotions'] ?? 0} / ${limits['maxActivePromotions'] ?? 1}',
                           style: TextStyle(color: Colors.grey.shade700),
                         ),
                         if (expiresAt != null) ...[
@@ -155,13 +164,13 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                 ),
                 const SizedBox(height: 12),
                 ...catalog.map((plan) {
-                  final tier = plan['tier'] as String? ?? '';
+                  final tier = BusinessModel.normalizePlanTier(plan['tier'] as String?);
                   final isCurrent = effectiveTier == tier;
                   final price = (plan['priceKzt'] as num?)?.toInt() ?? 0;
                   final periodDays = plan['periodDays'] as int?;
                   final features = (plan['features'] as List<dynamic>? ?? [])
                       .cast<String>();
-                  final isDowngrade = tier == 'BASIC' && effectiveTier != 'BASIC';
+                  final isDowngradeToFree = tier == 'FREE' && effectiveTier != 'FREE';
 
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
@@ -205,7 +214,7 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                             ),
                           ),
                           Text(
-                            '${_formatPrice(price)} / ${periodDays == null ? 'навсегда' : '$periodDays дн.'}',
+                            '${_formatPrice(price)} / ${_periodLabel(periodDays)}',
                             style: TextStyle(color: Colors.grey.shade700),
                           ),
                           const SizedBox(height: 10),
@@ -232,8 +241,8 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                               child: Text(
                                 _checkoutTier == tier
                                     ? 'Подключение…'
-                                    : isDowngrade
-                                        ? 'Вернуться на Базовый'
+                                    : isDowngradeToFree
+                                        ? 'Вернуться на Free'
                                         : price == 0
                                             ? 'Выбрать'
                                             : 'Подключить (тест)',
@@ -251,18 +260,38 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
+                          'Рекламные размещения',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Рекламные размещения приобретаются отдельно. '
+                          'Скидка тарифа применяется к отдельным рекламным продуктам согласно условиям.',
+                          style: TextStyle(color: Colors.grey.shade700),
+                        ),
+                        const SizedBox(height: 10),
+                        OutlinedButton(
+                          onPressed: () => context.push('/owner/promote'),
+                          child: const Text('Перейти к рекламе'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
                           'Тестовая оплата',
                           style: TextStyle(fontWeight: FontWeight.w700),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Оплата имитируется без списания. Тариф активируется на 30 дней.',
+                          'Оплата имитируется без списания. Платные тарифы активируются на 30 дней.',
                           style: TextStyle(color: Colors.grey.shade700),
-                        ),
-                        const SizedBox(height: 10),
-                        OutlinedButton(
-                          onPressed: () => context.push('/owner/help'),
-                          child: const Text('Перейти в «Помощь»'),
                         ),
                       ],
                     ),

@@ -9,7 +9,28 @@
 
 ---
 
-## 2026-09-05 — Этап 4B: Admin monetization UI
+## 2026-09-06 — Этап 4C: FREE / BASIC / PREMIUM / VIP subscriptions
+
+**Сделано**
+- Prisma migration `20260906000000_business_plan_tier_stage_4c`: safe enum swap BASIC→FREE, PRO→PREMIUM, TOP_CITY→VIP; default `FREE`
+- `PlanLimitsService` / `PLAN_CATALOG` — единый backend source of truth (цены, лимиты, ad discounts 0/5/10/15%)
+- Backend enforcement: photos, service items, active promotions; expiry paid → FREE
+- Organic ranking plan-neutral (`compareBusinessCatalogRank` = title; geo = distance + title)
+- Subscription activation no longer sets `isFeatured` / `featuredSlot`; city promotion feed decoupled from plan tier
+- Analytics tiers: BASIC (7d summary), EXTENDED (30d + trends), FULL (365d + trends)
+- Flutter owner plan UI (4 tiers), badges, VIP disclaimer; `business_rank.dart` plan-neutral
+- Admin + business-web plan selectors updated; `packages/shared-types` plan DTOs
+- DEV seed: `qa-plan-free/basic/premium/vip` businesses
+- Tests: backend 122, Flutter 36, admin vitest 10
+
+**Checkpoint**
+- Tag: `checkpoint-stage-4c-pre-migration`
+- Pre-migration counts: `services/catalog-api/scripts/stage-4c-pre-migration-counts.json`
+
+**Заложить на будущее**
+- Stage 4B.1: package VIP creative linking; real payments; price editor
+
+---
 
 **Сделано**
 - `apps/admin-web` — раздел «Монетизация»: обзор, заказы, оплаты, кампании, креативы, placements
