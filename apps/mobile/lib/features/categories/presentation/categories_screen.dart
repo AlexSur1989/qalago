@@ -86,7 +86,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                   context.push('/search?q=${Uri.encodeComponent(q)}');
                 },
                 decoration: InputDecoration(
-                  hintText: 'Поиск категорий...',
+                  hintText: 'Фильтр по названию категории...',
                   prefixIcon: const Icon(
                     Icons.search,
                     color: Color(0xFF8A919F),
@@ -116,7 +116,32 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: () => context.push('/search'),
+                  icon: const Icon(Icons.storefront_outlined),
+                  label: const Text('Поиск заведений'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Категории',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      color: Colors.black,
+                    ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                city.nameRu,
+                style: TextStyle(
+                  color: Colors.black.withValues(alpha: 0.55),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 20),
               if (catalogTotalAsync.isLoading && !catalogTotalAsync.hasValue)
                 const LoadingView()
               else if (isEmptyCity)

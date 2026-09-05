@@ -11,6 +11,25 @@
 
 ---
 
+## 2026-09-06 — Stage 5B: consumer categories, search & filters
+
+**Сделано**
+- Categories screen: title, city context, local category-name filter, explicit «Поиск заведений» CTA
+- Category businesses: city-wide organic list (removed hidden 3 km default); city in app bar and section subtitle
+- Search: radius filter (3/5/10/15 km + «Весь город»), category chips with clear, active filter summary + reset
+- Deep links: `/search?q=&categoryId=&radiusKm=`; whole city omits geo params
+- Search uses `BusinessCard`; result count from API meta; differentiated empty/error states
+- Paid CATEGORY_TOP / CATEGORY_BOOST dedupe preserved; organic sort unchanged (no plan tier)
+- Deferred: open-now, rating, promotion filters (no reliable backend support)
+- Consumer tests expanded (search filters, category dedupe, guest search widgets)
+
+**Заложить на будущее**
+- Backend openNow / minRating / hasPromotion filters
+- Category business counts without N+1
+- Search debounce cancellation on dispose edge cases
+
+---
+
 ## 2026-09-06 — Stage 5A: guest-first consumer Home & discovery
 
 **Сделано**

@@ -9,6 +9,7 @@ void main() {
       expect(isPublicConsumerRoute('/categories/abc'), isTrue);
       expect(isPublicConsumerRoute('/map'), isTrue);
       expect(isPublicConsumerRoute('/search'), isTrue);
+      expect(isPublicConsumerRoute('/search?q=кофе&radiusKm=5'), isTrue);
       expect(isPublicConsumerRoute('/business/b1'), isTrue);
       expect(isPublicConsumerRoute('/promotions'), isTrue);
       expect(isPublicConsumerRoute('/profile'), isTrue);

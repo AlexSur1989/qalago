@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/location/user_location_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
@@ -16,18 +15,12 @@ import '../../ads/providers/ad_serve_provider.dart';
 import '../../ads/widgets/sponsored_business_section.dart';
 import '../../auth/providers/auth_provider.dart';
 
-const _categoryRadiusKm = nearbyRadiusKm;
-
 final categoryBusinessesProvider =
     FutureProvider.family<PaginatedBusinesses, String>((ref, categoryId) async {
   final city = ref.watch(cityProvider);
-  final position = ref.watch(nearbySearchPositionProvider);
   return ref.watch(catalogRepositoryProvider).fetchBusinesses(
         citySlug: city.slug,
         categoryId: categoryId,
-        latitude: position.latitude,
-        longitude: position.longitude,
-        radiusKm: _categoryRadiusKm,
         limit: 100,
       );
 });
@@ -44,6 +37,7 @@ class CategoryBusinessesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final city = ref.watch(cityProvider);
     final businessesAsync = ref.watch(categoryBusinessesProvider(categoryId));
     final topAdsAsync = ref.watch(
       serveAdsProvider(
@@ -65,7 +59,20 @@ class CategoryBusinessesScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(categoryTitle),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(categoryTitle),
+            Text(
+              city.nameRu,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Colors.black.withValues(alpha: 0.55),
+              ),
+            ),
+          ],
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -110,11 +117,11 @@ class CategoryBusinessesScreen extends ConsumerWidget {
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(24),
-                children: const [
-                  SizedBox(height: 80),
+                children: [
+                  const SizedBox(height: 80),
                   Center(
                     child: Text(
-                      'В радиусе 3 км от вас пока нет заведений\nв этой категории',
+                      'В категории «$categoryTitle» пока нет заведений\nв ${city.nameRu}',
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -146,7 +153,7 @@ class CategoryBusinessesScreen extends ConsumerWidget {
                   _SectionTitle(
                     title: 'Все места',
                     subtitle:
-                        'До 3 км · ${organicItems.length} ${_pluralPlaces(organicItems.length)}',
+                        '${city.nameRu} · ${organicItems.length} ${_pluralPlaces(organicItems.length)}',
                   ),
                   const SizedBox(height: 12),
                   ..._organicBusinessCards(context, organicItems),

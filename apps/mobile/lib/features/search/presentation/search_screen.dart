@@ -4,23 +4,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/constants/app_constants.dart';
 import '../../../core/location/user_location_provider.dart';
+import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
+import '../../../shared/widgets/business_card.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../search_filters.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({
     super.key,
     this.initialQuery,
     this.categoryId,
+    this.initialRadiusKm,
   });
 
   final String? initialQuery;
   final String? categoryId;
+  final String? initialRadiusKm;
 
   @override
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
@@ -30,13 +34,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   late final TextEditingController _controller;
   String _query = '';
   String? _categoryId;
+  SearchRadiusMode _radiusMode = SearchRadiusMode.wholeCity;
   Timer? _debounce;
+  bool _syncingRoute = false;
 
   @override
   void initState() {
     super.initState();
     _query = widget.initialQuery?.trim() ?? '';
     _categoryId = widget.categoryId;
+    _radiusMode = SearchRadiusModeX.fromRadiusKmParam(widget.initialRadiusKm);
     _controller = TextEditingController(text: _query);
     _controller.addListener(() {
       if (mounted) setState(() {});
@@ -50,12 +57,42 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     super.dispose();
   }
 
-  BusinessesQuery _buildQuery(UserPosition position) => BusinessesQuery(
+  bool get _hasActiveSearch => _query.isNotEmpty || _categoryId != null;
+
+  bool get _hasNarrowFilters =>
+      _query.isNotEmpty ||
+      _categoryId != null ||
+      _radiusMode != SearchRadiusMode.wholeCity;
+
+  BusinessesQuery _buildQuery() {
+    if (_radiusMode == SearchRadiusMode.wholeCity) {
+      return BusinessesQuery(
         search: _query.isEmpty ? null : _query,
         categoryId: _categoryId,
-        latitude: position.latitude,
-        longitude: position.longitude,
       );
+    }
+    final position = ref.read(nearbySearchPositionProvider);
+    return BusinessesQuery(
+      search: _query.isEmpty ? null : _query,
+      categoryId: _categoryId,
+      latitude: position.latitude,
+      longitude: position.longitude,
+      radiusKm: _radiusMode.radiusKm,
+    );
+  }
+
+  void _syncRoute() {
+    if (_syncingRoute || !mounted) return;
+    _syncingRoute = true;
+    final params = buildSearchRouteParams(
+      query: _query,
+      categoryId: _categoryId,
+      radiusMode: _radiusMode,
+    );
+    final uri = Uri(path: '/search', queryParameters: params.isEmpty ? null : params);
+    context.go(uri.toString());
+    _syncingRoute = false;
+  }
 
   void _onQueryChanged(String value) {
     _debounce?.cancel();
@@ -64,6 +101,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       final next = value.trim();
       if (next == _query) return;
       setState(() => _query = next);
+      _syncRoute();
     });
   }
 
@@ -72,12 +110,42 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     _controller.clear();
     if (_query.isEmpty) return;
     setState(() => _query = '');
+    _syncRoute();
+  }
+
+  void _resetFilters() {
+    _debounce?.cancel();
+    _controller.clear();
+    setState(() {
+      _query = '';
+      _categoryId = null;
+      _radiusMode = SearchRadiusMode.wholeCity;
+    });
+    _syncRoute();
+  }
+
+  void _setCategory(String? id) {
+    setState(() => _categoryId = id);
+    _syncRoute();
+  }
+
+  void _setRadius(SearchRadiusMode mode) {
+    setState(() => _radiusMode = mode);
+    _syncRoute();
+  }
+
+  String? _categoryTitle(List<CategoryModel> categories) {
+    if (_categoryId == null) return null;
+    for (final c in categories) {
+      if (c.id == _categoryId) return c.title;
+    }
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
-    final nearbyPosition = ref.watch(nearbySearchPositionProvider);
-    final query = _buildQuery(nearbyPosition);
+    final city = ref.watch(cityProvider);
+    final query = _buildQuery();
     final businessesAsync = ref.watch(businessesProvider(query));
     final categoriesAsync = ref.watch(categoriesProvider);
 
@@ -93,12 +161,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         ),
         title: TextField(
           controller: _controller,
-          autofocus: _query.isEmpty,
+          autofocus: _query.isEmpty && _categoryId == null,
           textInputAction: TextInputAction.search,
           onChanged: _onQueryChanged,
           onSubmitted: (value) {
             _debounce?.cancel();
             setState(() => _query = value.trim());
+            _syncRoute();
           },
           decoration: InputDecoration(
             hintText: 'Поиск заведений и услуг...',
@@ -134,26 +203,64 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           categoriesAsync.when(
             loading: () => const SizedBox.shrink(),
             error: (_, __) => const SizedBox.shrink(),
-            data: (categories) => _CategoryChips(
-              categories: categories,
-              selectedId: _categoryId,
-              onSelected: (id) => setState(() => _categoryId = id),
-            ),
+            data: (categories) {
+              final categoryTitle = _categoryTitle(categories);
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _CategoryChips(
+                    categories: categories,
+                    selectedId: _categoryId,
+                    onSelected: _setCategory,
+                  ),
+                  _RadiusChips(
+                    selected: _radiusMode,
+                    onSelected: _setRadius,
+                  ),
+                  if (_hasNarrowFilters)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              buildSearchFilterSummary(
+                                cityName: city.nameRu,
+                                categoryTitle: categoryTitle,
+                                radiusMode: _radiusMode,
+                                query: _query,
+                              ),
+                              style: const TextStyle(
+                                color: Color(0xFF596171),
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: _resetFilters,
+                            child: const Text('Сбросить'),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
           Expanded(
             child: businessesAsync.when(
               loading: () => const LoadingView(),
               error: (e, _) => ErrorView(
-                message: '$e',
-                onRetry: () => ref.invalidate(businessesProvider),
+                message: 'Не удалось выполнить поиск.\n$e',
+                onRetry: () => ref.invalidate(businessesProvider(query)),
               ),
               data: (data) {
-                if (_query.isEmpty && _categoryId == null) {
+                if (!_hasActiveSearch) {
                   return const Center(
                     child: Padding(
                       padding: EdgeInsets.all(24),
                       child: Text(
-                        'Введите название, адрес или категорию',
+                        'Введите название или выберите категорию',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Color(0xFF7B8291)),
                       ),
@@ -164,12 +271,22 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   return Center(
                     child: Padding(
                       padding: const EdgeInsets.all(24),
-                      child: Text(
-                        _query.isEmpty
-                            ? 'Нет заведений в выбранной категории'
-                            : 'Ничего не найдено по запросу «$_query»',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: Color(0xFF7B8291)),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _emptyMessage(city.nameRu),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: Color(0xFF7B8291)),
+                          ),
+                          if (_hasNarrowFilters) ...[
+                            const SizedBox(height: 16),
+                            OutlinedButton(
+                              onPressed: _resetFilters,
+                              child: const Text('Сбросить фильтры'),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                   );
@@ -181,7 +298,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   itemBuilder: (context, index) {
                     if (index == 0) {
                       return Text(
-                        'Найдено: ${data.items.length}',
+                        'Найдено: ${data.total}',
                         style: const TextStyle(
                           color: Color(0xFF7B8291),
                           fontWeight: FontWeight.w600,
@@ -189,7 +306,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       );
                     }
                     final business = data.items[index - 1];
-                    return _SearchResultTile(business: business);
+                    return BusinessCard(
+                      business: business,
+                      onTap: () => context.push('/business/${business.id}'),
+                    );
                   },
                 );
               },
@@ -198,6 +318,19 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         ],
       ),
     );
+  }
+
+  String _emptyMessage(String cityName) {
+    if (_query.isNotEmpty && _categoryId != null) {
+      return 'Ничего не найдено по запросу «$_query» в выбранной категории';
+    }
+    if (_query.isNotEmpty) {
+      return 'Ничего не найдено по запросу «$_query» в $cityName';
+    }
+    if (_categoryId != null && _radiusMode != SearchRadiusMode.wholeCity) {
+      return 'Нет заведений в выбранной категории ${_radiusMode.label.toLowerCase()}';
+    }
+    return 'Нет заведений в выбранной категории';
   }
 }
 
@@ -220,12 +353,12 @@ class _CategoryChips extends StatelessWidget {
       height: 44,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
         children: [
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: FilterChip(
-              label: const Text('Все'),
+              label: const Text('Все категории'),
               selected: selectedId == null,
               onSelected: (_) => onSelected(null),
               selectedColor: AppTheme.kzBlue.withValues(alpha: 0.15),
@@ -249,102 +382,36 @@ class _CategoryChips extends StatelessWidget {
   }
 }
 
-class _SearchResultTile extends StatelessWidget {
-  const _SearchResultTile({required this.business});
+class _RadiusChips extends StatelessWidget {
+  const _RadiusChips({
+    required this.selected,
+    required this.onSelected,
+  });
 
-  final BusinessModel business;
+  final SearchRadiusMode selected;
+  final ValueChanged<SearchRadiusMode> onSelected;
 
   @override
   Widget build(BuildContext context) {
-    final coverUrl = AppConstants.resolveMediaUrl(business.coverImageUrl);
-
-    return Material(
-      color: Colors.white,
-      elevation: 2,
-      shadowColor: Colors.black.withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => context.push('/business/${business.id}'),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: coverUrl.isNotEmpty
-                    ? Image.network(
-                        coverUrl,
-                        width: 96,
-                        height: 84,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _placeholder(),
-                      )
-                    : _placeholder(),
+    return SizedBox(
+      height: 44,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+        children: [
+          for (final mode in SearchRadiusMode.values)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: FilterChip(
+                label: Text(mode.label),
+                selected: selected == mode,
+                onSelected: (_) => onSelected(mode),
+                selectedColor: AppTheme.kzBlue.withValues(alpha: 0.15),
+                checkmarkColor: AppTheme.kzBlue,
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      business.title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      business.categoryTitle ?? 'Заведение',
-                      style: const TextStyle(
-                        color: Color(0xFF7B8291),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (business.shortDesc != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        business.shortDesc!,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Color(0xFF596171),
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 6),
-                    Text(
-                      business.distanceMeters != null
-                          ? '${formatDistanceMeters(business.distanceMeters)} · ${business.address}'
-                          : business.address,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFF8A919F),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+        ],
       ),
-    );
-  }
-
-  Widget _placeholder() {
-    return Container(
-      width: 96,
-      height: 84,
-      color: const Color(0xFFE8ECF1),
-      child: const Icon(Icons.storefront_outlined, color: Color(0xFF8A919F)),
     );
   }
 }
