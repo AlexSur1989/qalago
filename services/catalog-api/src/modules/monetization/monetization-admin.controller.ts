@@ -8,9 +8,11 @@ import {
   AdminListCampaignsQueryDto,
   AdminListOrdersQueryDto,
   AdminListPaymentsQueryDto,
+  CampaignAnalyticsQueryDto,
   ConfirmPaymentDto,
   RejectCreativeDto,
 } from './dto/monetization.dto';
+import { AdAnalyticsService } from './ad-analytics.service';
 import { MonetizationService } from './monetization.service';
 import { OrderService } from './order.service';
 
@@ -21,6 +23,7 @@ export class MonetizationAdminController {
     private readonly orderService: OrderService,
     private readonly monetizationService: MonetizationService,
     private readonly creativeService: CreativeService,
+    private readonly adAnalyticsService: AdAnalyticsService,
   ) {}
 
   @Get('orders')
@@ -69,6 +72,18 @@ export class MonetizationAdminController {
   @Get('campaigns/:id')
   getCampaign(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.monetizationService.getAdminCampaign(user, id);
+  }
+
+  @Get('campaigns/:id/analytics')
+  getCampaignAnalytics(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Query() query: CampaignAnalyticsQueryDto,
+  ) {
+    return this.adAnalyticsService.getCampaignAnalytics(user, id, {
+      from: query.from ? new Date(query.from) : undefined,
+      to: query.to ? new Date(query.to) : undefined,
+    });
   }
 
   @Post('campaigns/:id/pause')

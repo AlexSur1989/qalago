@@ -611,6 +611,75 @@ Domain errors include stable `code` in body:
 | `PAYMENT_AMOUNT_MISMATCH` | Confirm amount ≠ order total |
 | `ORDER_NOT_FOUND` | Unknown order |
 
+### Ad serving (Stage 3A — public)
+
+- `GET /monetization/ads/serve?placementCode&sessionId&citySlug|cityId&categoryId?&limit?`
+
+**Response `200`:**
+```json
+{
+  "placementCode": "HOME_FEATURED",
+  "cityId": "...",
+  "categoryId": null,
+  "items": [
+    {
+      "campaignId": "...",
+      "placementCode": "HOME_FEATURED",
+      "placementId": "...",
+      "position": 1,
+      "sponsored": true,
+      "displayLabel": "Реклама",
+      "productType": "FEATURED_BUSINESS",
+      "business": { "id": "...", "title": "...", "slug": "...", "...": "..." }
+    }
+  ]
+}
+```
+
+- `POST /monetization/ads/events` — track impression/click/action (rate limit 120/min/IP)
+
+**Body:**
+```json
+{
+  "campaignId": "...",
+  "placementCode": "HOME_FEATURED",
+  "sessionId": "abc123",
+  "type": "AD_IMPRESSION",
+  "position": 1
+}
+```
+
+**Impression dedupe response (duplicate within 30 min):**
+```json
+{ "recorded": false, "duplicate": true }
+```
+
+### Campaign analytics (Stage 3A)
+
+- `GET /monetization/campaigns/:id/analytics?from&to` — owner/admin/city-admin
+- `GET /admin/monetization/campaigns/:id/analytics?from&to`
+
+**Response `200`:**
+```json
+{
+  "campaignId": "...",
+  "period": { "from": null, "to": null },
+  "served": 1200,
+  "qualifiedImpressions": 450,
+  "clicks": 23,
+  "ctr": 5.11,
+  "actions": {
+    "AD_CARD_OPEN": 40,
+    "AD_CALL_CLICK": 8,
+    "AD_WHATSAPP_CLICK": 0,
+    "AD_ROUTE_CLICK": 3,
+    "AD_WEBSITE_CLICK": 1,
+    "AD_INSTAGRAM_CLICK": 0,
+    "AD_PROMOTION_OPEN": 2
+  }
+}
+```
+
 ---
 
 ## Health

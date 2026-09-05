@@ -5,6 +5,29 @@
 
 ---
 
+---
+
+## 2026-09-05 — Этап 3A: ad serving, fair rotation, analytics
+
+**Сделано**
+- `AdRotationService` — fairSort по `qualifiedImpressions/weight`, tie-break hash(sessionId+campaignId+scope), CATEGORY_TOP position 1 через `lastTopPositionAt`
+- `AdServingService` — `GET /monetization/ads/serve` (public), фильтры кампаний, AD_SERVED + servedCount
+- `AdEventsService` — `POST /monetization/ads/events`, dedupe AD_IMPRESSION 30 мин, click/action counters
+- `AdAnalyticsService` — CTR, action groupBy; owner + admin analytics endpoints
+- `CampaignExpirationScheduler` — cron */5 min → COMPLETED
+- In-memory rate limit guard (120 req/min/IP) для ad events
+- `scripts/seed-monetization-demo.ts`, npm script `seed:monetization-demo`
+- 34+ unit tests (rotation, serving, events, analytics, expiration)
+- Docs: `MONETIZATION.md`, `api-contracts.md`
+
+**Сохранено без изменений**
+- `schema.prisma` (no migration), `GET /businesses`, `business-rank.util.ts`, Flutter/admin/business web
+
+**Заложить на будущее**
+- Flutter widgets, period-scoped aggregates from events, Redis optional upgrade
+
+---
+
 ## 2026-09-05 — Этап 2: backend monetization core
 
 **Сделано**

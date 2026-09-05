@@ -4,6 +4,7 @@ import {
   IsArray,
   IsDateString,
   IsEnum,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -11,6 +12,7 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
+import { AD_ANALYTICS_EVENT_TYPES } from '../constants/monetization.constants';
 
 export class MonetizationCityQueryDto {
   @IsOptional()
@@ -250,4 +252,50 @@ export class ConfirmPaymentDto {
   @IsOptional()
   @IsString()
   note?: string;
+}
+
+export class ServeAdsQueryDto extends MonetizationCityQueryDto {
+  @IsString()
+  placementCode!: string;
+
+  @IsString()
+  @Length(1, 128)
+  sessionId!: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  limit?: number;
+}
+
+export class TrackAdEventDto {
+  @IsString()
+  campaignId!: string;
+
+  @IsString()
+  placementCode!: string;
+
+  @IsString()
+  @Length(1, 128)
+  sessionId!: string;
+
+  @IsIn([...AD_ANALYTICS_EVENT_TYPES])
+  type!: (typeof AD_ANALYTICS_EVENT_TYPES)[number];
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  position?: number;
+}
+
+export class CampaignAnalyticsQueryDto {
+  @IsOptional()
+  @IsDateString()
+  from?: string;
+
+  @IsOptional()
+  @IsDateString()
+  to?: string;
 }

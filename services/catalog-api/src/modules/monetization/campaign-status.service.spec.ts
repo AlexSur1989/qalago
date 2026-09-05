@@ -62,4 +62,14 @@ describe('CampaignStatusService', () => {
     expect(result.status).toBe(AdCampaignStatus.SCHEDULED);
     expect(result.startAt).toEqual(future);
   });
+
+  it('37. syncExpiredCampaigns targets ACTIVE/SCHEDULED past endAt', () => {
+    const now = new Date('2026-09-10T00:00:00Z');
+    const args = service.syncExpiredCampaigns(now);
+    expect(args.where).toEqual({
+      status: { in: [AdCampaignStatus.ACTIVE, AdCampaignStatus.SCHEDULED] },
+      endAt: { lte: now },
+    });
+    expect(args.data).toEqual({ status: AdCampaignStatus.COMPLETED });
+  });
 });

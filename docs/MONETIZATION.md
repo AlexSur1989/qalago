@@ -1,20 +1,23 @@
-# Monetization — QalaGo (Stage 2 Backend)
+# Monetization — QalaGo (Stage 2 + 3A Backend)
 
 Campaign-based advertising monetization in `services/catalog-api`.  
 Coexists with legacy subscription tiers (`Business.planTier`, `PlanPayment`, `/plans`).
 
 ---
 
-## Scope (Stage 2)
+## Scope
 
-| Included | Not included (later stages) |
-|----------|----------------------------|
-| Product catalog & packages | Ad serving / fair rotation |
-| Pricing engine + plan discounts | Impression/click tracking |
-| Availability checks | Flutter ad widgets |
-| Orders + manual payments | Real payment gateways (Kaspi/Halyk) |
-| Campaign provisioning | Cron scheduler |
-| Creative moderation API | Admin/business UI |
+| Stage | Included |
+|-------|----------|
+| **Stage 2** | Product catalog, pricing, orders, manual payments, campaign provisioning, creative moderation |
+| **Stage 3A** | Ad serving API, fair rotation, impression/click analytics, campaign expiration cron |
+
+| Not included (later) | |
+|--------------------|---|
+| Flutter ad widgets | Stage 3B+ |
+| Real payment gateways | Stage 4+ |
+| Redis session store | Uses deterministic hash instead |
+| `GET /businesses` ad mixing | Paid ads via separate API only |
 
 ---
 
@@ -27,7 +30,87 @@ Coexists with legacy subscription tiers (`Business.planTier`, `PlanPayment`, `/p
 | `FEATURED_BUSINESS` | FEATURED_BUSINESS | `HOME_FEATURED` |
 | `VIP_BANNER` | VIP_BANNER | `HOME_VIP_BANNER` |
 | `PROMOTED_PROMOTION` | PROMOTED_PROMOTION | `HOME_PROMOTIONS` |
-| `PACKAGE` | PACKAGE | (line item only; provisions package items) |
+| `PACKAGE` | PACKAGE | (line item only) |
+
+### Serving placements (Stage 3A)
+
+Active: `HOME_VIP_BANNER`, `HOME_FEATURED`, `HOME_PROMOTIONS`, `CATEGORY_TOP`, `CATEGORY_BOOST`
+
+Inactive (reserved): `SEARCH_TOP`, `MAP_FEATURED`
+
+---
+
+## Fair rotation (Stage 3A)
+
+No Redis. Session stability via deterministic hash:
+
+```
+hash = SHA256(sessionId + campaignId + scope)
+scope = sessionScopeKey(placement, cityId, categoryId?)
+```
+
+### Selection algorithm
+
+1. **fairSort** — order candidates by `qualifiedImpressions / weight` ASC (lower = higher priority).
+2. **Tie-break** — `hash(sessionId, campaignId, scope)` ascending.
+3. **CATEGORY_TOP position 1** — among selected pool, campaign with oldest (or `null`) `lastTopPositionAt` gets position 1; positions 2+ from fairSort excluding the top-1 winner.
+4. **Other placements** — first `maxVisible` from fairSort.
+
+### Position fairness without schema migration
+
+Schema has `lastTopPositionAt` (not separate top1/top3/top5 counters).  
+When client reports `AD_IMPRESSION` with `position=1`, server sets `lastTopPositionAt = now`.  
+This rotates CATEGORY_TOP slot 1 fairly over time.
+
+`AD_SERVED` increments `servedCount` only (not `qualifiedImpressions`).  
+Qualified impressions increment on deduped `AD_IMPRESSION` within 30 minutes per `sessionId+campaignId+placementId`.
+
+---
+
+## Ad serving API
+
+`GET /monetization/ads/serve` (public)
+
+Query: `placementCode`, `sessionId`, `citySlug|cityId`, `categoryId?` (required for category placements), `limit?`
+
+- Validates placement is active and in `SERVING_PLACEMENT_CODES`
+- `limit` capped by `AdPlacement.maxVisible`
+- Filters: `ACTIVE` campaign, date window, `ACTIVE` business, active product, placement link, VIP requires `APPROVED` creative
+- Response items: `sponsored: true`, `displayLabel: "Реклама"`, no financial fields
+- Payload shape by product: VIP → creative; featured/top/boost → business card fields; promotions → promotion + business stub
+
+On serve: atomic `servedCount++`, `lastShownAt`, `AnalyticsEvent` type `AD_SERVED`.
+
+---
+
+## Ad events API
+
+`POST /monetization/ads/events` (public, rate limit 120 req/min/IP)
+
+Body: `campaignId`, `placementCode`, `sessionId`, `type`, `position?`
+
+| Type | Behavior |
+|------|----------|
+| `AD_IMPRESSION` | Dedupe 30 min; `qualifiedImpressions++`; if `position=1` → `lastTopPositionAt=now` |
+| `AD_CLICK` | `clickCount++` |
+| `AD_CARD_OPEN`, `AD_CALL_CLICK`, … | Store `AnalyticsEvent` only |
+
+---
+
+## Campaign analytics
+
+- Owner: `GET /monetization/campaigns/:id/analytics?from&to`
+- Admin: `GET /admin/monetization/campaigns/:id/analytics?from&to`
+
+Returns: `served`, `qualifiedImpressions`, `clicks`, `ctr` (%), `actions` (groupBy on action event types).  
+RBAC via `MonetizationAccessService`. Optional `from`/`to` filters action event counts.
+
+---
+
+## Campaign expiration
+
+Cron every 5 minutes (`CampaignExpirationScheduler`):  
+`ACTIVE`/`SCHEDULED` campaigns with `endAt <= now` → `COMPLETED` via `CampaignStatusService.syncExpiredCampaigns`.
 
 ---
 
@@ -41,14 +124,9 @@ Coexists with legacy subscription tiers (`Business.planTier`, `PlanPayment`, `/p
 4. `categoryId`
 5. Global (all null)
 
-Filters: `isActive`, `validFrom`, `validUntil`.  
-No fallback beyond step 5 → `PRICE_NOT_FOUND`.
-
 ---
 
 ## Legacy plan discounts (temporary)
-
-Server-side mapping in `PricingService` (Stage 2 only):
 
 | Plan tier | Discount |
 |-----------|----------|
@@ -56,122 +134,12 @@ Server-side mapping in `PricingService` (Stage 2 only):
 | PRO | 10% |
 | TOP_CITY | 15% |
 
-**Packages:** `discountPercent = 0` always (fixed package price).
-
-Money: integer KZT, `discountAmount = Math.round(basePrice * percent / 100)`.
-
-Client `finalPrice` is **never** trusted.
-
----
-
-## Quote flow
-
-`POST /monetization/quote`:
-
-1. Auth + business ownership
-2. Resolve city/category from business (reject client mismatch)
-3. Lookup price + plan discount
-4. Check placement availability
-5. Return quote — **does not reserve slot or create order**
-
-Response includes `basePrice`, `discountPercent`, `discountAmount`, `finalPrice`, `availability`, `calculatedEndAt`.
-
----
-
-## Availability
-
-Limited placements enforce `maxActiveCampaigns` for overlapping `ACTIVE` + `SCHEDULED` campaigns:
-
-| Placement | Scope |
-|-----------|-------|
-| `HOME_VIP_BANNER` | Global placement limit |
-| `CATEGORY_TOP` | Per city + category |
-| `HOME_FEATURED` | Per city |
-
-`COMPLETED`, `CANCELLED`, `REJECTED` do not consume capacity.
-
-When full: `available: false`, optional `nextAvailableAt` (earliest overlapping `endAt`).
-
-### Race condition protection
-
-Quote does **not** guarantee a slot. On order creation and campaign provisioning, availability is re-checked inside a PostgreSQL transaction using `pg_advisory_xact_lock` keyed by `placement:city:category` hash.
-
----
-
-## Orders
-
-- Human-readable `orderNumber`: `QLG-YYYYMMDD-XXXXXX` (server random, unique check)
-- Status: `AWAITING_PAYMENT` on create
-- `OrderItem` snapshots: `basePrice`, `discountPercent`, `discountAmount`, `finalPrice`
-- Integrity: `subtotal - discountAmount = totalAmount`
-- Auto-creates `Payment` `PENDING` / `provider=MANUAL`
-
----
-
-## Manual payment confirmation
-
-`POST /admin/monetization/payments/:id/confirm` — single transaction:
-
-1. Idempotent if already `PAID` → `{ alreadyPaid: true }`
-2. Verify `Payment=PENDING`, `Order=AWAITING_PAYMENT`, amounts match
-3. `Payment→PAID`, `Order→PAID`, provision campaigns
-4. Rollback entire transaction if provisioning fails
-
----
-
-## Campaign provisioning
-
-After `Order→PAID`, create `AdCampaign` + `AdCampaignPlacement` per order item.
-
-**VIP_BANNER:** requires `AdCreative`. Without approved creative → `PENDING_MODERATION`.  
-Paid days are not lost: on `APPROVED`, `startAt = max(now, desiredStartAt)`, `endAt = startAt + duration`.
-
-**Status rules:**
-
-| Condition | Status |
-|-----------|--------|
-| Awaiting creative approval | `PENDING_MODERATION` |
-| Approved, start in future | `SCHEDULED` |
-| Approved, start now/past | `ACTIVE` |
-| `endAt <= now` | `COMPLETED` (effective) |
-
-**Packages:** one `OrderItem` (type `PACKAGE`), provisions each `PromotionPackageItem`:
-
-| Package | Items |
-|---------|-------|
-| START | TOP_CATEGORY 7d, PROMOTED_PROMOTION 7d |
-| BUSINESS | TOP_CATEGORY 7d, FEATURED_BUSINESS 7d, PROMOTED_PROMOTION 7d |
-| MAX | VIP_BANNER 7d, TOP_CATEGORY 7d, FEATURED_BUSINESS 7d, PROMOTED_PROMOTION 7d |
-| NEW_PLACE | VIP_BANNER 7d, TOP_CATEGORY 14d, FEATURED_BUSINESS 14d, PROMOTED_PROMOTION 14d |
-
-Package prices: START 6900, BUSINESS 12900, MAX 19900, NEW_PLACE 24900 KZT.
-
-`NEW_PLACE` badge not implemented in Stage 2.
-
----
-
-## Creatives & moderation
-
-- Owner: create/list/get/update (DRAFT/REJECTED only)
-- Admin: approve/reject
-- On approve: linked paid campaigns → `SCHEDULED` or `ACTIVE`
-- On reject: campaigns → `REJECTED` (no auto-refund)
-
----
-
-## RBAC
-
-- `BUSINESS`: own businesses only
-- `CITY_ADMIN`: city scope via `CityScopeService`
-- `ADMIN`: all cities
-- `BUSINESS` cannot confirm payments
-
 ---
 
 ## Legacy fields (unchanged)
 
-`Business.isFeatured`, `featuredSlot`, `planTier` — not wired to new ad campaigns.  
-`business-rank.util.ts` unchanged; ad products do not affect `GET /businesses` yet.
+`Business.isFeatured`, `featuredSlot`, `planTier` — not wired to ad serving.  
+`business-rank.util.ts` and `GET /businesses` unchanged.
 
 ---
 
@@ -179,26 +147,30 @@ Package prices: START 6900, BUSINESS 12900, MAX 19900, NEW_PLACE 24900 KZT.
 
 ```
 src/modules/monetization/
-  monetization.module.ts
-  monetization.controller.ts
-  monetization-admin.controller.ts
-  monetization.service.ts
-  pricing.service.ts
-  availability.service.ts
-  order.service.ts
-  campaign-provisioning.service.ts
-  campaign-status.service.ts
-  creative.service.ts
-  monetization-access.service.ts
-  constants/ errors/ dto/ utils/
+  ad-rotation.service.ts      # fairSort, assignPositions (exported for tests)
+  ad-serving.service.ts
+  ad-events.service.ts
+  ad-analytics.service.ts
+  campaign-expiration.scheduler.ts
+  guards/ad-events-rate-limit.guard.ts
+  … (Stage 2 services)
 ```
 
 ---
 
-## Future (Stage 3+)
+## Dev demo seed
 
-- Ad serving endpoint with fair rotation
-- Analytics event wiring (AD_SERVED, AD_IMPRESSION, AD_CLICK)
+```powershell
+npm run seed:monetization-demo
+```
+
+Creates sample ACTIVE campaigns in Uralsk (not part of main `prisma db seed`).
+
+---
+
+## Future
+
+- Flutter ad widgets + impression beacons
 - Real payment providers + webhooks
-- Cron for `syncExpiredCampaigns`
+- Period-scoped served/impression aggregates from events
 - Migration from legacy `isFeatured` to campaign-based featured
