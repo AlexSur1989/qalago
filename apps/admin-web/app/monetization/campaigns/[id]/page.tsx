@@ -14,6 +14,7 @@ import {
   analyticsActionLabel,
   campaignActionsForStatus,
   campaignStatusLabel,
+  creativeModerationLabel,
   formatCtr,
   formatDate,
   formatDateTime,
@@ -91,6 +92,7 @@ export default function MonetizationCampaignDetailPage() {
 
   const status = campaign.effectiveStatus || campaign.status;
   const actions = campaignActionsForStatus(status);
+  const isVip = campaign.product.code === 'VIP_BANNER';
 
   return (
     <>
@@ -114,10 +116,34 @@ export default function MonetizationCampaignDetailPage() {
               {campaignStatusLabel(status)}
             </span>
           </dd>
-          <dt>Начало</dt>
+          {isVip && campaign.requestedStartAt && (
+            <>
+              <dt>Запрошенное начало</dt>
+              <dd>{formatDateTime(campaign.requestedStartAt)}</dd>
+            </>
+          )}
+          <dt>{isVip && campaign.requestedStartAt ? 'Фактическое начало' : 'Начало'}</dt>
           <dd>{formatDateTime(campaign.startAt)}</dd>
           <dt>Окончание</dt>
           <dd>{formatDateTime(campaign.endAt)}</dd>
+          {isVip && (
+            <>
+              <dt>Креатив</dt>
+              <dd>
+                {campaign.creative ? (
+                  <>
+                    {campaign.creative.title ?? campaign.creative.id}
+                    {' · '}
+                    <span className={monetizationStatusClass(campaign.creative.moderationStatus)}>
+                      {creativeModerationLabel(campaign.creative.moderationStatus)}
+                    </span>
+                  </>
+                ) : (
+                  '— (не привязан)'
+                )}
+              </dd>
+            </>
+          )}
           <dt>Placement</dt>
           <dd>
             {campaign.placements?.map((p) => placementLabel(p.code)).join(', ') || '—'}

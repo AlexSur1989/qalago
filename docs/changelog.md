@@ -9,6 +9,22 @@
 
 ---
 
+## 2026-09-06 — Stage 4B.1: package VIP creative activation
+
+**Сделано**
+- Package orders принимают `creativeId` / `promotionId` / `desiredStartAt` в metadata
+- VIP_BANNER в MAX/NEW_PLACE: `PENDING_MODERATION` до одобрения linked creative; остальные items активируются сразу
+- Duration на approval из `PromotionPackageItem` (NEW_PLACE VIP 7d vs order 14d)
+- Idempotency: повторный provision/payment confirm не дублирует кампании; повторный approve не сдвигает даты
+- Flutter: package → VIP creative → confirm; notice + CTA для пакетов с VIP
+- Admin: VIP campaign/order — creative, moderation, requested vs actual start
+
+**Заложить на будущее**
+- Post-payment creative link API (если pay-first без creativeId)
+- VIP inventory reservation во время moderation (сейчас PENDING_MODERATION не резервирует слот)
+
+---
+
 ## 2026-09-06 — Stage 4C.1: subscription / organic visibility cleanup
 
 **Сделано**

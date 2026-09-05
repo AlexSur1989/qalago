@@ -154,6 +154,21 @@ export function campaignStatusLabel(status: string): string {
   }
 }
 
+export function creativeModerationLabel(status: string): string {
+  switch (status) {
+    case 'DRAFT':
+      return 'Черновик';
+    case 'PENDING':
+      return 'На проверке';
+    case 'APPROVED':
+      return 'Одобрен';
+    case 'REJECTED':
+      return 'Отклонён';
+    default:
+      return status;
+  }
+}
+
 export function creativeStatusLabel(status: string): string {
   switch (status) {
     case 'DRAFT':

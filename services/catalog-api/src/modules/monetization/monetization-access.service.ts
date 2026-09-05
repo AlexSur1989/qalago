@@ -106,9 +106,10 @@ export class MonetizationAccessService {
     const campaign = await this.prisma.adCampaign.findUnique({
       where: { id: campaignId },
       include: {
-        business: { select: { ownerId: true, cityId: true } },
+        business: { select: { ownerId: true, cityId: true, title: true } },
         product: true,
         creative: true,
+        orderItem: { select: { metadata: true } },
         campaignPlacements: { include: { placement: true } },
       },
     });

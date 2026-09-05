@@ -90,8 +90,32 @@ export class OrderService {
       );
     }
 
+    const hasPromotedPromotion = pkg!.items.some(
+      (item) => item.product.type === MonetizationProductType.PROMOTED_PROMOTION,
+    );
+    if (hasPromotedPromotion && !dto.promotionId) {
+      monetizationBadRequest(
+        MonetizationErrorCode.PROMOTION_NOT_OWNED,
+        'promotionId required for package with PROMOTED_PROMOTION',
+      );
+    }
+    if (dto.promotionId) {
+      const promotion = await this.prisma.promotion.findFirst({
+        where: { id: dto.promotionId, businessId: dto.businessId },
+      });
+      if (!promotion) {
+        monetizationBadRequest(
+          MonetizationErrorCode.PROMOTION_NOT_OWNED,
+          'Promotion not found or not owned by business',
+        );
+      }
+    }
+
+    const desiredStartAt = dto.desiredStartAt
+      ? new Date(dto.desiredStartAt)
+      : new Date();
+
     for (const item of pkg!.items) {
-      const desiredStartAt = new Date();
       const desiredEndAt = this.availability.addDuration(
         desiredStartAt,
         item.durationHours,
@@ -128,7 +152,12 @@ export class OrderService {
         discountAmount,
         finalPrice,
         durationDays: pkg!.durationDays,
-        metadata: { packageCode: pkg!.code },
+        metadata: {
+          packageCode: pkg!.code,
+          creativeId: dto.creativeId,
+          desiredStartAt: dto.desiredStartAt,
+          promotionId: dto.promotionId,
+        },
       },
     ];
 
@@ -325,6 +354,13 @@ export class OrderService {
             adCampaigns: {
               include: {
                 product: true,
+                creative: {
+                  select: {
+                    id: true,
+                    title: true,
+                    moderationStatus: true,
+                  },
+                },
                 campaignPlacements: { include: { placement: true } },
               },
             },
@@ -346,16 +382,29 @@ export class OrderService {
       ...this.formatOrder(order),
       businessId: order.businessId,
       business: order.business,
-      campaigns: order.items.flatMap((item) =>
-        item.adCampaigns.map((c) => ({
+      campaigns: order.items.flatMap((item) => {
+        const meta =
+          item.metadata && typeof item.metadata === 'object' && !Array.isArray(item.metadata)
+            ? (item.metadata as { desiredStartAt?: string })
+            : {};
+        const requestedStartAt = meta.desiredStartAt ?? null;
+        return item.adCampaigns.map((c) => ({
           id: c.id,
           status: c.status,
           startAt: c.startAt,
           endAt: c.endAt,
+          requestedStartAt,
           product: { code: c.product.code, name: c.product.name },
+          creative: c.creative
+            ? {
+                id: c.creative.id,
+                title: c.creative.title,
+                moderationStatus: c.creative.moderationStatus,
+              }
+            : null,
           placements: c.campaignPlacements.map((cp) => cp.placement),
-        })),
-      ),
+        }));
+      }),
     };
   }
 

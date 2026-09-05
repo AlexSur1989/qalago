@@ -4,8 +4,6 @@ import {
   AdModerationStatus,
   MonetizationProductType,
   OrderStatus,
-  PaymentProvider,
-  PaymentStatus,
   Prisma,
 } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -60,6 +58,11 @@ export class CampaignProvisioningService {
     }
 
     for (const item of order.items) {
+      const existingCount = await tx.adCampaign.count({
+        where: { orderItemId: item.id },
+      });
+      if (existingCount > 0) continue;
+
       if (item.product.type === MonetizationProductType.PACKAGE) {
         await this.provisionPackageItem(tx, order, item, paidAt);
       } else {
@@ -99,6 +102,23 @@ export class CampaignProvisioningService {
     }
 
     for (const pkgItem of pkg.items) {
+      if (pkgItem.product.type === MonetizationProductType.PROMOTED_PROMOTION) {
+        await this.assertPromotionOwned(tx, order.businessId, meta.promotionId);
+      }
+
+      const itemMeta: OrderItemMeta = {
+        packageCode,
+        desiredStartAt: meta.desiredStartAt,
+        promotionId:
+          pkgItem.product.type === MonetizationProductType.PROMOTED_PROMOTION
+            ? meta.promotionId
+            : undefined,
+        creativeId:
+          pkgItem.product.type === MonetizationProductType.VIP_BANNER
+            ? meta.creativeId
+            : undefined,
+      };
+
       await this.createCampaignForProduct(tx, {
         businessId: order.businessId,
         cityId: order.business.cityId,
@@ -107,7 +127,7 @@ export class CampaignProvisioningService {
         product: pkgItem.product,
         durationHours: pkgItem.durationHours,
         durationDays: pkgItem.durationDays,
-        metadata: meta,
+        metadata: itemMeta,
         paidAt,
       });
     }
@@ -192,6 +212,10 @@ export class CampaignProvisioningService {
     const placementCode = PRODUCT_PLACEMENT_MAP[ctx.product.type];
     if (!placementCode) return;
 
+    const requiresCreative = this.campaignStatus.requiresCreative(ctx.product.type);
+    const creativeId =
+      requiresCreative && ctx.metadata.creativeId ? ctx.metadata.creativeId : null;
+
     const desiredStartAt = ctx.metadata.desiredStartAt
       ? new Date(ctx.metadata.desiredStartAt)
       : ctx.paidAt;
@@ -201,18 +225,22 @@ export class CampaignProvisioningService {
       ctx.durationDays,
     );
 
-    await this.availability.assertAvailableInTransaction(tx, {
-      productType: ctx.product.type,
-      cityId: ctx.cityId,
-      categoryId: ctx.categoryId,
-      desiredStartAt,
-      desiredEndAt,
-    });
+    // VIP waiting for creative approval does not reserve inventory (PENDING_MODERATION
+    // is excluded from CAPACITY_CAMPAIGN_STATUSES). Non-VIP items assert availability.
+    if (!requiresCreative || creativeId) {
+      await this.availability.assertAvailableInTransaction(tx, {
+        productType: ctx.product.type,
+        cityId: ctx.cityId,
+        categoryId: ctx.categoryId,
+        desiredStartAt,
+        desiredEndAt,
+      });
+    }
 
     let creativeModerationStatus: AdModerationStatus | null = null;
-    if (ctx.metadata.creativeId) {
+    if (creativeId) {
       const creative = await tx.adCreative.findFirst({
-        where: { id: ctx.metadata.creativeId, businessId: ctx.businessId },
+        where: { id: creativeId, businessId: ctx.businessId },
       });
       if (!creative) {
         monetizationBadRequest(
@@ -223,7 +251,6 @@ export class CampaignProvisioningService {
       creativeModerationStatus = creative!.moderationStatus;
     }
 
-    const requiresCreative = this.campaignStatus.requiresCreative(ctx.product.type);
     const schedule = this.campaignStatus.resolveInitialStatus({
       desiredStartAt: ctx.metadata.desiredStartAt
         ? new Date(ctx.metadata.desiredStartAt)
@@ -251,7 +278,7 @@ export class CampaignProvisioningService {
         businessId: ctx.businessId,
         orderItemId: ctx.orderItemId,
         productId: ctx.product.id,
-        creativeId: ctx.metadata.creativeId ?? null,
+        creativeId,
         cityId: ctx.cityId,
         categoryId:
           ctx.product.type === MonetizationProductType.TOP_CATEGORY ||
@@ -270,6 +297,44 @@ export class CampaignProvisioningService {
         placementId: placement!.id,
       },
     });
+  }
+
+  private async resolveCampaignDuration(campaign: {
+    productId: string;
+    product: { type: MonetizationProductType };
+    orderItem: {
+      durationDays: number | null;
+      durationHours: number | null;
+      metadata: Prisma.JsonValue | null;
+    } | null;
+  }): Promise<{ durationHours?: number | null; durationDays?: number | null }> {
+    if (!campaign.orderItem) {
+      return { durationDays: null, durationHours: null };
+    }
+
+    const meta = this.parseMeta(campaign.orderItem.metadata);
+    if (meta.packageCode) {
+      const pkg = await this.prisma.promotionPackage.findUnique({
+        where: { code: meta.packageCode },
+        include: { items: { include: { product: true } } },
+      });
+      const pkgItem = pkg?.items.find(
+        (item) =>
+          item.productId === campaign.productId ||
+          item.product.type === campaign.product.type,
+      );
+      if (pkgItem) {
+        return {
+          durationDays: pkgItem.durationDays,
+          durationHours: pkgItem.durationHours,
+        };
+      }
+    }
+
+    return {
+      durationDays: campaign.orderItem.durationDays ?? meta.durationDays,
+      durationHours: campaign.orderItem.durationHours ?? meta.durationHours,
+    };
   }
 
   async activateCampaignsForCreative(creativeId: string, approvedAt = new Date()) {
@@ -297,12 +362,13 @@ export class CampaignProvisioningService {
     const updated = [];
     for (const campaign of campaigns) {
       const meta = this.parseMeta(campaign.orderItem?.metadata ?? null);
+      const duration = await this.resolveCampaignDuration(campaign);
       const schedule = this.campaignStatus.resolveOnCreativeApproved(
         campaign,
         {
           desiredStartAt: meta.desiredStartAt,
-          durationHours: campaign.orderItem?.durationHours ?? meta.durationHours,
-          durationDays: campaign.orderItem?.durationDays ?? meta.durationDays,
+          durationHours: duration.durationHours,
+          durationDays: duration.durationDays,
         },
         approvedAt,
       );

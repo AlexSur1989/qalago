@@ -69,6 +69,7 @@ describe('CampaignProvisioningService', () => {
       },
       adCampaign: {
         create: jest.fn().mockResolvedValue({ id: 'camp-1' }),
+        count: jest.fn().mockResolvedValue(0),
       },
       adCampaignPlacement: { create: jest.fn() },
       promotion: { findFirst: jest.fn() },
@@ -123,7 +124,7 @@ describe('CampaignProvisioningService', () => {
               product: { id: 'pkg-prod', type: MonetizationProductType.PACKAGE },
               durationDays: 7,
               durationHours: null,
-              metadata: { packageCode: 'START' },
+              metadata: { packageCode: 'START', promotionId: 'promo-1' },
             },
           ],
         }),
@@ -152,7 +153,7 @@ describe('CampaignProvisioningService', () => {
             Promise.resolve(placement(where.code)),
           ),
       },
-      adCampaign: { create: jest.fn().mockResolvedValue({ id: 'camp' }) },
+      adCampaign: { create: jest.fn().mockResolvedValue({ id: 'camp' }), count: jest.fn().mockResolvedValue(0) },
       adCampaignPlacement: { create: jest.fn() },
       promotion: { findFirst: jest.fn().mockResolvedValue({ id: 'promo-1' }) },
     };

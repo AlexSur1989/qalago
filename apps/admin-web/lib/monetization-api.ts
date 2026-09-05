@@ -58,7 +58,13 @@ export type MonetizationOrderDetail = MonetizationOrderRow & {
     status: string;
     startAt: string;
     endAt: string;
+    requestedStartAt?: string | null;
     product: { code: string; name: string };
+    creative?: {
+      id: string;
+      title: string;
+      moderationStatus: string;
+    } | null;
     placements: Array<{ code: string; name: string }>;
   }>;
 };
@@ -88,8 +94,13 @@ export type MonetizationCampaignRow = {
   effectiveStatus: string;
   startAt: string;
   endAt: string;
+  requestedStartAt?: string | null;
   product: { code: string; name: string; type: string };
-  creative?: { id: string; moderationStatus: string } | null;
+  creative?: {
+    id: string;
+    title?: string;
+    moderationStatus: string;
+  } | null;
   placements?: Array<{ code: string; name: string }>;
   metrics: {
     servedCount: number;

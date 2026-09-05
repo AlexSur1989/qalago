@@ -490,15 +490,28 @@ export class MonetizationService {
     cityId: string;
     categoryId: string | null;
     product: { code: string; name: string; type: MonetizationProductType };
-    creative?: { id: string; moderationStatus: string } | null;
+    creative?: {
+      id: string;
+      title?: string;
+      moderationStatus: string;
+    } | null;
     campaignPlacements?: Array<{ placement: { code: string; name: string } }>;
     business?: { id: string; title: string } | { ownerId: string | null; cityId: string };
+    orderItem?: { metadata: Prisma.JsonValue | null } | null;
   }) {
     const effectiveStatus = this.campaignStatus.getEffectiveStatus(
       campaign.status,
       campaign.startAt,
       campaign.endAt,
     );
+
+    let requestedStartAt: Date | null = null;
+    if (campaign.orderItem?.metadata && typeof campaign.orderItem.metadata === 'object') {
+      const meta = campaign.orderItem.metadata as { desiredStartAt?: string };
+      if (meta.desiredStartAt) {
+        requestedStartAt = new Date(meta.desiredStartAt);
+      }
+    }
 
     return {
       id: campaign.id,
@@ -511,8 +524,15 @@ export class MonetizationService {
       effectiveStatus,
       startAt: campaign.startAt,
       endAt: campaign.endAt,
+      requestedStartAt,
       product: campaign.product,
-      creative: campaign.creative,
+      creative: campaign.creative
+        ? {
+            id: campaign.creative.id,
+            title: campaign.creative.title,
+            moderationStatus: campaign.creative.moderationStatus,
+          }
+        : null,
       placements: campaign.campaignPlacements?.map((cp) => cp.placement),
       metrics: {
         servedCount: campaign.servedCount,

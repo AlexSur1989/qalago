@@ -128,6 +128,20 @@ export class CreateOrderDto {
   @IsString()
   packageCode?: string;
 
+  /** Linked VIP creative for package orders that include VIP_BANNER. */
+  @IsOptional()
+  @IsString()
+  creativeId?: string;
+
+  @IsOptional()
+  @IsDateString()
+  desiredStartAt?: string;
+
+  /** Required when package includes PROMOTED_PROMOTION. */
+  @IsOptional()
+  @IsString()
+  promotionId?: string;
+
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })

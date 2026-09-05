@@ -7,6 +7,7 @@ import { monetizationApi, MonetizationOrderDetail } from '@/lib/monetization-api
 import { useMonetizationContext } from '@/components/monetization/monetization-layout-client';
 import {
   campaignStatusLabel,
+  creativeModerationLabel,
   formatDate,
   formatDateTime,
   formatDuration,
@@ -172,6 +173,7 @@ export default function MonetizationOrderDetailPage() {
               <tr>
                 <th>Продукт</th>
                 <th>Статус</th>
+                <th>Креатив</th>
                 <th>Период</th>
                 <th></th>
               </tr>
@@ -184,6 +186,13 @@ export default function MonetizationOrderDetailPage() {
                     <span className={monetizationStatusClass(c.status)}>
                       {campaignStatusLabel(c.status)}
                     </span>
+                  </td>
+                  <td>
+                    {c.product.code === 'VIP_BANNER'
+                      ? c.creative
+                        ? `${c.creative.title ?? c.creative.id} (${creativeModerationLabel(c.creative.moderationStatus)})`
+                        : '—'
+                      : '—'}
                   </td>
                   <td>
                     {formatDate(c.startAt)} — {formatDate(c.endAt)}

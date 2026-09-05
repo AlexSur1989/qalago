@@ -36,7 +36,19 @@ class _MonetizationOrderConfirmScreenState
     final businessTitle = business?['title'] as String? ?? 'Заведение';
     final productCode = widget.extra['productCode'] as String?;
     final packageCode = widget.extra['packageCode'] as String?;
-    final isVip = productCode == 'VIP_BANNER';
+    final packagesAsync = packageCode != null
+        ? ref.watch(monetizationPackagesProvider)
+        : null;
+    final packageHasVip = packagesAsync?.maybeWhen(
+          data: (packages) => packages.any(
+            (p) =>
+                p.code == packageCode &&
+                p.items.any((item) => item.productCode == 'VIP_BANNER'),
+          ),
+          orElse: () => false,
+        ) ??
+        false;
+    final isVip = productCode == 'VIP_BANNER' || packageHasVip;
 
     final title = packageCode != null
         ? (_quote.packageName ?? packageCode)
@@ -129,7 +141,16 @@ class _MonetizationOrderConfirmScreenState
       final packageCode = widget.extra['packageCode'] as String?;
       final Map<String, dynamic> body;
       if (packageCode != null) {
-        body = {'businessId': businessId, 'packageCode': packageCode};
+        body = {
+          'businessId': businessId,
+          'packageCode': packageCode,
+          if (widget.extra['creativeId'] != null)
+            'creativeId': widget.extra['creativeId'],
+          if (widget.extra['promotionId'] != null)
+            'promotionId': widget.extra['promotionId'],
+          if (widget.extra['desiredStartAt'] != null)
+            'desiredStartAt': widget.extra['desiredStartAt'],
+        };
       } else {
         body = {
           'businessId': businessId,
