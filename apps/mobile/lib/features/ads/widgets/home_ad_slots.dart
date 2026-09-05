@@ -60,6 +60,9 @@ class HomePromotionsAdSlot extends ConsumerWidget {
   }
 }
 
+/// Consumer-facing title for paid [HOME_FEATURED] placement (Stage 5A).
+const homeFeaturedSectionTitle = 'Продвигаемые места';
+
 class HomeFeaturedAdSlot extends ConsumerWidget {
   const HomeFeaturedAdSlot({super.key});
 
@@ -72,7 +75,7 @@ class HomeFeaturedAdSlot extends ConsumerWidget {
         return Column(
           children: [
             SponsoredBusinessSection(
-              title: 'Рекомендуем',
+              title: homeFeaturedSectionTitle,
               items: items,
             ),
             const SizedBox(height: 24),

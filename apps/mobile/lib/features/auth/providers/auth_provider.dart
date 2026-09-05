@@ -321,6 +321,7 @@ final serviceMenuProvider = FutureProvider.family<Map<String, dynamic>, String>(
 );
 
 final favoritesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  if (!ref.watch(authProvider).isAuthenticated) return [];
   return ref.watch(favoritesRepositoryProvider).fetchFavorites();
 });
 
@@ -376,6 +377,7 @@ final notificationsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) a
 });
 
 final unreadNotificationsProvider = FutureProvider<int>((ref) async {
+  if (!ref.watch(authProvider).isAuthenticated) return 0;
   return ref.watch(notificationsRepositoryProvider).unreadCount();
 });
 

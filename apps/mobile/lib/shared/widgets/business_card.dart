@@ -39,30 +39,6 @@ class BusinessCard extends StatelessWidget {
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => _buildPlaceholder(),
                   ),
-                  if (business.planBadgeLabel != null)
-                    Positioned(
-                      top: 12,
-                      right: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: switch (business.planTier) {
-                            'VIP' => const Color(0xFFFEC50C),
-                            'PREMIUM' => const Color(0xFF00A8D6),
-                            _ => const Color(0xFF64748B),
-                          },
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          business.planBadgeLabel!,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ),
                 ],
               )
             else

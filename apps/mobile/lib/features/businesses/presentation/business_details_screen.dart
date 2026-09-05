@@ -9,6 +9,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
+import '../../../core/auth/auth_prompt.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../owner/presentation/widgets/service_menu_widgets.dart';
 import '../../recommendations/data/ai_repository.dart';
@@ -45,6 +46,17 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
   }
 
   Future<void> _toggleFavorite() async {
+    if (!ref.read(authProvider).isAuthenticated) {
+      if (!mounted) return;
+      await showAuthRequiredDialog(
+        context,
+        title: 'Войдите в QalaGo',
+        message: 'Чтобы сохранять избранное, войдите по номеру телефона.',
+        returnPath: '/business/${widget.id}',
+      );
+      return;
+    }
+
     final repo = ref.read(favoritesRepositoryProvider);
     final analytics = ref.read(catalogRepositoryProvider);
     final fav = await repo.isFavorite(widget.id);

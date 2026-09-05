@@ -35,6 +35,29 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
   Widget build(BuildContext context) {
     final favoritesAsync = ref.watch(favoritesProvider);
     final city = ref.watch(cityProvider);
+    final isAuthed = ref.watch(authProvider).isAuthenticated;
+
+    if (!isAuthed) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _FavoritesHeader(
+                  cityName: city.nameRu,
+                  onCityTap: () => showCityPickerSheet(context, ref),
+                ),
+                const SizedBox(height: 48),
+                const Expanded(child: _GuestFavoritesPrompt()),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -363,6 +386,51 @@ class _FavoriteBusinessCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _GuestFavoritesPrompt extends StatelessWidget {
+  const _GuestFavoritesPrompt();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        CircleAvatar(
+          radius: 42,
+          backgroundColor: AppTheme.kzBlue.withValues(alpha: 0.1),
+          child: const Icon(
+            Icons.favorite_border,
+            color: AppTheme.kzBlue,
+            size: 42,
+          ),
+        ),
+        const SizedBox(height: 16),
+        const Text(
+          'Войдите, чтобы сохранять избранное',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Добавляйте места в избранное и возвращайтесь к ним в один тап.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Color(0xFF7B8291), height: 1.35),
+        ),
+        const SizedBox(height: 24),
+        FilledButton(
+          onPressed: () => context.push(
+            '/login?redirect=${Uri.encodeComponent('/favorites')}',
+          ),
+          child: const Text('Войти'),
+        ),
+      ],
     );
   }
 }

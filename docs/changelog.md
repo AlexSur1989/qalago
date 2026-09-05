@@ -9,6 +9,30 @@
 
 ---
 
+---
+
+## 2026-09-06 — Stage 5A: guest-first consumer Home & discovery
+
+**Сделано**
+- Guest-first routing: browse Home, categories, map, search, business, promotions без JWT
+- «Продолжить как гость» → `/home` без demo auto-login
+- Auth gates: favorites, review submit, profile edit, notifications, owner/admin routes
+- Guest profile и favorites с CTA «Войти»
+- API config через `--dart-define` (`QALAGO_API_BASE_URL`, `QALAGO_AI_BASE_URL`, `QALAGO_DEV_HOST`)
+- Home: organic «Рекомендуем» + paid «Продвигаемые места»; dedupe HOME_FEATURED из organic
+- Удалены consumer TOP/VIP organic copy и plan badges на organic cards
+- Search geo parity: `nearbySearchPositionProvider`
+- Bottom nav: no false tab highlight on search/business/promotions
+- COMING_SOON badge «Скоро» в city picker
+- Consumer tests (45 total)
+
+**Заложить на будущее**
+- Anonymous organic analytics (backend auth policy)
+- Home dedupe across VIP/promotions paid slots
+- Favorites city filter for authed users
+
+---
+
 ## 2026-09-06 — Stage 4E: business owner experience unification
 
 **Сделано**

@@ -20,6 +20,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../categories/presentation/category_businesses_screen.dart';
 import '../../ads/providers/ad_serve_provider.dart';
 import '../../ads/widgets/home_ad_slots.dart';
+import '../providers/home_organic_recommendations_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -112,7 +113,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final businessesAsync = ref.watch(
       businessesProvider(_businessesQuery(nearbyPosition)),
     );
-    final featuredAsync = ref.watch(recommendedBusinessesProvider);
+    final featuredAsync = ref.watch(homeOrganicRecommendationsProvider);
     final promotionsAsync = ref.watch(promotionsProvider);
     final unreadAsync = ref.watch(unreadNotificationsProvider);
     final catalogTotalAsync = ref.watch(cityCatalogTotalProvider);
@@ -128,6 +129,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ref.invalidate(categoriesProvider);
             ref.invalidate(cityCatalogTotalProvider);
             ref.invalidate(businessesProvider);
+            ref.invalidate(homeOrganicRecommendationsProvider);
             ref.invalidate(recommendedBusinessesProvider);
             ref.invalidate(promotionsProvider);
             ref.invalidate(unreadNotificationsProvider);
@@ -212,8 +214,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             const SizedBox(height: 194, child: LoadingView()),
                         error: (e, _) => ErrorView(
                           message: '$e',
-                          onRetry: () =>
-                              ref.invalidate(recommendedBusinessesProvider),
+                          onRetry: () {
+                            ref.invalidate(homeOrganicRecommendationsProvider);
+                            ref.invalidate(recommendedBusinessesProvider);
+                          },
                         ),
                         data: (items) {
                           _syncFeaturedItemsCount(items.length);
@@ -229,7 +233,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       const HomeFeaturedAdSlot(),
                       const _SectionHeader(
                         title: 'Рядом с вами',
-                        subtitle: 'До 3 км · сначала TOP и VIP',
+                        subtitle: 'Места рядом с вами · до 3 км',
                       ),
                       const SizedBox(height: 12),
                       businessesAsync.when(
@@ -869,9 +873,7 @@ class _PopularPlaceCard extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.star,
-                        color: business.planTier == 'VIP'
-                            ? AppTheme.kzGold
-                            : AppTheme.kzBlue,
+                        color: AppTheme.kzBlue,
                         size: 17,
                       ),
                       const SizedBox(width: 4),
@@ -924,126 +926,38 @@ class _NearbyBusinessList extends StatelessWidget {
       );
     }
 
-    final tiers = splitBusinessesByTier(items);
-    final preview = <BusinessModel>[];
-    for (final group in [tiers.top, tiers.pro, tiers.regular]) {
-      for (final business in group) {
-        if (preview.length >= _maxPreviewItems) break;
-        preview.add(business);
-      }
-      if (preview.length >= _maxPreviewItems) break;
-    }
-
-    final previewTop = preview.where(isTopBusiness).toList();
-    final previewPro = preview.where(isProBusiness).toList();
-    final previewRegular = preview
-        .where((b) => !isTopBusiness(b) && !isProBusiness(b))
-        .toList();
+    final preview = sortNearbyBusinesses(items).take(_maxPreviewItems).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (previewTop.isNotEmpty) ...[
-          const _NearbySubheader(
-            title: 'Топ города',
-            icon: Icons.emoji_events_outlined,
-          ),
-          const SizedBox(height: 8),
-          for (final business in previewTop) ...[
-            _NearbyBusinessTile(business: business, emphasizePlan: true),
-            const SizedBox(height: 12),
-          ],
+        for (final business in preview) ...[
+          _NearbyBusinessTile(business: business),
+          const SizedBox(height: 12),
         ],
-        if (previewPro.isNotEmpty) ...[
-          if (previewTop.isNotEmpty) const SizedBox(height: 4),
-          const _NearbySubheader(
-            title: 'VIP · Pro',
-            icon: Icons.workspace_premium_outlined,
-          ),
-          const SizedBox(height: 8),
-          for (final business in previewPro) ...[
-            _NearbyBusinessTile(business: business, emphasizePlan: true),
-            const SizedBox(height: 12),
-          ],
-        ],
-        if (previewRegular.isNotEmpty) ...[
-          if (previewTop.isNotEmpty || previewPro.isNotEmpty)
-            const SizedBox(height: 4),
-          _NearbySubheader(
-            title: previewTop.isEmpty && previewPro.isEmpty
-                ? 'Заведения'
-                : 'Все остальные',
-            icon: Icons.near_me_outlined,
-          ),
-          const SizedBox(height: 8),
-          for (final business in previewRegular) ...[
-            _NearbyBusinessTile(business: business),
-            const SizedBox(height: 12),
-          ],
-        ],
-      ],
-    );
-  }
-}
-
-class _NearbySubheader extends StatelessWidget {
-  const _NearbySubheader({required this.title, required this.icon});
-
-  final String title;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: AppTheme.kzBlue),
-        const SizedBox(width: 6),
-        Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w800,
-            fontSize: 15,
-            color: AppTheme.kzBlue,
-          ),
-        ),
       ],
     );
   }
 }
 
 class _NearbyBusinessTile extends StatelessWidget {
-  const _NearbyBusinessTile({
-    required this.business,
-    this.emphasizePlan = false,
-  });
+  const _NearbyBusinessTile({required this.business});
 
   final BusinessModel business;
-  final bool emphasizePlan;
 
   @override
   Widget build(BuildContext context) {
     final coverUrl = AppConstants.resolveMediaUrl(business.coverImageUrl);
 
     return Material(
-      color: emphasizePlan ? AppTheme.kzBlue.withValues(alpha: 0.03) : Colors.white,
-      elevation: emphasizePlan ? 3 : 2,
+      color: Colors.white,
+      elevation: 2,
       shadowColor: Colors.black.withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () => context.push('/business/${business.id}'),
-        child: DecoratedBox(
-          decoration: emphasizePlan
-              ? BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: business.isTopCity
-                        ? AppTheme.kzGold.withValues(alpha: 0.7)
-                        : AppTheme.kzBlue.withValues(alpha: 0.35),
-                  ),
-                )
-              : const BoxDecoration(),
-          child: Padding(
+        child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
@@ -1064,23 +978,15 @@ class _NearbyBusinessTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            business.title,
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w900,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (business.planBadgeLabel != null)
-                          _SmallStatusPill(text: business.planBadgeLabel!),
-                      ],
+                    Text(
+                      business.title,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -1136,7 +1042,6 @@ class _NearbyBusinessTile extends StatelessWidget {
             ],
           ),
         ),
-        ),
       ),
     );
   }
@@ -1189,33 +1094,6 @@ class _DiscountBadge extends StatelessWidget {
             color: Colors.white,
             fontSize: 14,
             fontWeight: FontWeight.w900,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SmallStatusPill extends StatelessWidget {
-  const _SmallStatusPill({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppTheme.kzGold.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        child: Text(
-          text,
-          style: const TextStyle(
-            color: Colors.black,
-            fontSize: 12,
-            fontWeight: FontWeight.w800,
           ),
         ),
       ),

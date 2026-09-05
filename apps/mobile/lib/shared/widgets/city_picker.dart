@@ -34,16 +34,40 @@ Future<void> showCityPickerSheet(BuildContext context, WidgetRef ref) async {
                 ...cities.map((c) {
                   final slug = c['slug'] as String? ?? '';
                   final name = c['nameRu'] as String? ?? slug;
+                  final launchStatus = c['launchStatus'] as String? ?? 'LIVE';
+                  final isComingSoon = launchStatus == 'COMING_SOON';
                   final isSelected = selectedSlug == slug;
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-                    title: Text(
-                      name,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? AppTheme.kzBlue : Colors.black87,
-                      ),
+                    title: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            name,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              color: isSelected ? AppTheme.kzBlue : Colors.black87,
+                            ),
+                          ),
+                        ),
+                        if (isComingSoon)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.06),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'Скоро',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF7B8291),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                     trailing: isSelected
                         ? const Icon(Icons.check_circle, color: AppTheme.kzBlue)

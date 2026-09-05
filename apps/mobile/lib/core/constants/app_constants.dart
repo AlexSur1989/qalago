@@ -6,26 +6,37 @@ class AppConstants {
   static const selectedCityKey = 'selected_city_slug';
   static const accessTokenKey = 'access_token';
 
-  /// Web: localhost. Desktop/mobile emulator: 127.0.0.1 or 10.0.2.2 (Android).
+  /// Override via `--dart-define=QALAGO_API_BASE_URL=https://api.qalago.kz/api/v1`
+  static const apiBaseUrlOverride = String.fromEnvironment('QALAGO_API_BASE_URL');
+
+  /// Override via `--dart-define=QALAGO_AI_BASE_URL=https://ai.qalago.kz/api/v1`
+  static const aiBaseUrlOverride = String.fromEnvironment('QALAGO_AI_BASE_URL');
+
+  /// Override host for catalog/media on Android emulator: `--dart-define=QALAGO_DEV_HOST=10.0.2.2`
+  static const devHostOverride = String.fromEnvironment('QALAGO_DEV_HOST');
+
+  static String get _devHost {
+    if (devHostOverride.isNotEmpty) return devHostOverride;
+    if (kIsWeb) return 'localhost';
+    return '127.0.0.1';
+  }
+
   static String get baseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:3002/api/v1';
-    }
-    return 'http://127.0.0.1:3002/api/v1';
+    if (apiBaseUrlOverride.isNotEmpty) return apiBaseUrlOverride;
+    return 'http://$_devHost:3002/api/v1';
   }
 
   static String get mediaBaseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:3002';
+    if (apiBaseUrlOverride.isNotEmpty) {
+      final uri = Uri.parse(apiBaseUrlOverride);
+      return '${uri.scheme}://${uri.host}${uri.hasPort ? ':${uri.port}' : ''}';
     }
-    return 'http://127.0.0.1:3002';
+    return 'http://$_devHost:3002';
   }
 
   static String get aiOrchestratorBaseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:3004/api/v1';
-    }
-    return 'http://127.0.0.1:3004/api/v1';
+    if (aiBaseUrlOverride.isNotEmpty) return aiBaseUrlOverride;
+    return 'http://$_devHost:3004/api/v1';
   }
 
   static String resolveMediaUrl(String? path) {

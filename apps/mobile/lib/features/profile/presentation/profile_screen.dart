@@ -13,6 +13,10 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authProvider);
+    if (!auth.isAuthenticated) {
+      return _GuestProfileScreen(cityName: ref.watch(cityProvider).nameRu);
+    }
+
     final user = auth.user;
     final role = user?.role ?? 'USER';
     final city = ref.watch(cityProvider);
@@ -139,6 +143,96 @@ class ProfileScreen extends ConsumerWidget {
               ),
               icon: const Icon(Icons.logout),
               label: const Text('Выйти из аккаунта'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GuestProfileScreen extends StatelessWidget {
+  const _GuestProfileScreen({required this.cityName});
+
+  final String cityName;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: ListView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
+          children: [
+            _ProfileHeader(cityName: cityName),
+            const SizedBox(height: 28),
+            const Text(
+              'Профиль',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 34,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 24),
+            CircleAvatar(
+              radius: 48,
+              backgroundColor: AppTheme.kzBlue.withValues(alpha: 0.12),
+              child: const Icon(Icons.person_outline, size: 48, color: AppTheme.kzBlue),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Войдите в QalaGo',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 24,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Сохраняйте избранное, оставляйте отзывы и управляйте профилем.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Color(0xFF7B8291),
+                fontSize: 16,
+                height: 1.35,
+              ),
+            ),
+            const SizedBox(height: 28),
+            FilledButton(
+              onPressed: () => context.push('/login?redirect=${Uri.encodeComponent('/profile')}'),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(58),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              child: const Text('Войти'),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton(
+              onPressed: () => context.push('/profile/help'),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(52),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              child: const Text('Помощь'),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: () => context.push('/profile/about'),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(52),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              child: const Text('О приложении'),
             ),
           ],
         ),

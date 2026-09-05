@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 
@@ -68,33 +69,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  Future<void> _continueAsGuest() async {
-    const demoPhone = '+77000000003';
-    _phoneController.text = demoPhone;
-    try {
-      final debug = await ref.read(authProvider.notifier).sendCode(demoPhone);
-      if (debug == null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Гостевой вход доступен в dev-режиме'),
-            ),
-          );
-        }
-        return;
-      }
-      await ref.read(authProvider.notifier).verifyCode(
-            demoPhone,
-            debug,
-            accountType: 'user',
-          );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Ошибка гостевого входа: $e')));
-      }
-    }
+  void _continueAsGuest() {
+    context.go('/home');
   }
 
   @override

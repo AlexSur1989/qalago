@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../auth/route_access.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/businesses/presentation/business_details_screen.dart';
@@ -68,18 +69,39 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     refreshListenable: refresh,
     redirect: (context, state) {
       final authState = ref.read(authProvider);
-      final isLoggingIn = state.matchedLocation == '/login';
+      final location = state.matchedLocation;
+      final isLoggingIn = location == '/login';
       final isAuthed = authState.isAuthenticated;
-      if (!isAuthed && !isLoggingIn) return '/login';
+
+      if (!isAuthed) {
+        if (isLoggingIn || isPublicConsumerRoute(location)) return null;
+        if (isOwnerRoute(location) || isAdminRoute(location) ||
+            isAuthOnlyConsumerRoute(location)) {
+          return loginRedirectPath(state.uri.toString());
+        }
+        return loginRedirectPath(state.uri.toString());
+      }
+
       if (isAuthed && isLoggingIn) {
+        final redirect = state.uri.queryParameters['redirect'];
+        if (redirect != null && redirect.isNotEmpty) return redirect;
         if (canManageBusinessCabinet(authState.user?.role)) {
           return '/owner';
         }
         return '/home';
       }
-      if (state.matchedLocation.startsWith('/admin')) {
+
+      if (isOwnerRoute(location)) {
+        if (location == '/owner/create-business') return null;
+        if (!canManageBusinessCabinet(authState.user?.role)) {
+          return '/profile';
+        }
+      }
+
+      if (isAdminRoute(location)) {
         if (!canModerate(authState.user?.role)) return '/profile';
       }
+
       return null;
     },
     routes: [
@@ -307,18 +329,19 @@ class AppShell extends StatelessWidget {
 
   final Widget child;
 
-  int _indexForLocation(String location) {
-    if (location.startsWith('/categories')) return 1;
-    if (location.startsWith('/map')) return 2;
-    if (location.startsWith('/favorites')) return 3;
-    if (location.startsWith('/profile')) return 4;
-    return 0;
+  int? _tabIndexForPath(String path) {
+    if (path == '/home') return 0;
+    if (path.startsWith('/categories')) return 1;
+    if (path == '/map') return 2;
+    if (path == '/favorites') return 3;
+    if (path.startsWith('/profile')) return 4;
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
-    final location = GoRouterState.of(context).uri.toString();
-    final index = _indexForLocation(location);
+    final path = GoRouterState.of(context).uri.path;
+    final selectedTab = _tabIndexForPath(path);
 
     return Scaffold(
       body: child,
@@ -333,53 +356,98 @@ class AppShell extends StatelessWidget {
             ),
           ],
         ),
-        child: NavigationBar(
-          selectedIndex: index,
-          height: 76,
-          elevation: 0,
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.white,
-          indicatorColor: Colors.transparent,
-          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-          onDestinationSelected: (i) {
-            switch (i) {
-              case 0:
-                context.go('/home');
-              case 1:
-                context.go('/categories');
-              case 2:
-                context.go('/map');
-              case 3:
-                context.go('/favorites');
-              case 4:
-                context.go('/profile');
-            }
-          },
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home, color: AppTheme.kzBlue),
-              label: 'Главная',
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 76,
+            child: Row(
+              children: [
+                _ShellTab(
+                  index: 0,
+                  selectedIndex: selectedTab,
+                  icon: Icons.home_outlined,
+                  selectedIcon: Icons.home,
+                  label: 'Главная',
+                  onTap: () => context.go('/home'),
+                ),
+                _ShellTab(
+                  index: 1,
+                  selectedIndex: selectedTab,
+                  icon: Icons.grid_view_outlined,
+                  selectedIcon: Icons.grid_view,
+                  label: 'Категории',
+                  onTap: () => context.go('/categories'),
+                ),
+                _ShellTab(
+                  index: 2,
+                  selectedIndex: selectedTab,
+                  icon: Icons.location_on_outlined,
+                  selectedIcon: Icons.location_on,
+                  label: 'Карта',
+                  onTap: () => context.go('/map'),
+                ),
+                _ShellTab(
+                  index: 3,
+                  selectedIndex: selectedTab,
+                  icon: Icons.favorite_border,
+                  selectedIcon: Icons.favorite,
+                  label: 'Избранное',
+                  onTap: () => context.go('/favorites'),
+                ),
+                _ShellTab(
+                  index: 4,
+                  selectedIndex: selectedTab,
+                  icon: Icons.person_outline,
+                  selectedIcon: Icons.person,
+                  label: 'Профиль',
+                  onTap: () => context.go('/profile'),
+                ),
+              ],
             ),
-            NavigationDestination(
-              icon: Icon(Icons.grid_view_outlined),
-              selectedIcon: Icon(Icons.grid_view, color: AppTheme.kzBlue),
-              label: 'Категории',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.location_on_outlined),
-              selectedIcon: Icon(Icons.location_on, color: AppTheme.kzBlue),
-              label: 'Карта',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.favorite_border),
-              selectedIcon: Icon(Icons.favorite, color: AppTheme.kzBlue),
-              label: 'Избранное',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.person_outline),
-              selectedIcon: Icon(Icons.person, color: AppTheme.kzBlue),
-              label: 'Профиль',
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ShellTab extends StatelessWidget {
+  const _ShellTab({
+    required this.index,
+    required this.selectedIndex,
+    required this.icon,
+    required this.selectedIcon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final int index;
+  final int? selectedIndex;
+  final IconData icon;
+  final IconData selectedIcon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = selectedIndex == index;
+    final color = isSelected ? AppTheme.kzBlue : const Color(0xFF8A919F);
+
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(isSelected ? selectedIcon : icon, color: color, size: 26),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+              ),
             ),
           ],
         ),

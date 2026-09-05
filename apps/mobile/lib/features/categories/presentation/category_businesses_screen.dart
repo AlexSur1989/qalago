@@ -163,35 +163,17 @@ class CategoryBusinessesScreen extends ConsumerWidget {
     BuildContext context,
     List<BusinessModel> items,
   ) {
-    final tiers = splitBusinessesByTier(items);
-    final widgets = <Widget>[];
-
-    void addGroup(String title, List<BusinessModel> group) {
-      if (group.isEmpty) return;
-      widgets.add(_SectionTitle(title: title));
-      widgets.add(const SizedBox(height: 12));
-      for (final business in group) {
-        widgets.add(
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: BusinessCard(
-              business: business,
-              onTap: () => context.push('/business/${business.id}'),
-            ),
+    final sorted = sortNearbyBusinesses(items);
+    return [
+      for (final business in sorted)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: BusinessCard(
+            business: business,
+            onTap: () => context.push('/business/${business.id}'),
           ),
-        );
-      }
-      widgets.add(const SizedBox(height: 8));
-    }
-
-    addGroup('Топ города', tiers.top);
-    addGroup('VIP · Pro', tiers.pro);
-    addGroup(
-      tiers.top.isEmpty && tiers.pro.isEmpty ? 'Заведения' : 'Все остальные',
-      tiers.regular,
-    );
-
-    return widgets;
+        ),
+    ];
   }
 
   static String _pluralPlaces(int count) {

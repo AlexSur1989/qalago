@@ -50,11 +50,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     super.dispose();
   }
 
-  BusinessesQuery _buildQuery(UserPosition? position) => BusinessesQuery(
+  BusinessesQuery _buildQuery(UserPosition position) => BusinessesQuery(
         search: _query.isEmpty ? null : _query,
         categoryId: _categoryId,
-        latitude: position?.latitude,
-        longitude: position?.longitude,
+        latitude: position.latitude,
+        longitude: position.longitude,
       );
 
   void _onQueryChanged(String value) {
@@ -76,8 +76,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userPosition = ref.watch(userLocationProvider).valueOrNull;
-    final query = _buildQuery(userPosition);
+    final nearbyPosition = ref.watch(nearbySearchPositionProvider);
+    final query = _buildQuery(nearbyPosition);
     final businessesAsync = ref.watch(businessesProvider(query));
     final categoriesAsync = ref.watch(categoriesProvider);
 

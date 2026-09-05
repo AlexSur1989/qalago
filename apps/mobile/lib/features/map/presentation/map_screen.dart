@@ -327,10 +327,7 @@ class _NearbySheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final split = splitNearbyBusinesses(businesses);
-    final priority = split.priority.take(3).toList();
-    final regular = split.regular.take(5 - priority.length).toList();
-    final visible = [...priority, ...regular];
+    final visible = sortNearbyBusinesses(businesses).take(5).toList();
 
     return Material(
       color: Colors.white,
@@ -338,7 +335,7 @@ class _NearbySheet extends StatelessWidget {
       shadowColor: Colors.black.withValues(alpha: 0.16),
       borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       child: SizedBox(
-        height: priority.isNotEmpty ? 320 : 286,
+        height: 286,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 10, 20, 18),
           child: Column(
@@ -364,19 +361,6 @@ class _NearbySheet extends StatelessWidget {
                   letterSpacing: 0,
                 ),
               ),
-              if (priority.isNotEmpty) ...[
-                const SizedBox(height: 6),
-                Text(
-                  'Приоритетные: ${priority.map((b) => b.planBadgeLabel ?? b.title).join(', ')}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: AppTheme.kzBlue.withValues(alpha: 0.9),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
               const SizedBox(height: 12),
               Expanded(
                 child: visible.isEmpty
@@ -390,10 +374,7 @@ class _NearbySheet extends StatelessWidget {
                         ),
                         itemBuilder: (context, index) {
                           final business = visible[index];
-                          return _NearbyMapTile(
-                            business: business,
-                            emphasizePlan: isPriorityBusiness(business),
-                          );
+                          return _NearbyMapTile(business: business);
                         },
                       ),
               ),
@@ -406,13 +387,9 @@ class _NearbySheet extends StatelessWidget {
 }
 
 class _NearbyMapTile extends StatelessWidget {
-  const _NearbyMapTile({
-    required this.business,
-    this.emphasizePlan = false,
-  });
+  const _NearbyMapTile({required this.business});
 
   final BusinessModel business;
-  final bool emphasizePlan;
 
   @override
   Widget build(BuildContext context) {
@@ -441,39 +418,15 @@ class _NearbyMapTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        business.title,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (business.planBadgeLabel != null)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: business.isTopCity
-                              ? AppTheme.kzGold
-                              : AppTheme.kzBlue,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          business.planBadgeLabel!,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                  ],
+                Text(
+                  business.title,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
