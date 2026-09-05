@@ -6,7 +6,7 @@ import type { MonetizationSubNavId } from '@/lib/monetization-utils';
 
 const ITEMS: { id: MonetizationSubNavId; href: string; label: string }[] = [
   { id: 'overview', href: '/monetization', label: 'Обзор' },
-  { id: 'products', href: '/monetization/products', label: 'Рекламные продукты' },
+  { id: 'products', href: '/monetization/products', label: 'Продукты' },
   { id: 'packages', href: '/monetization/packages', label: 'Пакеты' },
   { id: 'orders', href: '/monetization/orders', label: 'Мои заказы' },
   { id: 'campaigns', href: '/monetization/campaigns', label: 'Мои кампании' },

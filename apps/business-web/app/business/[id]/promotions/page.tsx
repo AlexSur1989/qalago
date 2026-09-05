@@ -102,8 +102,8 @@ export default function BusinessPromotionsPage() {
           <p className="page-header-meta">Управление спецпредложениями для клиентов</p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Link href="/dashboard" className="btn">
-            ← На главную
+          <Link href="/dashboard" className="btn btn-ghost">
+            ← Обзор
           </Link>
           <Link href="/monetization/products/PROMOTED_PROMOTION" className="btn btn-primary">
             Продвинуть акцию
@@ -118,10 +118,10 @@ export default function BusinessPromotionsPage() {
             {planStatus.limits.maxActivePromotions}
             {' · '}срок акции до {planStatus.limits.maxPromotionDurationDays} дн.
           </p>
-          {atActiveLimit && (
-            <p style={{ margin: '8px 0 0', fontSize: '0.9rem' }}>
-              Лимит активных акций достигнут.{' '}
-              <Link href="/plan">Улучшить тариф</Link>
+          {planStatus.entitlements?.activePromotions.overLimit && (
+            <p className="alert" style={{ marginTop: 10, marginBottom: 0, fontSize: '0.88rem' }}>
+              {planStatus.entitlements.overLimitNotice ??
+                'На текущем тарифе публикуется ограниченное число активных акций. Остальные сохранены в кабинете.'}
             </p>
           )}
         </section>

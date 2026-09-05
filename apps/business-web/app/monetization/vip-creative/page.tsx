@@ -6,6 +6,7 @@ import { FormEvent, Suspense, useState } from 'react';
 import { ownerApi } from '@/lib/api';
 import { VipBannerPreview } from '@/components/monetization/vip-banner-preview';
 import { useMonetizationContext } from '@/components/monetization/monetization-shell';
+import { VIP_MODERATION_NOTICE } from '@/lib/owner-utils';
 import { parseApiError } from '@/lib/monetization-utils';
 
 export default function VipCreativePage() {
@@ -116,6 +117,10 @@ function VipCreativeContent() {
       </header>
 
       {error && <div className="alert alert-error">{error}</div>}
+
+      <p className="alert" style={{ maxWidth: 720, fontSize: '0.9rem' }}>
+        {VIP_MODERATION_NOTICE}
+      </p>
 
       <div className="creatives-layout">
         <form onSubmit={onSubmit} className="form-card">

@@ -3,43 +3,32 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import {
-  AnalyticsSummary,
-  AnalyticsTrends,
   BusinessPlanStatus,
   BusinessRow,
+  MonetizationCampaign,
   PromotionRow,
   ownerApi,
 } from '@/lib/api';
 import {
   buildRecentActions,
-  comparePeriods,
-  deltaClass,
-  formatDelta,
   formatNumber,
   formatTodayHeader,
   profileCompletion,
+  statusLabel,
 } from '@/lib/business-utils';
+import { buildPlanUsageSummary } from '@/lib/owner-utils';
+import { campaignStatusLabel, monetizationStatusClass } from '@/lib/monetization-utils';
 import { useAuth } from '@/lib/use-auth';
 import { BusinessShell, useSelectedBusiness } from '@/components/business-shell';
-import { ViewsChart, aggregateViewTrends } from '@/components/views-chart';
-
-const KPI_CONFIG = [
-  { key: 'VIEW_BUSINESS', label: 'Просмотры карточки' },
-  { key: 'CALL_CLICK', label: 'Клики по телефону' },
-  { key: 'WHATSAPP_CLICK', label: 'Клики по WhatsApp' },
-  { key: 'ROUTE_CLICK', label: 'Построения маршрута' },
-  { key: 'FAVORITE_ADD', label: 'Добавления в избранное' },
-] as const;
 
 export default function DashboardPage() {
   const { token, user, ready, logout } = useAuth();
   const [businesses, setBusinesses] = useState<BusinessRow[]>([]);
   const business = useSelectedBusiness(businesses);
-  const [summary7, setSummary7] = useState<AnalyticsSummary | null>(null);
-  const [summaryPrev, setSummaryPrev] = useState<AnalyticsSummary | null>(null);
-  const [trends, setTrends] = useState<AnalyticsTrends | null>(null);
   const [promotions, setPromotions] = useState<PromotionRow[]>([]);
   const [planStatus, setPlanStatus] = useState<BusinessPlanStatus | null>(null);
+  const [campaigns, setCampaigns] = useState<MonetizationCampaign[]>([]);
+  const [summary7, setSummary7] = useState<{ total: number; views: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -54,27 +43,19 @@ export default function DashboardPage() {
     if (!token || !business) return;
     (async () => {
       try {
-        const [s7, s14, t, promos, plan] = await Promise.all([
+        const [s7, promos, plan, camps] = await Promise.all([
           ownerApi.analyticsSummary(token, business.id, 7),
-          ownerApi.analyticsSummary(token, business.id, 14),
-          ownerApi.analyticsTrends(token, business.id, 7),
           ownerApi.listPromotions(token, business.id),
           ownerApi.getBusinessPlan(token, business.id),
+          ownerApi.listMonetizationCampaigns(token, business.id),
         ]);
-        setSummary7(s7);
-        setSummaryPrev({
-          ...s14,
-          byType: Object.fromEntries(
-            Object.entries(s14.byType).map(([k, v]) => [
-              k,
-              v - (s7.byType[k] ?? 0),
-            ]),
-          ),
-          total: s14.total - s7.total,
+        setSummary7({
+          total: s7.total,
+          views: s7.byType.VIEW_BUSINESS ?? 0,
         });
-        setTrends(t);
         setPromotions(promos.items.filter((p) => p.status === 'ACTIVE'));
         setPlanStatus(plan);
+        setCampaigns(camps);
       } catch (err) {
         setError(String(err));
       }
@@ -85,12 +66,11 @@ export default function DashboardPage() {
     return <p className="page-content">Загрузка…</p>;
   }
 
-  const metrics =
-    summary7 && summaryPrev ? comparePeriods(summary7, summaryPrev) : null;
-  const viewSeries = trends ? aggregateViewTrends(trends.items) : [];
   const actions = business ? buildRecentActions(business, promotions) : [];
   const completion = business ? profileCompletion(business) : 0;
-  const totalActions = summary7?.total ?? 0;
+  const activeCampaigns = campaigns.filter((c) => c.status === 'ACTIVE');
+  const pendingModeration = campaigns.filter((c) => c.status === 'PENDING_MODERATION');
+  const usageLines = planStatus ? buildPlanUsageSummary(planStatus) : [];
 
   return (
     <BusinessShell
@@ -114,47 +94,116 @@ export default function DashboardPage() {
         <>
           <header className="page-header">
             <div>
-              <h1>Добро пожаловать, {business.title}! 👋</h1>
+              <h1>Обзор</h1>
               <p className="page-header-meta">
-                {formatTodayHeader()} · У вас{' '}
-                <strong>{formatNumber(summary7?.byType.VIEW_BUSINESS ?? 0)}</strong> просмотров
-                и <strong>{formatNumber(totalActions)}</strong> действий за 7 дней
+                {business.title} · {statusLabel(business.status)} · {formatTodayHeader()}
               </p>
-            </div>
-            <div className="page-actions">
-              <Link href={`/business/${business.id}`} className="btn">
-                👁 Предпросмотр
-              </Link>
-              <Link href={`/business/${business.id}`} className="btn btn-primary">
-                ✏️ Редактировать профиль
-              </Link>
             </div>
           </header>
 
-          <section className="kpi-grid">
-            {KPI_CONFIG.map(({ key, label }) => {
-              const current = metrics?.[key]?.current ?? 0;
-              const previous = metrics?.[key]?.previous ?? 0;
-              const delta = formatDelta(current, previous);
-              return (
-                <article key={key} className="kpi-card">
-                  <div className="kpi-label">{label}</div>
-                  <div className="kpi-value">{formatNumber(current)}</div>
-                  {delta && (
-                    <div className={deltaClass(current, previous)}>{delta} за неделю</div>
-                  )}
-                </article>
-              );
-            })}
+          <section className="kpi-grid" style={{ marginBottom: 16 }}>
+            <article className="kpi-card">
+              <div className="kpi-label">Просмотры за 7 дней</div>
+              <div className="kpi-value">{formatNumber(summary7?.views ?? 0)}</div>
+              <Link href="/statistics" className="card-link" style={{ fontSize: '0.85rem' }}>
+                Подробная статистика →
+              </Link>
+            </article>
+            <article className="kpi-card">
+              <div className="kpi-label">Действия за 7 дней</div>
+              <div className="kpi-value">{formatNumber(summary7?.total ?? 0)}</div>
+            </article>
+            <article className="kpi-card">
+              <div className="kpi-label">Активные кампании</div>
+              <div className="kpi-value">{activeCampaigns.length}</div>
+              {pendingModeration.length > 0 && (
+                <span className="tag tag-warning" style={{ marginTop: 8 }}>
+                  {pendingModeration.length} на модерации
+                </span>
+              )}
+            </article>
+            <article className="kpi-card">
+              <div className="kpi-label">Тариф</div>
+              <div className="kpi-value" style={{ fontSize: '1.25rem' }}>
+                {planStatus?.catalog.nameRu ?? '—'}
+              </div>
+              {planStatus?.expiresAt && (
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  до {new Date(planStatus.expiresAt).toLocaleDateString('ru-RU')}
+                </span>
+              )}
+            </article>
+          </section>
+
+          <section className="quick-actions-grid" style={{ marginBottom: 16 }}>
+            <Link href={`/business/${business.id}`} className="btn">
+              ✏️ Редактировать бизнес
+            </Link>
+            <Link href={`/business/${business.id}/menu`} className="btn">
+              ➕ Товар или услуга
+            </Link>
+            <Link href={`/business/${business.id}/promotions`} className="btn">
+              🏷️ Создать акцию
+            </Link>
+            <Link href="/monetization" className="btn btn-primary">
+              📣 Запустить рекламу
+            </Link>
           </section>
 
           <div className="dashboard-grid">
             <div className="dashboard-main">
-              <article className="card">
+              {planStatus && (
+                <article className="card" style={{ marginBottom: 16 }}>
+                  <div className="card-header">
+                    <h2>Использование тарифа</h2>
+                    <Link href="/plan" className="card-link">
+                      Тариф
+                    </Link>
+                  </div>
+                  <ul className="plan-list">
+                    {usageLines.map((line) => (
+                      <li key={line}>{line}</li>
+                    ))}
+                  </ul>
+                  {planStatus.entitlements?.overLimitNotice && (
+                    <p className="alert" style={{ marginTop: 12, fontSize: '0.9rem' }}>
+                      {planStatus.entitlements.overLimitNotice}
+                    </p>
+                  )}
+                </article>
+              )}
+
+              <article className="card" style={{ marginBottom: 16 }}>
                 <div className="card-header">
-                  <h2>Просмотры за 7 дней</h2>
+                  <h2>Рекламные кампании</h2>
+                  <Link href="/monetization/campaigns" className="card-link">
+                    Все кампании
+                  </Link>
                 </div>
-                <ViewsChart items={viewSeries} days={7} />
+                {campaigns.length === 0 ? (
+                  <p style={{ color: 'var(--text-muted)', margin: 0 }}>
+                    Нет кампаний.{' '}
+                    <Link href="/monetization">Запустить рекламу</Link>
+                  </p>
+                ) : (
+                  <ul className="action-list">
+                    {campaigns.slice(0, 5).map((c) => (
+                      <li key={c.id} className="action-item">
+                        <div className="action-icon">📣</div>
+                        <div className="action-text">
+                          <strong>{c.product?.name ?? 'Кампания'}</strong>
+                          <span>
+                            <span className={monetizationStatusClass(c.status)}>
+                              {campaignStatusLabel(c.status)}
+                            </span>
+                            {' · '}
+                            <Link href={`/monetization/campaigns/${c.id}`}>Подробнее</Link>
+                          </span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </article>
 
               <div className="bottom-row">
@@ -200,24 +249,16 @@ export default function DashboardPage() {
                       </div>
                     ))
                   )}
-                  <Link
-                    href={`/business/${business.id}/promotions`}
-                    className="card-link"
-                    style={{ display: 'inline-block', marginTop: 12 }}
-                  >
-                    + Создать новую акцию
-                  </Link>
                 </article>
               </div>
             </div>
 
             <aside className="dashboard-side">
               <article className="card">
-                <h2 style={{ margin: '0 0 12px', fontSize: '1rem' }}>Статус заведения</h2>
-                <span className="tag tag-success">{business.status === 'ACTIVE' ? 'Активен' : business.status}</span>
+                <h2 style={{ margin: '0 0 12px', fontSize: '1rem' }}>Профиль</h2>
                 <div className="progress-block">
                   <div className="progress-label">
-                    <span>Заполненность профиля</span>
+                    <span>Заполненность</span>
                     <strong>{completion}%</strong>
                   </div>
                   <div className="progress-bar">
@@ -225,44 +266,26 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <Link href={`/business/${business.id}`} className="btn btn-sm" style={{ width: '100%' }}>
-                  Заполнить полностью
+                  Мой бизнес
                 </Link>
               </article>
 
               <article className="card">
-                <h2 style={{ margin: '0 0 8px', fontSize: '1rem' }}>Ваш тариф</h2>
-                <strong style={{ fontSize: '1.1rem' }}>
-                  {planStatus?.catalog.nameRu ?? 'Базовый'}
-                </strong>
-                <p style={{ margin: '6px 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  {planStatus?.expiresAt
-                    ? `До ${new Date(planStatus.expiresAt).toLocaleDateString('ru-RU')}`
-                    : 'Бесплатный план'}
-                </p>
-                <ul className="plan-list">
-                  {(planStatus?.catalog.features ?? [
-                    'Карточка в каталоге QalaGo',
-                    'До 5 фото',
-                    '1 акция',
-                  ]).slice(0, 3).map((feature) => (
-                    <li key={feature}>{feature}</li>
-                  ))}
-                </ul>
-                <Link href="/plan" className="btn btn-sm" style={{ width: '100%' }}>
-                  Улучшить тариф
-                </Link>
-              </article>
-
-              <article className="card">
-                <h2 style={{ margin: '0 0 12px', fontSize: '1rem' }}>Нужна помощь?</h2>
+                <h2 style={{ margin: '0 0 12px', fontSize: '1rem' }}>Быстрые ссылки</h2>
                 <ul className="help-links">
-                  <li><Link href="/help">Как добавить акцию?</Link></li>
-                  <li><Link href="/help">Как заполнить профиль?</Link></li>
-                  <li><Link href="/help">Как читать статистику?</Link></li>
+                  <li>
+                    <Link href={`/business/${business.id}/media`}>Фото и видео</Link>
+                  </li>
+                  <li>
+                    <Link href={`/business/${business.id}/reviews`}>Отзывы</Link>
+                  </li>
+                  <li>
+                    <Link href="/monetization/orders">Мои заказы</Link>
+                  </li>
+                  <li>
+                    <Link href="/help">Помощь</Link>
+                  </li>
                 </ul>
-                <Link href="/help" className="btn btn-sm" style={{ width: '100%' }}>
-                  🎧 Связаться с поддержкой
-                </Link>
               </article>
             </aside>
           </div>

@@ -61,9 +61,9 @@ String campaignStatusLabel(String status) {
     case 'AWAITING_PAYMENT':
       return 'Ожидает оплаты';
     case 'SCHEDULED':
-      return 'Запланировано';
+      return 'Запланирована';
     case 'ACTIVE':
-      return 'Активно';
+      return 'Активна';
     case 'PAUSED':
       return 'Приостановлено';
     case 'COMPLETED':

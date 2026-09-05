@@ -5,6 +5,7 @@ import { ChangeEvent, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { BusinessImageRow, BusinessPlanStatus, ownerApi } from '@/lib/api';
 import { mediaUrl } from '@/lib/media';
+import { photoPublishLabel, photoPublishState } from '@/lib/owner-utils';
 import { useOwnerBusiness } from '@/lib/use-owner-business';
 import { BusinessShell } from '@/components/business-shell';
 
@@ -39,7 +40,7 @@ export default function BusinessMediaPage() {
     const file = e.target.files?.[0];
     if (!token || !file) return;
     if (atPhotoLimit) {
-      setError(`Лимит тарифа: не более ${maxPhotos} фото. Улучшите тариф в разделе «Тариф и продвижение».`);
+      setError(`Достигнут лимит загрузки (${maxPhotos} фото). Улучшите тариф в разделе «Тариф».`);
       e.target.value = '';
       return;
     }
@@ -61,7 +62,7 @@ export default function BusinessMediaPage() {
 
   return (
     <BusinessShell
-      activeNav="media"
+      activeNav="profile"
       business={business}
       businesses={businesses}
       userName={user?.name ?? user?.phone ?? undefined}
@@ -82,17 +83,18 @@ export default function BusinessMediaPage() {
       {planStatus && (
         <section className="form-card" style={{ maxWidth: 820, marginBottom: 18 }}>
           <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            Тариф «{planStatus.catalog.nameRu}»:{' '}
-            {maxPhotos != null
-              ? `${images.length} / ${maxPhotos} фото`
-              : `${images.length} фото · без лимита`}
-            {atPhotoLimit && (
-              <>
-                {' · '}
-                <Link href="/plan">Улучшить тариф</Link>
-              </>
-            )}
+            Тариф «{planStatus.catalog.nameRu}»: {images.length} / {maxPhotos ?? '∞'} фото
+            {planStatus.entitlements?.photos.overLimit &&
+              planStatus.entitlements.photos.published != null && (
+                <> · опубликовано {planStatus.entitlements.photos.published}</>
+              )}
           </p>
+          {planStatus.entitlements?.photos.overLimit && (
+            <p className="alert" style={{ marginTop: 10, marginBottom: 0, fontSize: '0.88rem' }}>
+              На тарифе «{planStatus.catalog.nameRu}» публикуется до {maxPhotos} фото. Остальные
+              сохранены и снова появятся после повышения тарифа.
+            </p>
+          )}
         </section>
       )}
 
@@ -128,9 +130,11 @@ export default function BusinessMediaPage() {
               gap: 14,
             }}
           >
-            {images.map((image) => {
+            {images.map((image, index) => {
               const src = mediaUrl(image.imageUrl);
               const isCover = business?.coverImageUrl === image.imageUrl;
+              const publishState = photoPublishState(index, planStatus);
+              const publishLabel = photoPublishLabel(publishState);
               return (
                 <article
                   key={image.id}
@@ -149,6 +153,15 @@ export default function BusinessMediaPage() {
                   />
                   <div style={{ padding: 10, display: 'grid', gap: 8 }}>
                     {isCover && <span className="tag tag-success">Обложка</span>}
+                    {publishLabel && (
+                      <span
+                        className={
+                          publishState === 'published' ? 'tag tag-success' : 'tag tag-warning'
+                        }
+                      >
+                        {publishLabel}
+                      </span>
+                    )}
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                       {!isCover && (
                         <button

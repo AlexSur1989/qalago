@@ -168,7 +168,8 @@ void main() {
 
     test('11. status mapping', () {
       expect(orderStatusLabel('AWAITING_PAYMENT'), 'Ожидает оплаты');
-      expect(campaignStatusLabel('ACTIVE'), 'Активно');
+      expect(campaignStatusLabel('ACTIVE'), 'Активна');
+      expect(campaignStatusLabel('SCHEDULED'), 'Запланирована');
       expect(campaignStatusLabel('PENDING_MODERATION'), 'На модерации');
     });
 

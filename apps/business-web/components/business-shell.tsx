@@ -10,14 +10,14 @@ export type NavId =
   | 'profile'
   | 'menu'
   | 'promotions'
-  | 'media'
-  | 'reviews'
   | 'stats'
   | 'messages'
   | 'settings'
   | 'plan'
   | 'monetization'
-  | 'help';
+  | 'help'
+  | 'media'
+  | 'reviews';
 
 type NavItem = {
   id: NavId;
@@ -28,25 +28,22 @@ type NavItem = {
 };
 
 const NAV: NavItem[] = [
-  { id: 'home', label: 'Главная', icon: '🏠', href: () => '/dashboard' },
-  { id: 'profile', label: 'Профиль заведения', icon: '🏪', href: (id) => `/business/${id}` },
-  { id: 'menu', label: 'Услуги и меню', icon: '📋', href: (id) => `/business/${id}/menu` },
+  { id: 'home', label: 'Обзор', icon: '🏠', href: () => '/dashboard' },
+  { id: 'profile', label: 'Мой бизнес', icon: '🏪', href: (id) => `/business/${id}` },
+  { id: 'menu', label: 'Товары и услуги', icon: '📋', href: (id) => `/business/${id}/menu` },
   { id: 'promotions', label: 'Акции', icon: '🏷️', href: (id) => `/business/${id}/promotions` },
-  { id: 'media', label: 'Фото и видео', icon: '📷', href: (id) => `/business/${id}/media` },
-  { id: 'reviews', label: 'Отзывы', icon: '⭐', href: (id) => `/business/${id}/reviews` },
-  { id: 'stats', label: 'Статистика', icon: '📊', href: () => '/dashboard' },
-  { id: 'messages', label: 'Сообщения', icon: '💬', href: () => '/messages' },
-  { id: 'settings', label: 'Настройки', icon: '⚙️', href: () => '/settings' },
-];
-
-const FOOTER_NAV: NavItem[] = [
-  { id: 'plan', label: 'Тариф', icon: '💎', href: () => '/plan' },
   {
     id: 'monetization',
     label: 'Реклама и продвижение',
     icon: '📣',
     href: () => '/monetization',
   },
+  { id: 'stats', label: 'Статистика', icon: '📊', href: () => '/statistics' },
+  { id: 'settings', label: 'Настройки', icon: '⚙️', href: () => '/settings' },
+];
+
+const FOOTER_NAV: NavItem[] = [
+  { id: 'plan', label: 'Тариф', icon: '💎', href: () => '/plan' },
   { id: 'help', label: 'Помощь', icon: '❓', href: () => '/help' },
 ];
 

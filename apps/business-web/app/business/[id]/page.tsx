@@ -112,13 +112,31 @@ export default function BusinessEditPage() {
     >
       <header className="page-header">
         <div>
-          <h1>Профиль заведения</h1>
-          <p className="page-header-meta">Редактирование карточки в каталоге QalaGo</p>
+          <h1>Мой бизнес</h1>
+          <p className="page-header-meta">Профиль, контакты и часы работы</p>
         </div>
-        <Link href="/dashboard" className="btn">
-          ← На главную
+        <Link href="/dashboard" className="btn btn-ghost">
+          ← Обзор
         </Link>
       </header>
+
+      <section className="form-card" style={{ maxWidth: 720, marginBottom: 16 }}>
+        <h2 style={{ marginTop: 0, fontSize: '1rem' }}>Разделы</h2>
+        <div className="quick-actions-grid">
+          <Link href={`/business/${id}/media`} className="btn btn-sm">
+            📷 Фото и видео
+          </Link>
+          <Link href={`/business/${id}/reviews`} className="btn btn-sm">
+            ⭐ Отзывы
+          </Link>
+          <Link href={`/business/${id}/menu`} className="btn btn-sm">
+            📋 Товары и услуги
+          </Link>
+          <Link href={`/business/${id}/promotions`} className="btn btn-sm">
+            🏷️ Акции
+          </Link>
+        </div>
+      </section>
 
       <form onSubmit={onSubmit} className="form-card form-grid" style={{ maxWidth: 720 }}>
         {field('Название', form.title, (v) => setForm({ ...form, title: v }))}

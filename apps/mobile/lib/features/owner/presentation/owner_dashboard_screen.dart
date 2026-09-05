@@ -182,6 +182,11 @@ class _DashboardContent extends StatelessWidget {
     final activePromotions = data['activePromotions'] as List<PromotionModel>;
     final plan = data['plan'] as Map<String, dynamic>;
     final catalog = plan['catalog'] as Map<String, dynamic>? ?? {};
+    final limits = plan['limits'] as Map<String, dynamic>? ?? {};
+    final usage = plan['usage'] as Map<String, dynamic>? ?? {};
+    final entitlements = plan['entitlements'] as Map<String, dynamic>? ?? {};
+    final maxPhotos = limits['maxPhotos'] as int?;
+    final maxServiceItems = limits['maxServiceItems'] as int?;
     final feedHint = ownerPromotionFeedHint(plan);
     final completion = ownerProfileCompletion(business);
     final totalActions = (summary7['total'] as num?)?.toInt() ?? 0;
@@ -262,6 +267,36 @@ class _DashboardContent extends StatelessWidget {
                     ),
                   ),
                 OwnerViewsChart(items: trendItems),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Использование тарифа',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Фото: ${usage['photos'] ?? 0}${maxPhotos != null ? ' / $maxPhotos' : ''}'
+                  '${entitlements['photos']?['overLimit'] == true ? ' (опубл. ${entitlements['photos']?['published']})' : ''}'
+                  '\nТовары и услуги: ${usage['serviceItems'] ?? 0}${maxServiceItems != null ? ' / $maxServiceItems' : ''}'
+                  '\nАктивные акции: ${usage['activePromotions'] ?? 0} / ${limits['maxActivePromotions'] ?? 1}',
+                  style: TextStyle(color: Colors.grey.shade700),
+                ),
+                if (entitlements['overLimitNotice'] != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    entitlements['overLimitNotice'] as String,
+                    style: TextStyle(color: Colors.orange.shade900, fontSize: 13),
+                  ),
+                ],
               ],
             ),
           ),
@@ -371,24 +406,24 @@ class _DashboardContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Продвинуть бизнес',
+                  'Реклама и продвижение',
                   style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Больше просмотров и клиентов в QalaGo',
+                  'VIP-баннер, TOP категории, продвижение акций и пакеты',
                   style: TextStyle(color: Colors.grey.shade800),
                 ),
                 const SizedBox(height: 12),
                 FilledButton(
                   onPressed: () => context.push('/owner/promote'),
                   style: FilledButton.styleFrom(backgroundColor: AppTheme.kzBlue),
-                  child: const Text('Продвинуть'),
+                  child: const Text('Открыть каталог'),
                 ),
                 const SizedBox(height: 8),
                 TextButton(
                   onPressed: () => context.push('/owner/monetization/campaigns'),
-                  child: const Text('Мои продвижения'),
+                  child: const Text('Мои кампании'),
                 ),
               ],
             ),
@@ -448,8 +483,8 @@ class _ManagementGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      (Icons.storefront_outlined, 'Профиль', '/owner/edit/$businessId?title=$encodedTitle'),
-      (Icons.restaurant_menu, 'Меню', '/owner/menu/$businessId?title=$encodedTitle'),
+      (Icons.storefront_outlined, 'Мой бизнес', '/owner/edit/$businessId?title=$encodedTitle'),
+      (Icons.restaurant_menu, 'Товары и услуги', '/owner/menu/$businessId?title=$encodedTitle'),
       (Icons.photo_library_outlined, 'Галерея', '/owner/gallery/$businessId?title=$encodedTitle'),
       (Icons.local_offer_outlined, 'Акции', '/owner/promotions/$businessId?title=$encodedTitle'),
       (Icons.star_outline, 'Отзывы', '/owner/reviews/$businessId?title=$encodedTitle'),

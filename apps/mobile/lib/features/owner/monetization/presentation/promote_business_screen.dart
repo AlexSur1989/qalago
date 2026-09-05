@@ -19,7 +19,7 @@ class PromoteBusinessScreen extends ConsumerWidget {
     final business = ref.watch(ownerSelectedBusinessProvider);
     if (business == null) {
       return const OwnerScaffold(
-        title: 'Продвинуть бизнес',
+        title: 'Реклама и продвижение',
         body: Center(child: Text('Сначала выберите заведение')),
       );
     }
@@ -40,7 +40,7 @@ class PromoteBusinessScreen extends ConsumerWidget {
     final packagesAsync = ref.watch(monetizationPackagesProvider);
 
     return OwnerScaffold(
-      title: 'Продвинуть бизнес',
+      title: 'Реклама и продвижение',
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(monetizationProductsProvider);

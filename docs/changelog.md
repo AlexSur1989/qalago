@@ -9,6 +9,20 @@
 
 ---
 
+## 2026-09-06 — Stage 4E: business owner experience unification
+
+**Сделано**
+- Единая IA кабинета: Обзор, Мой бизнес, Товары и услуги, Акции, Реклама и продвижение, Статистика, Тариф, Настройки
+- business-web: обновлён dashboard (лимиты тарифа, кампании, быстрые действия), `/statistics`, hub «Мой бизнес», метки фото over-limit, лимиты меню, FAQ без legacy Pro/TOP
+- Flutter owner: drawer «Обзор» + «Реклама и продвижение», plan usage на dashboard, VIP disclaimer, единые RU labels кампаний
+- `lib/owner-utils.ts` + тесты: plan usage, VIP/moderation copy, photo publish state
+
+**Заложить на будущее**
+- Отдельная глобальная аналитика бизнеса beyond `/analytics/business/:id/summary`
+- Business switcher в Flutter sub-screens (URL-bound routes)
+
+---
+
 ## 2026-09-06 — Stage 4B.2: VIP inventory reservation + order validation
 
 **Сделано**

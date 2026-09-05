@@ -69,9 +69,17 @@ class _OwnerDrawer extends StatelessWidget {
             _navTile(
               context,
               icon: Icons.dashboard_outlined,
-              label: 'Главная',
+              label: 'Обзор',
               path: '/owner',
               selected: currentPath == '/owner',
+            ),
+            _navTile(
+              context,
+              icon: Icons.campaign_outlined,
+              label: 'Реклама и продвижение',
+              path: '/owner/promote',
+              selected: currentPath.startsWith('/owner/promote') ||
+                  currentPath.startsWith('/owner/monetization'),
             ),
             _navTile(
               context,

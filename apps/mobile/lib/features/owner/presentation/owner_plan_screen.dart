@@ -86,7 +86,7 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
     final planAsync = ref.watch(businessPlanProvider(businessId));
 
     return OwnerScaffold(
-      title: 'Тариф и продвижение',
+      title: 'Тариф',
       body: catalogAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
@@ -245,6 +245,16 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                               ),
                             ),
                           ),
+                          if (tier == 'VIP') ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              'Рекламные размещения приобретаются отдельно.',
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 12),
                           if (isCurrent)
                             const OutlinedButton(onPressed: null, child: Text('Активен'))

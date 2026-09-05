@@ -165,6 +165,11 @@ export default function PlanPage() {
                   <li key={f}>{f}</li>
                 ))}
               </ul>
+              {plan.tier === 'VIP' && (
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 12 }}>
+                  Рекламные размещения приобретаются отдельно.
+                </p>
+              )}
               {isCurrent ? (
                 <button type="button" className="btn btn-ghost" disabled>
                   Активен

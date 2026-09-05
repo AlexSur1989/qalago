@@ -3,9 +3,16 @@
 import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { ServiceMenuManage, ownerApi } from '@/lib/api';
+import { BusinessPlanStatus, ServiceMenuManage, ownerApi } from '@/lib/api';
 import { useOwnerBusiness } from '@/lib/use-owner-business';
 import { BusinessShell } from '@/components/business-shell';
+
+function countMenuItems(menu: ServiceMenuManage | null): number {
+  if (!menu) return 0;
+  return (
+    menu.groups.reduce((sum, g) => sum + g.items.length, 0) + (menu.ungrouped?.length ?? 0)
+  );
+}
 
 export default function BusinessMenuPage() {
   const params = useParams<{ id: string }>();
@@ -13,13 +20,19 @@ export default function BusinessMenuPage() {
   const { token, user, ready, logout, businesses, business, error, setError } =
     useOwnerBusiness(businessId);
   const [menu, setMenu] = useState<ServiceMenuManage | null>(null);
+  const [planStatus, setPlanStatus] = useState<BusinessPlanStatus | null>(null);
   const [groupTitle, setGroupTitle] = useState('');
   const [itemTitle, setItemTitle] = useState('');
   const [itemPrice, setItemPrice] = useState('');
   const [itemGroupId, setItemGroupId] = useState('');
 
   async function load(t: string) {
-    setMenu(await ownerApi.getServiceMenu(t, businessId));
+    const [menuData, plan] = await Promise.all([
+      ownerApi.getServiceMenu(t, businessId),
+      ownerApi.getBusinessPlan(t, businessId),
+    ]);
+    setMenu(menuData);
+    setPlanStatus(plan);
   }
 
   useEffect(() => {
@@ -41,6 +54,14 @@ export default function BusinessMenuPage() {
   async function createItem(e: FormEvent) {
     e.preventDefault();
     if (!token || !itemTitle.trim()) return;
+    const maxItems = planStatus?.limits.maxServiceItems;
+    const total = countMenuItems(menu);
+    if (maxItems != null && total >= maxItems) {
+      setError(
+        `На тарифе «${planStatus?.catalog.nameRu ?? ''}» можно опубликовать до ${maxItems} товаров и услуг. Улучшите тариф или удалите позиции.`,
+      );
+      return;
+    }
     await ownerApi.createMenuItem(token, {
       businessId,
       groupId: itemGroupId || undefined,
@@ -56,6 +77,8 @@ export default function BusinessMenuPage() {
 
   const groups = menu?.groups ?? [];
   const ungrouped = menu?.ungrouped ?? [];
+  const itemCount = countMenuItems(menu);
+  const maxItems = planStatus?.limits.maxServiceItems;
 
   return (
     <BusinessShell
@@ -67,15 +90,32 @@ export default function BusinessMenuPage() {
     >
       <header className="page-header">
         <div>
-          <h1>Услуги и меню</h1>
+          <h1>Товары и услуги</h1>
           <p className="page-header-meta">Группы и позиции для клиентов в приложении</p>
         </div>
         <Link href="/dashboard" className="btn">
-          ← На главную
+          ← Обзор
         </Link>
       </header>
 
       {error && <div className="alert alert-error">{error}</div>}
+
+      {planStatus && maxItems != null && (
+        <section className="form-card" style={{ maxWidth: 820, marginBottom: 18 }}>
+          <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+            Тариф «{planStatus.catalog.nameRu}»: {itemCount} / {maxItems} товаров и услуг
+            {planStatus.entitlements?.serviceItems.overLimit &&
+              planStatus.entitlements.serviceItems.published != null && (
+                <> · опубликовано {planStatus.entitlements.serviceItems.published}</>
+              )}
+          </p>
+          {planStatus.entitlements?.serviceItems.overLimit && (
+            <p className="alert" style={{ marginTop: 10, marginBottom: 0, fontSize: '0.88rem' }}>
+              На текущем тарифе публикуется до {maxItems} позиций. Остальные сохранены в кабинете.
+            </p>
+          )}
+        </section>
+      )}
 
       <div style={{ display: 'grid', gap: 18, maxWidth: 820 }}>
         <form onSubmit={createGroup} className="form-card form-grid">

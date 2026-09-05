@@ -429,6 +429,12 @@ select {
   gap: 18px;
 }
 
+.quick-actions-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .dashboard-main {
   display: grid;
   gap: 18px;
