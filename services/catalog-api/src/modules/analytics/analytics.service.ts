@@ -1,18 +1,35 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { AnalyticsEventType, BusinessStatus, UserRole } from '@prisma/client';
+import { getAnalyticsCapabilitiesForPlan } from '../../common/utils/analytics-capabilities.util';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AnalyticsDashboardBuilder } from './analytics-dashboard.builder';
 import { AnalyticsWindowQueryDto, CreateAnalyticsEventDto } from './dto/analytics.dto';
 
 const EVENT_TYPES = Object.values(AnalyticsEventType);
 
+const ACTION_EVENT_TYPES = new Set<AnalyticsEventType>([
+  AnalyticsEventType.CALL_CLICK,
+  AnalyticsEventType.WHATSAPP_CLICK,
+  AnalyticsEventType.ROUTE_CLICK,
+  'WEBSITE_CLICK' as AnalyticsEventType,
+  'INSTAGRAM_CLICK' as AnalyticsEventType,
+  AnalyticsEventType.FAVORITE_ADD,
+  AnalyticsEventType.FAVORITE_REMOVE,
+  AnalyticsEventType.PROMOTION_VIEW,
+]);
+
 @Injectable()
 export class AnalyticsService {
+  private readonly dashboardBuilder: AnalyticsDashboardBuilder;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly planLimits: PlanLimitsService,
-  ) {}
+  ) {
+    this.dashboardBuilder = new AnalyticsDashboardBuilder(prisma, planLimits);
+  }
 
   async track(dto: CreateAnalyticsEventDto) {
     const business = await this.prisma.business.findFirst({
@@ -46,29 +63,36 @@ export class AnalyticsService {
       _count: { _all: true },
     });
 
+    const caps = getAnalyticsCapabilitiesForPlan(ctx.effectiveTier);
     const byType = this.emptyCounts();
     for (const item of grouped) {
       byType[item.type] = item._count._all;
     }
+    const filteredByType = this.filterByTypeForPlan(byType, caps);
 
     return {
       businessId,
       days,
       analyticsTier: ctx.limits.analyticsTier,
       capabilities: this.planLimits.getAnalyticsCapabilities(ctx.effectiveTier),
-      total: Object.values(byType).reduce((sum, count) => sum + count, 0),
-      byType,
+      total: Object.values(filteredByType).reduce((sum, count) => sum + count, 0),
+      byType: filteredByType,
     };
+  }
+
+  async dashboard(user: AuthUser, businessId: string, query: AnalyticsWindowQueryDto) {
+    await this.assertCanViewBusinessAnalytics(user, businessId);
+    return this.dashboardBuilder.build(businessId, query.days ?? 30);
   }
 
   async trends(user: AuthUser, businessId: string, query: AnalyticsWindowQueryDto) {
     await this.assertCanViewBusinessAnalytics(user, businessId);
 
     const ctx = await this.planLimits.getBusinessPlanContext(businessId);
-    const caps = this.planLimits.getAnalyticsCapabilities(ctx.effectiveTier);
-    if (!caps.trends) {
+    const caps = getAnalyticsCapabilitiesForPlan(ctx.effectiveTier);
+    if (!caps.viewTrend && !caps.actionTrend) {
       throw new ForbiddenException(
-        'Динамика по дням доступна на тарифах Basic и выше. Обновите тариф в кабинете.',
+        'Динамика по дням недоступна на текущем тарифе. Обновите тариф в кабинете.',
       );
     }
 
@@ -87,14 +111,19 @@ export class AnalyticsService {
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }
 
-    const items = [...counts.entries()].map(([key, count]) => {
-      const separator = key.indexOf(':');
-      return {
-        date: key.slice(0, separator),
-        type: key.slice(separator + 1) as AnalyticsEventType,
-        count,
-      };
-    });
+    const items = [...counts.entries()]
+      .map(([key, count]) => {
+        const separator = key.indexOf(':');
+        return {
+          date: key.slice(0, separator),
+          type: key.slice(separator + 1) as AnalyticsEventType,
+          count,
+        };
+      })
+      .filter((item) => {
+        if (item.type === AnalyticsEventType.VIEW_BUSINESS) return caps.viewTrend;
+        return caps.actionTrend;
+      });
 
     return { businessId, days, analyticsTier: ctx.limits.analyticsTier, items };
   }
@@ -116,6 +145,22 @@ export class AnalyticsService {
     }
 
     throw new ForbiddenException('Not allowed to view analytics');
+  }
+
+  private filterByTypeForPlan(
+    byType: Record<AnalyticsEventType, number>,
+    caps: ReturnType<typeof getAnalyticsCapabilitiesForPlan>,
+  ): Record<AnalyticsEventType, number> {
+    const filtered = this.emptyCounts();
+    filtered[AnalyticsEventType.VIEW_BUSINESS] =
+      byType[AnalyticsEventType.VIEW_BUSINESS] ?? 0;
+    if (!caps.actions) {
+      return filtered;
+    }
+    for (const type of ACTION_EVENT_TYPES) {
+      filtered[type] = byType[type] ?? 0;
+    }
+    return filtered;
   }
 
   private emptyCounts(): Record<AnalyticsEventType, number> {

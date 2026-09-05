@@ -349,7 +349,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
 
       const limitsService = new PlanLimitsService(prisma, { create: jest.fn() } as never);
       const capped = await limitsService.capAnalyticsDays('b1', 365);
-      expect(capped).toBe(7);
+      expect(capped).toBe(30);
       expect(analyticsCount).not.toHaveBeenCalled();
     });
   });

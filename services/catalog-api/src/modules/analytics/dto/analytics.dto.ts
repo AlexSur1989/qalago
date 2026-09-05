@@ -15,6 +15,6 @@ export class AnalyticsWindowQueryDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(90)
+  @Max(365)
   days?: number = 30;
 }

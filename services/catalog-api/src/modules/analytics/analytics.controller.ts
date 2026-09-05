@@ -36,4 +36,14 @@ export class AnalyticsController {
   ) {
     return this.analyticsService.trends(user, businessId, query);
   }
+
+  @Roles(UserRole.BUSINESS, UserRole.CITY_ADMIN, UserRole.ADMIN)
+  @Get('business/:businessId/dashboard')
+  dashboard(
+    @CurrentUser() user: AuthUser,
+    @Param('businessId') businessId: string,
+    @Query() query: AnalyticsWindowQueryDto,
+  ) {
+    return this.analyticsService.dashboard(user, businessId, query);
+  }
 }

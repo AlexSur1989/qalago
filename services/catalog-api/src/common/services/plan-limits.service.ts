@@ -7,6 +7,9 @@ import { BusinessPlanTier, NotificationType, PromotionStatus } from '@prisma/cli
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationsService } from '../../modules/notifications/notifications.service';
 import {
+  getAnalyticsCapabilitiesForPlan,
+} from '../utils/analytics-capabilities.util';
+import {
   buildEntitlementSummary,
   isPromotionLiveNow,
   selectPublicPromotions,
@@ -61,7 +64,7 @@ export const PLAN_CATALOG: PlanCatalogItem[] = [
       maxActivePromotions: 1,
       maxPromotionDurationDays: 14,
       maxPromotionsCreatedPerDay: 1,
-      maxAnalyticsDays: 7,
+      maxAnalyticsDays: 30,
       advertisingDiscountPercent: 0,
       analyticsTier: 'BASIC',
       supportPriority: 'STANDARD',
@@ -116,7 +119,7 @@ export const PLAN_CATALOG: PlanCatalogItem[] = [
       maxActivePromotions: 10,
       maxPromotionDurationDays: 90,
       maxPromotionsCreatedPerDay: 5,
-      maxAnalyticsDays: 365,
+      maxAnalyticsDays: 90,
       advertisingDiscountPercent: 10,
       analyticsTier: 'FULL',
       supportPriority: 'PRIORITY',
@@ -373,14 +376,7 @@ export class PlanLimitsService {
   }
 
   getAnalyticsCapabilities(tier: BusinessPlanTier) {
-    const analyticsTier = this.getAnalyticsTier(tier);
-    const maxDays = this.getLimits(tier).maxAnalyticsDays;
-    return {
-      tier: analyticsTier,
-      maxDays,
-      summary: true,
-      trends: analyticsTier !== 'BASIC',
-    };
+    return getAnalyticsCapabilitiesForPlan(tier);
   }
 
   isPaidTier(tier: BusinessPlanTier): boolean {

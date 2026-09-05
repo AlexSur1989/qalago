@@ -1,5 +1,6 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { AnalyticsEventType, UserRole } from '@prisma/client';
+import { getAnalyticsCapabilitiesForPlan } from '../../common/utils/analytics-capabilities.util';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -147,30 +148,63 @@ describe('AnalyticsService', () => {
     });
   });
 
-  it('blocks trends for FREE/basic analytics tier', async () => {
+  it('filters action counts for FREE summary', async () => {
     const { prisma, planLimits, service } = createService();
     prisma.business.findUnique.mockResolvedValue({ ownerId: owner.id });
     planLimits.getBusinessPlanContext = jest.fn().mockResolvedValue({
       effectiveTier: 'FREE',
-      limits: { maxAnalyticsDays: 7, analyticsTier: 'BASIC' },
+      limits: { maxAnalyticsDays: 30, analyticsTier: 'BASIC' },
     });
-    planLimits.getAnalyticsCapabilities = jest.fn().mockReturnValue({
-      tier: 'BASIC',
-      maxDays: 7,
-      summary: true,
-      trends: false,
-    });
+    planLimits.getAnalyticsCapabilities = jest.fn().mockReturnValue(
+      getAnalyticsCapabilitiesForPlan('FREE' as never),
+    );
+    prisma.analyticsEvent.groupBy.mockResolvedValue([
+      { type: AnalyticsEventType.VIEW_BUSINESS, _count: { _all: 7 } },
+      { type: AnalyticsEventType.CALL_CLICK, _count: { _all: 2 } },
+    ]);
 
-    await expect(service.trends(owner, 'business-1', { days: 7 })).rejects.toBeInstanceOf(
+    const result = await service.summary(owner, 'business-1', { days: 30 });
+
+    expect(result.byType[AnalyticsEventType.VIEW_BUSINESS]).toBe(7);
+    expect(result.byType[AnalyticsEventType.CALL_CLICK]).toBe(0);
+    expect(result.total).toBe(7);
+  });
+
+  it('allows view trends for FREE tier', async () => {
+    const { prisma, planLimits, service } = createService();
+    prisma.business.findUnique.mockResolvedValue({ ownerId: owner.id });
+    planLimits.getBusinessPlanContext = jest.fn().mockResolvedValue({
+      effectiveTier: 'FREE',
+      limits: { maxAnalyticsDays: 30, analyticsTier: 'BASIC' },
+    });
+    planLimits.getAnalyticsCapabilities = jest.fn().mockReturnValue(
+      getAnalyticsCapabilitiesForPlan('FREE' as never),
+    );
+    prisma.analyticsEvent.findMany.mockResolvedValue([
+      { type: AnalyticsEventType.VIEW_BUSINESS, createdAt: new Date('2026-08-29T01:00:00.000Z') },
+      { type: AnalyticsEventType.CALL_CLICK, createdAt: new Date('2026-08-29T05:00:00.000Z') },
+    ]);
+
+    const result = await service.trends(owner, 'business-1', { days: 7 });
+    expect(result.items).toEqual([
+      { date: '2026-08-29', type: AnalyticsEventType.VIEW_BUSINESS, count: 1 },
+    ]);
+  });
+
+  it('blocks regular users from business analytics dashboard', async () => {
+    const { prisma, service } = createService();
+    prisma.business.findUnique.mockResolvedValue({ ownerId: owner.id });
+
+    await expect(service.dashboard(user, 'business-1', {})).rejects.toBeInstanceOf(
       ForbiddenException,
     );
   });
 
-  it('blocks regular users from business analytics', async () => {
+  it('blocks owner from another business analytics dashboard', async () => {
     const { prisma, service } = createService();
-    prisma.business.findUnique.mockResolvedValue({ ownerId: owner.id });
+    prisma.business.findUnique.mockResolvedValue({ ownerId: 'other-owner' });
 
-    await expect(service.summary(user, 'business-1', {})).rejects.toBeInstanceOf(
+    await expect(service.dashboard(owner, 'business-1', {})).rejects.toBeInstanceOf(
       ForbiddenException,
     );
   });

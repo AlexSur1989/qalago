@@ -21,6 +21,7 @@ class SelectedOwnerBusinessIdNotifier extends Notifier<String?> {
 void onOwnerBusinessSelected(WidgetRef ref, String businessId) {
   ref.read(selectedOwnerBusinessIdProvider.notifier).select(businessId);
   invalidateOwnerMonetizationOnBusinessSwitch(ref, businessId);
+  ref.invalidate(businessAnalyticsDashboardProvider);
 }
 
 final ownerSelectedBusinessProvider = Provider<Map<String, dynamic>?>((ref) {
@@ -55,7 +56,7 @@ final ownerDashboardProvider =
     final summary7 = results[0] as Map<String, dynamic>;
     final summary14 = results[1] as Map<String, dynamic>;
     final capabilities = summary7['capabilities'] as Map<String, dynamic>? ?? {};
-    final trendsAvailable = capabilities['trends'] == true;
+    final trendsAvailable = capabilities['viewTrend'] == true || capabilities['trends'] == true;
     final trends = trendsAvailable
         ? await catalog.fetchAnalyticsTrends(businessId, days: 7)
         : <String, dynamic>{'items': <dynamic>[], 'trendsUnavailable': true};

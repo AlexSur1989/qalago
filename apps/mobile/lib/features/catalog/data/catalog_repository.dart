@@ -330,6 +330,17 @@ class CatalogRepository {
     await _dio.patch('/uploads/business/$businessId/images/$imageId/cover');
   }
 
+  Future<Map<String, dynamic>> fetchAnalyticsDashboard(
+    String businessId, {
+    int days = 30,
+  }) async {
+    final response = await _dio.get(
+      '/analytics/business/$businessId/dashboard',
+      queryParameters: {'days': days},
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> fetchAnalyticsSummary(
     String businessId, {
     int days = 30,

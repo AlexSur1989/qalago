@@ -11,6 +11,42 @@
 
 ---
 
+---
+
+## 2026-09-06 — Stage 5F: business analytics parity (Web + Mobile Owner)
+
+**Сделано**
+- Backend: unified `GET /analytics/business/:id/dashboard` contract; plan entitlements as source of truth
+- Tier windows: FREE/BASIC 30d, PREMIUM 90d, VIP 365d; locked metrics not returned in API
+- FREE: views + daily view trend; BASIC+: customer actions; PREMIUM+: sources/conversion/comparison; VIP: popular times/benchmark/recommendations
+- Business Web `/statistics`: tiered KPIs, locked sections, upgrade CTA → `/plan`, organic vs ad split
+- Flutter Owner `/owner/analytics/:businessId`: same contract, drawer entry, business switch invalidation
+- Tests: backend capabilities, web analytics-utils, Flutter owner analytics entitlement matrix
+
+**Feature matrix (Stage 5F)**
+
+| Feature | Backend | Web | Mobile |
+|---------|---------|-----|--------|
+| Views | IMPLEMENTED | IMPLEMENTED | IMPLEMENTED |
+| Actions | IMPLEMENTED | IMPLEMENTED | IMPLEMENTED |
+| View/action trends | IMPLEMENTED | IMPLEMENTED | IMPLEMENTED |
+| Traffic sources | PARTIAL (deferred UI; no fake attribution) | IMPLEMENTED | IMPLEMENTED |
+| Conversion | IMPLEMENTED | IMPLEMENTED | IMPLEMENTED |
+| Period comparison | IMPLEMENTED | IMPLEMENTED | IMPLEMENTED |
+| Popular times | IMPLEMENTED | IMPLEMENTED | IMPLEMENTED |
+| Category benchmark | IMPLEMENTED | IMPLEMENTED | IMPLEMENTED |
+| Recommendations | IMPLEMENTED | IMPLEMENTED | IMPLEMENTED |
+| Search queries | DEFERRED | DEFERRED | DEFERRED |
+| Audience geography | DEFERRED | DEFERRED | DEFERRED |
+| Ad campaign analytics | IMPLEMENTED | IMPLEMENTED | IMPLEMENTED |
+
+**Заложить на будущее**
+- Referrer/source tracking on organic events for multi-source breakdown
+- Search-query and service-level analytics when event schema supports them
+- Report export (VIP, platform-appropriate)
+
+---
+
 ## 2026-09-06 — Stage 5E: guest, auth & profile polish
 
 **Сделано**

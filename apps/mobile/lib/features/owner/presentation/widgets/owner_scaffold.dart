@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/providers/auth_provider.dart';
+import '../../providers/owner_providers.dart';
 
 class OwnerScaffold extends ConsumerWidget {
   const OwnerScaffold({
@@ -36,7 +37,7 @@ class OwnerScaffold extends ConsumerWidget {
   }
 }
 
-class _OwnerDrawer extends StatelessWidget {
+class _OwnerDrawer extends ConsumerWidget {
   const _OwnerDrawer({
     required this.currentPath,
     required this.unreadCount,
@@ -46,7 +47,7 @@ class _OwnerDrawer extends StatelessWidget {
   final int unreadCount;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Drawer(
       child: SafeArea(
         child: ListView(
@@ -72,6 +73,23 @@ class _OwnerDrawer extends StatelessWidget {
               label: 'Обзор',
               path: '/owner',
               selected: currentPath == '/owner',
+            ),
+            _navTile(
+              context,
+              icon: Icons.bar_chart_outlined,
+              label: 'Статистика',
+              path: '/owner/analytics',
+              selected: currentPath.startsWith('/owner/analytics'),
+              onTap: (ctx) {
+                final business = ref.read(ownerSelectedBusinessProvider);
+                if (business == null) {
+                  ctx.go('/owner');
+                  return;
+                }
+                final id = business['id'] as String;
+                final title = Uri.encodeComponent(business['title'] as String? ?? '');
+                ctx.go('/owner/analytics/$id?title=$title');
+              },
             ),
             _navTile(
               context,
@@ -132,6 +150,7 @@ class _OwnerDrawer extends StatelessWidget {
     required String path,
     required bool selected,
     int badge = 0,
+    void Function(BuildContext context)? onTap,
   }) {
     return ListTile(
       leading: Icon(icon, color: selected ? AppTheme.kzBlue : null),
@@ -155,7 +174,11 @@ class _OwnerDrawer extends StatelessWidget {
       selected: selected,
       onTap: () {
         Navigator.pop(context);
-        context.go(path);
+        if (onTap != null) {
+          onTap(context);
+        } else {
+          context.go(path);
+        }
       },
     );
   }

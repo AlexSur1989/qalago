@@ -146,6 +146,25 @@ export {
   type PlanLimitsDto,
 } from './plans';
 
+export type {
+  AnalyticsActionsDto,
+  AnalyticsBenchmarkDto,
+  AnalyticsCapabilitiesDto,
+  AnalyticsComparisonDto,
+  AnalyticsConversionDto,
+  AnalyticsEffectiveRangeDto,
+  AnalyticsEventType,
+  AnalyticsLockedSectionDto,
+  AnalyticsOverviewDto,
+  AnalyticsPopularTimesDto,
+  AnalyticsPromotionItemDto,
+  AnalyticsRecommendationDto,
+  AnalyticsSourceItemDto,
+  AnalyticsTrendPointDto,
+  AnalyticsTrendsDto,
+  BusinessAnalyticsDashboardDto,
+} from './analytics';
+
 export {
   ROLE_DEFINITIONS,
   canAccessAdminWeb,

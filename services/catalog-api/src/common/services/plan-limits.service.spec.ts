@@ -35,9 +35,9 @@ describe('PlanLimitsService', () => {
   });
 
   it.each([
-    [BusinessPlanTier.FREE, 5, 10, 1, 0, 7, 'BASIC'],
+    [BusinessPlanTier.FREE, 5, 10, 1, 0, 30, 'BASIC'],
     [BusinessPlanTier.BASIC, 15, 30, 3, 5, 30, 'EXTENDED'],
-    [BusinessPlanTier.PREMIUM, 40, 100, 10, 10, 365, 'FULL'],
+    [BusinessPlanTier.PREMIUM, 40, 100, 10, 10, 90, 'FULL'],
     [BusinessPlanTier.VIP, 100, 300, 25, 15, 365, 'FULL'],
   ])(
     '%s limits',
@@ -79,7 +79,7 @@ describe('PlanLimitsService', () => {
     });
 
     const days = await service.capAnalyticsDays('b1', 30);
-    expect(days).toBe(7);
+    expect(days).toBe(30);
   });
 
   it('downgrades expired plan in database to FREE', async () => {
@@ -182,14 +182,16 @@ describe('PlanLimitsService', () => {
     );
   });
 
-  it('analytics capabilities: FREE basic only, BASIC extended trends', () => {
-    expect(service.getAnalyticsCapabilities(BusinessPlanTier.FREE)).toEqual({
-      tier: 'BASIC',
-      maxDays: 7,
-      summary: true,
-      trends: false,
+  it('analytics capabilities: FREE views only, BASIC actions, PREMIUM sources', () => {
+    expect(service.getAnalyticsCapabilities(BusinessPlanTier.FREE)).toMatchObject({
+      maxDays: 30,
+      views: true,
+      actions: false,
+      viewTrend: true,
     });
-    expect(service.getAnalyticsCapabilities(BusinessPlanTier.BASIC).trends).toBe(true);
-    expect(service.getAnalyticsCapabilities(BusinessPlanTier.PREMIUM).tier).toBe('FULL');
+    expect(service.getAnalyticsCapabilities(BusinessPlanTier.BASIC).actions).toBe(true);
+    expect(service.getAnalyticsCapabilities(BusinessPlanTier.PREMIUM).trafficSources).toBe(
+      true,
+    );
   });
 });

@@ -112,6 +112,81 @@ export type PromotionRow = {
   createdAt?: string;
 };
 
+export type AnalyticsDashboard = {
+  businessId: string;
+  plan: string;
+  effectivePlan: string;
+  headline: string;
+  capabilities: {
+    maxDays: number;
+    views: boolean;
+    viewTrend: boolean;
+    actions: boolean;
+    actionTrend: boolean;
+    trafficSources: boolean;
+    conversion: boolean;
+    periodComparison: boolean;
+    promotionAnalytics: boolean;
+    popularTimes: boolean;
+    benchmark: boolean;
+    recommendations: boolean;
+    searchQueries: boolean;
+    audienceGeography: boolean;
+  };
+  lockedSections: Array<{
+    id: string;
+    label: string;
+    requiredPlan: string;
+    message: string;
+  }>;
+  effectiveRange: { days: number; from: string; to: string };
+  overview: { views: number; totalCustomerActions?: number };
+  actions: {
+    total: number;
+    calls: number;
+    whatsapp: number;
+    routes: number;
+    website: number;
+    instagram: number;
+    favorites: number;
+    promotionViews: number;
+  } | null;
+  trends: {
+    views: Array<{ date: string; count: number }>;
+    actions?: Array<{ date: string; count: number }>;
+  };
+  sources: Array<{ source: string; label: string; views: number; share: number }> | null;
+  sourcesStatus?: 'DEFERRED' | null;
+  conversion: { views: number; actions: number; rate: number } | null;
+  comparison: {
+    currentDays: number;
+    previousDays: number;
+    metrics: Array<{
+      key: string;
+      label: string;
+      current: number;
+      previous: number;
+      deltaPercent: number | null;
+    }>;
+  } | null;
+  promotions: { promotionViews: number } | null;
+  popularTimes: {
+    byHour: Array<{ hour: number; count: number }>;
+    byWeekday: Array<{ weekday: number; label: string; count: number }>;
+  } | null;
+  benchmark: {
+    status?: 'AVAILABLE' | 'INSUFFICIENT_DATA';
+    categoryTitle: string;
+    businessViews?: number;
+    categoryAvgViews?: number;
+    businessActions?: number;
+    categoryAvgActions?: number;
+    cohortSize?: number;
+    message?: string;
+  } | null;
+  recommendations: Array<{ id: string; title: string; body: string }> | null;
+};
+
 export type AnalyticsSummary = {
   businessId: string;
   days: number;
@@ -445,6 +520,12 @@ export const ownerApi = {
 
   deletePromotion: (token: string, id: string) =>
     api<void>(`/promotions/${id}`, { method: 'DELETE', token }),
+
+  analyticsDashboard: (token: string, businessId: string, days = 30) =>
+    api<AnalyticsDashboard>(
+      `/analytics/business/${businessId}/dashboard?days=${days}`,
+      { token },
+    ),
 
   analyticsSummary: (token: string, businessId: string, days = 30) =>
     api<AnalyticsSummary>(

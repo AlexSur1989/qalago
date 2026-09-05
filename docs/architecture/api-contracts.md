@@ -386,37 +386,71 @@ Response `201`:
 
 ### GET /analytics/business/:businessId/summary
 
-Query: `days` (optional, 1-90, default `30`)
+Query: `days` (optional, 1-365, default `30`). Clamped by plan `maxAnalyticsDays`.
 
-Response `200`:
+Response `200` — plan-filtered counts (FREE: views only; BASIC+: action types included):
 ```json
 {
   "businessId": "...",
   "days": 30,
+  "analyticsTier": "BASIC",
+  "capabilities": { "maxDays": 30, "views": true, "actions": false, "viewTrend": true },
   "total": 42,
-  "byType": {
-    "VIEW_BUSINESS": 30,
-    "CALL_CLICK": 4,
-    "WHATSAPP_CLICK": 3,
-    "ROUTE_CLICK": 5
-  }
+  "byType": { "VIEW_BUSINESS": 30, "CALL_CLICK": 0 }
 }
 ```
 
 ### GET /analytics/business/:businessId/trends
 
-Query: `days` (optional, 1-90, default `30`)
+Query: `days` (optional, 1-365, default `30`)
+
+Response `200` — FREE: `VIEW_BUSINESS` only; BASIC+: all entitled event types.
+
+### GET /analytics/business/:businessId/dashboard
+
+Query: `days` (optional, 1-365, default `30`)
+
+Unified owner analytics contract for Business Web and Flutter Owner. Backend is source of truth for entitlements; locked sections return `null` data + `lockedSections` metadata (no leaked values).
 
 Response `200`:
 ```json
 {
   "businessId": "...",
-  "days": 30,
-  "items": [
-    { "date": "2026-08-29", "type": "VIEW_BUSINESS", "count": 7 }
-  ]
+  "plan": "BASIC",
+  "effectivePlan": "BASIC",
+  "headline": "Что делают после просмотра?",
+  "capabilities": {
+    "maxDays": 30,
+    "views": true,
+    "viewTrend": true,
+    "actions": true,
+    "actionTrend": true,
+    "trafficSources": false,
+    "conversion": false,
+    "periodComparison": false,
+    "promotionAnalytics": false,
+    "popularTimes": false,
+    "benchmark": false,
+    "recommendations": false,
+    "searchQueries": false,
+    "audienceGeography": false
+  },
+  "lockedSections": [],
+  "effectiveRange": { "days": 30, "from": "...", "to": "..." },
+  "overview": { "views": 30, "totalCustomerActions": 12 },
+  "actions": { "total": 12, "calls": 4, "whatsapp": 3, "routes": 5, "website": 0, "instagram": 0, "favorites": 0, "promotionViews": 0 },
+  "trends": { "views": [{ "date": "2026-08-29", "count": 7 }], "actions": [{ "date": "2026-08-29", "count": 2 }] },
+  "sources": null,
+  "conversion": null,
+  "comparison": null,
+  "promotions": null,
+  "popularTimes": null,
+  "benchmark": null,
+  "recommendations": null
 }
 ```
+
+Plan windows: FREE/BASIC 30d; PREMIUM 90d; VIP 365d. Campaign analytics remain under `/monetization/campaigns/:id/analytics` (not subscription-gated).
 
 ---
 

@@ -463,6 +463,16 @@ final businessGalleryProvider = FutureProvider.family<List<Map<String, dynamic>>
 
 typedef BusinessAnalyticsQuery = ({String businessId, int days});
 
+final businessAnalyticsDashboardProvider =
+    FutureProvider.family<Map<String, dynamic>, BusinessAnalyticsQuery>(
+  (ref, query) async {
+    return ref.watch(catalogRepositoryProvider).fetchAnalyticsDashboard(
+          query.businessId,
+          days: query.days,
+        );
+  },
+);
+
 final businessAnalyticsProvider =
     FutureProvider.family<Map<String, dynamic>, BusinessAnalyticsQuery>(
   (ref, query) async {
