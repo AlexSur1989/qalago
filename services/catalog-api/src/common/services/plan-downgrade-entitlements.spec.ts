@@ -312,20 +312,32 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
       } as unknown as PrismaService;
 
       const planLimits = new PlanLimitsService(prisma, { create: jest.fn() } as never);
-      const serviceMenu = {
-        findPublicMenu: jest.fn().mockResolvedValue({ groups: [], ungrouped: [] }),
+      const publicContent = {
+        getGalleryPreview: jest.fn().mockResolvedValue({
+          items: images.slice(0, 6),
+          totalCount: 15,
+        }),
+        getCatalogPreview: jest.fn().mockResolvedValue({ items: [], totalCount: 0 }),
+        getPromotionsPreview: jest.fn().mockResolvedValue({
+          items: promotions.slice(0, 3),
+          totalCount: 3,
+        }),
+        getReviewsPreview: jest.fn().mockResolvedValue({ items: [], totalCount: 0 }),
+        resolveCoverImageUrl: jest.fn().mockResolvedValue('https://cdn.example/cover.jpg'),
       };
 
       const businessesService = new BusinessesService(
         prisma,
         { resolveCityId: jest.fn() } as never,
-        serviceMenu as never,
         planLimits,
+        publicContent as never,
       );
 
       const result = await businessesService.findOne('b1');
-      expect(result.images).toHaveLength(15);
-      expect(result.promotions).toHaveLength(3);
+      expect(result.galleryPreview.items.length).toBeLessThanOrEqual(6);
+      expect(result.galleryPreview.totalCount).toBe(15);
+      expect(result.promotionsPreview.items).toHaveLength(3);
+      expect(result.promotionsPreview.totalCount).toBe(3);
       expect(images).toHaveLength(40);
     });
   });

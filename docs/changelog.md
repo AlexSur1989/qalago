@@ -13,6 +13,31 @@
 
 ---
 
+---
+
+## 2026-09-06 — Stage 5G: scalable business catalog & gallery
+
+**Сделано**
+- Public `GET /businesses/:id` returns bounded previews (`galleryPreview`, `catalogPreview`, `promotionsPreview`, `reviewsPreview`) — fixed limits independent of plan
+- New public endpoints: `GET /businesses/:id/catalog` (pagination, section filter, search), `GET /businesses/:id/photos` (pagination)
+- Owner paginated management: `GET /service-menu/manage/:businessId/items`
+- Catalog sections reuse `ServiceMenuGroup` + `ServiceItem.groupId` (nullable; delete group → SET NULL)
+- Flutter consumer: detail previews, `/business/:id/catalog`, `/business/:id/photos`
+- Business Web owner menu: pagination, search, section filter, group CRUD
+- Flutter owner: section assignment on items (existing group dropdown)
+- Backend regression tests for VIP-scale content vs bounded previews
+
+**DEFERRED**
+- Public consumer web (no app in repo) — backend contract ready
+- Flutter owner full section CRUD (primary in Business Web)
+- Thumbnail/CDN pipeline (document as P2 if absent)
+
+**На будущее**
+- Public web consumer catalog/gallery screens when consumer web app exists
+- Optional catalog item detail / item-open analytics event
+
+---
+
 ## 2026-09-06 — Stage 5F: business analytics parity (Web + Mobile Owner)
 
 **Сделано**

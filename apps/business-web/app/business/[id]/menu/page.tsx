@@ -1,44 +1,85 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { BusinessPlanStatus, ServiceMenuManage, ownerApi } from '@/lib/api';
+import {
+  BusinessPlanStatus,
+  ManageMenuItemsPage,
+  ManageMenuSection,
+  ownerApi,
+} from '@/lib/api';
+import { hasMoreMenuPages, menuSectionLabel } from '@/lib/menu-utils';
 import { useOwnerBusiness } from '@/lib/use-owner-business';
 import { BusinessShell } from '@/components/business-shell';
 
-function countMenuItems(menu: ServiceMenuManage | null): number {
-  if (!menu) return 0;
-  return (
-    menu.groups.reduce((sum, g) => sum + g.items.length, 0) + (menu.ungrouped?.length ?? 0)
-  );
-}
+const PAGE_SIZE = 20;
 
 export default function BusinessMenuPage() {
   const params = useParams<{ id: string }>();
   const businessId = params.id;
   const { token, user, ready, logout, businesses, business, error, setError } =
     useOwnerBusiness(businessId);
-  const [menu, setMenu] = useState<ServiceMenuManage | null>(null);
   const [planStatus, setPlanStatus] = useState<BusinessPlanStatus | null>(null);
+  const [menuPage, setMenuPage] = useState<ManageMenuItemsPage | null>(null);
+  const [page, setPage] = useState(1);
+  const [sectionId, setSectionId] = useState<string>('');
+  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [loadingItems, setLoadingItems] = useState(false);
   const [groupTitle, setGroupTitle] = useState('');
   const [itemTitle, setItemTitle] = useState('');
   const [itemPrice, setItemPrice] = useState('');
   const [itemGroupId, setItemGroupId] = useState('');
 
-  async function load(t: string) {
-    const [menuData, plan] = await Promise.all([
-      ownerApi.getServiceMenu(t, businessId),
-      ownerApi.getBusinessPlan(t, businessId),
-    ]);
-    setMenu(menuData);
+  const loadItems = useCallback(
+    async (
+      t: string,
+      nextPage = page,
+      nextSectionId = sectionId,
+      nextSearch = search,
+      append = false,
+    ) => {
+      setLoadingItems(true);
+      try {
+        const data = await ownerApi.listManageMenuItems(t, businessId, {
+          page: nextPage,
+          limit: PAGE_SIZE,
+          sectionId: nextSectionId || undefined,
+          search: nextSearch || undefined,
+        });
+        setMenuPage((prev) =>
+          append && prev
+            ? {
+                ...data,
+                items: [...prev.items, ...data.items],
+              }
+            : data,
+        );
+        setPage(nextPage);
+      } finally {
+        setLoadingItems(false);
+      }
+    },
+    [businessId, page, search, sectionId],
+  );
+
+  const loadPlan = useCallback(async (t: string) => {
+    const plan = await ownerApi.getBusinessPlan(t, businessId);
     setPlanStatus(plan);
-  }
+  }, [businessId]);
 
   useEffect(() => {
     if (!token) return;
-    load(token).catch((err) => setError(String(err)));
+    Promise.all([loadPlan(token), loadItems(token, 1, sectionId, search)]).catch((err) =>
+      setError(String(err)),
+    );
   }, [token, businessId]);
+
+  async function reloadAll() {
+    if (!token) return;
+    await Promise.all([loadPlan(token), loadItems(token, 1, sectionId, search)]);
+  }
 
   async function createGroup(e: FormEvent) {
     e.preventDefault();
@@ -48,14 +89,14 @@ export default function BusinessMenuPage() {
       title: groupTitle.trim(),
     });
     setGroupTitle('');
-    await load(token);
+    await reloadAll();
   }
 
   async function createItem(e: FormEvent) {
     e.preventDefault();
     if (!token || !itemTitle.trim()) return;
     const maxItems = planStatus?.limits.maxServiceItems;
-    const total = countMenuItems(menu);
+    const total = menuPage?.pagination.total ?? 0;
     if (maxItems != null && total >= maxItems) {
       setError(
         `На тарифе «${planStatus?.catalog.nameRu ?? ''}» можно опубликовать до ${maxItems} товаров и услуг. Улучшите тариф или удалите позиции.`,
@@ -70,14 +111,20 @@ export default function BusinessMenuPage() {
     });
     setItemTitle('');
     setItemPrice('');
-    await load(token);
+    await reloadAll();
+  }
+
+  async function applyFilters(nextSectionId = sectionId, nextSearch = search) {
+    if (!token) return;
+    await loadItems(token, 1, nextSectionId, nextSearch);
   }
 
   if (!ready || !token) return <p className="page-content">Загрузка…</p>;
 
-  const groups = menu?.groups ?? [];
-  const ungrouped = menu?.ungrouped ?? [];
-  const itemCount = countMenuItems(menu);
+  const sections: ManageMenuSection[] = menuPage?.sections ?? [];
+  const items = menuPage?.items ?? [];
+  const pagination = menuPage?.pagination;
+  const itemCount = pagination?.total ?? 0;
   const maxItems = planStatus?.limits.maxServiceItems;
 
   return (
@@ -101,7 +148,7 @@ export default function BusinessMenuPage() {
       {error && <div className="alert alert-error">{error}</div>}
 
       {planStatus && maxItems != null && (
-        <section className="form-card" style={{ maxWidth: 820, marginBottom: 18 }}>
+        <section className="form-card" style={{ maxWidth: 920, marginBottom: 18 }}>
           <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
             Тариф «{planStatus.catalog.nameRu}»: {itemCount} / {maxItems} товаров и услуг
             {planStatus.entitlements?.serviceItems.overLimit &&
@@ -117,7 +164,7 @@ export default function BusinessMenuPage() {
         </section>
       )}
 
-      <div style={{ display: 'grid', gap: 18, maxWidth: 820 }}>
+      <div style={{ display: 'grid', gap: 18, maxWidth: 920 }}>
         <form onSubmit={createGroup} className="form-card form-grid">
           <h2 style={{ margin: 0 }}>Новая группа</h2>
           <input
@@ -142,12 +189,9 @@ export default function BusinessMenuPage() {
             onChange={(e) => setItemPrice(e.target.value)}
             placeholder="Цена, например 2500"
           />
-          <select
-            value={itemGroupId}
-            onChange={(e) => setItemGroupId(e.target.value)}
-          >
+          <select value={itemGroupId} onChange={(e) => setItemGroupId(e.target.value)}>
             <option value="">Без группы</option>
-            {groups.map((g) => (
+            {sections.map((g) => (
               <option key={g.id} value={g.id}>
                 {g.title}
               </option>
@@ -159,86 +203,183 @@ export default function BusinessMenuPage() {
         </form>
 
         <section className="form-card">
-          <h2 style={{ marginTop: 0 }}>Текущее меню</h2>
-          {groups.length === 0 && ungrouped.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)' }}>Меню пока пустое</p>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 12,
+              alignItems: 'center',
+              marginBottom: 16,
+            }}
+          >
+            <h2 style={{ margin: 0, flex: '1 1 200px' }}>Позиции</h2>
+            <input
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Найти товар или услугу"
+              style={{ minWidth: 220, flex: '1 1 220px' }}
+            />
+            <button
+              type="button"
+              className="btn btn-sm"
+              onClick={() => {
+                setSearch(searchInput.trim());
+                void applyFilters(sectionId, searchInput.trim());
+              }}
+            >
+              Найти
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+            <FilterChip
+              active={!sectionId}
+              label="Все"
+              onClick={() => {
+                setSectionId('');
+                void applyFilters('', search);
+              }}
+            />
+            <FilterChip
+              active={sectionId === 'uncategorized'}
+              label="Без группы"
+              onClick={() => {
+                setSectionId('uncategorized');
+                void applyFilters('uncategorized', search);
+              }}
+            />
+            {sections.map((section) => (
+              <FilterChip
+                key={section.id}
+                active={sectionId === section.id}
+                label={`${section.title} (${section.itemCount})`}
+                onClick={() => {
+                  setSectionId(section.id);
+                  void applyFilters(section.id, search);
+                }}
+              />
+            ))}
+          </div>
+
+          {loadingItems && items.length === 0 ? (
+            <p style={{ color: 'var(--text-muted)' }}>Загрузка позиций…</p>
+          ) : items.length === 0 ? (
+            <p style={{ color: 'var(--text-muted)' }}>Позиции не найдены</p>
           ) : (
             <>
-              {groups.map((group) => (
-                <div key={group.id} style={{ marginBottom: 20 }}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      gap: 12,
-                    }}
-                  >
-                    <strong>{group.title}</strong>
-                    <button
-                      type="button"
-                      className="btn btn-sm"
-                      onClick={async () => {
-                        if (!token) return;
-                        await ownerApi.deleteMenuGroup(token, group.id);
-                        await load(token);
-                      }}
-                    >
-                      Удалить группу
-                    </button>
-                  </div>
-                  {group.items.length === 0 ? (
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                      Нет позиций
-                    </p>
-                  ) : (
-                    group.items.map((item) => (
-                      <MenuItemRow
-                        key={item.id}
-                        title={item.title}
-                        price={item.price}
-                        onDelete={async () => {
-                          if (!token) return;
-                          await ownerApi.deleteMenuItem(token, item.id);
-                          await load(token);
-                        }}
-                      />
-                    ))
-                  )}
-                </div>
+              {items.map((item) => (
+                <MenuItemRow
+                  key={item.id}
+                  title={item.title}
+                  price={item.price}
+                  sectionLabel={menuSectionLabel(item.sectionId, sections)}
+                  onDelete={async () => {
+                    if (!token) return;
+                    await ownerApi.deleteMenuItem(token, item.id);
+                    await reloadAll();
+                  }}
+                />
               ))}
-              {ungrouped.length > 0 && (
-                <div>
-                  <strong>Без группы</strong>
-                  {ungrouped.map((item) => (
-                    <MenuItemRow
-                      key={item.id}
-                      title={item.title}
-                      price={item.price}
-                      onDelete={async () => {
-                        if (!token) return;
-                        await ownerApi.deleteMenuItem(token, item.id);
-                        await load(token);
-                      }}
-                    />
-                  ))}
-                </div>
+              {pagination && (
+                <p style={{ marginTop: 12, color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                  Показано {items.length} из {pagination.total}
+                  {pagination.totalPages > 1 && ` · страница ${pagination.page} / ${pagination.totalPages}`}
+                </p>
+              )}
+              {pagination && hasMoreMenuPages(pagination.page, pagination.totalPages) && (
+                <button
+                  type="button"
+                  className="btn"
+                  style={{ marginTop: 8 }}
+                  disabled={loadingItems}
+                  onClick={() => {
+                    if (!token || !pagination) return;
+                    void loadItems(token, pagination.page + 1, sectionId, search, true);
+                  }}
+                >
+                  {loadingItems ? 'Загрузка…' : 'Показать ещё'}
+                </button>
               )}
             </>
           )}
         </section>
+
+        {sections.length > 0 && (
+          <section className="form-card">
+            <h2 style={{ marginTop: 0 }}>Управление группами</h2>
+            {sections.map((section) => (
+              <div
+                key={section.id}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '8px 0',
+                  borderBottom: '1px solid var(--border-subtle, #eceff3)',
+                }}
+              >
+                <div>
+                  <strong>{section.title}</strong>
+                  <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
+                    {section.itemCount} поз.
+                    {!section.isActive && ' · скрыта'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  onClick={async () => {
+                    if (!token) return;
+                    await ownerApi.deleteMenuGroup(token, section.id);
+                    if (sectionId === section.id) setSectionId('');
+                    await reloadAll();
+                  }}
+                >
+                  Удалить группу
+                </button>
+              </div>
+            ))}
+          </section>
+        )}
       </div>
     </BusinessShell>
+  );
+}
+
+function FilterChip({
+  active,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className="btn btn-sm"
+      style={{
+        background: active ? 'var(--accent, #f97316)' : undefined,
+        color: active ? '#fff' : undefined,
+      }}
+      onClick={onClick}
+    >
+      {label}
+    </button>
   );
 }
 
 function MenuItemRow({
   title,
   price,
+  sectionLabel,
   onDelete,
 }: {
   title: string;
   price?: string | null;
+  sectionLabel: string;
   onDelete: () => void;
 }) {
   return (
@@ -248,7 +389,10 @@ function MenuItemRow({
     >
       <div className="promo-body">
         <strong>{title}</strong>
-        {price && <p style={{ margin: '4px 0 0' }}>{price} ₸</p>}
+        <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
+          {sectionLabel}
+          {price ? ` · ${price} ₸` : ''}
+        </p>
       </div>
       <button type="button" className="btn btn-sm" onClick={onDelete}>
         Удалить

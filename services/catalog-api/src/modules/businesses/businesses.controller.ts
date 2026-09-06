@@ -3,11 +3,17 @@ import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { BusinessesService } from './businesses.service';
+import { BusinessPublicContentService } from './business-public-content.service';
 import { CreateBusinessDto, ListBusinessesQueryDto, UpdateBusinessDto } from './dto/business.dto';
+import { ListBusinessCatalogQueryDto } from './dto/business-catalog.dto';
+import { ListBusinessPhotosQueryDto } from './dto/business-photos.dto';
 
 @Controller('businesses')
 export class BusinessesController {
-  constructor(private readonly businessesService: BusinessesService) {}
+  constructor(
+    private readonly businessesService: BusinessesService,
+    private readonly publicContent: BusinessPublicContentService,
+  ) {}
 
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() dto: CreateBusinessDto) {
@@ -28,6 +34,18 @@ export class BusinessesController {
   @Get('recommended/me')
   recommended(@CurrentUser() user: AuthUser, @Query('citySlug') citySlug?: string) {
     return this.businessesService.recommended(user, citySlug);
+  }
+
+  @Public()
+  @Get(':id/catalog')
+  findCatalog(@Param('id') id: string, @Query() query: ListBusinessCatalogQueryDto) {
+    return this.publicContent.findPublicCatalog(id, query);
+  }
+
+  @Public()
+  @Get(':id/photos')
+  findPhotos(@Param('id') id: string, @Query() query: ListBusinessPhotosQueryDto) {
+    return this.publicContent.findPublicPhotos(id, query);
   }
 
   @Public()

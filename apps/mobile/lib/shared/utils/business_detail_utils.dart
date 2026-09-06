@@ -250,6 +250,27 @@ String openStatusLabel(BusinessOpenStatus status) => switch (status) {
       BusinessOpenStatus.unknown => '',
     };
 
+(double?, int) reviewStatsFromPreview(List<dynamic> previewItems, int totalCount) {
+  if (previewItems.isEmpty) return (null, totalCount);
+  var sum = 0;
+  for (final raw in previewItems) {
+    if (raw is Map) {
+      sum += (raw['rating'] as num?)?.toInt() ?? 0;
+    }
+  }
+  return (sum / previewItems.length, totalCount);
+}
+
+bool shouldShowSeeAllAction({required int totalCount, required int previewCount}) =>
+    totalCount > previewCount;
+
+Map<String, dynamic>? previewBlock(Map<String, dynamic> data, String key) {
+  final value = data[key];
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) return Map<String, dynamic>.from(value);
+  return null;
+}
+
 (double?, int) reviewStatsFromList(List<dynamic> reviews) {
   if (reviews.isEmpty) return (null, 0);
   var sum = 0;

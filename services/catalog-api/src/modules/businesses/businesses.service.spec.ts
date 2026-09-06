@@ -3,7 +3,7 @@ import { BusinessesService } from './businesses.service';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
-import { ServiceMenuService } from '../service-items/service-menu.service';
+import { BusinessPublicContentService } from './business-public-content.service';
 
 describe('BusinessesService.findAll', () => {
   const cityScope = {
@@ -17,9 +17,10 @@ describe('BusinessesService.findAll', () => {
     },
   } as unknown as PrismaService;
 
-  const serviceMenuService = {} as ServiceMenuService;
+  const serviceMenuService = {} as BusinessPublicContentService;
   const planLimits = {} as PlanLimitsService;
-  const service = new BusinessesService(prisma, cityScope, serviceMenuService, planLimits);
+  const publicContent = {} as BusinessPublicContentService;
+  const service = new BusinessesService(prisma, cityScope, planLimits, publicContent);
 
   const category = { id: 'cat-1', title: 'Кафе', slug: 'cafe', icon: null };
 
@@ -202,8 +203,8 @@ describe('BusinessesService.recommended', () => {
   const service = new BusinessesService(
     prisma,
     cityScope,
-    {} as ServiceMenuService,
     {} as PlanLimitsService,
+    {} as BusinessPublicContentService,
   );
 
   const category = { id: 'cat-1', title: 'Кафе', slug: 'cafe', icon: null };

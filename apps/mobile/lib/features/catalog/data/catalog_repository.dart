@@ -107,6 +107,40 @@ class CatalogRepository {
     return response.data as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> fetchBusinessCatalog(
+    String businessId, {
+    int page = 1,
+    int limit = 20,
+    String? sectionId,
+    String? search,
+  }) async {
+    final response = await _dio.get(
+      '/businesses/$businessId/catalog',
+      queryParameters: {
+        'page': page,
+        'limit': limit,
+        if (sectionId != null && sectionId.isNotEmpty) 'sectionId': sectionId,
+        if (search != null && search.isNotEmpty) 'search': search,
+      },
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> fetchBusinessPhotos(
+    String businessId, {
+    int page = 1,
+    int limit = 24,
+  }) async {
+    final response = await _dio.get(
+      '/businesses/$businessId/photos',
+      queryParameters: {
+        'page': page,
+        'limit': limit,
+      },
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
   Future<void> trackBusinessView(String businessId) =>
       _trackAnalyticsEvent(businessId: businessId, type: 'VIEW_BUSINESS');
 

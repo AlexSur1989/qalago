@@ -8,13 +8,14 @@ import 'package:latlong2/latlong.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
+import '../../../shared/utils/json_parse.dart';
 import '../../../shared/utils/business_detail_utils.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../../core/auth/auth_prompt.dart';
 import '../../ads/utils/ad_url_utils.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../../owner/presentation/widgets/service_menu_widgets.dart';
+import '../widgets/catalog_item_card.dart';
 import '../../recommendations/data/ai_repository.dart';
 
 class BusinessDetailsScreen extends ConsumerStatefulWidget {
@@ -109,8 +110,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
           rating: _rating,
           text: text,
         );
-    ref.invalidate(reviewsProvider(widget.id));
-    ref.invalidate(myReviewsProvider);
+    ref.invalidate(businessDetailsProvider(widget.id));
     if (mounted) {
       ScaffoldMessenger.of(
         context,
@@ -121,8 +121,6 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final detailsAsync = ref.watch(businessDetailsProvider(widget.id));
-    final menuAsync = ref.watch(serviceMenuProvider(widget.id));
-    final reviewsAsync = ref.watch(reviewsProvider(widget.id));
     final favoriteAsync = ref.watch(businessFavoriteProvider(widget.id));
     final isAuthenticated = ref.watch(authProvider).isAuthenticated;
     final canManageMenu = isAuthenticated &&
@@ -140,8 +138,6 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
           message: _consumerErrorMessage('$e'),
           onRetry: () {
             ref.invalidate(businessDetailsProvider(widget.id));
-            ref.invalidate(serviceMenuProvider(widget.id));
-            ref.invalidate(reviewsProvider(widget.id));
           },
         ),
         data: (data) {
@@ -160,21 +156,56 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
           final whatsapp = data['whatsapp'] as String?;
           final instagramUrl = normalizeInstagramUrl(data['instagram'] as String?);
           final websiteUrl = normalizeWebsiteUrl(data['website'] as String?);
-          final latitude = (data['latitude'] as num?)?.toDouble();
-          final longitude = (data['longitude'] as num?)?.toDouble();
+          final latitude = parseJsonDouble(data['latitude']);
+          final longitude = parseJsonDouble(data['longitude']);
           final routeAvailable = buildRouteUrl(
                 latitude: latitude,
                 longitude: longitude,
                 address: address,
               ) !=
               null;
-          final promotions =
-              filterActivePromotions((data['promotions'] as List<dynamic>?) ?? []);
-          final embeddedMenu = _asMap(data['menu']);
+          final galleryPreview = previewBlock(data, 'galleryPreview');
+          final catalogPreview = previewBlock(data, 'catalogPreview');
+          final promotionsPreview = previewBlock(data, 'promotionsPreview');
+          final reviewsPreview = previewBlock(data, 'reviewsPreview');
+
+          final promotionItems =
+              (promotionsPreview?['items'] as List<dynamic>? ??
+                      data['promotions'] as List<dynamic>? ??
+                      [])
+                  .cast<Map<String, dynamic>>();
+          final promotions = filterActivePromotions(promotionItems);
+          final promotionTotal =
+              promotionsPreview?['totalCount'] as int? ?? promotions.length;
+
+          final catalogItems =
+              (catalogPreview?['items'] as List<dynamic>? ?? [])
+                  .cast<Map<String, dynamic>>();
+          final catalogTotal =
+              catalogPreview?['totalCount'] as int? ?? catalogItems.length;
+
+          final galleryItems =
+              (galleryPreview?['items'] as List<dynamic>? ??
+                      data['images'] as List<dynamic>? ??
+                      [])
+                  .cast<Map<String, dynamic>>();
+          final galleryTotal =
+              galleryPreview?['totalCount'] as int? ?? galleryItems.length;
+
+          final reviewItems =
+              (reviewsPreview?['items'] as List<dynamic>? ?? [])
+                  .cast<Map<String, dynamic>>();
+          final reviewTotal =
+              reviewsPreview?['totalCount'] as int? ?? reviewItems.length;
+
           final coverUrl = AppConstants.resolveMediaUrl(
             data['coverImageUrl'] as String?,
           );
-          final galleryUrls = _galleryUrls(data['images'], coverUrl);
+          final galleryUrls = galleryItems
+              .map((image) =>
+                  AppConstants.resolveMediaUrl(image['imageUrl'] as String?))
+              .where((url) => url.isNotEmpty)
+              .toList();
           final photoUrls = [if (coverUrl.isNotEmpty) coverUrl, ...galleryUrls];
           final openStatus =
               computeOpenStatus(data['workHours'], timezone: cityTimezone);
@@ -182,10 +213,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
           final hasHours = hasWorkHours(data['workHours']);
           final weekRows = weeklyHoursRows(data['workHours']);
 
-          final reviewStats = reviewsAsync.maybeWhen(
-            data: (reviews) => _reviewStats(reviews),
-            orElse: () => (null, 0),
-          );
+          final reviewStats = reviewStatsFromPreview(reviewItems, reviewTotal);
 
           return ListView(
             padding: EdgeInsets.zero,
@@ -308,7 +336,15 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                       ],
                       if (promotions.isNotEmpty) ...[
                         const SizedBox(height: 24),
-                        const _SectionTitle(title: 'Акции'),
+                        _SectionHeaderRow(
+                          title: 'Акции',
+                          actionLabel: promotionTotal > promotions.length
+                              ? 'Все акции ($promotionTotal)'
+                              : null,
+                          onAction: promotionTotal > promotions.length
+                              ? () => context.push('/promotions')
+                              : null,
+                        ),
                         const SizedBox(height: 10),
                         ...promotions.map(
                           (promo) => _PromotionTile(
@@ -323,43 +359,29 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                           ),
                         ),
                       ],
-                      const SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const _SectionTitle(title: 'Меню и услуги'),
-                          if (canManageMenu)
-                            TextButton(
-                              onPressed: () => context.push(
-                                '/owner/menu/${widget.id}?title=${Uri.encodeComponent(title)}',
-                              ),
-                              child: const Text('Редактировать'),
-                            ),
-                        ],
-                      ),
-                      menuAsync.when(
-                        loading: () {
-                          if (embeddedMenu == null) {
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 10),
-                              child: LinearProgressIndicator(),
-                            );
-                          }
-                          return PublicMenuView(menu: embeddedMenu);
-                        },
-                        error: (e, _) {
-                          if (embeddedMenu != null) {
-                            return PublicMenuView(menu: embeddedMenu);
-                          }
-                          return Text(
-                            'Не удалось загрузить меню',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                          );
-                        },
-                        data: (menu) => PublicMenuView(menu: menu),
-                      ),
+                      if (catalogItems.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        _SectionHeaderRow(
+                          title: 'Товары и услуги',
+                          actionLabel: catalogTotal > catalogItems.length
+                              ? 'Смотреть все ($catalogTotal)'
+                              : null,
+                          onAction: catalogTotal > catalogItems.length
+                              ? () => context.push('/business/${widget.id}/catalog')
+                              : null,
+                          trailing: canManageMenu
+                              ? TextButton(
+                                  onPressed: () => context.push(
+                                    '/owner/menu/${widget.id}?title=${Uri.encodeComponent(title)}',
+                                  ),
+                                  child: const Text('Редактировать'),
+                                )
+                              : null,
+                        ),
+                        const SizedBox(height: 10),
+                        for (final item in catalogItems)
+                          CatalogItemCard(item: item),
+                      ],
                       if (hasHours) ...[
                         const SizedBox(height: 24),
                         _WorkHoursBlock(
@@ -405,9 +427,17 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                               : null,
                         ),
                       ],
-                      if (photoUrls.length > 1) ...[
+                      if (photoUrls.length > 1 || galleryTotal > 1) ...[
                         const SizedBox(height: 24),
-                        const _SectionTitle(title: 'Фотографии'),
+                        _SectionHeaderRow(
+                          title: 'Фотографии',
+                          actionLabel: galleryTotal > photoUrls.length
+                              ? 'Все фото ($galleryTotal)'
+                              : null,
+                          onAction: galleryTotal > photoUrls.length
+                              ? () => context.push('/business/${widget.id}/photos')
+                              : null,
+                        ),
                         const SizedBox(height: 10),
                         _PhotosStrip(
                           urls: photoUrls,
@@ -416,9 +446,9 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                         ),
                       ],
                       const SizedBox(height: 24),
-                      const _SectionTitle(title: 'Отзывы'),
+                      _SectionHeaderRow(title: 'Отзывы'),
                       const SizedBox(height: 8),
-                      _ReviewsBlock(reviewsAsync: reviewsAsync),
+                      _ReviewsPreviewBlock(reviews: reviewItems),
                       if (!canManageMenu) ...[
                         const SizedBox(height: 16),
                         if (isAuthenticated)
@@ -458,22 +488,87 @@ Map<String, dynamic>? _asMap(dynamic value) {
   return null;
 }
 
-List<String> _galleryUrls(dynamic images, String coverUrl) {
-  final rawImages = (images as List<dynamic>?) ?? [];
-  return rawImages
-      .map((raw) {
-        final image = _asMap(raw);
-        if (image == null) return '';
-        return AppConstants.resolveMediaUrl(image['imageUrl'] as String?);
-      })
-      .where((url) => url.isNotEmpty && url != coverUrl)
-      .toList();
+class _SectionHeaderRow extends StatelessWidget {
+  const _SectionHeaderRow({
+    required this.title,
+    this.actionLabel,
+    this.onAction,
+    this.trailing,
+  });
+
+  final String title;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(child: _SectionTitle(title: title)),
+        if (trailing != null) trailing!,
+        if (actionLabel != null && onAction != null)
+          TextButton(onPressed: onAction, child: Text(actionLabel!)),
+      ],
+    );
+  }
 }
 
-(double?, int) _reviewStats(List<ReviewModel> reviews) {
-  if (reviews.isEmpty) return (null, 0);
-  final sum = reviews.fold<int>(0, (total, review) => total + review.rating);
-  return (sum / reviews.length, reviews.length);
+class _ReviewsPreviewBlock extends StatelessWidget {
+  const _ReviewsPreviewBlock({required this.reviews});
+
+  final List<Map<String, dynamic>> reviews;
+
+  @override
+  Widget build(BuildContext context) {
+    if (reviews.isEmpty) {
+      return const Text(
+        'Пока нет отзывов',
+        style: TextStyle(color: Color(0xFF687080)),
+      );
+    }
+
+    return Column(
+      children: reviews.map((review) {
+        final user = _asMap(review['user']);
+        final name = user?['name'] as String? ?? 'Пользователь';
+        final rating = (review['rating'] as num?)?.toInt() ?? 0;
+        return Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF7FAFC),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE8EBF0)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      name,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const Icon(Icons.star, color: Colors.amber, size: 16),
+                  const SizedBox(width: 4),
+                  Text('$rating'),
+                ],
+              ),
+              if (review['text'] != null) ...[
+                const SizedBox(height: 6),
+                Text(review['text'] as String),
+              ],
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
 }
 
 String _consumerErrorMessage(String raw) {
@@ -1187,92 +1282,6 @@ class _PhotosStrip extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _ReviewsBlock extends StatelessWidget {
-  const _ReviewsBlock({required this.reviewsAsync});
-
-  final AsyncValue<List<dynamic>> reviewsAsync;
-
-  @override
-  Widget build(BuildContext context) {
-    return reviewsAsync.when(
-      loading: () => const LoadingView(),
-      error: (e, _) => Text('Ошибка отзывов: $e'),
-      data: (reviews) {
-        if (reviews.isEmpty) {
-          return const Text(
-            'Пока нет отзывов',
-            style: TextStyle(color: Color(0xFF687080)),
-          );
-        }
-        return Column(
-          children: reviews
-              .map(
-                (r) => Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 10),
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF7FAFC),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFE8EBF0)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              r.userName ?? 'Пользователь',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 15,
-                              ),
-                            ),
-                          ),
-                          const Icon(
-                            Icons.star_rounded,
-                            color: AppTheme.kzGold,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${r.rating}',
-                            style: const TextStyle(fontWeight: FontWeight.w700),
-                          ),
-                        ],
-                      ),
-                      if (r.text != null) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          r.text!,
-                          style: const TextStyle(
-                            color: Color(0xFF596170),
-                            height: 1.35,
-                          ),
-                        ),
-                      ],
-                      if (r.ownerReply != null) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          'Ответ: ${r.ownerReply}',
-                          style: const TextStyle(
-                            color: Color(0xFF596170),
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              )
-              .toList(),
-        );
-      },
     );
   }
 }

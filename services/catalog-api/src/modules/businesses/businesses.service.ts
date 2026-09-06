@@ -10,8 +10,8 @@ import { haversineMeters } from '../../common/utils/geo.utils';
 import { compareBusinessCatalogRank } from '../../common/utils/business-rank.util';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ServiceMenuService } from '../service-items/service-menu.service';
 import { CreateBusinessDto, ListBusinessesQueryDto, UpdateBusinessDto } from './dto/business.dto';
+import { BusinessPublicContentService } from './business-public-content.service';
 import { randomBytes } from 'crypto';
 
 const businessListSelect = {
@@ -39,11 +39,6 @@ const businessListSelect = {
 const businessDetailInclude = {
   category: true,
   city: { select: { id: true, slug: true, nameRu: true, timezone: true } },
-  images: { orderBy: { sortOrder: 'asc' as const } },
-  promotions: {
-    where: { status: 'ACTIVE' as const },
-    orderBy: { createdAt: 'desc' as const },
-  },
 };
 
 @Injectable()
@@ -51,8 +46,8 @@ export class BusinessesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cityScope: CityScopeService,
-    private readonly serviceMenuService: ServiceMenuService,
     private readonly planLimits: PlanLimitsService,
+    private readonly publicContent: BusinessPublicContentService,
   ) {}
 
   async create(user: AuthUser, dto: CreateBusinessDto) {
@@ -116,7 +111,6 @@ export class BusinessesService {
     if (query.categoryId) {
       where.categoryId = query.categoryId;
     }
-    // Legacy `featured` query param ignored — paid visibility via AdCampaign only (Stage 4C.1).
     if (query.search) {
       where.OR = [
         { title: { contains: query.search, mode: 'insensitive' } },
@@ -202,30 +196,27 @@ export class BusinessesService {
       throw new NotFoundException('Business not found');
     }
 
-    const ctx = await this.planLimits.getBusinessPlanContext(id);
-    const publicImages = this.planLimits.applyPublicPhotoLimit(
-      business.images,
-      ctx.limits.maxPhotos,
-    );
-    const publicPromotions = this.planLimits.applyPublicPromotionLimit(
-      business.promotions,
-      ctx.limits.maxActivePromotions,
-    );
+    const [galleryPreview, catalogPreview, promotionsPreview, reviewsPreview] =
+      await Promise.all([
+        this.publicContent.getGalleryPreview(id),
+        this.publicContent.getCatalogPreview(id),
+        this.publicContent.getPromotionsPreview(id),
+        this.publicContent.getReviewsPreview(id),
+      ]);
 
-    const publishedImageUrls = new Set(publicImages.map((image) => image.imageUrl));
-    const coverImageUrl =
-      business.coverImageUrl && publishedImageUrls.has(business.coverImageUrl)
-        ? business.coverImageUrl
-        : publicImages[0]?.imageUrl ?? business.coverImageUrl;
-
-    const menu = await this.serviceMenuService.findPublicMenu(id);
+    const coverImageUrl = await this.publicContent.resolveCoverImageUrl(
+      id,
+      business.coverImageUrl,
+      galleryPreview.items,
+    );
 
     return {
       ...business,
       coverImageUrl,
-      images: publicImages,
-      promotions: publicPromotions,
-      menu,
+      galleryPreview,
+      catalogPreview,
+      promotionsPreview,
+      reviewsPreview,
     };
   }
 

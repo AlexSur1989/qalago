@@ -6,6 +6,8 @@ import '../../shared/utils/auth_utils.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/businesses/presentation/business_details_screen.dart';
+import '../../features/businesses/presentation/business_catalog_screen.dart';
+import '../../features/businesses/presentation/business_photos_screen.dart';
 import '../../features/categories/presentation/categories_screen.dart';
 import '../../features/categories/presentation/category_businesses_screen.dart';
 import '../../features/favorites/presentation/favorites_screen.dart';
@@ -181,6 +183,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: '/business/:id',
             builder: (context, state) =>
                 BusinessDetailsScreen(id: state.pathParameters['id']!),
+          ),
+          GoRoute(
+            path: '/business/:id/catalog',
+            builder: (context, state) => BusinessCatalogScreen(
+              businessId: state.pathParameters['id']!,
+            ),
+          ),
+          GoRoute(
+            path: '/business/:id/photos',
+            builder: (context, state) => BusinessPhotosScreen(
+              businessId: state.pathParameters['id']!,
+            ),
           ),
         ],
       ),

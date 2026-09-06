@@ -243,6 +243,42 @@ export type ServiceMenuManage = {
   ungrouped: ServiceMenuItem[];
 };
 
+export type ManageMenuSection = {
+  id: string;
+  title: string;
+  sortOrder: number;
+  isActive: boolean;
+  itemCount: number;
+};
+
+export type ManageMenuItemRow = {
+  id: string;
+  title: string;
+  description?: string | null;
+  price?: string | null;
+  imageUrl?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  sectionId?: string | null;
+  section?: {
+    id: string;
+    title: string;
+    sortOrder: number;
+    isActive: boolean;
+  } | null;
+};
+
+export type ManageMenuItemsPage = {
+  items: ManageMenuItemRow[];
+  sections: ManageMenuSection[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+};
+
 export type BusinessImageRow = {
   id: string;
   businessId: string;
@@ -553,6 +589,28 @@ export const ownerApi = {
 
   getServiceMenu: (token: string, businessId: string) =>
     api<ServiceMenuManage>(`/service-menu/manage/${businessId}`, { token }),
+
+  listManageMenuItems: (
+    token: string,
+    businessId: string,
+    params?: {
+      page?: number;
+      limit?: number;
+      sectionId?: string;
+      search?: string;
+    },
+  ) => {
+    const query = new URLSearchParams();
+    if (params?.page != null) query.set('page', String(params.page));
+    if (params?.limit != null) query.set('limit', String(params.limit));
+    if (params?.sectionId) query.set('sectionId', params.sectionId);
+    if (params?.search?.trim()) query.set('search', params.search.trim());
+    const suffix = query.toString() ? `?${query.toString()}` : '';
+    return api<ManageMenuItemsPage>(
+      `/service-menu/manage/${businessId}/items${suffix}`,
+      { token },
+    );
+  },
 
   createMenuGroup: (
     token: string,

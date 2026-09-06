@@ -1,5 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
+import { sortCatalogItems } from '../../common/utils/catalog-sort.util';
+import { sliceToPublicLimit } from '../../common/utils/plan-entitlements.util';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -17,11 +19,20 @@ export class ServiceItemsService {
     private readonly planLimits: PlanLimitsService,
   ) {}
 
-  findByBusiness(query: ListServiceItemsQueryDto) {
-    return this.prisma.serviceItem.findMany({
-      where: { businessId: query.businessId, isActive: true },
-      orderBy: [{ sortOrder: 'asc' }, { title: 'asc' }],
+  async findByBusiness(query: ListServiceItemsQueryDto) {
+    const items = await this.prisma.serviceItem.findMany({
+      where: {
+        businessId: query.businessId,
+        isActive: true,
+        OR: [{ groupId: null }, { group: { isActive: true } }],
+      },
+      include: {
+        group: { select: { id: true, title: true, sortOrder: true } },
+      },
     });
+    const ctx = await this.planLimits.getBusinessPlanContext(query.businessId);
+    const sorted = sortCatalogItems(items);
+    return sliceToPublicLimit(sorted, ctx.limits.maxServiceItems);
   }
 
   async findForManage(user: AuthUser, businessId: string) {

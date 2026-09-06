@@ -174,6 +174,48 @@ List items may include `planTier`, `planExpiresAt`, `featuredSlot`, `isFeatured`
 
 ### GET /businesses/:id
 
+Public business detail summary (Stage 5G). Returns core business fields plus **bounded previews** — not full collections:
+
+```json
+{
+  "id": "...",
+  "title": "...",
+  "coverImageUrl": "...",
+  "galleryPreview": { "items": [...], "totalCount": 100 },
+  "catalogPreview": { "items": [...], "totalCount": 300 },
+  "promotionsPreview": { "items": [...], "totalCount": 25 },
+  "reviewsPreview": { "items": [...], "totalCount": 42 }
+}
+```
+
+Public preview limits (fixed, independent of subscription tier): gallery 6, catalog 6, promotions 3, reviews 3. Subscription limits apply to owner storage/publication only.
+
+### GET /businesses/:id/catalog
+
+Paginated public catalog for one business.
+
+Query: `page` (default 1), `limit` (default 20, max 50), `sectionId` (optional — business menu group id, or omit for all), `search` (optional — item title/description).
+
+Response:
+
+```json
+{
+  "items": [{ "id", "title", "description", "price", "imageUrl", "sectionId", "section": { "id", "title" } }],
+  "sections": [{ "id", "title", "sortOrder", "isActive" }],
+  "pagination": { "page", "limit", "total", "totalPages" }
+}
+```
+
+Only active items from active sections (or uncategorized). Sort: section `sortOrder`, item `sortOrder`, title, `createdAt`.
+
+### GET /businesses/:id/photos
+
+Paginated public gallery.
+
+Query: `page` (default 1), `limit` (default 24, max 50).
+
+Response: `{ "items": [...], "totalCount", "pagination": { ... } }`
+
 ### GET /businesses/my
 
 Owner: own businesses.
@@ -287,15 +329,25 @@ Only active groups and items.
 
 Auth: owner / admin. Same shape, includes hidden groups/items.
 
+### GET /service-menu/manage/:businessId/items
+
+Auth: owner / admin. Paginated owner catalog management (Stage 5G).
+
+Query: `page`, `limit` (default 20, max 50), `sectionId` (`uncategorized` for ungrouped), `search`.
+
+Response: `{ "items", "sections", "pagination" }` — flat item list with section metadata; sections include `itemCount`.
+
 ### Service menu groups
 
 - `POST /service-menu-groups` — `{ "businessId", "title", "description?", "sortOrder?" }`
 - `PATCH /service-menu-groups/:id` — `{ "title?", "description?", "isActive?", "sortOrder?" }`
 - `DELETE /service-menu-groups/:id` — items become ungrouped (`groupId` set null)
 
-### GET /businesses/:id
+Business catalog **sections** reuse `ServiceMenuGroup` (not global `Category`). Items reference `groupId` (nullable).
 
-Includes `menu` (same shape as `/service-menu`).
+### GET /businesses/:id (legacy note)
+
+Previously included full `menu`, `images`, and `promotions`. Stage 5G: use preview blocks above and dedicated `/catalog` + `/photos` endpoints.
 
 ## Service items (positions inside a group)
 
