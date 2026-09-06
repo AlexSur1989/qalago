@@ -26,3 +26,9 @@ export class VerifyCodeDto {
   @IsIn(['user', 'business'])
   accountType?: 'user' | 'business';
 }
+
+export class DevLoginDto {
+  @IsString()
+  @Matches(/^\+?[0-9]{10,15}$/, { message: 'phone must be a valid E.164-like number' })
+  phone!: string;
+}

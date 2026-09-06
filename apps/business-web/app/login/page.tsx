@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ownerApi, TOKEN_KEY } from '@/lib/api';
+import { businessWebDevLoginEnabled } from '@/lib/auth-config';
 
 type AccountType = 'user' | 'business';
 
@@ -43,27 +44,44 @@ export default function LoginPage() {
     }
   }
 
+  async function finishLogin(accessToken: string, user: Awaited<ReturnType<typeof ownerApi.verifyCode>>['user']) {
+    if (
+      user.role !== 'BUSINESS' &&
+      user.role !== 'ADMIN' &&
+      user.role !== 'CITY_ADMIN' &&
+      user.role !== 'USER'
+    ) {
+      setError('Нет доступа к кабинету');
+      return;
+    }
+    localStorage.setItem(TOKEN_KEY, accessToken);
+    if (user.role === 'USER' && accountType === 'business') {
+      router.push('/register');
+      return;
+    }
+    router.push('/dashboard');
+  }
+
   async function verify(e: FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
       const res = await ownerApi.verifyCode(phone, code, accountType);
-      if (
-        res.user.role !== 'BUSINESS' &&
-        res.user.role !== 'ADMIN' &&
-        res.user.role !== 'CITY_ADMIN' &&
-        res.user.role !== 'USER'
-      ) {
-        setError('Нет доступа к кабинету');
-        return;
-      }
-      localStorage.setItem(TOKEN_KEY, res.accessToken);
-      if (res.user.role === 'USER' && accountType === 'business') {
-        router.push('/register');
-        return;
-      }
-      router.push('/dashboard');
+      await finishLogin(res.accessToken, res.user);
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function devLogin() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await ownerApi.devLogin(phone);
+      await finishLogin(res.accessToken, res.user);
     } catch (err) {
       setError(String(err));
     } finally {
@@ -117,6 +135,17 @@ export default function LoginPage() {
             {accountType === 'business' ? 'Войти / зарегистрироваться' : 'Войти'}
           </button>
         </form>
+        {businessWebDevLoginEnabled && (
+          <button
+            type="button"
+            className="btn"
+            style={{ marginTop: 16, width: '100%' }}
+            disabled={loading}
+            onClick={devLogin}
+          >
+            Войти без SMS
+          </button>
+        )}
         {error && <div className="alert alert-error" style={{ marginTop: 16 }}>{error}</div>}
         <p style={{ marginTop: 20, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
           Нет заведения?{' '}

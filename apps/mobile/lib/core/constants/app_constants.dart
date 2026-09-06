@@ -15,6 +15,11 @@ class AppConstants {
   /// Override host for catalog/media on Android emulator: `--dart-define=QALAGO_DEV_HOST=10.0.2.2`
   static const devHostOverride = String.fromEnvironment('QALAGO_DEV_HOST');
 
+  /// Development-only passwordless login. NEVER enable in production builds.
+  /// Launch: `flutter run --dart-define=QALAGO_DEV_LOGIN=true`
+  static const devLoginEnabled =
+      bool.fromEnvironment('QALAGO_DEV_LOGIN', defaultValue: false);
+
   static String get _devHost {
     if (devHostOverride.isNotEmpty) return devHostOverride;
     if (kIsWeb) return 'localhost';

@@ -250,13 +250,28 @@ class AuthNotifier extends Notifier<AuthState> {
         code: code,
         accountType: accountType,
       );
-      await _storage.saveToken(result.token);
-      state = AuthState(user: result.user, isAuthenticated: true);
-      await _syncSessionCityToProfile(result.user);
+      await _finishLogin(result.token, result.user);
     } catch (e) {
       state = state.copyWith(isLoading: false);
       rethrow;
     }
+  }
+
+  Future<void> devLogin(String phone) async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final result = await _repo.devLogin(phone);
+      await _finishLogin(result.token, result.user);
+    } catch (e) {
+      state = state.copyWith(isLoading: false);
+      rethrow;
+    }
+  }
+
+  Future<void> _finishLogin(String token, UserModel user) async {
+    await _storage.saveToken(token);
+    state = AuthState(user: user, isAuthenticated: true);
+    await _syncSessionCityToProfile(user);
   }
 
   Future<void> logout() async {

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/utils/auth_utils.dart';
 import '../providers/auth_provider.dart';
@@ -113,6 +114,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             code,
             accountType: _accountType,
           );
+    } catch (e) {
+      _showError(mapAuthError(e));
+    }
+  }
+
+  Future<void> _devLogin() async {
+    final normalized = normalizeKazakhstanPhone(_phoneController.text);
+    if (normalized == null) {
+      _showError('Проверьте номер телефона');
+      return;
+    }
+
+    try {
+      await ref.read(authProvider.notifier).devLogin(normalized);
     } catch (e) {
       _showError(mapAuthError(e));
     }
@@ -323,6 +338,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             )
                           : Text(_codeSent ? 'Войти' : 'Получить код'),
                     ),
+                    if (AppConstants.devLoginEnabled && !_codeSent) ...[
+                      const SizedBox(height: 12),
+                      OutlinedButton(
+                        onPressed: isBusy ? null : _devLogin,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.kzBlue,
+                          minimumSize: const Size.fromHeight(58),
+                          side: BorderSide(
+                            color: AppTheme.kzBlue.withValues(alpha: 0.35),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                        ),
+                        child: const Text('Войти без SMS'),
+                      ),
+                    ],
                     const SizedBox(height: 20),
                     OutlinedButton.icon(
                       onPressed: isBusy ? null : _continueAsGuest,

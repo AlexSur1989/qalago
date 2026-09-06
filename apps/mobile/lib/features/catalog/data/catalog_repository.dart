@@ -33,6 +33,15 @@ class AuthRepository {
     );
   }
 
+  Future<({String token, UserModel user})> devLogin(String phone) async {
+    final response = await _dio.post('/auth/dev-login', data: {'phone': phone});
+    final data = response.data as Map<String, dynamic>;
+    return (
+      token: data['accessToken'] as String,
+      user: UserModel.fromJson(data['user'] as Map<String, dynamic>),
+    );
+  }
+
   Future<UserModel> getMe() async {
     final response = await _dio.get('/users/me');
     return UserModel.fromJson(response.data as Map<String, dynamic>);

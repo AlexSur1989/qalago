@@ -4,6 +4,7 @@ export default () => ({
     jwtSecret: process.env.JWT_SECRET ?? 'dev-secret-change-me-32-chars-min',
     jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
     otpDebug: process.env.OTP_DEBUG === 'true',
+    devLoginEnabled: process.env.DEV_LOGIN_ENABLED === 'true',
     defaultCitySlug: process.env.DEFAULT_CITY_SLUG ?? 'uralsk',
     corsOrigins: process.env.CORS_ORIGINS ?? '',
     uploadDir: process.env.UPLOAD_DIR ?? './uploads',

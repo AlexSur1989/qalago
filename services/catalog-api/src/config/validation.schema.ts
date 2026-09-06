@@ -7,6 +7,7 @@ export const validationSchema = Joi.object({
   JWT_SECRET: Joi.string().min(16).required(),
   JWT_EXPIRES_IN: Joi.string().default('7d'),
   OTP_DEBUG: Joi.boolean().truthy('true').falsy('false').default(false),
+  DEV_LOGIN_ENABLED: Joi.boolean().truthy('true').falsy('false').default(false),
   DEFAULT_CITY_SLUG: Joi.string().default('uralsk'),
   CORS_ORIGINS: Joi.string().allow('').default(''),
   UPLOAD_DIR: Joi.string().default('./uploads'),

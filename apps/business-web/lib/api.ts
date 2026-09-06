@@ -488,6 +488,12 @@ export const ownerApi = {
       body: JSON.stringify({ phone, code, ...(accountType ? { accountType } : {}) }),
     }),
 
+  devLogin: (phone: string) =>
+    api<{ accessToken: string; user: AuthUser }>('/auth/dev-login', {
+      method: 'POST',
+      body: JSON.stringify({ phone }),
+    }),
+
   getMe: (token: string) => api<AuthUser>('/users/me', { token }),
 
   updateMe: (token: string, data: { name?: string; preferredCityId?: string }) =>

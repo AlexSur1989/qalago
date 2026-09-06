@@ -15,6 +15,18 @@
 
 ---
 
+## 2026-09-06 — DEV login without SMS (development only)
+
+**Сделано**
+- `POST /auth/dev-login` — passwordless phone login when `DEV_LOGIN_ENABLED=true`; returns 404 when disabled
+- Shared `completeLogin()` for OTP verify and DEV login (same JWT/session)
+- Flutter: `QALAGO_DEV_LOGIN` dart-define + «Войти без SMS» button
+- Business Web: `NEXT_PUBLIC_QALAGO_DEV_LOGIN` + equivalent button
+
+**WARNING:** NEVER set `DEV_LOGIN_ENABLED=true` in production.
+
+---
+
 ## 2026-09-06 — Stage 5G: scalable business catalog & gallery
 
 **Сделано**

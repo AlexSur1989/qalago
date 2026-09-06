@@ -50,6 +50,23 @@ Response `200`:
 }
 ```
 
+### POST /auth/dev-login
+
+**Development only.** Requires server flag `DEV_LOGIN_ENABLED=true`. When disabled, returns **404 Not Found** (endpoint not advertised).
+
+Request:
+```json
+{ "phone": "+77001234567" }
+```
+
+Accepts KZ formats: `87001234567`, `77001234567`, `+77001234567` → canonical `+77001234567`.
+
+No `role` / `accountType` from client. New users receive default `USER` role. Existing users keep their stored role.
+
+Response `200`: same shape as `/auth/verify-code` (`accessToken`, `user`).
+
+> **NEVER enable `DEV_LOGIN_ENABLED` in production.**
+
 ### GET /auth/me
 
 Headers: `Authorization: Bearer <token>`
