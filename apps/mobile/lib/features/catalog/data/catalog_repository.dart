@@ -214,6 +214,25 @@ class CatalogRepository {
     return response.data as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> fetchManageMenuItems(
+    String businessId, {
+    int page = 1,
+    int limit = 20,
+    String? sectionId,
+    String? search,
+  }) async {
+    final response = await _dio.get(
+      '/service-menu/manage/$businessId/items',
+      queryParameters: {
+        'page': page,
+        'limit': limit,
+        if (sectionId != null && sectionId.isNotEmpty) 'sectionId': sectionId,
+        if (search != null && search.isNotEmpty) 'search': search,
+      },
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> createServiceMenuGroup(
     Map<String, dynamic> data,
   ) async {

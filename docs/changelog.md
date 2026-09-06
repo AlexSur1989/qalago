@@ -15,6 +15,20 @@
 
 ---
 
+---
+
+## 2026-09-06 — Stage 5G.1: Flutter owner catalog pagination
+
+**Сделано**
+- Flutter Owner menu uses paginated `GET /service-menu/manage/:businessId/items`
+- Server-side search, section filter, load-more (20/page), business switch reset
+- Plan usage display from existing `businessPlanProvider`
+
+**DEFERRED**
+- Flutter owner full section CRUD (Business Web)
+
+---
+
 ## 2026-09-06 — DEV login without SMS (development only)
 
 **Сделано**
