@@ -451,6 +451,10 @@ Legacy clients may omit it; stored as `null` and aggregated as `UNKNOWN` in owne
 `searchQuery` (optional, Stage 5I): only stored when `trafficSource=SEARCH`. Normalized server-side
 (trim, collapse spaces, lowercase, 2–100 chars). Counts only business-detail opens from Search.
 
+`audienceDistanceBucket` (optional, Stage 5J): only valid on `VIEW_BUSINESS`. Coarse enum only —
+`LT_1_KM`, `KM_1_3`, `KM_3_5`, `KM_5_10`, `GT_10_KM`, `UNKNOWN`. Computed on device; **no**
+`userLatitude`, `userLongitude`, or raw distance accepted or stored.
+
 Supported event types:
 `VIEW_BUSINESS`, `CALL_CLICK`, `WHATSAPP_CLICK`, `ROUTE_CLICK`,
 `FAVORITE_ADD`, `FAVORITE_REMOVE`, `PROMOTION_VIEW`.
@@ -531,7 +535,12 @@ Response `200`:
   "promotions": null,
   "popularTimes": null,
   "benchmark": null,
-  "recommendations": null
+  "recommendations": null,
+  "audienceGeography": [
+    { "bucket": "LT_1_KM", "label": "До 1 км", "count": 120, "percentage": 21.4 },
+    { "bucket": "KM_1_3", "label": "1–3 км", "count": 190, "percentage": 33.9 }
+  ],
+  "audienceGeographyStatus": "AVAILABLE"
 }
 ```
 

@@ -43,10 +43,12 @@ export class AnalyticsService {
 
     if (
       dto.type !== AnalyticsEventType.VIEW_BUSINESS &&
-      (dto.trafficSource != null || dto.searchQuery != null)
+      (dto.trafficSource != null ||
+        dto.searchQuery != null ||
+        dto.audienceDistanceBucket != null)
     ) {
       throw new BadRequestException(
-        'trafficSource and searchQuery are only allowed for VIEW_BUSINESS events',
+        'trafficSource, searchQuery and audienceDistanceBucket are only allowed for VIEW_BUSINESS events',
       );
     }
 
@@ -67,6 +69,9 @@ export class AnalyticsService {
           ? { trafficSource: dto.trafficSource }
           : {}),
         ...(normalizedSearchQuery ? { searchQuery: normalizedSearchQuery } : {}),
+        ...(dto.type === AnalyticsEventType.VIEW_BUSINESS && dto.audienceDistanceBucket
+          ? { audienceDistanceBucket: dto.audienceDistanceBucket }
+          : {}),
       },
     });
 

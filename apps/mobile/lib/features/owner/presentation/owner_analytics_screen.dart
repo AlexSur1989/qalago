@@ -199,6 +199,20 @@ class _AnalyticsBody extends StatelessWidget {
                 'Поисковые запросы доступны с PREMIUM',
             onUpgrade: onUpgrade,
           ),
+        if (dashboard['audienceGeography'] is List &&
+            (dashboard['audienceGeography'] as List).isNotEmpty)
+          _AudienceGeographySection(
+            items: dashboard['audienceGeography'] as List,
+          )
+        else if (dashboard['audienceGeographyStatus'] == 'INSUFFICIENT_DATA')
+          const _InsufficientAudienceGeographySection()
+        else if (ownerAnalyticsIsLocked(dashboard, 'audienceGeography'))
+          _LockedSection(
+            label: 'Аудитория по расстоянию',
+            message: ownerAnalyticsLockedMessage(dashboard, 'audienceGeography') ??
+                'Аналитика аудитории доступна на тарифе VIP',
+            onUpgrade: onUpgrade,
+          ),
         if (dashboard['conversion'] is Map)
           _ConversionSection(conversion: dashboard['conversion'] as Map<String, dynamic>)
         else if (ownerAnalyticsIsLocked(dashboard, 'conversion'))
@@ -408,6 +422,75 @@ class _InsufficientSearchQueriesSection extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Недостаточно данных для анализа поисковых запросов',
+              style: TextStyle(color: Colors.grey.shade700),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AudienceGeographySection extends StatelessWidget {
+  const _AudienceGeographySection({required this.items});
+
+  final List items;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Аудитория по расстоянию',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Показывает примерное расстояние пользователей от вашей компании '
+              'в момент открытия карточки. Точные координаты не сохраняются.',
+              style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+            ),
+            const SizedBox(height: 8),
+            ...items.whereType<Map>().map(
+                  (row) => ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(row['label'] as String? ?? ''),
+                    trailing: Text(
+                      '${row['count'] ?? 0} · ${row['percentage'] ?? 0}%',
+                    ),
+                  ),
+                ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InsufficientAudienceGeographySection extends StatelessWidget {
+  const _InsufficientAudienceGeographySection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Аудитория по расстоянию',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Недостаточно данных для анализа аудитории по расстоянию',
               style: TextStyle(color: Colors.grey.shade700),
             ),
           ],

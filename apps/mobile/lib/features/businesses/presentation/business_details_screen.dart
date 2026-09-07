@@ -7,7 +7,10 @@ import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/location/passive_user_position.dart';
+import '../../../core/location/user_location_provider.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
+import '../../../shared/utils/audience_distance_bucket.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/utils/json_parse.dart';
 import '../../../shared/utils/business_detail_utils.dart';
@@ -43,12 +46,26 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _trackViewOnce());
   }
 
-  void _trackViewOnce() {
+  Future<void> _trackViewOnce({
+    required double? latitude,
+    required double? longitude,
+  }) async {
     if (_viewTracked || !mounted) return;
     _viewTracked = true;
+
+    final cachedPosition = ref.read(userLocationProvider).valueOrNull;
+    final userPosition = await readPassiveUserPosition(
+      activeStreamValue: cachedPosition,
+    );
+    final bucket = computeAudienceDistanceBucket(
+      businessLat: latitude,
+      businessLng: longitude,
+      userPosition: userPosition,
+    );
+
+    if (!mounted) return;
     final source = widget.trafficSource ?? BusinessTrafficSource.direct;
     unawaited(
       ref.read(catalogRepositoryProvider).trackBusinessView(
@@ -57,6 +74,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
             searchQuery: source == BusinessTrafficSource.search
                 ? widget.searchQuery
                 : null,
+            audienceDistanceBucket: bucket,
           ),
     );
   }
@@ -173,6 +191,9 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
           final websiteUrl = normalizeWebsiteUrl(data['website'] as String?);
           final latitude = parseJsonDouble(data['latitude']);
           final longitude = parseJsonDouble(data['longitude']);
+          if (!_viewTracked) {
+            unawaited(_trackViewOnce(latitude: latitude, longitude: longitude));
+          }
           final routeAvailable = buildRouteUrl(
                 latitude: latitude,
                 longitude: longitude,

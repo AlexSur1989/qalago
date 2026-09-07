@@ -19,6 +19,33 @@
 
 ---
 
+---
+
+## 2026-09-07 — Stage 5J: privacy-safe audience geography analytics
+
+**Сделано**
+- `AnalyticsEvent.audienceDistanceBucket` — coarse enum only (no raw GPS on server)
+- Flutter computes bucket locally from actual user position + business coords; passive read (no new permission prompt)
+- VIP dashboard: «Аудитория по расстоянию» with `MIN_AUDIENCE_GEOGRAPHY_SAMPLE = 10`
+- Business Web + Flutter Owner parity; privacy explanation copy
+
+**На будущее**
+- Stage 6 remains deferred
+
+---
+
+## 2026-09-07 — DEV quick-login shortcuts for seed users
+
+**Сделано**
+- Flutter: панель «DEV: быстрый вход без SMS» на главной и экране входа (chips: Test User, Business Owner, Admin, City Admin)
+- Admin Web + Business Web: кнопки быстрого dev-login на `/login`
+- `start-all.ps1`: `DEV_LOGIN_ENABLED=true` для API, `NEXT_PUBLIC_QALAGO_DEV_LOGIN=true` для Admin/Business/Mobile
+
+**На будущее**
+- Убрать перед production; не включать флаги на staging/prod
+
+---
+
 ## 2026-09-07 — Stage 5I: business search query analytics
 
 **Сделано**

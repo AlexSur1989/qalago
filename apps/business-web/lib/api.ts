@@ -188,6 +188,13 @@ export type AnalyticsDashboard = {
     message?: string;
   } | null;
   recommendations: Array<{ id: string; title: string; body: string }> | null;
+  audienceGeography: Array<{
+    bucket: string;
+    label: string;
+    count: number;
+    percentage: number;
+  }> | null;
+  audienceGeographyStatus?: 'AVAILABLE' | 'INSUFFICIENT_DATA' | null;
 };
 
 export type AnalyticsSummary = {

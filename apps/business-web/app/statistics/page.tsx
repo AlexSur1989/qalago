@@ -286,6 +286,55 @@ export default function StatisticsPage() {
                 </div>
               ) : null}
 
+              {dashboard.audienceGeography && dashboard.audienceGeography.length > 0 ? (
+                <article className="card" style={{ marginTop: 16 }}>
+                  <div className="card-header">
+                    <h2>Аудитория по расстоянию</h2>
+                  </div>
+                  <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
+                    Показывает примерное расстояние пользователей от вашей компании в
+                    момент открытия карточки. Точные координаты не сохраняются.
+                  </p>
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Расстояние</th>
+                        <th>Открытия</th>
+                        <th>Доля</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dashboard.audienceGeography.map((row) => (
+                        <tr key={row.bucket}>
+                          <td>{row.label}</td>
+                          <td>{formatNumber(row.count)}</td>
+                          <td>{row.percentage}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </article>
+              ) : dashboard.audienceGeographyStatus === 'INSUFFICIENT_DATA' ? (
+                <article className="card" style={{ marginTop: 16 }}>
+                  <div className="card-header">
+                    <h2>Аудитория по расстоянию</h2>
+                  </div>
+                  <p style={{ color: 'var(--text-muted)' }}>
+                    Недостаточно данных для анализа аудитории по расстоянию
+                  </p>
+                </article>
+              ) : isLockedSection(dashboard, 'audienceGeography') ? (
+                <div style={{ marginTop: 16 }}>
+                  <LockedCard
+                    label="Аудитория по расстоянию"
+                    message={
+                      lockedSectionMessage(dashboard, 'audienceGeography') ??
+                      'Аналитика аудитории доступна на тарифе VIP'
+                    }
+                  />
+                </div>
+              ) : null}
+
               {dashboard.conversion ? (
                 <article className="card" style={{ marginTop: 16 }}>
                   <div className="card-header">

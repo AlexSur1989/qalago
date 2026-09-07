@@ -163,6 +163,8 @@ export type {
   AnalyticsPromotionItemDto,
   AnalyticsRecommendationDto,
   AnalyticsSearchQueryItemDto,
+  AnalyticsAudienceGeographyItemDto,
+  AudienceDistanceBucket,
   AnalyticsSourceItemDto,
   AnalyticsTrendPointDto,
   AnalyticsTrendsDto,

@@ -24,6 +24,7 @@ Map<String, dynamic> mockDashboard({
       'popularTimes': isVip,
       'benchmark': isVip,
       'recommendations': isVip,
+      'audienceGeography': isVip,
     },
     'lockedSections': isFree
         ? [
@@ -45,8 +46,21 @@ Map<String, dynamic> mockDashboard({
                   'label': 'Поисковые запросы',
                   'message': 'Поисковые запросы доступны с PREMIUM',
                 },
+                {
+                  'id': 'audienceGeography',
+                  'label': 'Аудитория по расстоянию',
+                  'message': 'Аналитика аудитории доступна на тарифе VIP',
+                },
               ]
-            : [],
+            : isPremium
+                ? [
+                    {
+                      'id': 'audienceGeography',
+                      'label': 'Аудитория по расстоянию',
+                      'message': 'Аналитика аудитории доступна на тарифе VIP',
+                    },
+                  ]
+                : [],
     'overview': {'views': 12},
     'actions': isFree
         ? null
@@ -204,6 +218,43 @@ void main() {
       expect(dashboard['popularTimes'], isNotNull);
       expect(dashboard['benchmark'], isNotNull);
       expect(dashboard['recommendations'], isNotNull);
+    });
+
+    test('audience geography visible with Russian labels', () {
+      final dashboard = mockDashboard(
+        plan: 'VIP',
+        overrides: {
+          'audienceGeography': [
+            {'bucket': 'LT_1_KM', 'label': 'До 1 км', 'count': 12, 'percentage': 21.4},
+            {'bucket': 'UNKNOWN', 'label': 'Не определено', 'count': 2, 'percentage': 3.6},
+          ],
+          'audienceGeographyStatus': 'AVAILABLE',
+        },
+      );
+      expect((dashboard['audienceGeography'] as List), hasLength(2));
+      expect(dashboard['audienceGeographyStatus'], 'AVAILABLE');
+    });
+
+    test('insufficient audience geography data state', () {
+      final dashboard = mockDashboard(
+        plan: 'VIP',
+        overrides: {
+          'audienceGeography': [],
+          'audienceGeographyStatus': 'INSUFFICIENT_DATA',
+        },
+      );
+      expect(dashboard['audienceGeographyStatus'], 'INSUFFICIENT_DATA');
+    });
+  });
+
+  group('PREMIUM audience geography', () {
+    test('audience geography locked on PREMIUM', () {
+      final dashboard = mockDashboard(plan: 'PREMIUM');
+      expect(ownerAnalyticsIsLocked(dashboard, 'audienceGeography'), isTrue);
+      expect(
+        ownerAnalyticsLockedMessage(dashboard, 'audienceGeography'),
+        'Аналитика аудитории доступна на тарифе VIP',
+      );
     });
   });
 

@@ -11,6 +11,14 @@ export type BusinessTrafficSource =
   | 'DIRECT'
   | 'UNKNOWN';
 
+export type AudienceDistanceBucket =
+  | 'LT_1_KM'
+  | 'KM_1_3'
+  | 'KM_3_5'
+  | 'KM_5_10'
+  | 'GT_10_KM'
+  | 'UNKNOWN';
+
 export type AnalyticsEventType =
   | 'VIEW_BUSINESS'
   | 'CALL_CLICK'
@@ -91,6 +99,13 @@ export interface AnalyticsSearchQueryItemDto {
   percentage: number;
 }
 
+export interface AnalyticsAudienceGeographyItemDto {
+  bucket: AudienceDistanceBucket;
+  label: string;
+  count: number;
+  percentage: number;
+}
+
 export interface AnalyticsConversionDto {
   views: number;
   actions: number;
@@ -157,4 +172,6 @@ export interface BusinessAnalyticsDashboardDto {
   popularTimes: AnalyticsPopularTimesDto | null;
   benchmark: AnalyticsBenchmarkDto | null;
   recommendations: AnalyticsRecommendationDto[] | null;
+  audienceGeography: AnalyticsAudienceGeographyItemDto[] | null;
+  audienceGeographyStatus?: 'AVAILABLE' | 'INSUFFICIENT_DATA' | null;
 }

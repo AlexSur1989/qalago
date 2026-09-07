@@ -73,6 +73,15 @@ enum BusinessTrafficSource {
   UNKNOWN
 }
 
+enum AudienceDistanceBucket {
+  LT_1_KM
+  KM_1_3
+  KM_3_5
+  KM_5_10
+  GT_10_KM
+  UNKNOWN
+}
+
 enum MonetizationProductType {
   BOOST
   TOP_CATEGORY
@@ -387,9 +396,10 @@ model AnalyticsEvent {
   businessId    String
   userId        String?
   type          AnalyticsEventType
-  trafficSource BusinessTrafficSource?
-  searchQuery   String?
-  campaignId    String?
+  trafficSource          BusinessTrafficSource?
+  searchQuery            String?
+  audienceDistanceBucket AudienceDistanceBucket?
+  campaignId             String?
   placementId   String?
   sessionId     String?
   createdAt     DateTime                @default(now())

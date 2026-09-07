@@ -66,7 +66,7 @@ export function getAnalyticsCapabilitiesForPlan(tier: BusinessPlanTier): Analyti
     benchmark: isVip,
     recommendations: isVip,
     searchQueries: isPremiumOrAbove,
-    audienceGeography: false,
+    audienceGeography: isVip,
     summary: true,
     trends: isBasicOrAbove,
     tier: legacyTier,
@@ -150,6 +150,12 @@ export function getAnalyticsLockedSections(
         label: 'Рекомендации',
         requiredPlan: BusinessPlanTier.VIP,
         message: 'Доступно с VIP',
+      },
+      {
+        id: 'audienceGeography',
+        label: 'Аудитория по расстоянию',
+        requiredPlan: BusinessPlanTier.VIP,
+        message: 'Аналитика аудитории доступна на тарифе VIP',
       },
     );
   }

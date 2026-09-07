@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qalago_mobile/features/catalog/data/catalog_repository.dart';
 import 'package:qalago_mobile/shared/navigation/business_traffic_source.dart';
+import 'package:qalago_mobile/shared/utils/audience_distance_bucket.dart';
 
 class _RecordingDio implements Dio {
   Map<String, dynamic>? lastPayload;
@@ -78,6 +79,40 @@ void main() {
         'type': 'VIEW_BUSINESS',
         'trafficSource': 'SEARCH',
       });
+    });
+
+    test('trackBusinessView sends audienceDistanceBucket', () async {
+      final dio = _RecordingDio();
+      final repo = CatalogRepository(dio);
+
+      await repo.trackBusinessView(
+        'biz-1',
+        trafficSource: BusinessTrafficSource.search,
+        searchQuery: 'кофе',
+        audienceDistanceBucket: AudienceDistanceBucket.km1_3,
+      );
+
+      expect(dio.lastPayload, {
+        'businessId': 'biz-1',
+        'type': 'VIEW_BUSINESS',
+        'trafficSource': 'SEARCH',
+        'searchQuery': 'кофе',
+        'audienceDistanceBucket': 'KM_1_3',
+      });
+    });
+
+    test('payload never includes raw coordinates', () async {
+      final dio = _RecordingDio();
+      final repo = CatalogRepository(dio);
+
+      await repo.trackBusinessView(
+        'biz-1',
+        audienceDistanceBucket: AudienceDistanceBucket.unknown,
+      );
+
+      expect(dio.lastPayload?.containsKey('userLatitude'), isFalse);
+      expect(dio.lastPayload?.containsKey('userLongitude'), isFalse);
+      expect(dio.lastPayload?.containsKey('rawDistanceKm'), isFalse);
     });
 
     test('trackBusinessView omits trafficSource when not provided', () async {

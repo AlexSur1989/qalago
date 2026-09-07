@@ -35,7 +35,12 @@ describe('Stage 5F entitlement matrix', () => {
     expect(caps.popularTimes).toBe(false);
     const locked = getAnalyticsLockedSections(BusinessPlanTier.PREMIUM);
     expect(locked.map((s) => s.id)).toEqual(
-      expect.arrayContaining(['popularTimes', 'benchmark', 'recommendations']),
+      expect.arrayContaining([
+        'popularTimes',
+        'benchmark',
+        'recommendations',
+        'audienceGeography',
+      ]),
     );
   });
 
@@ -48,17 +53,17 @@ describe('Stage 5F entitlement matrix', () => {
     expect(getAnalyticsLockedSections(BusinessPlanTier.VIP)).toHaveLength(0);
   });
 
-  it('search queries and audience geography remain deferred for all tiers', () => {
-    for (const tier of [
-      BusinessPlanTier.FREE,
-      BusinessPlanTier.BASIC,
-    ]) {
+  it('Stage 5J: audience geography VIP-only; search queries PREMIUM+', () => {
+    for (const tier of [BusinessPlanTier.FREE, BusinessPlanTier.BASIC]) {
       const caps = getAnalyticsCapabilitiesForPlan(tier);
       expect(caps.searchQueries).toBe(false);
       expect(caps.audienceGeography).toBe(false);
     }
     expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.PREMIUM).searchQueries).toBe(true);
+    expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.PREMIUM).audienceGeography).toBe(
+      false,
+    );
     expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.VIP).searchQueries).toBe(true);
-    expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.VIP).audienceGeography).toBe(false);
+    expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.VIP).audienceGeography).toBe(true);
   });
 });

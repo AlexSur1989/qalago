@@ -28,7 +28,7 @@ function mockDashboard(plan: string, overrides: Partial<AnalyticsDashboard> = {}
       popularTimes: plan === 'VIP',
       benchmark: plan === 'VIP',
       recommendations: plan === 'VIP',
-      audienceGeography: false,
+      audienceGeography: plan === 'VIP',
     },
     lockedSections:
       plan === 'FREE'
@@ -37,8 +37,13 @@ function mockDashboard(plan: string, overrides: Partial<AnalyticsDashboard> = {}
           ? [
               { id: 'sources', label: 'Источники', requiredPlan: 'PREMIUM', message: 'Доступно с PREMIUM' },
               { id: 'searchQueries', label: 'Поисковые запросы', requiredPlan: 'PREMIUM', message: 'Поисковые запросы доступны с PREMIUM' },
+              { id: 'audienceGeography', label: 'Аудитория по расстоянию', requiredPlan: 'VIP', message: 'Аналитика аудитории доступна на тарифе VIP' },
             ]
-          : [],
+          : plan === 'PREMIUM'
+            ? [
+                { id: 'audienceGeography', label: 'Аудитория по расстоянию', requiredPlan: 'VIP', message: 'Аналитика аудитории доступна на тарифе VIP' },
+              ]
+            : [],
     effectiveRange: { days: 30, from: '', to: '' },
     overview: { views: 10 },
     actions: plan === 'FREE' ? null : { total: 3, calls: 1, whatsapp: 1, routes: 1, website: 0, instagram: 0, favorites: 0, promotionViews: 0 },
@@ -50,6 +55,7 @@ function mockDashboard(plan: string, overrides: Partial<AnalyticsDashboard> = {}
     popularTimes: null,
     benchmark: null,
     recommendations: null,
+    audienceGeography: null,
     ...overrides,
   };
 }
@@ -114,10 +120,30 @@ describe('analytics-utils', () => {
         categoryAvgActions: 2,
       },
       recommendations: [{ id: 'keep-going', title: 'OK', body: 'body' }],
+      audienceGeography: [
+        { bucket: 'LT_1_KM', label: 'До 1 км', count: 12, percentage: 21.4 },
+        { bucket: 'UNKNOWN', label: 'Не определено', count: 2, percentage: 3.6 },
+      ],
+      audienceGeographyStatus: 'AVAILABLE',
     });
     expect(dashboard.popularTimes?.byHour).toHaveLength(1);
     expect(dashboard.benchmark?.categoryTitle).toBe('Кафе');
     expect(dashboard.recommendations).toHaveLength(1);
+    expect(dashboard.audienceGeography).toHaveLength(2);
+  });
+
+  it('PREMIUM locks audience geography', () => {
+    const dashboard = mockDashboard('PREMIUM');
+    expect(isLockedSection(dashboard, 'audienceGeography')).toBe(true);
+    expect(dashboard.audienceGeography).toBeNull();
+  });
+
+  it('VIP insufficient audience geography data state', () => {
+    const dashboard = mockDashboard('VIP', {
+      audienceGeography: [],
+      audienceGeographyStatus: 'INSUFFICIENT_DATA',
+    });
+    expect(dashboard.audienceGeographyStatus).toBe('INSUFFICIENT_DATA');
   });
 
   it('availablePeriodOptions respects maxDays', () => {

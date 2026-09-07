@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import '../../../features/ads/data/ad_models.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
+import '../../../shared/utils/audience_distance_bucket.dart';
 
 class AuthRepository {
   AuthRepository(this._dio);
@@ -155,6 +156,7 @@ class CatalogRepository {
     String businessId, {
     BusinessTrafficSource? trafficSource,
     String? searchQuery,
+    AudienceDistanceBucket? audienceDistanceBucket,
   }) =>
       _trackAnalyticsEvent(
         businessId: businessId,
@@ -163,6 +165,7 @@ class CatalogRepository {
         searchQuery: trafficSource == BusinessTrafficSource.search
             ? searchQuery
             : null,
+        audienceDistanceBucket: audienceDistanceBucket?.apiValue,
       );
 
   Future<void> trackCallClick(String businessId) =>
@@ -194,6 +197,7 @@ class CatalogRepository {
     required String type,
     String? trafficSource,
     String? searchQuery,
+    String? audienceDistanceBucket,
   }) async {
     try {
       await _dio.post(
@@ -204,6 +208,8 @@ class CatalogRepository {
           if (trafficSource != null) 'trafficSource': trafficSource,
           if (searchQuery != null && searchQuery.trim().isNotEmpty)
             'searchQuery': searchQuery.trim(),
+          if (audienceDistanceBucket != null)
+            'audienceDistanceBucket': audienceDistanceBucket,
         },
       );
     } on DioException {

@@ -11,6 +11,7 @@ import {
 } from '../../common/utils/analytics-capabilities.util';
 import { aggregateTrafficSources } from '../../common/utils/business-traffic-source.util';
 import { aggregateSearchQueries } from '../../common/utils/search-query-analytics.util';
+import { aggregateAudienceGeography } from '../../common/utils/audience-geography.util';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -58,6 +59,8 @@ export class AnalyticsDashboardBuilder {
     let popularTimes = null;
     let benchmark = null;
     let recommendations = null;
+    let audienceGeography = null;
+    let audienceGeographyStatus: 'AVAILABLE' | 'INSUFFICIENT_DATA' | null = null;
 
     if (caps.trafficSources) {
       sources = await this.buildSources(businessId, from, to);
@@ -86,6 +89,12 @@ export class AnalyticsDashboardBuilder {
     if (caps.recommendations) {
       recommendations = this.buildRecommendations(counts, caps);
     }
+    if (caps.audienceGeography) {
+      const views = counts[AnalyticsEventType.VIEW_BUSINESS] ?? 0;
+      const geography = await this.buildAudienceGeography(businessId, from, to, views);
+      audienceGeography = geography.buckets;
+      audienceGeographyStatus = geography.status;
+    }
 
     return {
       businessId,
@@ -113,12 +122,40 @@ export class AnalyticsDashboardBuilder {
       popularTimes,
       benchmark,
       recommendations,
+      audienceGeography,
+      audienceGeographyStatus,
     };
   }
 
   private publicCapabilities(caps: AnalyticsCapabilities) {
     const { summary: _s, trends: _t, tier: _tier, ...rest } = caps;
     return rest;
+  }
+
+  private async buildAudienceGeography(
+    businessId: string,
+    from: Date,
+    to: Date,
+    totalViews: number,
+  ) {
+    const grouped = await this.prisma.analyticsEvent.groupBy({
+      by: ['audienceDistanceBucket'],
+      where: {
+        businessId,
+        campaignId: null,
+        type: AnalyticsEventType.VIEW_BUSINESS,
+        createdAt: { gte: from, lte: to },
+      },
+      _count: { _all: true },
+    });
+
+    return aggregateAudienceGeography(
+      grouped.map((row) => ({
+        bucket: row.audienceDistanceBucket,
+        count: row._count._all,
+      })),
+      totalViews,
+    );
   }
 
   private async buildSearchQueries(businessId: string, from: Date, to: Date) {

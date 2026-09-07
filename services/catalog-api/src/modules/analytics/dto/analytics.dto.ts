@@ -1,4 +1,4 @@
-import { AnalyticsEventType, BusinessTrafficSource } from '@prisma/client';
+import { AnalyticsEventType, AudienceDistanceBucket, BusinessTrafficSource } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   IsEnum,
@@ -29,6 +29,12 @@ export class CreateAnalyticsEventDto {
   @IsString()
   @Max(100)
   searchQuery?: string;
+
+  /** Coarse distance bucket — only for VIEW_BUSINESS (Stage 5J). No raw coordinates. */
+  @ValidateIf((dto: CreateAnalyticsEventDto) => dto.type === AnalyticsEventType.VIEW_BUSINESS)
+  @IsOptional()
+  @IsEnum(AudienceDistanceBucket)
+  audienceDistanceBucket?: AudienceDistanceBucket;
 }
 
 export class AnalyticsWindowQueryDto {
