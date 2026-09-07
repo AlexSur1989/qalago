@@ -16,6 +16,11 @@ void main() {
       expect(normalizeKazakhstanPhone('+77771234567'), '+77771234567');
     });
 
+    test('normalizes 10-digit input when +7 prefix is shown separately', () {
+      expect(normalizeKazakhstanPhone('7771234567'), '+77771234567');
+      expect(normalizeKazakhstanPhone('707 123 45 67'), '+77071234567');
+    });
+
     test('rejects invalid phone', () {
       expect(normalizeKazakhstanPhone('123'), isNull);
       expect(normalizeKazakhstanPhone(''), isNull);

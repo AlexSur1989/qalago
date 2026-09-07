@@ -3,6 +3,7 @@
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminApi, TOKEN_KEY } from '@/lib/api';
+import { adminWebDevLoginEnabled, devSeedAccounts } from '@/lib/auth-config';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,6 +12,15 @@ export default function LoginPage() {
   const [debugCode, setDebugCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  async function finishLogin(accessToken: string, user: Awaited<ReturnType<typeof adminApi.verifyCode>>['user']) {
+    if (user.role !== 'ADMIN' && user.role !== 'CITY_ADMIN') {
+      setError('Доступ только для ADMIN / CITY_ADMIN');
+      return;
+    }
+    localStorage.setItem(TOKEN_KEY, accessToken);
+    router.push('/dashboard');
+  }
 
   async function sendCode(e: FormEvent) {
     e.preventDefault();
@@ -35,12 +45,20 @@ export default function LoginPage() {
     setError(null);
     try {
       const res = await adminApi.verifyCode(phone, code);
-      if (res.user.role !== 'ADMIN' && res.user.role !== 'CITY_ADMIN') {
-        setError('Доступ только для ADMIN / CITY_ADMIN');
-        return;
-      }
-      localStorage.setItem(TOKEN_KEY, res.accessToken);
-      router.push('/dashboard');
+      await finishLogin(res.accessToken, res.user);
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function devLogin(nextPhone = phone) {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await adminApi.devLogin(nextPhone);
+      await finishLogin(res.accessToken, res.user);
     } catch (err) {
       setError(String(err));
     } finally {
@@ -71,6 +89,35 @@ export default function LoginPage() {
             Войти
           </button>
         </form>
+        {adminWebDevLoginEnabled && (
+          <>
+            <button
+              type="button"
+              className="btn"
+              style={{ marginTop: 16, width: '100%' }}
+              disabled={loading}
+              onClick={() => devLogin()}
+            >
+              Войти без SMS
+            </button>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+              {devSeedAccounts.map((account) => (
+                <button
+                  key={account.phone}
+                  type="button"
+                  className="btn"
+                  disabled={loading}
+                  onClick={() => {
+                    setPhone(account.phone);
+                    void devLogin(account.phone);
+                  }}
+                >
+                  {account.label}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
         {error && <div className="alert alert-error" style={{ marginTop: 16 }}>{error}</div>}
       </div>
     </main>

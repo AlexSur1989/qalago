@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/utils/auth_utils.dart';
+import 'dev_quick_login_panel.dart';
 import '../providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -354,6 +355,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         child: const Text('Войти без SMS'),
                       ),
+                      const DevQuickLoginPanel(compact: true),
                     ],
                     const SizedBox(height: 20),
                     OutlinedButton.icon(

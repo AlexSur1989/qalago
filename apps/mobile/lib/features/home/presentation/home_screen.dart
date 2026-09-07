@@ -18,6 +18,7 @@ import '../../../shared/widgets/empty_city_view.dart';
 import '../../../shared/widgets/city_picker.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
+import '../../auth/presentation/dev_quick_login_panel.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../categories/presentation/category_businesses_screen.dart';
 import '../../ads/providers/ad_serve_provider.dart';
@@ -159,6 +160,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         onNotificationsTap: () =>
                             context.push('/notifications'),
                       ),
+                      const DevQuickLoginPanel(),
                       const SizedBox(height: 20),
                       _SearchBox(
                         onTap: () => context.push('/search'),

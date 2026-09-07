@@ -4,6 +4,8 @@ import '../constants/app_constants.dart';
 import '../network/dio_provider.dart';
 import '../../features/catalog/data/catalog_repository.dart';
 
+import '../../shared/utils/json_parse.dart';
+
 class CityState {
   const CityState({
     required this.slug,
@@ -76,8 +78,8 @@ class CityNotifier extends Notifier<CityState> {
     await selectCity(
       slug,
       nameRu,
-      centerLat: _parseCoord(city['centerLat']),
-      centerLng: _parseCoord(city['centerLng']),
+      centerLat: parseJsonDouble(city['centerLat']),
+      centerLng: parseJsonDouble(city['centerLng']),
       launchStatus: city['launchStatus'] as String?,
     );
   }
@@ -87,17 +89,13 @@ class CityNotifier extends Notifier<CityState> {
     return CityState(
       slug: slug,
       nameRu: json['nameRu'] as String? ?? _fallbackName(slug),
-      centerLat: _parseCoord(json['centerLat']),
-      centerLng: _parseCoord(json['centerLng']),
+      centerLat: parseJsonDouble(json['centerLat']),
+      centerLng: parseJsonDouble(json['centerLng']),
       launchStatus: json['launchStatus'] as String? ?? 'LIVE',
     );
   }
 
-  double? _parseCoord(Object? value) {
-    if (value == null) return null;
-    if (value is num) return value.toDouble();
-    return double.tryParse(value.toString());
-  }
+  double? _parseCoord(Object? value) => parseJsonDouble(value);
 
   String _fallbackName(String slug) {
     switch (slug) {

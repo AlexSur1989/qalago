@@ -26,6 +26,12 @@ export const adminApi = {
       body: JSON.stringify({ phone, code }),
     }),
 
+  devLogin: (phone: string) =>
+    api<{ accessToken: string; user: AuthUser }>('/auth/dev-login', {
+      method: 'POST',
+      body: JSON.stringify({ phone }),
+    }),
+
   getMe: (token: string) => api<AuthUser>('/users/me', { token }),
 
   listBusinesses: (

@@ -5,6 +5,7 @@ import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ownerApi, TOKEN_KEY } from '@/lib/api';
 import { businessWebDevLoginEnabled } from '@/lib/auth-config';
+import { devSeedAccounts } from '@/lib/dev-seed-accounts';
 
 type AccountType = 'user' | 'business';
 
@@ -76,11 +77,11 @@ export default function LoginPage() {
     }
   }
 
-  async function devLogin() {
+  async function devLogin(nextPhone = phone) {
     setLoading(true);
     setError(null);
     try {
-      const res = await ownerApi.devLogin(phone);
+      const res = await ownerApi.devLogin(nextPhone);
       await finishLogin(res.accessToken, res.user);
     } catch (err) {
       setError(String(err));
@@ -136,15 +137,33 @@ export default function LoginPage() {
           </button>
         </form>
         {businessWebDevLoginEnabled && (
-          <button
-            type="button"
-            className="btn"
-            style={{ marginTop: 16, width: '100%' }}
-            disabled={loading}
-            onClick={devLogin}
-          >
-            Войти без SMS
-          </button>
+          <>
+            <button
+              type="button"
+              className="btn"
+              style={{ marginTop: 16, width: '100%' }}
+              disabled={loading}
+              onClick={() => devLogin()}
+            >
+              Войти без SMS
+            </button>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+              {devSeedAccounts.map((account) => (
+                <button
+                  key={account.phone}
+                  type="button"
+                  className="btn"
+                  disabled={loading}
+                  onClick={() => {
+                    setPhone(account.phone);
+                    void devLogin(account.phone);
+                  }}
+                >
+                  {account.label}
+                </button>
+              ))}
+            </div>
+          </>
         )}
         {error && <div className="alert alert-error" style={{ marginTop: 16 }}>{error}</div>}
         <p style={{ marginTop: 20, fontSize: '0.9rem', color: 'var(--text-muted)' }}>

@@ -1,3 +1,5 @@
+import '../utils/json_parse.dart';
+
 class CategoryModel {
   CategoryModel({
     required this.id,
@@ -66,39 +68,26 @@ class BusinessModel {
   final String? categoryId;
   final int? distanceMeters;
 
-  static double? _toDouble(dynamic value) {
-    if (value == null) return null;
-    if (value is num) return value.toDouble();
-    return double.tryParse(value.toString());
-  }
-
-  static int? _toInt(dynamic value) {
-    if (value == null) return null;
-    if (value is int) return value;
-    if (value is num) return value.round();
-    return int.tryParse(value.toString());
-  }
-
   factory BusinessModel.fromJson(Map<String, dynamic> json) => BusinessModel(
     id: json['id'] as String,
     title: json['title'] as String,
     slug: json['slug'] as String,
     address: json['address'] as String,
     shortDesc: json['shortDesc'] as String?,
-    latitude: _toDouble(json['latitude']),
-    longitude: _toDouble(json['longitude']),
+    latitude: parseJsonDouble(json['latitude']),
+    longitude: parseJsonDouble(json['longitude']),
     phone: json['phone'] as String?,
     whatsapp: json['whatsapp'] as String?,
     coverImageUrl: json['coverImageUrl'] as String?,
     isFeatured: json['isFeatured'] as bool? ?? false,
     planTier: json['planTier'] as String?,
-    featuredSlot: _toInt(json['featuredSlot']),
+    featuredSlot: parseJsonInt(json['featuredSlot']),
     categoryTitle:
         (json['category'] as Map<String, dynamic>?)?['title'] as String?,
     categoryId:
         json['categoryId'] as String? ??
         (json['category'] as Map<String, dynamic>?)?['id'] as String?,
-    distanceMeters: _toInt(json['distanceMeters']),
+    distanceMeters: parseJsonInt(json['distanceMeters']),
   );
 
   bool get isTopCity => false;
@@ -222,7 +211,7 @@ class PaginatedBusinesses {
     final meta = json['meta'] as Map<String, dynamic>? ?? {};
     return PaginatedBusinesses(
       items: items,
-      total: meta['total'] as int? ?? items.length,
+      total: parseJsonInt(meta['total']) ?? items.length,
     );
   }
 }

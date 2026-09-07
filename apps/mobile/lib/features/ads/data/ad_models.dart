@@ -1,4 +1,5 @@
 import '../../../shared/models/models.dart';
+import '../../../shared/utils/json_parse.dart';
 
 /// Tracking context for a served ad — not part of core Business domain.
 class AdContext {
@@ -154,6 +155,8 @@ Map<String, dynamic> normalizeAdBusinessJson(Map<String, dynamic> json) {
     ...json,
     'slug': json['slug'] as String? ?? '',
     'address': json['address'] as String? ?? '',
+    'latitude': parseJsonDouble(json['latitude']),
+    'longitude': parseJsonDouble(json['longitude']),
   };
 }
 

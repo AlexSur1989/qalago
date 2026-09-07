@@ -16,6 +16,11 @@ String? normalizeKazakhstanPhone(String raw) {
     digits = '7${digits.substring(1)}';
   }
 
+  // 10 digits when user omits country code (+7 shown separately in UI)
+  if (digits.length == 10 && digits.startsWith('7')) {
+    digits = '7$digits';
+  }
+
   if (digits.length == 11 && digits.startsWith('7')) {
     return '+$digits';
   }

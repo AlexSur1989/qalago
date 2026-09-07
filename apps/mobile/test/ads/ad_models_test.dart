@@ -58,6 +58,31 @@ void main() {
       expect(response.items, isEmpty);
     });
 
+    test('HOME_FEATURED string Decimal coords parse without crash', () {
+      final item = AdItemModel.fromJson({
+        'campaignId': 'camp-1',
+        'placementId': 'pl-1',
+        'placementCode': 'HOME_FEATURED',
+        'position': 1,
+        'sponsored': true,
+        'displayLabel': 'Реклама',
+        'productType': 'FEATURED_BUSINESS',
+        'business': {
+          'id': 'cmpn1wnpt000cult8zzvrr409',
+          'title': 'Coffee House Uralsk',
+          'slug': 'coffee-house-uralsk',
+          'address': 'ул. Достык, 12',
+          'latitude': '51.2285',
+          'longitude': '51.3842',
+        },
+      });
+
+      final business = item.toBusinessModel();
+      expect(business, isNotNull);
+      expect(business!.latitude, closeTo(51.2285, 0.0001));
+      expect(business.longitude, closeTo(51.3842, 0.0001));
+    });
+
     test('HOME_PROMOTIONS subset business parses without crash', () {
       final item = AdItemModel.fromJson({
         'campaignId': 'camp-promo',
