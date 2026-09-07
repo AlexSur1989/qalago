@@ -3,6 +3,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
+import '../../../shared/navigation/business_traffic_source.dart';
+import '../../../shared/navigation/open_business.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_constants.dart';
@@ -300,7 +302,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       userLng: userPosition?.longitude,
                     ),
                     onClose: () => setState(() => _selectedBusinessId = null),
-                    onDetails: () => context.push('/business/${business.id}'),
+                    onDetails: () => openBusiness(
+                          context,
+                          business.id,
+                          BusinessTrafficSource.map,
+                        ),
                   );
                 }
 

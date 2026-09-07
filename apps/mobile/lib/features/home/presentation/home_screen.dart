@@ -4,6 +4,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../shared/navigation/business_traffic_source.dart';
+import '../../../shared/navigation/open_business.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/location/user_location_provider.dart';
 import '../../../core/providers/city_catalog_provider.dart';
@@ -102,7 +104,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     unawaited(
       ref.read(catalogRepositoryProvider).trackPromotionView(business.id),
     );
-    context.push('/business/${business.id}');
+    openBusiness(context, business.id, BusinessTrafficSource.promotions);
+  }
+
+  void _openPaidPromotion(PromotionModel promotion) {
+    openAdPromotion(context, promotion);
   }
 
   @override
@@ -201,7 +207,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      HomePromotionsAdSlot(onPromotionTap: _openPromotion),
+                      HomePromotionsAdSlot(onPromotionTap: _openPaidPromotion),
                       _SectionHeader(
                         title: 'Рекомендуем',
                         actionLabel: _featuredItemsCount > 1
@@ -809,7 +815,7 @@ class _PopularPlaceCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () => context.push('/business/${business.id}'),
+        onTap: () => openBusiness(context, business.id, BusinessTrafficSource.home),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -956,7 +962,7 @@ class _NearbyBusinessTile extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () => context.push('/business/${business.id}'),
+        onTap: () => openBusiness(context, business.id, BusinessTrafficSource.home),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(

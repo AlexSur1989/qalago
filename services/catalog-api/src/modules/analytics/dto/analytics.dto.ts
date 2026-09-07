@@ -1,6 +1,14 @@
-import { AnalyticsEventType } from '@prisma/client';
+import { AnalyticsEventType, BusinessTrafficSource } from '@prisma/client';
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+  ValidateIf,
+} from 'class-validator';
 
 export class CreateAnalyticsEventDto {
   @IsString()
@@ -8,6 +16,12 @@ export class CreateAnalyticsEventDto {
 
   @IsEnum(AnalyticsEventType)
   type!: AnalyticsEventType;
+
+  /** Explicit consumer navigation source — only for VIEW_BUSINESS (Stage 5H). */
+  @ValidateIf((dto: CreateAnalyticsEventDto) => dto.type === AnalyticsEventType.VIEW_BUSINESS)
+  @IsOptional()
+  @IsEnum(BusinessTrafficSource)
+  trafficSource?: BusinessTrafficSource;
 }
 
 export class AnalyticsWindowQueryDto {

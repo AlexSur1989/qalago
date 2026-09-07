@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../shared/navigation/business_traffic_source.dart';
+import '../../../shared/navigation/open_business.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
@@ -438,7 +440,11 @@ class _DashboardContent extends StatelessWidget {
         _ManagementGrid(businessId: businessId, encodedTitle: encodedTitle),
         const SizedBox(height: 12),
         OutlinedButton.icon(
-          onPressed: () => context.push('/business/$businessId'),
+          onPressed: () => openBusiness(
+                context,
+                businessId,
+                BusinessTrafficSource.direct,
+              ),
           icon: const Icon(Icons.visibility_outlined),
           label: const Text('Предпросмотр карточки'),
         ),

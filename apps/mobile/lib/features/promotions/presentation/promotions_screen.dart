@@ -4,6 +4,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../shared/navigation/business_traffic_source.dart';
+import '../../../shared/navigation/open_business.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -39,7 +41,7 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
     unawaited(
       ref.read(catalogRepositoryProvider).trackPromotionView(business.id),
     );
-    context.push('/business/${business.id}');
+    openBusiness(context, business.id, BusinessTrafficSource.promotions);
   }
 
   List<PromotionModel> _filtered(List<PromotionModel> items) {

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../../../features/ads/data/ad_models.dart';
 import '../../../shared/models/models.dart';
+import '../../../shared/navigation/business_traffic_source.dart';
 
 class AuthRepository {
   AuthRepository(this._dio);
@@ -150,8 +151,15 @@ class CatalogRepository {
     return response.data as Map<String, dynamic>;
   }
 
-  Future<void> trackBusinessView(String businessId) =>
-      _trackAnalyticsEvent(businessId: businessId, type: 'VIEW_BUSINESS');
+  Future<void> trackBusinessView(
+    String businessId, {
+    BusinessTrafficSource? trafficSource,
+  }) =>
+      _trackAnalyticsEvent(
+        businessId: businessId,
+        type: 'VIEW_BUSINESS',
+        trafficSource: trafficSource?.apiValue,
+      );
 
   Future<void> trackCallClick(String businessId) =>
       _trackAnalyticsEvent(businessId: businessId, type: 'CALL_CLICK');
@@ -180,11 +188,16 @@ class CatalogRepository {
   Future<void> _trackAnalyticsEvent({
     required String businessId,
     required String type,
+    String? trafficSource,
   }) async {
     try {
       await _dio.post(
         '/analytics/events',
-        data: {'businessId': businessId, 'type': type},
+        data: {
+          'businessId': businessId,
+          'type': type,
+          if (trafficSource != null) 'trafficSource': trafficSource,
+        },
       );
     } on DioException {
       // Analytics must never block a user action.

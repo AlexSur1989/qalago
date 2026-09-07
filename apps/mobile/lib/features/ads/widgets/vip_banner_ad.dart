@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../shared/navigation/business_traffic_source.dart';
+import '../../../shared/navigation/open_business.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
@@ -161,7 +163,7 @@ class VipBannerAd extends ConsumerWidget {
     switch (creative.targetType) {
       case 'PROMOTION':
         if (creative.targetId != null) {
-          context.push('/business/${item.business?['id']}');
+          openBusiness(context, item.business!['id'] as String, BusinessTrafficSource.ad);
         }
         break;
       case 'EXTERNAL_URL':
@@ -172,7 +174,7 @@ class VipBannerAd extends ConsumerWidget {
         final businessId =
             creative.targetId ?? item.business?['id'] as String?;
         if (businessId != null) {
-          context.push('/business/$businessId');
+          openBusiness(context, businessId, BusinessTrafficSource.ad);
         }
     }
   }

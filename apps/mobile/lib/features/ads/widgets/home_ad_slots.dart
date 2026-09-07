@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../shared/navigation/business_traffic_source.dart';
+import '../../../shared/navigation/open_business.dart';
 
 import '../../../shared/models/models.dart';
 import '../providers/ad_serve_provider.dart';
@@ -91,5 +93,5 @@ class HomeFeaturedAdSlot extends ConsumerWidget {
 void openAdPromotion(BuildContext context, PromotionModel promotion) {
   final business = promotion.business;
   if (business == null) return;
-  context.push('/business/${business.id}');
+  openBusiness(context, business.id, BusinessTrafficSource.ad);
 }

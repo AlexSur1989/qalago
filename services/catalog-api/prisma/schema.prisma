@@ -61,6 +61,18 @@ enum AnalyticsEventType {
   AD_PROMOTION_OPEN
 }
 
+enum BusinessTrafficSource {
+  HOME
+  SEARCH
+  CATEGORY
+  MAP
+  PROMOTIONS
+  FAVORITES
+  AD
+  DIRECT
+  UNKNOWN
+}
+
 enum MonetizationProductType {
   BOOST
   TOP_CATEGORY
@@ -371,19 +383,21 @@ model Review {
 }
 
 model AnalyticsEvent {
-  id          String             @id @default(cuid())
-  businessId  String
-  userId      String?
-  type        AnalyticsEventType
-  campaignId  String?
-  placementId String?
-  sessionId   String?
-  createdAt   DateTime           @default(now())
-  business    Business           @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  campaign    AdCampaign?        @relation(fields: [campaignId], references: [id], onDelete: SetNull)
-  placement   AdPlacement?       @relation(fields: [placementId], references: [id], onDelete: SetNull)
+  id            String                  @id @default(cuid())
+  businessId    String
+  userId        String?
+  type          AnalyticsEventType
+  trafficSource BusinessTrafficSource?
+  campaignId    String?
+  placementId   String?
+  sessionId     String?
+  createdAt     DateTime                @default(now())
+  business      Business                @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  campaign      AdCampaign?             @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  placement     AdPlacement?            @relation(fields: [placementId], references: [id], onDelete: SetNull)
 
   @@index([businessId, type])
+  @@index([businessId, type, trafficSource])
   @@index([campaignId])
   @@index([placementId])
   @@index([sessionId])

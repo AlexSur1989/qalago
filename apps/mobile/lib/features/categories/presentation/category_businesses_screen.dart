@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../shared/navigation/business_traffic_source.dart';
+import '../../../shared/navigation/open_business.dart';
 
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -177,7 +179,11 @@ class CategoryBusinessesScreen extends ConsumerWidget {
           padding: const EdgeInsets.only(bottom: 12),
           child: BusinessCard(
             business: business,
-            onTap: () => context.push('/business/${business.id}'),
+            onTap: () => openBusiness(
+                  context,
+                  business.id,
+                  BusinessTrafficSource.category,
+                ),
           ),
         ),
     ];

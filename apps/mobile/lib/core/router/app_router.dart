@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../auth/route_access.dart';
 import '../../shared/utils/auth_utils.dart';
+import '../../shared/navigation/open_business.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/businesses/presentation/business_details_screen.dart';
@@ -181,8 +182,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/business/:id',
-            builder: (context, state) =>
-                BusinessDetailsScreen(id: state.pathParameters['id']!),
+            builder: (context, state) => BusinessDetailsScreen(
+              id: state.pathParameters['id']!,
+              trafficSource: parseBusinessTrafficSourceFromRoute(
+                state.uri.queryParameters['source'],
+              ),
+            ),
           ),
           GoRoute(
             path: '/business/:id/catalog',

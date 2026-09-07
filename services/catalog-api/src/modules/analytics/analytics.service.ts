@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { AnalyticsEventType, BusinessStatus, UserRole } from '@prisma/client';
 import { getAnalyticsCapabilitiesForPlan } from '../../common/utils/analytics-capabilities.util';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
@@ -40,10 +40,22 @@ export class AnalyticsService {
       throw new NotFoundException('Business not found');
     }
 
+    if (
+      dto.type !== AnalyticsEventType.VIEW_BUSINESS &&
+      dto.trafficSource != null
+    ) {
+      throw new BadRequestException(
+        'trafficSource is only allowed for VIEW_BUSINESS events',
+      );
+    }
+
     await this.prisma.analyticsEvent.create({
       data: {
         businessId: dto.businessId,
         type: dto.type,
+        ...(dto.type === AnalyticsEventType.VIEW_BUSINESS && dto.trafficSource
+          ? { trafficSource: dto.trafficSource }
+          : {}),
       },
     });
 

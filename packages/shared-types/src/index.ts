@@ -113,6 +113,8 @@ export interface PromotionListItem {
 export interface AnalyticsEventRequest {
   businessId: string;
   type: AnalyticsEventType;
+  /** Explicit navigation source for VIEW_BUSINESS (Stage 5H). */
+  trafficSource?: import('./analytics').BusinessTrafficSource;
 }
 
 export interface AnalyticsSummary {
@@ -163,6 +165,7 @@ export type {
   AnalyticsTrendPointDto,
   AnalyticsTrendsDto,
   BusinessAnalyticsDashboardDto,
+  BusinessTrafficSource,
 } from './analytics';
 
 export {

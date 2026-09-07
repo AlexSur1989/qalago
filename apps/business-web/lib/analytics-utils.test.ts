@@ -65,10 +65,13 @@ describe('analytics-utils', () => {
     expect(isLockedSection(dashboard, 'sources')).toBe(true);
   });
 
-  it('PREMIUM dashboard exposes conversion and deferred sources', () => {
+  it('PREMIUM dashboard exposes conversion and real source breakdown', () => {
     const dashboard = mockDashboard('PREMIUM', {
-      sources: null,
-      sourcesStatus: 'DEFERRED',
+      sources: [
+        { source: 'SEARCH', label: 'Поиск', views: 10, share: 50 },
+        { source: 'UNKNOWN', label: 'Неизвестно', views: 10, share: 50 },
+      ],
+      sourcesStatus: null,
       conversion: { views: 10, actions: 3, rate: 30 },
       comparison: {
         currentDays: 30,
@@ -76,7 +79,7 @@ describe('analytics-utils', () => {
         metrics: [{ key: 'views', label: 'Просмотры', current: 10, previous: 8, deltaPercent: 25 }],
       },
     });
-    expect(dashboard.sources).toBeNull();
+    expect(dashboard.sources).toHaveLength(2);
     expect(dashboard.conversion?.rate).toBe(30);
   });
 

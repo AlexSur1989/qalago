@@ -120,11 +120,32 @@ void main() {
   });
 
   group('PREMIUM tier', () {
-    test('conversion and comparison visible; sources deferred not faked', () {
-      final dashboard = mockDashboard(plan: 'PREMIUM');
-      expect(dashboard['sources'], isNull);
+    test('conversion and comparison visible; sources show real breakdown', () {
+      final dashboard = mockDashboard(
+        plan: 'PREMIUM',
+        overrides: {
+          'sources': [
+            {'source': 'SEARCH', 'label': 'Поиск', 'views': 10, 'share': 50},
+            {'source': 'UNKNOWN', 'label': 'Неизвестно', 'views': 10, 'share': 50},
+          ],
+          'sourcesStatus': null,
+        },
+      );
+      expect((dashboard['sources'] as List), hasLength(2));
       expect(dashboard['conversion'], isNotNull);
       expect(dashboard['comparison'], isNotNull);
+    });
+
+    test('empty sources with capability shows no-data path', () {
+      final dashboard = mockDashboard(
+        plan: 'PREMIUM',
+        overrides: {
+          'sources': [],
+          'sourcesStatus': null,
+        },
+      );
+      expect(dashboard['sources'], isEmpty);
+      expect(dashboard['capabilities']['trafficSources'], isTrue);
     });
   });
 

@@ -175,13 +175,15 @@ class _AnalyticsBody extends StatelessWidget {
         if (dashboard['sources'] is List && (dashboard['sources'] as List).isNotEmpty)
           _SourcesSection(sources: dashboard['sources'] as List)
         else if (dashboard['sourcesStatus'] == 'DEFERRED')
-          _DeferredSourcesSection()
+          const _DeferredSourcesSection()
         else if (ownerAnalyticsIsLocked(dashboard, 'sources'))
           _LockedSection(
             label: 'Источники',
             message: ownerAnalyticsLockedMessage(dashboard, 'sources') ?? 'Доступно с PREMIUM',
             onUpgrade: onUpgrade,
-          ),
+          )
+        else if (dashboard['capabilities']?['trafficSources'] == true)
+          const _EmptySourcesSection(),
         if (dashboard['conversion'] is Map)
           _ConversionSection(conversion: dashboard['conversion'] as Map<String, dynamic>)
         else if (ownerAnalyticsIsLocked(dashboard, 'conversion'))
@@ -325,6 +327,34 @@ class _LockedSection extends StatelessWidget {
   }
 }
 
+class _EmptySourcesSection extends StatelessWidget {
+  const _EmptySourcesSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Источники просмотров',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Недостаточно данных',
+              style: TextStyle(color: Colors.grey.shade700),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _DeferredSourcesSection extends StatelessWidget {
   const _DeferredSourcesSection();
 
@@ -341,7 +371,7 @@ class _DeferredSourcesSection extends StatelessWidget {
               children: [
                 const Expanded(
                   child: Text(
-                    'Источники трафика',
+                    'Источники просмотров',
                     style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
@@ -378,7 +408,7 @@ class _SourcesSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Источники трафика', style: TextStyle(fontWeight: FontWeight.w700)),
+            const Text('Источники просмотров', style: TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             ...sources.whereType<Map>().map(
                   (row) => ListTile(

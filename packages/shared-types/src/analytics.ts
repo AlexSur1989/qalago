@@ -1,5 +1,16 @@
 import type { BusinessPlanTier } from './plans';
 
+export type BusinessTrafficSource =
+  | 'HOME'
+  | 'SEARCH'
+  | 'CATEGORY'
+  | 'MAP'
+  | 'PROMOTIONS'
+  | 'FAVORITES'
+  | 'AD'
+  | 'DIRECT'
+  | 'UNKNOWN';
+
 export type AnalyticsEventType =
   | 'VIEW_BUSINESS'
   | 'CALL_CLICK'
@@ -68,7 +79,7 @@ export interface AnalyticsTrendsDto {
 }
 
 export interface AnalyticsSourceItemDto {
-  source: string;
+  source: BusinessTrafficSource | string;
   label: string;
   views: number;
   share: number;
@@ -129,6 +140,8 @@ export interface BusinessAnalyticsDashboardDto {
   actions: AnalyticsActionsDto | null;
   trends: AnalyticsTrendsDto;
   sources: AnalyticsSourceItemDto[] | null;
+  /** Legacy Stage 5F placeholder — null after Stage 5H implementation. */
+  sourcesStatus?: 'DEFERRED' | null;
   conversion: AnalyticsConversionDto | null;
   comparison: AnalyticsComparisonDto | null;
   promotions: AnalyticsPromotionItemDto | null;

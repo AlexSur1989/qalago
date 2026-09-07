@@ -441,8 +441,12 @@ Business dashboards are protected: business owner, `CITY_ADMIN`, or `ADMIN`.
 
 Request:
 ```json
-{ "businessId": "...", "type": "VIEW_BUSINESS" }
+{ "businessId": "...", "type": "VIEW_BUSINESS", "trafficSource": "SEARCH" }
 ```
+
+`trafficSource` (optional, Stage 5H): only valid on `VIEW_BUSINESS`. Enum:
+`HOME`, `SEARCH`, `CATEGORY`, `MAP`, `PROMOTIONS`, `FAVORITES`, `AD`, `DIRECT`, `UNKNOWN`.
+Legacy clients may omit it; stored as `null` and aggregated as `UNKNOWN` in owner dashboards.
 
 Supported event types:
 `VIEW_BUSINESS`, `CALL_CLICK`, `WHATSAPP_CLICK`, `ROUTE_CLICK`,
@@ -509,7 +513,11 @@ Response `200`:
   "overview": { "views": 30, "totalCustomerActions": 12 },
   "actions": { "total": 12, "calls": 4, "whatsapp": 3, "routes": 5, "website": 0, "instagram": 0, "favorites": 0, "promotionViews": 0 },
   "trends": { "views": [{ "date": "2026-08-29", "count": 7 }], "actions": [{ "date": "2026-08-29", "count": 2 }] },
-  "sources": null,
+  "sources": [
+    { "source": "SEARCH", "label": "Поиск", "views": 24, "share": 38.1 },
+    { "source": "UNKNOWN", "label": "Неизвестно", "views": 6, "share": 9.5 }
+  ],
+  "sourcesStatus": null,
   "conversion": null,
   "comparison": null,
   "promotions": null,

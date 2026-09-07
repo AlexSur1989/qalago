@@ -17,6 +17,28 @@
 
 ---
 
+---
+
+## 2026-09-07 — Stage 5H: real business traffic source attribution
+
+**Сделано**
+- `BusinessTrafficSource` enum on `AnalyticsEvent.trafficSource` (nullable, additive migration)
+- `POST /analytics/events` accepts optional `trafficSource` on `VIEW_BUSINESS`
+- PREMIUM/VIP dashboard aggregates organic `VIEW_BUSINESS` by source; legacy null → UNKNOWN
+- Flutter consumer passes explicit source on every business-detail navigation
+- Business Web + Flutter owner show «Источники просмотров» breakdown
+
+**Semantics**
+- One business open → one `VIEW_BUSINESS` with source metadata
+- Paid ad tap: `AD_CARD_OPEN` (campaign) + `VIEW_BUSINESS source=AD` (business analytics) — not duplicate views
+- `AD` in source breakdown = business opens from paid placements; campaign metrics remain separate
+
+**DEFERRED**
+- Search-query analytics (which search term)
+- Consumer web attribution (enum ready for future web client)
+
+---
+
 ## 2026-09-06 — Stage 5G.1: Flutter owner catalog pagination
 
 **Сделано**

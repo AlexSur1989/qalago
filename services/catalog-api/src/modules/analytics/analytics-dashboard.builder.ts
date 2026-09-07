@@ -9,6 +9,7 @@ import {
   weekdayLabel,
   windowStart,
 } from '../../common/utils/analytics-capabilities.util';
+import { aggregateTrafficSources } from '../../common/utils/business-traffic-source.util';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -55,7 +56,7 @@ export class AnalyticsDashboardBuilder {
     let recommendations = null;
 
     if (caps.trafficSources) {
-      sources = null;
+      sources = await this.buildSources(businessId, from, to);
     }
     if (caps.conversion) {
       conversion = this.buildConversion(counts);
@@ -92,7 +93,7 @@ export class AnalyticsDashboardBuilder {
       actions,
       trends,
       sources,
-      sourcesStatus: caps.trafficSources ? 'DEFERRED' : null,
+      sourcesStatus: null,
       conversion,
       comparison,
       promotions,
@@ -105,6 +106,26 @@ export class AnalyticsDashboardBuilder {
   private publicCapabilities(caps: AnalyticsCapabilities) {
     const { summary: _s, trends: _t, tier: _tier, ...rest } = caps;
     return rest;
+  }
+
+  private async buildSources(businessId: string, from: Date, to: Date) {
+    const grouped = await this.prisma.analyticsEvent.groupBy({
+      by: ['trafficSource'],
+      where: {
+        businessId,
+        campaignId: null,
+        type: AnalyticsEventType.VIEW_BUSINESS,
+        createdAt: { gte: from, lte: to },
+      },
+      _count: { _all: true },
+    });
+
+    return aggregateTrafficSources(
+      grouped.map((row) => ({
+        trafficSource: row.trafficSource,
+        count: row._count._all,
+      })),
+    );
   }
 
   private async fetchEvents(businessId: string, from: Date, to: Date): Promise<EventRow[]> {

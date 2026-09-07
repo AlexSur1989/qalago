@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/utils/json_parse.dart';
 import '../../../shared/utils/business_detail_utils.dart';
@@ -19,9 +20,14 @@ import '../widgets/catalog_item_card.dart';
 import '../../recommendations/data/ai_repository.dart';
 
 class BusinessDetailsScreen extends ConsumerStatefulWidget {
-  const BusinessDetailsScreen({super.key, required this.id});
+  const BusinessDetailsScreen({
+    super.key,
+    required this.id,
+    this.trafficSource,
+  });
 
   final String id;
+  final BusinessTrafficSource? trafficSource;
 
   @override
   ConsumerState<BusinessDetailsScreen> createState() =>
@@ -41,8 +47,12 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
   void _trackViewOnce() {
     if (_viewTracked || !mounted) return;
     _viewTracked = true;
+    final source = widget.trafficSource ?? BusinessTrafficSource.direct;
     unawaited(
-      ref.read(catalogRepositoryProvider).trackBusinessView(widget.id),
+      ref.read(catalogRepositoryProvider).trackBusinessView(
+            widget.id,
+            trafficSource: source,
+          ),
     );
   }
 

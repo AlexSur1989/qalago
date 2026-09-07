@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../shared/navigation/business_traffic_source.dart';
+import '../../../shared/navigation/open_business.dart';
 
 import '../../../core/location/user_location_provider.dart';
 import '../../../core/providers/city_provider.dart';
@@ -308,7 +310,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     final business = data.items[index - 1];
                     return BusinessCard(
                       business: business,
-                      onTap: () => context.push('/business/${business.id}'),
+                      onTap: () => openBusiness(
+                            context,
+                            business.id,
+                            BusinessTrafficSource.search,
+                          ),
                     );
                   },
                 );

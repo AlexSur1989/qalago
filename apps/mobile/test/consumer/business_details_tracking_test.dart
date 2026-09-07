@@ -1,0 +1,66 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:qalago_mobile/features/catalog/data/catalog_repository.dart';
+import 'package:qalago_mobile/shared/navigation/business_traffic_source.dart';
+
+class _RecordingDio implements Dio {
+  Map<String, dynamic>? lastPayload;
+
+  @override
+  Future<Response<T>> post<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    lastPayload = data as Map<String, dynamic>?;
+    return Response(
+      requestOptions: RequestOptions(path: path),
+      data: {'success': true} as T,
+    );
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+void main() {
+  group('CatalogRepository traffic source tracking', () {
+    test('trackBusinessView sends trafficSource for SEARCH', () async {
+      final dio = _RecordingDio();
+      final repo = CatalogRepository(dio);
+
+      await repo.trackBusinessView(
+        'biz-1',
+        trafficSource: BusinessTrafficSource.search,
+      );
+
+      expect(dio.lastPayload, {
+        'businessId': 'biz-1',
+        'type': 'VIEW_BUSINESS',
+        'trafficSource': 'SEARCH',
+      });
+    });
+
+    test('trackBusinessView omits trafficSource when not provided', () async {
+      final dio = _RecordingDio();
+      final repo = CatalogRepository(dio);
+
+      await repo.trackBusinessView('biz-1');
+
+      expect(dio.lastPayload, {
+        'businessId': 'biz-1',
+        'type': 'VIEW_BUSINESS',
+      });
+    });
+
+    test('all navigation sources map to API enum values', () {
+      expect(BusinessTrafficSource.home.apiValue, 'HOME');
+      expect(BusinessTrafficSource.ad.apiValue, 'AD');
+      expect(BusinessTrafficSource.direct.apiValue, 'DIRECT');
+    });
+  });
+}

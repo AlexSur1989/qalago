@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../shared/navigation/business_traffic_source.dart';
+import '../../../shared/navigation/open_business.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/models/models.dart';
@@ -62,7 +64,7 @@ class SponsoredBusinessSection extends ConsumerWidget {
                 item.toContext(sessionId),
                 AdEventTypes.cardOpen,
               );
-              context.push('/business/${business.id}');
+              openBusiness(context, business.id, BusinessTrafficSource.ad);
             },
           ),
           const SizedBox(height: 12),

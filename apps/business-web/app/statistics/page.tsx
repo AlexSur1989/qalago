@@ -186,7 +186,7 @@ export default function StatisticsPage() {
               {dashboard.sources && dashboard.sources.length > 0 ? (
                 <article className="card" style={{ marginTop: 16 }}>
                   <div className="card-header">
-                    <h2>Источники трафика</h2>
+                    <h2>Источники просмотров</h2>
                   </div>
                   <table className="data-table">
                     <thead>
@@ -210,7 +210,7 @@ export default function StatisticsPage() {
               ) : dashboard.sourcesStatus === 'DEFERRED' ? (
                 <article className="card" style={{ marginTop: 16 }}>
                   <div className="card-header">
-                    <h2>Источники трафика</h2>
+                    <h2>Источники просмотров</h2>
                     <span className="badge badge-muted">Скоро</span>
                   </div>
                   <p style={{ color: 'var(--text-muted)' }}>
@@ -226,6 +226,13 @@ export default function StatisticsPage() {
                     message={lockedSectionMessage(dashboard, 'sources') ?? 'Доступно с PREMIUM'}
                   />
                 </div>
+              ) : dashboard.capabilities.trafficSources ? (
+                <article className="card" style={{ marginTop: 16 }}>
+                  <div className="card-header">
+                    <h2>Источники просмотров</h2>
+                  </div>
+                  <p style={{ color: 'var(--text-muted)' }}>Недостаточно данных</p>
+                </article>
               ) : null}
 
               {dashboard.conversion ? (

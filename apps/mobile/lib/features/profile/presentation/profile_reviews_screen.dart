@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../shared/navigation/business_traffic_source.dart';
+import '../../../shared/navigation/open_business.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_theme.dart';
@@ -82,7 +84,11 @@ class ProfileReviewsScreen extends ConsumerWidget {
                 dateLabel: _formatDate(reviews[index].createdAt),
                 onOpenBusiness: reviews[index].businessId == null
                     ? null
-                    : () => context.push('/business/${reviews[index].businessId}'),
+                    : () => openBusiness(
+                          context,
+                          reviews[index].businessId!,
+                          BusinessTrafficSource.direct,
+                        ),
               );
             },
           );
