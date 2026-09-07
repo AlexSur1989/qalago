@@ -114,7 +114,8 @@ export interface AnalyticsEventRequest {
   businessId: string;
   type: AnalyticsEventType;
   /** Explicit navigation source for VIEW_BUSINESS (Stage 5H). */
-  trafficSource?: import('./analytics').BusinessTrafficSource;
+  /** trafficSource + searchQuery only sent when source=SEARCH. */
+  searchQuery?: string;
 }
 
 export interface AnalyticsSummary {
@@ -161,6 +162,7 @@ export type {
   AnalyticsPopularTimesDto,
   AnalyticsPromotionItemDto,
   AnalyticsRecommendationDto,
+  AnalyticsSearchQueryItemDto,
   AnalyticsSourceItemDto,
   AnalyticsTrendPointDto,
   AnalyticsTrendsDto,

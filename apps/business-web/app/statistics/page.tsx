@@ -235,6 +235,57 @@ export default function StatisticsPage() {
                 </article>
               ) : null}
 
+              {dashboard.searchQueries && dashboard.searchQueries.length > 0 ? (
+                <article className="card" style={{ marginTop: 16 }}>
+                  <div className="card-header">
+                    <h2>По каким запросам вас находят</h2>
+                  </div>
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Запрос</th>
+                        <th>Открытия</th>
+                        <th>Доля</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dashboard.searchQueries.map((row) => (
+                        <tr key={row.query}>
+                          <td>{row.query}</td>
+                          <td>{formatNumber(row.count)}</td>
+                          <td>{row.percentage}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {dashboard.searchQueriesOtherCount != null &&
+                  dashboard.searchQueriesOtherCount > 0 ? (
+                    <p style={{ color: 'var(--text-muted)', marginTop: 12 }}>
+                      Другие запросы — {formatNumber(dashboard.searchQueriesOtherCount)}
+                    </p>
+                  ) : null}
+                </article>
+              ) : dashboard.searchQueriesStatus === 'INSUFFICIENT_DATA' ? (
+                <article className="card" style={{ marginTop: 16 }}>
+                  <div className="card-header">
+                    <h2>По каким запросам вас находят</h2>
+                  </div>
+                  <p style={{ color: 'var(--text-muted)' }}>
+                    Недостаточно данных для анализа поисковых запросов
+                  </p>
+                </article>
+              ) : isLockedSection(dashboard, 'searchQueries') ? (
+                <div style={{ marginTop: 16 }}>
+                  <LockedCard
+                    label="Поисковые запросы"
+                    message={
+                      lockedSectionMessage(dashboard, 'searchQueries') ??
+                      'Поисковые запросы доступны с PREMIUM'
+                    }
+                  />
+                </div>
+              ) : null}
+
               {dashboard.conversion ? (
                 <article className="card" style={{ marginTop: 16 }}>
                   <div className="card-header">

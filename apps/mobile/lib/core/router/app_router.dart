@@ -187,6 +187,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               trafficSource: parseBusinessTrafficSourceFromRoute(
                 state.uri.queryParameters['source'],
               ),
+              searchQuery: parseBusinessSearchQueryFromRoute(
+                state.uri.queryParameters['searchQuery'],
+              ),
             ),
           ),
           GoRoute(

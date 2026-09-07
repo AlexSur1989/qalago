@@ -85,6 +85,12 @@ export interface AnalyticsSourceItemDto {
   share: number;
 }
 
+export interface AnalyticsSearchQueryItemDto {
+  query: string;
+  count: number;
+  percentage: number;
+}
+
 export interface AnalyticsConversionDto {
   views: number;
   actions: number;
@@ -142,6 +148,9 @@ export interface BusinessAnalyticsDashboardDto {
   sources: AnalyticsSourceItemDto[] | null;
   /** Legacy Stage 5F placeholder — null after Stage 5H implementation. */
   sourcesStatus?: 'DEFERRED' | null;
+  searchQueries: AnalyticsSearchQueryItemDto[] | null;
+  searchQueriesStatus?: 'AVAILABLE' | 'INSUFFICIENT_DATA' | null;
+  searchQueriesOtherCount?: number | null;
   conversion: AnalyticsConversionDto | null;
   comparison: AnalyticsComparisonDto | null;
   promotions: AnalyticsPromotionItemDto | null;

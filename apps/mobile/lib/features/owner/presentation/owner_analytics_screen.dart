@@ -184,6 +184,21 @@ class _AnalyticsBody extends StatelessWidget {
           )
         else if (dashboard['capabilities']?['trafficSources'] == true)
           const _EmptySourcesSection(),
+        if (dashboard['searchQueries'] is List &&
+            (dashboard['searchQueries'] as List).isNotEmpty)
+          _SearchQueriesSection(
+            queries: dashboard['searchQueries'] as List,
+            otherCount: dashboard['searchQueriesOtherCount'] as num?,
+          )
+        else if (dashboard['searchQueriesStatus'] == 'INSUFFICIENT_DATA')
+          const _InsufficientSearchQueriesSection()
+        else if (ownerAnalyticsIsLocked(dashboard, 'searchQueries'))
+          _LockedSection(
+            label: 'Поисковые запросы',
+            message: ownerAnalyticsLockedMessage(dashboard, 'searchQueries') ??
+                'Поисковые запросы доступны с PREMIUM',
+            onUpgrade: onUpgrade,
+          ),
         if (dashboard['conversion'] is Map)
           _ConversionSection(conversion: dashboard['conversion'] as Map<String, dynamic>)
         else if (ownerAnalyticsIsLocked(dashboard, 'conversion'))
@@ -319,6 +334,81 @@ class _LockedSection extends StatelessWidget {
               onPressed: onUpgrade,
               style: FilledButton.styleFrom(backgroundColor: AppTheme.kzBlue),
               child: const Text('Улучшить тариф'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchQueriesSection extends StatelessWidget {
+  const _SearchQueriesSection({
+    required this.queries,
+    this.otherCount,
+  });
+
+  final List queries;
+  final num? otherCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'По каким запросам вас находят',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            ...queries.whereType<Map>().map(
+                  (row) => ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(row['query'] as String? ?? ''),
+                    trailing: Text(
+                      '${row['count'] ?? 0} · ${row['percentage'] ?? 0}%',
+                    ),
+                  ),
+                ),
+            if (otherCount != null && otherCount! > 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  'Другие запросы — ${otherCount!.toInt()}',
+                  style: TextStyle(color: Colors.grey.shade700),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InsufficientSearchQueriesSection extends StatelessWidget {
+  const _InsufficientSearchQueriesSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'По каким запросам вас находят',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Недостаточно данных для анализа поисковых запросов',
+              style: TextStyle(color: Colors.grey.shade700),
             ),
           ],
         ),

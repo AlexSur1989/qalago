@@ -388,6 +388,7 @@ model AnalyticsEvent {
   userId        String?
   type          AnalyticsEventType
   trafficSource BusinessTrafficSource?
+  searchQuery   String?
   campaignId    String?
   placementId   String?
   sessionId     String?
@@ -398,6 +399,7 @@ model AnalyticsEvent {
 
   @@index([businessId, type])
   @@index([businessId, type, trafficSource])
+  @@index([businessId, type, createdAt])
   @@index([campaignId])
   @@index([placementId])
   @@index([sessionId])

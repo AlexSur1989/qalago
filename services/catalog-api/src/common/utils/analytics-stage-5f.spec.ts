@@ -52,12 +52,13 @@ describe('Stage 5F entitlement matrix', () => {
     for (const tier of [
       BusinessPlanTier.FREE,
       BusinessPlanTier.BASIC,
-      BusinessPlanTier.PREMIUM,
-      BusinessPlanTier.VIP,
     ]) {
       const caps = getAnalyticsCapabilitiesForPlan(tier);
       expect(caps.searchQueries).toBe(false);
       expect(caps.audienceGeography).toBe(false);
     }
+    expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.PREMIUM).searchQueries).toBe(true);
+    expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.VIP).searchQueries).toBe(true);
+    expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.VIP).audienceGeography).toBe(false);
   });
 });

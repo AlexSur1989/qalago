@@ -19,6 +19,25 @@
 
 ---
 
+## 2026-09-07 — Stage 5I: business search query analytics
+
+**Сделано**
+- `AnalyticsEvent.searchQuery` (nullable) on `VIEW_BUSINESS` when `trafficSource=SEARCH`
+- Query normalization (trim, collapse spaces, lowercase, min 2 / max 100 chars)
+- PREMIUM/VIP dashboard: top 10 queries, threshold count ≥ 3, `otherCount` bucket
+- Flutter Search passes effective result-set query via `openBusiness(..., searchQuery:)`
+- Business Web + Flutter owner: «По каким запросам вас находят»
+
+**Privacy**
+- Aggregate only; no user identity in owner API
+- Low-frequency queries hidden below threshold (not exposed individually)
+
+**DEFERRED**
+- Audience geography analytics
+- Query clustering / typo normalization
+
+---
+
 ## 2026-09-07 — Stage 5H: real business traffic source attribution
 
 **Сделано**

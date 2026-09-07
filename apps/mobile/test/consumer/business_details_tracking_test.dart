@@ -36,6 +36,41 @@ void main() {
       await repo.trackBusinessView(
         'biz-1',
         trafficSource: BusinessTrafficSource.search,
+        searchQuery: 'кофе рядом',
+      );
+
+      expect(dio.lastPayload, {
+        'businessId': 'biz-1',
+        'type': 'VIEW_BUSINESS',
+        'trafficSource': 'SEARCH',
+        'searchQuery': 'кофе рядом',
+      });
+    });
+
+    test('trackBusinessView omits searchQuery for HOME source', () async {
+      final dio = _RecordingDio();
+      final repo = CatalogRepository(dio);
+
+      await repo.trackBusinessView(
+        'biz-1',
+        trafficSource: BusinessTrafficSource.home,
+        searchQuery: 'кофе',
+      );
+
+      expect(dio.lastPayload, {
+        'businessId': 'biz-1',
+        'type': 'VIEW_BUSINESS',
+        'trafficSource': 'HOME',
+      });
+    });
+
+    test('trackBusinessView omits searchQuery when not provided for SEARCH', () async {
+      final dio = _RecordingDio();
+      final repo = CatalogRepository(dio);
+
+      await repo.trackBusinessView(
+        'biz-1',
+        trafficSource: BusinessTrafficSource.search,
       );
 
       expect(dio.lastPayload, {

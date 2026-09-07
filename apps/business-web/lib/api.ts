@@ -157,6 +157,9 @@ export type AnalyticsDashboard = {
   };
   sources: Array<{ source: string; label: string; views: number; share: number }> | null;
   sourcesStatus?: 'DEFERRED' | null;
+  searchQueries: Array<{ query: string; count: number; percentage: number }> | null;
+  searchQueriesStatus?: 'AVAILABLE' | 'INSUFFICIENT_DATA' | null;
+  searchQueriesOtherCount?: number | null;
   conversion: { views: number; actions: number; rate: number } | null;
   comparison: {
     currentDays: number;

@@ -65,7 +65,7 @@ export function getAnalyticsCapabilitiesForPlan(tier: BusinessPlanTier): Analyti
     popularTimes: isVip,
     benchmark: isVip,
     recommendations: isVip,
-    searchQueries: false,
+    searchQueries: isPremiumOrAbove,
     audienceGeography: false,
     summary: true,
     trends: isBasicOrAbove,
@@ -121,6 +121,12 @@ export function getAnalyticsLockedSections(
         label: 'Сравнение периодов',
         requiredPlan: BusinessPlanTier.PREMIUM,
         message: 'Доступно с PREMIUM',
+      },
+      {
+        id: 'searchQueries',
+        label: 'Поисковые запросы',
+        requiredPlan: BusinessPlanTier.PREMIUM,
+        message: 'Поисковые запросы доступны с PREMIUM',
       },
     );
   }

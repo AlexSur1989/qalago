@@ -1,6 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { AnalyticsEventType, BusinessStatus, UserRole } from '@prisma/client';
+import { AnalyticsEventType, BusinessStatus, BusinessTrafficSource, UserRole } from '@prisma/client';
 import { getAnalyticsCapabilitiesForPlan } from '../../common/utils/analytics-capabilities.util';
+import { normalizeSearchQueryForAnalytics } from '../../common/utils/search-query-analytics.util';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -42,11 +43,20 @@ export class AnalyticsService {
 
     if (
       dto.type !== AnalyticsEventType.VIEW_BUSINESS &&
-      dto.trafficSource != null
+      (dto.trafficSource != null || dto.searchQuery != null)
     ) {
       throw new BadRequestException(
-        'trafficSource is only allowed for VIEW_BUSINESS events',
+        'trafficSource and searchQuery are only allowed for VIEW_BUSINESS events',
       );
+    }
+
+    let normalizedSearchQuery: string | undefined;
+    if (
+      dto.type === AnalyticsEventType.VIEW_BUSINESS &&
+      dto.trafficSource === BusinessTrafficSource.SEARCH
+    ) {
+      normalizedSearchQuery =
+        normalizeSearchQueryForAnalytics(dto.searchQuery) ?? undefined;
     }
 
     await this.prisma.analyticsEvent.create({
@@ -56,6 +66,7 @@ export class AnalyticsService {
         ...(dto.type === AnalyticsEventType.VIEW_BUSINESS && dto.trafficSource
           ? { trafficSource: dto.trafficSource }
           : {}),
+        ...(normalizedSearchQuery ? { searchQuery: normalizedSearchQuery } : {}),
       },
     });
 

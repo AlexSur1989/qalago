@@ -18,6 +18,7 @@ Map<String, dynamic> mockDashboard({
       'viewTrend': true,
       'actionTrend': !isFree,
       'trafficSources': isPremium,
+      'searchQueries': isPremium,
       'conversion': isPremium,
       'periodComparison': isPremium,
       'popularTimes': isVip,
@@ -38,6 +39,11 @@ Map<String, dynamic> mockDashboard({
                   'id': 'sources',
                   'label': 'Источники',
                   'message': 'Доступно с PREMIUM',
+                },
+                {
+                  'id': 'searchQueries',
+                  'label': 'Поисковые запросы',
+                  'message': 'Поисковые запросы доступны с PREMIUM',
                 },
               ]
             : [],
@@ -120,6 +126,31 @@ void main() {
   });
 
   group('PREMIUM tier', () {
+    test('search queries visible when threshold met', () {
+      final dashboard = mockDashboard(
+        plan: 'PREMIUM',
+        overrides: {
+          'searchQueries': [
+            {'query': 'кофе рядом', 'count': 10, 'percentage': 50},
+            {'query': 'дәмхана', 'count': 6, 'percentage': 30},
+          ],
+          'searchQueriesStatus': 'AVAILABLE',
+        },
+      );
+      expect((dashboard['searchQueries'] as List), hasLength(2));
+    });
+
+    test('insufficient search query data state', () {
+      final dashboard = mockDashboard(
+        plan: 'PREMIUM',
+        overrides: {
+          'searchQueries': [],
+          'searchQueriesStatus': 'INSUFFICIENT_DATA',
+        },
+      );
+      expect(dashboard['searchQueriesStatus'], 'INSUFFICIENT_DATA');
+    });
+
     test('conversion and comparison visible; sources show real breakdown', () {
       final dashboard = mockDashboard(
         plan: 'PREMIUM',
@@ -146,6 +177,24 @@ void main() {
       );
       expect(dashboard['sources'], isEmpty);
       expect(dashboard['capabilities']['trafficSources'], isTrue);
+    });
+  });
+
+  group('BASIC search queries', () {
+    test('search queries locked', () {
+      final dashboard = mockDashboard(
+        plan: 'BASIC',
+        overrides: {
+          'lockedSections': [
+            {
+              'id': 'searchQueries',
+              'label': 'Поисковые запросы',
+              'message': 'Поисковые запросы доступны с PREMIUM',
+            },
+          ],
+        },
+      );
+      expect(ownerAnalyticsIsLocked(dashboard, 'searchQueries'), isTrue);
     });
   });
 

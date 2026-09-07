@@ -1,4 +1,4 @@
-import { AnalyticsEventType, BusinessPlanTier } from '@prisma/client';
+import { AnalyticsEventType, BusinessPlanTier, BusinessTrafficSource } from '@prisma/client';
 import {
   AnalyticsCapabilities,
   buildDateRange,
@@ -10,6 +10,7 @@ import {
   windowStart,
 } from '../../common/utils/analytics-capabilities.util';
 import { aggregateTrafficSources } from '../../common/utils/business-traffic-source.util';
+import { aggregateSearchQueries } from '../../common/utils/search-query-analytics.util';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -48,6 +49,9 @@ export class AnalyticsDashboardBuilder {
     const trends = this.buildTrends(currentEvents, days, caps, end);
 
     let sources = null;
+    let searchQueries = null;
+    let searchQueriesStatus: 'AVAILABLE' | 'INSUFFICIENT_DATA' | null = null;
+    let searchQueriesOtherCount: number | null = null;
     let conversion = null;
     let comparison = null;
     let promotions = null;
@@ -57,6 +61,12 @@ export class AnalyticsDashboardBuilder {
 
     if (caps.trafficSources) {
       sources = await this.buildSources(businessId, from, to);
+    }
+    if (caps.searchQueries) {
+      const searchResult = await this.buildSearchQueries(businessId, from, to);
+      searchQueries = searchResult.queries;
+      searchQueriesStatus = searchResult.status;
+      searchQueriesOtherCount = searchResult.otherCount > 0 ? searchResult.otherCount : null;
     }
     if (caps.conversion) {
       conversion = this.buildConversion(counts);
@@ -94,6 +104,9 @@ export class AnalyticsDashboardBuilder {
       trends,
       sources,
       sourcesStatus: null,
+      searchQueries,
+      searchQueriesStatus,
+      searchQueriesOtherCount,
       conversion,
       comparison,
       promotions,
@@ -106,6 +119,30 @@ export class AnalyticsDashboardBuilder {
   private publicCapabilities(caps: AnalyticsCapabilities) {
     const { summary: _s, trends: _t, tier: _tier, ...rest } = caps;
     return rest;
+  }
+
+  private async buildSearchQueries(businessId: string, from: Date, to: Date) {
+    const grouped = await this.prisma.analyticsEvent.groupBy({
+      by: ['searchQuery'],
+      where: {
+        businessId,
+        campaignId: null,
+        type: AnalyticsEventType.VIEW_BUSINESS,
+        trafficSource: BusinessTrafficSource.SEARCH,
+        searchQuery: { not: null },
+        createdAt: { gte: from, lte: to },
+      },
+      _count: { _all: true },
+    });
+
+    return aggregateSearchQueries(
+      grouped
+        .filter((row) => row.searchQuery != null)
+        .map((row) => ({
+          searchQuery: row.searchQuery as string,
+          count: row._count._all,
+        })),
+    );
   }
 
   private async buildSources(businessId: string, from: Date, to: Date) {

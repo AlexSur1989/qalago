@@ -21,20 +21,23 @@ function mockDashboard(plan: string, overrides: Partial<AnalyticsDashboard> = {}
       actions: plan !== 'FREE',
       actionTrend: plan !== 'FREE',
       trafficSources: plan === 'PREMIUM' || plan === 'VIP',
+      searchQueries: plan === 'PREMIUM' || plan === 'VIP',
       conversion: plan === 'PREMIUM' || plan === 'VIP',
       periodComparison: plan === 'PREMIUM' || plan === 'VIP',
       promotionAnalytics: plan === 'PREMIUM' || plan === 'VIP',
       popularTimes: plan === 'VIP',
       benchmark: plan === 'VIP',
       recommendations: plan === 'VIP',
-      searchQueries: false,
       audienceGeography: false,
     },
     lockedSections:
       plan === 'FREE'
         ? [{ id: 'actions', label: 'Действия клиентов', requiredPlan: 'BASIC', message: 'Доступно с BASIC' }]
         : plan === 'BASIC'
-          ? [{ id: 'sources', label: 'Источники', requiredPlan: 'PREMIUM', message: 'Доступно с PREMIUM' }]
+          ? [
+              { id: 'sources', label: 'Источники', requiredPlan: 'PREMIUM', message: 'Доступно с PREMIUM' },
+              { id: 'searchQueries', label: 'Поисковые запросы', requiredPlan: 'PREMIUM', message: 'Поисковые запросы доступны с PREMIUM' },
+            ]
           : [],
     effectiveRange: { days: 30, from: '', to: '' },
     overview: { views: 10 },
@@ -69,9 +72,12 @@ describe('analytics-utils', () => {
     const dashboard = mockDashboard('PREMIUM', {
       sources: [
         { source: 'SEARCH', label: 'Поиск', views: 10, share: 50 },
-        { source: 'UNKNOWN', label: 'Неизвестно', views: 10, share: 50 },
       ],
       sourcesStatus: null,
+      searchQueries: [
+        { query: 'кофе рядом', count: 10, percentage: 50 },
+      ],
+      searchQueriesStatus: 'AVAILABLE',
       conversion: { views: 10, actions: 3, rate: 30 },
       comparison: {
         currentDays: 30,
@@ -79,8 +85,22 @@ describe('analytics-utils', () => {
         metrics: [{ key: 'views', label: 'Просмотры', current: 10, previous: 8, deltaPercent: 25 }],
       },
     });
-    expect(dashboard.sources).toHaveLength(2);
+    expect(dashboard.sources).toHaveLength(1);
+    expect(dashboard.searchQueries).toHaveLength(1);
     expect(dashboard.conversion?.rate).toBe(30);
+  });
+
+  it('PREMIUM search queries insufficient data state', () => {
+    const dashboard = mockDashboard('PREMIUM', {
+      searchQueries: [],
+      searchQueriesStatus: 'INSUFFICIENT_DATA',
+    });
+    expect(dashboard.searchQueriesStatus).toBe('INSUFFICIENT_DATA');
+  });
+
+  it('BASIC locks search queries', () => {
+    const dashboard = mockDashboard('BASIC');
+    expect(isLockedSection(dashboard, 'searchQueries')).toBe(true);
   });
 
   it('VIP dashboard exposes advanced sections', () => {

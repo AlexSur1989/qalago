@@ -35,6 +35,7 @@ class SearchScreen extends ConsumerStatefulWidget {
 class _SearchScreenState extends ConsumerState<SearchScreen> {
   late final TextEditingController _controller;
   String _query = '';
+  String? _resultAttributionQuery;
   String? _categoryId;
   SearchRadiusMode _radiusMode = SearchRadiusMode.wholeCity;
   Timer? _debounce;
@@ -150,6 +151,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final query = _buildQuery();
     final businessesAsync = ref.watch(businessesProvider(query));
     final categoriesAsync = ref.watch(categoriesProvider);
+
+    ref.listen(businessesProvider(query), (previous, next) {
+      next.whenData((_) {
+        if (mounted) {
+          setState(() => _resultAttributionQuery = query.search);
+        }
+      });
+    });
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -308,12 +317,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       );
                     }
                     final business = data.items[index - 1];
+                    final attributionQuery =
+                        _resultAttributionQuery ?? query.search;
                     return BusinessCard(
                       business: business,
                       onTap: () => openBusiness(
                             context,
                             business.id,
                             BusinessTrafficSource.search,
+                            searchQuery: attributionQuery,
                           ),
                     );
                   },

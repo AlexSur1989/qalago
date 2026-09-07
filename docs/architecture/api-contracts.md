@@ -448,6 +448,9 @@ Request:
 `HOME`, `SEARCH`, `CATEGORY`, `MAP`, `PROMOTIONS`, `FAVORITES`, `AD`, `DIRECT`, `UNKNOWN`.
 Legacy clients may omit it; stored as `null` and aggregated as `UNKNOWN` in owner dashboards.
 
+`searchQuery` (optional, Stage 5I): only stored when `trafficSource=SEARCH`. Normalized server-side
+(trim, collapse spaces, lowercase, 2–100 chars). Counts only business-detail opens from Search.
+
 Supported event types:
 `VIEW_BUSINESS`, `CALL_CLICK`, `WHATSAPP_CLICK`, `ROUTE_CLICK`,
 `FAVORITE_ADD`, `FAVORITE_REMOVE`, `PROMOTION_VIEW`.
@@ -518,6 +521,11 @@ Response `200`:
     { "source": "UNKNOWN", "label": "Неизвестно", "views": 6, "share": 9.5 }
   ],
   "sourcesStatus": null,
+  "searchQueries": [
+    { "query": "кофе рядом", "count": 214, "percentage": 31.2 }
+  ],
+  "searchQueriesStatus": "AVAILABLE",
+  "searchQueriesOtherCount": 14,
   "conversion": null,
   "comparison": null,
   "promotions": null,

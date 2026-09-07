@@ -24,10 +24,12 @@ class BusinessDetailsScreen extends ConsumerStatefulWidget {
     super.key,
     required this.id,
     this.trafficSource,
+    this.searchQuery,
   });
 
   final String id;
   final BusinessTrafficSource? trafficSource;
+  final String? searchQuery;
 
   @override
   ConsumerState<BusinessDetailsScreen> createState() =>
@@ -52,6 +54,9 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
       ref.read(catalogRepositoryProvider).trackBusinessView(
             widget.id,
             trafficSource: source,
+            searchQuery: source == BusinessTrafficSource.search
+                ? widget.searchQuery
+                : null,
           ),
     );
   }

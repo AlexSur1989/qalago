@@ -22,6 +22,13 @@ export class CreateAnalyticsEventDto {
   @IsOptional()
   @IsEnum(BusinessTrafficSource)
   trafficSource?: BusinessTrafficSource;
+
+  /** Normalized search term — only when trafficSource=SEARCH (Stage 5I). */
+  @ValidateIf((dto: CreateAnalyticsEventDto) => dto.type === AnalyticsEventType.VIEW_BUSINESS)
+  @IsOptional()
+  @IsString()
+  @Max(100)
+  searchQuery?: string;
 }
 
 export class AnalyticsWindowQueryDto {

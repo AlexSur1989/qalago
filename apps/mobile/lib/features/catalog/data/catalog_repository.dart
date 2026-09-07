@@ -154,11 +154,15 @@ class CatalogRepository {
   Future<void> trackBusinessView(
     String businessId, {
     BusinessTrafficSource? trafficSource,
+    String? searchQuery,
   }) =>
       _trackAnalyticsEvent(
         businessId: businessId,
         type: 'VIEW_BUSINESS',
         trafficSource: trafficSource?.apiValue,
+        searchQuery: trafficSource == BusinessTrafficSource.search
+            ? searchQuery
+            : null,
       );
 
   Future<void> trackCallClick(String businessId) =>
@@ -189,6 +193,7 @@ class CatalogRepository {
     required String businessId,
     required String type,
     String? trafficSource,
+    String? searchQuery,
   }) async {
     try {
       await _dio.post(
@@ -197,6 +202,8 @@ class CatalogRepository {
           'businessId': businessId,
           'type': type,
           if (trafficSource != null) 'trafficSource': trafficSource,
+          if (searchQuery != null && searchQuery.trim().isNotEmpty)
+            'searchQuery': searchQuery.trim(),
         },
       );
     } on DioException {
