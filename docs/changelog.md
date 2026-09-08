@@ -21,6 +21,18 @@
 
 ---
 
+## 2026-09-08 — Stage 5K.1: Flutter native analytics CSV share
+
+**Сделано**
+- Native Android/iOS: backend CSV → app temp file → system share sheet (`share_plus` + `path_provider`)
+- Filename sanitization, temp cleanup, dismiss ≠ error UX
+- Flutter Web regression preserved (browser download)
+
+**На будущее**
+- Optional native “save to Downloads” without share sheet (P2)
+
+---
+
 ## 2026-09-08 — Stage 5K: VIP business analytics CSV export
 
 **Сделано**

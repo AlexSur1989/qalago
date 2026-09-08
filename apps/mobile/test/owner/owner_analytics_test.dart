@@ -269,6 +269,27 @@ void main() {
     });
   });
 
+  group('VIP report export', () {
+    test('report export available on VIP', () {
+      final dashboard = mockDashboard(plan: 'VIP');
+      expect((dashboard['capabilities'] as Map)['reportExport'], isTrue);
+    });
+  });
+
+  group('FREE report export', () {
+    test('report export locked on FREE', () {
+      final dashboard = mockDashboard(plan: 'FREE');
+      expect((dashboard['capabilities'] as Map)['reportExport'], isFalse);
+    });
+  });
+
+  group('BASIC report export', () {
+    test('report export locked on BASIC', () {
+      final dashboard = mockDashboard(plan: 'BASIC');
+      expect(ownerAnalyticsIsLocked(dashboard, 'reportExport'), isTrue);
+    });
+  });
+
   group('PREMIUM audience geography', () {
     test('audience geography locked on PREMIUM', () {
       final dashboard = mockDashboard(plan: 'PREMIUM');

@@ -303,11 +303,21 @@ class _ExportReportSectionState extends ConsumerState<_ExportReportSection> {
             widget.businessId,
             days: widget.days,
           );
-      downloadCsvBytes(result.bytes, result.filename);
-    } catch (e) {
+      final shareResult = await shareCsvBytes(result.bytes, result.filename);
+      if (!mounted || shareResult.cancelled) return;
+      if (shareResult.failed) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Не удалось подготовить отчёт. Попробуйте ещё раз.'),
+          ),
+        );
+      }
+    } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Не удалось скачать отчёт: $e')),
+        const SnackBar(
+          content: Text('Не удалось подготовить отчёт. Попробуйте ещё раз.'),
+        ),
       );
     } finally {
       if (mounted) setState(() => _exporting = false);
@@ -342,8 +352,8 @@ class _ExportReportSectionState extends ConsumerState<_ExportReportSection> {
                         height: 18,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Icon(Icons.download_outlined),
-                label: Text(_exporting ? 'Формирование…' : 'Скачать CSV'),
+                    : const Icon(Icons.ios_share_outlined),
+                label: Text(_exporting ? 'Формирование…' : 'Скачать / Поделиться CSV'),
               ),
             ] else ...[
               Text(
