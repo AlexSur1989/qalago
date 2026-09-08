@@ -111,6 +111,19 @@ Each `(userId, businessId)` membership has independent `permissions[]`. Switchin
 
 ## Future
 
-- MODERATOR, SUPER_ADMIN — out of scope
-- AuditLog (Stage 5M.3) — team actions, admin role changes, payments; see `api-contracts.md`
+- MODERATOR, SUPER_ADMIN — **not implemented**
+- Audit retention/archival policy — TBD
 - Second owner API — schema allows; not exposed in 5M.2
+- Flutter owner team UI — deferred (P2)
+
+## AuditLog (Stage 5M.3 — implemented)
+
+Central `AuditLogService` records security/operational mutations. See [RBAC](./rbac.md) and [API contracts](./api-contracts.md).
+
+**Wired:** team invite/accept/permission/suspend/restore/revoke; business profile/hours; catalog; photos; promotions; review reply create; plan checkout/override; payment confirm; ad orders/creatives/campaign pause/activate; user role change; city/category admin actions.
+
+**Read:** `GET /admin/audit-logs` (ADMIN/CITY_ADMIN); `GET /businesses/:id/team/audit` (OWNER).
+
+**Not wired (no endpoint):** `USER_STATUS_CHANGE`, `PAYMENT_REJECT`, review reply update/delete.
+
+**Policy:** append-only; no historic backfill; metadata sanitized; not mixed with analytics.

@@ -85,4 +85,7 @@ Country (KZ)
 
 - [Modules](./modules.md)
 - [API contracts](./api-contracts.md)
+- [RBAC & AuditLog](./rbac.md)
+- [Business membership](./business-membership.md)
+- [Project status](../PROJECT_STATUS.md)
 - [Agents](../agents/overview.md)

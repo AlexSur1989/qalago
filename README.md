@@ -2,70 +2,92 @@
 
 Городской super-app для Казахстана. Старт: **Уральск**. Масштаб: **вся KZ**.
 
-Каталог заведений, карта, акции, связь с бизнесом, кабинет предпринимателя, админка. Позже — бронирование, лояльность, QR, AI-рекомендации.
+Каталог заведений, карта, акции, кабинет предпринимателя, админка, монетизация и аналитика.
 
 ## Статус
 
-**MVP foundation** — `services/catalog-api` + `apps/mobile` + `apps/admin-web`.
-Seed covers Uralsk first and Aktobe as a second-city smoke test. PostgreSQL is required for the API.
+**Checkpoint:** `2bacbb3` — Stage **5M.3** (AuditLog foundation + documentation).
 
-## Стек (план)
+| Компонент | Состояние |
+|-----------|-----------|
+| `services/catalog-api` | Production-ready MVP backend |
+| `apps/mobile` | Consumer + membership-aware owner |
+| `apps/admin-web` | City/platform moderation + audit logs |
+| `apps/business-web` | Owner cabinet + team management + team history |
+| `services/ai-orchestrator` | Dev scaffold, proxied via catalog-api |
+
+Подробнее: [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md)
+
+## Стек
 
 | Слой | Технология |
 |------|------------|
 | Mobile | Flutter, Riverpod, Go Router |
-| API | NestJS, Prisma, PostgreSQL |
-| Web panels | Next.js, TypeScript |
-| AI | packages/ai-core + services/ai-orchestrator |
-| Infra | Docker, GitHub Actions |
+| API | NestJS, Prisma, PostgreSQL, JWT |
+| Web | Next.js, TypeScript |
+| AI | packages/ai-core + ai-orchestrator |
 
 ## Структура monorepo
 
 ```text
-apps/           — deployable приложения (mobile, admin-web, business-web)
-services/       — backend-сервисы (catalog-api, ai-orchestrator, …)
-packages/       — shared-types, api-client, ai-core, agents
-docs/           — архитектура, API, агенты
-tests/          — unit, integration, e2e, contract
-infra/          — docker, CI, env examples
-scripts/        — dev, seed, deploy
+apps/           mobile, admin-web, business-web
+services/       catalog-api, ai-orchestrator
+packages/       shared-types, api-client, ai-core
+docs/           architecture, contracts, status
+infra/          docker, env examples
+scripts/dev/    local setup
 ```
 
-## Быстрый старт (когда появится код)
+## Быстрый старт
+
+**Требования:** Node 20+, npm 9+, PostgreSQL (или Docker), Flutter для mobile.
 
 ```powershell
-# 1. Инфраструктура
-docker compose -f infra/docker/docker-compose.dev.yml up -d
-
-# 2. Зависимости (из корня)
+# 1. Зависимости
 npm install
 
-# 3. API
-cd services/catalog-api
-cp ../../infra/env/.env.example .env
-npm run start:dev
+# 2. Env для API
+Copy-Item infra\env\.env.example services\catalog-api\.env
+# Отредактируйте DATABASE_URL при необходимости
 
-# 4. Mobile
-cd apps/mobile
+# 3. PostgreSQL + миграции (не db push)
+cd services\catalog-api
+Remove-Item Env:DATABASE_URL -ErrorAction SilentlyContinue
+npx prisma migrate deploy
+npm run seed
+npm run start:dev
+# → http://localhost:3002/api/v1/health
+
+# 4. Admin + Business web (из корня)
+npm run dev:admin      # :3001
+npm run dev:business   # :3003
+
+# 5. Mobile
+cd apps\mobile
 flutter pub get
-flutter run
+flutter run -d chrome
 ```
+
+Полный стек: `npm run dev:all` — см. [scripts/dev/SETUP.md](scripts/dev/SETUP.md).
+
+**Dev login:** только при `DEV_LOGIN_ENABLED=true` и `OTP_DEBUG=true` в `.env`. В production оба **false**.
 
 ## Документация
 
-- [Архитектура](docs/architecture/overview.md)
-- [Модули](docs/architecture/modules.md)
-- [API-контракты](docs/architecture/api-contracts.md)
-- [AI-агенты](docs/agents/overview.md)
-- [Правила для AI-разработчиков](AGENTS.md)
+- [Project status](docs/PROJECT_STATUS.md)
+- [Documentation index](docs/README.md)
+- [Architecture](docs/architecture/overview.md)
+- [RBAC](docs/architecture/rbac.md)
+- [API contracts](docs/architecture/api-contracts.md)
+- [Changelog](docs/changelog.md)
+- [Правила для AI](AGENTS.md)
 
 ## Принципы
 
-1. Multi-city с первого дня (`City` + `cityId`), запуск с одного города.
+1. Multi-city с первого дня (`City` + `cityId`).
 2. Бизнес-логика в `services/` и `packages/`, не в UI.
 3. API меняется только вместе с `docs/architecture/api-contracts.md`.
-4. AI-агенты — через orchestrator, с allowlist tools.
-5. Сначала план, потом код.
+4. Сначала план, потом код.
 
 ## Лицензия
 

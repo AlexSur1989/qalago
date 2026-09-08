@@ -1,5 +1,8 @@
 # Stage 5L — RBAC & Access Control Audit
 
+> **HISTORICAL / SUPERSEDED** — snapshot at checkpoint `fa2e72e` (pre–5M.0).  
+> Current authorization truth: [RBAC](./architecture/rbac.md), [Business membership](./architecture/business-membership.md), [Project status](./PROJECT_STATUS.md).
+
 **Date:** 2026-09-08  
 **Checkpoint audited:** `fa2e72e` (Stage 5K.1)  
 **Scope:** Read-only audit of current authentication, authorization, ownership, and role architecture.  

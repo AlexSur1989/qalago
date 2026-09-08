@@ -20,8 +20,12 @@ Required for production:
 |----------|---------|
 | `POSTGRES_PASSWORD` | strong random |
 | `JWT_SECRET` | min 32 chars |
+| `QALAGO_INTERNAL_SERVICE_TOKEN` | strong random (catalog-api ↔ ai-orchestrator) |
 | `CORS_ORIGINS` | `https://admin.yourdomain.kz` |
 | `OTP_DEBUG` | `false` |
+| `DEV_LOGIN_ENABLED` | `false` |
+
+Never expose `QALAGO_INTERNAL_SERVICE_TOKEN` in browser or mobile public env vars.
 
 ## 2. Build & run API
 
@@ -34,9 +38,11 @@ docker compose -f infra/docker/docker-compose.prod.yml --env-file .env.prod up -
 Apply schema and seed (first deploy):
 
 ```bash
-docker compose -f infra/docker/docker-compose.prod.yml exec api npx prisma db push
+docker compose -f infra/docker/docker-compose.prod.yml exec api npx prisma migrate deploy
 docker compose -f infra/docker/docker-compose.prod.yml exec api npm run seed
 ```
+
+Use `prisma migrate deploy` (not `db push`) for production. Back up PostgreSQL before migrations — see [postgresql-backup.md](./infra/postgresql-backup.md).
 
 Health check: `GET http://SERVER_IP:3000/api/v1/health`
 

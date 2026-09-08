@@ -28,7 +28,8 @@ Copy-Item infra\env\.env.example services\catalog-api\.env
 ```powershell
 cd services\catalog-api
 npm install
-npx prisma db push
+Remove-Item Env:DATABASE_URL -ErrorAction SilentlyContinue
+npx prisma migrate deploy
 npm run seed
 npm run start:dev
 ```

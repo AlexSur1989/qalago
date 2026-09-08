@@ -23,6 +23,22 @@
 
 ---
 
+---
+
+## 2026-09-08 — Documentation sync through Stage 5M.3
+
+**Updated**
+- `README.md`, `docs/PROJECT_STATUS.md`, `docs/README.md` — checkpoint `2bacbb3`, 9 migrations, 5M.3 complete
+- `scripts/dev/SETUP.md`, `docs/deploy.md` — `migrate deploy` workflow, DATABASE_URL Windows pitfall, production safety
+- `docs/stage-5l-rbac-audit.md` — marked HISTORICAL/SUPERSEDED
+- `docs/architecture/business-membership.md` — AuditLog implemented; deferred items clarified
+
+**Policy**
+- Stage 6 not started; SUPER_ADMIN / MODERATOR not implemented
+- No historic AuditLog backfill
+
+---
+
 ## 2026-09-08 — Stage 5M.3: Audit log foundation
 
 **Added**
@@ -87,7 +103,7 @@
 
 **На будущее**
 - Flutter owner team UI (optional P2)
-- Full AuditLog for team ops
+- ~~Full AuditLog for team ops~~ → implemented in Stage 5M.3
 
 ---
 
