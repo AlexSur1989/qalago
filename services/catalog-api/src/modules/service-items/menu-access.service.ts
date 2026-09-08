@@ -1,22 +1,16 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { AuthUser } from '../../common/types/jwt-payload.type';
+import { BusinessAccessService } from '../../common/services/business-access.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class MenuAccessService {
-  constructor(private readonly prisma: PrismaService) {}
-
+  constructor(
+    private readonly businessAccess: BusinessAccessService,
+    private readonly prisma: PrismaService,
+  ) {}
   async assertCanManage(user: AuthUser, businessId: string) {
-    if (user.role === UserRole.ADMIN || user.role === UserRole.CITY_ADMIN) return;
-    const business = await this.prisma.business.findUnique({
-      where: { id: businessId },
-      select: { ownerId: true },
-    });
-    if (!business) throw new NotFoundException('Business not found');
-    if (business.ownerId !== user.id) {
-      throw new ForbiddenException('Not business owner');
-    }
+    await this.businessAccess.assertCanManageBusiness(user, businessId);
   }
 
   async assertGroupForBusiness(groupId: string, businessId: string) {

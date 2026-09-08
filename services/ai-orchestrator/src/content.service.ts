@@ -1,6 +1,6 @@
 import { buildEditorialDraft, type EditorialDraft } from '@qalago/ai-core';
 import { contentAgent } from '@qalago/agents';
-import { fetchCity, fetchFeaturedFallback } from './catalog-client';
+import { fetchCity, fetchOrganicFallback } from './catalog-client';
 
 const CITY_NAMES: Record<string, string> = {
   uralsk: 'Уральск',
@@ -25,7 +25,7 @@ export async function createContentDraft(params: {
     }
   }
 
-  const businesses = await fetchFeaturedFallback(citySlug, Math.max(limit, 10));
+  const businesses = await fetchOrganicFallback(citySlug, Math.max(limit, 10));
   const draft = buildEditorialDraft({
     cityName,
     citySlug,

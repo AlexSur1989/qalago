@@ -11,6 +11,7 @@ import {
 } from '@prisma/client';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
+import { BusinessAccessService } from '../../common/services/business-access.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -42,6 +43,7 @@ export class PromotionsService {
     private readonly prisma: PrismaService,
     private readonly cityScope: CityScopeService,
     private readonly planLimits: PlanLimitsService,
+    private readonly businessAccess: BusinessAccessService,
   ) {}
 
   async findAll(query: ListPromotionsQueryDto, user?: AuthUser) {
@@ -271,12 +273,12 @@ export class PromotionsService {
 
   private async canManageBusiness(user: AuthUser | undefined, businessId: string) {
     if (!user) return false;
-    if (user.role === UserRole.ADMIN || user.role === UserRole.CITY_ADMIN) return true;
-    const business = await this.prisma.business.findUnique({
-      where: { id: businessId },
-      select: { ownerId: true },
-    });
-    return business?.ownerId === user.id;
+    try {
+      await this.businessAccess.assertCanManageBusiness(user, businessId);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   /** City promotion feed: subscription tier does not affect ordering (Stage 4C). */
@@ -287,15 +289,7 @@ export class PromotionsService {
   }
 
   private async assertCanManage(user: AuthUser, businessId: string) {
-    if (user.role === UserRole.ADMIN || user.role === UserRole.CITY_ADMIN) return;
-    const business = await this.prisma.business.findUnique({
-      where: { id: businessId },
-      select: { ownerId: true },
-    });
-    if (!business) throw new NotFoundException('Business not found');
-    if (business.ownerId !== user.id) {
-      throw new ForbiddenException('Not business owner');
-    }
+    await this.businessAccess.assertCanManageBusiness(user, businessId);
   }
 }
 

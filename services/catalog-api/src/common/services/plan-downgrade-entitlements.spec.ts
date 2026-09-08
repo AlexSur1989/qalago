@@ -11,6 +11,7 @@ import { PricingService } from '../../modules/monetization/pricing.service';
 import { PlansService } from '../../modules/plans/plans.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CityScopeService } from '../services/city-scope.service';
+import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
 
 describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
   const now = new Date('2026-09-06T12:00:00Z');
@@ -255,7 +256,12 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
 
       const cityScope = { resolveCityId: jest.fn() } as unknown as CityScopeService;
       const limitsService = new PlanLimitsService(prisma, { create: jest.fn() } as never);
-      const promotionsService = new PromotionsService(prisma, cityScope, limitsService);
+      const promotionsService = new PromotionsService(
+        prisma,
+        cityScope,
+        limitsService,
+        asBusinessAccessService(createMockBusinessAccess()),
+      );
 
       const ownerResult = await promotionsService.findAll(
         { businessId: 'b1', page: 1, limit: 20 },
@@ -329,6 +335,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
       const businessesService = new BusinessesService(
         prisma,
         { resolveCityId: jest.fn() } as never,
+        asBusinessAccessService(createMockBusinessAccess()),
         planLimits,
         publicContent as never,
       );
@@ -404,7 +411,12 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
       } as unknown as PlanLimitsService;
 
       const notifications = { create: jest.fn().mockResolvedValue(undefined) };
-      const plansService = new PlansService(prisma, planLimits, notifications as never);
+      const plansService = new PlansService(
+        prisma,
+        planLimits,
+        notifications as never,
+        asBusinessAccessService(createMockBusinessAccess()),
+      );
 
       await plansService.setBusinessTier('b1', BusinessPlanTier.BASIC, {
         isMock: true,

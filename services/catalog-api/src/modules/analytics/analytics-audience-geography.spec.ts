@@ -16,6 +16,7 @@ import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AnalyticsDashboardBuilder } from './analytics-dashboard.builder';
 import { AnalyticsService } from './analytics.service';
+import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
 
 describe('Stage 5J audience geography analytics', () => {
   const owner: AuthUser = {
@@ -43,12 +44,16 @@ describe('Stage 5J audience geography analytics', () => {
       getAnalyticsCapabilities: jest.fn(),
     } as unknown as PlanLimitsService;
 
+    const businessAccess = createMockBusinessAccess();
+
     return {
       prisma,
       planLimits,
+      businessAccess,
       service: new AnalyticsService(
         prisma as unknown as PrismaService,
         planLimits,
+        asBusinessAccessService(businessAccess),
       ),
       builder: new AnalyticsDashboardBuilder(
         prisma as unknown as PrismaService,

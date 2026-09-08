@@ -66,7 +66,7 @@ class AiRepository {
     int limit = 10,
   }) async {
     final response = await _dio.post(
-      '/recommendations',
+      '/ai/recommendations',
       data: {'citySlug': citySlug, 'limit': limit},
     );
     final data = response.data as Map<String, dynamic>;
@@ -84,7 +84,7 @@ class AiRepository {
 
     try {
       final response = await _dio.post(
-        '/moderation/analyze',
+        '/ai/moderation/analyze',
         data: {'text': text, 'rating': rating},
       );
       return ModerationAnalysisModel.fromJson(

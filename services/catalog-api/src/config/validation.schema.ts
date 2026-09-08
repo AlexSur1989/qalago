@@ -12,4 +12,6 @@ export const validationSchema = Joi.object({
   CORS_ORIGINS: Joi.string().allow('').default(''),
   UPLOAD_DIR: Joi.string().default('./uploads'),
   MAX_UPLOAD_MB: Joi.number().default(5),
+  AI_ORCHESTRATOR_URL: Joi.string().uri().default('http://localhost:3004'),
+  QALAGO_INTERNAL_SERVICE_TOKEN: Joi.string().allow('').default(''),
 });

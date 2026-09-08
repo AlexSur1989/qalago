@@ -4,6 +4,7 @@ import { CityScopeService } from '../../common/services/city-scope.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { BusinessPublicContentService } from './business-public-content.service';
+import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
 
 describe('BusinessesService.findAll', () => {
   const cityScope = {
@@ -20,7 +21,13 @@ describe('BusinessesService.findAll', () => {
   const serviceMenuService = {} as BusinessPublicContentService;
   const planLimits = {} as PlanLimitsService;
   const publicContent = {} as BusinessPublicContentService;
-  const service = new BusinessesService(prisma, cityScope, planLimits, publicContent);
+  const service = new BusinessesService(
+    prisma,
+    cityScope,
+    asBusinessAccessService(createMockBusinessAccess()),
+    planLimits,
+    publicContent,
+  );
 
   const category = { id: 'cat-1', title: 'Кафе', slug: 'cafe', icon: null };
 
@@ -203,6 +210,7 @@ describe('BusinessesService.recommended', () => {
   const service = new BusinessesService(
     prisma,
     cityScope,
+    asBusinessAccessService(createMockBusinessAccess()),
     {} as PlanLimitsService,
     {} as BusinessPublicContentService,
   );

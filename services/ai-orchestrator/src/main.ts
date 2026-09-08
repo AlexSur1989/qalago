@@ -3,6 +3,7 @@ import { agents } from '@qalago/agents';
 import { recommend } from './recommendation.service';
 import { analyzeModeration } from './moderation.service';
 import { createContentDraft } from './content.service';
+import { extractServiceToken, verifyServiceToken } from './service-auth';
 
 const port = Number(process.env.PORT ?? 3004);
 
@@ -12,7 +13,7 @@ app.use((_req, res, next) => {
   const allowedOrigin = process.env.CORS_ORIGIN ?? '*';
   res.header('Access-Control-Allow-Origin', allowedOrigin);
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-QalaGo-Service-Token');
   if (_req.method === 'OPTIONS') {
     res.sendStatus(204);
     return;
@@ -22,9 +23,24 @@ app.use((_req, res, next) => {
 
 app.use(express.json());
 
+function requireServiceAuth(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) {
+  const result = verifyServiceToken(extractServiceToken(req));
+  if (!result.ok) {
+    res.status(result.status).json({ message: result.message });
+    return;
+  }
+  next();
+}
+
 app.get('/api/v1/health', (_req, res) => {
   res.json({ status: 'ok', service: 'ai-orchestrator' });
 });
+
+app.use('/api/v1', requireServiceAuth);
 
 app.get('/api/v1/agents', (_req, res) => {
   res.json({ items: agents });

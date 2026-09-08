@@ -5,6 +5,7 @@ import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AnalyticsService } from './analytics.service';
+import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
 
 describe('AnalyticsService', () => {
   const owner: AuthUser = {
@@ -54,12 +55,16 @@ describe('AnalyticsService', () => {
       }),
     } as unknown as PlanLimitsService;
 
+    const businessAccess = createMockBusinessAccess();
+
     return {
       prisma,
       planLimits,
+      businessAccess,
       service: new AnalyticsService(
         prisma as unknown as PrismaService,
         planLimits,
+        asBusinessAccessService(businessAccess),
       ),
     };
   }
@@ -192,8 +197,7 @@ describe('AnalyticsService', () => {
   });
 
   it('blocks regular users from business analytics dashboard', async () => {
-    const { prisma, service } = createService();
-    prisma.business.findUnique.mockResolvedValue({ ownerId: owner.id });
+    const { service } = createService();
 
     await expect(service.dashboard(user, 'business-1', {})).rejects.toBeInstanceOf(
       ForbiddenException,
@@ -201,8 +205,10 @@ describe('AnalyticsService', () => {
   });
 
   it('blocks owner from another business analytics dashboard', async () => {
-    const { prisma, service } = createService();
-    prisma.business.findUnique.mockResolvedValue({ ownerId: 'other-owner' });
+    const { businessAccess, service } = createService();
+    businessAccess.assertCanViewBusinessAnalytics.mockRejectedValue(
+      new ForbiddenException('Not allowed to manage this business'),
+    );
 
     await expect(service.dashboard(owner, 'business-1', {})).rejects.toBeInstanceOf(
       ForbiddenException,

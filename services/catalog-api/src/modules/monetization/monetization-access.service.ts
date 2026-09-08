@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
+import { BusinessAccessService } from '../../common/services/business-access.service';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -14,57 +15,41 @@ export class MonetizationAccessService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cityScope: CityScopeService,
+    private readonly businessAccess: BusinessAccessService,
   ) {}
 
   async assertBusinessOwner(user: AuthUser, businessId: string) {
-    const business = await this.prisma.business.findUnique({
-      where: { id: businessId },
-      select: { ownerId: true, cityId: true, categoryId: true },
-    });
-    if (!business) {
-      monetizationNotFound(
-        MonetizationErrorCode.PRODUCT_NOT_FOUND,
-        'Business not found',
+    try {
+      return await this.businessAccess.assertCanManageBusiness(user, businessId);
+    } catch (err) {
+      if (err instanceof NotFoundException) {
+        monetizationNotFound(
+          MonetizationErrorCode.PRODUCT_NOT_FOUND,
+          'Business not found',
+        );
+      }
+      monetizationForbidden(
+        MonetizationErrorCode.BUSINESS_NOT_OWNED,
+        'Not business owner',
       );
     }
-
-    if (
-      user.role === UserRole.ADMIN ||
-      user.role === UserRole.CITY_ADMIN ||
-      business.ownerId === user.id
-    ) {
-      return business;
-    }
-
-    monetizationForbidden(
-      MonetizationErrorCode.BUSINESS_NOT_OWNED,
-      'Not business owner',
-    );
   }
 
   async assertCanManageBusiness(user: AuthUser, businessId: string) {
-    const business = await this.prisma.business.findUnique({
-      where: { id: businessId },
-      select: { ownerId: true, cityId: true, categoryId: true },
-    });
-    if (!business) {
-      monetizationNotFound(
-        MonetizationErrorCode.PRODUCT_NOT_FOUND,
-        'Business not found',
+    try {
+      return await this.businessAccess.assertCanManageBusiness(user, businessId);
+    } catch (err) {
+      if (err instanceof NotFoundException) {
+        monetizationNotFound(
+          MonetizationErrorCode.PRODUCT_NOT_FOUND,
+          'Business not found',
+        );
+      }
+      monetizationForbidden(
+        MonetizationErrorCode.BUSINESS_NOT_OWNED,
+        'Not business owner',
       );
     }
-
-    if (user.role === UserRole.ADMIN || user.role === UserRole.CITY_ADMIN) {
-      return business;
-    }
-    if (user.role === UserRole.BUSINESS && business.ownerId === user.id) {
-      return business;
-    }
-
-    monetizationForbidden(
-      MonetizationErrorCode.BUSINESS_NOT_OWNED,
-      'Not business owner',
-    );
   }
 
   async assertOrderAccess(user: AuthUser, orderId: string) {

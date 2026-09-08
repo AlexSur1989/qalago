@@ -10,6 +10,7 @@ import {
   PlanLimitsService,
   PLAN_CATALOG,
 } from '../../common/services/plan-limits.service';
+import { BusinessAccessService } from '../../common/services/business-access.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -21,6 +22,7 @@ export class PlansService {
     private readonly prisma: PrismaService,
     private readonly planLimits: PlanLimitsService,
     private readonly notifications: NotificationsService,
+    private readonly businessAccess: BusinessAccessService,
   ) {}
 
   listCatalog() {
@@ -147,38 +149,11 @@ export class PlansService {
   }
 
   private async assertCanView(user: AuthUser, businessId: string) {
-    const business = await this.prisma.business.findUnique({
-      where: { id: businessId },
-      select: { ownerId: true },
-    });
-    if (!business) {
-      throw new NotFoundException('Business not found');
-    }
-    if (
-      user.role === UserRole.ADMIN ||
-      user.role === UserRole.CITY_ADMIN ||
-      business.ownerId === user.id
-    ) {
-      return;
-    }
-    throw new ForbiddenException('Not allowed');
+    await this.businessAccess.assertCanManageBusiness(user, businessId);
   }
 
   private async assertCanManage(user: AuthUser, businessId: string) {
-    const business = await this.prisma.business.findUnique({
-      where: { id: businessId },
-      select: { ownerId: true },
-    });
-    if (!business) {
-      throw new NotFoundException('Business not found');
-    }
-    if (user.role === UserRole.ADMIN || user.role === UserRole.CITY_ADMIN) {
-      return;
-    }
-    if (user.role === UserRole.BUSINESS && business.ownerId === user.id) {
-      return;
-    }
-    throw new ForbiddenException('Not business owner');
+    await this.businessAccess.assertCanManageBusiness(user, businessId);
   }
 
   private addDays(date: Date, days: number) {

@@ -7,6 +7,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AnalyticsDashboardBuilder } from './analytics-dashboard.builder';
 import { AnalyticsService } from './analytics.service';
 import { CSV_UTF8_BOM } from './analytics-csv.serializer';
+import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
 
 describe('Stage 5K analytics CSV export', () => {
   const owner: AuthUser = {
@@ -91,16 +92,19 @@ describe('Stage 5K analytics CSV export', () => {
       getAnalyticsCapabilities: jest.fn(),
     } as unknown as PlanLimitsService;
 
+    const businessAccess = createMockBusinessAccess();
+
     const service = new AnalyticsService(
       prisma as unknown as PrismaService,
       planLimits,
+      asBusinessAccessService(businessAccess),
     );
 
     const builder = (service as unknown as { dashboardBuilder: AnalyticsDashboardBuilder })
       .dashboardBuilder;
     const buildSpy = jest.spyOn(builder, 'build').mockResolvedValue(dashboardFixture as never);
 
-    return { prisma, planLimits, service, builder, buildSpy };
+    return { prisma, planLimits, service, builder, buildSpy, businessAccess };
   }
 
   function mockVipContext(planLimits: PlanLimitsService) {
@@ -122,12 +126,10 @@ describe('Stage 5K analytics CSV export', () => {
   it('VIP owner can export CSV', async () => {
     const { prisma, planLimits, service } = createService();
     mockVipContext(planLimits);
-    prisma.business.findUnique
-      .mockResolvedValueOnce({ ownerId: owner.id })
-      .mockResolvedValueOnce({
-        title: 'Кофейня',
-        city: { nameRu: 'Уральск' },
-      });
+    prisma.business.findUnique.mockResolvedValue({
+      title: 'Кофейня',
+      city: { nameRu: 'Уральск' },
+    });
 
     const result = await service.exportCsv(owner, 'business-1', { days: 30 });
 
@@ -153,7 +155,10 @@ describe('Stage 5K analytics CSV export', () => {
         effectiveTier: tier,
         limits: { maxAnalyticsDays: 30, analyticsTier: 'BASIC' },
       });
-      prisma.business.findUnique.mockResolvedValue({ ownerId: owner.id });
+      prisma.business.findUnique.mockResolvedValue({
+        title: 'Test',
+        city: { nameRu: 'Уральск' },
+      });
 
       await expect(service.exportCsv(owner, 'business-1', { days: 30 })).rejects.toBeInstanceOf(
         ForbiddenException,
@@ -162,9 +167,11 @@ describe('Stage 5K analytics CSV export', () => {
   });
 
   it('rejects cross-owner export', async () => {
-    const { prisma, planLimits, service } = createService();
+    const { planLimits, service, businessAccess } = createService();
     mockVipContext(planLimits);
-    prisma.business.findUnique.mockResolvedValue({ ownerId: owner.id });
+    businessAccess.assertCanViewBusinessAnalytics.mockRejectedValue(
+      new ForbiddenException('Not allowed to manage this business'),
+    );
 
     await expect(
       service.exportCsv(otherOwner, 'business-1', { days: 30 }),
@@ -175,7 +182,6 @@ describe('Stage 5K analytics CSV export', () => {
     const { prisma, planLimits, service, buildSpy } = createService();
     mockVipContext(planLimits);
     prisma.business.findUnique.mockImplementation(async () => ({
-      ownerId: owner.id,
       title: 'Test',
       city: { nameRu: 'Уральск' },
     }));
@@ -202,7 +208,6 @@ describe('Stage 5K analytics CSV export', () => {
       trends: { views: [{ date: '2026-09-01', count: 0 }] },
     } as never);
     prisma.business.findUnique
-      .mockResolvedValueOnce({ ownerId: owner.id })
       .mockResolvedValueOnce({ title: 'Empty', city: { nameRu: 'Уральск' } });
 
     const result = await service.exportCsv(owner, 'business-1', { days: 30 });
@@ -214,7 +219,6 @@ describe('Stage 5K analytics CSV export', () => {
     const { prisma, planLimits, service } = createService();
     mockVipContext(planLimits);
     prisma.business.findUnique.mockImplementation(async () => ({
-      ownerId: owner.id,
       title: 'Test',
       city: { nameRu: 'Уральск' },
     }));
@@ -227,7 +231,6 @@ describe('Stage 5K analytics CSV export', () => {
     const { prisma, planLimits, service } = createService();
     mockVipContext(planLimits);
     prisma.business.findUnique.mockImplementation(async () => ({
-      ownerId: owner.id,
       title: '=HYPERLINK("evil")',
       city: { nameRu: 'Уральск' },
     }));
@@ -239,9 +242,7 @@ describe('Stage 5K analytics CSV export', () => {
   it('throws when business not found during export metadata lookup', async () => {
     const { prisma, planLimits, service } = createService();
     mockVipContext(planLimits);
-    prisma.business.findUnique
-      .mockResolvedValueOnce({ ownerId: owner.id })
-      .mockResolvedValueOnce(null);
+    prisma.business.findUnique.mockResolvedValue(null);
 
     await expect(service.exportCsv(owner, 'business-1', { days: 30 })).rejects.toBeInstanceOf(
       NotFoundException,

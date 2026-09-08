@@ -1,8 +1,9 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { AnalyticsEventType, BusinessStatus, BusinessTrafficSource, UserRole } from '@prisma/client';
+import { AnalyticsEventType, BusinessStatus, BusinessTrafficSource } from '@prisma/client';
 import { getAnalyticsCapabilitiesForPlan } from '../../common/utils/analytics-capabilities.util';
 import { normalizeSearchQueryForAnalytics } from '../../common/utils/search-query-analytics.util';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
+import { BusinessAccessService } from '../../common/services/business-access.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AnalyticsDashboardBuilder } from './analytics-dashboard.builder';
@@ -36,6 +37,7 @@ export class AnalyticsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly planLimits: PlanLimitsService,
+    private readonly businessAccess: BusinessAccessService,
   ) {
     this.dashboardBuilder = new AnalyticsDashboardBuilder(prisma, planLimits);
   }
@@ -206,22 +208,7 @@ export class AnalyticsService {
   }
 
   private async assertCanViewBusinessAnalytics(user: AuthUser, businessId: string) {
-    const business = await this.prisma.business.findUnique({
-      where: { id: businessId },
-      select: { ownerId: true },
-    });
-    if (!business) {
-      throw new NotFoundException('Business not found');
-    }
-
-    if (user.role === UserRole.ADMIN || user.role === UserRole.CITY_ADMIN) {
-      return;
-    }
-    if (user.role === UserRole.BUSINESS && business.ownerId === user.id) {
-      return;
-    }
-
-    throw new ForbiddenException('Not allowed to view analytics');
+    await this.businessAccess.assertCanViewBusinessAnalytics(user, businessId);
   }
 
   private filterByTypeForPlan(

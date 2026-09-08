@@ -10,6 +10,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AnalyticsDashboardBuilder } from '../../modules/analytics/analytics-dashboard.builder';
 import { AnalyticsService } from '../../modules/analytics/analytics.service';
 import { CreateAnalyticsEventDto } from '../../modules/analytics/dto/analytics.dto';
+import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
 
 describe('Stage 5H traffic source attribution', () => {
   const owner: AuthUser = {
@@ -37,12 +38,16 @@ describe('Stage 5H traffic source attribution', () => {
       getAnalyticsCapabilities: jest.fn(),
     } as unknown as PlanLimitsService;
 
+    const businessAccess = createMockBusinessAccess();
+
     return {
       prisma,
       planLimits,
+      businessAccess,
       service: new AnalyticsService(
         prisma as unknown as PrismaService,
         planLimits,
+        asBusinessAccessService(businessAccess),
       ),
       builder: new AnalyticsDashboardBuilder(
         prisma as unknown as PrismaService,

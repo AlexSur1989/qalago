@@ -2,6 +2,7 @@ import { BusinessPlanTier } from '@prisma/client';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PlansService } from './plans.service';
+import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
 
 describe('PlansService — subscription vs paid visibility (Stage 4C.1)', () => {
   const notifications = { create: jest.fn().mockResolvedValue(undefined) };
@@ -49,7 +50,12 @@ describe('PlansService — subscription vs paid visibility (Stage 4C.1)', () => 
       ...planLimitsOverrides,
     } as unknown as PlanLimitsService;
 
-    const service = new PlansService(prisma, planLimits, notifications as never);
+    const service = new PlansService(
+      prisma,
+      planLimits,
+      notifications as never,
+      asBusinessAccessService(createMockBusinessAccess()),
+    );
     return { service, tx, prisma };
   }
 

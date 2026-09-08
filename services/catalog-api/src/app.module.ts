@@ -23,6 +23,8 @@ import { ServiceItemsModule } from './modules/service-items/service-items.module
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { PlansModule } from './modules/plans/plans.module';
 import { MonetizationModule } from './modules/monetization/monetization.module';
+import { AiModule } from './modules/ai/ai.module';
+import { CommonAccessModule } from './common/common-access.module';
 import { HealthController } from './modules/health/health.controller';
 
 @Module({
@@ -43,6 +45,7 @@ import { HealthController } from './modules/health/health.controller';
       ],
     }),
     PrismaModule,
+    CommonAccessModule,
     AuthModule,
     UsersModule,
     CitiesModule,
@@ -58,6 +61,7 @@ import { HealthController } from './modules/health/health.controller';
     AnalyticsModule,
     PlansModule,
     MonetizationModule,
+    AiModule,
   ],
   controllers: [HealthController],
   providers: [

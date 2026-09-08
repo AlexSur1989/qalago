@@ -1,10 +1,10 @@
 import {
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { BusinessStatus, Prisma, UserRole } from '@prisma/client';
 import { CityScopeService } from '../../common/services/city-scope.service';
+import { BusinessAccessService } from '../../common/services/business-access.service';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { haversineMeters } from '../../common/utils/geo.utils';
 import { compareBusinessCatalogRank } from '../../common/utils/business-rank.util';
@@ -46,6 +46,7 @@ export class BusinessesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cityScope: CityScopeService,
+    private readonly businessAccess: BusinessAccessService,
     private readonly planLimits: PlanLimitsService,
     private readonly publicContent: BusinessPublicContentService,
   ) {}
@@ -261,7 +262,7 @@ export class BusinessesService {
     if (!business) {
       throw new NotFoundException('Business not found');
     }
-    this.assertCanManage(user, business.ownerId);
+    await this.businessAccess.assertCanManageBusiness(user, id);
 
     return this.prisma.business.update({
       where: { id },
@@ -272,15 +273,5 @@ export class BusinessesService {
       },
       include: businessDetailInclude,
     });
-  }
-
-  private assertCanManage(user: AuthUser, ownerId: string | null) {
-    if (user.role === UserRole.ADMIN || user.role === UserRole.CITY_ADMIN) {
-      return;
-    }
-    if (user.role === UserRole.BUSINESS && ownerId === user.id) {
-      return;
-    }
-    throw new ForbiddenException('Not allowed to manage this business');
   }
 }

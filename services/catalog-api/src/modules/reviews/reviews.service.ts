@@ -1,9 +1,6 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { NotificationType, UserRole } from '@prisma/client';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { NotificationType } from '@prisma/client';
+import { BusinessAccessService } from '../../common/services/business-access.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -14,6 +11,7 @@ export class ReviewsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly businessAccess: BusinessAccessService,
   ) {}
 
   findByBusiness(businessId: string) {
@@ -67,15 +65,11 @@ export class ReviewsService {
   async reply(user: AuthUser, id: string, dto: ReplyReviewDto) {
     const review = await this.prisma.review.findUnique({
       where: { id },
-      include: { business: { select: { ownerId: true } } },
+      include: { business: { select: { id: true } } },
     });
     if (!review) throw new NotFoundException('Review not found');
 
-    const isOwner = review.business.ownerId === user.id;
-    const isAdmin = user.role === UserRole.ADMIN || user.role === UserRole.CITY_ADMIN;
-    if (!isOwner && !isAdmin) {
-      throw new ForbiddenException('Not allowed to reply');
-    }
+    await this.businessAccess.assertCanManageBusiness(user, review.business.id);
 
     const updated = await this.prisma.review.update({
       where: { id },

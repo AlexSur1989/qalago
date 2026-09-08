@@ -1,7 +1,5 @@
 import { api } from './api-core';
 
-const AI_BASE = process.env.NEXT_PUBLIC_AI_URL ?? 'http://localhost:3004/api/v1';
-
 export type AuthUser = {
   id: string;
   phone: string;
@@ -13,8 +11,7 @@ export type AuthUser = {
   managedCity?: { slug: string; nameRu: string } | null;
 };
 
-export const adminApi = {
-  sendCode: (phone: string) =>
+export const adminApi = {  sendCode: (phone: string) =>
     api<{ success: boolean; debugCode?: string }>('/auth/send-code', {
       method: 'POST',
       body: JSON.stringify({ phone }),
@@ -214,34 +211,25 @@ export type ModerationAnalysis = {
 };
 
 export const aiApi = {
-  createContentDraft: (params: {
-    citySlug: string;
-    topic?: string;
-    limit?: number;
-  }) =>
-    fetch(`${AI_BASE}/content/draft`, {
+  createContentDraft: (
+    token: string,
+    params: {
+      citySlug: string;
+      topic?: string;
+      limit?: number;
+    },
+  ) =>
+    api<EditorialDraft>('/admin/ai/content/draft', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      token,
       body: JSON.stringify(params),
-    }).then(async (res) => {
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || res.statusText);
-      }
-      return res.json() as Promise<EditorialDraft>;
     }),
 
-  analyzeModeration: (params: { text: string; rating: number }) =>
-    fetch(`${AI_BASE}/moderation/analyze`, {
+  analyzeModeration: (token: string, params: { text: string; rating: number }) =>
+    api<ModerationAnalysis>('/admin/ai/moderation/analyze', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      token,
       body: JSON.stringify(params),
-    }).then(async (res) => {
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || res.statusText);
-      }
-      return res.json() as Promise<ModerationAnalysis>;
     }),
 };
 

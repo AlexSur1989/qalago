@@ -575,6 +575,8 @@ Static files served at `/uploads/*` (not under `/api/v1`).
 
 ### POST /uploads
 
+Auth: **BUSINESS | CITY_ADMIN | ADMIN** (Stage 5M.0 — not available to USER).
+
 Multipart field `file` (JPEG/PNG/WebP/GIF, max 5 MB).
 
 Response `200`:
@@ -582,9 +584,11 @@ Response `200`:
 { "url": "/uploads/uuid.jpg" }
 ```
 
+Business attach endpoints additionally verify ownership / CITY_ADMIN city scope via `BusinessAccessService`.
+
 ### POST /uploads/business/:businessId
 
-Attach uploaded image to business (owner/admin).
+Attach uploaded image to business (owner / CITY_ADMIN scoped / ADMIN).
 
 Body:
 ```json
@@ -625,11 +629,35 @@ Notification types: `GENERAL`, `NEW_REVIEW`, `REVIEW_REPLY`, `BUSINESS_APPROVED`
 
 ---
 
-## AI Orchestrator (Phase 4 scaffold)
+## AI (Stage 5M.0 — catalog-api proxy)
 
-Base URL (separate service): `http://localhost:3004/api/v1`
+Clients call **catalog-api**, not ai-orchestrator directly.
 
-- `GET /health`
+### POST /ai/recommendations
+
+Public. Proxies to ai-orchestrator with internal service token. Optional user `Authorization` forwarded for personalized results.
+
+### POST /ai/moderation/analyze
+
+Auth: any authenticated user. Proxies moderation assist (no side effects).
+
+### POST /admin/ai/moderation/analyze
+
+Auth: ADMIN | CITY_ADMIN.
+
+### POST /admin/ai/content/draft
+
+Auth: ADMIN | CITY_ADMIN. CITY_ADMIN limited to `managedCityId` (citySlug must match managed city).
+
+---
+
+## AI Orchestrator (internal)
+
+Base URL (internal service): `http://localhost:3004/api/v1`
+
+**Auth (Stage 5M.0):** all routes except `GET /health` require header `X-QalaGo-Service-Token: <QALAGO_INTERNAL_SERVICE_TOKEN>`. Production fails closed if token unset. User JWT may be passed separately via `Authorization` for personalized recommendations.
+
+- `GET /health` — public
 - `GET /agents` — registered agent metadata
 - `POST /recommendations` — body `{ "citySlug": "uralsk", "limit": 10 }`, optional `Authorization` for personalized results via catalog-api read tools
 - `POST /moderation/analyze` — body `{ "text": "string", "rating": 1-5?, "reviewId": "string?" }` → rule-based moderation assist (no side effects)

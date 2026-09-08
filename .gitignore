@@ -35,9 +35,9 @@ Thumbs.db
 *.log
 logs/
 
-# Uploads & local storage
-uploads/
-services/**/uploads/
+# Upload storage directories (not Nest `modules/uploads` source)
+/uploads/
+services/catalog-api/uploads/
 
 # Test & coverage
 coverage/

@@ -21,6 +21,20 @@
 
 ---
 
+## 2026-09-08 — Stage 5M.0: Authorization P0 hardening
+
+**Сделано**
+- `BusinessAccessService` — единая проверка ADMIN / CITY_ADMIN (managedCityId) / BUSINESS owner
+- CITY_ADMIN scope на PATCH business, analytics/export, catalog, promotions, reviews reply, plans, uploads, monetization
+- `POST /uploads` ограничен ролями BUSINESS / CITY_ADMIN / ADMIN
+- AI: service token (`X-QalaGo-Service-Token`), proxy через catalog-api (`/ai/*`, `/admin/ai/*`)
+
+**Инварианты**
+- CITY_ADMIN не выходит за managedCityId
+- Секрет сервиса не попадает в browser/mobile bundle
+
+---
+
 ## 2026-09-08 — Stage 5L: RBAC & access control audit
 
 **Сделано**

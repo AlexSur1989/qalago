@@ -9,6 +9,8 @@ export default () => ({
     corsOrigins: process.env.CORS_ORIGINS ?? '',
     uploadDir: process.env.UPLOAD_DIR ?? './uploads',
     maxUploadMb: parseInt(process.env.MAX_UPLOAD_MB ?? '5', 10),
+    aiOrchestratorUrl: process.env.AI_ORCHESTRATOR_URL ?? 'http://localhost:3004',
+    internalServiceToken: process.env.QALAGO_INTERNAL_SERVICE_TOKEN ?? '',
   },
   database: {
     url: process.env.DATABASE_URL,

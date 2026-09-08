@@ -244,11 +244,11 @@ export default function DashboardPage() {
 
   async function analyzeReview(review: AdminReviewRow) {
     const text = review.text?.trim();
-    if (!text) return;
+    if (!text || !token) return;
     setReviewCheckingId(review.id);
     setError(null);
     try {
-      const result = await aiApi.analyzeModeration({ text, rating: review.rating });
+      const result = await aiApi.analyzeModeration(token, { text, rating: review.rating });
       setReviewAnalysis((prev) => ({ ...prev, [review.id]: result }));
     } catch (err) {
       setError(String(err));
@@ -379,11 +379,12 @@ export default function DashboardPage() {
   }
 
   async function generateDraft() {
+    if (!token) return;
     setContentLoading(true);
     setContentError(null);
     setCopied(false);
     try {
-      const draft = await aiApi.createContentDraft({
+      const draft = await aiApi.createContentDraft(token, {
         citySlug,
         topic: contentTopic,
         limit: 5,

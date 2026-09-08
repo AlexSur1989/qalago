@@ -1,5 +1,6 @@
 import { ReviewsService } from './reviews.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
 
 describe('ReviewsService', () => {
   let service: ReviewsService;
@@ -14,6 +15,7 @@ describe('ReviewsService', () => {
     service = new ReviewsService(
       prisma as unknown as PrismaService,
       { create: jest.fn() } as never,
+      asBusinessAccessService(createMockBusinessAccess()),
     );
   });
 

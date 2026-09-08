@@ -20,9 +20,9 @@ function Start-DevWindow {
 
 Set-Location $Root
 
-Start-DevWindow "QalaGo API :3002" "$Root\services\catalog-api" "`$env:DEV_LOGIN_ENABLED='true'; npm run start:dev"
+Start-DevWindow "QalaGo API :3002" "$Root\services\catalog-api" "`$env:DEV_LOGIN_ENABLED='true'; `$env:QALAGO_INTERNAL_SERVICE_TOKEN='dev-internal-service-token-change-me'; npm run start:dev"
 Start-Sleep -Seconds 2
-Start-DevWindow "QalaGo AI :3004" "$Root" "npm run dev:ai"
+Start-DevWindow "QalaGo AI :3004" "$Root" "`$env:QALAGO_INTERNAL_SERVICE_TOKEN='dev-internal-service-token-change-me'; npm run dev:ai"
 Start-Sleep -Seconds 1
 Start-DevWindow "QalaGo Admin :3001" "$Root" "`$env:NEXT_PUBLIC_QALAGO_DEV_LOGIN='true'; npm run dev:admin"
 Start-DevWindow "QalaGo Business :3003" "$Root" "`$env:NEXT_PUBLIC_QALAGO_DEV_LOGIN='true'; npm run dev:business"

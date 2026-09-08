@@ -2,6 +2,7 @@ import { UserRole } from '@prisma/client';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MonetizationAccessService } from './monetization-access.service';
+import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
 
 describe('MonetizationAccessService RBAC', () => {
   const prisma = {
@@ -16,7 +17,13 @@ describe('MonetizationAccessService RBAC', () => {
     resolveAdminCityId: jest.fn(),
   } as unknown as CityScopeService;
 
-  const service = new MonetizationAccessService(prisma, cityScope);
+  const businessAccess = createMockBusinessAccess();
+
+  const service = new MonetizationAccessService(
+    prisma,
+    cityScope,
+    asBusinessAccessService(businessAccess),
+  );
 
   beforeEach(() => jest.clearAllMocks());
 
