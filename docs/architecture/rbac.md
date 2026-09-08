@@ -67,12 +67,38 @@
 
 | Слой | Файлы |
 |------|--------|
-| API guards | `roles.guard.ts`, `business-owner.guard.ts` |
+| API guards | `roles.guard.ts`, `BusinessAccessService` |
 | Город модератора | `city-scope.service.ts` |
 | Admin API | `admin.controller.ts` |
+| Business membership | `business-membership.service.ts`, `business-access.service.ts` |
 | Mobile UI | `role_permissions.dart`, `profile_permissions_screen.dart` |
 | Admin-web | `lib/rbac.ts`, login + dashboard |
 | Shared | `packages/shared-types/src/rbac.ts` |
+
+---
+
+## AuditLog (Stage 5M.3)
+
+**Назначение:** append-only журнал **безопасностных/операционных** мутаций (не аналитика, не `AnalyticsEvent`).
+
+| Принцип | Правило |
+|---------|---------|
+| Запись | Только сервер (`AuditLogService.record`) |
+| Актор | `actorUserId` + `actorRole` snapshot из auth context |
+| Membership | `metadata.membershipRole` = OWNER/MANAGER при business-действиях |
+| Scope | `businessId` / `cityId` из загруженного ресурса, не из клиента |
+| Metadata | `changedFields`, enum before/after, permission diffs — без секретов/телефонов |
+| Immutability | INSERT + READ; нет PATCH/DELETE API |
+| Backfill | Нет — аудит с момента деплоя 5M.3 |
+| Retention | TBD (пока хранить бессрочно) |
+
+**Чтение:**
+- `GET /admin/audit-logs` — ADMIN (global), CITY_ADMIN (`managedCityId` enforced)
+- `GET /businesses/:id/team/audit` — OWNER only (team actions)
+
+USER / MANAGER / BUSINESS без admin-доступа **не** читают admin audit logs.
+
+Подробнее: `docs/architecture/business-membership.md`, `docs/architecture/api-contracts.md`.
 
 ---
 
