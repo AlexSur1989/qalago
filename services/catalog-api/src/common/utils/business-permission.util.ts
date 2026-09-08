@@ -4,7 +4,7 @@ import { UpdateBusinessDto } from '../../modules/businesses/dto/business.dto';
 
 export const ALL_BUSINESS_PERMISSIONS = Object.values(BusinessPermission);
 
-const PROFILE_FIELDS = new Set([
+export const PROFILE_FIELDS = new Set([
   'title',
   'shortDesc',
   'description',
@@ -18,7 +18,7 @@ const PROFILE_FIELDS = new Set([
   'coverImageUrl',
 ]);
 
-const HOURS_FIELDS = new Set(['workHours']);
+export const HOURS_FIELDS = new Set(['workHours']);
 
 export function normalizeBusinessPermissions(
   permissions: BusinessPermission[],

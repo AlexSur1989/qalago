@@ -1,9 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { BusinessPermission, NotificationType } from '@prisma/client';
+import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  AuditAction,
+  AuditResourceType,
+  BusinessPermission,
+  NotificationType,
+} from '@prisma/client';
 import { BusinessAccessService } from '../../common/services/business-access.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
+import { toMembershipRole } from '../audit-log/audit-log.util';
 import { CreateReviewDto, ReplyReviewDto } from './dto/review.dto';
 
 @Injectable()
@@ -12,6 +19,7 @@ export class ReviewsService {
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
     private readonly businessAccess: BusinessAccessService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   findByBusiness(businessId: string) {
@@ -65,19 +73,29 @@ export class ReviewsService {
   async reply(user: AuthUser, id: string, dto: ReplyReviewDto) {
     const review = await this.prisma.review.findUnique({
       where: { id },
-      include: { business: { select: { id: true } } },
+      include: { business: { select: { id: true, cityId: true } } },
     });
     if (!review) throw new NotFoundException('Review not found');
 
-    await this.businessAccess.assertBusinessPermission(
-      user,
-      review.business.id,
-      BusinessPermission.REVIEWS_REPLY,
-    );
+    const access = await this.businessAccess.resolveAccess(user, review.business.id);
+    if (!access.permissions.includes(BusinessPermission.REVIEWS_REPLY)) {
+      throw new ForbiddenException(`Missing permission: ${BusinessPermission.REVIEWS_REPLY}`);
+    }
 
     const updated = await this.prisma.review.update({
       where: { id },
       data: { ownerReply: dto.ownerReply },
+    });
+
+    await this.auditLog.record({
+      actor: user,
+      action: AuditAction.REVIEW_REPLY_CREATE,
+      resourceType: AuditResourceType.REVIEW,
+      resourceId: id,
+      businessId: review.business.id,
+      cityId: review.business.cityId,
+      membershipRole: toMembershipRole(access.accessRole),
+      metadata: { reviewId: id },
     });
 
     await this.notifications.create({

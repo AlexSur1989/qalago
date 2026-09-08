@@ -8,6 +8,7 @@ import {
 import { BusinessAccessService } from './business-access.service';
 import { BusinessMembershipService } from './business-membership.service';
 import { CityScopeService } from './city-scope.service';
+import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
 
 describe('BusinessAccessService (Stage 5M.2)', () => {
   const uralskCityId = 'city-uralsk';
@@ -50,7 +51,7 @@ describe('BusinessAccessService (Stage 5M.2)', () => {
         throw new ForbiddenException('Not allowed to manage businesses in this city');
       }
     });
-    membership = new BusinessMembershipService(prisma as never);
+    membership = new BusinessMembershipService(prisma as never, asAuditLogService(createMockAuditLog()));
     service = new BusinessAccessService(prisma as never, cityScope, membership);
   });
 

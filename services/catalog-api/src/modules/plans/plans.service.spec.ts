@@ -3,6 +3,7 @@ import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PlansService } from './plans.service';
 import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
+import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
 
 describe('PlansService — subscription vs paid visibility (Stage 4C.1)', () => {
   const notifications = { create: jest.fn().mockResolvedValue(undefined) };
@@ -55,6 +56,7 @@ describe('PlansService — subscription vs paid visibility (Stage 4C.1)', () => 
       planLimits,
       notifications as never,
       asBusinessAccessService(createMockBusinessAccess()),
+      asAuditLogService(createMockAuditLog()),
     );
     return { service, tx, prisma };
   }

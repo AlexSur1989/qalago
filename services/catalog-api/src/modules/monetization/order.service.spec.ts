@@ -12,6 +12,7 @@ import { OrderService } from './order.service';
 import { MonetizationAccessService } from './monetization-access.service';
 import { PricingService } from './pricing.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
 
 describe('OrderService', () => {
   const prisma = {
@@ -52,7 +53,7 @@ describe('OrderService', () => {
     provisionOrderCampaigns: jest.fn().mockResolvedValue(undefined),
   } as unknown as CampaignProvisioningService;
 
-  const service = new OrderService(prisma, access, pricing, availability, provisioning);
+  const service = new OrderService(prisma, access, pricing, availability, provisioning, asAuditLogService(createMockAuditLog()));
 
   const user = { id: 'user-1', role: UserRole.BUSINESS, phone: '+7700', sub: 'user-1' };
   const business = { cityId: 'city-1', categoryId: 'cat-1', ownerId: 'user-1' };
@@ -394,8 +395,9 @@ describe('OrderService', () => {
       status: PaymentStatus.PENDING,
       amount: 4900,
       orderId: 'ord-1',
-      order: { id: 'ord-1', status: OrderStatus.AWAITING_PAYMENT, totalAmount: 4900 },
+      order: { id: 'ord-1', businessId: 'biz-1', status: OrderStatus.AWAITING_PAYMENT, totalAmount: 4900 },
     });
+    prisma.business.findUnique = jest.fn().mockResolvedValue({ cityId: 'city-1' });
 
     prisma.$transaction = jest.fn().mockImplementation(async (fn) => {
       const tx = {
@@ -487,8 +489,9 @@ describe('OrderService', () => {
       status: PaymentStatus.PENDING,
       amount: 4900,
       orderId: 'ord-1',
-      order: { id: 'ord-1', status: OrderStatus.AWAITING_PAYMENT, totalAmount: 4900 },
+      order: { id: 'ord-1', businessId: 'biz-1', status: OrderStatus.AWAITING_PAYMENT, totalAmount: 4900 },
     });
+    prisma.business.findUnique = jest.fn().mockResolvedValue({ cityId: 'city-1' });
 
     prisma.$transaction = jest.fn().mockImplementation(async (fn) => {
       const tx = {

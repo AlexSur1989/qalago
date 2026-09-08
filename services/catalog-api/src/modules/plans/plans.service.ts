@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { BusinessPlanTier, BusinessPermission, NotificationType, PlanPaymentStatus, UserRole } from '@prisma/client';
+import { AuditAction, AuditResourceType, BusinessPlanTier, BusinessPermission, NotificationType, PlanPaymentStatus, UserRole } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import {
   PlanLimitsService,
@@ -13,6 +13,8 @@ import {
 import { BusinessAccessService } from '../../common/services/business-access.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
+import { toMembershipRole } from '../audit-log/audit-log.util';
 
 const PAID_PERIOD_DAYS = 30;
 
@@ -23,6 +25,7 @@ export class PlansService {
     private readonly planLimits: PlanLimitsService,
     private readonly notifications: NotificationsService,
     private readonly businessAccess: BusinessAccessService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   listCatalog() {
@@ -44,16 +47,23 @@ export class PlansService {
 
   async mockCheckout(user: AuthUser, businessId: string, tier: BusinessPlanTier) {
     await this.assertCanManage(user, businessId);
+    const access = await this.businessAccess.resolveAccess(user, businessId);
     return this.setBusinessTier(businessId, tier, {
       isMock: true,
       message: 'Тариф подключён (тестовая оплата без списания)',
+      audit: {
+        actor: user,
+        action: AuditAction.PLAN_CHECKOUT,
+        cityId: access.business.cityId,
+        membershipRole: toMembershipRole(access.accessRole),
+      },
     });
   }
 
   async adminSetTier(user: AuthUser, businessId: string, tier: BusinessPlanTier) {
     const business = await this.prisma.business.findUnique({
       where: { id: businessId },
-      select: { cityId: true },
+      select: { cityId: true, planTier: true },
     });
     if (!business) {
       throw new NotFoundException('Business not found');
@@ -66,6 +76,11 @@ export class PlansService {
       isMock: false,
       skipPayment: true,
       message: 'Тариф изменён администратором',
+      audit: {
+        actor: user,
+        action: AuditAction.PLAN_OVERRIDE,
+        cityId: business.cityId,
+      },
     });
   }
 
@@ -76,6 +91,12 @@ export class PlansService {
       isMock?: boolean;
       skipPayment?: boolean;
       message?: string;
+      audit?: {
+        actor: AuthUser;
+        action: AuditAction;
+        cityId: string;
+        membershipRole?: import('@prisma/client').BusinessMembershipRole | null;
+      };
     } = {},
   ) {
     const catalog = this.planLimits.getCatalogItem(tier);
@@ -101,8 +122,19 @@ export class PlansService {
       isMock?: boolean;
       skipPayment?: boolean;
       message?: string;
+      audit?: {
+        actor: AuthUser;
+        action: AuditAction;
+        cityId: string;
+        membershipRole?: import('@prisma/client').BusinessMembershipRole | null;
+      };
     } = {},
   ) {
+    const existing = await this.prisma.business.findUnique({
+      where: { id: businessId },
+      select: { planTier: true },
+    });
+
     const updated = await this.prisma.$transaction(async (tx) => {
       const business = await tx.business.update({
         where: { id: businessId },
@@ -129,6 +161,24 @@ export class PlansService {
             isMock: options.isMock ?? true,
             expiresAt,
           },
+        });
+      }
+
+      if (options.audit) {
+        await this.auditLog.record({
+          actor: options.audit.actor,
+          action: options.audit.action,
+          resourceType: AuditResourceType.PLAN,
+          resourceId: businessId,
+          businessId,
+          cityId: options.audit.cityId,
+          membershipRole: options.audit.membershipRole ?? null,
+          metadata: {
+            planFrom: existing?.planTier ?? null,
+            planTo: tier,
+            isMock: options.isMock ?? false,
+          },
+          tx,
         });
       }
 

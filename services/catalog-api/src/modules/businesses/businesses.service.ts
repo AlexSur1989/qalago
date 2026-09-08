@@ -2,16 +2,23 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { BusinessStatus, BusinessMembershipRole, BusinessMembershipStatus, Prisma, UserRole } from '@prisma/client';
+import { BusinessStatus, AuditAction, AuditResourceType, BusinessMembershipRole, BusinessMembershipStatus, Prisma, UserRole } from '@prisma/client';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { BusinessAccessService } from '../../common/services/business-access.service';
 import { BusinessMembershipService } from '../../common/services/business-membership.service';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
-import { getRequiredPermissionsForPatch, ownerHasAllPermissions } from '../../common/utils/business-permission.util';
+import {
+  getRequiredPermissionsForPatch,
+  ownerHasAllPermissions,
+  PROFILE_FIELDS,
+  HOURS_FIELDS,
+} from '../../common/utils/business-permission.util';
 import { haversineMeters } from '../../common/utils/geo.utils';
 import { compareBusinessCatalogRank } from '../../common/utils/business-rank.util';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
+import { changedFieldsFromDto, toMembershipRole } from '../audit-log/audit-log.util';
 import { CreateBusinessDto, ListBusinessesQueryDto, UpdateBusinessDto } from './dto/business.dto';
 import { BusinessPublicContentService } from './business-public-content.service';
 import { randomBytes } from 'crypto';
@@ -52,6 +59,7 @@ export class BusinessesService {
     private readonly membership: BusinessMembershipService,
     private readonly planLimits: PlanLimitsService,
     private readonly publicContent: BusinessPublicContentService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   async create(user: AuthUser, dto: CreateBusinessDto) {
@@ -320,7 +328,10 @@ export class BusinessesService {
       await this.businessAccess.assertBusinessPermission(user, id, permission);
     }
 
-    return this.prisma.business.update({
+    const access = await this.businessAccess.resolveAccess(user, id);
+    const changedKeys = changedFieldsFromDto(dto as Record<string, unknown>);
+
+    const updated = await this.prisma.business.update({
       where: { id },
       data: {
         ...dto,
@@ -329,5 +340,36 @@ export class BusinessesService {
       },
       include: businessDetailInclude,
     });
+
+    const membershipRole = toMembershipRole(access.accessRole);
+    const profileChanged = changedKeys.filter((k) => PROFILE_FIELDS.has(k));
+    const hoursChanged = changedKeys.filter((k) => HOURS_FIELDS.has(k));
+
+    if (profileChanged.length > 0) {
+      await this.auditLog.record({
+        actor: user,
+        action: AuditAction.BUSINESS_PROFILE_UPDATE,
+        resourceType: AuditResourceType.BUSINESS,
+        resourceId: id,
+        businessId: id,
+        cityId: business.cityId,
+        membershipRole,
+        metadata: { changedFields: profileChanged },
+      });
+    }
+    if (hoursChanged.length > 0) {
+      await this.auditLog.record({
+        actor: user,
+        action: AuditAction.BUSINESS_HOURS_UPDATE,
+        resourceType: AuditResourceType.BUSINESS,
+        resourceId: id,
+        businessId: id,
+        cityId: business.cityId,
+        membershipRole,
+        metadata: { changedFields: hoursChanged },
+      });
+    }
+
+    return updated;
   }
 }

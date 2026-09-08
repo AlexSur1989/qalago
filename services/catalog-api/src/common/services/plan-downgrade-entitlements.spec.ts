@@ -12,6 +12,7 @@ import { PlansService } from '../../modules/plans/plans.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CityScopeService } from '../services/city-scope.service';
 import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
+import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
 
 describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
   const now = new Date('2026-09-06T12:00:00Z');
@@ -261,6 +262,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
         cityScope,
         limitsService,
         asBusinessAccessService(createMockBusinessAccess()),
+        asAuditLogService(createMockAuditLog()),
       );
 
       const ownerResult = await promotionsService.findAll(
@@ -339,6 +341,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
         { createActiveOwnerMembership: jest.fn() } as never,
         planLimits,
         publicContent as never,
+        asAuditLogService(createMockAuditLog()),
       );
 
       const result = await businessesService.findOne('b1');
@@ -417,6 +420,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
         planLimits,
         notifications as never,
         asBusinessAccessService(createMockBusinessAccess()),
+        asAuditLogService(createMockAuditLog()),
       );
 
       await plansService.setBusinessTier('b1', BusinessPlanTier.BASIC, {

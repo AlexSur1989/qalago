@@ -262,6 +262,7 @@ OWNER `permissions` in response are the full enum (implicit all). MANAGER receiv
 | POST | `/businesses/:businessId/team/invite` | OWNER — body `{ phone, permissions[] }` |
 | PATCH | `/businesses/:businessId/team/:membershipId` | OWNER — body `{ permissions?, status? }` |
 | DELETE | `/businesses/:businessId/team/invitations/:invitationId` | OWNER |
+| GET | `/businesses/:businessId/team/audit` | **OWNER only** — team-related audit rows; paginated (`page`, `limit` max 100) |
 
 ### PATCH /businesses/:id
 
@@ -283,6 +284,7 @@ Auth user recommendations (rule-based MVP; AI later). Cold start (no favorites):
 - `PATCH /admin/categories/:id/city-order` — body `{ "citySlug", "sortOrder" }`
 - `GET /admin/users` — ADMIN only
 - `PATCH /admin/users/:id/role` — ADMIN only; body: `{ role, managedCityId? }` (required when role is CITY_ADMIN)
+- `GET /admin/audit-logs` — **ADMIN** global; **CITY_ADMIN** scoped to `managedCityId`. Query: `page`, `limit` (default 50, max 100), `action`, `resourceType`, `businessId`, `cityId`, `actorUserId`, `dateFrom`, `dateTo`. Append-only; no PATCH/DELETE. Reading audit logs does not create audit rows.
 - `GET /admin/reviews?citySlug=&limit=` — reviews scoped by admin city; includes user + business
 - `DELETE /admin/reviews/:id` — remove review (city-scoped for CITY_ADMIN)
 

@@ -7,6 +7,7 @@ import {
 } from '@prisma/client';
 import { AvailabilityService } from './availability.service';
 import { CampaignProvisioningService } from './campaign-provisioning.service';
+import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
 import { CampaignStatusService } from './campaign-status.service';
 import { OrderService } from './order.service';
 import { MonetizationAccessService } from './monetization-access.service';
@@ -177,6 +178,7 @@ describe('Stage 4B.2 — VIP inventory reservation + order validation', () => {
       pricing,
       availability,
       provisioning,
+      asAuditLogService(createMockAuditLog()),
     );
 
     const user = { id: 'user-1', role: UserRole.BUSINESS, phone: '+7700', sub: 'user-1' };

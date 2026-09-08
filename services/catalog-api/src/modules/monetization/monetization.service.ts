@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import {
   AdCampaignStatus,
+  AuditAction,
+  AuditResourceType,
   MonetizationProductType,
   Prisma,
 } from '@prisma/client';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
 import { AvailabilityService } from './availability.service';
 import { CampaignStatusService } from './campaign-status.service';
 import { QuoteDto } from './dto/monetization.dto';
@@ -27,6 +30,7 @@ export class MonetizationService {
     private readonly availability: AvailabilityService,
     private readonly access: MonetizationAccessService,
     private readonly campaignStatus: CampaignStatusService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   async listProducts(
@@ -352,7 +356,7 @@ export class MonetizationService {
   }
 
   async pauseCampaign(user: AuthUser, campaignId: string) {
-    await this.access.assertCampaignAccess(user, campaignId);
+    const campaign = await this.access.assertCampaignAccess(user, campaignId);
     const updated = await this.prisma.adCampaign.update({
       where: { id: campaignId },
       data: { status: AdCampaignStatus.PAUSED },
@@ -361,6 +365,25 @@ export class MonetizationService {
         campaignPlacements: { include: { placement: true } },
       },
     });
+
+    const business = await this.prisma.business.findUnique({
+      where: { id: campaign.businessId },
+      select: { cityId: true },
+    });
+
+    await this.auditLog.record({
+      actor: user,
+      action: AuditAction.AD_CAMPAIGN_PAUSE,
+      resourceType: AuditResourceType.AD_CAMPAIGN,
+      resourceId: campaignId,
+      businessId: campaign.businessId,
+      cityId: business?.cityId ?? null,
+      metadata: {
+        oldStatus: campaign.status,
+        newStatus: AdCampaignStatus.PAUSED,
+      },
+    });
+
     return this.formatCampaign(updated);
   }
 
@@ -386,6 +409,25 @@ export class MonetizationService {
         campaignPlacements: { include: { placement: true } },
       },
     });
+
+    const business = await this.prisma.business.findUnique({
+      where: { id: campaign.businessId },
+      select: { cityId: true },
+    });
+
+    await this.auditLog.record({
+      actor: user,
+      action: AuditAction.AD_CAMPAIGN_ACTIVATE,
+      resourceType: AuditResourceType.AD_CAMPAIGN,
+      resourceId: campaignId,
+      businessId: campaign.businessId,
+      cityId: business?.cityId ?? null,
+      metadata: {
+        oldStatus: campaign.status,
+        newStatus: status,
+      },
+    });
+
     return this.formatCampaign(updated);
   }
 

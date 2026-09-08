@@ -5,6 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  AuditAction,
+  AuditResourceType,
   BusinessInvitationStatus,
   BusinessMembershipRole,
   BusinessMembershipStatus,
@@ -21,6 +23,8 @@ import {
   validatePermissionDependencies,
 } from '../../common/utils/business-permission.util';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
+import { maskPhoneForAudit, permissionDiff } from '../audit-log/audit-log.util';
 import { InviteTeamMemberDto, UpdateTeamMemberDto } from './dto/team.dto';
 
 const INVITE_TTL_DAYS = 7;
@@ -31,6 +35,7 @@ export class BusinessTeamService {
     private readonly prisma: PrismaService,
     private readonly businessAccess: BusinessAccessService,
     private readonly membership: BusinessMembershipService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   async listTeam(user: AuthUser, businessId: string) {
@@ -74,7 +79,7 @@ export class BusinessTeamService {
   }
 
   async inviteManager(user: AuthUser, businessId: string, dto: InviteTeamMemberDto) {
-    await this.businessAccess.assertOwner(user, businessId);
+    const business = await this.businessAccess.assertOwner(user, businessId);
     validatePermissionDependencies(dto.permissions);
     const permissions = normalizeBusinessPermissions(dto.permissions);
     const phone = this.requirePhone(dto.phone);
@@ -118,6 +123,22 @@ export class BusinessTeamService {
           },
         });
 
+        await this.auditLog.record({
+          actor: user,
+          action: AuditAction.TEAM_INVITE,
+          resourceType: AuditResourceType.BUSINESS_MEMBERSHIP,
+          resourceId: membership.id,
+          businessId,
+          cityId: business.cityId,
+          targetUserId: existingUser.id,
+          membershipRole: BusinessMembershipRole.OWNER,
+          metadata: {
+            membershipId: membership.id,
+            permissionCount: permissions.length,
+          },
+          tx,
+        });
+
         return { type: 'membership' as const, membershipId: membership.id };
       });
     }
@@ -144,6 +165,21 @@ export class BusinessTeamService {
       },
     });
 
+    await this.auditLog.record({
+      actor: user,
+      action: AuditAction.TEAM_INVITE,
+      resourceType: AuditResourceType.BUSINESS_INVITATION,
+      resourceId: invitation.id,
+      businessId,
+      cityId: business.cityId,
+      membershipRole: BusinessMembershipRole.OWNER,
+      metadata: {
+        invitationId: invitation.id,
+        phoneMasked: maskPhoneForAudit(phone),
+        permissionCount: permissions.length,
+      },
+    });
+
     return { type: 'invitation' as const, invitationId: invitation.id, expiresAt };
   }
 
@@ -153,7 +189,7 @@ export class BusinessTeamService {
     membershipId: string,
     dto: UpdateTeamMemberDto,
   ) {
-    await this.businessAccess.assertOwner(user, businessId);
+    const business = await this.businessAccess.assertOwner(user, businessId);
 
     const membership = await this.prisma.businessMembership.findFirst({
       where: { id: membershipId, businessId },
@@ -166,9 +202,16 @@ export class BusinessTeamService {
     }
 
     const data: Prisma.BusinessMembershipUpdateInput = {};
+    let permissionsAdded: string[] = [];
+    let permissionsRemoved: string[] = [];
+
     if (dto.permissions !== undefined) {
       validatePermissionDependencies(dto.permissions);
-      data.permissions = normalizeBusinessPermissions(dto.permissions);
+      const nextPermissions = normalizeBusinessPermissions(dto.permissions);
+      const diff = permissionDiff(membership.permissions, nextPermissions);
+      permissionsAdded = diff.permissionsAdded;
+      permissionsRemoved = diff.permissionsRemoved;
+      data.permissions = nextPermissions;
     }
     if (dto.status !== undefined) {
       if (dto.status === BusinessMembershipStatus.INVITED) {
@@ -180,14 +223,69 @@ export class BusinessTeamService {
       data.status = dto.status;
     }
 
-    return this.prisma.businessMembership.update({
+    const updated = await this.prisma.businessMembership.update({
       where: { id: membershipId },
       data,
     });
+
+    const auditEntries: Array<{ action: AuditAction; metadata: Record<string, unknown> }> = [];
+
+    if (dto.permissions !== undefined) {
+      auditEntries.push({
+        action: AuditAction.TEAM_PERMISSION_UPDATE,
+        metadata: {
+          membershipId,
+          targetUserId: membership.userId,
+          permissionsAdded,
+          permissionsRemoved,
+          permissionCountBefore: membership.permissions.length,
+          permissionCountAfter: updated.permissions.length,
+        },
+      });
+    }
+
+    if (dto.status !== undefined && dto.status !== membership.status) {
+      let action: AuditAction = AuditAction.TEAM_REVOKE;
+      if (dto.status === BusinessMembershipStatus.SUSPENDED) {
+        action = AuditAction.TEAM_SUSPEND;
+      } else if (
+        dto.status === BusinessMembershipStatus.ACTIVE &&
+        membership.status === BusinessMembershipStatus.SUSPENDED
+      ) {
+        action = AuditAction.TEAM_RESTORE;
+      } else if (dto.status === BusinessMembershipStatus.REVOKED) {
+        action = AuditAction.TEAM_REVOKE;
+      }
+      auditEntries.push({
+        action,
+        metadata: {
+          membershipId,
+          targetUserId: membership.userId,
+          oldStatus: membership.status,
+          newStatus: dto.status,
+        },
+      });
+    }
+
+    for (const entry of auditEntries) {
+      await this.auditLog.record({
+        actor: user,
+        action: entry.action,
+        resourceType: AuditResourceType.BUSINESS_MEMBERSHIP,
+        resourceId: membershipId,
+        businessId,
+        cityId: business.cityId,
+        targetUserId: membership.userId,
+        membershipRole: BusinessMembershipRole.OWNER,
+        metadata: entry.metadata,
+      });
+    }
+
+    return updated;
   }
 
   async revokeInvitation(user: AuthUser, businessId: string, invitationId: string) {
-    await this.businessAccess.assertOwner(user, businessId);
+    const business = await this.businessAccess.assertOwner(user, businessId);
 
     const invitation = await this.prisma.businessInvitation.findFirst({
       where: { id: invitationId, businessId, status: BusinessInvitationStatus.PENDING },
@@ -196,10 +294,28 @@ export class BusinessTeamService {
       throw new NotFoundException('Invitation not found');
     }
 
-    return this.prisma.businessInvitation.update({
+    const updated = await this.prisma.businessInvitation.update({
       where: { id: invitationId },
       data: { status: BusinessInvitationStatus.REVOKED },
     });
+
+    await this.auditLog.record({
+      actor: user,
+      action: AuditAction.TEAM_REVOKE,
+      resourceType: AuditResourceType.BUSINESS_INVITATION,
+      resourceId: invitationId,
+      businessId,
+      cityId: business.cityId,
+      membershipRole: BusinessMembershipRole.OWNER,
+      metadata: {
+        invitationId,
+        phoneMasked: maskPhoneForAudit(invitation.phone),
+        oldStatus: BusinessInvitationStatus.PENDING,
+        newStatus: BusinessInvitationStatus.REVOKED,
+      },
+    });
+
+    return updated;
   }
 
   private async assertTeamReadAccess(user: AuthUser, businessId: string) {
@@ -223,7 +339,6 @@ export class BusinessTeamService {
   }
 
   private maskPhone(phone: string): string {
-    if (phone.length < 8) return '***';
-    return `${phone.slice(0, 4)}***${phone.slice(-2)}`;
+    return maskPhoneForAudit(phone);
   }
 }

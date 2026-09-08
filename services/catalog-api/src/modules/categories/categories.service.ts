@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { AuditAction, AuditResourceType, UserRole } from '@prisma/client';
 import { CityScopeService } from '../../common/services/city-scope.service';
+import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
+import { changedFieldsFromDto } from '../audit-log/audit-log.util';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
 
 type CategoryRecord = {
@@ -25,6 +28,7 @@ export class CategoriesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cityScope: CityScopeService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   async findAll(params?: { citySlug?: string }) {
@@ -148,18 +152,41 @@ export class CategoriesService {
     return { success: true, isHidden };
   }
 
-  async create(dto: CreateCategoryDto) {
-    return this.prisma.category.create({ data: dto });
+  async create(actor: AuthUser, dto: CreateCategoryDto) {
+    const category = await this.prisma.category.create({ data: dto });
+    await this.auditLog.record({
+      actor,
+      action: AuditAction.CATEGORY_CREATE,
+      resourceType: AuditResourceType.CATEGORY,
+      resourceId: category.id,
+      metadata: { slug: category.slug, title: category.title },
+    });
+    return category;
   }
 
-  async update(id: string, dto: UpdateCategoryDto) {
+  async update(actor: AuthUser, id: string, dto: UpdateCategoryDto) {
     await this.ensureExists(id);
-    return this.prisma.category.update({ where: { id }, data: dto });
+    const updated = await this.prisma.category.update({ where: { id }, data: dto });
+    await this.auditLog.record({
+      actor,
+      action: AuditAction.CATEGORY_UPDATE,
+      resourceType: AuditResourceType.CATEGORY,
+      resourceId: id,
+      metadata: { changedFields: changedFieldsFromDto(dto as Record<string, unknown>) },
+    });
+    return updated;
   }
 
-  async remove(id: string) {
+  async remove(actor: AuthUser, id: string) {
     await this.ensureExists(id);
-    return this.prisma.category.delete({ where: { id } });
+    await this.prisma.category.delete({ where: { id } });
+    await this.auditLog.record({
+      actor,
+      action: AuditAction.CATEGORY_DELETE,
+      resourceType: AuditResourceType.CATEGORY,
+      resourceId: id,
+    });
+    return { success: true };
   }
 
   private async applyCityOrder(categories: CategoryRecord[], cityId: string) {

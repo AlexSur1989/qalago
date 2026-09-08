@@ -1,6 +1,14 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 
-import { BusinessStatus, BusinessPlanTier, NotificationType, Prisma, UserRole } from '@prisma/client';
+import {
+  AuditAction,
+  AuditResourceType,
+  BusinessStatus,
+  BusinessPlanTier,
+  NotificationType,
+  Prisma,
+  UserRole,
+} from '@prisma/client';
 
 import { AuthUser } from '../../common/types/jwt-payload.type';
 
@@ -17,6 +25,8 @@ import { CitiesService } from '../cities/cities.service';
 import { GeoService } from '../geo/geo.service';
 
 import { PlansService } from '../plans/plans.service';
+
+import { AuditLogService } from '../audit-log/audit-log.service';
 
 import { CreateCityDto, UpdateCityDto } from '../cities/dto/city.dto';
 
@@ -56,6 +66,8 @@ export class AdminService {
     private readonly geo: GeoService,
 
     private readonly plans: PlansService,
+
+    private readonly auditLog: AuditLogService,
 
   ) {}
 
@@ -251,40 +263,48 @@ export class AdminService {
 
 
 
-  updateUserRole(id: string, dto: UpdateUserRoleDto) {
+  async updateUserRole(actor: AuthUser, id: string, dto: UpdateUserRoleDto) {
+    const target = await this.prisma.user.findUnique({ where: { id } });
+    if (!target) {
+      throw new NotFoundException('User not found');
+    }
 
-    return this.prisma.user.update({
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.user.update({
+        where: { id },
+        data: {
+          role: dto.role,
+          managedCityId:
+            dto.role === UserRole.CITY_ADMIN ? dto.managedCityId ?? null : null,
+        },
+        select: {
+          id: true,
+          phone: true,
+          name: true,
+          role: true,
+          managedCityId: true,
+          managedCity: { select: { id: true, slug: true, nameRu: true } },
+        },
+      });
 
-      where: { id },
+      await this.auditLog.record({
+        actor,
+        action: AuditAction.USER_ROLE_CHANGE,
+        resourceType: AuditResourceType.USER,
+        resourceId: id,
+        targetUserId: id,
+        metadata: {
+          oldRole: target.role,
+          newRole: dto.role,
+          oldManagedCityId: target.managedCityId,
+          newManagedCityId:
+            dto.role === UserRole.CITY_ADMIN ? dto.managedCityId ?? null : null,
+        },
+        tx,
+      });
 
-      data: {
-
-        role: dto.role,
-
-        managedCityId:
-
-          dto.role === UserRole.CITY_ADMIN ? dto.managedCityId ?? null : null,
-
-      },
-
-      select: {
-
-        id: true,
-
-        phone: true,
-
-        name: true,
-
-        role: true,
-
-        managedCityId: true,
-
-        managedCity: { select: { id: true, slug: true, nameRu: true } },
-
-      },
-
+      return updated;
     });
-
   }
 
 
@@ -391,14 +411,49 @@ export class AdminService {
     return this.cities.findAllAdmin();
   }
 
-  async createCity(dto: CreateCityDto) {
+  async createCity(actor: AuthUser, dto: CreateCityDto) {
     const city = await this.cities.create(dto);
     await this.categories.bootstrapCityCategories(city.id);
+    await this.auditLog.record({
+      actor,
+      action: AuditAction.CITY_CREATE,
+      resourceType: AuditResourceType.CITY,
+      resourceId: city.id,
+      cityId: city.id,
+      metadata: {
+        slug: city.slug,
+        launchStatus: city.launchStatus,
+      },
+    });
     return city;
   }
 
-  updateCity(id: string, dto: UpdateCityDto) {
-    return this.cities.update(id, dto);
+  async updateCity(actor: AuthUser, id: string, dto: UpdateCityDto) {
+    const existing = await this.prisma.city.findUnique({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException('City not found');
+    }
+
+    const city = await this.cities.update(id, dto);
+
+    const launchChanged =
+      dto.launchStatus !== undefined && dto.launchStatus !== existing.launchStatus;
+
+    await this.auditLog.record({
+      actor,
+      action: launchChanged ? AuditAction.CITY_LAUNCH_STATUS_CHANGE : AuditAction.CITY_UPDATE,
+      resourceType: AuditResourceType.CITY,
+      resourceId: id,
+      cityId: id,
+      metadata: {
+        changedFields: Object.keys(dto).filter((k) => (dto as Record<string, unknown>)[k] !== undefined),
+        ...(launchChanged
+          ? { oldLaunchStatus: existing.launchStatus, newLaunchStatus: dto.launchStatus }
+          : {}),
+      },
+    });
+
+    return city;
   }
 
   searchGeoPlaces(query: string, country = 'kz') {

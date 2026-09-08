@@ -7,11 +7,12 @@ import { ConfigService } from '@nestjs/config';
 import { createWriteStream, existsSync, mkdirSync } from 'fs';
 import { join, extname } from 'path';
 import { randomUUID } from 'crypto';
-import { BusinessPermission } from '@prisma/client';
+import { AuditAction, AuditResourceType, BusinessPermission } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { BusinessAccessService } from '../../common/services/business-access.service';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
 
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
@@ -22,6 +23,7 @@ export class UploadsService {
     private readonly prisma: PrismaService,
     private readonly planLimits: PlanLimitsService,
     private readonly businessAccess: BusinessAccessService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   getUploadDir(): string {
@@ -69,6 +71,19 @@ export class UploadsService {
         where: { id: businessId },
         data: { coverImageUrl: imageUrl },
       });
+      await this.auditLog.recordBusinessAction(user, businessId, {
+        action: AuditAction.BUSINESS_COVER_CHANGE,
+        resourceType: AuditResourceType.BUSINESS_IMAGE,
+        resourceId: image.id,
+        metadata: { imageId: image.id },
+      });
+    } else {
+      await this.auditLog.recordBusinessAction(user, businessId, {
+        action: AuditAction.BUSINESS_PHOTO_ADD,
+        resourceType: AuditResourceType.BUSINESS_IMAGE,
+        resourceId: image.id,
+        metadata: { imageId: image.id },
+      });
     }
 
     return image;
@@ -96,6 +111,13 @@ export class UploadsService {
 
     await this.prisma.businessImage.delete({ where: { id: imageId } });
 
+    await this.auditLog.recordBusinessAction(user, businessId, {
+      action: AuditAction.BUSINESS_PHOTO_DELETE,
+      resourceType: AuditResourceType.BUSINESS_IMAGE,
+      resourceId: imageId,
+      metadata: { imageId },
+    });
+
     if (business?.coverImageUrl === image.imageUrl) {
       const next = await this.prisma.businessImage.findFirst({
         where: { businessId },
@@ -120,6 +142,13 @@ export class UploadsService {
     await this.prisma.business.update({
       where: { id: businessId },
       data: { coverImageUrl: image.imageUrl },
+    });
+
+    await this.auditLog.recordBusinessAction(user, businessId, {
+      action: AuditAction.BUSINESS_COVER_CHANGE,
+      resourceType: AuditResourceType.BUSINESS_IMAGE,
+      resourceId: imageId,
+      metadata: { imageId },
     });
 
     return { success: true, coverImageUrl: image.imageUrl };

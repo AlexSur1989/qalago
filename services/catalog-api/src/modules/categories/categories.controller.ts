@@ -2,6 +2,8 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestj
 import { UserRole } from '@prisma/client';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { AuthUser } from '../../common/types/jwt-payload.type';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto, ListCategoriesQueryDto, UpdateCategoryDto } from './dto/category.dto';
 
@@ -17,19 +19,23 @@ export class CategoriesController {
 
   @Roles(UserRole.ADMIN, UserRole.CITY_ADMIN)
   @Post()
-  create(@Body() dto: CreateCategoryDto) {
-    return this.categoriesService.create(dto);
+  create(@CurrentUser() user: AuthUser, @Body() dto: CreateCategoryDto) {
+    return this.categoriesService.create(user, dto);
   }
 
   @Roles(UserRole.ADMIN, UserRole.CITY_ADMIN)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
-    return this.categoriesService.update(id, dto);
+  update(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateCategoryDto,
+  ) {
+    return this.categoriesService.update(user, id, dto);
   }
 
   @Roles(UserRole.ADMIN, UserRole.CITY_ADMIN)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.categoriesService.remove(id);
+  remove(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.categoriesService.remove(user, id);
   }
 }

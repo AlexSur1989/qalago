@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
+  AuditAction,
+  AuditResourceType,
   MonetizationProductType,
   OrderStatus,
   PaymentProvider,
@@ -8,6 +10,7 @@ import {
 } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
 import { AvailabilityService } from './availability.service';
 import { CampaignProvisioningService } from './campaign-provisioning.service';
 import { PACKAGE_PRODUCT_CODE } from './constants/monetization.constants';
@@ -44,6 +47,7 @@ export class OrderService {
     private readonly pricing: PricingService,
     private readonly availability: AvailabilityService,
     private readonly provisioning: CampaignProvisioningService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   async createOrder(user: AuthUser, dto: CreateOrderDto) {
@@ -332,6 +336,27 @@ export class OrderService {
         },
       });
 
+      const businessScope = await tx.business.findUniqueOrThrow({
+        where: { id: businessId },
+        select: { cityId: true },
+      });
+
+      await this.auditLog.record({
+        actor: user,
+        action: AuditAction.AD_ORDER_CREATE,
+        resourceType: AuditResourceType.ORDER,
+        resourceId: order.id,
+        businessId,
+        cityId: businessScope.cityId,
+        metadata: {
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          totalAmount,
+          currency: 'KZT',
+        },
+        tx,
+      });
+
       return this.formatOrder({ ...order, payments: [payment] });
     });
   }
@@ -536,6 +561,29 @@ export class OrderService {
       });
 
       await this.provisioning.provisionOrderCampaigns(tx, order.id, paidAt);
+
+      const businessScope = await this.prisma.business.findUnique({
+        where: { id: order.businessId },
+        select: { cityId: true },
+      });
+
+      await this.auditLog.record({
+        actor: user,
+        action: AuditAction.PAYMENT_CONFIRM,
+        resourceType: AuditResourceType.PAYMENT,
+        resourceId: paymentId,
+        businessId: order.businessId,
+        cityId: businessScope?.cityId ?? null,
+        metadata: {
+          paymentId,
+          orderId: order.id,
+          oldStatus: PaymentStatus.PENDING,
+          newStatus: PaymentStatus.PAID,
+          amount: payment.amount,
+          currency: payment.currency,
+        },
+        tx,
+      });
 
       const updated = await tx.order.findUniqueOrThrow({
         where: { id: order.id },

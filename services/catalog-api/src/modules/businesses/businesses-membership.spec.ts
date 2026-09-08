@@ -6,6 +6,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { BusinessPublicContentService } from './business-public-content.service';
 import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
+import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
 
 describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
   const cityScope = {
@@ -45,6 +46,7 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
       membership,
       {} as PlanLimitsService,
       {} as BusinessPublicContentService,
+      asAuditLogService(createMockAuditLog()),
     );
 
     return { service, prisma, tx, membership };

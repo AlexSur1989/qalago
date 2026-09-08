@@ -112,5 +112,5 @@ Each `(userId, businessId)` membership has independent `permissions[]`. Switchin
 ## Future
 
 - MODERATOR, SUPER_ADMIN — out of scope
-- Full AuditLog — deferred
+- AuditLog (Stage 5M.3) — team actions, admin role changes, payments; see `api-contracts.md`
 - Second owner API — schema allows; not exposed in 5M.2

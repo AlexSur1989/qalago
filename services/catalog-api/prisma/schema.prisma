@@ -204,6 +204,7 @@ model City {
   adPlacements       AdPlacement[]
   productPrices      ProductPrice[]
   adCampaigns        AdCampaign[]
+  auditLogs          AuditLog[]
 }
 
 model User {
@@ -226,6 +227,7 @@ model User {
   otps            OtpCode[]
   orders          Order[]
   sentInvitations BusinessInvitation[] @relation("InvitationSender")
+  auditLogsAsActor  AuditLog[]           @relation("AuditActor")
 }
 
 enum NotificationType {
@@ -339,6 +341,7 @@ model Business {
   adCampaigns       AdCampaign[]
   memberships       BusinessMembership[]
   invitations       BusinessInvitation[]
+  auditLogs         AuditLog[]
 
   @@index([cityId, status])
   @@index([categoryId])
@@ -737,4 +740,100 @@ model PromotionPackageItem {
 
   @@index([packageId])
   @@index([productId])
+}
+
+enum AuditAction {
+  TEAM_INVITE
+  TEAM_INVITATION_ACCEPT
+  TEAM_PERMISSION_UPDATE
+  TEAM_SUSPEND
+  TEAM_RESTORE
+  TEAM_REVOKE
+
+  BUSINESS_PROFILE_UPDATE
+  BUSINESS_HOURS_UPDATE
+
+  CATALOG_ITEM_CREATE
+  CATALOG_ITEM_UPDATE
+  CATALOG_ITEM_DELETE
+  CATALOG_SECTION_CREATE
+  CATALOG_SECTION_UPDATE
+  CATALOG_SECTION_DELETE
+
+  BUSINESS_PHOTO_ADD
+  BUSINESS_PHOTO_DELETE
+  BUSINESS_COVER_CHANGE
+
+  PROMOTION_CREATE
+  PROMOTION_UPDATE
+  PROMOTION_DELETE
+
+  REVIEW_REPLY_CREATE
+
+  PLAN_CHECKOUT
+  PLAN_OVERRIDE
+
+  AD_ORDER_CREATE
+  AD_CREATIVE_CREATE
+  AD_CREATIVE_APPROVE
+  AD_CREATIVE_REJECT
+  AD_CAMPAIGN_PAUSE
+  AD_CAMPAIGN_ACTIVATE
+
+  PAYMENT_CONFIRM
+
+  USER_ROLE_CHANGE
+
+  CITY_CREATE
+  CITY_UPDATE
+  CITY_LAUNCH_STATUS_CHANGE
+
+  CATEGORY_CREATE
+  CATEGORY_UPDATE
+  CATEGORY_DELETE
+}
+
+enum AuditResourceType {
+  USER
+  BUSINESS
+  BUSINESS_MEMBERSHIP
+  BUSINESS_INVITATION
+  SERVICE_ITEM
+  SERVICE_MENU_GROUP
+  BUSINESS_IMAGE
+  PROMOTION
+  PLAN
+  ORDER
+  PAYMENT
+  AD_CAMPAIGN
+  AD_CREATIVE
+  CITY
+  CATEGORY
+  REVIEW
+}
+
+model AuditLog {
+  id           String            @id @default(cuid())
+  actorUserId  String?
+  actorRole    UserRole?
+  action       AuditAction
+  resourceType AuditResourceType
+  resourceId   String?
+  businessId   String?
+  cityId       String?
+  targetUserId String?
+  metadata     Json?
+  createdAt    DateTime          @default(now())
+  actor        User?             @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  business     Business?         @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  city         City?             @relation(fields: [cityId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([actorUserId])
+  @@index([action])
+  @@index([resourceType])
+  @@index([businessId])
+  @@index([cityId])
+  @@index([businessId, createdAt])
+  @@index([cityId, createdAt])
 }

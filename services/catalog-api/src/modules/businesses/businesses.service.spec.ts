@@ -5,6 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { BusinessPublicContentService } from './business-public-content.service';
 import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
+import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
 
 describe('BusinessesService.findAll', () => {
   const cityScope = {
@@ -28,6 +29,7 @@ describe('BusinessesService.findAll', () => {
     { createActiveOwnerMembership: jest.fn() } as never,
     planLimits,
     publicContent,
+    asAuditLogService(createMockAuditLog()),
   );
 
   const category = { id: 'cat-1', title: 'Кафе', slug: 'cafe', icon: null };
@@ -215,6 +217,7 @@ describe('BusinessesService.recommended', () => {
     { createActiveOwnerMembership: jest.fn() } as never,
     {} as PlanLimitsService,
     {} as BusinessPublicContentService,
+    asAuditLogService(createMockAuditLog()),
   );
 
   const category = { id: 'cat-1', title: 'Кафе', slug: 'cafe', icon: null };

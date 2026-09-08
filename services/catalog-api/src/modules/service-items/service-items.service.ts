@@ -1,9 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { AuditAction, AuditResourceType } from '@prisma/client';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { sortCatalogItems } from '../../common/utils/catalog-sort.util';
 import { sliceToPublicLimit } from '../../common/utils/plan-entitlements.util';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
+import { changedFieldsFromDto } from '../audit-log/audit-log.util';
 import {
   CreateServiceItemDto,
   ListServiceItemsQueryDto,
@@ -17,6 +20,7 @@ export class ServiceItemsService {
     private readonly prisma: PrismaService,
     private readonly menuAccess: MenuAccessService,
     private readonly planLimits: PlanLimitsService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   async findByBusiness(query: ListServiceItemsQueryDto) {
@@ -45,11 +49,10 @@ export class ServiceItemsService {
 
   async create(user: AuthUser, dto: CreateServiceItemDto) {
     await this.menuAccess.assertCanManage(user, dto.businessId);
-    await this.planLimits.assertCanAddServiceItem(dto.businessId);
     if (dto.groupId) {
       await this.menuAccess.assertGroupForBusiness(dto.groupId, dto.businessId);
     }
-    return this.prisma.serviceItem.create({
+    const item = await this.prisma.serviceItem.create({
       data: {
         businessId: dto.businessId,
         groupId: dto.groupId,
@@ -60,6 +63,13 @@ export class ServiceItemsService {
         sortOrder: dto.sortOrder ?? 0,
       },
     });
+    await this.auditLog.recordBusinessAction(user, dto.businessId, {
+      action: AuditAction.CATALOG_ITEM_CREATE,
+      resourceType: AuditResourceType.SERVICE_ITEM,
+      resourceId: item.id,
+      metadata: { title: dto.title },
+    });
+    return item;
   }
 
   async update(user: AuthUser, id: string, dto: UpdateServiceItemDto) {
@@ -72,13 +82,20 @@ export class ServiceItemsService {
     }
 
     const { groupId, ...rest } = dto;
-    return this.prisma.serviceItem.update({
+    const updated = await this.prisma.serviceItem.update({
       where: { id },
       data: {
         ...rest,
         ...(groupId !== undefined ? { groupId } : {}),
       },
     });
+    await this.auditLog.recordBusinessAction(user, item.businessId, {
+      action: AuditAction.CATALOG_ITEM_UPDATE,
+      resourceType: AuditResourceType.SERVICE_ITEM,
+      resourceId: id,
+      metadata: { changedFields: changedFieldsFromDto(dto as Record<string, unknown>) },
+    });
+    return updated;
   }
 
   async remove(user: AuthUser, id: string) {
@@ -86,6 +103,11 @@ export class ServiceItemsService {
     if (!item) throw new NotFoundException('Service item not found');
     await this.menuAccess.assertCanManage(user, item.businessId);
     await this.prisma.serviceItem.delete({ where: { id } });
+    await this.auditLog.recordBusinessAction(user, item.businessId, {
+      action: AuditAction.CATALOG_ITEM_DELETE,
+      resourceType: AuditResourceType.SERVICE_ITEM,
+      resourceId: id,
+    });
     return { success: true };
   }
 }

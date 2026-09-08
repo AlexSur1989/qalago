@@ -4,6 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  AuditAction,
+  AuditResourceType,
   BusinessStatus,
   BusinessPermission,
   Prisma,
@@ -15,6 +17,8 @@ import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { BusinessAccessService } from '../../common/services/business-access.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
+import { changedFieldsFromDto } from '../audit-log/audit-log.util';
 import {
   CreatePromotionDto,
   ListPromotionsQueryDto,
@@ -45,6 +49,7 @@ export class PromotionsService {
     private readonly cityScope: CityScopeService,
     private readonly planLimits: PlanLimitsService,
     private readonly businessAccess: BusinessAccessService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   async findAll(query: ListPromotionsQueryDto, user?: AuthUser) {
@@ -195,7 +200,7 @@ export class PromotionsService {
       dto.endDate,
     );
 
-    return this.prisma.promotion.create({
+    const promo = await this.prisma.promotion.create({
       data: {
         businessId: dto.businessId,
         title: dto.title,
@@ -206,6 +211,15 @@ export class PromotionsService {
         status,
       },
     });
+
+    await this.auditLog.recordBusinessAction(user, dto.businessId, {
+      action: AuditAction.PROMOTION_CREATE,
+      resourceType: AuditResourceType.PROMOTION,
+      resourceId: promo.id,
+      metadata: { title: dto.title },
+    });
+
+    return promo;
   }
 
   async update(user: AuthUser, id: string, dto: UpdatePromotionDto) {
@@ -227,7 +241,7 @@ export class PromotionsService {
         ? this.planLimits.resolvePromotionDates(ctx.limits, startInput, endInput)
         : null;
 
-    return this.prisma.promotion.update({
+    const updated = await this.prisma.promotion.update({
       where: { id },
       data: {
         title: dto.title,
@@ -238,6 +252,15 @@ export class PromotionsService {
         endDate: dates?.endDate,
       },
     });
+
+    await this.auditLog.recordBusinessAction(user, promo.businessId, {
+      action: AuditAction.PROMOTION_UPDATE,
+      resourceType: AuditResourceType.PROMOTION,
+      resourceId: id,
+      metadata: { changedFields: changedFieldsFromDto(dto as Record<string, unknown>) },
+    });
+
+    return updated;
   }
 
   async remove(user: AuthUser, id: string) {
@@ -245,6 +268,11 @@ export class PromotionsService {
     if (!promo) throw new NotFoundException('Promotion not found');
     await this.assertCanManage(user, promo.businessId);
     await this.prisma.promotion.delete({ where: { id } });
+    await this.auditLog.recordBusinessAction(user, promo.businessId, {
+      action: AuditAction.PROMOTION_DELETE,
+      resourceType: AuditResourceType.PROMOTION,
+      resourceId: id,
+    });
     return { success: true };
   }
 

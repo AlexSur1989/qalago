@@ -118,6 +118,13 @@ export function AdminShell({
                 </button>
               ),
             )}
+          <Link
+            href="/audit-logs"
+            className={`nav-item${pathname.startsWith('/audit-logs') ? ' active' : ''}`}
+          >
+            <span className="nav-icon">🛡️</span>
+            <span>Аудит</span>
+          </Link>
         </nav>
       </aside>
 

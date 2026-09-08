@@ -21,6 +21,29 @@
 
 ---
 
+---
+
+## 2026-09-08 — Stage 5M.3: Audit log foundation
+
+**Added**
+- Prisma `AuditLog` model + migration `20260908180000_stage_5m3_audit_log` (9 migrations total)
+- Central `AuditLogService` — server-side actor, role snapshot, safe metadata, transaction support
+- Wired mutations: team, business profile/hours, catalog, photos, promotions, review replies, plans, ad orders/payments/creatives/campaigns, user role, cities, categories
+- `GET /admin/audit-logs` (ADMIN global, CITY_ADMIN city-scoped)
+- `GET /businesses/:id/team/audit` (OWNER only)
+- Admin Web `/audit-logs`; Business Web team history block
+
+**Policy**
+- Append-only; no backfill of historic actions; retention TBD
+- Not mixed with `AnalyticsEvent`; secrets/PII excluded from metadata
+- Critical mutations (team invite existing user, role change, payment confirm, invitation accept) logged in same DB transaction where practical
+
+**Deferred**
+- `USER_STATUS_CHANGE` / `PAYMENT_REJECT` — no admin endpoints yet
+- SUPER_ADMIN / MODERATOR roles
+
+---
+
 ## 2026-09-08 — Stage 5M.2.1: Prisma & runtime verification
 
 **Verified**

@@ -134,6 +134,37 @@ export const adminApi = {  sendCode: (phone: string) =>
   listUsers: (token: string) =>
     api<AuthUser[]>('/admin/users', { token }),
 
+  listAuditLogs: (
+    token: string,
+    params: {
+      page?: number;
+      limit?: number;
+      action?: string;
+      resourceType?: string;
+      businessId?: string;
+      cityId?: string;
+      actorUserId?: string;
+      dateFrom?: string;
+      dateTo?: string;
+    } = {},
+  ) => {
+    const qs = new URLSearchParams();
+    if (params.page) qs.set('page', String(params.page));
+    if (params.limit) qs.set('limit', String(params.limit));
+    if (params.action) qs.set('action', params.action);
+    if (params.resourceType) qs.set('resourceType', params.resourceType);
+    if (params.businessId) qs.set('businessId', params.businessId);
+    if (params.cityId) qs.set('cityId', params.cityId);
+    if (params.actorUserId) qs.set('actorUserId', params.actorUserId);
+    if (params.dateFrom) qs.set('dateFrom', params.dateFrom);
+    if (params.dateTo) qs.set('dateTo', params.dateTo);
+    const query = qs.toString();
+    return api<{ items: AuditLogRow[]; meta: ListMeta }>(
+      `/admin/audit-logs${query ? `?${query}` : ''}`,
+      { token },
+    );
+  },
+
   updateUserRole: (token: string, id: string, role: string, managedCityId?: string | null) =>
     api<AuthUser>(`/admin/users/${id}/role`, {
       method: 'PATCH',
@@ -312,6 +343,21 @@ export type AdminReviewRow = {
   createdAt: string;
   user?: { id: string; phone: string; name?: string | null };
   business?: { id: string; title: string; city?: { slug: string; nameRu: string } };
+};
+
+export type AuditLogRow = {
+  id: string;
+  action: string;
+  resourceType: string;
+  resourceId?: string | null;
+  businessId?: string | null;
+  cityId?: string | null;
+  targetUserId?: string | null;
+  metadata?: Record<string, unknown> | null;
+  createdAt: string;
+  actor?: { id: string; name?: string | null; phone: string; role: string } | null;
+  business?: { id: string; title: string } | null;
+  city?: { id: string; slug: string; nameRu: string } | null;
 };
 
 export const TOKEN_KEY = 'qalago_admin_token';

@@ -1,6 +1,7 @@
 import { CategoriesService } from './categories.service';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
 
 describe('CategoriesService', () => {
   const prisma = {
@@ -23,7 +24,7 @@ describe('CategoriesService', () => {
     resolveCityId: jest.fn().mockResolvedValue('city-1'),
   } as unknown as CityScopeService;
 
-  const service = new CategoriesService(prisma, cityScope);
+  const service = new CategoriesService(prisma, cityScope, asAuditLogService(createMockAuditLog()));
 
   beforeEach(() => {
     jest.clearAllMocks();

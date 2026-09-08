@@ -9,6 +9,8 @@ import { CreateBusinessDto, ListBusinessesQueryDto, UpdateBusinessDto } from './
 import { InviteTeamMemberDto, UpdateTeamMemberDto } from './dto/team.dto';
 import { ListBusinessCatalogQueryDto } from './dto/business-catalog.dto';
 import { ListBusinessPhotosQueryDto } from './dto/business-photos.dto';
+import { AuditLogService } from '../audit-log/audit-log.service';
+import { ListTeamAuditQueryDto } from '../audit-log/dto/audit-log.dto';
 
 @Controller('businesses')
 export class BusinessesController {
@@ -16,6 +18,7 @@ export class BusinessesController {
     private readonly businessesService: BusinessesService,
     private readonly teamService: BusinessTeamService,
     private readonly publicContent: BusinessPublicContentService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   @Post()
@@ -37,6 +40,15 @@ export class BusinessesController {
   @Get('recommended/me')
   recommended(@CurrentUser() user: AuthUser, @Query('citySlug') citySlug?: string) {
     return this.businessesService.recommended(user, citySlug);
+  }
+
+  @Get(':businessId/team/audit')
+  listTeamAudit(
+    @CurrentUser() user: AuthUser,
+    @Param('businessId') businessId: string,
+    @Query() query: ListTeamAuditQueryDto,
+  ) {
+    return this.auditLog.listTeamHistory(user, businessId, query);
   }
 
   @Get(':businessId/team')

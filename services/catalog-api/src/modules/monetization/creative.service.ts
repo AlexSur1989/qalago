@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { AdModerationStatus } from '@prisma/client';
+import { AdModerationStatus, AuditAction, AuditResourceType } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
 import { CampaignProvisioningService } from './campaign-provisioning.service';
 import { CreateCreativeDto, UpdateCreativeDto } from './dto/monetization.dto';
 import {
@@ -16,6 +17,7 @@ export class CreativeService {
     private readonly prisma: PrismaService,
     private readonly access: MonetizationAccessService,
     private readonly provisioning: CampaignProvisioningService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   async create(user: AuthUser, dto: CreateCreativeDto) {
@@ -34,6 +36,13 @@ export class CreativeService {
         targetUrl: dto.targetUrl,
         moderationStatus: AdModerationStatus.DRAFT,
       },
+    });
+
+    await this.auditLog.recordBusinessAction(user, dto.businessId, {
+      action: AuditAction.AD_CREATIVE_CREATE,
+      resourceType: AuditResourceType.AD_CREATIVE,
+      resourceId: creative.id,
+      metadata: { title: dto.title },
     });
 
     return this.formatCreative(creative);
@@ -153,7 +162,7 @@ export class CreativeService {
   }
 
   async approve(user: AuthUser, id: string) {
-    await this.access.assertCreativeAccess(user, id);
+    const scope = await this.access.assertCreativeAccess(user, id);
 
     const updated = await this.prisma.adCreative.update({
       where: { id },
@@ -165,11 +174,26 @@ export class CreativeService {
 
     await this.provisioning.activateCampaignsForCreative(id);
 
+    const business = await this.prisma.business.findUnique({
+      where: { id: scope.businessId },
+      select: { cityId: true },
+    });
+
+    await this.auditLog.record({
+      actor: user,
+      action: AuditAction.AD_CREATIVE_APPROVE,
+      resourceType: AuditResourceType.AD_CREATIVE,
+      resourceId: id,
+      businessId: scope.businessId,
+      cityId: business?.cityId ?? null,
+      metadata: { creativeId: id },
+    });
+
     return this.formatCreative(updated);
   }
 
   async reject(user: AuthUser, id: string, comment?: string) {
-    await this.access.assertCreativeAccess(user, id);
+    const scope = await this.access.assertCreativeAccess(user, id);
 
     const updated = await this.prisma.adCreative.update({
       where: { id },
@@ -180,6 +204,21 @@ export class CreativeService {
     });
 
     await this.provisioning.rejectCampaignsForCreative(id);
+
+    const business = await this.prisma.business.findUnique({
+      where: { id: scope.businessId },
+      select: { cityId: true },
+    });
+
+    await this.auditLog.record({
+      actor: user,
+      action: AuditAction.AD_CREATIVE_REJECT,
+      resourceType: AuditResourceType.AD_CREATIVE,
+      resourceId: id,
+      businessId: scope.businessId,
+      cityId: business?.cityId ?? null,
+      metadata: { creativeId: id, hasComment: !!comment },
+    });
 
     return this.formatCreative(updated);
   }

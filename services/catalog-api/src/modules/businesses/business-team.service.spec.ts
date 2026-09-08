@@ -34,6 +34,7 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
   };
   let businessAccess: { assertOwner: jest.Mock; resolveAccess: jest.Mock };
   let membership: { getMembership: jest.Mock };
+  let auditLog: { record: jest.Mock };
   let service: BusinessTeamService;
 
   beforeEach(() => {
@@ -55,14 +56,16 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
       $transaction: jest.fn(async (fn: (tx: typeof prisma) => unknown) => fn(prisma)),
     };
     businessAccess = {
-      assertOwner: jest.fn().mockResolvedValue({ id: businessId }),
+      assertOwner: jest.fn().mockResolvedValue({ id: businessId, cityId: 'city-1' }),
       resolveAccess: jest.fn().mockResolvedValue({}),
     };
     membership = { getMembership: jest.fn() };
+    auditLog = { record: jest.fn().mockResolvedValue({ id: 'audit-1' }) };
     service = new BusinessTeamService(
       prisma as never,
       businessAccess as unknown as BusinessAccessService,
       membership as unknown as BusinessMembershipService,
+      auditLog as never,
     );
   });
 
@@ -158,6 +161,7 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
   it('revoke pending invitation', async () => {
     prisma.businessInvitation.findFirst.mockResolvedValue({
       id: 'inv-1',
+      phone: '+77001112233',
       status: BusinessInvitationStatus.PENDING,
     });
     prisma.businessInvitation.update.mockResolvedValue({ id: 'inv-1' });

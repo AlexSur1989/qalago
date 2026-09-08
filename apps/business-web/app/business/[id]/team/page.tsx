@@ -7,6 +7,7 @@ import {
   TeamInvitationRow,
   TeamListResponse,
   TeamMemberRow,
+  TeamAuditRow,
   ownerApi,
 } from '@/lib/api';
 import {
@@ -37,6 +38,7 @@ export default function BusinessTeamPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
   const [editPermissions, setEditPermissions] = useState<BusinessPermission[]>([]);
+  const [teamAudit, setTeamAudit] = useState<TeamAuditRow[]>([]);
 
   const mainNav = useMemo(
     () => filterNavByAccess(buildMainNavItems(), access),
@@ -57,6 +59,7 @@ export default function BusinessTeamPage() {
   useEffect(() => {
     if (!token || !ownerAccess) return;
     loadTeam(token).catch((err) => setError(String(err)));
+    ownerApi.listTeamAudit(token, businessId).then((res) => setTeamAudit(res.items)).catch(() => undefined);
   }, [token, businessId, ownerAccess]);
 
   function togglePermission(permission: BusinessPermission) {
@@ -72,6 +75,25 @@ export default function BusinessTeamPage() {
     const preset = PERMISSION_PRESETS.find((p) => p.id === presetId);
     if (!preset) return;
     setSelectedPermissions(normalizeSelectedPermissions([...preset.permissions]));
+  }
+
+  function teamAuditLabel(action: string): string {
+    switch (action) {
+      case 'TEAM_INVITE':
+        return 'пригласил сотрудника';
+      case 'TEAM_INVITATION_ACCEPT':
+        return 'принял приглашение';
+      case 'TEAM_PERMISSION_UPDATE':
+        return 'изменил права сотрудника';
+      case 'TEAM_SUSPEND':
+        return 'приостановил доступ';
+      case 'TEAM_RESTORE':
+        return 'восстановил доступ';
+      case 'TEAM_REVOKE':
+        return 'отозвал доступ';
+      default:
+        return action;
+    }
   }
 
   async function submitInvite(e: FormEvent) {
@@ -437,6 +459,24 @@ export default function BusinessTeamPage() {
           </button>
         </form>
       </section>
+
+      {teamAudit.length > 0 && (
+        <section className="card" style={{ marginTop: '1.5rem' }}>
+          <h2>История изменений</h2>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {teamAudit.map((entry) => (
+              <li key={entry.id} style={{ padding: '0.5rem 0', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ color: 'var(--muted)' }}>
+                  {new Date(entry.createdAt).toLocaleString('ru-RU')}
+                </span>
+                {' — '}
+                <strong>{entry.actor?.name ?? entry.actor?.phone ?? 'Система'}</strong>{' '}
+                {teamAuditLabel(entry.action)}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </BusinessShell>
   );
 }

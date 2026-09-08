@@ -66,8 +66,12 @@ export class AdminController {
 
   @Roles(UserRole.ADMIN)
   @Patch('users/:id/role')
-  updateUserRole(@Param('id') id: string, @Body() dto: UpdateUserRoleDto) {
-    return this.adminService.updateUserRole(id, dto);
+  updateUserRole(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateUserRoleDto,
+  ) {
+    return this.adminService.updateUserRole(user, id, dto);
   }
 
   @Get('reviews')
@@ -123,14 +127,18 @@ export class AdminController {
 
   @Roles(UserRole.ADMIN)
   @Post('cities')
-  createCity(@Body() dto: CreateCityDto) {
-    return this.adminService.createCity(dto);
+  createCity(@CurrentUser() user: AuthUser, @Body() dto: CreateCityDto) {
+    return this.adminService.createCity(user, dto);
   }
 
   @Roles(UserRole.ADMIN)
   @Patch('cities/:id')
-  updateCity(@Param('id') id: string, @Body() dto: UpdateCityDto) {
-    return this.adminService.updateCity(id, dto);
+  updateCity(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateCityDto,
+  ) {
+    return this.adminService.updateCity(user, id, dto);
   }
 }
 

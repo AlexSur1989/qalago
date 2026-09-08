@@ -66,6 +66,14 @@ export type TeamListResponse = {
   pendingInvitations: TeamInvitationRow[];
 };
 
+export type TeamAuditRow = {
+  id: string;
+  action: string;
+  createdAt: string;
+  actor?: { id: string; name?: string | null; phone: string } | null;
+  metadata?: Record<string, unknown> | null;
+};
+
 export type BusinessRow = {
   id: string;
   title: string;
@@ -609,6 +617,12 @@ export const ownerApi = {
     api<void>(
       `/businesses/${encodeURIComponent(businessId)}/team/invitations/${invitationId}`,
       { method: 'DELETE', token },
+    ),
+
+  listTeamAudit: (token: string, businessId: string, page = 1) =>
+    api<{ items: TeamAuditRow[]; meta: { page: number; limit: number; total: number } }>(
+      `/businesses/${encodeURIComponent(businessId)}/team/audit?page=${page}&limit=20`,
+      { token },
     ),
 
   getBusiness: (token: string, id: string) =>

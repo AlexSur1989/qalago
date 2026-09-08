@@ -2,6 +2,7 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { BusinessPermission, UserRole } from '@prisma/client';
 import { UploadsService } from './uploads.service';
 import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
+import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
 
 describe('UploadsService authorization', () => {
   const businessId = 'biz-1';
@@ -21,6 +22,7 @@ describe('UploadsService authorization', () => {
       } as never,
       { assertCanAddPhoto: jest.fn().mockResolvedValue(undefined) } as never,
       asBusinessAccessService(businessAccess),
+      asAuditLogService(createMockAuditLog()),
     );
   });
 

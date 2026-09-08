@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import {
+  AuditAction,
+  AuditResourceType,
   BusinessInvitationStatus,
   BusinessMembershipRole,
   BusinessMembershipStatus,
-  BusinessPermission,
   Prisma,
 } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuthUser } from '../../common/types/jwt-payload.type';
+import { AuditLogService } from '../../modules/audit-log/audit-log.service';
 
 export type BusinessMembershipRecord = {
   id: string;
@@ -14,7 +17,7 @@ export type BusinessMembershipRecord = {
   businessId: string;
   role: BusinessMembershipRole;
   status: BusinessMembershipStatus;
-  permissions: BusinessPermission[];
+  permissions: import('@prisma/client').BusinessPermission[];
 };
 
 /**
@@ -23,7 +26,10 @@ export type BusinessMembershipRecord = {
  */
 @Injectable()
 export class BusinessMembershipService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditLog: AuditLogService,
+  ) {}
 
   getMembership(userId: string, businessId: string) {
     return this.prisma.businessMembership.findUnique({
@@ -97,6 +103,19 @@ export class BusinessMembershipService {
    * Claim pending phone invitations after verified login (Stage 5M.2).
    */
   async claimPendingInvitations(userId: string, phone: string) {
+    const actor = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, phone: true, role: true },
+    });
+    if (!actor) return;
+
+    const authUser: AuthUser = {
+      id: actor.id,
+      sub: actor.id,
+      phone: actor.phone,
+      role: actor.role,
+    };
+
     const now = new Date();
     const pending = await this.prisma.businessInvitation.findMany({
       where: {
@@ -116,8 +135,13 @@ export class BusinessMembershipService {
         continue;
       }
 
-      await this.prisma.$transaction([
-        this.prisma.businessMembership.upsert({
+      const business = await this.prisma.business.findUnique({
+        where: { id: invitation.businessId },
+        select: { cityId: true },
+      });
+
+      await this.prisma.$transaction(async (tx) => {
+        const membership = await tx.businessMembership.upsert({
           where: { userId_businessId: { userId, businessId: invitation.businessId } },
           create: {
             userId,
@@ -131,12 +155,30 @@ export class BusinessMembershipService {
             status: BusinessMembershipStatus.ACTIVE,
             permissions: invitation.permissions,
           },
-        }),
-        this.prisma.businessInvitation.update({
+        });
+
+        await tx.businessInvitation.update({
           where: { id: invitation.id },
           data: { status: BusinessInvitationStatus.ACCEPTED },
-        }),
-      ]);
+        });
+
+        await this.auditLog.record({
+          actor: authUser,
+          action: AuditAction.TEAM_INVITATION_ACCEPT,
+          resourceType: AuditResourceType.BUSINESS_INVITATION,
+          resourceId: invitation.id,
+          businessId: invitation.businessId,
+          cityId: business?.cityId ?? null,
+          targetUserId: userId,
+          membershipRole: BusinessMembershipRole.MANAGER,
+          metadata: {
+            invitationId: invitation.id,
+            membershipId: membership.id,
+            permissionCount: invitation.permissions.length,
+          },
+          tx,
+        });
+      });
     }
   }
 }
