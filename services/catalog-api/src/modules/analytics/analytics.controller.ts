@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Header, Param, Post, Query, StreamableFile } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
@@ -45,5 +45,20 @@ export class AnalyticsController {
     @Query() query: AnalyticsWindowQueryDto,
   ) {
     return this.analyticsService.dashboard(user, businessId, query);
+  }
+
+  @Roles(UserRole.BUSINESS, UserRole.CITY_ADMIN, UserRole.ADMIN)
+  @Get('business/:businessId/export')
+  @Header('Content-Type', 'text/csv; charset=utf-8')
+  async exportCsv(
+    @CurrentUser() user: AuthUser,
+    @Param('businessId') businessId: string,
+    @Query() query: AnalyticsWindowQueryDto,
+  ) {
+    const result = await this.analyticsService.exportCsv(user, businessId, query);
+    return new StreamableFile(Buffer.from(result.body, 'utf-8'), {
+      type: 'text/csv; charset=utf-8',
+      disposition: result.contentDisposition,
+    });
   }
 }

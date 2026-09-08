@@ -25,6 +25,7 @@ Map<String, dynamic> mockDashboard({
       'benchmark': isVip,
       'recommendations': isVip,
       'audienceGeography': isVip,
+      'reportExport': isVip,
     },
     'lockedSections': isFree
         ? [
@@ -51,6 +52,11 @@ Map<String, dynamic> mockDashboard({
                   'label': 'Аудитория по расстоянию',
                   'message': 'Аналитика аудитории доступна на тарифе VIP',
                 },
+                {
+                  'id': 'reportExport',
+                  'label': 'Экспорт отчётов',
+                  'message': 'Экспорт отчётов доступен на тарифе VIP',
+                },
               ]
             : isPremium
                 ? [
@@ -58,6 +64,11 @@ Map<String, dynamic> mockDashboard({
                       'id': 'audienceGeography',
                       'label': 'Аудитория по расстоянию',
                       'message': 'Аналитика аудитории доступна на тарифе VIP',
+                    },
+                    {
+                      'id': 'reportExport',
+                      'label': 'Экспорт отчётов',
+                      'message': 'Экспорт отчётов доступен на тарифе VIP',
                     },
                   ]
                 : [],
@@ -244,6 +255,17 @@ void main() {
         },
       );
       expect(dashboard['audienceGeographyStatus'], 'INSUFFICIENT_DATA');
+    });
+  });
+
+  group('PREMIUM report export', () {
+    test('report export locked on PREMIUM', () {
+      final dashboard = mockDashboard(plan: 'PREMIUM');
+      expect(ownerAnalyticsIsLocked(dashboard, 'reportExport'), isTrue);
+      expect(
+        ownerAnalyticsLockedMessage(dashboard, 'reportExport'),
+        'Экспорт отчётов доступен на тарифе VIP',
+      );
     });
   });
 

@@ -132,6 +132,7 @@ export type AnalyticsDashboard = {
     recommendations: boolean;
     searchQueries: boolean;
     audienceGeography: boolean;
+    reportExport: boolean;
   };
   lockedSections: Array<{
     id: string;
@@ -578,6 +579,34 @@ export const ownerApi = {
       `/analytics/business/${businessId}/dashboard?days=${days}`,
       { token },
     ),
+
+  downloadAnalyticsExport: async (token: string, businessId: string, days = 30) => {
+    const res = await fetch(
+      `${API_BASE}/analytics/business/${businessId}/export?days=${days}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || res.statusText);
+    }
+    const blob = await res.blob();
+    const disposition = res.headers.get('Content-Disposition') ?? '';
+    const utf8Match = disposition.match(/filename\*=UTF-8''([^;]+)/i);
+    const asciiMatch = disposition.match(/filename="([^"]+)"/i);
+    const filename = utf8Match
+      ? decodeURIComponent(utf8Match[1])
+      : asciiMatch?.[1] ?? `qalago-analytics-${businessId}.csv`;
+
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    return filename;
+  },
 
   analyticsSummary: (token: string, businessId: string, days = 30) =>
     api<AnalyticsSummary>(

@@ -429,6 +429,26 @@ class CatalogRepository {
     return response.data as Map<String, dynamic>;
   }
 
+  Future<({List<int> bytes, String filename})> fetchAnalyticsExport(
+    String businessId, {
+    int days = 30,
+  }) async {
+    final response = await _dio.get<List<int>>(
+      '/analytics/business/$businessId/export',
+      queryParameters: {'days': days},
+      options: Options(responseType: ResponseType.bytes),
+    );
+    final disposition = response.headers.value('content-disposition') ?? '';
+    final utf8Match = RegExp(r"filename\*=UTF-8''([^;]+)", caseSensitive: false)
+        .firstMatch(disposition);
+    final asciiMatch =
+        RegExp(r'filename="([^"]+)"').firstMatch(disposition);
+    final filename = utf8Match != null
+        ? Uri.decodeComponent(utf8Match.group(1)!)
+        : asciiMatch?.group(1) ?? 'qalago-analytics-$businessId.csv';
+    return (bytes: response.data ?? <int>[], filename: filename);
+  }
+
   Future<Map<String, dynamic>> fetchAnalyticsSummary(
     String businessId, {
     int days = 30,

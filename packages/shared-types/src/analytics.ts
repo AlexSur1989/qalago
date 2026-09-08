@@ -45,6 +45,7 @@ export interface AnalyticsCapabilitiesDto {
   recommendations: boolean;
   searchQueries: boolean;
   audienceGeography: boolean;
+  reportExport: boolean;
 }
 
 export interface AnalyticsLockedSectionDto {

@@ -46,6 +46,7 @@ export default function StatisticsPage() {
   const [dashboard, setDashboard] = useState<AnalyticsDashboard | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     if (!token) return;
@@ -70,6 +71,21 @@ export default function StatisticsPage() {
   const periodOptions = dashboard
     ? availablePeriodOptions(dashboard.capabilities.maxDays)
     : [7, 30];
+
+  const canExport = dashboard?.capabilities.reportExport === true;
+
+  async function handleExport() {
+    if (!token || !business || exporting) return;
+    setExporting(true);
+    setError(null);
+    try {
+      await ownerApi.downloadAnalyticsExport(token, business.id, days);
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setExporting(false);
+    }
+  }
 
   return (
     <BusinessShell
@@ -123,6 +139,38 @@ export default function StatisticsPage() {
               </button>
             ))}
           </div>
+
+          {dashboard && (
+            <article className="card" style={{ marginBottom: 16 }}>
+              <div className="card-header">
+                <h2>Скачать отчёт</h2>
+              </div>
+              {canExport ? (
+                <>
+                  <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
+                    Отчёт за {days} дн. · CSV для Excel
+                  </p>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    disabled={exporting || loading}
+                    onClick={handleExport}
+                  >
+                    {exporting ? 'Формирование…' : 'Скачать CSV'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
+                    Экспорт отчётов доступен на тарифе VIP
+                  </p>
+                  <Link href="/plan" className="btn btn-primary btn-sm">
+                    Улучшить тариф
+                  </Link>
+                </>
+              )}
+            </article>
+          )}
 
           {loading && !dashboard ? (
             <p>Загрузка статистики…</p>

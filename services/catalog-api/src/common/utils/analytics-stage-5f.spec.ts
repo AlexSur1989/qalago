@@ -66,4 +66,13 @@ describe('Stage 5F entitlement matrix', () => {
     expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.VIP).searchQueries).toBe(true);
     expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.VIP).audienceGeography).toBe(true);
   });
+
+  it('Stage 5K: report export VIP-only', () => {
+    expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.VIP).reportExport).toBe(true);
+    expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.PREMIUM).reportExport).toBe(false);
+    expect(getAnalyticsLockedSections(BusinessPlanTier.PREMIUM).some((s) => s.id === 'reportExport')).toBe(
+      true,
+    );
+    expect(getAnalyticsLockedSections(BusinessPlanTier.VIP)).toHaveLength(0);
+  });
 });

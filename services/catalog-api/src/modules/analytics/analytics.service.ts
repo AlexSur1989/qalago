@@ -6,7 +6,15 @@ import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AnalyticsDashboardBuilder } from './analytics-dashboard.builder';
+import {
+  buildAnalyticsExportCsv,
+  CSV_UTF8_BOM,
+} from './analytics-csv.serializer';
 import { AnalyticsWindowQueryDto, CreateAnalyticsEventDto } from './dto/analytics.dto';
+import {
+  buildAnalyticsExportFilename,
+  buildContentDisposition,
+} from '../../common/utils/csv.util';
 
 const EVENT_TYPES = Object.values(AnalyticsEventType);
 
@@ -111,6 +119,47 @@ export class AnalyticsService {
   async dashboard(user: AuthUser, businessId: string, query: AnalyticsWindowQueryDto) {
     await this.assertCanViewBusinessAnalytics(user, businessId);
     return this.dashboardBuilder.build(businessId, query.days ?? 30);
+  }
+
+  async exportCsv(user: AuthUser, businessId: string, query: AnalyticsWindowQueryDto) {
+    await this.assertCanViewBusinessAnalytics(user, businessId);
+
+    const ctx = await this.planLimits.getBusinessPlanContext(businessId);
+    const caps = getAnalyticsCapabilitiesForPlan(ctx.effectiveTier);
+    if (!caps.reportExport) {
+      throw new ForbiddenException('Экспорт отчётов доступен на тарифе VIP');
+    }
+
+    const requestedDays = query.days ?? 30;
+    if (requestedDays < 1 || requestedDays > 365) {
+      throw new BadRequestException('Period must be between 1 and 365 days');
+    }
+
+    const dashboard = await this.dashboardBuilder.build(businessId, requestedDays);
+    const business = await this.prisma.business.findUnique({
+      where: { id: businessId },
+      select: {
+        title: true,
+        city: { select: { nameRu: true } },
+      },
+    });
+    if (!business) {
+      throw new NotFoundException('Business not found');
+    }
+
+    const generatedAt = new Date();
+    const csvBody = buildAnalyticsExportCsv(dashboard, {
+      businessTitle: business.title,
+      cityName: business.city.nameRu,
+      generatedAt,
+    });
+    const filename = buildAnalyticsExportFilename(businessId, business.title, generatedAt);
+
+    return {
+      body: `${CSV_UTF8_BOM}${csvBody}`,
+      filename,
+      contentDisposition: buildContentDisposition(filename),
+    };
   }
 
   async trends(user: AuthUser, businessId: string, query: AnalyticsWindowQueryDto) {

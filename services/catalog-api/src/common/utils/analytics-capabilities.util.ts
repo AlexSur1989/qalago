@@ -15,6 +15,7 @@ export interface AnalyticsCapabilities {
   recommendations: boolean;
   searchQueries: boolean;
   audienceGeography: boolean;
+  reportExport: boolean;
   /** @deprecated use viewTrend / actionTrend */
   summary: boolean;
   /** @deprecated use viewTrend / actionTrend */
@@ -67,6 +68,7 @@ export function getAnalyticsCapabilitiesForPlan(tier: BusinessPlanTier): Analyti
     recommendations: isVip,
     searchQueries: isPremiumOrAbove,
     audienceGeography: isVip,
+    reportExport: isVip,
     summary: true,
     trends: isBasicOrAbove,
     tier: legacyTier,
@@ -156,6 +158,12 @@ export function getAnalyticsLockedSections(
         label: 'Аудитория по расстоянию',
         requiredPlan: BusinessPlanTier.VIP,
         message: 'Аналитика аудитории доступна на тарифе VIP',
+      },
+      {
+        id: 'reportExport',
+        label: 'Экспорт отчётов',
+        requiredPlan: BusinessPlanTier.VIP,
+        message: 'Экспорт отчётов доступен на тарифе VIP',
       },
     );
   }

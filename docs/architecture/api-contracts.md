@@ -513,7 +513,8 @@ Response `200`:
     "benchmark": false,
     "recommendations": false,
     "searchQueries": false,
-    "audienceGeography": false
+    "audienceGeography": false,
+    "reportExport": false
   },
   "lockedSections": [],
   "effectiveRange": { "days": 30, "from": "...", "to": "..." },
@@ -545,6 +546,26 @@ Response `200`:
 ```
 
 Plan windows: FREE/BASIC 30d; PREMIUM 90d; VIP 365d. Campaign analytics remain under `/monetization/campaigns/:id/analytics` (not subscription-gated).
+
+### GET /analytics/business/:businessId/export
+
+**VIP only.** Authenticated owner / `CITY_ADMIN` / `ADMIN` with existing analytics access.
+
+Query: `days` (optional, 1–365, default `30`). Clamped to plan `maxAnalyticsDays` (VIP: 365).
+
+Response `200` — CSV file (not JSON):
+
+- `Content-Type: text/csv; charset=utf-8`
+- `Content-Disposition: attachment; filename="qalago-analytics-<slug>-YYYY-MM-DD.csv"`
+- UTF-8 BOM for Excel on Windows
+- Semicolon (`;`) delimiter
+- Formula-injection safe cells (leading `=`, `+`, `-`, `@` escaped)
+
+Report is generated from the **same canonical dashboard builder** as `GET …/dashboard`. Aggregate metrics only — no raw `AnalyticsEvent` rows, no user identity, no GPS coordinates.
+
+Sections (when entitled): summary, traffic sources, search queries (threshold ≥3), audience geography (coarse buckets), popular times, benchmark, recommendations, trends.
+
+`403` when business plan is not VIP (`reportExport` capability).
 
 ---
 

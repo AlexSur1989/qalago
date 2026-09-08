@@ -29,6 +29,7 @@ function mockDashboard(plan: string, overrides: Partial<AnalyticsDashboard> = {}
       benchmark: plan === 'VIP',
       recommendations: plan === 'VIP',
       audienceGeography: plan === 'VIP',
+      reportExport: plan === 'VIP',
     },
     lockedSections:
       plan === 'FREE'
@@ -38,10 +39,12 @@ function mockDashboard(plan: string, overrides: Partial<AnalyticsDashboard> = {}
               { id: 'sources', label: 'Источники', requiredPlan: 'PREMIUM', message: 'Доступно с PREMIUM' },
               { id: 'searchQueries', label: 'Поисковые запросы', requiredPlan: 'PREMIUM', message: 'Поисковые запросы доступны с PREMIUM' },
               { id: 'audienceGeography', label: 'Аудитория по расстоянию', requiredPlan: 'VIP', message: 'Аналитика аудитории доступна на тарифе VIP' },
+              { id: 'reportExport', label: 'Экспорт отчётов', requiredPlan: 'VIP', message: 'Экспорт отчётов доступен на тарифе VIP' },
             ]
           : plan === 'PREMIUM'
             ? [
                 { id: 'audienceGeography', label: 'Аудитория по расстоянию', requiredPlan: 'VIP', message: 'Аналитика аудитории доступна на тарифе VIP' },
+                { id: 'reportExport', label: 'Экспорт отчётов', requiredPlan: 'VIP', message: 'Экспорт отчётов доступен на тарифе VIP' },
               ]
             : [],
     effectiveRange: { days: 30, from: '', to: '' },
@@ -144,6 +147,18 @@ describe('analytics-utils', () => {
       audienceGeographyStatus: 'INSUFFICIENT_DATA',
     });
     expect(dashboard.audienceGeographyStatus).toBe('INSUFFICIENT_DATA');
+  });
+
+  it('VIP report export capability enabled', () => {
+    const dashboard = mockDashboard('VIP');
+    expect(dashboard.capabilities.reportExport).toBe(true);
+    expect(isLockedSection(dashboard, 'reportExport')).toBe(false);
+  });
+
+  it('PREMIUM locks report export', () => {
+    const dashboard = mockDashboard('PREMIUM');
+    expect(dashboard.capabilities.reportExport).toBe(false);
+    expect(isLockedSection(dashboard, 'reportExport')).toBe(true);
   });
 
   it('availablePeriodOptions respects maxDays', () => {

@@ -8,6 +8,7 @@ import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../owner_analytics_utils.dart';
 import '../owner_utils.dart';
+import '../utils/analytics_export_download.dart';
 import 'widgets/owner_views_chart.dart';
 
 class OwnerAnalyticsScreen extends ConsumerStatefulWidget {
@@ -49,6 +50,7 @@ class _OwnerAnalyticsScreenState extends ConsumerState<OwnerAnalyticsScreen> {
           onRetry: () => ref.invalidate(businessAnalyticsDashboardProvider(query)),
         ),
         data: (dashboard) => _AnalyticsBody(
+          businessId: widget.businessId,
           dashboard: dashboard,
           days: _days,
           onDaysChanged: (value) => setState(() => _days = value),
@@ -61,12 +63,14 @@ class _OwnerAnalyticsScreenState extends ConsumerState<OwnerAnalyticsScreen> {
 
 class _AnalyticsBody extends StatelessWidget {
   const _AnalyticsBody({
+    required this.businessId,
     required this.dashboard,
     required this.days,
     required this.onDaysChanged,
     required this.onUpgrade,
   });
 
+  final String businessId;
   final Map<String, dynamic> dashboard;
   final int days;
   final ValueChanged<int> onDaysChanged;
@@ -109,6 +113,13 @@ class _AnalyticsBody extends StatelessWidget {
                 )
                 .toList(),
           ),
+        ),
+        const SizedBox(height: 16),
+        _ExportReportSection(
+          businessId: businessId,
+          days: days,
+          dashboard: dashboard,
+          onUpgrade: onUpgrade,
         ),
         const SizedBox(height: 16),
         _MetricCard(
@@ -260,6 +271,92 @@ class _AnalyticsBody extends StatelessWidget {
           label: const Text('Статистика рекламы'),
         ),
       ],
+    );
+  }
+}
+
+class _ExportReportSection extends ConsumerStatefulWidget {
+  const _ExportReportSection({
+    required this.businessId,
+    required this.days,
+    required this.dashboard,
+    required this.onUpgrade,
+  });
+
+  final String businessId;
+  final int days;
+  final Map<String, dynamic> dashboard;
+  final VoidCallback onUpgrade;
+
+  @override
+  ConsumerState<_ExportReportSection> createState() => _ExportReportSectionState();
+}
+
+class _ExportReportSectionState extends ConsumerState<_ExportReportSection> {
+  bool _exporting = false;
+
+  Future<void> _export() async {
+    if (_exporting) return;
+    setState(() => _exporting = true);
+    try {
+      final result = await ref.read(catalogRepositoryProvider).fetchAnalyticsExport(
+            widget.businessId,
+            days: widget.days,
+          );
+      downloadCsvBytes(result.bytes, result.filename);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Не удалось скачать отчёт: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final caps = widget.dashboard['capabilities'] as Map<String, dynamic>? ?? {};
+    final canExport = caps['reportExport'] == true;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Экспорт отчёта', style: TextStyle(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            if (canExport) ...[
+              Text(
+                'Отчёт за ${widget.days} дн. · CSV для Excel',
+                style: TextStyle(color: Colors.grey.shade700),
+              ),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: _exporting ? null : _export,
+                icon: _exporting
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.download_outlined),
+                label: Text(_exporting ? 'Формирование…' : 'Скачать CSV'),
+              ),
+            ] else ...[
+              Text(
+                ownerAnalyticsLockedMessage(widget.dashboard, 'reportExport') ??
+                    'Экспорт отчётов доступен на тарифе VIP',
+                style: TextStyle(color: Colors.grey.shade700),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton(onPressed: widget.onUpgrade, child: const Text('Улучшить тариф')),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

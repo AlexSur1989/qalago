@@ -21,6 +21,18 @@
 
 ---
 
+## 2026-09-08 — Stage 5K: VIP business analytics CSV export
+
+**Сделано**
+- `GET /analytics/business/:businessId/export` — VIP-only CSV from canonical dashboard builder
+- Semicolon delimiter, UTF-8 BOM, formula-injection safe escaping
+- Business Web + Flutter Owner: «Скачать CSV» with period selector
+
+**На будущее**
+- PDF export deferred; campaign analytics export deferred (P2)
+
+---
+
 ## 2026-09-07 — Stage 5J: privacy-safe audience geography analytics
 
 **Сделано**
