@@ -12,6 +12,7 @@ enum UserRole {
   BUSINESS
   CITY_ADMIN
   ADMIN
+  SUPER_ADMIN
 }
 
 enum BusinessMembershipRole {

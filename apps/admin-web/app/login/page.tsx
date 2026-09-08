@@ -4,6 +4,7 @@ import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminApi, TOKEN_KEY } from '@/lib/api';
 import { adminWebDevLoginEnabled, devSeedAccounts } from '@/lib/auth-config';
+import { canAccessAdminWeb } from '@/lib/rbac';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,8 +15,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   async function finishLogin(accessToken: string, user: Awaited<ReturnType<typeof adminApi.verifyCode>>['user']) {
-    if (user.role !== 'ADMIN' && user.role !== 'CITY_ADMIN') {
-      setError('Доступ только для ADMIN / CITY_ADMIN');
+    if (!canAccessAdminWeb(user.role)) {
+      setError('Доступ только для администраторов платформы');
       return;
     }
     localStorage.setItem(TOKEN_KEY, accessToken);
@@ -70,9 +71,10 @@ export default function LoginPage() {
     <main className="login-page">
       <div className="login-card">
         <h1 style={{ marginTop: 0, color: 'var(--primary)' }}>QalaGo Admin</h1>
-        <p style={{ color: 'var(--text-muted)' }}>Вход для ADMIN и CITY_ADMIN</p>
+        <p style={{ color: 'var(--text-muted)' }}>Вход для администраторов платформы</p>
         <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20, lineHeight: 1.6 }}>
-          <div><strong>ADMIN</strong> · +77000000001</div>
+          <div><strong>SUPER_ADMIN</strong> · +77000000001</div>
+          <div><strong>ADMIN</strong> · +77000000005</div>
           <div><strong>CITY_ADMIN</strong> · +77000000004 · Актобе</div>
           <div style={{ marginTop: 6 }}>OTP: 1234</div>
         </div>

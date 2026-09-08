@@ -1,5 +1,4 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-
 import {
   AuditAction,
   AuditResourceType,
@@ -13,6 +12,7 @@ import {
 import { AuthUser } from '../../common/types/jwt-payload.type';
 
 import { CityScopeService } from '../../common/services/city-scope.service';
+import { SystemAccessService } from '../../common/services/system-access.service';
 
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -68,6 +68,8 @@ export class AdminService {
     private readonly plans: PlansService,
 
     private readonly auditLog: AuditLogService,
+
+    private readonly systemAccess: SystemAccessService,
 
   ) {}
 
@@ -264,9 +266,24 @@ export class AdminService {
 
 
   async updateUserRole(actor: AuthUser, id: string, dto: UpdateUserRoleDto) {
+    this.systemAccess.assertSuperAdmin(actor);
+
+    if (actor.id === id) {
+      throw new ForbiddenException('Cannot change your own system role');
+    }
+
     const target = await this.prisma.user.findUnique({ where: { id } });
     if (!target) {
       throw new NotFoundException('User not found');
+    }
+
+    if (target.role === UserRole.SUPER_ADMIN && dto.role !== UserRole.SUPER_ADMIN) {
+      await this.systemAccess.assertCanDemoteSuperAdmin(target.id);
+    }
+
+    let managedCityId: string | null = null;
+    if (dto.role === UserRole.CITY_ADMIN) {
+      managedCityId = await this.systemAccess.validateCityAdminAssignment(dto.managedCityId);
     }
 
     return this.prisma.$transaction(async (tx) => {
@@ -274,8 +291,7 @@ export class AdminService {
         where: { id },
         data: {
           role: dto.role,
-          managedCityId:
-            dto.role === UserRole.CITY_ADMIN ? dto.managedCityId ?? null : null,
+          managedCityId,
         },
         select: {
           id: true,
@@ -297,8 +313,7 @@ export class AdminService {
           oldRole: target.role,
           newRole: dto.role,
           oldManagedCityId: target.managedCityId,
-          newManagedCityId:
-            dto.role === UserRole.CITY_ADMIN ? dto.managedCityId ?? null : null,
+          newManagedCityId: managedCityId,
         },
         tx,
       });

@@ -3,6 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { UserRole } from '@prisma/client';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import { AuthUser } from '../types/jwt-payload.type';
+import { satisfiesRequiredRoles } from '../utils/system-access.util';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -22,17 +23,11 @@ export class RolesGuard implements CanActivate {
     if (!user) {
       throw new ForbiddenException('Missing user context');
     }
-    if (!requiredRoles.includes(user.role)) {
-      // Stage 5M.2 — USER with business membership reaches business routes;
-      // BusinessAccessService enforces permissions on the handler.
-      if (
-        user.role === UserRole.USER &&
-        requiredRoles.includes(UserRole.BUSINESS)
-      ) {
-        return true;
-      }
+
+    if (!satisfiesRequiredRoles(user.role, requiredRoles)) {
       throw new ForbiddenException('Insufficient role');
     }
+
     return true;
   }
 }

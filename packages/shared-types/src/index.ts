@@ -15,6 +15,7 @@ export enum UserRole {
   BUSINESS = 'BUSINESS',
   CITY_ADMIN = 'CITY_ADMIN',
   ADMIN = 'ADMIN',
+  SUPER_ADMIN = 'SUPER_ADMIN',
 }
 
 export enum BusinessStatus {
@@ -168,7 +169,6 @@ export type {
   AnalyticsComparisonDto,
   AnalyticsConversionDto,
   AnalyticsEffectiveRangeDto,
-  AnalyticsEventType,
   AnalyticsLockedSectionDto,
   AnalyticsOverviewDto,
   AnalyticsPopularTimesDto,
@@ -189,8 +189,13 @@ export {
   canAccessAdminWeb,
   canAccessBusinessWeb,
   canManageBusinessCabinet,
+  canManageCities,
+  canManageGlobalCategories,
   canManageUsers,
   canModerate,
+  canViewUsers,
   getRoleDefinition,
+  isGlobalAdminRole,
+  isSuperAdminRole,
   type RoleDefinition,
 } from './rbac';

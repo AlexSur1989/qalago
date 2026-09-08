@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminApi, AuditLogRow } from '@/lib/api';
+import { canModerate } from '@/lib/rbac';
 import { useAuth } from '@/lib/use-auth';
 
 function formatAction(action: string): string {
@@ -36,7 +37,7 @@ export default function AuditLogsPage() {
       router.replace('/login');
       return;
     }
-    if (user.role !== 'ADMIN' && user.role !== 'CITY_ADMIN') {
+    if (!canModerate(user.role)) {
       router.replace('/dashboard');
     }
   }, [ready, token, user, router]);

@@ -1,7 +1,7 @@
 # RBAC — роли и права QalaGo
 
-**Версия:** MVP  
-**Роли:** `USER`, `BUSINESS`, `CITY_ADMIN`, `ADMIN`
+**Версия:** MVP (Stage 5M.4)  
+**Роли:** `USER`, `BUSINESS`, `CITY_ADMIN`, `ADMIN`, `SUPER_ADMIN`
 
 Права проверяются на **сервере** (`services/catalog-api`). UI только скрывает или показывает разделы — обход через API запрещён guard'ами.
 
@@ -14,32 +14,40 @@
 | **USER** | Житель города | Mobile |
 | **BUSINESS** | Владелец заведения | Mobile, business-web |
 | **CITY_ADMIN** | Модератор одного города | Mobile, admin-web |
-| **ADMIN** | Администратор платформы | Mobile, admin-web, business-web |
+| **ADMIN** | Операционный администратор платформы | Mobile, admin-web, business-web |
+| **SUPER_ADMIN** | Суперадминистратор / governance | Mobile, admin-web, business-web |
 
 ---
 
-## Матрица возможностей
+## Иерархия (Stage 5M.4)
 
-| Действие | USER | BUSINESS | CITY_ADMIN | ADMIN |
-|----------|:----:|:--------:|:----------:|:-----:|
-| Каталог, карта, избранное | ✅ | ✅ | ✅ | ✅ |
-| Отзывы | ✅ | ✅ | ✅ | ✅ |
-| Заявка на заведение | ✅ | ✅ | ✅ | ✅ |
-| Кабинет своего бизнеса | ❌ | ✅ | ✅* | ✅ |
-| Акции / статистика своего бизнеса | ❌ | ✅ | ✅* | ✅ |
-| Ответ на отзыв | ❌ | ✅ | ✅ | ✅ |
-| Модерация заведений | ❌ | ❌ | ✅** | ✅ |
-| VIP / Топ | ❌ | ❌ | ✅** | ✅ |
-| Черновик подборки (AI) | ❌ | ❌ | ✅** | ✅ |
-| Категории каталога (CRUD) | ❌ | ❌ | ✅ | ✅ |
-| Управление городами (создание, активация) | ❌ | ❌ | ❌ | ✅ |
-| Список пользователей | ❌ | ❌ | ❌ | ✅ |
-| Смена ролей | ❌ | ❌ | ❌ | ✅ |
-| Admin-web | ❌ | ❌ | ✅ | ✅ |
-| Business-web | ❌ | ✅ | ✅* | ✅ |
+```text
+SUPER_ADMIN  → governance + все операции ADMIN
+ADMIN        → глобальные операции (без смены системных ролей)
+CITY_ADMIN   → managedCityId scope
+USER/BUSINESS → без системного admin-доступа
+```
 
-\* Если у аккаунта есть свои заведения  
-\** Только в закреплённом городе (`managedCityId`)
+`@Roles(ADMIN)` на API допускает **ADMIN + SUPER_ADMIN**.  
+`@Roles(SUPER_ADMIN)` — **только SUPER_ADMIN**.
+
+---
+
+## Матрица (Stage 5M.4)
+
+| Возможность | SUPER_ADMIN | ADMIN | CITY_ADMIN |
+|-------------|:-----------:|:-----:|:----------:|
+| Глобальная модерация бизнеса | ✅ | ✅ | ❌ |
+| Модерация в своём городе | ✅ | ✅ | ✅ |
+| Аудит (глобальный) | ✅ | ✅ | ❌ |
+| Аудит (свой город) | ✅ | ✅ | ✅ |
+| Смена системных ролей | ✅ | ❌ | ❌ |
+| Создание городов / launch | ✅ | ❌ | ❌ |
+| CRUD глобальных категорий (create/delete) | ✅ | ❌ | ❌ |
+| Обновление категорий | ✅ | ✅ | ❌ |
+| Подтверждение платежей | ✅ | ✅ | city-scoped |
+
+---
 
 ---
 
@@ -48,7 +56,7 @@
 - Город задаётся полем `managedCityId` у пользователя.
 - `GET /admin/businesses` и `PATCH .../status` — только заведения этого города.
 - В admin-web и mobile город **заблокирован** (нельзя смотреть другой город).
-- Нельзя: `GET /admin/users`, `PATCH /admin/users/:id/role`.
+- Нельзя: смена системных ролей, создание городов, глобальный CRUD категорий.
 
 ---
 
@@ -59,7 +67,8 @@
 | `+77000000003` | USER | любой |
 | `+77000000002` | BUSINESS | Uralsk (владелец) |
 | `+77000000004` | CITY_ADMIN | Актобе |
-| `+77000000001` | ADMIN | все города |
+| `+77000000001` | SUPER_ADMIN | все города |
+| `+77000000005` | ADMIN | все города (операционный) |
 
 ---
 
@@ -67,7 +76,7 @@
 
 | Слой | Файлы |
 |------|--------|
-| API guards | `roles.guard.ts`, `BusinessAccessService` |
+| System governance | `system-access.service.ts`, `SystemAccessService` |
 | Город модератора | `city-scope.service.ts` |
 | Admin API | `admin.controller.ts` |
 | Business membership | `business-membership.service.ts`, `business-access.service.ts` |

@@ -25,6 +25,23 @@
 
 ---
 
+## 2026-09-08 — Stage 5M.4: SUPER_ADMIN system role governance
+
+**Added**
+- `UserRole.SUPER_ADMIN`; migrations `20260908190000_stage_5m4_super_admin` + `20260908190001_stage_5m4_super_admin_migrate`
+- Existing `ADMIN` users migrated → `SUPER_ADMIN` (privilege preserved)
+- `SystemAccessService` + `RolesGuard` hierarchy (SUPER_ADMIN inherits ADMIN ops, not vice versa)
+- Role change: **SUPER_ADMIN only**; self-change denied; last-SUPER_ADMIN demotion blocked
+- Governance: city create/update, global category create/delete → SUPER_ADMIN
+- Operational ADMIN: moderation, payments, audit read, category update
+- Dev seed: `+77000000001` SUPER_ADMIN, `+77000000005` ADMIN
+
+**Deferred**
+- MODERATOR role
+- USER_STATUS_CHANGE endpoint
+
+---
+
 ## 2026-09-08 — Documentation sync through Stage 5M.3
 
 **Updated**

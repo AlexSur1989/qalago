@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, NotFoundException, forwardRef } from '@nestjs/common';
 import {
   AuditAction,
   AuditResourceType,
@@ -7,6 +7,7 @@ import {
   UserRole,
 } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
+import { isGlobalAdmin } from '../../common/utils/system-access.util';
 import { BusinessAccessService } from '../../common/services/business-access.service';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -36,6 +37,7 @@ export class AuditLogService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cityScope: CityScopeService,
+    @Inject(forwardRef(() => BusinessAccessService))
     private readonly businessAccess: BusinessAccessService,
   ) {}
 
@@ -80,7 +82,7 @@ export class AuditLogService {
   }
 
   async listAdmin(user: AuthUser, query: ListAuditLogsQueryDto) {
-    if (user.role !== UserRole.ADMIN && user.role !== UserRole.CITY_ADMIN) {
+    if (!isGlobalAdmin(user) && user.role !== UserRole.CITY_ADMIN) {
       throw new ForbiddenException('Admin access required');
     }
 

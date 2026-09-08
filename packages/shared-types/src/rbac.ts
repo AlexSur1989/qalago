@@ -51,7 +51,7 @@ export const ROLE_DEFINITIONS: Record<UserRole, RoleDefinition> = {
   },
   [UserRole.CITY_ADMIN]: {
     role: UserRole.CITY_ADMIN,
-    labelRu: 'Модератор города',
+    labelRu: 'Администратор города',
     summaryRu: 'Администратор одного города (например, Актобе).',
     apps: ['Mobile', 'Admin-web'],
     can: [
@@ -70,20 +70,39 @@ export const ROLE_DEFINITIONS: Record<UserRole, RoleDefinition> = {
   },
   [UserRole.ADMIN]: {
     role: UserRole.ADMIN,
-    labelRu: 'Администратор платформы',
-    summaryRu: 'Полный доступ к модерации и настройкам MVP.',
+    labelRu: 'Администратор',
+    summaryRu: 'Глобальный операционный администратор платформы.',
     apps: ['Mobile', 'Admin-web', 'Business-web'],
     can: [
       'Модерация заведений во всех городах',
       'VIP / Топ в любом городе',
-      'Список пользователей и смена ролей',
-      'Категории каталога (создание / правки)',
-      'Черновики подборок для любого города',
+      'Просмотр пользователей (без смены ролей)',
+      'Модерация рекламы и подтверждение платежей',
+      'Глобальный аудит операций',
       'Кабинет бизнеса и аналитика',
     ],
     cannot: [
+      'Назначать SUPER_ADMIN / ADMIN / CITY_ADMIN',
+      'Создавать города и менять launch status',
+      'Создавать/удалять глобальные категории',
+    ],
+  },
+  [UserRole.SUPER_ADMIN]: {
+    role: UserRole.SUPER_ADMIN,
+    labelRu: 'Суперадминистратор',
+    summaryRu: 'Высший уровень управления платформой.',
+    apps: ['Mobile', 'Admin-web', 'Business-web'],
+    can: [
+      'Все операционные возможности ADMIN',
+      'Смена системных ролей пользователей',
+      'Создание городов и управление launch status',
+      'Создание/удаление глобальных категорий',
+      'Глобальный аудит и governance',
+    ],
+    cannot: [
+      'Менять собственную системную роль через стандартный API',
+      'Понизить последнего SUPER_ADMIN',
       'Прямой доступ к БД и секретам',
-      'Автопубликация контента без проверки редактора',
     ],
   },
 };
@@ -93,18 +112,38 @@ export function getRoleDefinition(role: string): RoleDefinition {
   return ROLE_DEFINITIONS[key] ?? ROLE_DEFINITIONS[UserRole.USER];
 }
 
+export function isGlobalAdminRole(role: string): boolean {
+  return role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN;
+}
+
+export function isSuperAdminRole(role: string): boolean {
+  return role === UserRole.SUPER_ADMIN;
+}
+
 export function canModerate(role: string): boolean {
-  return role === UserRole.ADMIN || role === UserRole.CITY_ADMIN;
+  return isGlobalAdminRole(role) || role === UserRole.CITY_ADMIN;
+}
+
+export function canViewUsers(role: string): boolean {
+  return isGlobalAdminRole(role);
 }
 
 export function canManageUsers(role: string): boolean {
-  return role === UserRole.ADMIN;
+  return role === UserRole.SUPER_ADMIN;
+}
+
+export function canManageCities(role: string): boolean {
+  return role === UserRole.SUPER_ADMIN;
+}
+
+export function canManageGlobalCategories(role: string): boolean {
+  return role === UserRole.SUPER_ADMIN;
 }
 
 export function canManageBusinessCabinet(role: string): boolean {
   return (
     role === UserRole.BUSINESS ||
-    role === UserRole.ADMIN ||
+    isGlobalAdminRole(role) ||
     role === UserRole.CITY_ADMIN
   );
 }

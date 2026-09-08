@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import {
   AuditAction,
   AuditResourceType,
@@ -28,6 +28,7 @@ export type BusinessMembershipRecord = {
 export class BusinessMembershipService {
   constructor(
     private readonly prisma: PrismaService,
+    @Inject(forwardRef(() => AuditLogService))
     private readonly auditLog: AuditLogService,
   ) {}
 

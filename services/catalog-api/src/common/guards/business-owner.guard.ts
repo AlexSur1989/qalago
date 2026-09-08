@@ -8,6 +8,7 @@ import {
 import { UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthUser } from '../types/jwt-payload.type';
+import { isGlobalAdmin, isCityAdmin } from '../utils/system-access.util';
 
 @Injectable()
 export class BusinessOwnerGuard implements CanActivate {
@@ -22,7 +23,7 @@ export class BusinessOwnerGuard implements CanActivate {
     const user = request.user;
     if (!user) throw new ForbiddenException();
 
-    if (user.role === UserRole.ADMIN || user.role === UserRole.CITY_ADMIN) {
+    if (isGlobalAdmin(user) || isCityAdmin(user)) {
       return true;
     }
 

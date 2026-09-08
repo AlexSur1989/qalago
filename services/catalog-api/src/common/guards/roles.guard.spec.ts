@@ -57,9 +57,31 @@ describe('RolesGuard (Stage 5M.2.1)', () => {
     ).toBe(true);
   });
 
-  it('passes through when no roles metadata', () => {
-    reflector.getAllAndOverride = jest.fn().mockReturnValue(undefined);
+  it('allows SUPER_ADMIN when ADMIN is required', () => {
+    reflector.getAllAndOverride = jest.fn().mockReturnValue([UserRole.ADMIN]);
 
-    expect(guard.canActivate(contextFor({ id: 'u1', role: UserRole.USER }))).toBe(true);
+    expect(
+      guard.canActivate(
+        contextFor({ id: 'sa', role: UserRole.SUPER_ADMIN }),
+      ),
+    ).toBe(true);
+  });
+
+  it('denies ADMIN when SUPER_ADMIN is required', () => {
+    reflector.getAllAndOverride = jest.fn().mockReturnValue([UserRole.SUPER_ADMIN]);
+
+    expect(() =>
+      guard.canActivate(contextFor({ id: 'a1', role: UserRole.ADMIN })),
+    ).toThrow(ForbiddenException);
+  });
+
+  it('allows SUPER_ADMIN when SUPER_ADMIN is required', () => {
+    reflector.getAllAndOverride = jest.fn().mockReturnValue([UserRole.SUPER_ADMIN]);
+
+    expect(
+      guard.canActivate(
+        contextFor({ id: 'sa', role: UserRole.SUPER_ADMIN }),
+      ),
+    ).toBe(true);
   });
 });

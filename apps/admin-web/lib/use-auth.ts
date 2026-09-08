@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminApi, AuthUser, TOKEN_KEY } from '@/lib/api';
+import { canAccessAdminWeb } from '@/lib/rbac';
 
 export function useAuth(redirectTo = '/login') {
   const router = useRouter();
@@ -20,7 +21,7 @@ export function useAuth(redirectTo = '/login') {
     adminApi
       .getMe(t)
       .then((me) => {
-        if (me.role !== 'ADMIN' && me.role !== 'CITY_ADMIN') {
+        if (!canAccessAdminWeb(me.role)) {
           localStorage.removeItem(TOKEN_KEY);
           router.replace(redirectTo);
           return;

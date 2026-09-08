@@ -105,15 +105,21 @@ RoleDefinition roleDefinitionFor(String role) =>
     kRoleDefinitions[role] ?? kRoleDefinitions['USER']!;
 
 bool canModerate(String? role) =>
-    role == 'ADMIN' || role == 'CITY_ADMIN';
+    role == 'SUPER_ADMIN' || role == 'ADMIN' || role == 'CITY_ADMIN';
 
-bool canManageUsers(String? role) => role == 'ADMIN';
+bool canManageUsers(String? role) => role == 'SUPER_ADMIN';
 
-/// Legacy system-role gate (BUSINESS / ADMIN / CITY_ADMIN).
+bool isGlobalAdminRole(String? role) =>
+    role == 'SUPER_ADMIN' || role == 'ADMIN';
+
+/// Legacy system-role gate (BUSINESS / ADMIN / CITY_ADMIN / SUPER_ADMIN).
 ///
 /// Router and profile also grant cabinet access when [canAccessBusinessCabinet]
 /// sees non-empty membership entries (e.g. USER + MANAGER). Server remains authoritative.
 bool canManageBusinessCabinet(String? role) =>
-    role == 'BUSINESS' || role == 'ADMIN' || role == 'CITY_ADMIN';
+    role == 'BUSINESS' ||
+    role == 'SUPER_ADMIN' ||
+    role == 'ADMIN' ||
+    role == 'CITY_ADMIN';
 
 String profileRoleLabel(String role) => roleDefinitionFor(role).labelRu;

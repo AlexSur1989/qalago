@@ -3,6 +3,7 @@ import { BusinessPermission, UserRole } from '@prisma/client';
 import { BusinessAccessService } from '../../common/services/business-access.service';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
+import { isGlobalAdmin } from '../../common/utils/system-access.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   MonetizationErrorCode,
@@ -99,7 +100,7 @@ export class MonetizationAccessService {
       );
     }
 
-    if (user.role === UserRole.ADMIN) {
+    if (isGlobalAdmin(user)) {
       return order;
     }
 
@@ -130,7 +131,7 @@ export class MonetizationAccessService {
       );
     }
 
-    if (user.role === UserRole.ADMIN) {
+    if (isGlobalAdmin(user)) {
       return campaign;
     }
 
@@ -167,7 +168,7 @@ export class MonetizationAccessService {
       );
     }
 
-    if (user.role === UserRole.ADMIN || user.role === UserRole.CITY_ADMIN) {
+    if (isGlobalAdmin(user) || user.role === UserRole.CITY_ADMIN) {
       if (user.role === UserRole.CITY_ADMIN) {
         await this.cityScope.assertBusinessInAdminScope(
           user,
@@ -194,7 +195,7 @@ export class MonetizationAccessService {
   }
 
   async assertAdminPaymentAccess(user: AuthUser, paymentId: string) {
-    if (user.role !== UserRole.ADMIN && user.role !== UserRole.CITY_ADMIN) {
+    if (!isGlobalAdmin(user) && user.role !== UserRole.CITY_ADMIN) {
       monetizationForbidden(
         MonetizationErrorCode.BUSINESS_NOT_OWNED,
         'Admin only',

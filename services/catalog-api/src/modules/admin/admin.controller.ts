@@ -17,11 +17,15 @@ import {
 } from './dto/admin.dto';
 import { CreateCityDto, UpdateCityDto } from '../cities/dto/city.dto';
 import { AdminService } from './admin.service';
+import { SystemAccessService } from '../../common/services/system-access.service';
 
 @Controller('admin')
 @Roles(UserRole.ADMIN, UserRole.CITY_ADMIN)
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly systemAccess: SystemAccessService,
+  ) {}
 
   @Get('businesses')
   listBusinesses(
@@ -60,11 +64,12 @@ export class AdminController {
 
   @Roles(UserRole.ADMIN)
   @Get('users')
-  listUsers() {
+  listUsers(@CurrentUser() user: AuthUser) {
+    this.systemAccess.assertGlobalAdmin(user);
     return this.adminService.listUsers();
   }
 
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN)
   @Patch('users/:id/role')
   updateUserRole(
     @CurrentUser() user: AuthUser,
@@ -113,25 +118,25 @@ export class AdminController {
     return this.adminService.updateCategoryCityVisibility(user, id, dto);
   }
 
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN)
   @Get('geo/search')
   searchGeo(@Query() query: GeoSearchQueryDto) {
     return this.adminService.searchGeoPlaces(query.q, query.country ?? 'kz');
   }
 
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN)
   @Get('cities')
   listCitiesAdmin() {
     return this.adminService.listCitiesAdmin();
   }
 
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN)
   @Post('cities')
   createCity(@CurrentUser() user: AuthUser, @Body() dto: CreateCityDto) {
     return this.adminService.createCity(user, dto);
   }
 
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN)
   @Patch('cities/:id')
   updateCity(
     @CurrentUser() user: AuthUser,

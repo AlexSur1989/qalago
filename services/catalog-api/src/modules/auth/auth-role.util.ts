@@ -13,6 +13,7 @@ export function resolveAccountRole(
   }
 
   if (
+    existingRole === UserRole.SUPER_ADMIN ||
     existingRole === UserRole.ADMIN ||
     existingRole === UserRole.CITY_ADMIN ||
     existingRole === UserRole.BUSINESS

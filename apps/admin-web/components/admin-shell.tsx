@@ -5,14 +5,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AuthUser } from '@/lib/api';
 import { AdminTabId } from '@/lib/admin-utils';
-import { getRoleDefinition } from '@/lib/rbac';
+import { canManageCities, canViewUsers, getRoleDefinition } from '@/lib/rbac';
 import type { MonetizationSubNavId } from '@/lib/monetization-utils';
 
 type NavItem = {
   id: AdminTabId;
   label: string;
   icon: string;
-  adminOnly?: boolean;
+  visible?: boolean;
   badge?: number | string | null;
 };
 
@@ -49,7 +49,6 @@ export function AdminShell({
 }: AdminShellProps) {
   const pathname = usePathname();
   const roleInfo = getRoleDefinition(user.role);
-  const showUsers = user.role === 'ADMIN';
 
   const monetizationBadgeTotal =
     (monetizationBadges?.orders ?? 0) + (monetizationBadges?.creatives ?? 0);
@@ -61,8 +60,8 @@ export function AdminShell({
     { id: 'monetization', label: 'Монетизация', icon: '💰', badge: monetizationBadgeTotal || null },
     { id: 'categories', label: 'Категории', icon: '🗂️' },
     { id: 'content', label: 'AI-черновики', icon: '✨' },
-    { id: 'users', label: 'Пользователи', icon: '👥', adminOnly: true },
-    { id: 'cities', label: 'Города', icon: '🏙️', adminOnly: true },
+    { id: 'users', label: 'Пользователи', icon: '👥', visible: canViewUsers(user.role) },
+    { id: 'cities', label: 'Города', icon: '🏙️', visible: canManageCities(user.role) },
   ];
 
   const cityLabel =
@@ -85,7 +84,7 @@ export function AdminShell({
 
         <nav className="sidebar-nav">
           {nav
-            .filter((item) => !item.adminOnly || showUsers)
+            .filter((item) => item.visible !== false)
             .map((item) =>
               item.id === 'monetization' ? (
                 <Link

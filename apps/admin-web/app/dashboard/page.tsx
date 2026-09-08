@@ -25,7 +25,7 @@ import {
   publicVisibilityClass,
   publicVisibilityLabel,
 } from '@/lib/admin-utils';
-import { canManageUsers } from '@/lib/rbac';
+import { canManageUsers, canViewUsers, canManageCities, canManageGlobalCategories } from '@/lib/rbac';
 import { useAuth } from '@/lib/use-auth';
 
 export default function DashboardPage() {
@@ -66,7 +66,10 @@ export default function DashboardPage() {
 
   const isCityAdmin = user?.role === 'CITY_ADMIN';
   const cityLocked = isCityAdmin && !!user?.managedCity?.slug;
-  const showUsers = user ? canManageUsers(user.role) : false;
+  const showUsers = user ? canViewUsers(user.role) : false;
+  const canChangeRoles = user ? canManageUsers(user.role) : false;
+  const showCitiesTab = user ? canManageCities(user.role) : false;
+  const canEditGlobalCategories = user ? canManageGlobalCategories(user.role) : false;
 
   useEffect(() => {
     adminApi.listCities().then(setCities).catch(() => undefined);
@@ -776,24 +779,26 @@ export default function DashboardPage() {
 
       {tab === 'categories' && (
         <>
-          <section className="card">
-            <h2>Новая категория</h2>
-            <form onSubmit={createCategory} className="form-grid" style={{ maxWidth: 480 }}>
-              <input
-                value={catTitle}
-                onChange={(e) => setCatTitle(e.target.value)}
-                placeholder="Название, например Рестораны"
-              />
-              <input
-                value={catSlug}
-                onChange={(e) => setCatSlug(e.target.value)}
-                placeholder="slug, например food"
-              />
-              <button type="submit" className="btn btn-primary">
-                Добавить
-              </button>
-            </form>
-          </section>
+          {canEditGlobalCategories && (
+            <section className="card">
+              <h2>Новая категория</h2>
+              <form onSubmit={createCategory} className="form-grid" style={{ maxWidth: 480 }}>
+                <input
+                  value={catTitle}
+                  onChange={(e) => setCatTitle(e.target.value)}
+                  placeholder="Название, например Рестораны"
+                />
+                <input
+                  value={catSlug}
+                  onChange={(e) => setCatSlug(e.target.value)}
+                  placeholder="slug, например food"
+                />
+                <button type="submit" className="btn btn-primary">
+                  Добавить
+                </button>
+              </form>
+            </section>
+          )}
           <section className="card">
             <h2>Категории каталога ({categories.length})</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: 14, marginTop: 0 }}>
@@ -874,13 +879,15 @@ export default function DashboardPage() {
                       >
                         {c.isActive ? 'Скрыть' : 'Показать'}
                       </button>
-                      <button
-                        type="button"
-                        className="btn btn-danger btn-sm"
-                        onClick={() => removeCategory(c)}
-                      >
-                        Удалить
-                      </button>
+                      {canEditGlobalCategories && (
+                        <button
+                          type="button"
+                          className="btn btn-danger btn-sm"
+                          onClick={() => removeCategory(c)}
+                        >
+                          Удалить
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -950,7 +957,7 @@ export default function DashboardPage() {
                   <td>{u.name ?? '—'}</td>
                   <td>{u.role}</td>
                   <td>
-                    {u.role === 'CITY_ADMIN' ? (
+                    {u.role === 'CITY_ADMIN' && canChangeRoles ? (
                       <select
                         value={u.managedCityId ?? ''}
                         onChange={(e) =>
@@ -969,35 +976,41 @@ export default function DashboardPage() {
                     )}
                   </td>
                   <td>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      <select
-                        value={u.role}
-                        onChange={(e) => changeUserRole(u, e.target.value)}
-                      >
-                        <option value="USER">USER</option>
-                        <option value="BUSINESS">BUSINESS</option>
-                        <option value="CITY_ADMIN">CITY_ADMIN</option>
-                        <option value="ADMIN">ADMIN</option>
-                      </select>
-                      {u.role !== 'CITY_ADMIN' && (
+                    {canChangeRoles ? (
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                         <select
-                          value={userCityDraft[u.id] ?? cities[0]?.id ?? ''}
-                          onChange={(e) =>
-                            setUserCityDraft((prev) => ({
-                              ...prev,
-                              [u.id]: e.target.value,
-                            }))
-                          }
-                          title="Город при назначении CITY_ADMIN"
+                          value={u.role}
+                          onChange={(e) => changeUserRole(u, e.target.value)}
+                          disabled={u.role === 'SUPER_ADMIN'}
                         >
-                          {cities.map((city) => (
-                            <option key={city.id} value={city.id}>
-                              {city.nameRu}
-                            </option>
-                          ))}
+                          <option value="USER">USER</option>
+                          <option value="BUSINESS">BUSINESS</option>
+                          <option value="CITY_ADMIN">CITY_ADMIN</option>
+                          <option value="ADMIN">ADMIN</option>
+                          <option value="SUPER_ADMIN">SUPER_ADMIN</option>
                         </select>
-                      )}
-                    </div>
+                        {u.role !== 'CITY_ADMIN' && (
+                          <select
+                            value={userCityDraft[u.id] ?? cities[0]?.id ?? ''}
+                            onChange={(e) =>
+                              setUserCityDraft((prev) => ({
+                                ...prev,
+                                [u.id]: e.target.value,
+                              }))
+                            }
+                            title="Город при назначении CITY_ADMIN"
+                          >
+                            {cities.map((city) => (
+                              <option key={city.id} value={city.id}>
+                                {city.nameRu}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+                    ) : (
+                      '—'
+                    )}
                   </td>
                 </tr>
               ))}
@@ -1006,7 +1019,7 @@ export default function DashboardPage() {
         </section>
       )}
 
-      {tab === 'cities' && showUsers && (
+      {tab === 'cities' && showCitiesTab && (
         <>
           <section className="card">
             <h2>Новый город</h2>

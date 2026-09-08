@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { AuditAction, AuditResourceType, BusinessPlanTier, BusinessPermission, NotificationType, PlanPaymentStatus, UserRole } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
+import { isGlobalAdmin } from '../../common/utils/system-access.util';
 import {
   PlanLimitsService,
   PLAN_CATALOG,
@@ -68,7 +69,7 @@ export class PlansService {
     if (!business) {
       throw new NotFoundException('Business not found');
     }
-    if (user.role !== UserRole.ADMIN && user.role !== UserRole.CITY_ADMIN) {
+    if (!isGlobalAdmin(user) && user.role !== UserRole.CITY_ADMIN) {
       throw new ForbiddenException('Admin only');
     }
 

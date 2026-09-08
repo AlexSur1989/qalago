@@ -2,6 +2,7 @@ import { ForbiddenException } from '@nestjs/common';
 import { BusinessPermission, UserRole } from '@prisma/client';
 import { AuthUser } from '../common/types/jwt-payload.type';
 import { ownerHasAllPermissions } from '../common/utils/business-permission.util';
+import { isGlobalAdmin } from '../common/utils/system-access.util';
 
 const DEFAULT_BUSINESS = {
   id: 'business-1',
@@ -26,7 +27,7 @@ export type MockBusinessAccess = {
 };
 
 function isPrivileged(user: AuthUser) {
-  return user.role === UserRole.ADMIN || user.role === UserRole.CITY_ADMIN;
+  return isGlobalAdmin(user) || user.role === UserRole.CITY_ADMIN;
 }
 
 export function createMockBusinessAccess(options?: MockBusinessAccessOptions): MockBusinessAccess {
@@ -37,7 +38,12 @@ export function createMockBusinessAccess(options?: MockBusinessAccessOptions): M
     if (isPrivileged(user)) {
       return {
         business: { ...DEFAULT_BUSINESS, ownerId, id: businessId },
-        accessRole: user.role === UserRole.ADMIN ? 'ADMIN' : 'CITY_ADMIN',
+        accessRole:
+          user.role === UserRole.SUPER_ADMIN
+            ? 'SUPER_ADMIN'
+            : user.role === UserRole.ADMIN
+              ? 'ADMIN'
+              : 'CITY_ADMIN',
         permissions: ownerHasAllPermissions(),
       };
     }
@@ -60,7 +66,7 @@ export function createMockBusinessAccess(options?: MockBusinessAccessOptions): M
 
   const assertOwner = jest.fn(async (user: AuthUser, businessId: string) => {
     const access = await resolveAccess(user, businessId);
-    if (access.accessRole !== 'OWNER' && access.accessRole !== 'ADMIN' && access.accessRole !== 'CITY_ADMIN') {
+    if (access.accessRole !== 'OWNER' && access.accessRole !== 'ADMIN' && access.accessRole !== 'SUPER_ADMIN' && access.accessRole !== 'CITY_ADMIN') {
       throw new ForbiddenException('Owner access required');
     }
     return access.business;

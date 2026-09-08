@@ -71,8 +71,14 @@ async function main() {
 
   const admin = await prisma.user.upsert({
     where: { phone: '+77000000001' },
-    update: { role: UserRole.ADMIN, name: 'Admin' },
-    create: { phone: '+77000000001', name: 'Admin', role: UserRole.ADMIN },
+    update: { role: UserRole.SUPER_ADMIN, name: 'Super Admin' },
+    create: { phone: '+77000000001', name: 'Super Admin', role: UserRole.SUPER_ADMIN },
+  });
+
+  const platformAdmin = await prisma.user.upsert({
+    where: { phone: '+77000000005' },
+    update: { role: UserRole.ADMIN, name: 'Platform Admin' },
+    create: { phone: '+77000000005', name: 'Platform Admin', role: UserRole.ADMIN },
   });
 
   const owner = await prisma.user.upsert({

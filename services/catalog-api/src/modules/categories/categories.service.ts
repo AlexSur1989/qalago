@@ -225,4 +225,4 @@ export class CategoriesService {
   }
 }
 
-export const CATEGORY_ADMIN_ROLES = [UserRole.ADMIN, UserRole.CITY_ADMIN] as const;
+export const CATEGORY_ADMIN_ROLES = [UserRole.ADMIN, UserRole.SUPER_ADMIN] as const;

@@ -17,13 +17,13 @@ export class CategoriesController {
     return this.categoriesService.findAll({ citySlug: query.citySlug });
   }
 
-  @Roles(UserRole.ADMIN, UserRole.CITY_ADMIN)
+  @Roles(UserRole.SUPER_ADMIN)
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() dto: CreateCategoryDto) {
     return this.categoriesService.create(user, dto);
   }
 
-  @Roles(UserRole.ADMIN, UserRole.CITY_ADMIN)
+  @Roles(UserRole.ADMIN)
   @Patch(':id')
   update(
     @CurrentUser() user: AuthUser,
@@ -33,7 +33,7 @@ export class CategoriesController {
     return this.categoriesService.update(user, id, dto);
   }
 
-  @Roles(UserRole.ADMIN, UserRole.CITY_ADMIN)
+  @Roles(UserRole.SUPER_ADMIN)
   @Delete(':id')
   remove(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.categoriesService.remove(user, id);

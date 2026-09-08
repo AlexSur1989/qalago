@@ -5,6 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CityScopeService } from './city-scope.service';
 import { BusinessMembershipService } from './business-membership.service';
 import { ALL_BUSINESS_PERMISSIONS, ownerHasAllPermissions } from '../utils/business-permission.util';
+import { isGlobalAdmin } from '../utils/system-access.util';
 
 export type BusinessAccessRecord = {
   id: string;
@@ -13,7 +14,7 @@ export type BusinessAccessRecord = {
   categoryId: string;
 };
 
-export type BusinessAccessRole = 'ADMIN' | 'CITY_ADMIN' | 'OWNER' | 'MANAGER';
+export type BusinessAccessRole = 'SUPER_ADMIN' | 'ADMIN' | 'CITY_ADMIN' | 'OWNER' | 'MANAGER';
 
 export type ResolvedBusinessAccess = {
   business: BusinessAccessRecord;
@@ -24,7 +25,7 @@ export type ResolvedBusinessAccess = {
 /**
  * Stage 5M.2 — centralized business authorization.
  *
- * ADMIN: global, all permissions
+ * SUPER_ADMIN / ADMIN: global, all permissions
  * CITY_ADMIN: managed city, all permissions
  * OWNER: legacy ownerId or ACTIVE OWNER membership — all permissions (not stored)
  * MANAGER: ACTIVE membership + explicit permissions only
@@ -40,10 +41,10 @@ export class BusinessAccessService {
   async resolveAccess(user: AuthUser, businessId: string): Promise<ResolvedBusinessAccess> {
     const business = await this.loadBusiness(businessId);
 
-    if (user.role === UserRole.ADMIN) {
+    if (isGlobalAdmin(user)) {
       return {
         business,
-        accessRole: 'ADMIN',
+        accessRole: user.role === UserRole.SUPER_ADMIN ? 'SUPER_ADMIN' : 'ADMIN',
         permissions: ownerHasAllPermissions(),
       };
     }
@@ -82,7 +83,12 @@ export class BusinessAccessService {
 
   async assertOwner(user: AuthUser, businessId: string): Promise<BusinessAccessRecord> {
     const access = await this.resolveAccess(user, businessId);
-    if (access.accessRole !== 'OWNER' && access.accessRole !== 'ADMIN' && access.accessRole !== 'CITY_ADMIN') {
+    if (
+      access.accessRole !== 'OWNER' &&
+      access.accessRole !== 'ADMIN' &&
+      access.accessRole !== 'SUPER_ADMIN' &&
+      access.accessRole !== 'CITY_ADMIN'
+    ) {
       throw new ForbiddenException('Owner access required');
     }
     return access.business;

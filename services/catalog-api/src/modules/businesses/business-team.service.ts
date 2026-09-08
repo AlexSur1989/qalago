@@ -15,6 +15,7 @@ import {
   UserRole,
 } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
+import { isGlobalAdmin } from '../../common/utils/system-access.util';
 import { normalizeKazakhstanPhone } from '../auth/auth-phone.util';
 import { BusinessAccessService } from '../../common/services/business-access.service';
 import { BusinessMembershipService } from '../../common/services/business-membership.service';
@@ -319,7 +320,7 @@ export class BusinessTeamService {
   }
 
   private async assertTeamReadAccess(user: AuthUser, businessId: string) {
-    if (user.role === UserRole.ADMIN) {
+    if (isGlobalAdmin(user)) {
       await this.businessAccess.resolveAccess(user, businessId);
       return;
     }

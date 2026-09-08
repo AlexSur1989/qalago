@@ -1,11 +1,24 @@
-import { Global, Module } from '@nestjs/common';
+import { Global, Module, forwardRef } from '@nestjs/common';
 import { BusinessAccessService } from './services/business-access.service';
 import { BusinessMembershipService } from './services/business-membership.service';
 import { CityScopeService } from './services/city-scope.service';
+import { SystemAccessService } from './services/system-access.service';
+import { AuditLogModule } from '../modules/audit-log/audit-log.module';
 
 @Global()
 @Module({
-  providers: [CityScopeService, BusinessMembershipService, BusinessAccessService],
-  exports: [CityScopeService, BusinessMembershipService, BusinessAccessService],
+  imports: [forwardRef(() => AuditLogModule)],
+  providers: [
+    CityScopeService,
+    BusinessMembershipService,
+    BusinessAccessService,
+    SystemAccessService,
+  ],
+  exports: [
+    CityScopeService,
+    BusinessMembershipService,
+    BusinessAccessService,
+    SystemAccessService,
+  ],
 })
 export class CommonAccessModule {}
