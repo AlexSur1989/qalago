@@ -1,11 +1,11 @@
 # QalaGo — Project Status
 
 **Last updated:** 2026-09-08  
-**Stable checkpoint:** `2bacbb3` — Document AuditLog in RBAC guide (Stage 5M.3)
+**Stable checkpoint:** `1f726b5` — Add SUPER_ADMIN system role governance (Stage 5M.4)
 
 ---
 
-## Completed stages (through 5M.3)
+## Completed stages (through 5M.4)
 
 | Stage | Commit(s) | Summary |
 |-------|-----------|---------|
@@ -15,9 +15,10 @@
 | 5M.2 | `1dd77cc` | Manager permissions, team API, invitations |
 | 5M.2.1 | `471f17f` | PostgreSQL migration/runtime verification, RolesGuard fix |
 | 5M.3 | `051f2a4`, `2bacbb3` | AuditLog foundation, admin/owner read APIs, wired mutations |
+| 5M.4 | `1f726b5` | SUPER_ADMIN governance; ADMIN operational-only; role-change SUPER_ADMIN-only |
 
 **Not started:** Stage 6 (release readiness)  
-**Not implemented:** `SUPER_ADMIN`, `MODERATOR`
+**Not implemented:** `MODERATOR`
 
 ---
 
@@ -42,7 +43,7 @@ QalaGo/
 
 ## Database (Prisma)
 
-**9 migrations applied** (latest: `20260908180000_stage_5m3_audit_log`):
+**11 migrations applied** (latest: `20260908190001_stage_5m4_super_admin_migrate`):
 
 1. `20260905120000_monetization_campaign_architecture`
 2. `20260906000000_business_plan_tier_stage_4c`
@@ -53,6 +54,10 @@ QalaGo/
 7. `20260908140000_stage_5m1_business_membership`
 8. `20260908160000_stage_5m2_business_permissions`
 9. `20260908180000_stage_5m3_audit_log`
+10. `20260908190000_stage_5m4_super_admin`
+11. `20260908190001_stage_5m4_super_admin_migrate`
+
+**Migration note (5M.4):** existing `ADMIN` users were migrated to `SUPER_ADMIN` to preserve privilege.
 
 Use **migrations**, not `db push`, for normal workflow:
 
@@ -74,7 +79,13 @@ npx prisma migrate status
 
 ### System role — `User.role`
 
-`USER` | `BUSINESS` | `CITY_ADMIN` | `ADMIN`
+`USER` | `BUSINESS` | `CITY_ADMIN` | `ADMIN` | `SUPER_ADMIN`
+
+**Governance (5M.4):**
+- **SUPER_ADMIN** — system role authority (role changes, cities, category create/delete)
+- **ADMIN** — global operational admin (moderation, payments, audit read); **cannot** change system roles
+- **CITY_ADMIN** — `managedCityId` scope only
+- Self role-change denied; last-SUPER_ADMIN demotion blocked
 
 Legacy `BUSINESS` remains. A `USER` may legitimately be OWNER of one business and MANAGER of another.
 
@@ -124,7 +135,7 @@ Security/operational audit — **not** `AnalyticsEvent`, not consumer browsing.
 | `createdAt` | When |
 
 **Read APIs:**
-- `GET /admin/audit-logs` — ADMIN global; CITY_ADMIN `managedCityId` only
+- `GET /admin/audit-logs` — SUPER_ADMIN/ADMIN global; CITY_ADMIN `managedCityId` only
 - `GET /businesses/:id/team/audit` — OWNER only (team actions)
 
 **Policy:** append-only; no backfill; retention TBD; metadata sanitizer strips secrets/phones/addresses.
@@ -137,18 +148,18 @@ See [RBAC](./architecture/rbac.md), [API contracts](./architecture/api-contracts
 
 ---
 
-## Verified test baseline (5M.3)
+## Verified test baseline (5M.4)
 
 | Suite | Result |
 |-------|--------|
-| catalog-api | 326/326 |
-| business-web | build + tests pass |
+| catalog-api | **346/346** |
+| business-web | **41/41** |
 | admin-web | build pass |
-| Flutter | analyze + test + web build (regression) |
+| Flutter | **227 pass, 3 fail** (pre-existing `auth_session_test.dart`; unrelated to 5M.4) |
 
 Run from repo root: `npm test`, `npm run build`. Flutter: `cd apps/mobile && flutter test && flutter analyze`.
 
-**Manual UI QA:** not run for 5M.3 audit page walkthrough.
+**Manual API QA (5M.4.1):** SUPER_ADMIN/ADMIN/CITY_ADMIN role governance verified via dev-login API.
 
 ---
 
@@ -211,7 +222,7 @@ Internal header: `X-QalaGo-Service-Token` (`QALAGO_INTERNAL_SERVICE_TOKEN`). Nev
 
 | Priority | Item |
 |----------|------|
-| P1 | SUPER_ADMIN / MODERATOR separation |
+| P1 | MODERATOR role |
 | P1 | Audit retention/archival policy |
 | P1 | Full manual UI QA |
 | P2 | Flutter owner team-management screen |

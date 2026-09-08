@@ -25,6 +25,19 @@
 
 ---
 
+---
+
+## 2026-09-08 — Stage 5M.4.1: SUPER_ADMIN verification checkpoint
+
+**Verified**
+- Backend 346/346; 11 migrations; catalog-api restarted after schema change
+- Manual API QA: SUPER_ADMIN role assignment, audit log, ADMIN denial, CITY_ADMIN scope, self-demotion block
+- Git tag `stage-5m4-checkpoint` on `1f726b5` (+ docs commit if any)
+
+**Known unrelated:** Flutter `auth_session_test.dart` (3 failures)
+
+---
+
 ## 2026-09-08 — Stage 5M.4: SUPER_ADMIN system role governance
 
 **Added**
