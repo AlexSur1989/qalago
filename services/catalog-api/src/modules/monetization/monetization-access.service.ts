@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { BusinessAccessService } from '../../common/services/business-access.service';
+import { BusinessMembershipService } from '../../common/services/business-membership.service';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -16,6 +17,7 @@ export class MonetizationAccessService {
     private readonly prisma: PrismaService,
     private readonly cityScope: CityScopeService,
     private readonly businessAccess: BusinessAccessService,
+    private readonly membership: BusinessMembershipService,
   ) {}
 
   async assertBusinessOwner(user: AuthUser, businessId: string) {
@@ -56,7 +58,7 @@ export class MonetizationAccessService {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        business: { select: { ownerId: true, cityId: true } },
+        business: { select: { id: true, ownerId: true, cityId: true } },
         items: { include: { product: true } },
         payments: true,
       },
@@ -77,7 +79,13 @@ export class MonetizationAccessService {
       return order;
     }
 
-    if (order.business.ownerId === user.id) {
+    if (
+      await this.membership.hasActiveOwnerAccess(
+        user.id,
+        order.business.id,
+        order.business.ownerId,
+      )
+    ) {
       return order;
     }
 
@@ -91,7 +99,7 @@ export class MonetizationAccessService {
     const campaign = await this.prisma.adCampaign.findUnique({
       where: { id: campaignId },
       include: {
-        business: { select: { ownerId: true, cityId: true, title: true } },
+        business: { select: { id: true, ownerId: true, cityId: true, title: true } },
         product: true,
         creative: true,
         orderItem: { select: { metadata: true } },
@@ -114,7 +122,13 @@ export class MonetizationAccessService {
       return campaign;
     }
 
-    if (campaign.business.ownerId === user.id) {
+    if (
+      await this.membership.hasActiveOwnerAccess(
+        user.id,
+        campaign.business.id,
+        campaign.business.ownerId,
+      )
+    ) {
       return campaign;
     }
 
@@ -127,7 +141,7 @@ export class MonetizationAccessService {
   async assertCreativeAccess(user: AuthUser, creativeId: string) {
     const creative = await this.prisma.adCreative.findUnique({
       where: { id: creativeId },
-      include: { business: { select: { ownerId: true, cityId: true } } },
+      include: { business: { select: { id: true, ownerId: true, cityId: true } } },
     });
     if (!creative) {
       monetizationNotFound(
@@ -146,7 +160,13 @@ export class MonetizationAccessService {
       return creative;
     }
 
-    if (creative.business.ownerId === user.id) {
+    if (
+      await this.membership.hasActiveOwnerAccess(
+        user.id,
+        creative.business.id,
+        creative.business.ownerId,
+      )
+    ) {
       return creative;
     }
 

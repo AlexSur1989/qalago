@@ -2,9 +2,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { BusinessStatus, Prisma, UserRole } from '@prisma/client';
+import { BusinessStatus, BusinessMembershipRole, BusinessMembershipStatus, Prisma, UserRole } from '@prisma/client';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { BusinessAccessService } from '../../common/services/business-access.service';
+import { BusinessMembershipService } from '../../common/services/business-membership.service';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { haversineMeters } from '../../common/utils/geo.utils';
 import { compareBusinessCatalogRank } from '../../common/utils/business-rank.util';
@@ -47,6 +48,7 @@ export class BusinessesService {
     private readonly prisma: PrismaService,
     private readonly cityScope: CityScopeService,
     private readonly businessAccess: BusinessAccessService,
+    private readonly membership: BusinessMembershipService,
     private readonly planLimits: PlanLimitsService,
     private readonly publicContent: BusinessPublicContentService,
   ) {}
@@ -82,6 +84,8 @@ export class BusinessesService {
           status: BusinessStatus.PENDING,
         },
       });
+
+      await this.membership.createActiveOwnerMembership(tx, user.id, business.id);
 
       if (user.role === UserRole.USER) {
         await tx.user.update({
@@ -223,7 +227,20 @@ export class BusinessesService {
 
   async findMy(user: AuthUser) {
     return this.prisma.business.findMany({
-      where: { ownerId: user.id },
+      where: {
+        OR: [
+          { ownerId: user.id },
+          {
+            memberships: {
+              some: {
+                userId: user.id,
+                role: BusinessMembershipRole.OWNER,
+                status: BusinessMembershipStatus.ACTIVE,
+              },
+            },
+          },
+        ],
+      },
       include: { category: true, city: { select: { slug: true, nameRu: true } } },
       orderBy: { title: 'asc' },
     });

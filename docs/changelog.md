@@ -21,6 +21,27 @@
 
 ---
 
+## 2026-09-08 — Stage 5M.1: Business membership foundation
+
+**Сделано**
+- Prisma: `BusinessMembership` + enums `BusinessMembershipRole` / `BusinessMembershipStatus`
+- Backfill: каждый `Business.ownerId != null` → ACTIVE OWNER membership
+- `BusinessMembershipService` + dual-read в `BusinessAccessService`
+- Создание бизнеса: транзакция ownerId + membership
+- `GET /businesses/my`: legacy ownerId OR ACTIVE OWNER membership (dedupe)
+- Seed: upsert membership для seeded owners
+- Документация: `docs/architecture/business-membership.md`
+
+**Инварианты**
+- `UserRole` ≠ `BusinessMembershipRole`
+- MANAGER в enum, но без прав в 5M.1
+- JWT без membership claims
+
+**На будущее (Stage 5M.2)**
+- MANAGER permissions, invitations, team UI
+
+---
+
 ## 2026-09-08 — Stage 5M.0: Authorization P0 hardening
 
 **Сделано**

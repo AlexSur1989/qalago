@@ -14,6 +14,18 @@ enum UserRole {
   ADMIN
 }
 
+enum BusinessMembershipRole {
+  OWNER
+  MANAGER
+}
+
+enum BusinessMembershipStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+  REVOKED
+}
+
 enum BusinessStatus {
   PENDING
   ACTIVE
@@ -186,8 +198,9 @@ model User {
   updatedAt       DateTime       @updatedAt
   preferredCity   City?          @relation("PreferredCity", fields: [preferredCityId], references: [id], onDelete: SetNull)
   managedCity     City?          @relation("ManagedCity", fields: [managedCityId], references: [id], onDelete: SetNull)
-  ownedBusinesses Business[]     @relation("BusinessOwner")
-  favorites       Favorite[]
+  ownedBusinesses     Business[]           @relation("BusinessOwner")
+  businessMemberships BusinessMembership[]
+  favorites             Favorite[]
   reviews         Review[]
   notifications   Notification[]
   otps            OtpCode[]
@@ -303,9 +316,27 @@ model Business {
   orders            Order[]
   adCreatives       AdCreative[]
   adCampaigns       AdCampaign[]
+  memberships       BusinessMembership[]
 
   @@index([cityId, status])
   @@index([categoryId])
+}
+
+model BusinessMembership {
+  id         String                   @id @default(cuid())
+  userId     String
+  businessId String
+  role       BusinessMembershipRole
+  status     BusinessMembershipStatus
+  createdAt  DateTime                 @default(now())
+  updatedAt  DateTime                 @updatedAt
+  user       User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business   Business                 @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, businessId])
+  @@index([userId])
+  @@index([businessId])
+  @@index([businessId, status])
 }
 
 model BusinessImage {

@@ -25,6 +25,7 @@ describe('BusinessesService.findAll', () => {
     prisma,
     cityScope,
     asBusinessAccessService(createMockBusinessAccess()),
+    { createActiveOwnerMembership: jest.fn() } as never,
     planLimits,
     publicContent,
   );
@@ -211,6 +212,7 @@ describe('BusinessesService.recommended', () => {
     prisma,
     cityScope,
     asBusinessAccessService(createMockBusinessAccess()),
+    { createActiveOwnerMembership: jest.fn() } as never,
     {} as PlanLimitsService,
     {} as BusinessPublicContentService,
   );

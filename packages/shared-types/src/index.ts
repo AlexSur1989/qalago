@@ -1,3 +1,8 @@
+export {
+  BusinessMembershipRole,
+  BusinessMembershipStatus,
+} from './business-membership';
+
 export enum UserRole {
   USER = 'USER',
   BUSINESS = 'BUSINESS',

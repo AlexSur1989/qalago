@@ -336,6 +336,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
         prisma,
         { resolveCityId: jest.fn() } as never,
         asBusinessAccessService(createMockBusinessAccess()),
+        { createActiveOwnerMembership: jest.fn() } as never,
         planLimits,
         publicContent as never,
       );

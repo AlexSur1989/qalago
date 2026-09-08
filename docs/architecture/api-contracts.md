@@ -235,7 +235,7 @@ Response: `{ "items": [...], "totalCount", "pagination": { ... } }`
 
 ### GET /businesses/my
 
-Owner: own businesses.
+Auth: owner businesses — legacy `Business.ownerId` **or** `ACTIVE` membership with `role=OWNER` (Stage 5M.1 dual-read). Deduplicated. MANAGER memberships excluded in 5M.1.
 
 ### GET /businesses/recommended/me
 

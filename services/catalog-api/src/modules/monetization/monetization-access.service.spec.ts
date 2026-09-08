@@ -19,10 +19,15 @@ describe('MonetizationAccessService RBAC', () => {
 
   const businessAccess = createMockBusinessAccess();
 
+  const membership = {
+    hasActiveOwnerAccess: jest.fn(),
+  } as unknown as import('../../common/services/business-membership.service').BusinessMembershipService;
+
   const service = new MonetizationAccessService(
     prisma,
     cityScope,
     asBusinessAccessService(businessAccess),
+    membership,
   );
 
   beforeEach(() => jest.clearAllMocks());
@@ -30,7 +35,7 @@ describe('MonetizationAccessService RBAC', () => {
   it('39. CITY_ADMIN cannot access other city order', async () => {
     prisma.order.findUnique = jest.fn().mockResolvedValue({
       id: 'ord-1',
-      business: { ownerId: 'owner-1', cityId: 'city-other' },
+      business: { id: 'biz-1', ownerId: 'owner-1', cityId: 'city-other' },
       items: [],
       payments: [],
     });
@@ -62,10 +67,11 @@ describe('MonetizationAccessService RBAC', () => {
   it('41. owner cannot access other business order', async () => {
     prisma.order.findUnique = jest.fn().mockResolvedValue({
       id: 'ord-1',
-      business: { ownerId: 'other-owner', cityId: 'city-1' },
+      business: { id: 'biz-2', ownerId: 'other-owner', cityId: 'city-1' },
       items: [],
       payments: [],
     });
+    membership.hasActiveOwnerAccess = jest.fn().mockResolvedValue(false);
 
     await expect(
       service.assertOrderAccess(

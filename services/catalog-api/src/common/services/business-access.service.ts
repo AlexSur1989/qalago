@@ -3,6 +3,7 @@ import { UserRole } from '@prisma/client';
 import { AuthUser } from '../types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CityScopeService } from './city-scope.service';
+import { BusinessMembershipService } from './business-membership.service';
 
 export type BusinessAccessRecord = {
   id: string;
@@ -16,14 +17,15 @@ export type BusinessAccessRecord = {
  *
  * ADMIN: global
  * CITY_ADMIN: managedCityId only
- * BUSINESS: ownerId match
- * USER: denied for management/view-analytics actions
+ * BUSINESS / USER: legacy ownerId OR ACTIVE OWNER membership (dual-read)
+ * MANAGER membership: denied in Stage 5M.1
  */
 @Injectable()
 export class BusinessAccessService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cityScope: CityScopeService,
+    private readonly membership: BusinessMembershipService,
   ) {}
 
   async assertCanManageBusiness(
@@ -63,7 +65,9 @@ export class BusinessAccessService {
       return;
     }
 
-    if (user.role === UserRole.BUSINESS && business.ownerId === user.id) {
+    if (
+      await this.membership.hasActiveOwnerAccess(user.id, business.id, business.ownerId)
+    ) {
       return;
     }
 

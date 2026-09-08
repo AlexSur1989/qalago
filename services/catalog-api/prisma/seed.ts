@@ -1,7 +1,27 @@
-import { BusinessStatus, BusinessPlanTier, PrismaClient, PromotionStatus, UserRole } from '@prisma/client';
+import { BusinessStatus, BusinessPlanTier, BusinessMembershipRole, BusinessMembershipStatus, PrismaClient, PromotionStatus, UserRole } from '@prisma/client';
 import { seedMonetizationCatalog } from './seed-monetization';
 
 const prisma = new PrismaClient();
+
+async function ensureActiveOwnerMembership(
+  client: PrismaClient,
+  userId: string,
+  businessId: string,
+) {
+  await client.businessMembership.upsert({
+    where: { userId_businessId: { userId, businessId } },
+    create: {
+      userId,
+      businessId,
+      role: BusinessMembershipRole.OWNER,
+      status: BusinessMembershipStatus.ACTIVE,
+    },
+    update: {
+      role: BusinessMembershipRole.OWNER,
+      status: BusinessMembershipStatus.ACTIVE,
+    },
+  });
+}
 
 const photo = (id: string, width = 1200) =>
   `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${width}&q=80`;
@@ -398,6 +418,7 @@ async function main() {
       },
     });
     businessIds[b.slug] = record.id;
+    await ensureActiveOwnerMembership(prisma, owner.id, record.id);
   }
 
   await prisma.promotion.deleteMany({
@@ -1041,7 +1062,7 @@ async function main() {
   qaExpiresAt.setDate(qaExpiresAt.getDate() + 30);
 
   for (const qa of qaPlanTiers) {
-    await prisma.business.upsert({
+    const qaBusiness = await prisma.business.upsert({
       where: { slug: qa.slug },
       update: {
         title: qa.title,
@@ -1068,6 +1089,17 @@ async function main() {
         ownerId: owner.id,
       },
     });
+    await ensureActiveOwnerMembership(prisma, owner.id, qaBusiness.id);
+  }
+
+  const ownedBusinesses = await prisma.business.findMany({
+    where: { ownerId: { not: null } },
+    select: { id: true, ownerId: true },
+  });
+  for (const row of ownedBusinesses) {
+    if (row.ownerId) {
+      await ensureActiveOwnerMembership(prisma, row.ownerId, row.id);
+    }
   }
 
   console.log('Seed OK:', {
