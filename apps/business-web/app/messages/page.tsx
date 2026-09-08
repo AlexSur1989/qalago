@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { BusinessRow, NotificationRow, ownerApi } from '@/lib/api';
+import { BusinessRow, NotificationRow, myBusinessRows, ownerApi } from '@/lib/api';
 import { useAuth } from '@/lib/use-auth';
 import { BusinessShell, useSelectedBusiness } from '@/components/business-shell';
 
@@ -51,7 +51,7 @@ export default function MessagesPage() {
     if (!token) return;
     ownerApi
       .listMyBusinesses(token)
-      .then(setBusinesses)
+      .then((res) => setBusinesses(myBusinessRows(res.items)))
       .catch((err) => setError(String(err)));
     load(token);
   }, [token]);

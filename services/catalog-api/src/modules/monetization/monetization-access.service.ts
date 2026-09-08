@@ -1,7 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { BusinessPermission, UserRole } from '@prisma/client';
 import { BusinessAccessService } from '../../common/services/business-access.service';
-import { BusinessMembershipService } from '../../common/services/business-membership.service';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -17,12 +16,11 @@ export class MonetizationAccessService {
     private readonly prisma: PrismaService,
     private readonly cityScope: CityScopeService,
     private readonly businessAccess: BusinessAccessService,
-    private readonly membership: BusinessMembershipService,
   ) {}
 
   async assertBusinessOwner(user: AuthUser, businessId: string) {
     try {
-      return await this.businessAccess.assertCanManageBusiness(user, businessId);
+      return await this.businessAccess.assertOwner(user, businessId);
     } catch (err) {
       if (err instanceof NotFoundException) {
         monetizationNotFound(
@@ -39,7 +37,11 @@ export class MonetizationAccessService {
 
   async assertCanManageBusiness(user: AuthUser, businessId: string) {
     try {
-      return await this.businessAccess.assertCanManageBusiness(user, businessId);
+      return await this.businessAccess.assertBusinessPermission(
+        user,
+        businessId,
+        BusinessPermission.ADS_MANAGE,
+      );
     } catch (err) {
       if (err instanceof NotFoundException) {
         monetizationNotFound(
@@ -49,7 +51,34 @@ export class MonetizationAccessService {
       }
       monetizationForbidden(
         MonetizationErrorCode.BUSINESS_NOT_OWNED,
-        'Not business owner',
+        'Not allowed to manage ads for this business',
+      );
+    }
+  }
+
+  private async assertBusinessSideAccess(user: AuthUser, businessId: string) {
+    try {
+      const access = await this.businessAccess.resolveAccess(user, businessId);
+      if (
+        access.accessRole === 'OWNER' ||
+        access.accessRole === 'ADMIN' ||
+        access.accessRole === 'CITY_ADMIN' ||
+        access.permissions.includes(BusinessPermission.ADS_MANAGE) ||
+        access.permissions.includes(BusinessPermission.PAYMENTS_VIEW)
+      ) {
+        return access.business;
+      }
+      throw new ForbiddenException('Not allowed');
+    } catch (err) {
+      if (err instanceof NotFoundException) {
+        monetizationNotFound(
+          MonetizationErrorCode.PRODUCT_NOT_FOUND,
+          'Business not found',
+        );
+      }
+      monetizationForbidden(
+        MonetizationErrorCode.BUSINESS_NOT_OWNED,
+        'Not allowed to access this business monetization',
       );
     }
   }
@@ -79,20 +108,8 @@ export class MonetizationAccessService {
       return order;
     }
 
-    if (
-      await this.membership.hasActiveOwnerAccess(
-        user.id,
-        order.business.id,
-        order.business.ownerId,
-      )
-    ) {
-      return order;
-    }
-
-    monetizationForbidden(
-      MonetizationErrorCode.BUSINESS_NOT_OWNED,
-      'Not allowed to access this order',
-    );
+    await this.assertBusinessSideAccess(user, order.business.id);
+    return order;
   }
 
   async assertCampaignAccess(user: AuthUser, campaignId: string) {
@@ -122,20 +139,20 @@ export class MonetizationAccessService {
       return campaign;
     }
 
-    if (
-      await this.membership.hasActiveOwnerAccess(
-        user.id,
+    try {
+      await this.businessAccess.assertBusinessPermission(
+        user,
         campaign.business.id,
-        campaign.business.ownerId,
-      )
-    ) {
-      return campaign;
+        BusinessPermission.ADS_MANAGE,
+      );
+    } catch {
+      monetizationForbidden(
+        MonetizationErrorCode.BUSINESS_NOT_OWNED,
+        'Not allowed to access this campaign',
+      );
     }
 
-    monetizationForbidden(
-      MonetizationErrorCode.BUSINESS_NOT_OWNED,
-      'Not allowed to access this campaign',
-    );
+    return campaign;
   }
 
   async assertCreativeAccess(user: AuthUser, creativeId: string) {
@@ -160,20 +177,20 @@ export class MonetizationAccessService {
       return creative;
     }
 
-    if (
-      await this.membership.hasActiveOwnerAccess(
-        user.id,
+    try {
+      await this.businessAccess.assertBusinessPermission(
+        user,
         creative.business.id,
-        creative.business.ownerId,
-      )
-    ) {
-      return creative;
+        BusinessPermission.ADS_MANAGE,
+      );
+    } catch {
+      monetizationForbidden(
+        MonetizationErrorCode.CREATIVE_NOT_OWNED,
+        'Not allowed to access this creative',
+      );
     }
 
-    monetizationForbidden(
-      MonetizationErrorCode.CREATIVE_NOT_OWNED,
-      'Not allowed to access this creative',
-    );
+    return creative;
   }
 
   async assertAdminPaymentAccess(user: AuthUser, paymentId: string) {

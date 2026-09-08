@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/rbac/business_access.dart';
 import '../../../shared/models/models.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../owner_utils.dart';
@@ -25,17 +26,34 @@ void onOwnerBusinessSelected(WidgetRef ref, String businessId) {
 }
 
 final ownerSelectedBusinessProvider = Provider<Map<String, dynamic>?>((ref) {
-  final businessesAsync = ref.watch(myBusinessesProvider);
+  final entriesAsync = ref.watch(myBusinessEntriesProvider);
   final selectedId = ref.watch(selectedOwnerBusinessIdProvider);
-  return businessesAsync.maybeWhen(
-    data: (items) {
-      if (items.isEmpty) return null;
+  return entriesAsync.maybeWhen(
+    data: (entries) {
+      if (entries.isEmpty) return null;
       if (selectedId != null) {
-        for (final item in items) {
-          if (item['id'] == selectedId) return item;
+        for (final entry in entries) {
+          if (entry.businessId == selectedId) return entry.business;
         }
       }
-      return items.first;
+      return entries.first.business;
+    },
+    orElse: () => null,
+  );
+});
+
+final selectedBusinessAccessProvider = Provider<BusinessAccess?>((ref) {
+  final entriesAsync = ref.watch(myBusinessEntriesProvider);
+  final selectedId = ref.watch(selectedOwnerBusinessIdProvider);
+  return entriesAsync.maybeWhen(
+    data: (entries) {
+      if (entries.isEmpty) return null;
+      if (selectedId != null) {
+        for (final entry in entries) {
+          if (entry.businessId == selectedId) return entry.access;
+        }
+      }
+      return entries.first.access;
     },
     orElse: () => null,
   );

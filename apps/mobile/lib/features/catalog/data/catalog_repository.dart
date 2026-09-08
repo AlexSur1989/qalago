@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../../core/rbac/business_access.dart';
 import '../../../features/ads/data/ad_models.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
@@ -108,9 +109,13 @@ class CatalogRepository {
     return PaginatedBusinesses.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<List<Map<String, dynamic>>> fetchMyBusinesses() async {
+  Future<List<MyBusinessEntry>> fetchMyBusinesses() async {
     final response = await _dio.get('/businesses/my');
-    return (response.data as List<dynamic>).cast<Map<String, dynamic>>();
+    final data = response.data as Map<String, dynamic>;
+    final items = data['items'] as List<dynamic>? ?? const [];
+    return items
+        .map((item) => MyBusinessEntry.fromJson(item as Map<String, dynamic>))
+        .toList();
   }
 
   Future<Map<String, dynamic>> fetchBusinessDetails(String id) async {

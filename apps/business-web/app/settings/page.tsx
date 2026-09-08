@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
-import { BusinessRow, ownerApi } from '@/lib/api';
+import { BusinessRow, myBusinessRows, ownerApi } from '@/lib/api';
 import { useAuth } from '@/lib/use-auth';
 import { BusinessShell, useSelectedBusiness } from '@/components/business-shell';
 
@@ -17,7 +17,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (!token) return;
-    ownerApi.listMyBusinesses(token).then(setBusinesses).catch(() => undefined);
+    ownerApi.listMyBusinesses(token).then((res) => setBusinesses(myBusinessRows(res.items))).catch(() => undefined);
   }, [token]);
 
   useEffect(() => {

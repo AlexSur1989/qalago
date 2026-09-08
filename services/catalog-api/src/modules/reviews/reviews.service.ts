@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { NotificationType } from '@prisma/client';
+import { BusinessPermission, NotificationType } from '@prisma/client';
 import { BusinessAccessService } from '../../common/services/business-access.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -69,7 +69,11 @@ export class ReviewsService {
     });
     if (!review) throw new NotFoundException('Review not found');
 
-    await this.businessAccess.assertCanManageBusiness(user, review.business.id);
+    await this.businessAccess.assertBusinessPermission(
+      user,
+      review.business.id,
+      BusinessPermission.REVIEWS_REPLY,
+    );
 
     const updated = await this.prisma.review.update({
       where: { id },

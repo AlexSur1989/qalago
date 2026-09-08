@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
-import { BusinessRow, ownerApi } from '@/lib/api';
+import { BusinessRow, myBusinessRows, ownerApi } from '@/lib/api';
 import { useAuth } from '@/lib/use-auth';
 import { BusinessShell, useSelectedBusiness } from '@/components/business-shell';
 import { MonetizationSubNav } from '@/components/monetization/monetization-subnav';
@@ -36,7 +36,7 @@ export function MonetizationShell({ children }: MonetizationShellProps) {
     if (!token) return;
     ownerApi
       .listMyBusinesses(token)
-      .then(setBusinesses)
+      .then((res) => setBusinesses(myBusinessRows(res.items)))
       .catch(() => setBusinesses([]))
       .finally(() => setLoading(false));
   }, [token]);

@@ -17,7 +17,8 @@ export type NavId =
   | 'monetization'
   | 'help'
   | 'media'
-  | 'reviews';
+  | 'reviews'
+  | 'team';
 
 type NavItem = {
   id: NavId;
@@ -55,6 +56,8 @@ type BusinessShellProps = {
   userName?: string;
   onLogout: () => void;
   children: ReactNode;
+  mainNav?: NavItem[];
+  footerNav?: NavItem[];
 };
 
 export function BusinessShell({
@@ -65,9 +68,13 @@ export function BusinessShell({
   userName,
   onLogout,
   children,
+  mainNav,
+  footerNav,
 }: BusinessShellProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const navItems = mainNav ?? NAV;
+  const footerNavItems = footerNav ?? FOOTER_NAV;
 
   useEffect(() => {
     const token = localStorage.getItem(TOKEN_KEY);
@@ -138,7 +145,7 @@ export function BusinessShell({
         )}
 
         <nav className="sidebar-nav">
-          {NAV.map((item) => (
+          {navItems.map((item) => (
             <NavLink
               key={item.id}
               item={item}
@@ -150,7 +157,7 @@ export function BusinessShell({
         </nav>
 
         <div className="sidebar-footer">
-          {FOOTER_NAV.map((item) => (
+          {footerNavItems.map((item) => (
             <NavLink
               key={`footer-${item.id}`}
               item={item}

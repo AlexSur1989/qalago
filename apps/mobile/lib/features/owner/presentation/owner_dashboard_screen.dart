@@ -41,7 +41,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
           message: '$e',
-          onRetry: () => ref.invalidate(myBusinessesProvider),
+          onRetry: () => ref.invalidate(myBusinessEntriesProvider),
         ),
         data: (items) {
           if (items.isEmpty) {
@@ -59,7 +59,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
           return RefreshIndicator(
             onRefresh: () async {
               ref.invalidate(ownerDashboardProvider(businessId));
-              ref.invalidate(myBusinessesProvider);
+              ref.invalidate(myBusinessEntriesProvider);
             },
             child: ListView(
               padding: const EdgeInsets.all(AppSpacing.screen),

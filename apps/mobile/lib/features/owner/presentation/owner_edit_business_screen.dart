@@ -124,7 +124,7 @@ class _OwnerEditBusinessScreenState
         },
       );
       ref.invalidate(businessDetailsProvider(widget.businessId));
-      ref.invalidate(myBusinessesProvider);
+      ref.invalidate(myBusinessEntriesProvider);
       ref.invalidate(businessesProvider);
       ref.invalidate(featuredBusinessesProvider);
       if (mounted) {

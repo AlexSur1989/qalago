@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { User, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { BusinessMembershipService } from '../../common/services/business-membership.service';
 import { AccountType, resolveAccountRole } from './auth-role.util';
 import { normalizeKazakhstanPhone } from './auth-phone.util';
 import { DevLoginDto, SendCodeDto, VerifyCodeDto } from './dto/auth.dto';
@@ -28,6 +29,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
+    private readonly businessMembershipService: BusinessMembershipService,
   ) {}
 
   isDevLoginEnabled(): boolean {
@@ -136,6 +138,7 @@ export class AuthService {
     }
 
     const accessToken = await this.signToken(user);
+    await this.businessMembershipService.claimPendingInvitations(user.id, phone);
     return { accessToken, user };
   }
 

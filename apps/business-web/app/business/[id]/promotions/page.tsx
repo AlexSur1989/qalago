@@ -7,6 +7,7 @@ import {
   BusinessPlanStatus,
   BusinessRow,
   PromotionRow,
+  myBusinessRows,
   ownerApi,
 } from '@/lib/api';
 import { useAuth } from '@/lib/use-auth';
@@ -31,7 +32,7 @@ export default function BusinessPromotionsPage() {
 
   useEffect(() => {
     if (!token) return;
-    ownerApi.listMyBusinesses(token).then(setBusinesses).catch((err) => setError(String(err)));
+    ownerApi.listMyBusinesses(token).then((res) => setBusinesses(myBusinessRows(res.items))).catch((err) => setError(String(err)));
   }, [token]);
 
   async function load(t: string) {

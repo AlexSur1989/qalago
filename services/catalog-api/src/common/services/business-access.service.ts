@@ -1,9 +1,10 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { BusinessMembershipRole, BusinessPermission, UserRole } from '@prisma/client';
 import { AuthUser } from '../types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CityScopeService } from './city-scope.service';
 import { BusinessMembershipService } from './business-membership.service';
+import { ALL_BUSINESS_PERMISSIONS, ownerHasAllPermissions } from '../utils/business-permission.util';
 
 export type BusinessAccessRecord = {
   id: string;
@@ -12,13 +13,21 @@ export type BusinessAccessRecord = {
   categoryId: string;
 };
 
+export type BusinessAccessRole = 'ADMIN' | 'CITY_ADMIN' | 'OWNER' | 'MANAGER';
+
+export type ResolvedBusinessAccess = {
+  business: BusinessAccessRecord;
+  accessRole: BusinessAccessRole;
+  permissions: BusinessPermission[];
+};
+
 /**
- * Stage 5M.0 — centralized business resource access for legacy RBAC.
+ * Stage 5M.2 — centralized business authorization.
  *
- * ADMIN: global
- * CITY_ADMIN: managedCityId only
- * BUSINESS / USER: legacy ownerId OR ACTIVE OWNER membership (dual-read)
- * MANAGER membership: denied in Stage 5M.1
+ * ADMIN: global, all permissions
+ * CITY_ADMIN: managed city, all permissions
+ * OWNER: legacy ownerId or ACTIVE OWNER membership — all permissions (not stored)
+ * MANAGER: ACTIVE membership + explicit permissions only
  */
 @Injectable()
 export class BusinessAccessService {
@@ -28,20 +37,95 @@ export class BusinessAccessService {
     private readonly membership: BusinessMembershipService,
   ) {}
 
+  async resolveAccess(user: AuthUser, businessId: string): Promise<ResolvedBusinessAccess> {
+    const business = await this.loadBusiness(businessId);
+
+    if (user.role === UserRole.ADMIN) {
+      return {
+        business,
+        accessRole: 'ADMIN',
+        permissions: ownerHasAllPermissions(),
+      };
+    }
+
+    if (user.role === UserRole.CITY_ADMIN) {
+      await this.cityScope.assertBusinessInAdminScope(user, business.cityId);
+      return {
+        business,
+        accessRole: 'CITY_ADMIN',
+        permissions: ownerHasAllPermissions(),
+      };
+    }
+
+    if (await this.membership.hasActiveOwnerAccess(user.id, business.id, business.ownerId)) {
+      return {
+        business,
+        accessRole: 'OWNER',
+        permissions: ownerHasAllPermissions(),
+      };
+    }
+
+    const managerMembership = await this.membership.getActiveMembership(user.id, business.id);
+    if (
+      managerMembership?.role === BusinessMembershipRole.MANAGER &&
+      managerMembership.status === 'ACTIVE'
+    ) {
+      return {
+        business,
+        accessRole: 'MANAGER',
+        permissions: managerMembership.permissions ?? [],
+      };
+    }
+
+    throw new ForbiddenException('Not allowed to access this business');
+  }
+
+  async assertOwner(user: AuthUser, businessId: string): Promise<BusinessAccessRecord> {
+    const access = await this.resolveAccess(user, businessId);
+    if (access.accessRole !== 'OWNER' && access.accessRole !== 'ADMIN' && access.accessRole !== 'CITY_ADMIN') {
+      throw new ForbiddenException('Owner access required');
+    }
+    return access.business;
+  }
+
+  async assertBusinessPermission(
+    user: AuthUser,
+    businessId: string,
+    permission: BusinessPermission,
+  ): Promise<BusinessAccessRecord> {
+    const access = await this.resolveAccess(user, businessId);
+    if (!access.permissions.includes(permission)) {
+      throw new ForbiddenException(`Missing permission: ${permission}`);
+    }
+    return access.business;
+  }
+
+  /** Owner-level legacy alias — managers are denied. */
   async assertCanManageBusiness(
     user: AuthUser,
     businessId: string,
   ): Promise<BusinessAccessRecord> {
-    const business = await this.loadBusiness(businessId);
-    await this.assertManage(user, business);
-    return business;
+    return this.assertOwner(user, businessId);
   }
 
   async assertCanViewBusinessAnalytics(
     user: AuthUser,
     businessId: string,
   ): Promise<BusinessAccessRecord> {
-    return this.assertCanManageBusiness(user, businessId);
+    return this.assertBusinessPermission(user, businessId, BusinessPermission.ANALYTICS_VIEW);
+  }
+
+  async hasBusinessPermission(
+    user: AuthUser,
+    businessId: string,
+    permission: BusinessPermission,
+  ): Promise<boolean> {
+    try {
+      await this.assertBusinessPermission(user, businessId, permission);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   private async loadBusiness(businessId: string): Promise<BusinessAccessRecord> {
@@ -54,23 +138,6 @@ export class BusinessAccessService {
     }
     return business;
   }
-
-  private async assertManage(user: AuthUser, business: BusinessAccessRecord) {
-    if (user.role === UserRole.ADMIN) {
-      return;
-    }
-
-    if (user.role === UserRole.CITY_ADMIN) {
-      await this.cityScope.assertBusinessInAdminScope(user, business.cityId);
-      return;
-    }
-
-    if (
-      await this.membership.hasActiveOwnerAccess(user.id, business.id, business.ownerId)
-    ) {
-      return;
-    }
-
-    throw new ForbiddenException('Not allowed to manage this business');
-  }
 }
+
+export { ALL_BUSINESS_PERMISSIONS };

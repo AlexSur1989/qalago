@@ -24,7 +24,7 @@ class ProfileScreen extends ConsumerWidget {
     final user = auth.user;
     final role = user?.role ?? 'USER';
     final city = ref.watch(cityProvider);
-    final canManageBusiness = canManageBusinessCabinet(role);
+    final canManageBusiness = ref.watch(hasBusinessCabinetAccessProvider);
     final canModerateRole = canModerate(role);
 
     return Scaffold(

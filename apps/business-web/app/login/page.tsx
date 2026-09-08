@@ -46,20 +46,38 @@ export default function LoginPage() {
   }
 
   async function finishLogin(accessToken: string, user: Awaited<ReturnType<typeof ownerApi.verifyCode>>['user']) {
-    if (
-      user.role !== 'BUSINESS' &&
-      user.role !== 'ADMIN' &&
-      user.role !== 'CITY_ADMIN' &&
-      user.role !== 'USER'
-    ) {
+    const legacyRole =
+      user.role === 'BUSINESS' || user.role === 'ADMIN' || user.role === 'CITY_ADMIN';
+
+    let membershipCount = 0;
+    try {
+      const res = await ownerApi.listMyBusinesses(accessToken);
+      membershipCount = res.items.length;
+    } catch {
+      setError('Не удалось проверить доступ к заведениям');
+      return;
+    }
+
+    const hasMembership = membershipCount > 0;
+
+    if (!legacyRole && !hasMembership && user.role !== 'USER') {
       setError('Нет доступа к кабинету');
       return;
     }
+
     localStorage.setItem(TOKEN_KEY, accessToken);
-    if (user.role === 'USER' && accountType === 'business') {
+
+    if (user.role === 'USER' && !hasMembership && accountType === 'business') {
       router.push('/register');
       return;
     }
+
+    if (user.role === 'USER' && !hasMembership) {
+      setError('Нет доступа к кабинету. Попросите владельца пригласить вас или зарегистрируйте заведение.');
+      localStorage.removeItem(TOKEN_KEY);
+      return;
+    }
+
     router.push('/dashboard');
   }
 

@@ -29,6 +29,43 @@ export type AuthUser = {
   role: string;
 };
 
+export type BusinessAccessRole = 'OWNER' | 'MANAGER';
+
+export type BusinessAccessInfo = {
+  role: BusinessAccessRole;
+  permissions: string[];
+};
+
+export type MyBusinessItem = {
+  business: BusinessRow;
+  access: BusinessAccessInfo;
+};
+
+export type TeamMemberRow = {
+  membershipId: string;
+  userId: string;
+  name: string | null;
+  phone: string;
+  role: BusinessAccessRole;
+  status: string;
+  permissions: string[];
+  createdAt: string;
+};
+
+export type TeamInvitationRow = {
+  invitationId: string;
+  phone: string;
+  permissions: string[];
+  status: string;
+  expiresAt: string;
+  createdAt: string;
+};
+
+export type TeamListResponse = {
+  members: TeamMemberRow[];
+  pendingInvitations: TeamInvitationRow[];
+};
+
 export type BusinessRow = {
   id: string;
   title: string;
@@ -445,6 +482,17 @@ export type CreateMonetizationCreativePayload = {
 
 export const SELECTED_BUSINESS_KEY = 'qalago_business_id';
 
+export function myBusinessRows(items: MyBusinessItem[]): BusinessRow[] {
+  return items.map((item) => item.business);
+}
+
+export function findMyBusinessItem(
+  items: MyBusinessItem[],
+  businessId: string,
+): MyBusinessItem | undefined {
+  return items.find((item) => item.business.id === businessId);
+}
+
 async function api<T>(
   path: string,
   options: RequestInit & { token?: string } = {},
@@ -526,7 +574,42 @@ export const ownerApi = {
     }),
 
   listMyBusinesses: (token: string) =>
-    api<BusinessRow[]>('/businesses/my', { token }),
+    api<{ items: MyBusinessItem[] }>('/businesses/my', { token }),
+
+  listTeam: (token: string, businessId: string) =>
+    api<TeamListResponse>(`/businesses/${encodeURIComponent(businessId)}/team`, { token }),
+
+  inviteTeamMember: (
+    token: string,
+    businessId: string,
+    data: { phone: string; permissions: string[] },
+  ) =>
+    api<{ type: 'membership' | 'invitation'; membershipId?: string; invitationId?: string; expiresAt?: string }>(
+      `/businesses/${encodeURIComponent(businessId)}/team/invite`,
+      {
+        method: 'POST',
+        token,
+        body: JSON.stringify(data),
+      },
+    ),
+
+  updateTeamMember: (
+    token: string,
+    businessId: string,
+    membershipId: string,
+    data: { permissions?: string[]; status?: string },
+  ) =>
+    api<TeamMemberRow>(`/businesses/${encodeURIComponent(businessId)}/team/${membershipId}`, {
+      method: 'PATCH',
+      token,
+      body: JSON.stringify(data),
+    }),
+
+  revokeInvitation: (token: string, businessId: string, invitationId: string) =>
+    api<void>(
+      `/businesses/${encodeURIComponent(businessId)}/team/invitations/${invitationId}`,
+      { method: 'DELETE', token },
+    ),
 
   getBusiness: (token: string, id: string) =>
     api<BusinessRow>(`/businesses/${id}`, { token }),

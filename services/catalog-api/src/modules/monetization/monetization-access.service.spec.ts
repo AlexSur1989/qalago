@@ -1,3 +1,4 @@
+import { ForbiddenException } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -19,15 +20,10 @@ describe('MonetizationAccessService RBAC', () => {
 
   const businessAccess = createMockBusinessAccess();
 
-  const membership = {
-    hasActiveOwnerAccess: jest.fn(),
-  } as unknown as import('../../common/services/business-membership.service').BusinessMembershipService;
-
   const service = new MonetizationAccessService(
     prisma,
     cityScope,
     asBusinessAccessService(businessAccess),
-    membership,
   );
 
   beforeEach(() => jest.clearAllMocks());
@@ -71,7 +67,7 @@ describe('MonetizationAccessService RBAC', () => {
       items: [],
       payments: [],
     });
-    membership.hasActiveOwnerAccess = jest.fn().mockResolvedValue(false);
+    businessAccess.resolveAccess.mockRejectedValue(new ForbiddenException('Not allowed'));
 
     await expect(
       service.assertOrderAccess(

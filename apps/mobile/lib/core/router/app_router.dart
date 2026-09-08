@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../auth/route_access.dart';
+import '../rbac/business_access.dart';
 import '../../shared/utils/auth_utils.dart';
 import '../../shared/navigation/open_business.dart';
 import '../../features/auth/presentation/login_screen.dart';
@@ -53,9 +54,18 @@ final _shellNavigatorKey = GlobalKey<NavigatorState>();
 class _RouterRefresh extends ChangeNotifier {
   _RouterRefresh(this._ref) {
     _ref.listen(authProvider, (_, __) => notifyListeners());
+    _ref.listen(myBusinessEntriesProvider, (_, __) => notifyListeners());
   }
 
   final Ref _ref;
+}
+
+bool _hasBusinessCabinetAccess(Ref ref, AuthState authState) {
+  if (!authState.isAuthenticated) return false;
+  return canAccessBusinessCabinet(
+    authState.user?.role,
+    ref.read(myBusinessEntriesProvider).valueOrNull ?? const [],
+  );
 }
 
 final _routerRefreshProvider = Provider<_RouterRefresh>((ref) {
@@ -91,7 +101,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         if (redirect != null && redirect.isNotEmpty) {
           return sanitizeLoginRedirect(redirect);
         }
-        if (canManageBusinessCabinet(authState.user?.role)) {
+        if (_hasBusinessCabinetAccess(ref, authState)) {
           return '/owner';
         }
         return '/home';
@@ -99,7 +109,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       if (isOwnerRoute(location)) {
         if (location == '/owner/create-business') return null;
-        if (!canManageBusinessCabinet(authState.user?.role)) {
+        if (!_hasBusinessCabinetAccess(ref, authState)) {
           return '/profile';
         }
       }

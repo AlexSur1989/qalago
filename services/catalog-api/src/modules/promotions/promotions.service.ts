@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import {
   BusinessStatus,
+  BusinessPermission,
   Prisma,
   PromotionStatus,
   UserRole,
@@ -273,12 +274,11 @@ export class PromotionsService {
 
   private async canManageBusiness(user: AuthUser | undefined, businessId: string) {
     if (!user) return false;
-    try {
-      await this.businessAccess.assertCanManageBusiness(user, businessId);
-      return true;
-    } catch {
-      return false;
-    }
+    return this.businessAccess.hasBusinessPermission(
+      user,
+      businessId,
+      BusinessPermission.PROMOTIONS_EDIT,
+    );
   }
 
   /** City promotion feed: subscription tier does not affect ordering (Stage 4C). */
@@ -289,7 +289,11 @@ export class PromotionsService {
   }
 
   private async assertCanManage(user: AuthUser, businessId: string) {
-    await this.businessAccess.assertCanManageBusiness(user, businessId);
+    await this.businessAccess.assertBusinessPermission(
+      user,
+      businessId,
+      BusinessPermission.PROMOTIONS_EDIT,
+    );
   }
 }
 

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { BusinessRow, ownerApi } from '@/lib/api';
+import { BusinessRow, myBusinessRows, ownerApi } from '@/lib/api';
 import { useAuth } from '@/lib/use-auth';
 import { BusinessShell } from '@/components/business-shell';
 
@@ -41,7 +41,7 @@ export default function BusinessEditPage() {
 
   useEffect(() => {
     if (!token) return;
-    ownerApi.listMyBusinesses(token).then(setBusinesses).catch((err) => setError(String(err)));
+    ownerApi.listMyBusinesses(token).then((res) => setBusinesses(myBusinessRows(res.items))).catch((err) => setError(String(err)));
   }, [token]);
 
   useEffect(() => {
@@ -93,8 +93,8 @@ export default function BusinessEditPage() {
         },
       });
       setSaved(true);
-      const items = await ownerApi.listMyBusinesses(token);
-      setBusinesses(items);
+      const res = await ownerApi.listMyBusinesses(token);
+      setBusinesses(myBusinessRows(res.items));
     } catch (err) {
       setError(String(err));
     }

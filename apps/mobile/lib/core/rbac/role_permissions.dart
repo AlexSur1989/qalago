@@ -109,6 +109,10 @@ bool canModerate(String? role) =>
 
 bool canManageUsers(String? role) => role == 'ADMIN';
 
+/// Legacy system-role gate (BUSINESS / ADMIN / CITY_ADMIN).
+///
+/// Router and profile also grant cabinet access when [canAccessBusinessCabinet]
+/// sees non-empty membership entries (e.g. USER + MANAGER). Server remains authoritative.
 bool canManageBusinessCabinet(String? role) =>
     role == 'BUSINESS' || role == 'ADMIN' || role == 'CITY_ADMIN';
 

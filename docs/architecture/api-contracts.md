@@ -235,15 +235,43 @@ Response: `{ "items": [...], "totalCount", "pagination": { ... } }`
 
 ### GET /businesses/my
 
-Auth: owner businesses — legacy `Business.ownerId` **or** `ACTIVE` membership with `role=OWNER` (Stage 5M.1 dual-read). Deduplicated. MANAGER memberships excluded in 5M.1.
+Auth: accessible businesses — legacy `Business.ownerId` **or** `ACTIVE` membership with `role=OWNER|MANAGER` (Stage 5M.2). Deduplicated.
+
+Response:
+```json
+{
+  "items": [
+    {
+      "business": { "id", "title", "...": "..." },
+      "access": {
+        "role": "OWNER" | "MANAGER",
+        "permissions": ["CATALOG_EDIT", "..."]
+      }
+    }
+  ]
+}
+```
+
+OWNER `permissions` in response are the full enum (implicit all). MANAGER receives stored permissions only.
+
+### Team (Stage 5M.2)
+
+| Method | Path | Auth |
+|--------|------|------|
+| GET | `/businesses/:businessId/team` | OWNER; ADMIN; CITY_ADMIN (scoped read) |
+| POST | `/businesses/:businessId/team/invite` | OWNER — body `{ phone, permissions[] }` |
+| PATCH | `/businesses/:businessId/team/:membershipId` | OWNER — body `{ permissions?, status? }` |
+| DELETE | `/businesses/:businessId/team/invitations/:invitationId` | OWNER |
+
+### PATCH /businesses/:id
+
+Owner, manager (field-level permissions), or admin. Body (all optional): `title`, `shortDesc`, `description`, `address`, `latitude`, `longitude`, `phone`, `whatsapp`, `instagram`, `website`, `coverImageUrl`, `workHours`.
+
+Field groups require matching `BusinessPermission`: profile fields → `BUSINESS_PROFILE_EDIT`; `workHours` → `BUSINESS_HOURS_EDIT`. Mixed PATCH requires all relevant permissions.
 
 ### GET /businesses/recommended/me
 
 Auth user recommendations (rule-based MVP; AI later). Cold start (no favorites): active businesses in city, organic title order — **not** filtered by `isFeatured`. With favorites: same-category businesses, organic title order.
-
-### PATCH /businesses/:id
-
-Owner or admin. Body (all optional): `title`, `shortDesc`, `description`, `address`, `latitude`, `longitude`, `phone`, `whatsapp`, `instagram`, `website`, `coverImageUrl`, `workHours` (object: `{ "mon": "09:00-22:00", ... }`).
 
 ### Admin
 

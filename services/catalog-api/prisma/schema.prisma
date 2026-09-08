@@ -26,6 +26,26 @@ enum BusinessMembershipStatus {
   REVOKED
 }
 
+enum BusinessPermission {
+  BUSINESS_PROFILE_EDIT
+  BUSINESS_HOURS_EDIT
+  CATALOG_EDIT
+  PHOTOS_EDIT
+  PROMOTIONS_EDIT
+  REVIEWS_REPLY
+  ANALYTICS_VIEW
+  ANALYTICS_EXPORT
+  ADS_MANAGE
+  PAYMENTS_VIEW
+}
+
+enum BusinessInvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
 enum BusinessStatus {
   PENDING
   ACTIVE
@@ -205,6 +225,7 @@ model User {
   notifications   Notification[]
   otps            OtpCode[]
   orders          Order[]
+  sentInvitations BusinessInvitation[] @relation("InvitationSender")
 }
 
 enum NotificationType {
@@ -317,26 +338,45 @@ model Business {
   adCreatives       AdCreative[]
   adCampaigns       AdCampaign[]
   memberships       BusinessMembership[]
+  invitations       BusinessInvitation[]
 
   @@index([cityId, status])
   @@index([categoryId])
 }
 
 model BusinessMembership {
-  id         String                   @id @default(cuid())
-  userId     String
-  businessId String
-  role       BusinessMembershipRole
-  status     BusinessMembershipStatus
-  createdAt  DateTime                 @default(now())
-  updatedAt  DateTime                 @updatedAt
-  user       User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  business   Business                 @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  id          String                   @id @default(cuid())
+  userId      String
+  businessId  String
+  role        BusinessMembershipRole
+  status      BusinessMembershipStatus
+  permissions BusinessPermission[]     @default([])
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+  user        User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business    Business                 @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
   @@unique([userId, businessId])
   @@index([userId])
   @@index([businessId])
   @@index([businessId, status])
+}
+
+model BusinessInvitation {
+  id              String                   @id @default(cuid())
+  businessId      String
+  phone           String
+  permissions     BusinessPermission[]
+  status          BusinessInvitationStatus @default(PENDING)
+  invitedByUserId String
+  expiresAt       DateTime
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  business        Business                 @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  invitedBy       User                     @relation("InvitationSender", fields: [invitedByUserId], references: [id], onDelete: Cascade)
+
+  @@index([businessId, phone])
+  @@index([phone, status])
 }
 
 model BusinessImage {

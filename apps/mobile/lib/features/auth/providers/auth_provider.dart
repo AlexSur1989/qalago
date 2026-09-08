@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/rbac/business_access.dart';
+import '../../../core/rbac/role_permissions.dart';
 import '../../../core/network/dio_provider.dart';
 import '../../../core/providers/city_catalog_provider.dart';
 import '../../../core/providers/city_provider.dart';
@@ -35,7 +37,7 @@ final notificationsRepositoryProvider = Provider(
 void invalidateUserScopedProviders(Ref ref) {
   ref.invalidate(favoritesProvider);
   ref.invalidate(myReviewsProvider);
-  ref.invalidate(myBusinessesProvider);
+  ref.invalidate(myBusinessEntriesProvider);
   ref.invalidate(notificationsProvider);
   ref.invalidate(unreadNotificationsProvider);
   ref.invalidate(businessFavoriteProvider);
@@ -271,16 +273,19 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> _finishLogin(String token, UserModel user) async {
     await _storage.saveToken(token);
     state = AuthState(user: user, isAuthenticated: true);
+    invalidateUserScopedProviders(ref);
     await _syncSessionCityToProfile(user);
   }
 
   Future<void> logout() async {
     await _storage.clear();
+    invalidateUserScopedProviders(ref);
     clearSession();
   }
 
   Future<void> handleUnauthorized() async {
     await _storage.clear();
+    invalidateUserScopedProviders(ref);
     clearSession();
   }
 }
@@ -430,9 +435,23 @@ final myReviewsProvider = FutureProvider<List<ReviewModel>>((ref) async {
   return ref.watch(catalogRepositoryProvider).fetchMyReviews();
 });
 
-final myBusinessesProvider = FutureProvider((ref) async {
+final myBusinessEntriesProvider = FutureProvider<List<MyBusinessEntry>>((ref) async {
   if (!ref.watch(authProvider).isAuthenticated) return [];
   return ref.watch(catalogRepositoryProvider).fetchMyBusinesses();
+});
+
+/// Flat business maps for backward-compatible consumers.
+final myBusinessesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final entries = await ref.watch(myBusinessEntriesProvider.future);
+  return entries.map((entry) => entry.business).toList();
+});
+
+final hasBusinessCabinetAccessProvider = Provider<bool>((ref) {
+  final auth = ref.watch(authProvider);
+  if (!auth.isAuthenticated) return false;
+  if (canManageBusinessCabinet(auth.user?.role)) return true;
+  final entries = ref.watch(myBusinessEntriesProvider).valueOrNull ?? const [];
+  return entries.isNotEmpty;
 });
 
 final adminModerationCitySlugProvider = Provider<String>((ref) {

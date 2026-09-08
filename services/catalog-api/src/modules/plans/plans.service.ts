@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { BusinessPlanTier, NotificationType, PlanPaymentStatus, UserRole } from '@prisma/client';
+import { BusinessPlanTier, BusinessPermission, NotificationType, PlanPaymentStatus, UserRole } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import {
   PlanLimitsService,
@@ -149,11 +149,15 @@ export class PlansService {
   }
 
   private async assertCanView(user: AuthUser, businessId: string) {
-    await this.businessAccess.assertCanManageBusiness(user, businessId);
+    await this.businessAccess.assertBusinessPermission(
+      user,
+      businessId,
+      BusinessPermission.PAYMENTS_VIEW,
+    );
   }
 
   private async assertCanManage(user: AuthUser, businessId: string) {
-    await this.businessAccess.assertCanManageBusiness(user, businessId);
+    await this.businessAccess.assertOwner(user, businessId);
   }
 
   private addDays(date: Date, days: number) {

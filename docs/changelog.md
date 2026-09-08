@@ -21,6 +21,33 @@
 
 ---
 
+## 2026-09-08 — Stage 5M.2: Business team & manager permissions
+
+**Сделано**
+- Prisma: `BusinessPermission` enum, `BusinessMembership.permissions[]`, `BusinessInvitation`
+- Migration `20260908160000_stage_5m2_business_permissions`
+- `BusinessAccessService`: `resolveAccess`, `assertOwner`, `assertBusinessPermission`; MANAGER granular access
+- Field-level PATCH business authorization (profile vs hours)
+- Team API: list / invite / update / revoke invitation
+- Phone invitations: existing user → ACTIVE MANAGER; unknown → PENDING invite, claim on OTP login
+- `GET /businesses/my`: `{ items: [{ business, access }] }` — OWNER + ACTIVE MANAGER
+- Services wired: catalog, photos, promotions, reviews, analytics, export, ads, payments
+- Shared types: `BusinessPermission` + RU labels
+- Flutter: membership-based cabinet gate, permission-aware owner nav, tests
+- Business Web: accessible-business gate, team UI «Сотрудники», permission nav, tests
+
+**Инварианты**
+- OWNER implicit all permissions; not stored
+- Team management owner-only
+- JWT без permissions
+- Plan limits still server-side
+
+**На будущее**
+- Flutter owner team UI (optional P2)
+- Full AuditLog for team ops
+
+---
+
 ## 2026-09-08 — Stage 5M.1: Business membership foundation
 
 **Сделано**

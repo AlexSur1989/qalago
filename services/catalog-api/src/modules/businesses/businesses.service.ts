@@ -7,6 +7,7 @@ import { CityScopeService } from '../../common/services/city-scope.service';
 import { BusinessAccessService } from '../../common/services/business-access.service';
 import { BusinessMembershipService } from '../../common/services/business-membership.service';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
+import { getRequiredPermissionsForPatch, ownerHasAllPermissions } from '../../common/utils/business-permission.util';
 import { haversineMeters } from '../../common/utils/geo.utils';
 import { compareBusinessCatalogRank } from '../../common/utils/business-rank.util';
 import { AuthUser } from '../../common/types/jwt-payload.type';
@@ -226,7 +227,7 @@ export class BusinessesService {
   }
 
   async findMy(user: AuthUser) {
-    return this.prisma.business.findMany({
+    const businesses = await this.prisma.business.findMany({
       where: {
         OR: [
           { ownerId: user.id },
@@ -234,16 +235,50 @@ export class BusinessesService {
             memberships: {
               some: {
                 userId: user.id,
-                role: BusinessMembershipRole.OWNER,
                 status: BusinessMembershipStatus.ACTIVE,
+                role: { in: [BusinessMembershipRole.OWNER, BusinessMembershipRole.MANAGER] },
               },
             },
           },
         ],
       },
-      include: { category: true, city: { select: { slug: true, nameRu: true } } },
+      include: {
+        category: true,
+        city: { select: { slug: true, nameRu: true } },
+        memberships: {
+          where: { userId: user.id, status: BusinessMembershipStatus.ACTIVE },
+          select: { role: true, permissions: true, status: true },
+        },
+      },
       orderBy: { title: 'asc' },
     });
+
+    const seen = new Set<string>();
+    const items = [];
+    for (const row of businesses) {
+      if (seen.has(row.id)) continue;
+      seen.add(row.id);
+
+      const membership = row.memberships[0];
+      const isLegacyOwner = row.ownerId === user.id;
+      const accessRole =
+        isLegacyOwner || membership?.role === BusinessMembershipRole.OWNER ? 'OWNER' : 'MANAGER';
+      const permissions =
+        accessRole === 'OWNER'
+          ? ownerHasAllPermissions()
+          : (membership?.permissions ?? []);
+
+      const { memberships: _memberships, ...business } = row;
+      items.push({
+        business,
+        access: {
+          role: accessRole,
+          permissions,
+        },
+      });
+    }
+
+    return { items };
   }
 
   async recommended(user: AuthUser, citySlug?: string) {
@@ -279,7 +314,11 @@ export class BusinessesService {
     if (!business) {
       throw new NotFoundException('Business not found');
     }
-    await this.businessAccess.assertCanManageBusiness(user, id);
+
+    const requiredPermissions = getRequiredPermissionsForPatch(dto);
+    for (const permission of requiredPermissions) {
+      await this.businessAccess.assertBusinessPermission(user, id, permission);
+    }
 
     return this.prisma.business.update({
       where: { id },

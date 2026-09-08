@@ -3,6 +3,13 @@ export {
   BusinessMembershipStatus,
 } from './business-membership';
 
+export {
+  BusinessPermission,
+  ALL_BUSINESS_PERMISSIONS,
+  BUSINESS_PERMISSION_LABELS_RU,
+  normalizeBusinessPermissions,
+} from './business-permission';
+
 export enum UserRole {
   USER = 'USER',
   BUSINESS = 'BUSINESS',

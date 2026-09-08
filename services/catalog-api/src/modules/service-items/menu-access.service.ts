@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { BusinessPermission } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { BusinessAccessService } from '../../common/services/business-access.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -10,7 +11,11 @@ export class MenuAccessService {
     private readonly prisma: PrismaService,
   ) {}
   async assertCanManage(user: AuthUser, businessId: string) {
-    await this.businessAccess.assertCanManageBusiness(user, businessId);
+    await this.businessAccess.assertBusinessPermission(
+      user,
+      businessId,
+      BusinessPermission.CATALOG_EDIT,
+    );
   }
 
   async assertGroupForBusiness(groupId: string, businessId: string) {

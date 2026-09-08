@@ -3,12 +3,13 @@ import { CityScopeService } from '../../common/services/city-scope.service';
 import { PlansModule } from '../plans/plans.module';
 import { BusinessesController } from './businesses.controller';
 import { BusinessesService } from './businesses.service';
+import { BusinessTeamService } from './business-team.service';
 import { BusinessPublicContentService } from './business-public-content.service';
 
 @Module({
   imports: [PlansModule],
   controllers: [BusinessesController],
-  providers: [BusinessesService, BusinessPublicContentService, CityScopeService],
+  providers: [BusinessesService, BusinessTeamService, BusinessPublicContentService, CityScopeService],
   exports: [BusinessesService, BusinessPublicContentService],
 })
 export class BusinessesModule {}

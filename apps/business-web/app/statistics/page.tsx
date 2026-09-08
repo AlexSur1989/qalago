@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { AnalyticsDashboard, BusinessRow, ownerApi } from '@/lib/api';
+import { AnalyticsDashboard, BusinessRow, myBusinessRows, ownerApi } from '@/lib/api';
 import {
   actionMetricLabel,
   availablePeriodOptions,
@@ -50,7 +50,7 @@ export default function StatisticsPage() {
 
   useEffect(() => {
     if (!token) return;
-    ownerApi.listMyBusinesses(token).then(setBusinesses).catch((err) => setError(String(err)));
+    ownerApi.listMyBusinesses(token).then((res) => setBusinesses(myBusinessRows(res.items))).catch((err) => setError(String(err)));
   }, [token]);
 
   useEffect(() => {

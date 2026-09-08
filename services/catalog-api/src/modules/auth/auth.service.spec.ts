@@ -4,9 +4,11 @@ import { AuthService } from './auth.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { BusinessMembershipService } from '../../common/services/business-membership.service';
 
 describe('AuthService', () => {
   let service: AuthService;
+  let membership: { claimPendingInvitations: jest.Mock };
   let prisma: {
     otpCode: {
       create: jest.Mock;
@@ -44,10 +46,15 @@ describe('AuthService', () => {
       }),
     };
 
+    membership = {
+      claimPendingInvitations: jest.fn().mockResolvedValue(undefined),
+    };
+
     service = new AuthService(
       prisma as unknown as PrismaService,
       jwt as unknown as JwtService,
       config as unknown as ConfigService,
+      membership as unknown as BusinessMembershipService,
     );
   });
 

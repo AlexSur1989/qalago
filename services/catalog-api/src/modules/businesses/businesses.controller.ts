@@ -1,10 +1,12 @@
-import { Controller, Get, Param, Patch, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Param, Patch, Post, Body, Query, Delete } from '@nestjs/common';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { BusinessesService } from './businesses.service';
+import { BusinessTeamService } from './business-team.service';
 import { BusinessPublicContentService } from './business-public-content.service';
 import { CreateBusinessDto, ListBusinessesQueryDto, UpdateBusinessDto } from './dto/business.dto';
+import { InviteTeamMemberDto, UpdateTeamMemberDto } from './dto/team.dto';
 import { ListBusinessCatalogQueryDto } from './dto/business-catalog.dto';
 import { ListBusinessPhotosQueryDto } from './dto/business-photos.dto';
 
@@ -12,6 +14,7 @@ import { ListBusinessPhotosQueryDto } from './dto/business-photos.dto';
 export class BusinessesController {
   constructor(
     private readonly businessesService: BusinessesService,
+    private readonly teamService: BusinessTeamService,
     private readonly publicContent: BusinessPublicContentService,
   ) {}
 
@@ -34,6 +37,39 @@ export class BusinessesController {
   @Get('recommended/me')
   recommended(@CurrentUser() user: AuthUser, @Query('citySlug') citySlug?: string) {
     return this.businessesService.recommended(user, citySlug);
+  }
+
+  @Get(':businessId/team')
+  listTeam(@CurrentUser() user: AuthUser, @Param('businessId') businessId: string) {
+    return this.teamService.listTeam(user, businessId);
+  }
+
+  @Post(':businessId/team/invite')
+  inviteTeamMember(
+    @CurrentUser() user: AuthUser,
+    @Param('businessId') businessId: string,
+    @Body() dto: InviteTeamMemberDto,
+  ) {
+    return this.teamService.inviteManager(user, businessId, dto);
+  }
+
+  @Patch(':businessId/team/:membershipId')
+  updateTeamMember(
+    @CurrentUser() user: AuthUser,
+    @Param('businessId') businessId: string,
+    @Param('membershipId') membershipId: string,
+    @Body() dto: UpdateTeamMemberDto,
+  ) {
+    return this.teamService.updateMember(user, businessId, membershipId, dto);
+  }
+
+  @Delete(':businessId/team/invitations/:invitationId')
+  revokeInvitation(
+    @CurrentUser() user: AuthUser,
+    @Param('businessId') businessId: string,
+    @Param('invitationId') invitationId: string,
+  ) {
+    return this.teamService.revokeInvitation(user, businessId, invitationId);
   }
 
   @Public()

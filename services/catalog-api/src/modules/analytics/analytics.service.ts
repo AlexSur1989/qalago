@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { AnalyticsEventType, BusinessStatus, BusinessTrafficSource } from '@prisma/client';
+import { AnalyticsEventType, BusinessPermission, BusinessStatus, BusinessTrafficSource } from '@prisma/client';
 import { getAnalyticsCapabilitiesForPlan } from '../../common/utils/analytics-capabilities.util';
 import { normalizeSearchQueryForAnalytics } from '../../common/utils/search-query-analytics.util';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
@@ -124,7 +124,11 @@ export class AnalyticsService {
   }
 
   async exportCsv(user: AuthUser, businessId: string, query: AnalyticsWindowQueryDto) {
-    await this.assertCanViewBusinessAnalytics(user, businessId);
+    await this.businessAccess.assertBusinessPermission(
+      user,
+      businessId,
+      BusinessPermission.ANALYTICS_EXPORT,
+    );
 
     const ctx = await this.planLimits.getBusinessPlanContext(businessId);
     const caps = getAnalyticsCapabilitiesForPlan(ctx.effectiveTier);

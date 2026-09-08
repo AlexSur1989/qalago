@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { createWriteStream, existsSync, mkdirSync } from 'fs';
 import { join, extname } from 'path';
 import { randomUUID } from 'crypto';
+import { BusinessPermission } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { BusinessAccessService } from '../../common/services/business-access.service';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
@@ -125,6 +126,10 @@ export class UploadsService {
   }
 
   private async assertCanManage(user: AuthUser, businessId: string) {
-    await this.businessAccess.assertCanManageBusiness(user, businessId);
+    await this.businessAccess.assertBusinessPermission(
+      user,
+      businessId,
+      BusinessPermission.PHOTOS_EDIT,
+    );
   }
 }

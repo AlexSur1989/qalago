@@ -1,14 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   BusinessPlanStatus,
-  BusinessRow,
   MonetizationCampaign,
   PromotionRow,
   ownerApi,
 } from '@/lib/api';
+import {
+  buildFooterNavItems,
+  buildMainNavItems,
+  filterNavByAccess,
+} from '@/lib/business-access';
 import {
   buildRecentActions,
   formatNumber,
@@ -18,26 +22,25 @@ import {
 } from '@/lib/business-utils';
 import { buildPlanUsageSummary } from '@/lib/owner-utils';
 import { campaignStatusLabel, monetizationStatusClass } from '@/lib/monetization-utils';
-import { useAuth } from '@/lib/use-auth';
-import { BusinessShell, useSelectedBusiness } from '@/components/business-shell';
+import { useBusinessAccess } from '@/lib/use-business-access';
+import { BusinessShell } from '@/components/business-shell';
 
 export default function DashboardPage() {
-  const { token, user, ready, logout } = useAuth();
-  const [businesses, setBusinesses] = useState<BusinessRow[]>([]);
-  const business = useSelectedBusiness(businesses);
+  const { token, user, ready, logout, business, access, businesses } = useBusinessAccess();
   const [promotions, setPromotions] = useState<PromotionRow[]>([]);
   const [planStatus, setPlanStatus] = useState<BusinessPlanStatus | null>(null);
   const [campaigns, setCampaigns] = useState<MonetizationCampaign[]>([]);
   const [summary7, setSummary7] = useState<{ total: number; views: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!token) return;
-    ownerApi
-      .listMyBusinesses(token)
-      .then(setBusinesses)
-      .catch((err) => setError(String(err)));
-  }, [token]);
+  const mainNav = useMemo(
+    () => filterNavByAccess(buildMainNavItems(), access),
+    [access],
+  );
+  const footerNav = useMemo(
+    () => filterNavByAccess(buildFooterNavItems(), access),
+    [access],
+  );
 
   useEffect(() => {
     if (!token || !business) return;
@@ -77,6 +80,8 @@ export default function DashboardPage() {
       activeNav="home"
       business={business}
       businesses={businesses}
+      mainNav={mainNav}
+      footerNav={footerNav}
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
     >

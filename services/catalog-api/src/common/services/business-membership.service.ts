@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import {
+  BusinessInvitationStatus,
   BusinessMembershipRole,
   BusinessMembershipStatus,
+  BusinessPermission,
   Prisma,
 } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -12,6 +14,7 @@ export type BusinessMembershipRecord = {
   businessId: string;
   role: BusinessMembershipRole;
   status: BusinessMembershipStatus;
+  permissions: BusinessPermission[];
 };
 
 /**
@@ -88,5 +91,52 @@ export class BusinessMembershipService {
         status: BusinessMembershipStatus.ACTIVE,
       },
     });
+  }
+
+  /**
+   * Claim pending phone invitations after verified login (Stage 5M.2).
+   */
+  async claimPendingInvitations(userId: string, phone: string) {
+    const now = new Date();
+    const pending = await this.prisma.businessInvitation.findMany({
+      where: {
+        phone,
+        status: BusinessInvitationStatus.PENDING,
+        expiresAt: { gt: now },
+      },
+    });
+
+    for (const invitation of pending) {
+      const existing = await this.getMembership(userId, invitation.businessId);
+      if (existing?.role === BusinessMembershipRole.OWNER) {
+        await this.prisma.businessInvitation.update({
+          where: { id: invitation.id },
+          data: { status: BusinessInvitationStatus.REVOKED },
+        });
+        continue;
+      }
+
+      await this.prisma.$transaction([
+        this.prisma.businessMembership.upsert({
+          where: { userId_businessId: { userId, businessId: invitation.businessId } },
+          create: {
+            userId,
+            businessId: invitation.businessId,
+            role: BusinessMembershipRole.MANAGER,
+            status: BusinessMembershipStatus.ACTIVE,
+            permissions: invitation.permissions,
+          },
+          update: {
+            role: BusinessMembershipRole.MANAGER,
+            status: BusinessMembershipStatus.ACTIVE,
+            permissions: invitation.permissions,
+          },
+        }),
+        this.prisma.businessInvitation.update({
+          where: { id: invitation.id },
+          data: { status: BusinessInvitationStatus.ACCEPTED },
+        }),
+      ]);
+    }
   }
 }

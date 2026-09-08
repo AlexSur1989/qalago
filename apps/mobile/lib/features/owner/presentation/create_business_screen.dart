@@ -52,7 +52,7 @@ class _CreateBusinessScreenState extends ConsumerState<CreateBusinessScreen> {
         'shortDesc': _descController.text.trim(),
       });
       
-      ref.invalidate(myBusinessesProvider);
+      ref.invalidate(myBusinessEntriesProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Заявка отправлена на модерацию')),

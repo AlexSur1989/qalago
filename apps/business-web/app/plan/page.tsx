@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   BusinessPlanStatus,
   BusinessRow,
+  myBusinessRows,
   ownerApi,
   PlanCatalogRow,
 } from '@/lib/api';
@@ -41,11 +42,12 @@ export default function PlanPage() {
         ownerApi.listMyBusinesses(token),
         ownerApi.listPlans(),
       ]);
-      setBusinesses(myBusinesses);
+      const rows = myBusinessRows(myBusinesses.items);
+      setBusinesses(rows);
       setCatalog(plans);
 
       const selectedId =
-        myBusinesses.find((b) => b.id === business?.id)?.id ?? myBusinesses[0]?.id;
+        rows.find((b) => b.id === business?.id)?.id ?? rows[0]?.id;
       if (selectedId) {
         setPlanStatus(await ownerApi.getBusinessPlan(token, selectedId));
       } else {

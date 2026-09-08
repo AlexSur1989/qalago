@@ -75,7 +75,9 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
 
   it('findMy includes legacy ownerId businesses', async () => {
     const { service, prisma } = createService();
-    prisma.business.findMany = jest.fn().mockResolvedValue([{ id: 'b1' }]);
+    prisma.business.findMany = jest.fn().mockResolvedValue([
+      { id: 'b1', ownerId: 'owner-1', memberships: [] },
+    ]);
 
     await service.findMy({ id: 'owner-1', sub: 'owner-1', phone: '+7', role: UserRole.BUSINESS });
 
@@ -88,29 +90,59 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
     );
   });
 
-  it('findMy includes ACTIVE OWNER membership businesses', async () => {
+  it('findMy includes ACTIVE MANAGER membership businesses', async () => {
     const { service, prisma } = createService();
     prisma.business.findMany = jest.fn().mockResolvedValue([]);
 
-    await service.findMy({ id: 'owner-1', sub: 'owner-1', phone: '+7', role: UserRole.BUSINESS });
+    await service.findMy({ id: 'mgr-1', sub: 'mgr-1', phone: '+7', role: UserRole.USER });
 
     expect(prisma.business.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
-          OR: [
-            { ownerId: 'owner-1' },
+          OR: expect.arrayContaining([
             {
               memberships: {
                 some: {
-                  userId: 'owner-1',
-                  role: 'OWNER',
+                  userId: 'mgr-1',
                   status: 'ACTIVE',
+                  role: { in: ['OWNER', 'MANAGER'] },
                 },
               },
             },
-          ],
+          ]),
         },
       }),
     );
+  });
+
+  it('findMy returns items with access context', async () => {
+    const { service, prisma } = createService();
+    prisma.business.findMany = jest.fn().mockResolvedValue([
+      {
+        id: 'b1',
+        ownerId: 'owner-1',
+        title: 'Cafe',
+        memberships: [
+          {
+            role: 'MANAGER',
+            permissions: ['CATALOG_EDIT'],
+            status: 'ACTIVE',
+          },
+        ],
+        category: null,
+        city: null,
+      },
+    ]);
+
+    const result = await service.findMy({
+      id: 'mgr-1',
+      sub: 'mgr-1',
+      phone: '+7',
+      role: UserRole.USER,
+    });
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0].access.role).toBe('MANAGER');
+    expect(result.items[0].access.permissions).toContain('CATALOG_EDIT');
   });
 });

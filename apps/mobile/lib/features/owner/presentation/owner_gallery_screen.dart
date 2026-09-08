@@ -23,7 +23,7 @@ class OwnerGalleryScreen extends ConsumerWidget {
   void _invalidate(WidgetRef ref) {
     ref.invalidate(businessGalleryProvider(businessId));
     ref.invalidate(businessDetailsProvider(businessId));
-    ref.invalidate(myBusinessesProvider);
+    ref.invalidate(myBusinessEntriesProvider);
   }
 
   Future<void> _addPhoto(
