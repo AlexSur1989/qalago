@@ -21,6 +21,26 @@
 
 ---
 
+## 2026-09-08 — Stage 5M.2.1: Prisma & runtime verification
+
+**Verified**
+- Migration `20260908160000_stage_5m2_business_permissions` applied (8/8 migrations, DB up to date)
+- Owner invariant: 17 businesses with ownerId → 17 ACTIVE OWNER memberships (0 missing)
+- 44-scenario API runtime QA (owner/manager/invitations/cross-business/cross-city)
+- Expired invitation not claimed; live permission grant/revoke without relogin
+
+**Fix**
+- `RolesGuard`: USER may reach `@Roles(BUSINESS…)` routes; `BusinessAccessService` enforces permissions
+- `scripts/dev/SETUP.md`: document PowerShell `DATABASE_URL` shell override pitfall
+
+**Root cause (Stage 5M.2 Prisma CLI failure)**
+- `.env` was valid; stale `$env:DATABASE_URL` in PowerShell had leading `"` and overrode `.env`
+- PostgreSQL: native local instance on `localhost:5432` (Docker not installed on dev machine)
+
+**Manual UI QA:** Flutter/Business Web browser walkthrough not run; client unit tests + API QA executed.
+
+---
+
 ## 2026-09-08 — Stage 5M.2: Business team & manager permissions
 
 **Сделано**

@@ -21,6 +21,8 @@ Copy-Item infra\env\.env.example services\catalog-api\.env
 # Отредактируйте DATABASE_URL под ваш PostgreSQL
 ```
 
+**Prisma / DATABASE_URL (Windows):** Prisma reads process env **before** `.env`. Не задавайте `$env:DATABASE_URL` в PowerShell с кавычками внутри значения — URL должен начинаться с `postgresql://`. Если Prisma пишет «URL must start with postgresql://», выполните `Remove-Item Env:DATABASE_URL` и повторите команду.
+
 ## 2. Backend
 
 ```powershell

@@ -23,6 +23,14 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException('Missing user context');
     }
     if (!requiredRoles.includes(user.role)) {
+      // Stage 5M.2 — USER with business membership reaches business routes;
+      // BusinessAccessService enforces permissions on the handler.
+      if (
+        user.role === UserRole.USER &&
+        requiredRoles.includes(UserRole.BUSINESS)
+      ) {
+        return true;
+      }
       throw new ForbiddenException('Insufficient role');
     }
     return true;
