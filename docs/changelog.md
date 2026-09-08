@@ -21,6 +21,17 @@
 
 ---
 
+## 2026-09-08 — Stage 5L: RBAC & access control audit
+
+**Сделано**
+- Полный аудит текущих ролей, ownership, guards и client/server authorization
+- Access matrix, gap matrix, migration strategy → `docs/stage-5l-rbac-audit.md`
+
+**На будущее (Stage 5M)**
+- BusinessMembership, fine-grained permissions, CITY_ADMIN scope fixes
+
+---
+
 ## 2026-09-08 — Stage 5K.1: Flutter native analytics CSV share
 
 **Сделано**
