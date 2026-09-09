@@ -10,6 +10,18 @@ import '../../ads/providers/ad_serve_provider.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../../recommendations/data/ai_repository.dart';
 import '../../business_onboarding/providers/onboarding_providers.dart';
+import '../data/apple_sign_in_adapter.dart';
+import '../data/google_sign_in_adapter.dart';
+import '../data/social_sign_in_types.dart';
+import '../../../shared/utils/auth_utils.dart';
+
+final googleSignInGatewayProvider = Provider<GoogleSignInGateway>(
+  (ref) => GoogleSignInAdapter(),
+);
+
+final appleSignInGatewayProvider = Provider<AppleSignInGateway>(
+  (ref) => AppleSignInAdapter(),
+);
 
 final authRepositoryProvider = Provider(
   (ref) => AuthRepository(ref.watch(dioProvider)),
@@ -110,6 +122,8 @@ class AuthState {
 }
 
 class AuthNotifier extends Notifier<AuthState> {
+  bool _socialLoginInProgress = false;
+
   @override
   AuthState build() {
     Future.microtask(init);
@@ -281,6 +295,58 @@ class AuthNotifier extends Notifier<AuthState> {
     } catch (e) {
       state = state.copyWith(isLoading: false);
       rethrow;
+    }
+  }
+
+  Future<void> signInWithGoogle() async {
+    if (_socialLoginInProgress) return;
+    _socialLoginInProgress = true;
+    state = state.copyWith(isLoading: true);
+    try {
+      final outcome = await ref.read(googleSignInGatewayProvider).signIn();
+      if (outcome.cancelled) {
+        state = state.copyWith(isLoading: false);
+        throw const SocialSignInCancelled();
+      }
+      final idToken = outcome.idToken;
+      if (idToken == null || idToken.isEmpty) {
+        state = state.copyWith(isLoading: false);
+        throw const SocialSignInNoToken();
+      }
+      final result = await _repo.signInWithGoogle(idToken);
+      await _finishLogin(result.token, result.user);
+    } catch (e) {
+      if (state.isAuthenticated) return;
+      state = state.copyWith(isLoading: false);
+      rethrow;
+    } finally {
+      _socialLoginInProgress = false;
+    }
+  }
+
+  Future<void> signInWithApple() async {
+    if (_socialLoginInProgress) return;
+    _socialLoginInProgress = true;
+    state = state.copyWith(isLoading: true);
+    try {
+      final outcome = await ref.read(appleSignInGatewayProvider).signIn();
+      if (outcome.cancelled) {
+        state = state.copyWith(isLoading: false);
+        throw const SocialSignInCancelled();
+      }
+      final identityToken = outcome.identityToken;
+      if (identityToken == null || identityToken.isEmpty) {
+        state = state.copyWith(isLoading: false);
+        throw const SocialSignInNoToken();
+      }
+      final result = await _repo.signInWithApple(identityToken);
+      await _finishLogin(result.token, result.user);
+    } catch (e) {
+      if (state.isAuthenticated) return;
+      state = state.copyWith(isLoading: false);
+      rethrow;
+    } finally {
+      _socialLoginInProgress = false;
     }
   }
 

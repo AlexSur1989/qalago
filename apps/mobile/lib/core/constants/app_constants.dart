@@ -25,6 +25,25 @@ class AppConstants {
   static const mockPlanCheckoutEnabled =
       bool.fromEnvironment('QALAGO_MOCK_PLAN_CHECKOUT', defaultValue: false);
 
+  /// Client-side Google Sign-In (requires matching backend GOOGLE_AUTH_ENABLED).
+  static const googleAuthEnabled =
+      bool.fromEnvironment('QALAGO_GOOGLE_AUTH_ENABLED', defaultValue: false);
+
+  /// Client-side Sign in with Apple (requires matching backend APPLE_AUTH_ENABLED).
+  static const appleAuthEnabled =
+      bool.fromEnvironment('QALAGO_APPLE_AUTH_ENABLED', defaultValue: false);
+
+  /// Phone OTP fallback on login screen. Backend uses OTP_AUTH_ENABLED separately.
+  static const otpAuthEnabled =
+      bool.fromEnvironment('QALAGO_OTP_AUTH_ENABLED', defaultValue: true);
+
+  /// Optional Google OAuth client ID (platform-specific, from Google Cloud Console).
+  static const googleClientId = String.fromEnvironment('QALAGO_GOOGLE_CLIENT_ID');
+
+  /// Optional server/web client ID — required on some platforms for ID tokens.
+  static const googleServerClientId =
+      String.fromEnvironment('QALAGO_GOOGLE_SERVER_CLIENT_ID');
+
   static String get _devHost {
     if (devHostOverride.isNotEmpty) return devHostOverride;
     if (kIsWeb) return 'localhost';

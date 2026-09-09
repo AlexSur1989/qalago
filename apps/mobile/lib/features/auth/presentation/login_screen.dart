@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/utils/auth_utils.dart';
+import '../data/social_auth_platform.dart';
 import 'dev_quick_login_panel.dart';
 import '../providers/auth_provider.dart';
 
@@ -23,11 +25,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _codeController = TextEditingController();
   final _codeFocusNode = FocusNode();
   bool _codeSent = false;
+  bool _otpExpanded = false;
   String? _normalizedPhone;
   int _resendCooldownSec = 0;
   Timer? _resendTimer;
 
   static const _resendCooldownTotal = 60;
+
+  bool get _showGoogle =>
+      AppConstants.googleAuthEnabled && isGoogleSignInPlatformSupported();
+
+  bool get _showApple =>
+      AppConstants.appleAuthEnabled && isAppleSignInPlatformSupported();
+
+  bool get _showOtp =>
+      AppConstants.otpAuthEnabled || AppConstants.devLoginEnabled;
+
+  bool get _showSocial => _showGoogle || _showApple;
+
+  @override
+  void initState() {
+    super.initState();
+    _otpExpanded = !_showSocial && _showOtp;
+  }
 
   @override
   void dispose() {
@@ -144,6 +164,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     context.go('/home');
   }
 
+  Future<void> _signInWithGoogle() async {
+    try {
+      await ref.read(authProvider.notifier).signInWithGoogle();
+    } catch (e) {
+      final message = mapSocialAuthError(e, providerLabel: 'Google');
+      if (message.isNotEmpty) _showError(message);
+    }
+  }
+
+  Future<void> _signInWithApple() async {
+    try {
+      await ref.read(authProvider.notifier).signInWithApple();
+    } catch (e) {
+      final message = mapSocialAuthError(e, providerLabel: 'Apple');
+      if (message.isNotEmpty) _showError(message);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = ref.watch(authProvider);
@@ -181,7 +219,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      'Войдите по номеру телефона, чтобы сохранять избранное и оставлять отзывы.',
+                      'Войдите, чтобы сохранять избранное, оставлять отзывы и управлять профилем.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Color(0xFF7B8291),
@@ -190,133 +228,190 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 30),
-                    TextField(
-                      controller: _phoneController,
-                      enabled: !isBusy && !_codeSent,
-                      keyboardType: TextInputType.phone,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[\d+\s()-]')),
-                      ],
-                      decoration: InputDecoration(
-                        hintText: '+7 (777) 123-45-67',
-                        prefixIcon: Padding(
-                          padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: AppTheme.kzBlue.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 9,
-                                vertical: 4,
+                    const SizedBox(height: 28),
+                    if (_showGoogle) ...[
+                      _GoogleSignInButton(
+                        onPressed: isBusy ? null : _signInWithGoogle,
+                        loading: isBusy,
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    if (_showApple) ...[
+                      SignInWithAppleButton(
+                        onPressed: isBusy ? null : _signInWithApple,
+                        height: 52,
+                        borderRadius: BorderRadius.circular(18),
+                        text: 'Продолжить с Apple',
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    if (_showSocial && _showOtp) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Divider(
+                                color: Colors.black.withValues(alpha: 0.08),
                               ),
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 12),
                               child: Text(
-                                '+7',
+                                'или',
                                 style: TextStyle(
-                                  color: AppTheme.kzBlue,
-                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFF7B8291),
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(18),
-                          borderSide: BorderSide(
-                            color: Colors.black.withValues(alpha: 0.09),
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(18),
-                          borderSide: const BorderSide(
-                            color: AppTheme.kzBlue,
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (_codeSent) ...[
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: _codeController,
-                        focusNode: _codeFocusNode,
-                        enabled: !isBusy,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(6),
-                        ],
-                        decoration: const InputDecoration(
-                          labelText: 'Код из SMS',
-                          hintText: '••••',
-                        ),
-                        onSubmitted: (_) {
-                          if (!isBusy) _verify();
-                        },
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          TextButton(
-                            onPressed: isBusy ? null : _changePhone,
-                            child: const Text('Изменить номер'),
-                          ),
-                          const Spacer(),
-                          TextButton(
-                            onPressed: isBusy ||
-                                    _resendCooldownSec > 0
-                                ? null
-                                : () => _sendCode(isResend: true),
-                            child: Text(
-                              _resendCooldownSec > 0
-                                  ? 'Повтор через $_resendCooldownSec с'
-                                  : 'Отправить снова',
+                            Expanded(
+                              child: Divider(
+                                color: Colors.black.withValues(alpha: 0.08),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
-                    const SizedBox(height: 20),
-                    FilledButton(
-                      onPressed: isBusy
-                          ? null
-                          : (_codeSent ? _verify : () => _sendCode()),
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(62),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
+                    if (_showOtp) ...[
+                      if (_showSocial && !_otpExpanded)
+                        TextButton(
+                          onPressed: isBusy
+                              ? null
+                              : () => setState(() => _otpExpanded = true),
+                          child: const Text('Войти по телефону'),
                         ),
-                      ),
-                      child: isBusy
-                          ? const SizedBox(
-                              height: 22,
-                              width: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
+                      if (_otpExpanded || !_showSocial) ...[
+                        TextField(
+                          controller: _phoneController,
+                          enabled: !isBusy && !_codeSent,
+                          keyboardType: TextInputType.phone,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[\d+\s()-]'),
+                            ),
+                          ],
+                          decoration: InputDecoration(
+                            hintText: '+7 (777) 123-45-67',
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: AppTheme.kzBlue.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 9,
+                                    vertical: 4,
+                                  ),
+                                  child: Text(
+                                    '+7',
+                                    style: TextStyle(
+                                      color: AppTheme.kzBlue,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            )
-                          : Text(_codeSent ? 'Войти' : 'Получить код'),
-                    ),
-                    if (AppConstants.devLoginEnabled && !_codeSent) ...[
-                      const SizedBox(height: 12),
-                      OutlinedButton(
-                        onPressed: isBusy ? null : _devLogin,
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppTheme.kzBlue,
-                          minimumSize: const Size.fromHeight(58),
-                          side: BorderSide(
-                            color: AppTheme.kzBlue.withValues(alpha: 0.35),
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(18),
+                              borderSide: BorderSide(
+                                color: Colors.black.withValues(alpha: 0.09),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(18),
+                              borderSide: const BorderSide(
+                                color: AppTheme.kzBlue,
+                                width: 1.5,
+                              ),
+                            ),
                           ),
                         ),
-                        child: const Text('Войти без SMS'),
-                      ),
-                      const DevQuickLoginPanel(compact: true),
+                        if (_codeSent) ...[
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: _codeController,
+                            focusNode: _codeFocusNode,
+                            enabled: !isBusy,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(6),
+                            ],
+                            decoration: const InputDecoration(
+                              labelText: 'Код из SMS',
+                              hintText: '••••',
+                            ),
+                            onSubmitted: (_) {
+                              if (!isBusy) _verify();
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              TextButton(
+                                onPressed: isBusy ? null : _changePhone,
+                                child: const Text('Изменить номер'),
+                              ),
+                              const Spacer(),
+                              TextButton(
+                                onPressed: isBusy || _resendCooldownSec > 0
+                                    ? null
+                                    : () => _sendCode(isResend: true),
+                                child: Text(
+                                  _resendCooldownSec > 0
+                                      ? 'Повтор через $_resendCooldownSec с'
+                                      : 'Отправить снова',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                        const SizedBox(height: 16),
+                        FilledButton(
+                          onPressed: isBusy
+                              ? null
+                              : (_codeSent ? _verify : () => _sendCode()),
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size.fromHeight(58),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                          ),
+                          child: isBusy
+                              ? const SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Text(_codeSent ? 'Войти' : 'Получить код'),
+                        ),
+                        if (AppConstants.devLoginEnabled && !_codeSent) ...[
+                          const SizedBox(height: 12),
+                          OutlinedButton(
+                            onPressed: isBusy ? null : _devLogin,
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppTheme.kzBlue,
+                              minimumSize: const Size.fromHeight(54),
+                              side: BorderSide(
+                                color: AppTheme.kzBlue.withValues(alpha: 0.35),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                            ),
+                            child: const Text('Войти без SMS (dev)'),
+                          ),
+                          const DevQuickLoginPanel(compact: true),
+                        ],
+                      ],
                     ],
                     const SizedBox(height: 20),
                     OutlinedButton.icon(
@@ -356,71 +451,60 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 }
 
-class _AccountTypeCard extends StatelessWidget {
-  const _AccountTypeCard({
-    required this.selected,
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
+class _GoogleSignInButton extends StatelessWidget {
+  const _GoogleSignInButton({
+    required this.onPressed,
+    required this.loading,
   });
 
-  final bool selected;
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback? onTap;
+  final VoidCallback? onPressed;
+  final bool loading;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Ink(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: selected
-                ? AppTheme.kzBlue.withValues(alpha: 0.08)
-                : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: selected
-                  ? AppTheme.kzBlue
-                  : Colors.black.withValues(alpha: 0.09),
-              width: selected ? 1.5 : 1,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                icon,
-                color: selected ? AppTheme.kzBlue : const Color(0xFF7B8291),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  color: selected ? AppTheme.kzBlue : Colors.black,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  color: Color(0xFF8A919F),
-                  fontSize: 12,
-                  height: 1.25,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: Colors.black87,
+        backgroundColor: Colors.white,
+        minimumSize: const Size.fromHeight(52),
+        side: BorderSide(color: Colors.black.withValues(alpha: 0.12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
+      child: loading
+          ? const SizedBox(
+              height: 22,
+              width: 22,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: Colors.black12),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    'G',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      color: AppTheme.kzBlue,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'Продолжить с Google',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                ),
+              ],
+            ),
     );
   }
 }

@@ -143,3 +143,57 @@ bool isValidOtpCode(String code) {
   final trimmed = code.trim();
   return RegExp(r'^\d{4,6}$').hasMatch(trimmed);
 }
+
+/// User-facing message for Google/Apple login failures.
+/// Returns empty string for silent cancellation (no SnackBar).
+String mapSocialAuthError(Object error, {required String providerLabel}) {
+  if (error is SocialSignInCancelled) {
+    return '';
+  }
+
+  if (error is DioException) {
+    final status = error.response?.statusCode;
+    if (status == 404) {
+      return 'Вход через $providerLabel временно недоступен.';
+    }
+    if (status == 401) {
+      return 'Не удалось войти через $providerLabel. Попробуйте ещё раз.';
+    }
+    if (status == 429) {
+      return 'Слишком много попыток. Попробуйте позже.';
+    }
+    if (status != null && status >= 500) {
+      return 'Сервис временно недоступен. Попробуйте позже.';
+    }
+    switch (error.type) {
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.sendTimeout:
+      case DioExceptionType.receiveTimeout:
+      case DioExceptionType.connectionError:
+        return 'Не удалось подключиться. Попробуйте ещё раз.';
+      default:
+        break;
+    }
+  }
+
+  if (error is SocialSignInNoToken) {
+    return 'Не удалось войти через $providerLabel. Попробуйте ещё раз.';
+  }
+
+  final text = error.toString();
+  if (text.contains('SocketException') || text.contains('Connection')) {
+    return 'Не удалось подключиться. Попробуйте ещё раз.';
+  }
+
+  return 'Не удалось войти через $providerLabel. Попробуйте ещё раз.';
+}
+
+/// Thrown when user cancels provider UI — not an error.
+class SocialSignInCancelled implements Exception {
+  const SocialSignInCancelled();
+}
+
+/// Provider SDK completed without a usable identity token.
+class SocialSignInNoToken implements Exception {
+  const SocialSignInNoToken();
+}

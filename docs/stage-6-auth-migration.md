@@ -1,11 +1,12 @@
 # Stage 6 — Auth Migration (Google / Apple)
 
-## Current state (after 6.2B3)
+## Current state (after 6.2B4)
 
-- **Phone OTP** remains available when `OTP_AUTH_ENABLED=true`
-- **Google backend** implemented: `POST /auth/google` (requires `GOOGLE_AUTH_ENABLED=true`)
-- **Apple backend** implemented: `POST /auth/apple` (requires `APPLE_AUTH_ENABLED=true`)
-- **Flutter / Business Web social UI** deferred (B4/B5)
+- **Phone OTP** remains available when `OTP_AUTH_ENABLED=true` / `QALAGO_OTP_AUTH_ENABLED=true`
+- **Google backend** implemented: `POST /auth/google`
+- **Apple backend** implemented: `POST /auth/apple`
+- **Flutter consumer** Google/Apple login UI (B4) — credential-gated via dart-define
+- **Business Web social UI** deferred (B5)
 
 ## Foundation (Stage 6.2B1)
 
@@ -80,7 +81,7 @@ Future Google/Apple login must check `AuthIdentityTombstone` before creating use
 | **6.2B1** ✅ | Schema, AuthIdentity, tombstones, nullable phone, flags |
 | **6.2B2** ✅ | Google backend token verification + `POST /auth/google` |
 | **6.2B3** ✅ | Apple backend identity token verification + `POST /auth/apple` |
-| **6.2B4** | Flutter Google + Apple UI |
+| **6.2B4** ✅ | Flutter Google + Apple UI (see [stage-6-flutter-social-auth.md](./stage-6-flutter-social-auth.md)) |
 | **6.2B5** | Business Web social login |
 | **6.2B6** | Team invitation redesign (email/link) |
 | **6.2B7** | OTP deprecation, admin identity linking, QA |

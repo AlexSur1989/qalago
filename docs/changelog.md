@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-10 — Stage 6.2B4: Flutter social authentication
+
+- **Сделано:** Google/Apple login на Flutter; provider gateways; `AuthRepository.signInWithGoogle/Apple`; credential-gated dart-define flags; OTP fallback; guest-first UX preserved.
+- **На будущее:** real OAuth credentials, B5 Business Web, Apple revocation.
+
 ## 2026-09-10 — Stage 6.2B3: Apple backend authentication
 
 - **Сделано:** `POST /auth/apple`; Apple JWKS verification via `jose`; `AppleIdentityTokenVerifierService`; shared `SocialAuthLoginService`; relay email support; partial AuthIdentity metadata updates; Apple production config validation; Google DI runtime fix.

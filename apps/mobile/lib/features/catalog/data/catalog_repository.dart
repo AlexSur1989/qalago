@@ -45,6 +45,29 @@ class AuthRepository {
     );
   }
 
+  Future<({String token, UserModel user})> signInWithGoogle(String idToken) async {
+    final response = await _dio.post('/auth/google', data: {'idToken': idToken});
+    final data = response.data as Map<String, dynamic>;
+    return (
+      token: data['accessToken'] as String,
+      user: UserModel.fromJson(data['user'] as Map<String, dynamic>),
+    );
+  }
+
+  Future<({String token, UserModel user})> signInWithApple(
+    String identityToken,
+  ) async {
+    final response = await _dio.post(
+      '/auth/apple',
+      data: {'identityToken': identityToken},
+    );
+    final data = response.data as Map<String, dynamic>;
+    return (
+      token: data['accessToken'] as String,
+      user: UserModel.fromJson(data['user'] as Map<String, dynamic>),
+    );
+  }
+
   Future<UserModel> getMe() async {
     final response = await _dio.get('/users/me');
     return UserModel.fromJson(response.data as Map<String, dynamic>);
