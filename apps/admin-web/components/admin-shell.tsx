@@ -84,7 +84,7 @@ export function AdminShell({
 
         <div className="admin-role-card">
           <div className="admin-role-title">{roleInfo.labelRu}</div>
-          <div className="admin-role-meta">{user.phone}</div>
+          <div className="admin-role-meta">{user.phone ?? 'Телефон не указан'}</div>
         </div>
 
         <nav className="sidebar-nav">

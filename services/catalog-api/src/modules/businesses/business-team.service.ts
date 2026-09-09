@@ -62,7 +62,12 @@ export class BusinessTeamService {
         membershipId: m.id,
         userId: m.userId,
         name: m.user.name,
-        phone: maskPhone ? this.maskPhone(m.user.phone) : m.user.phone,
+        phone:
+          m.user.phone != null
+            ? maskPhone
+              ? this.maskPhone(m.user.phone)
+              : m.user.phone
+            : null,
         role: m.role,
         status: m.status,
         permissions: m.role === BusinessMembershipRole.OWNER ? [] : m.permissions,

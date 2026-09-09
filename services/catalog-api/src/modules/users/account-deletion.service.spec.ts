@@ -9,9 +9,11 @@ import {
 } from '@prisma/client';
 import { AccountDeletionService } from './account-deletion.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuthIdentityService } from '../auth/auth-identity.service';
 
 describe('AccountDeletionService', () => {
   let service: AccountDeletionService;
+  let authIdentity: { tombstoneUserIdentities: jest.Mock };
   let prisma: {
     user: { findUnique: jest.Mock; update: jest.Mock };
     businessMembership: { findMany: jest.Mock; count: jest.Mock; updateMany: jest.Mock };
@@ -40,7 +42,13 @@ describe('AccountDeletionService', () => {
       businessInvitation: { updateMany: jest.fn() },
       $transaction: jest.fn(async (fn: (tx: typeof prisma) => unknown) => fn(prisma)),
     };
-    service = new AccountDeletionService(prisma as unknown as PrismaService);
+    authIdentity = {
+      tombstoneUserIdentities: jest.fn().mockResolvedValue(0),
+    };
+    service = new AccountDeletionService(
+      prisma as unknown as PrismaService,
+      authIdentity as unknown as AuthIdentityService,
+    );
   });
 
   function mockOrdinaryUser() {
@@ -164,5 +172,46 @@ describe('AccountDeletionService', () => {
   it('throws when user not found', async () => {
     prisma.user.findUnique.mockResolvedValue(null);
     await expect(service.deleteOwnAccount('missing')).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('tombstones auth identities on deletion', async () => {
+    mockOrdinaryUser();
+    authIdentity.tombstoneUserIdentities.mockResolvedValue(2);
+
+    await service.deleteOwnAccount('u1');
+
+    expect(authIdentity.tombstoneUserIdentities).toHaveBeenCalledWith('u1', prisma);
+  });
+
+  it('handles user with null phone', async () => {
+    prisma.user.findUnique.mockResolvedValue({
+      id: 'u-social',
+      phone: null,
+      isActive: true,
+      role: UserRole.USER,
+    });
+    prisma.businessMembership.findMany.mockResolvedValue([]);
+
+    await service.deleteOwnAccount('u-social');
+
+    expect(prisma.otpCode.deleteMany).not.toHaveBeenCalled();
+    expect(prisma.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          phone: expect.stringMatching(/^deleted:u-social:/),
+          email: null,
+        }),
+      }),
+    );
+  });
+
+  it('clears email on deletion', async () => {
+    mockOrdinaryUser();
+    await service.deleteOwnAccount('u1');
+    expect(prisma.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ email: null }),
+      }),
+    );
   });
 });

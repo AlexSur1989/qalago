@@ -52,6 +52,7 @@ describe('AuthService', () => {
       get: jest.fn((key: string) => {
         if (key === 'app.devLoginEnabled') return false;
         if (key === 'app.otpDebug') return false;
+        if (key === 'app.otpAuthEnabled') return true;
         return undefined;
       }),
     };
@@ -271,6 +272,28 @@ describe('AuthService', () => {
 
       expect(result.user.role).toBe(UserRole.BUSINESS);
       expect(prisma.user.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('OTP_AUTH_ENABLED', () => {
+    it('blocks send-code when OTP auth is disabled', async () => {
+      config.get.mockImplementation((key: string) => {
+        if (key === 'app.otpAuthEnabled') return false;
+        return false;
+      });
+      await expect(service.sendCode({ phone: '+77001234567' }, '127.0.0.1')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+
+    it('blocks verify-code when OTP auth is disabled', async () => {
+      config.get.mockImplementation((key: string) => {
+        if (key === 'app.otpAuthEnabled') return false;
+        return false;
+      });
+      await expect(
+        service.verifyCode({ phone: '+77001234567', code: '1234' }, '127.0.0.1'),
+      ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 

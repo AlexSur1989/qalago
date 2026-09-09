@@ -20,6 +20,7 @@ const OTP_TTL_SEC = 300;
 const userSelect = {
   id: true,
   phone: true,
+  email: true,
   name: true,
   role: true,
 } as const;
@@ -38,7 +39,18 @@ export class AuthService {
     return this.config.get<boolean>('app.devLoginEnabled') === true;
   }
 
+  isOtpAuthEnabled(): boolean {
+    return this.config.get<boolean>('app.otpAuthEnabled') !== false;
+  }
+
+  assertOtpAuthEnabled(): void {
+    if (!this.isOtpAuthEnabled()) {
+      throw new NotFoundException();
+    }
+  }
+
   async sendCode(dto: SendCodeDto, ip: string) {
+    this.assertOtpAuthEnabled();
     const phone = this.requireNormalizedPhone(dto.phone);
     this.otpRateLimit.assertCanSendCode(phone, ip);
 
@@ -73,6 +85,7 @@ export class AuthService {
   }
 
   async verifyCode(dto: VerifyCodeDto, ip: string) {
+    this.assertOtpAuthEnabled();
     const phone = this.requireNormalizedPhone(dto.phone);
     this.otpRateLimit.assertCanVerifyCode(phone, ip);
     const codeHash = this.hashCode(dto.code);
@@ -150,7 +163,9 @@ export class AuthService {
     }
 
     const accessToken = await this.signToken(user);
-    await this.businessMembershipService.claimPendingInvitations(user.id, phone);
+    if (phone) {
+      await this.businessMembershipService.claimPendingInvitations(user.id, phone);
+    }
     return { accessToken, user };
   }
 
@@ -160,6 +175,7 @@ export class AuthService {
       select: {
         id: true,
         phone: true,
+        email: true,
         name: true,
         role: true,
         preferredCityId: true,
@@ -180,7 +196,7 @@ export class AuthService {
   private async signToken(user: Pick<User, 'id' | 'phone' | 'role'>) {
     return this.jwtService.signAsync({
       sub: user.id,
-      phone: user.phone,
+      ...(user.phone != null ? { phone: user.phone } : {}),
       role: user.role,
     });
   }

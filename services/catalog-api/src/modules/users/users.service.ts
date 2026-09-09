@@ -12,6 +12,7 @@ export class UsersService {
       select: {
         id: true,
         phone: true,
+        email: true,
         name: true,
         role: true,
         preferredCityId: true,
@@ -47,6 +48,7 @@ export class UsersService {
       select: {
         id: true,
         phone: true,
+        email: true,
         name: true,
         role: true,
         preferredCityId: true,

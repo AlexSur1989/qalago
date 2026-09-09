@@ -112,7 +112,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             enabled: false,
             decoration: InputDecoration(
               labelText: 'Телефон',
-              hintText: user?.phone ?? '',
+              hintText: user?.phone ?? 'Телефон не указан',
             ),
           ),
           const SizedBox(height: 8),

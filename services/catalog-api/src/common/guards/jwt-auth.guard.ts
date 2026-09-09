@@ -75,7 +75,7 @@ export class JwtAuthGuard implements CanActivate {
     request.user = {
       sub: dbUser.id,
       id: dbUser.id,
-      phone: dbUser.phone,
+      ...(dbUser.phone != null ? { phone: dbUser.phone } : {}),
       role: dbUser.role,
     };
   }

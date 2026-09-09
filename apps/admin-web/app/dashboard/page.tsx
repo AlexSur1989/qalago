@@ -216,18 +216,22 @@ export default function DashboardPage() {
         setError('Выберите город для CITY_ADMIN');
         return;
       }
-      if (!confirmAction(`Назначить ${u.phone} модератором города?`)) return;
+      if (!confirmAction(`Назначить ${u.phone ?? u.name ?? u.id} модератором города?`)) return;
       await adminApi.updateUserRole(token, u.id, role, cityId);
     } else {
-      if (!confirmAction(`Сменить роль ${u.phone} на ${role}?`)) return;
+      if (!confirmAction(`Сменить роль ${u.phone ?? u.name ?? u.id} на ${role}?`)) return;
       await adminApi.updateUserRole(token, u.id, role, null);
     }
     setUsers(await adminApi.listUsers(token));
   }
 
-  async function changeUserManagedCity(userId: string, managedCityId: string, phone: string) {
+  async function changeUserManagedCity(
+    userId: string,
+    managedCityId: string,
+    phone?: string | null,
+  ) {
     if (!token) return;
-    if (!confirmAction(`Сменить город модератора ${phone}?`)) return;
+    if (!confirmAction(`Сменить город модератора ${phone ?? userId}?`)) return;
     await adminApi.updateUserRole(token, userId, 'CITY_ADMIN', managedCityId);
     setUsers(await adminApi.listUsers(token));
   }
@@ -953,7 +957,7 @@ export default function DashboardPage() {
             <tbody>
               {users.map((u) => (
                 <tr key={u.id}>
-                  <td>{u.phone}</td>
+                  <td>{u.phone ?? '—'}</td>
                   <td>{u.name ?? '—'}</td>
                   <td>{u.role}</td>
                   <td>

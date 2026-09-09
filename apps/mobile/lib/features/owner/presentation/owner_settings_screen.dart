@@ -53,7 +53,9 @@ class _OwnerSettingsScreenState extends ConsumerState<OwnerSettingsScreen> {
                     decoration: InputDecoration(
                       labelText: 'Телефон',
                     ),
-                    controller: TextEditingController(text: user?.phone ?? ''),
+                    controller: TextEditingController(
+                      text: user?.phone ?? 'Телефон не указан',
+                    ),
                   ),
                   const SizedBox(height: 8),
                   TextField(

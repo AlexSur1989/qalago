@@ -135,7 +135,8 @@ class BusinessModel {
 class UserModel {
   UserModel({
     required this.id,
-    required this.phone,
+    this.phone,
+    this.email,
     this.name,
     required this.role,
     this.preferredCityId,
@@ -147,7 +148,8 @@ class UserModel {
   });
 
   final String id;
-  final String phone;
+  final String? phone;
+  final String? email;
   final String? name;
   final String role;
   final String? preferredCityId;
@@ -162,7 +164,8 @@ class UserModel {
     final managedCity = json['managedCity'] as Map<String, dynamic>?;
     return UserModel(
       id: json['id'] as String,
-      phone: json['phone'] as String,
+      phone: json['phone'] as String?,
+      email: json['email'] as String?,
       name: json['name'] as String?,
       role: json['role'] as String,
       preferredCityId: json['preferredCityId'] as String? ?? preferredCity?['id'] as String?,

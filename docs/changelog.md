@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-09 — Stage 6.2B1: Social auth identity foundation
+
+- **Сделано:** `AuthProvider` enum; `AuthIdentity` + `AuthIdentityTombstone` models; `User.phone` nullable; optional `User.email`; `AuthIdentityService`; account deletion tombstones external identities; JWT/AuthUser optional phone; feature flags `OTP_AUTH_ENABLED`, `GOOGLE_AUTH_ENABLED`, `APPLE_AUTH_ENABLED`; OTP routes gated when disabled; client null-safe phone display.
+- **На будущее:** B2 Google verification, B3 Apple verification, B4–B5 client social login, B6 phone-based invitation redesign.
+
 ## 2026-09-09 — Stage 6.0.1: Production safety prerequisites
 
 - **Сделано:** fail-closed CORS в production; OTP send/verify rate limiting (in-process, Redis-ready abstraction); mock plan checkout заблокирован в production (backend + Flutter + Business Web); production env validation (`JWT_SECRET`, `CORS_ORIGINS`, `OTP_DEBUG`, `DEV_LOGIN_ENABLED`); `DELETE /users/me` self-service account deletion (hybrid anonymize/deactivate); safe SUPER_ADMIN bootstrap script (`bootstrap:super-admin`); analytics ingest IP rate limit; permission error sanitization (`REVIEWS_REPLY`); deploy docs — **never seed production**.

@@ -2,7 +2,8 @@ import { api } from './api-core';
 
 export type AuthUser = {
   id: string;
-  phone: string;
+  phone?: string | null;
+  email?: string | null;
   name: string | null;
   role: string;
   isActive?: boolean;

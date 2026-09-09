@@ -39,7 +39,8 @@ export function OnboardingShell({ children, title, subtitle }: OnboardingShellPr
         </div>
         {user?.name && (
           <p className="muted" style={{ marginTop: 0 }}>
-            {user.name} · {user.phone}
+            {user.name ?? 'Пользователь'}
+            {user.phone ? ` · ${user.phone}` : ''}
           </p>
         )}
         <nav className="monetization-subnav" aria-label="Онбординг" style={{ marginBottom: 20 }}>

@@ -12,6 +12,7 @@ import {
   UserRole,
 } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuthIdentityService } from '../auth/auth-identity.service';
 export type AccountDeletionResult = {
   success: true;
   message: string;
@@ -19,7 +20,10 @@ export type AccountDeletionResult = {
 
 @Injectable()
 export class AccountDeletionService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly authIdentity: AuthIdentityService,
+  ) {}
 
   async deleteOwnAccount(userId: string): Promise<AccountDeletionResult> {
     const user = await this.prisma.user.findUnique({
@@ -35,7 +39,7 @@ export class AccountDeletionService {
       throw new NotFoundException('User not found');
     }
 
-    if (!user.isActive && user.phone.startsWith('deleted:')) {
+    if (!user.isActive && user.phone?.startsWith('deleted:')) {
       return {
         success: true,
         message: 'Account already deleted',
@@ -62,10 +66,14 @@ export class AccountDeletionService {
     const anonymizedPhone = `deleted:${userId}:${Date.now()}`;
 
     await this.prisma.$transaction(async (tx) => {
+      await this.authIdentity.tombstoneUserIdentities(userId, tx);
+
       await tx.favorite.deleteMany({ where: { userId } });
       await tx.notification.deleteMany({ where: { userId } });
       await tx.review.deleteMany({ where: { userId } });
-      await tx.otpCode.deleteMany({ where: { phone: user.phone } });
+      if (user.phone) {
+        await tx.otpCode.deleteMany({ where: { phone: user.phone } });
+      }
 
       await tx.businessMembership.updateMany({
         where: { userId, status: BusinessMembershipStatus.ACTIVE },
@@ -101,6 +109,7 @@ export class AccountDeletionService {
         data: {
           isActive: false,
           phone: anonymizedPhone,
+          email: null,
           name: null,
           preferredCityId: null,
         },

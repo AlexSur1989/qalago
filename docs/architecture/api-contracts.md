@@ -81,6 +81,8 @@ Response `200`: JWT payload + user fields.
 
 Includes `preferredCity`, and for `CITY_ADMIN` also `managedCity` (city scope for moderation).
 
+`phone` and `email` may be null (social-only users after Stage 6.2B1). AuthIdentity details are not exposed in this DTO.
+
 ### PATCH /users/me
 
 Body: `{ "name": "string", "preferredCityId": "string?" }`

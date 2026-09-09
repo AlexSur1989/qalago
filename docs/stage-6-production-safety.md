@@ -24,6 +24,10 @@ Status: implemented in code (Stage 6.0.1). Infrastructure and store release item
 4. Build mobile with `QALAGO_API_BASE_URL` only (no dev/mock flags)
 5. Build Business Web without `NEXT_PUBLIC_QALAGO_MOCK_PLAN_CHECKOUT`
 
+## Auth migration (Stage 6.2)
+
+See [stage-6-auth-migration.md](./stage-6-auth-migration.md) for Google/Apple foundation and roadmap.
+
 ## Remaining P0 (not in Stage 6.0.1)
 
 - Real SMS provider integration

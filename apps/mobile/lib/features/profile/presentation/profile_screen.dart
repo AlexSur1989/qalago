@@ -107,7 +107,7 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 20),
             _UserCard(
               name: user?.name ?? 'Пользователь',
-              phone: user?.phone ?? '+7 (***) ***-**-**',
+              phone: user?.phone ?? 'Телефон не указан',
               cityName: city.nameRu,
               roleLabel: profileRoleLabel(role),
               onTap: () => context.push('/profile/permissions'),

@@ -56,7 +56,8 @@ export interface CitySummary {
 
 export interface UserSummary {
   id: string;
-  phone: string;
+  phone?: string | null;
+  email?: string | null;
   name?: string | null;
   role: UserRole;
   preferredCityId?: string | null;

@@ -71,7 +71,7 @@ export default function SettingsPage() {
         <form onSubmit={saveAccount} className="form-grid">
           <label>
             Телефон
-            <input value={user?.phone ?? ''} readOnly disabled />
+            <input value={user?.phone ?? 'Телефон не указан'} readOnly disabled />
           </label>
           <label>
             Имя владельца
