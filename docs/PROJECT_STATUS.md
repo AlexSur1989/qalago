@@ -1,7 +1,8 @@
 # QalaGo — Project Status
 
 **Last updated:** 2026-09-09  
-**Stable checkpoint:** `stage-5n-checkpoint` — Stage 5N complete (5N.5 security hardening)
+**Stable checkpoint:** `stage-5n-checkpoint` @ `c74c142` — Stage 5N architecture accepted (5N.5)  
+**Latest QA:** Stage 5N.QA runtime pass with 1 P1 fix (permission error sanitization); manual browser QA **PARTIAL**
 
 ---
 
@@ -21,7 +22,8 @@
 | 5N.2 | `7a1ed6e` | BusinessOwnershipClaim backend, manual verification, plan preservation |
 | 5N.3 | `00b6953` | Admin Web moderation UI for applications + ownership claims |
 | 5N.4 | `aac46fa` | Flutter + Business Web client onboarding (applications + claims) |
-| 5N.5 | (this commit) | Legacy cutover, rate limits, session cleanup, PAYMENTS_VIEW RBAC, 393 backend tests |
+| 5N.5 | `c74c142` | Legacy cutover, rate limits, session cleanup, PAYMENTS_VIEW RBAC, 393 backend tests |
+| 5N.QA | pending | Runtime E2E API QA + HTTP smoke; P1 fix generic permission denial; browser UI PARTIAL |
 
 **Not started:** Stage 6 (release readiness)  
 **Deferred:** `MODERATOR`, document KYC, automatic phone ownership verification

@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-09 — Stage 5N.QA: Manual E2E verification (runtime)
+
+- **Сделано:** runtime QA script `services/catalog-api/scripts/stage-5n-qa-runtime.mjs` + fixture audit `stage-5n-qa-fixtures.mjs`; DEV stack verified (API :3002, Admin :3001, Business :3003, Flutter :8080); HTTP smoke on all web apps; API paths for application/claim lifecycle, POST `/businesses` matrix, PAYMENTS_VIEW RBAC, CITY_ADMIN scope, stale moderation, rate limit 429, accountType attack; **P1 fix:** `BusinessAccessService.assertBusinessPermission` возвращает generic `Insufficient permissions` вместо `Missing permission: PAYMENTS_VIEW` (+1 regression test, backend 394/394).
+- **Manual UI:** PARTIAL — browser automation недоступна в Cursor; Flutter/Admin/Business Web flows покрыты automated unit tests + API runtime; responsive/guest redirect/nav smoke не выполнялись в реальном браузере.
+- **На будущее:** Playwright smoke для onboarding/plan RBAC; перезапуск API или отдельные QA phones между прогонами runtime script (in-memory rate limit).
+
 ## 2026-09-09 — Stage 5N.5: Business onboarding security hardening
 
 - **Сделано:** `POST /businesses` закрыт для обычных пользователей (только ADMIN/SUPER_ADMIN import); `accountType=business` больше не повышает роль; удалены мёртвые client `createBusiness`; rate limits на create/submit applications и ownership claims (429, env-config); Flutter session cleanup через `userScopedCacheCleanupProvider` + auth-gated onboarding providers; PAYMENTS_VIEW RBAC на Business Web сохранён и расширен тестами; backend +7 тестов (393 total).

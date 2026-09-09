@@ -114,6 +114,14 @@ describe('BusinessAccessService (Stage 5M.2)', () => {
     ).resolves.toEqual(businessOrphanOwner);
   });
 
+  it('denied permission uses generic message without enum leak', async () => {
+    prisma.business.findUnique.mockResolvedValue(businessOrphanOwner);
+    mockManager([BusinessPermission.CATALOG_EDIT]);
+    await expect(
+      service.assertBusinessPermission(manager, businessOrphanOwner.id, BusinessPermission.PAYMENTS_VIEW),
+    ).rejects.toMatchObject({ message: 'Insufficient permissions' });
+  });
+
   it('ACTIVE MANAGER without ANALYTICS_VIEW denied analytics', async () => {
     prisma.business.findUnique.mockResolvedValue(businessOrphanOwner);
     mockManager([BusinessPermission.CATALOG_EDIT]);

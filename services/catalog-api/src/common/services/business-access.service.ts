@@ -101,7 +101,7 @@ export class BusinessAccessService {
   ): Promise<BusinessAccessRecord> {
     const access = await this.resolveAccess(user, businessId);
     if (!access.permissions.includes(permission)) {
-      throw new ForbiddenException(`Missing permission: ${permission}`);
+      throw new ForbiddenException('Insufficient permissions');
     }
     return access.business;
   }
