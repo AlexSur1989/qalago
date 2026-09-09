@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-10 — Stage 6.2B5: Business Web social authentication
+
+- **Сделано:** Google/Apple login на Business Web; GIS + Apple JS; state/nonce; existing JWT session; OTP fallback.
+- **На будущее:** real OAuth credentials, Apple revocation, httpOnly cookie hardening, B6 team invites.
+
 ## 2026-09-10 — Stage 6.2B4: Flutter social authentication
 
 - **Сделано:** Google/Apple login на Flutter; provider gateways; `AuthRepository.signInWithGoogle/Apple`; credential-gated dart-define flags; OTP fallback; guest-first UX preserved.

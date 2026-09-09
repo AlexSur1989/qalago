@@ -1,12 +1,26 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, Suspense, useState } from 'react';
+import { FormEvent, Suspense, useCallback, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ownerApi, TOKEN_KEY } from '@/lib/api';
-import { businessWebDevLoginEnabled } from '@/lib/auth-config';
+import {
+  businessWebAppleAuthConfigured,
+  businessWebDevLoginEnabled,
+  businessWebGoogleAuthConfigured,
+  businessWebGoogleClientId,
+  businessWebSocialAuthConfigured,
+} from '@/lib/auth-config';
 import { devSeedAccounts } from '@/lib/dev-seed-accounts';
-import { hasBusinessCabinetAccess } from '@/lib/use-auth';
+import { resolvePostLoginDestination } from '@/lib/login-session';
+import {
+  exchangeAppleAuthorization,
+  exchangeGoogleIdToken,
+} from '@/lib/social-auth/social-auth-service';
+import { mapSocialAuthError } from '@/lib/social-auth/social-auth-errors';
+import { AppleLoginButton } from '@/components/social-login/apple-login-button';
+import { GoogleLoginButton } from '@/components/social-login/google-login-button';
 
 function sanitizeRedirect(raw: string | null): string | null {
   if (!raw) return null;
@@ -16,11 +30,21 @@ function sanitizeRedirect(raw: string | null): string | null {
 }
 
 export default function LoginPage() {
-  return (
+  const inner = (
     <Suspense fallback={<main className="login-page"><p>Загрузка…</p></main>}>
       <LoginContent />
     </Suspense>
   );
+
+  if (businessWebGoogleAuthConfigured) {
+    return (
+      <GoogleOAuthProvider clientId={businessWebGoogleClientId}>
+        {inner}
+      </GoogleOAuthProvider>
+    );
+  }
+
+  return inner;
 }
 
 function LoginContent() {
@@ -33,9 +57,28 @@ function LoginContent() {
   const [debugCode, setDebugCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [otpExpanded, setOtpExpanded] = useState(!businessWebSocialAuthConfigured);
+
+  const finishLogin = useCallback(
+    async (accessToken: string, user: Awaited<ReturnType<typeof ownerApi.verifyCode>>['user']) => {
+      const destination = await resolvePostLoginDestination(
+        accessToken,
+        user,
+        redirectParam,
+      );
+      if (destination.error) {
+        setError(destination.error);
+        return;
+      }
+      localStorage.setItem(TOKEN_KEY, accessToken);
+      router.push(destination.path);
+    },
+    [redirectParam, router],
+  );
 
   async function sendCode(e: FormEvent) {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
     setError(null);
     try {
@@ -51,38 +94,9 @@ function LoginContent() {
     }
   }
 
-  async function finishLogin(accessToken: string, user: Awaited<ReturnType<typeof ownerApi.verifyCode>>['user']) {
-    let items: Awaited<ReturnType<typeof ownerApi.listMyBusinesses>>['items'] = [];
-    try {
-      const res = await ownerApi.listMyBusinesses(accessToken);
-      items = res.items;
-    } catch {
-      setError('Не удалось проверить доступ к заведениям');
-      return;
-    }
-
-    if (!hasBusinessCabinetAccess(user, items) && user.role !== 'USER') {
-      setError('Нет доступа к кабинету');
-      return;
-    }
-
-    localStorage.setItem(TOKEN_KEY, accessToken);
-
-    if (redirectParam) {
-      router.push(redirectParam);
-      return;
-    }
-
-    if (hasBusinessCabinetAccess(user, items)) {
-      router.push('/dashboard');
-      return;
-    }
-
-    router.push('/onboarding');
-  }
-
   async function verify(e: FormEvent) {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
     setError(null);
     try {
@@ -96,6 +110,7 @@ function LoginContent() {
   }
 
   async function devLogin(nextPhone = phone) {
+    if (loading) return;
     setLoading(true);
     setError(null);
     try {
@@ -108,33 +123,138 @@ function LoginContent() {
     }
   }
 
+  async function handleGoogleCredential(credential: string) {
+    if (loading) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await exchangeGoogleIdToken(credential);
+      await finishLogin(res.accessToken, res.user);
+    } catch (err) {
+      const message = mapSocialAuthError(err, 'Google');
+      if (message) setError(message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleAppleAuthorization(
+    response: Parameters<typeof exchangeAppleAuthorization>[0],
+  ) {
+    if (loading) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await exchangeAppleAuthorization(response);
+      await finishLogin(res.accessToken, res.user);
+    } catch (err) {
+      const message = mapSocialAuthError(err, 'Apple');
+      if (message) setError(message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <main className="login-page">
       <div className="login-card">
         <h1>QalaGo Business</h1>
-        <p>Вход по номеру телефона · OTP (тест: +77000000002, код 1234)</p>
+        <p className="login-lead">
+          {businessWebSocialAuthConfigured
+            ? 'Войдите, чтобы управлять заведением, командой и аналитикой.'
+            : 'Вход по номеру телефона · OTP (тест: +77000000002, код 1234)'}
+        </p>
 
-        <form onSubmit={sendCode} className="form-grid" style={{ marginBottom: 24 }}>
-          <input
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="Телефон"
+        {businessWebGoogleAuthConfigured && (
+          <GoogleLoginButton
+            disabled={loading}
+            onCredential={handleGoogleCredential}
+            onError={() => setError('Не удалось войти через Google. Попробуйте ещё раз.')}
           />
-          <button type="submit" disabled={loading} className="btn btn-primary">
-            Отправить код
-          </button>
-        </form>
-        {debugCode && <p style={{ color: 'var(--success)' }}>Dev OTP: {debugCode}</p>}
-        <form onSubmit={verify} className="form-grid">
-          <input
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            placeholder="Код из SMS"
+        )}
+
+        {businessWebAppleAuthConfigured && (
+          <AppleLoginButton
+            disabled={loading}
+            onAuthorization={handleAppleAuthorization}
           />
-          <button type="submit" disabled={loading} className="btn btn-primary">
-            Войти
-          </button>
-        </form>
+        )}
+
+        {businessWebSocialAuthConfigured && (
+          <>
+            <div className="login-divider">
+              <span>или</span>
+            </div>
+            {!otpExpanded ? (
+              <button
+                type="button"
+                className="btn"
+                style={{ width: '100%' }}
+                disabled={loading}
+                onClick={() => setOtpExpanded(true)}
+              >
+                Войти по телефону
+              </button>
+            ) : (
+              <>
+                <form onSubmit={sendCode} className="form-grid" style={{ marginBottom: 24 }}>
+                  <input
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="Телефон"
+                    disabled={loading}
+                  />
+                  <button type="submit" disabled={loading} className="btn btn-primary">
+                    Отправить код
+                  </button>
+                </form>
+                {debugCode && (
+                  <p style={{ color: 'var(--success)' }}>Dev OTP: {debugCode}</p>
+                )}
+                <form onSubmit={verify} className="form-grid">
+                  <input
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    placeholder="Код из SMS"
+                    disabled={loading}
+                  />
+                  <button type="submit" disabled={loading} className="btn btn-primary">
+                    Войти
+                  </button>
+                </form>
+              </>
+            )}
+          </>
+        )}
+
+        {!businessWebSocialAuthConfigured && (
+          <>
+            <form onSubmit={sendCode} className="form-grid" style={{ marginBottom: 24 }}>
+              <input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Телефон"
+                disabled={loading}
+              />
+              <button type="submit" disabled={loading} className="btn btn-primary">
+                Отправить код
+              </button>
+            </form>
+            {debugCode && <p style={{ color: 'var(--success)' }}>Dev OTP: {debugCode}</p>}
+            <form onSubmit={verify} className="form-grid">
+              <input
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder="Код из SMS"
+                disabled={loading}
+              />
+              <button type="submit" disabled={loading} className="btn btn-primary">
+                Войти
+              </button>
+            </form>
+          </>
+        )}
+
         {businessWebDevLoginEnabled && (
           <>
             <button
@@ -164,7 +284,13 @@ function LoginContent() {
             </div>
           </>
         )}
-        {error && <div className="alert alert-error" style={{ marginTop: 16 }}>{error}</div>}
+
+        {error && (
+          <div className="alert alert-error" style={{ marginTop: 16 }}>
+            {error}
+          </div>
+        )}
+
         <p style={{ marginTop: 20, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
           Нет бизнеса в QalaGo?{' '}
           <Link href="/onboarding" style={{ color: 'var(--primary)' }}>

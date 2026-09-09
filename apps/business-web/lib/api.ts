@@ -554,6 +554,18 @@ export const ownerApi = {
       body: JSON.stringify({ phone }),
     }),
 
+  signInWithGoogle: (idToken: string) =>
+    api<{ accessToken: string; user: AuthUser }>('/auth/google', {
+      method: 'POST',
+      body: JSON.stringify({ idToken }),
+    }),
+
+  signInWithApple: (identityToken: string) =>
+    api<{ accessToken: string; user: AuthUser }>('/auth/apple', {
+      method: 'POST',
+      body: JSON.stringify({ identityToken }),
+    }),
+
   getMe: (token: string) => api<AuthUser>('/users/me', { token }),
 
   updateMe: (token: string, data: { name?: string; preferredCityId?: string }) =>
