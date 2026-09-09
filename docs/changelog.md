@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-10 — Stage 6.4: Subscription plan redesign
+
+- **Сделано:** Canonical `PLAN_CATALOG` (FREE/BASIC/PREMIUM/VIP → Бесплатный/Бизнес/PRO/VIP); manager limits; review-reply entitlement; monthly ad bonus in catalog (display only); ad discount derived from catalog; consumer plan badge removed; Business/Admin/Flutter plan UX; docs + monthly ad bonus design note.
+- **Политика:** subscription ≠ organic ranking; downgrade preserves content; no ad wallet ledger in 6.4.
+- **На будущее:** Analytics 360 (6.5/6.6), monthly ad bonus accounting, extended styling UI.
+
 ## 2026-09-10 — Stage 6.3: Privacy, terms, account deletion & store compliance foundation
 
 - **Сделано:** Public `/privacy`, `/terms`, `/account-deletion` (Business Web); Flutter/Business Web legal links and login consent; privacy data inventory; Google Play / Apple privacy drafts; store checklists; legal-review-required registry.

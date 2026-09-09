@@ -94,18 +94,8 @@ class BusinessModel {
 
   bool get isVipPro => planTier == 'VIP';
 
-  String? get planBadgeLabel {
-    switch (planTier) {
-      case 'BASIC':
-        return 'BASIC';
-      case 'PREMIUM':
-        return 'PREMIUM';
-      case 'VIP':
-        return 'VIP';
-      default:
-        return null;
-    }
-  }
+  /// Paid subscription must not appear as a quality badge to consumers (Stage 6.4).
+  String? get planBadgeLabel => null;
 
   /// Maps legacy API/cache tier strings to Stage 4C tiers.
   /// PRO → PREMIUM and TOP_CITY → VIP remain for stale client payloads only;

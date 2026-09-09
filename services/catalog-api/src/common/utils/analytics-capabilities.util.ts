@@ -1,4 +1,6 @@
 import { BusinessPlanTier } from '@prisma/client';
+import { PLAN_CATALOG } from '../services/plan-limits.service';
+import { publicPlanLabelRu } from './plan-display.util';
 
 export interface AnalyticsCapabilities {
   maxDays: number;
@@ -21,7 +23,7 @@ export interface AnalyticsCapabilities {
   /** @deprecated use viewTrend / actionTrend */
   trends: boolean;
   /** @deprecated legacy analytics tier label */
-  tier: 'BASIC' | 'EXTENDED' | 'FULL';
+  tier: 'BASIC' | 'EXTENDED' | 'FULL' | 'ANALYTICS_360';
 }
 
 export interface AnalyticsLockedSection {
@@ -33,13 +35,13 @@ export interface AnalyticsLockedSection {
 
 const WEEKDAY_LABELS = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
 
+function catalogLimits(tier: BusinessPlanTier) {
+  return PLAN_CATALOG.find((p) => p.tier === tier)!.limits;
+}
+
 export function getAnalyticsCapabilitiesForPlan(tier: BusinessPlanTier): AnalyticsCapabilities {
-  const maxDays =
-    tier === BusinessPlanTier.VIP
-      ? 365
-      : tier === BusinessPlanTier.PREMIUM
-        ? 90
-        : 30;
+  const limits = catalogLimits(tier);
+  const maxDays = limits.maxAnalyticsDays;
 
   const isFree = tier === BusinessPlanTier.FREE;
   const isBasicOrAbove = !isFree;
@@ -47,11 +49,7 @@ export function getAnalyticsCapabilitiesForPlan(tier: BusinessPlanTier): Analyti
     tier === BusinessPlanTier.PREMIUM || tier === BusinessPlanTier.VIP;
   const isVip = tier === BusinessPlanTier.VIP;
 
-  const legacyTier: AnalyticsCapabilities['tier'] = isFree
-    ? 'BASIC'
-    : tier === BusinessPlanTier.BASIC
-      ? 'EXTENDED'
-      : 'FULL';
+  const legacyTier: AnalyticsCapabilities['tier'] = limits.analyticsTier;
 
   return {
     maxDays,
@@ -82,7 +80,7 @@ export function getAnalyticsHeadline(tier: BusinessPlanTier): string {
     case BusinessPlanTier.BASIC:
       return 'Что делают после просмотра?';
     case BusinessPlanTier.PREMIUM:
-      return 'Откуда приходят клиенты и что работает?';
+      return 'Откуда приходят посетители и что работает?';
     case BusinessPlanTier.VIP:
       return 'Почему это происходит и что можно улучшить?';
     default:
@@ -95,12 +93,16 @@ export function getAnalyticsLockedSections(
 ): AnalyticsLockedSection[] {
   const locked: AnalyticsLockedSection[] = [];
 
+  const businessLabel = publicPlanLabelRu(BusinessPlanTier.BASIC);
+  const proLabel = publicPlanLabelRu(BusinessPlanTier.PREMIUM);
+  const vipLabel = publicPlanLabelRu(BusinessPlanTier.VIP);
+
   if (tier === BusinessPlanTier.FREE) {
     locked.push({
       id: 'actions',
-      label: 'Действия клиентов',
+      label: 'Действия посетителей',
       requiredPlan: BusinessPlanTier.BASIC,
-      message: 'Доступно с BASIC',
+      message: `Доступно с «${businessLabel}»`,
     });
   }
 
@@ -110,25 +112,25 @@ export function getAnalyticsLockedSections(
         id: 'sources',
         label: 'Источники',
         requiredPlan: BusinessPlanTier.PREMIUM,
-        message: 'Доступно с PREMIUM',
+        message: `Доступно с «${proLabel}»`,
       },
       {
         id: 'conversion',
         label: 'Конверсия',
         requiredPlan: BusinessPlanTier.PREMIUM,
-        message: 'Доступно с PREMIUM',
+        message: `Доступно с «${proLabel}»`,
       },
       {
         id: 'comparison',
         label: 'Сравнение периодов',
         requiredPlan: BusinessPlanTier.PREMIUM,
-        message: 'Доступно с PREMIUM',
+        message: `Доступно с «${proLabel}»`,
       },
       {
         id: 'searchQueries',
         label: 'Поисковые запросы',
         requiredPlan: BusinessPlanTier.PREMIUM,
-        message: 'Поисковые запросы доступны с PREMIUM',
+        message: `Поисковые запросы доступны с «${proLabel}»`,
       },
     );
   }
@@ -139,31 +141,31 @@ export function getAnalyticsLockedSections(
         id: 'popularTimes',
         label: 'Популярные часы',
         requiredPlan: BusinessPlanTier.VIP,
-        message: 'Доступно с VIP',
+        message: `Доступно с «${vipLabel}»`,
       },
       {
         id: 'benchmark',
         label: 'Сравнение с категорией',
         requiredPlan: BusinessPlanTier.VIP,
-        message: 'Доступно с VIP',
+        message: `Доступно с «${vipLabel}»`,
       },
       {
         id: 'recommendations',
         label: 'Рекомендации',
         requiredPlan: BusinessPlanTier.VIP,
-        message: 'Доступно с VIP',
+        message: `Доступно с «${vipLabel}»`,
       },
       {
         id: 'audienceGeography',
         label: 'Аудитория по расстоянию',
         requiredPlan: BusinessPlanTier.VIP,
-        message: 'Аналитика аудитории доступна на тарифе VIP',
+        message: `Аналитика аудитории доступна на тарифе «${vipLabel}»`,
       },
       {
         id: 'reportExport',
         label: 'Экспорт отчётов',
         requiredPlan: BusinessPlanTier.VIP,
-        message: 'Экспорт отчётов доступен на тарифе VIP',
+        message: `Экспорт отчётов доступен на тарифе «${vipLabel}»`,
       },
     );
   }

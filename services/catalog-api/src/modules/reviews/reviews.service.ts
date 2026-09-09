@@ -3,9 +3,12 @@ import {
   AuditAction,
   AuditResourceType,
   BusinessPermission,
+  BusinessPlanTier,
   NotificationType,
 } from '@prisma/client';
+import { publicPlanLabelRu } from '../../common/utils/plan-display.util';
 import { BusinessAccessService } from '../../common/services/business-access.service';
+import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -20,6 +23,7 @@ export class ReviewsService {
     private readonly notifications: NotificationsService,
     private readonly businessAccess: BusinessAccessService,
     private readonly auditLog: AuditLogService,
+    private readonly planLimits: PlanLimitsService,
   ) {}
 
   findByBusiness(businessId: string) {
@@ -80,6 +84,13 @@ export class ReviewsService {
     const access = await this.businessAccess.resolveAccess(user, review.business.id);
     if (!access.permissions.includes(BusinessPermission.REVIEWS_REPLY)) {
       throw new ForbiddenException('Insufficient permissions');
+    }
+
+    const planCtx = await this.planLimits.getBusinessPlanContext(review.business.id);
+    if (!planCtx.limits.canReplyToReviews) {
+      throw new ForbiddenException(
+        `Ответы на отзывы доступны с тарифа «${publicPlanLabelRu(BusinessPlanTier.BASIC)}» и выше.`,
+      );
     }
 
     const updated = await this.prisma.review.update({

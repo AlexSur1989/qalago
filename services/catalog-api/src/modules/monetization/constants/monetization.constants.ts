@@ -1,12 +1,11 @@
 import { BusinessPlanTier, MonetizationProductType } from '@prisma/client';
+import { PLAN_CATALOG } from '../../../common/services/plan-limits.service';
 
-/** Plan tier → monetization advertising discount percent (Stage 4C). */
-export const PLAN_ADVERTISING_DISCOUNT_PERCENT: Record<BusinessPlanTier, number> = {
-  [BusinessPlanTier.FREE]: 0,
-  [BusinessPlanTier.BASIC]: 5,
-  [BusinessPlanTier.PREMIUM]: 10,
-  [BusinessPlanTier.VIP]: 15,
-};
+/** Derived from canonical PLAN_CATALOG — do not duplicate values here. */
+export const PLAN_ADVERTISING_DISCOUNT_PERCENT: Record<BusinessPlanTier, number> =
+  Object.fromEntries(
+    PLAN_CATALOG.map((plan) => [plan.tier, plan.limits.advertisingDiscountPercent]),
+  ) as Record<BusinessPlanTier, number>;
 
 /** Package orders never receive plan-tier discounts on Stage 2. */
 export const PACKAGE_DISCOUNT_PERCENT = 0;

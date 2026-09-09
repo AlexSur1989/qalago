@@ -16,27 +16,32 @@ import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-aud
 
 describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
   const now = new Date('2026-09-06T12:00:00Z');
+  const teamCountMocks = {
+    businessMembership: { count: jest.fn().mockResolvedValue(0) },
+    businessInvitation: { count: jest.fn().mockResolvedValue(0) },
+  };
 
   describe('photos', () => {
     const planLimits = new PlanLimitsService(
       {
         business: { findUnique: jest.fn() },
         promotion: { count: jest.fn() },
+        ...teamCountMocks,
       } as unknown as PrismaService,
       { create: jest.fn() } as never,
     );
 
-    it('1–2. PREMIUM 40 photos → BASIC: 40 preserved, public 15, owner context shows 40/15', async () => {
+    it('1–2. PREMIUM 40 photos → BASIC: 40 preserved, public 20, owner context shows 40/20', async () => {
       const images = Array.from({ length: 40 }, (_, i) => ({
         id: `img-${i}`,
         sortOrder: i,
         imageUrl: `https://cdn.example/${i}.jpg`,
       }));
 
-      const publicImages = planLimits.applyPublicPhotoLimit(images, 15);
+      const publicImages = planLimits.applyPublicPhotoLimit(images, 20);
       expect(images).toHaveLength(40);
-      expect(publicImages).toHaveLength(15);
-      expect(publicImages.map((i) => i.id)).toEqual(images.slice(0, 15).map((i) => i.id));
+      expect(publicImages).toHaveLength(20);
+      expect(publicImages.map((i) => i.id)).toEqual(images.slice(0, 20).map((i) => i.id));
 
       const prisma = {
         business: {
@@ -49,11 +54,12 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
             _count: { images: 40, serviceItems: 0, promotions: 0 },
           }),
         },
+        ...teamCountMocks,
       } as unknown as PrismaService;
       const limitsService = new PlanLimitsService(prisma, { create: jest.fn() } as never);
       const ctx = await limitsService.getBusinessPlanContext('b1');
       expect(ctx.usage.photos).toBe(40);
-      expect(ctx.entitlements.photos.published).toBe(15);
+      expect(ctx.entitlements.photos.published).toBe(20);
       expect(ctx.entitlements.photos.overLimit).toBe(true);
     });
 
@@ -69,10 +75,11 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
             _count: { images: 40, serviceItems: 0, promotions: 0 },
           }),
         },
+        ...teamCountMocks,
       } as unknown as PrismaService;
       const limitsService = new PlanLimitsService(prisma, { create: jest.fn() } as never);
       await expect(limitsService.assertCanAddPhoto('b1')).rejects.toThrow(
-        /не более 15 фото/,
+        /не более 20 фото/,
       );
     });
 
@@ -82,7 +89,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
         sortOrder: i,
         imageUrl: `https://cdn.example/${i}.jpg`,
       }));
-      expect(planLimits.applyPublicPhotoLimit(images, 15)).toHaveLength(15);
+      expect(planLimits.applyPublicPhotoLimit(images, 20)).toHaveLength(20);
       expect(planLimits.applyPublicPhotoLimit(images, 40)).toHaveLength(39);
     });
   });
@@ -92,11 +99,12 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
       {
         business: { findUnique: jest.fn() },
         promotion: { count: jest.fn() },
+        ...teamCountMocks,
       } as unknown as PrismaService,
       { create: jest.fn() } as never,
     );
 
-    it('6–7. 80 items preserved, public 30 on BASIC', async () => {
+    it('6–7. 80 items preserved, public 50 on BASIC', async () => {
       const menu = {
         groups: [
           {
@@ -112,9 +120,9 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
         ungrouped: [] as Array<{ id: string; sortOrder: number; title: string }>,
       };
 
-      const publicMenu = applyPublicServiceMenuLimit(menu, 30);
+      const publicMenu = applyPublicServiceMenuLimit(menu, 50);
       const publicCount = publicMenu.groups.reduce((n, g) => n + g.items.length, 0);
-      expect(publicCount).toBe(30);
+      expect(publicCount).toBe(50);
       expect(menu.groups[0]?.items).toHaveLength(80);
 
       const prisma = {
@@ -128,11 +136,12 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
             _count: { images: 0, serviceItems: 80, promotions: 0 },
           }),
         },
+        ...teamCountMocks,
       } as unknown as PrismaService;
       const limitsService = new PlanLimitsService(prisma, { create: jest.fn() } as never);
       const ctx = await limitsService.getBusinessPlanContext('b1');
       expect(ctx.usage.serviceItems).toBe(80);
-      expect(ctx.entitlements.serviceItems.published).toBe(30);
+      expect(ctx.entitlements.serviceItems.published).toBe(50);
     });
 
     it('8. service create blocked over limit', async () => {
@@ -147,10 +156,11 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
             _count: { images: 0, serviceItems: 80, promotions: 0 },
           }),
         },
+        ...teamCountMocks,
       } as unknown as PrismaService;
       const limitsService = new PlanLimitsService(prisma, { create: jest.fn() } as never);
       await expect(limitsService.assertCanAddServiceItem('b1')).rejects.toThrow(
-        /не более 30/,
+        /не более 50/,
       );
     });
   });
@@ -191,6 +201,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
           findMany: jest.fn(),
           updateMany: jest.fn(),
         },
+        ...teamCountMocks,
       } as unknown as PrismaService;
 
       const notifications = { create: jest.fn() };
@@ -212,7 +223,11 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
 
     it('11–12. upgrade restores valid promotions; expired-by-date stays hidden', () => {
       const planLimits = new PlanLimitsService(
-        { business: { findUnique: jest.fn() }, promotion: { count: jest.fn() } } as never,
+        {
+          business: { findUnique: jest.fn() },
+          promotion: { count: jest.fn() },
+          ...teamCountMocks,
+        } as never,
         { create: jest.fn() } as never,
       );
 
@@ -253,6 +268,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
               _count: { images: 0, serviceItems: 0, promotions: 7 },
             }),
         },
+        ...teamCountMocks,
       } as unknown as PrismaService;
 
       const cityScope = { resolveCityId: jest.fn() } as unknown as CityScopeService;
@@ -317,6 +333,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
             _count: { images: 40, serviceItems: 80, promotions: 7 },
           }),
         },
+        ...teamCountMocks,
       } as unknown as PrismaService;
 
       const planLimits = new PlanLimitsService(prisma, { create: jest.fn() } as never);
@@ -368,6 +385,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
           }),
         },
         analyticsEvent: { count: analyticsCount },
+        ...teamCountMocks,
       } as unknown as PrismaService;
 
       const limitsService = new PlanLimitsService(prisma, { create: jest.fn() } as never);
@@ -446,6 +464,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
         getBusinessPlanContext: jest.fn().mockResolvedValue({
           effectiveTier: BusinessPlanTier.BASIC,
         }),
+        getAdvertisingDiscountPercent: jest.fn().mockReturnValue(5),
       } as unknown as PlanLimitsService;
       const pricing = new PricingService({ productPrice: { findMany: jest.fn() } } as never, planLimits);
       await expect(pricing.resolvePlanDiscountPercent('b1')).resolves.toBe(5);

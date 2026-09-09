@@ -65,7 +65,8 @@ describe('monetization-utils', () => {
   });
 
   it('maps plan tiers', () => {
-    expect(planTierLabel('PREMIUM')).toBe('Premium');
+    expect(planTierLabel('PREMIUM')).toBe('PRO');
+    expect(planTierLabel('BASIC')).toBe('Бизнес');
     expect(planTierLabel('VIP')).toBe('VIP');
   });
 

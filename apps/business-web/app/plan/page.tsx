@@ -25,9 +25,25 @@ function formatPrice(priceKzt: number) {
   return `${priceKzt.toLocaleString('ru-RU')} ₸`;
 }
 
-function formatPeriod(periodDays: number | null) {
+function formatPeriod(periodDays: number | null, priceKzt: number) {
   if (periodDays == null) return 'навсегда';
+  if (priceKzt > 0) return 'мес';
   return `${periodDays} дн.`;
+}
+
+function analyticsLevelLabel(tier: string): string {
+  switch (tier) {
+    case 'BASIC':
+      return 'Базовая';
+    case 'EXTENDED':
+      return 'Расширенная';
+    case 'FULL':
+      return 'Полная';
+    case 'ANALYTICS_360':
+      return 'Analytics 360';
+    default:
+      return tier;
+  }
 }
 
 export default function PlanPage() {
@@ -155,6 +171,15 @@ export default function PlanPage() {
               {planStatus.entitlements.overLimitNotice}
             </p>
           )}
+          {planStatus.team && planStatus.team.limit > 0 && (
+            <p style={{ color: 'var(--text-muted)', marginBottom: 8 }}>
+              Менеджеры: {planStatus.team.activeManagers} / {planStatus.team.limit}
+              {planStatus.team.pendingInvitations > 0
+                ? ` (+${planStatus.team.pendingInvitations} приглаш.)`
+                : ''}
+              {planStatus.team.overLimit ? ' — превышен лимит, новых менеджеров добавить нельзя' : ''}
+            </p>
+          )}
           {planStatus.expiresAt && (
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
               Действует до {new Date(planStatus.expiresAt).toLocaleDateString('ru-RU')}
@@ -177,8 +202,23 @@ export default function PlanPage() {
               <h2 style={{ margin: '0 0 4px' }}>{plan.nameRu}</h2>
               <p className="plan-price">
                 {formatPrice(plan.priceKzt)}
-                <span> / {formatPeriod(plan.periodDays)}</span>
+                <span> / {formatPeriod(plan.periodDays, plan.priceKzt)}</span>
               </p>
+              <ul className="plan-features" style={{ fontSize: '0.85rem', marginTop: 8 }}>
+                <li>Фото: {plan.limits.maxPhotos}</li>
+                <li>Товары/услуги: {plan.limits.maxServiceItems}</li>
+                <li>Акции: {plan.limits.maxActivePromotions}</li>
+                <li>Менеджеры: {plan.limits.maxManagers}</li>
+                <li>Ответы на отзывы: {plan.limits.canReplyToReviews ? 'да' : 'нет'}</li>
+                <li>Аналитика: {analyticsLevelLabel(plan.limits.analyticsTier)}</li>
+                <li>
+                  Бонус на рекламу QalaGo:{' '}
+                  {plan.limits.monthlyAdBonusKzt > 0
+                    ? `${plan.limits.monthlyAdBonusKzt.toLocaleString('ru-RU')} ₸/мес`
+                    : '—'}
+                </li>
+                <li>Скидка на рекламу: {plan.limits.advertisingDiscountPercent}%</li>
+              </ul>
               <ul className="plan-features">
                 {plan.features.map((f) => (
                   <li key={f}>{f}</li>
@@ -226,10 +266,17 @@ export default function PlanPage() {
       </div>
 
       <section className="form-card" style={{ marginTop: 16, maxWidth: 720 }}>
-        <h3 style={{ marginTop: 0 }}>Рекламные размещения</h3>
+        <h3 style={{ marginTop: 0 }}>Бонус на рекламу QalaGo</h3>
         <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
-          Рекламные размещения приобретаются отдельно. Скидка тарифа применяется к отдельным
-          рекламным продуктам согласно условиям.
+          Ежемесячный бонус — внутренний кредит для оплаты eligible рекламных продуктов QalaGo.
+          Это не наличные деньги, не cashback и не выводимый баланс. Начисление бонуса будет
+          доступно после внедрения учётной модели (Stage 6.4 — только отображение в тарифах).
+        </p>
+        <h3>Рекламные размещения</h3>
+        <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
+          Подписка не повышает органический рейтинг в каталоге. Рекламные размещения
+          приобретаются отдельно. Скидка тарифа применяется к отдельным рекламным продуктам
+          при оформлении заказа и фиксируется в истории оплат.
         </p>
         {businessWebMockPlanCheckoutEnabled ? (
           <>

@@ -11,7 +11,12 @@ describe('BusinessMembershipService.hasActiveOwnerAccess (Stage 5N.1)', () => {
 
   function createService(getMembership: jest.Mock) {
     const prisma = {} as PrismaService;
-    const service = new BusinessMembershipService(prisma, asAuditLogService(auditLog));
+    const planLimits = { assertCanAddManager: jest.fn().mockResolvedValue(undefined) };
+    const service = new BusinessMembershipService(
+      prisma,
+      asAuditLogService(auditLog),
+      planLimits as never,
+    );
     jest.spyOn(service, 'getMembership').mockImplementation(getMembership);
     return service;
   }

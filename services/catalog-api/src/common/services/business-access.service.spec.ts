@@ -51,7 +51,11 @@ describe('BusinessAccessService (Stage 5M.2)', () => {
         throw new ForbiddenException('Not allowed to manage businesses in this city');
       }
     });
-    membership = new BusinessMembershipService(prisma as never, asAuditLogService(createMockAuditLog()));
+    membership = new BusinessMembershipService(
+      prisma as never,
+      asAuditLogService(createMockAuditLog()),
+      { assertCanAddManager: jest.fn().mockResolvedValue(undefined) } as never,
+    );
     service = new BusinessAccessService(prisma as never, cityScope, membership);
   });
 

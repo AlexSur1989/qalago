@@ -264,7 +264,7 @@ class _DashboardContent extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Text(
-                      'График действий по дням доступен на тарифе Basic и выше.',
+                      'График действий по дням доступен на тарифе «Бизнес» и выше.',
                       style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
                     ),
                   ),

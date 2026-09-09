@@ -18,6 +18,7 @@ import { AuthUser } from '../../common/types/jwt-payload.type';
 import { isGlobalAdmin } from '../../common/utils/system-access.util';
 import { normalizeKazakhstanPhone } from '../auth/auth-phone.util';
 import { BusinessAccessService } from '../../common/services/business-access.service';
+import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { BusinessMembershipService } from '../../common/services/business-membership.service';
 import {
   normalizeBusinessPermissions,
@@ -39,6 +40,7 @@ export class BusinessTeamService {
     private readonly membership: BusinessMembershipService,
     private readonly auditLog: AuditLogService,
     private readonly invitations: BusinessInvitationService,
+    private readonly planLimits: PlanLimitsService,
   ) {}
 
   async listTeam(user: AuthUser, businessId: string) {
@@ -94,6 +96,7 @@ export class BusinessTeamService {
 
   async inviteManager(user: AuthUser, businessId: string, dto: InviteTeamMemberDto) {
     const business = await this.businessAccess.assertOwner(user, businessId);
+    await this.planLimits.assertCanAddManager(businessId);
     validatePermissionDependencies(dto.permissions);
     const permissions = normalizeBusinessPermissions(dto.permissions);
 

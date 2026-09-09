@@ -61,17 +61,18 @@ export function confirmAction(message: string): boolean {
   return window.confirm(message);
 }
 
+/** Maps internal enum to public Russian labels (Stage 6.4). */
 export function planTierLabel(tier?: string | null): string {
   switch (tier) {
     case 'FREE':
-      return 'Free';
+      return 'Бесплатный';
     case 'BASIC':
-      return 'Basic';
+      return 'Бизнес';
     case 'PREMIUM':
-      return 'Premium';
+      return 'PRO';
     case 'VIP':
       return 'VIP';
     default:
-      return 'Free';
+      return 'Бесплатный';
   }
 }

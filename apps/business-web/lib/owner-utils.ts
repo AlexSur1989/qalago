@@ -12,18 +12,19 @@ export const VIP_PLAN_DISCLAIMER =
 export const PHOTO_OVER_LIMIT_HINT =
   'На текущем тарифе публикуется ограниченное число фото. Остальные сохранены и снова появятся после повышения тарифа.';
 
+/** Maps internal enum (FREE/BASIC/PREMIUM/VIP) to public Russian labels (Stage 6.4). */
 export function planTierLabelRu(tier?: string | null): string {
   switch (tier) {
     case 'FREE':
-      return 'Free';
+      return 'Бесплатный';
     case 'BASIC':
-      return 'Basic';
+      return 'Бизнес';
     case 'PREMIUM':
-      return 'Premium';
+      return 'PRO';
     case 'VIP':
       return 'VIP';
     default:
-      return tier ?? 'Free';
+      return tier ?? 'Бесплатный';
   }
 }
 

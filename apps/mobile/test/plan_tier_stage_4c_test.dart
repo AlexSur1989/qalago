@@ -23,12 +23,10 @@ void main() {
       expect(business(title: 'A', planTier: 'FREE').planBadgeLabel, isNull);
     });
 
-    test('PREMIUM badge is PREMIUM not VIP', () {
-      expect(business(title: 'A', planTier: 'PREMIUM').planBadgeLabel, 'PREMIUM');
-    });
-
-    test('VIP badge is VIP', () {
-      expect(business(title: 'A', planTier: 'VIP').planBadgeLabel, 'VIP');
+    test('paid tiers do not show consumer plan badges (Stage 6.4)', () {
+      expect(business(title: 'A', planTier: 'PREMIUM').planBadgeLabel, isNull);
+      expect(business(title: 'A', planTier: 'VIP').planBadgeLabel, isNull);
+      expect(business(title: 'A', planTier: 'BASIC').planBadgeLabel, isNull);
     });
 
     test('unknown tier falls back to FREE', () {

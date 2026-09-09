@@ -40,6 +40,7 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
     buildInviteUrl: jest.Mock;
     maskRecipient: jest.Mock;
   };
+  let planLimits: { assertCanAddManager: jest.Mock };
   let service: BusinessTeamService;
 
   beforeEach(() => {
@@ -76,12 +77,14 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
       buildInviteUrl: jest.fn().mockReturnValue('http://localhost:3003/invite/raw-token'),
       maskRecipient: jest.fn().mockReturnValue('m***@example.com'),
     };
+    planLimits = { assertCanAddManager: jest.fn().mockResolvedValue(undefined) };
     service = new BusinessTeamService(
       prisma as never,
       businessAccess as unknown as BusinessAccessService,
       membership as unknown as BusinessMembershipService,
       auditLog as never,
       invitations as never,
+      planLimits as never,
     );
   });
 
@@ -93,6 +96,18 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
   it('MANAGER cannot list team', async () => {
     businessAccess.assertOwner.mockRejectedValue(new ForbiddenException());
     await expect(service.listTeam(manager, businessId)).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('checks manager limit before invite', async () => {
+    prisma.user.findUnique.mockResolvedValue(null);
+    prisma.businessInvitation.create.mockResolvedValue({ id: 'inv-1' });
+
+    await service.inviteManager(owner, businessId, {
+      phone: '+77001112233',
+      permissions: [BusinessPermission.CATALOG_EDIT],
+    });
+
+    expect(planLimits.assertCanAddManager).toHaveBeenCalledWith(businessId);
   });
 
   it('invite existing user creates ACTIVE MANAGER membership', async () => {

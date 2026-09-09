@@ -3,7 +3,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { BusinessPlanTier, NotificationType, PromotionStatus } from '@prisma/client';
+import {
+  BusinessInvitationStatus,
+  BusinessMembershipRole,
+  BusinessMembershipStatus,
+  BusinessPlanTier,
+  NotificationType,
+  PromotionStatus,
+} from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationsService } from '../../modules/notifications/notifications.service';
 import {
@@ -15,8 +22,12 @@ import {
   selectPublicPromotions,
   sliceToPublicLimit,
 } from '../utils/plan-entitlements.util';
+import {
+  getPlanDisplayMetadata,
+  PlanDisplayMetadata,
+} from '../utils/plan-display.util';
 
-export type AnalyticsTier = 'BASIC' | 'EXTENDED' | 'FULL';
+export type AnalyticsTier = 'BASIC' | 'EXTENDED' | 'FULL' | 'ANALYTICS_360';
 export type SupportPriority = 'STANDARD' | 'PRIORITY' | 'HIGHEST';
 export type ModerationPriority = 'STANDARD' | 'PRIORITY' | 'HIGHEST';
 
@@ -26,11 +37,16 @@ export interface PlanLimits {
   maxActivePromotions: number;
   maxPromotionDurationDays: number;
   maxPromotionsCreatedPerDay: number;
+  maxManagers: number;
   maxAnalyticsDays: number;
   advertisingDiscountPercent: number;
+  monthlyAdBonusKzt: number;
+  canReplyToReviews: boolean;
+  extendedStyling: boolean;
   analyticsTier: AnalyticsTier;
   supportPriority: SupportPriority;
   moderationPriority: ModerationPriority;
+  /** Always false — paid plans must not show quality badges to consumers (Stage 6.4). */
   showPlanBadge: boolean;
 }
 
@@ -38,123 +54,133 @@ export interface PlanCatalogItem {
   tier: BusinessPlanTier;
   slug: string;
   nameRu: string;
+  display: PlanDisplayMetadata;
   priceKzt: number;
   periodDays: number | null;
   features: string[];
   limits: PlanLimits;
 }
 
+function catalogEntry(
+  tier: BusinessPlanTier,
+  slug: string,
+  priceKzt: number,
+  features: string[],
+  limits: Omit<PlanLimits, 'showPlanBadge'> & { showPlanBadge?: boolean },
+): PlanCatalogItem {
+  const display = getPlanDisplayMetadata(tier);
+  return {
+    tier,
+    slug,
+    nameRu: display.nameRu,
+    display,
+    priceKzt,
+    periodDays: tier === BusinessPlanTier.FREE ? null : 30,
+    features,
+    limits: { ...limits, showPlanBadge: false },
+  };
+}
+
+/** Canonical subscription catalog — Stage 6.4. Internal enum: FREE/BASIC/PREMIUM/VIP. */
 export const PLAN_CATALOG: PlanCatalogItem[] = [
-  {
-    tier: BusinessPlanTier.FREE,
-    slug: 'free',
-    nameRu: 'Free',
-    priceKzt: 0,
-    periodDays: null,
-    features: [
-      'Карточка заведения в каталоге',
-      'До 5 фото',
-      'До 10 товаров и услуг',
-      '1 активная акция',
-      'Базовая статистика',
-    ],
-    limits: {
-      maxPhotos: 5,
-      maxServiceItems: 10,
-      maxActivePromotions: 1,
-      maxPromotionDurationDays: 14,
-      maxPromotionsCreatedPerDay: 1,
-      maxAnalyticsDays: 30,
-      advertisingDiscountPercent: 0,
-      analyticsTier: 'BASIC',
-      supportPriority: 'STANDARD',
-      moderationPriority: 'STANDARD',
-      showPlanBadge: false,
-    },
-  },
-  {
-    tier: BusinessPlanTier.BASIC,
-    slug: 'basic',
-    nameRu: 'Basic',
-    priceKzt: 4900,
-    periodDays: 30,
-    features: [
-      'До 15 фото',
-      'До 30 товаров и услуг',
-      '3 активные акции',
-      'Расширенная статистика',
-      '5% скидка на рекламу',
-    ],
-    limits: {
-      maxPhotos: 15,
-      maxServiceItems: 30,
-      maxActivePromotions: 3,
-      maxPromotionDurationDays: 30,
-      maxPromotionsCreatedPerDay: 2,
-      maxAnalyticsDays: 30,
-      advertisingDiscountPercent: 5,
-      analyticsTier: 'EXTENDED',
-      supportPriority: 'STANDARD',
-      moderationPriority: 'STANDARD',
-      showPlanBadge: true,
-    },
-  },
-  {
-    tier: BusinessPlanTier.PREMIUM,
-    slug: 'premium',
-    nameRu: 'Premium',
-    priceKzt: 9900,
-    periodDays: 30,
-    features: [
-      'До 40 фото',
-      'До 100 товаров и услуг',
-      '10 активных акций',
-      'Полная статистика',
-      '10% скидка на рекламу',
-      'Приоритетная поддержка',
-    ],
-    limits: {
-      maxPhotos: 40,
-      maxServiceItems: 100,
-      maxActivePromotions: 10,
-      maxPromotionDurationDays: 90,
-      maxPromotionsCreatedPerDay: 5,
-      maxAnalyticsDays: 90,
-      advertisingDiscountPercent: 10,
-      analyticsTier: 'FULL',
-      supportPriority: 'PRIORITY',
-      moderationPriority: 'PRIORITY',
-      showPlanBadge: true,
-    },
-  },
-  {
-    tier: BusinessPlanTier.VIP,
-    slug: 'vip',
-    nameRu: 'VIP',
-    priceKzt: 19900,
-    periodDays: 30,
-    features: [
-      'До 100 фото',
-      'До 300 товаров и услуг',
-      '25 активных акций',
-      'Полная статистика',
-      '15% скидка на рекламу',
-      'Максимальный приоритет поддержки и модерации',
-    ],
-    limits: {
-      maxPhotos: 100,
-      maxServiceItems: 300,
-      maxActivePromotions: 25,
-      maxPromotionDurationDays: 90,
-      maxPromotionsCreatedPerDay: 10,
-      maxAnalyticsDays: 365,
-      advertisingDiscountPercent: 15,
-      analyticsTier: 'FULL',
-      supportPriority: 'HIGHEST',
-      moderationPriority: 'HIGHEST',
-      showPlanBadge: true,
-    },
-  },
+  catalogEntry(BusinessPlanTier.FREE, 'free', 0, [
+    'Карточка заведения в каталоге',
+    'До 5 фото',
+    'До 10 товаров и услуг',
+    '1 активная акция',
+    'Базовая статистика (30 дней)',
+    'Без менеджеров и ответов на отзывы',
+  ], {
+    maxPhotos: 5,
+    maxServiceItems: 10,
+    maxActivePromotions: 1,
+    maxPromotionDurationDays: 14,
+    maxPromotionsCreatedPerDay: 1,
+    maxManagers: 0,
+    maxAnalyticsDays: 30,
+    advertisingDiscountPercent: 0,
+    monthlyAdBonusKzt: 0,
+    canReplyToReviews: false,
+    extendedStyling: false,
+    analyticsTier: 'BASIC',
+    supportPriority: 'STANDARD',
+    moderationPriority: 'STANDARD',
+  }),
+  catalogEntry(BusinessPlanTier.BASIC, 'business', 4900, [
+    'До 20 фото',
+    'До 50 товаров и услуг',
+    '3 активные акции',
+    '1 менеджер',
+    'Ответы на отзывы',
+    'Расширенная статистика',
+    'Бонус на рекламу QalaGo: 500 ₸/мес',
+    '5% скидка на рекламу',
+  ], {
+    maxPhotos: 20,
+    maxServiceItems: 50,
+    maxActivePromotions: 3,
+    maxPromotionDurationDays: 30,
+    maxPromotionsCreatedPerDay: 2,
+    maxManagers: 1,
+    maxAnalyticsDays: 30,
+    advertisingDiscountPercent: 5,
+    monthlyAdBonusKzt: 500,
+    canReplyToReviews: true,
+    extendedStyling: true,
+    analyticsTier: 'EXTENDED',
+    supportPriority: 'STANDARD',
+    moderationPriority: 'STANDARD',
+  }),
+  catalogEntry(BusinessPlanTier.PREMIUM, 'pro', 9900, [
+    'До 50 фото',
+    'До 150 товаров и услуг',
+    '10 активных акций',
+    '3 менеджера',
+    'Полная аналитика привлечения',
+    'Бонус на рекламу QalaGo: 1 500 ₸/мес',
+    '10% скидка на рекламу',
+    'Приоритетная модерация и поддержка',
+  ], {
+    maxPhotos: 50,
+    maxServiceItems: 150,
+    maxActivePromotions: 10,
+    maxPromotionDurationDays: 90,
+    maxPromotionsCreatedPerDay: 5,
+    maxManagers: 3,
+    maxAnalyticsDays: 90,
+    advertisingDiscountPercent: 10,
+    monthlyAdBonusKzt: 1500,
+    canReplyToReviews: true,
+    extendedStyling: true,
+    analyticsTier: 'FULL',
+    supportPriority: 'PRIORITY',
+    moderationPriority: 'PRIORITY',
+  }),
+  catalogEntry(BusinessPlanTier.VIP, 'vip', 19900, [
+    'До 100 фото',
+    'До 300 товаров и услуг',
+    '25 активных акций',
+    '10 менеджеров',
+    'Analytics 360 + рекомендации (по мере внедрения)',
+    'Бонус на рекламу QalaGo: 3 500 ₸/мес',
+    '15% скидка на рекламу',
+    'Максимальный приоритет модерации и поддержки',
+  ], {
+    maxPhotos: 100,
+    maxServiceItems: 300,
+    maxActivePromotions: 25,
+    maxPromotionDurationDays: 90,
+    maxPromotionsCreatedPerDay: 10,
+    maxManagers: 10,
+    maxAnalyticsDays: 365,
+    advertisingDiscountPercent: 15,
+    monthlyAdBonusKzt: 3500,
+    canReplyToReviews: true,
+    extendedStyling: true,
+    analyticsTier: 'ANALYTICS_360',
+    supportPriority: 'HIGHEST',
+    moderationPriority: 'HIGHEST',
+  }),
 ];
 
 @Injectable()
@@ -198,7 +224,62 @@ export class PlanLimitsService {
   }
 
   hasFullAnalytics(tier: BusinessPlanTier): boolean {
-    return this.getLimits(tier).analyticsTier === 'FULL';
+    const level = this.getLimits(tier).analyticsTier;
+    return level === 'FULL' || level === 'ANALYTICS_360';
+  }
+
+  canReplyToReviews(tier: BusinessPlanTier): boolean {
+    return this.getLimits(tier).canReplyToReviews;
+  }
+
+  async countManagerSlotsUsed(
+    businessId: string,
+    options?: { excludeInvitationId?: string },
+  ): Promise<{ activeManagers: number; pendingInvitations: number; total: number }> {
+    const now = new Date();
+    const [activeManagers, pendingInvitations] = await Promise.all([
+      this.prisma.businessMembership.count({
+        where: {
+          businessId,
+          role: BusinessMembershipRole.MANAGER,
+          status: BusinessMembershipStatus.ACTIVE,
+        },
+      }),
+      this.prisma.businessInvitation.count({
+        where: {
+          businessId,
+          status: BusinessInvitationStatus.PENDING,
+          expiresAt: { gt: now },
+          ...(options?.excludeInvitationId
+            ? { id: { not: options.excludeInvitationId } }
+            : {}),
+        },
+      }),
+    ]);
+    return {
+      activeManagers,
+      pendingInvitations,
+      total: activeManagers + pendingInvitations,
+    };
+  }
+
+  async assertCanAddManager(
+    businessId: string,
+    options?: { excludeInvitationId?: string },
+  ): Promise<void> {
+    const ctx = await this.getBusinessPlanContext(businessId);
+    const max = ctx.limits.maxManagers;
+    if (max <= 0) {
+      throw new ForbiddenException(
+        `Тариф «${ctx.catalog.nameRu}» не включает менеджеров. Повысьте тариф до «Бизнес» или выше.`,
+      );
+    }
+    const slots = await this.countManagerSlotsUsed(businessId, options);
+    if (slots.total >= max) {
+      throw new ForbiddenException(
+        `Лимит тарифа «${ctx.catalog.nameRu}»: не более ${max} менеджер${max === 1 ? 'а' : 'ов'}. Сначала отзовите приглашение или понизьте состав команды.`,
+      );
+    }
   }
 
   async getBusinessPlanContext(businessId: string) {
@@ -243,6 +324,8 @@ export class PlanLimitsService {
       activePromotions: Math.min(totals.activePromotions, limits.maxActivePromotions),
     };
 
+    const managerSlots = await this.countManagerSlotsUsed(businessId);
+
     return {
       businessId,
       tier: business.planTier,
@@ -254,6 +337,15 @@ export class PlanLimitsService {
       limits,
       usage: totals,
       entitlements: buildEntitlementSummary(totals, limits, published),
+      team: {
+        activeManagers: managerSlots.activeManagers,
+        pendingInvitations: managerSlots.pendingInvitations,
+        limit: limits.maxManagers,
+        slotsUsed: managerSlots.total,
+        overLimit: managerSlots.activeManagers > limits.maxManagers,
+        canAddManager:
+          limits.maxManagers > 0 && managerSlots.total < limits.maxManagers,
+      },
     };
   }
 
@@ -417,7 +509,7 @@ export class PlanLimitsService {
         userId: business.ownerId,
         type: NotificationType.PLAN_EXPIRED,
         title: 'Тариф истёк',
-        body: `Тариф «${planName}» для «${business.title}» завершён. Заведение переведено на Free.`,
+        body: `Тариф «${planName}» для «${business.title}» завершён. Заведение переведено на «Бесплатный».`,
       });
     }
   }

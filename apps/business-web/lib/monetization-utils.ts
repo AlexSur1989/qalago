@@ -221,15 +221,15 @@ export function vipModerationNotice(campaign: VipCampaignLike): string | null {
 export function planTierLabel(tier?: string | null): string {
   switch (tier) {
     case 'FREE':
-      return 'Free';
+      return 'Бесплатный';
     case 'BASIC':
-      return 'Basic';
+      return 'Бизнес';
     case 'PREMIUM':
-      return 'Premium';
+      return 'PRO';
     case 'VIP':
       return 'VIP';
     default:
-      return tier ?? 'Free';
+      return tier ?? 'Бесплатный';
   }
 }
 

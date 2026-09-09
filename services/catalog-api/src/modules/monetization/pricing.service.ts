@@ -2,10 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { BusinessPlanTier, ProductPrice } from '@prisma/client';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import {
-  PACKAGE_DISCOUNT_PERCENT,
-  PLAN_ADVERTISING_DISCOUNT_PERCENT,
-} from './constants/monetization.constants';
+import { PACKAGE_DISCOUNT_PERCENT } from './constants/monetization.constants';
 import {
   MonetizationErrorCode,
   monetizationBadRequest,
@@ -94,7 +91,7 @@ export class PricingService {
 
   async resolvePlanDiscountPercent(businessId: string): Promise<number> {
     const ctx = await this.planLimits.getBusinessPlanContext(businessId);
-    return PLAN_ADVERTISING_DISCOUNT_PERCENT[ctx.effectiveTier];
+    return this.planLimits.getAdvertisingDiscountPercent(ctx.effectiveTier);
   }
 
   packageDiscountPercent(): number {

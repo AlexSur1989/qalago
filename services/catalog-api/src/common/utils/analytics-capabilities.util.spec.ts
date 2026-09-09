@@ -44,7 +44,7 @@ describe('analytics-capabilities.util', () => {
       expect.arrayContaining([
         expect.objectContaining({
           id: 'actions',
-          message: 'Доступно с BASIC',
+          message: 'Доступно с «Бизнес»',
         }),
       ]),
     );

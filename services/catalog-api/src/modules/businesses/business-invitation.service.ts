@@ -17,6 +17,7 @@ import { AuthUser } from '../../common/types/jwt-payload.type';
 import { SlidingWindowRateLimitService } from '../../common/services/sliding-window-rate-limit.service';
 import { generateInviteToken, hashInviteToken } from '../../common/utils/invite-token.util';
 import { maskInvitationEmail, normalizeInvitationEmail } from '../../common/utils/email-normalize.util';
+import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { maskPhoneForAudit } from '../audit-log/audit-log.util';
@@ -37,6 +38,7 @@ export class BusinessInvitationService {
     private readonly auditLog: AuditLogService,
     private readonly rateLimit: SlidingWindowRateLimitService,
     private readonly config: ConfigService,
+    private readonly planLimits: PlanLimitsService,
   ) {}
 
   buildInviteUrl(rawToken: string): string {
@@ -156,6 +158,10 @@ export class BusinessInvitationService {
           alreadyMember: true,
         };
       }
+
+      await this.planLimits.assertCanAddManager(invitation.businessId, {
+        excludeInvitationId: invitation.id,
+      });
 
       const membership = await tx.businessMembership.upsert({
         where: {

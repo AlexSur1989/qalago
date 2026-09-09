@@ -9,6 +9,12 @@ describe('ReviewsService', () => {
   let prisma: {
     review: { findMany: jest.Mock };
   };
+  const planLimits = {
+    getBusinessPlanContext: jest.fn().mockResolvedValue({
+      limits: { canReplyToReviews: true },
+      catalog: { nameRu: 'Бизнес' },
+    }),
+  };
 
   beforeEach(() => {
     prisma = {
@@ -19,6 +25,7 @@ describe('ReviewsService', () => {
       { create: jest.fn() } as never,
       asBusinessAccessService(createMockBusinessAccess()),
       asAuditLogService(createMockAuditLog()),
+      planLimits as never,
     );
   });
 
@@ -44,6 +51,7 @@ describe('ReviewsService', () => {
         { create: jest.fn() } as never,
         asBusinessAccessService(businessAccess),
         asAuditLogService(createMockAuditLog()),
+        planLimits as never,
       );
 
       await expect(

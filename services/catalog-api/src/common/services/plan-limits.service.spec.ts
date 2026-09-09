@@ -14,6 +14,8 @@ describe('PlanLimitsService', () => {
       findMany: jest.fn(),
       updateMany: jest.fn(),
     },
+    businessMembership: { count: jest.fn().mockResolvedValue(0) },
+    businessInvitation: { count: jest.fn().mockResolvedValue(0) },
   } as unknown as PrismaService;
 
   const notifications = {
@@ -35,22 +37,43 @@ describe('PlanLimitsService', () => {
   });
 
   it.each([
-    [BusinessPlanTier.FREE, 5, 10, 1, 0, 30, 'BASIC'],
-    [BusinessPlanTier.BASIC, 15, 30, 3, 5, 30, 'EXTENDED'],
-    [BusinessPlanTier.PREMIUM, 40, 100, 10, 10, 90, 'FULL'],
-    [BusinessPlanTier.VIP, 100, 300, 25, 15, 365, 'FULL'],
+    [BusinessPlanTier.FREE, 5, 10, 1, 0, 0, 0, 30, 'BASIC', false],
+    [BusinessPlanTier.BASIC, 20, 50, 3, 1, 500, 5, 30, 'EXTENDED', true],
+    [BusinessPlanTier.PREMIUM, 50, 150, 10, 3, 1500, 10, 90, 'FULL', true],
+    [BusinessPlanTier.VIP, 100, 300, 25, 10, 3500, 15, 365, 'ANALYTICS_360', true],
   ])(
-    '%s limits',
-    (tier, photos, items, promos, discount, analyticsDays, analyticsTier) => {
+    '%s limits (Stage 6.4)',
+    (
+      tier,
+      photos,
+      items,
+      promos,
+      managers,
+      adBonus,
+      discount,
+      analyticsDays,
+      analyticsTier,
+      canReply,
+    ) => {
       const limits = service.getLimits(tier);
       expect(limits.maxPhotos).toBe(photos);
       expect(limits.maxServiceItems).toBe(items);
       expect(limits.maxActivePromotions).toBe(promos);
+      expect(limits.maxManagers).toBe(managers);
+      expect(limits.monthlyAdBonusKzt).toBe(adBonus);
       expect(limits.advertisingDiscountPercent).toBe(discount);
       expect(limits.maxAnalyticsDays).toBe(analyticsDays);
       expect(limits.analyticsTier).toBe(analyticsTier);
+      expect(limits.canReplyToReviews).toBe(canReply);
+      expect(limits.showPlanBadge).toBe(false);
     },
   );
+
+  it('catalog uses public display names', () => {
+    const basic = PLAN_CATALOG.find((p) => p.tier === BusinessPlanTier.BASIC);
+    expect(basic?.nameRu).toBe('Бизнес');
+    expect(basic?.display.publicCode).toBe('BUSINESS');
+  });
 
   it('downgrades expired paid tier to FREE', () => {
     const tier = service.resolveEffectiveTier({
@@ -149,7 +172,7 @@ describe('PlanLimitsService', () => {
       planExpiresAt: new Date('2099-01-01'),
       isFeatured: false,
       featuredSlot: null,
-      _count: { images: 0, serviceItems: 30, promotions: 0 },
+      _count: { images: 0, serviceItems: 50, promotions: 0 },
     });
 
     await expect(service.assertCanAddServiceItem('b1')).rejects.toBeInstanceOf(
@@ -164,7 +187,7 @@ describe('PlanLimitsService', () => {
       planExpiresAt: new Date('2099-01-01'),
       isFeatured: false,
       featuredSlot: null,
-      _count: { images: 0, serviceItems: 29, promotions: 0 },
+      _count: { images: 0, serviceItems: 49, promotions: 0 },
     });
 
     await expect(service.assertCanAddServiceItem('b1')).resolves.toBeUndefined();
@@ -179,6 +202,38 @@ describe('PlanLimitsService', () => {
     ]);
     expect(PLAN_CATALOG.find((p) => p.tier === BusinessPlanTier.BASIC)?.priceKzt).toBe(
       4900,
+    );
+  });
+
+  it('rejects manager invite on FREE tier', async () => {
+    prisma.business.findUnique = jest.fn().mockResolvedValue({
+      id: 'b1',
+      planTier: BusinessPlanTier.FREE,
+      planExpiresAt: null,
+      isFeatured: false,
+      featuredSlot: null,
+      _count: { images: 0, serviceItems: 0, promotions: 0 },
+    });
+
+    await expect(service.assertCanAddManager('b1')).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+  });
+
+  it('rejects manager when slots full', async () => {
+    prisma.business.findUnique = jest.fn().mockResolvedValue({
+      id: 'b1',
+      planTier: BusinessPlanTier.BASIC,
+      planExpiresAt: new Date('2099-01-01'),
+      isFeatured: false,
+      featuredSlot: null,
+      _count: { images: 0, serviceItems: 0, promotions: 0 },
+    });
+    prisma.businessMembership.count = jest.fn().mockResolvedValue(1);
+    prisma.businessInvitation.count = jest.fn().mockResolvedValue(0);
+
+    await expect(service.assertCanAddManager('b1')).rejects.toBeInstanceOf(
+      ForbiddenException,
     );
   });
 

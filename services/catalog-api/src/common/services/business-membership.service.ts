@@ -10,6 +10,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { AuditLogService } from '../../modules/audit-log/audit-log.service';
+import { PlanLimitsService } from './plan-limits.service';
 
 export type BusinessMembershipRecord = {
   id: string;
@@ -30,6 +31,7 @@ export class BusinessMembershipService {
     private readonly prisma: PrismaService,
     @Inject(forwardRef(() => AuditLogService))
     private readonly auditLog: AuditLogService,
+    private readonly planLimits: PlanLimitsService,
   ) {}
 
   getMembership(userId: string, businessId: string) {
@@ -139,6 +141,14 @@ export class BusinessMembershipService {
           where: { id: invitation.id },
           data: { status: BusinessInvitationStatus.REVOKED },
         });
+        continue;
+      }
+
+      try {
+        await this.planLimits.assertCanAddManager(invitation.businessId, {
+          excludeInvitationId: invitation.id,
+        });
+      } catch {
         continue;
       }
 

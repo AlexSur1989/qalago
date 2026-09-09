@@ -37,6 +37,7 @@ export class PlansService {
       tier: plan.tier,
       slug: plan.slug,
       nameRu: plan.nameRu,
+      display: plan.display,
       priceKzt: plan.priceKzt,
       periodDays: plan.periodDays,
       features: plan.features,

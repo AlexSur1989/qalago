@@ -587,9 +587,9 @@ export default function DashboardPage() {
                             : undefined
                         }
                       >
-                        <option value="FREE">Free</option>
-                        <option value="BASIC">Basic</option>
-                        <option value="PREMIUM">Premium</option>
+                        <option value="FREE">Бесплатный</option>
+                        <option value="BASIC">Бизнес</option>
+                        <option value="PREMIUM">PRO</option>
                         <option value="VIP">VIP</option>
                       </select>
                     </td>

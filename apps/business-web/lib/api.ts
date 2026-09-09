@@ -99,15 +99,25 @@ export type BusinessRow = {
   category?: { id: string; slug: string; title: string } | null;
 };
 
+export type PlanDisplayRow = {
+  publicCode: 'FREE' | 'BUSINESS' | 'PRO' | 'VIP';
+  nameKey: string;
+  nameRu: string;
+};
+
 export type PlanLimitsRow = {
   maxPhotos: number;
   maxServiceItems: number;
   maxActivePromotions: number;
   maxPromotionDurationDays: number;
   maxPromotionsCreatedPerDay: number;
+  maxManagers: number;
   maxAnalyticsDays: number;
   advertisingDiscountPercent: number;
-  analyticsTier: 'BASIC' | 'EXTENDED' | 'FULL';
+  monthlyAdBonusKzt: number;
+  canReplyToReviews: boolean;
+  extendedStyling: boolean;
+  analyticsTier: 'BASIC' | 'EXTENDED' | 'FULL' | 'ANALYTICS_360';
   supportPriority: 'STANDARD' | 'PRIORITY' | 'HIGHEST';
   moderationPriority: 'STANDARD' | 'PRIORITY' | 'HIGHEST';
   showPlanBadge: boolean;
@@ -117,10 +127,20 @@ export type PlanCatalogRow = {
   tier: string;
   slug: string;
   nameRu: string;
+  display?: PlanDisplayRow;
   priceKzt: number;
   periodDays: number | null;
   features: string[];
   limits: PlanLimitsRow;
+};
+
+export type PlanTeamEntitlements = {
+  activeManagers: number;
+  pendingInvitations: number;
+  limit: number;
+  slotsUsed: number;
+  overLimit: boolean;
+  canAddManager: boolean;
 };
 
 export type PlanEntitlements = {
@@ -145,6 +165,7 @@ export type BusinessPlanStatus = {
     activePromotions: number;
   };
   entitlements?: PlanEntitlements;
+  team?: PlanTeamEntitlements;
 };
 
 export type PromotionRow = {

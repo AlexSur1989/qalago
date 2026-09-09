@@ -11,6 +11,15 @@ describe('PricingService', () => {
   const planLimits = {
     getBusinessPlanContext: jest.fn(),
     resolveEffectiveTier: jest.fn(),
+    getAdvertisingDiscountPercent: jest.fn((tier: BusinessPlanTier) => {
+      const map: Record<BusinessPlanTier, number> = {
+        FREE: 0,
+        BASIC: 5,
+        PREMIUM: 10,
+        VIP: 15,
+      };
+      return map[tier];
+    }),
   } as unknown as PlanLimitsService;
 
   const service = new PricingService(prisma, planLimits);
