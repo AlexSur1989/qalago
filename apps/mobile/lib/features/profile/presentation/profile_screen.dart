@@ -9,6 +9,61 @@ import '../../../shared/widgets/qalago_logo.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../business_onboarding/utils/onboarding_labels.dart';
 
+Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
+  final first = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Удалить аккаунт?'),
+      content: const Text(
+        'Это действие необратимо. Будут удалены избранное, отзывы и доступ к заведениям. '
+        'Если вы единственный владелец бизнеса, сначала передайте управление.',
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Отмена')),
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          style: TextButton.styleFrom(foregroundColor: Colors.red),
+          child: const Text('Продолжить'),
+        ),
+      ],
+    ),
+  );
+  if (first != true || !context.mounted) return;
+
+  final second = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Подтвердите удаление'),
+      content: const Text('Аккаунт будет удалён без возможности восстановления.'),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Отмена')),
+        FilledButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          style: FilledButton.styleFrom(backgroundColor: Colors.red),
+          child: const Text('Удалить'),
+        ),
+      ],
+    ),
+  );
+  if (second != true || !context.mounted) return;
+
+  try {
+    await ref.read(authProvider.notifier).deleteAccount();
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Аккаунт удалён')),
+      );
+      context.go('/home');
+    }
+  } catch (e) {
+    if (!context.mounted) return;
+    final message = e.toString().contains('409') || e.toString().contains('Conflict')
+        ? 'Перед удалением передайте управление заведением другому владельцу.'
+        : 'Не удалось удалить аккаунт. Попробуйте позже.';
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+}
+
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
@@ -189,6 +244,20 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ],
             const SizedBox(height: 28),
+            OutlinedButton.icon(
+              onPressed: () => _confirmDeleteAccount(context, ref),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red.shade700,
+                minimumSize: const Size.fromHeight(52),
+                side: BorderSide(color: Colors.red.shade200),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              icon: const Icon(Icons.delete_forever_outlined),
+              label: const Text('Удалить аккаунт'),
+            ),
+            const SizedBox(height: 12),
             OutlinedButton.icon(
               onPressed: () async {
                 await ref.read(authProvider.notifier).logout();

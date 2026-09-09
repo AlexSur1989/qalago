@@ -15,6 +15,7 @@ import {
   isOwner,
   PAYMENTS_ACCESS_DENIED_RU,
 } from '@/lib/business-access';
+import { businessWebMockPlanCheckoutEnabled } from '@/lib/auth-config';
 import { parseApiError } from '@/lib/monetization-utils';
 import { useBusinessAccess } from '@/lib/use-business-access';
 import { BusinessShell } from '@/components/business-shell';
@@ -75,6 +76,7 @@ export default function PlanPage() {
   }, [load]);
 
   async function onCheckout(tier: string) {
+    if (!businessWebMockPlanCheckoutEnabled) return;
     if (!token || !planStatus || !canManage) return;
     setCheckoutTier(tier);
     setError(null);
@@ -195,6 +197,10 @@ export default function PlanPage() {
                 <button type="button" className="btn btn-ghost" disabled>
                   Активен
                 </button>
+              ) : !businessWebMockPlanCheckoutEnabled ? (
+                <button type="button" className="btn btn-ghost" disabled>
+                  Покупка недоступна
+                </button>
               ) : (
                 <button
                   type="button"
@@ -225,10 +231,20 @@ export default function PlanPage() {
           Рекламные размещения приобретаются отдельно. Скидка тарифа применяется к отдельным
           рекламным продуктам согласно условиям.
         </p>
-        <h3>Тестовая оплата</h3>
-        <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
-          Сейчас оплата имитируется без списания денег. Платные тарифы активируются на 30 дней.
-        </p>
+        {businessWebMockPlanCheckoutEnabled ? (
+          <>
+            <h3>Тестовая оплата</h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
+              Сейчас оплата имитируется без списания денег. Платные тарифы активируются на 30
+              дней.
+            </p>
+          </>
+        ) : (
+          <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
+            Оформление подписки через кабинет пока недоступно. Информация о тарифе отображается
+            для справки.
+          </p>
+        )}
         <Link href="/help" className="btn btn-ghost">
           Перейти в раздел «Помощь»
         </Link>

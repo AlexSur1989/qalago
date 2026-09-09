@@ -19,13 +19,16 @@ Required for production:
 | Variable | Example |
 |----------|---------|
 | `POSTGRES_PASSWORD` | strong random |
-| `JWT_SECRET` | min 32 chars |
+| `JWT_SECRET` | min 32 chars, not a dev placeholder |
 | `QALAGO_INTERNAL_SERVICE_TOKEN` | strong random (catalog-api ↔ ai-orchestrator) |
-| `CORS_ORIGINS` | `https://admin.yourdomain.kz` |
-| `OTP_DEBUG` | `false` |
-| `DEV_LOGIN_ENABLED` | `false` |
+| `CORS_ORIGINS` | `https://qalago.kz,https://www.qalago.kz,https://admin.qalago.kz,https://business.qalago.kz` |
+| `OTP_DEBUG` | `false` (startup fails if `true`) |
+| `DEV_LOGIN_ENABLED` | `false` (startup fails if `true`) |
+| `MOCK_PLAN_CHECKOUT_ENABLED` | `false` (startup fails if `true`) |
 
 Never expose `QALAGO_INTERNAL_SERVICE_TOKEN` in browser or mobile public env vars.
+
+**Production safety (Stage 6.0.1):** empty `CORS_ORIGINS`, wildcard origins, weak JWT, and dangerous dev flags cause startup failure in `NODE_ENV=production`.
 
 ## 2. Build & run API
 
@@ -35,14 +38,25 @@ From repo root:
 docker compose -f infra/docker/docker-compose.prod.yml --env-file .env.prod up -d --build
 ```
 
-Apply schema and seed (first deploy):
+Apply schema on first deploy (**do not run full dev/QA seed in production**):
 
 ```bash
 docker compose -f infra/docker/docker-compose.prod.yml exec api npx prisma migrate deploy
-docker compose -f infra/docker/docker-compose.prod.yml exec api npm run seed
 ```
 
+Bootstrap the first SUPER_ADMIN once (real phone, not seed QA numbers):
+
+```bash
+docker compose -f infra/docker/docker-compose.prod.yml exec \
+  -e BOOTSTRAP_SUPER_ADMIN_PHONE=+7701XXXXXXX \
+  api npm run bootstrap:super-admin
+```
+
+Then sign in via OTP in the admin panel and complete platform setup.
+
 Use `prisma migrate deploy` (not `db push`) for production. Back up PostgreSQL before migrations — see [postgresql-backup.md](./infra/postgresql-backup.md).
+
+`npm run seed` is for **local dev / staging QA only**. It creates known test admins, demo businesses, and fake campaigns — never run it against production.
 
 Health check: `GET http://SERVER_IP:3000/api/v1/health`
 
@@ -77,9 +91,21 @@ Features: list owned businesses, edit profile, manage promotions, view analytics
 
 ## 5. Mobile
 
-Point `AppConstants.baseUrl` / build flavors to production API URL.
+Point `AppConstants.baseUrl` / build flavors to production API URL:
 
-For stores: configure signing, app icons, and FCM (push — phase 3).
+```bash
+flutter build apk --dart-define=QALAGO_API_BASE_URL=https://api.qalago.kz/api/v1
+```
+
+Do **not** pass `QALAGO_DEV_LOGIN=true` or `QALAGO_MOCK_PLAN_CHECKOUT=true` in store/release builds.
+
+Self-service account deletion is available in Profile. Mock subscription checkout is disabled in production builds.
+
+For stores: configure signing, app icons, privacy/terms, real SMS, and FCM (push — phase 3). See remaining P0 items in [stage-6-production-safety.md](./stage-6-production-safety.md).
+
+## Remaining release blockers
+
+See [stage-6-production-safety.md](./stage-6-production-safety.md) for unresolved P0/P1 items (SMS, signing, legal docs, S3, Nginx/TLS, store billing).
 
 ## 6. Reverse proxy (recommended)
 

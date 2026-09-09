@@ -4,6 +4,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { isMockPlanCheckoutAllowed } from '../../common/utils/production-config.util';
 import { AuditAction, AuditResourceType, BusinessPlanTier, BusinessPermission, NotificationType, PlanPaymentStatus, UserRole } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { isGlobalAdmin } from '../../common/utils/system-access.util';
@@ -27,6 +29,7 @@ export class PlansService {
     private readonly notifications: NotificationsService,
     private readonly businessAccess: BusinessAccessService,
     private readonly auditLog: AuditLogService,
+    private readonly config: ConfigService,
   ) {}
 
   listCatalog() {
@@ -47,6 +50,12 @@ export class PlansService {
   }
 
   async mockCheckout(user: AuthUser, businessId: string, tier: BusinessPlanTier) {
+    const nodeEnv = this.config.get<string>('NODE_ENV', 'development');
+    const mockEnabled = this.config.get<boolean>('app.mockPlanCheckoutEnabled') === true;
+    if (!isMockPlanCheckoutAllowed(nodeEnv, mockEnabled)) {
+      throw new NotFoundException();
+    }
+
     await this.assertCanManage(user, businessId);
     const access = await this.businessAccess.resolveAccess(user, businessId);
     return this.setBusinessTier(businessId, tier, {

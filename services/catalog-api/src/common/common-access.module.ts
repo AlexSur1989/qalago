@@ -4,6 +4,8 @@ import { BusinessMembershipService } from './services/business-membership.servic
 import { CityScopeService } from './services/city-scope.service';
 import { SystemAccessService } from './services/system-access.service';
 import { OnboardingRateLimitService } from './services/onboarding-rate-limit.service';
+import { SlidingWindowRateLimitService } from './services/sliding-window-rate-limit.service';
+import { OtpRateLimitService } from './services/otp-rate-limit.service';
 import { AuditLogModule } from '../modules/audit-log/audit-log.module';
 
 @Global()
@@ -15,6 +17,8 @@ import { AuditLogModule } from '../modules/audit-log/audit-log.module';
     BusinessAccessService,
     SystemAccessService,
     OnboardingRateLimitService,
+    SlidingWindowRateLimitService,
+    OtpRateLimitService,
   ],
   exports: [
     CityScopeService,
@@ -22,6 +26,8 @@ import { AuditLogModule } from '../modules/audit-log/audit-log.module';
     BusinessAccessService,
     SystemAccessService,
     OnboardingRateLimitService,
+    SlidingWindowRateLimitService,
+    OtpRateLimitService,
   ],
 })
 export class CommonAccessModule {}

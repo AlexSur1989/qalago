@@ -85,6 +85,18 @@ Includes `preferredCity`, and for `CITY_ADMIN` also `managedCity` (city scope fo
 
 Body: `{ "name": "string", "preferredCityId": "string?" }`
 
+### DELETE /users/me
+
+Authenticated self-service account deletion.
+
+- Success: `{ "success": true, "message": "..." }`
+- `409 Conflict` when user is sole owner of a business (must transfer ownership first)
+- `409 Conflict` for admin roles (must contact support)
+- Idempotent if account already deleted
+- Revokes memberships, deletes favorites/reviews/notifications, cancels pending applications/claims
+- Anonymizes phone (`deleted:{userId}:{timestamp}`), sets `isActive=false`
+- Existing JWT stops working immediately (guard checks `isActive`)
+
 ### Admin (platform)
 
 - `GET /admin/users` — **ADMIN only**

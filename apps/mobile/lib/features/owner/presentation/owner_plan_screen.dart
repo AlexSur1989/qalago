@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
@@ -32,6 +33,8 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
   }
 
   Future<void> _checkout(String businessId, String tier) async {
+    if (!AppConstants.mockPlanCheckoutEnabled) return;
+
     setState(() {
       _checkoutTier = tier;
       _message = null;
@@ -258,6 +261,11 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                           const SizedBox(height: 12),
                           if (isCurrent)
                             const OutlinedButton(onPressed: null, child: Text('Активен'))
+                          else if (!AppConstants.mockPlanCheckoutEnabled)
+                            const OutlinedButton(
+                              onPressed: null,
+                              child: Text('Покупка недоступна'),
+                            )
                           else
                             FilledButton(
                               onPressed: _checkoutTier == tier
@@ -303,25 +311,37 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                     ),
                   ),
                 ),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Тестовая оплата',
-                          style: TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Оплата имитируется без списания. Платные тарифы активируются на 30 дней.',
-                          style: TextStyle(color: Colors.grey.shade700),
-                        ),
-                      ],
+                if (AppConstants.mockPlanCheckoutEnabled)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Тестовая оплата',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Оплата имитируется без списания. Платные тарифы активируются на 30 дней.',
+                            style: TextStyle(color: Colors.grey.shade700),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        'Оформление подписки в приложении пока недоступно. '
+                        'Информация о тарифе отображается для справки.',
+                        style: TextStyle(color: Colors.grey.shade700),
+                      ),
                     ),
                   ),
-                ),
               ],
             );
           },

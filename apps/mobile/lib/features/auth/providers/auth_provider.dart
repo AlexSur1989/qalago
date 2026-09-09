@@ -295,6 +295,17 @@ class AuthNotifier extends Notifier<AuthState> {
     clearSession();
   }
 
+  Future<void> deleteAccount() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      await _repo.deleteAccount();
+      await logout();
+    } catch (e) {
+      state = state.copyWith(isLoading: false);
+      rethrow;
+    }
+  }
+
   Future<void> handleUnauthorized() async {
     await _storage.clear();
     clearSession();

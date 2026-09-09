@@ -10,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { BusinessMembershipService } from '../../common/services/business-membership.service';
+import { OtpRateLimitService } from '../../common/services/otp-rate-limit.service';
 import { AccountType, resolveAccountRole } from './auth-role.util';
 import { normalizeKazakhstanPhone } from './auth-phone.util';
 import { DevLoginDto, SendCodeDto, VerifyCodeDto } from './dto/auth.dto';
@@ -30,14 +31,22 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
     private readonly businessMembershipService: BusinessMembershipService,
+    private readonly otpRateLimit: OtpRateLimitService,
   ) {}
 
   isDevLoginEnabled(): boolean {
     return this.config.get<boolean>('app.devLoginEnabled') === true;
   }
 
-  async sendCode(dto: SendCodeDto) {
+  async sendCode(dto: SendCodeDto, ip: string) {
     const phone = this.requireNormalizedPhone(dto.phone);
+    this.otpRateLimit.assertCanSendCode(phone, ip);
+
+    await this.prisma.otpCode.updateMany({
+      where: { phone, consumed: false },
+      data: { consumed: true },
+    });
+
     const code = this.generateCode();
     const codeHash = this.hashCode(code);
 
@@ -48,6 +57,8 @@ export class AuthService {
         expiresAt: new Date(Date.now() + OTP_TTL_SEC * 1000),
       },
     });
+
+    this.otpRateLimit.recordSendCode(phone);
 
     const response: { success: boolean; expiresInSec: number; debugCode?: string } = {
       success: true,
@@ -61,8 +72,9 @@ export class AuthService {
     return response;
   }
 
-  async verifyCode(dto: VerifyCodeDto) {
+  async verifyCode(dto: VerifyCodeDto, ip: string) {
     const phone = this.requireNormalizedPhone(dto.phone);
+    this.otpRateLimit.assertCanVerifyCode(phone, ip);
     const codeHash = this.hashCode(dto.code);
 
     const otp = await this.prisma.otpCode.findFirst({
@@ -76,6 +88,7 @@ export class AuthService {
     });
 
     if (!otp) {
+      this.otpRateLimit.recordVerifyFailure(phone, ip);
       throw new UnauthorizedException('Invalid or expired verification code');
     }
 
@@ -83,6 +96,8 @@ export class AuthService {
       where: { id: otp.id },
       data: { consumed: true },
     });
+
+    this.otpRateLimit.clearVerifyAttempts(phone, ip);
 
     return this.completeLogin(phone, {
       name: dto.name,
@@ -104,6 +119,10 @@ export class AuthService {
     options?: { name?: string; accountType?: AccountType },
   ) {
     const existing = await this.prisma.user.findUnique({ where: { phone } });
+    if (existing && !existing.isActive) {
+      throw new UnauthorizedException('Invalid or expired verification code');
+    }
+
     const targetRole = resolveAccountRole(
       existing?.role ?? null,
       options?.accountType ?? 'user',

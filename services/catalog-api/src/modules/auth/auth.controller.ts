@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, NotFoundException, Req } from '@nestjs/common';
+import { Request } from 'express';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
+import { resolveRequestIp } from '../../common/utils/request-ip.util';
 import { AuthService } from './auth.service';
 import { SendCodeDto, VerifyCodeDto, DevLoginDto } from './dto/auth.dto';
 
@@ -11,14 +13,14 @@ export class AuthController {
 
   @Public()
   @Post('send-code')
-  sendCode(@Body() dto: SendCodeDto) {
-    return this.authService.sendCode(dto);
+  sendCode(@Body() dto: SendCodeDto, @Req() req: Request) {
+    return this.authService.sendCode(dto, resolveRequestIp(req));
   }
 
   @Public()
   @Post('verify-code')
-  verifyCode(@Body() dto: VerifyCodeDto) {
-    return this.authService.verifyCode(dto);
+  verifyCode(@Body() dto: VerifyCodeDto, @Req() req: Request) {
+    return this.authService.verifyCode(dto, resolveRequestIp(req));
   }
 
   @Public()

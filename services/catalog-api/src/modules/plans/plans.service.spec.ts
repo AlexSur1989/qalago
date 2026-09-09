@@ -1,4 +1,6 @@
 import { BusinessPlanTier } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
+import { NotFoundException } from '@nestjs/common';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PlansService } from './plans.service';
@@ -11,6 +13,7 @@ describe('PlansService — subscription vs paid visibility (Stage 4C.1)', () => 
   function createService(
     txOverrides: Record<string, unknown> = {},
     planLimitsOverrides: Partial<PlanLimitsService> = {},
+    configOverrides: Record<string, unknown> = {},
   ) {
     const tx = {
       business: {
@@ -51,12 +54,23 @@ describe('PlansService — subscription vs paid visibility (Stage 4C.1)', () => 
       ...planLimitsOverrides,
     } as unknown as PlanLimitsService;
 
+    const config = {
+      get: jest.fn((key: string, defaultValue?: unknown) => {
+        if (key === 'NODE_ENV') return configOverrides.nodeEnv ?? 'test';
+        if (key === 'app.mockPlanCheckoutEnabled') {
+          return configOverrides.mockPlanCheckoutEnabled ?? true;
+        }
+        return defaultValue;
+      }),
+    } as unknown as ConfigService;
+
     const service = new PlansService(
       prisma,
       planLimits,
       notifications as never,
       asBusinessAccessService(createMockBusinessAccess()),
       asAuditLogService(createMockAuditLog()),
+      config,
     );
     return { service, tx, prisma };
   }
@@ -99,5 +113,27 @@ describe('PlansService — subscription vs paid visibility (Stage 4C.1)', () => 
     const { service, prisma } = createService();
     await service.setBusinessTier('b1', BusinessPlanTier.BASIC, { isMock: true, skipPayment: false });
     expect(prisma.promotion.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('blocks mock checkout in production', async () => {
+    const { service } = createService({}, {}, { nodeEnv: 'production', mockPlanCheckoutEnabled: true });
+    await expect(
+      service.mockCheckout(
+        { id: 'owner-1', phone: '+77001234567', role: 'BUSINESS' } as never,
+        'b1',
+        BusinessPlanTier.PREMIUM,
+      ),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('allows mock checkout in development when enabled', async () => {
+    const { service } = createService({}, {}, { nodeEnv: 'development', mockPlanCheckoutEnabled: true });
+    await expect(
+      service.mockCheckout(
+        { id: 'owner-1', phone: '+77001234567', role: 'BUSINESS' } as never,
+        'b1',
+        BusinessPlanTier.PREMIUM,
+      ),
+    ).resolves.toBeDefined();
   });
 });

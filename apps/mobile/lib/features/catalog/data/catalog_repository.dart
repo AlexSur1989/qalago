@@ -60,6 +60,11 @@ class AuthRepository {
     );
     return UserModel.fromJson(response.data as Map<String, dynamic>);
   }
+
+  Future<Map<String, dynamic>> deleteAccount() async {
+    final response = await _dio.delete('/users/me');
+    return response.data as Map<String, dynamic>;
+  }
 }
 
 class CatalogRepository {

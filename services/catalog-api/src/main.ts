@@ -2,6 +2,7 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { isProductionNodeEnv } from './common/utils/production-config.util';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -11,19 +12,24 @@ async function bootstrap() {
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
 
   const nodeEnv = config.get<string>('NODE_ENV', 'development');
-  const origins = config.get<string>('app.corsOrigins', '');
+  const origins = config
+    .get<string>('app.corsOrigins', '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
 
   app.enableCors({
     origin: (
       origin: string | undefined,
       callback: (err: Error | null, allow?: boolean) => void,
     ) => {
+      // Native mobile apps and server-to-server calls omit Origin.
       if (!origin) {
         callback(null, true);
         return;
       }
 
-      if (nodeEnv !== 'production') {
+      if (!isProductionNodeEnv(nodeEnv)) {
         const isLocalDev =
           /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/i.test(origin) ||
           /^https?:\/\/192\.168\.\d{1,3}\.\d{1,3}(:\d+)?$/i.test(origin) ||
@@ -32,11 +38,7 @@ async function bootstrap() {
         return;
       }
 
-      const allowed = origins
-        .split(',')
-        .map((o) => o.trim())
-        .filter(Boolean);
-      callback(null, allowed.length === 0 || allowed.includes(origin));
+      callback(null, origins.includes(origin));
     },
     credentials: true,
   });

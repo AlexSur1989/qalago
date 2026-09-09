@@ -1,4 +1,5 @@
 import * as Joi from 'joi';
+import { assertProductionConfig } from '../common/utils/production-config.util';
 
 export const validationSchema = Joi.object({
   NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
@@ -8,6 +9,16 @@ export const validationSchema = Joi.object({
   JWT_EXPIRES_IN: Joi.string().default('7d'),
   OTP_DEBUG: Joi.boolean().truthy('true').falsy('false').default(false),
   DEV_LOGIN_ENABLED: Joi.boolean().truthy('true').falsy('false').default(false),
+  MOCK_PLAN_CHECKOUT_ENABLED: Joi.boolean().truthy('true').falsy('false').default(false),
+  OTP_SEND_COOLDOWN_SECONDS: Joi.number().integer().min(30).default(60),
+  OTP_SEND_PHONE_LIMIT: Joi.number().integer().min(1).default(5),
+  OTP_SEND_PHONE_WINDOW_SECONDS: Joi.number().integer().min(60).default(3600),
+  OTP_SEND_IP_LIMIT: Joi.number().integer().min(1).default(20),
+  OTP_SEND_IP_WINDOW_SECONDS: Joi.number().integer().min(60).default(3600),
+  OTP_VERIFY_MAX_ATTEMPTS: Joi.number().integer().min(1).default(5),
+  OTP_VERIFY_WINDOW_SECONDS: Joi.number().integer().min(60).default(900),
+  ANALYTICS_EVENTS_IP_LIMIT: Joi.number().integer().min(10).default(300),
+  ANALYTICS_EVENTS_WINDOW_SECONDS: Joi.number().integer().min(10).default(60),
   DEFAULT_CITY_SLUG: Joi.string().default('uralsk'),
   CORS_ORIGINS: Joi.string().allow('').default(''),
   UPLOAD_DIR: Joi.string().default('./uploads'),
@@ -20,4 +31,19 @@ export const validationSchema = Joi.object({
   BUSINESS_APPLICATION_SUBMIT_WINDOW_SECONDS: Joi.number().integer().min(1).default(3600),
   OWNERSHIP_CLAIM_CREATE_LIMIT: Joi.number().integer().min(1).default(5),
   OWNERSHIP_CLAIM_CREATE_WINDOW_SECONDS: Joi.number().integer().min(1).default(3600),
+}).custom((value, helpers) => {
+  try {
+    assertProductionConfig({
+      nodeEnv: value.NODE_ENV,
+      jwtSecret: value.JWT_SECRET,
+      corsOrigins: value.CORS_ORIGINS ?? '',
+      otpDebug: value.OTP_DEBUG === true,
+      devLoginEnabled: value.DEV_LOGIN_ENABLED === true,
+      mockPlanCheckoutEnabled: value.MOCK_PLAN_CHECKOUT_ENABLED === true,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Invalid production configuration';
+    return helpers.error('any.custom', { message });
+  }
+  return value;
 });

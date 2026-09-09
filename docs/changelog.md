@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-09 — Stage 6.0.1: Production safety prerequisites
+
+- **Сделано:** fail-closed CORS в production; OTP send/verify rate limiting (in-process, Redis-ready abstraction); mock plan checkout заблокирован в production (backend + Flutter + Business Web); production env validation (`JWT_SECRET`, `CORS_ORIGINS`, `OTP_DEBUG`, `DEV_LOGIN_ENABLED`); `DELETE /users/me` self-service account deletion (hybrid anonymize/deactivate); safe SUPER_ADMIN bootstrap script (`bootstrap:super-admin`); analytics ingest IP rate limit; permission error sanitization (`REVIEWS_REPLY`); deploy docs — **never seed production**.
+- **На будущее (Stage 6.1+):** Redis-backed rate limits; real SMS; Android/iOS signing; S3 uploads; Nginx/TLS; store billing; privacy/terms legal text.
+
 ## 2026-09-09 — Hotfix: VIP creative moderation lifecycle sync
 
 - **Сделано:** `POST /monetization/creatives/:id/submit` (`DRAFT`/`REJECTED` → `PENDING`, ADS_MANAGE); VIP campaign при оплате с `DRAFT` креативом → `SCHEDULED` (не `PENDING_MODERATION`); submit синхронизирует кампанию в `PENDING_MODERATION`; admin approve/reject только для `PENDING`; Business Web — «Отправить на модерацию», корректный «Фактический период»; Admin Web — подсказка для `DRAFT`; +11 backend tests (405 total).

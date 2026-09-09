@@ -415,12 +415,20 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
       } as unknown as PlanLimitsService;
 
       const notifications = { create: jest.fn().mockResolvedValue(undefined) };
+      const config = {
+        get: jest.fn((key: string, defaultValue?: unknown) => {
+          if (key === 'NODE_ENV') return 'test';
+          if (key === 'app.mockPlanCheckoutEnabled') return true;
+          return defaultValue;
+        }),
+      } as never;
       const plansService = new PlansService(
         prisma,
         planLimits,
         notifications as never,
         asBusinessAccessService(createMockBusinessAccess()),
         asAuditLogService(createMockAuditLog()),
+        config,
       );
 
       await plansService.setBusinessTier('b1', BusinessPlanTier.BASIC, {

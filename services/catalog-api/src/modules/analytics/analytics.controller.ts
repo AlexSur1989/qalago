@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Header, Param, Post, Query, StreamableFile } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Header,
+  Param,
+  Post,
+  Query,
+  StreamableFile,
+  UseGuards,
+} from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
@@ -6,12 +16,14 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { AnalyticsService } from './analytics.service';
 import { AnalyticsWindowQueryDto, CreateAnalyticsEventDto } from './dto/analytics.dto';
+import { AnalyticsEventsRateLimitGuard } from './guards/analytics-events-rate-limit.guard';
 
 @Controller('analytics')
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 
   @Public()
+  @UseGuards(AnalyticsEventsRateLimitGuard)
   @Post('events')
   track(@Body() dto: CreateAnalyticsEventDto) {
     return this.analyticsService.track(dto);

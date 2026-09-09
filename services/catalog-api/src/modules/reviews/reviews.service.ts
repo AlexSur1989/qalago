@@ -79,7 +79,7 @@ export class ReviewsService {
 
     const access = await this.businessAccess.resolveAccess(user, review.business.id);
     if (!access.permissions.includes(BusinessPermission.REVIEWS_REPLY)) {
-      throw new ForbiddenException(`Missing permission: ${BusinessPermission.REVIEWS_REPLY}`);
+      throw new ForbiddenException('Insufficient permissions');
     }
 
     const updated = await this.prisma.review.update({

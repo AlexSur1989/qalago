@@ -20,6 +20,11 @@ class AppConstants {
   static const devLoginEnabled =
       bool.fromEnvironment('QALAGO_DEV_LOGIN', defaultValue: false);
 
+  /// Development-only mock plan checkout. NEVER enable in production/store builds.
+  /// Launch: `flutter run --dart-define=QALAGO_MOCK_PLAN_CHECKOUT=true`
+  static const mockPlanCheckoutEnabled =
+      bool.fromEnvironment('QALAGO_MOCK_PLAN_CHECKOUT', defaultValue: false);
+
   static String get _devHost {
     if (devHostOverride.isNotEmpty) return devHostOverride;
     if (kIsWeb) return 'localhost';

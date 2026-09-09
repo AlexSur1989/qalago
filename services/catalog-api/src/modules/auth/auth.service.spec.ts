@@ -1,10 +1,11 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { AuthService } from './auth.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { BusinessMembershipService } from '../../common/services/business-membership.service';
+import { OtpRateLimitService } from '../../common/services/otp-rate-limit.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -14,6 +15,7 @@ describe('AuthService', () => {
       create: jest.Mock;
       findFirst: jest.Mock;
       update: jest.Mock;
+      updateMany: jest.Mock;
     };
     user: {
       findUnique: jest.Mock;
@@ -23,6 +25,13 @@ describe('AuthService', () => {
   };
   let jwt: { signAsync: jest.Mock };
   let config: { get: jest.Mock };
+  let otpRateLimit: {
+    assertCanSendCode: jest.Mock;
+    recordSendCode: jest.Mock;
+    assertCanVerifyCode: jest.Mock;
+    recordVerifyFailure: jest.Mock;
+    clearVerifyAttempts: jest.Mock;
+  };
 
   beforeEach(() => {
     prisma = {
@@ -30,6 +39,7 @@ describe('AuthService', () => {
         create: jest.fn(),
         findFirst: jest.fn(),
         update: jest.fn(),
+        updateMany: jest.fn(),
       },
       user: {
         findUnique: jest.fn(),
@@ -50,11 +60,20 @@ describe('AuthService', () => {
       claimPendingInvitations: jest.fn().mockResolvedValue(undefined),
     };
 
+    otpRateLimit = {
+      assertCanSendCode: jest.fn(),
+      recordSendCode: jest.fn(),
+      assertCanVerifyCode: jest.fn(),
+      recordVerifyFailure: jest.fn(),
+      clearVerifyAttempts: jest.fn(),
+    };
+
     service = new AuthService(
       prisma as unknown as PrismaService,
       jwt as unknown as JwtService,
       config as unknown as ConfigService,
       membership as unknown as BusinessMembershipService,
+      otpRateLimit as unknown as OtpRateLimitService,
     );
   });
 
@@ -111,6 +130,7 @@ describe('AuthService', () => {
         phone: '+77001234567',
         name: 'Admin',
         role: UserRole.ADMIN,
+        isActive: true,
       });
 
       const result = await service.devLogin({ phone: '+77001234567' });
@@ -147,6 +167,7 @@ describe('AuthService', () => {
         id: 'u1',
         phone: '+77001234567',
         role: UserRole.USER,
+        isActive: true,
       });
 
       await service.devLogin({ phone: '+77001234567' });
@@ -165,6 +186,7 @@ describe('AuthService', () => {
         id: 'u1',
         phone: '+77001234567',
         role: UserRole.USER,
+        isActive: true,
       });
 
       await service.devLogin({ phone: '+77001234567' });
@@ -184,17 +206,20 @@ describe('AuthService', () => {
         role: UserRole.USER,
       });
 
-      const result = await service.verifyCode({
-        phone: '+77001234567',
-        code: '1234',
-      });
+      const result = await service.verifyCode(
+        {
+          phone: '+77001234567',
+          code: '1234',
+        },
+        '127.0.0.1',
+      );
       expect(result.accessToken).toBe('jwt-token');
       expect(prisma.otpCode.update).toHaveBeenCalled();
     });
 
     it('rejects invalid phone', async () => {
       await expect(
-        service.verifyCode({ phone: 'bad', code: '1234' }),
+        service.verifyCode({ phone: 'bad', code: '1234' }, '127.0.0.1'),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
@@ -208,11 +233,14 @@ describe('AuthService', () => {
         role: UserRole.USER,
       });
 
-      await service.verifyCode({
-        phone: '+77008887766',
-        code: '1234',
-        accountType: 'business',
-      });
+      await service.verifyCode(
+        {
+          phone: '+77008887766',
+          code: '1234',
+          accountType: 'business',
+        },
+        '127.0.0.1',
+      );
 
       expect(prisma.user.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -229,13 +257,17 @@ describe('AuthService', () => {
         id: 'biz-user',
         phone: '+77001234567',
         role: UserRole.BUSINESS,
+        isActive: true,
       });
 
-      const result = await service.verifyCode({
-        phone: '+77001234567',
-        code: '1234',
-        accountType: 'user',
-      });
+      const result = await service.verifyCode(
+        {
+          phone: '+77001234567',
+          code: '1234',
+          accountType: 'user',
+        },
+        '127.0.0.1',
+      );
 
       expect(result.user.role).toBe(UserRole.BUSINESS);
       expect(prisma.user.update).not.toHaveBeenCalled();
@@ -245,12 +277,79 @@ describe('AuthService', () => {
   describe('sendCode', () => {
     it('normalizes phone before storing OTP', async () => {
       prisma.otpCode.create.mockResolvedValue({});
-      await service.sendCode({ phone: '87001234567' });
+      prisma.otpCode.updateMany.mockResolvedValue({ count: 0 });
+      await service.sendCode({ phone: '87001234567' }, '127.0.0.1');
       expect(prisma.otpCode.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ phone: '+77001234567' }),
         }),
       );
+      expect(otpRateLimit.recordSendCode).toHaveBeenCalledWith('+77001234567');
+    });
+
+    it('does not expose debugCode when OTP_DEBUG=false', async () => {
+      prisma.otpCode.create.mockResolvedValue({});
+      prisma.otpCode.updateMany.mockResolvedValue({ count: 0 });
+      const result = await service.sendCode({ phone: '+77001234567' }, '127.0.0.1');
+      expect(result.debugCode).toBeUndefined();
+    });
+
+    it('invalidates previous unconsumed OTPs on resend', async () => {
+      prisma.otpCode.create.mockResolvedValue({});
+      prisma.otpCode.updateMany.mockResolvedValue({ count: 1 });
+      await service.sendCode({ phone: '+77001234567' }, '127.0.0.1');
+      expect(prisma.otpCode.updateMany).toHaveBeenCalledWith({
+        where: { phone: '+77001234567', consumed: false },
+        data: { consumed: true },
+      });
+    });
+
+    it('propagates rate limit errors', async () => {
+      otpRateLimit.assertCanSendCode.mockImplementation(() => {
+        throw new HttpException('Too many requests', 429);
+      });
+      await expect(service.sendCode({ phone: '+77001234567' }, '127.0.0.1')).rejects.toBeInstanceOf(
+        HttpException,
+      );
+    });
+  });
+
+  describe('verifyCode security', () => {
+    it('rejects invalid OTP without leaking account existence', async () => {
+      prisma.otpCode.findFirst.mockResolvedValue(null);
+      await expect(
+        service.verifyCode({ phone: '+77001234567', code: '9999' }, '127.0.0.1'),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
+      expect(otpRateLimit.recordVerifyFailure).toHaveBeenCalled();
+    });
+
+    it('rejects login for inactive users with generic message', async () => {
+      prisma.otpCode.findFirst.mockResolvedValue({ id: 'otp-1' });
+      prisma.otpCode.update.mockResolvedValue({});
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'u1',
+        phone: '+77001234567',
+        role: UserRole.USER,
+        isActive: false,
+      });
+
+      await expect(
+        service.verifyCode({ phone: '+77001234567', code: '1234' }, '127.0.0.1'),
+      ).rejects.toThrow('Invalid or expired verification code');
+    });
+
+    it('clears verify counters on success', async () => {
+      prisma.otpCode.findFirst.mockResolvedValue({ id: 'otp-1' });
+      prisma.otpCode.update.mockResolvedValue({});
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'u1',
+        phone: '+77001234567',
+        role: UserRole.USER,
+        isActive: true,
+      });
+
+      await service.verifyCode({ phone: '+77001234567', code: '1234' }, '127.0.0.1');
+      expect(otpRateLimit.clearVerifyAttempts).toHaveBeenCalledWith('+77001234567', '127.0.0.1');
     });
   });
 });
