@@ -27,6 +27,25 @@
 
 ---
 
+## 2026-09-09 — Stage 5N.1: Business application backend foundation
+
+**Added**
+- `BusinessApplication` model + migrations (`BusinessApplicationStatus`: DRAFT/PENDING/APPROVED/REJECTED/CANCELLED)
+- User API: `/business-applications/*` (create, edit, submit, cancel)
+- Admin API: `/admin/business-applications/*` (list, approve, reject)
+- Dedupe fingerprint (`dedupeKey`) + partial unique index for active DRAFT/PENDING per applicant
+- Approval transaction: Business + ACTIVE OWNER membership + `ownerId` + AuditLog; applicant stays `USER`
+- Audit actions: `BUSINESS_APPLICATION_SUBMIT/APPROVE/REJECT/CANCEL`
+- P0 fix: membership-authoritative owner access (revoked `ownerId` bypass closed)
+
+**Legacy**
+- `POST /businesses` marked deprecated; kept for Flutter/Business Web until Stage 5N.4
+
+**Deferred**
+- Ownership claims (5N.2), Admin moderation UI (5N.3), client onboarding (5N.4), rate limiting (5N.5)
+
+---
+
 ## 2026-09-08 — Stage 5M.4.1: SUPER_ADMIN verification checkpoint
 
 **Verified**

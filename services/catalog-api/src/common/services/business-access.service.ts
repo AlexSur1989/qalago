@@ -27,7 +27,7 @@ export type ResolvedBusinessAccess = {
  *
  * SUPER_ADMIN / ADMIN: global, all permissions
  * CITY_ADMIN: managed city, all permissions
- * OWNER: legacy ownerId or ACTIVE OWNER membership — all permissions (not stored)
+ * OWNER: ACTIVE OWNER membership, or legacy ownerId when no membership row exists
  * MANAGER: ACTIVE membership + explicit permissions only
  */
 @Injectable()

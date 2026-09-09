@@ -34,7 +34,7 @@ describe('BusinessAccessService (Stage 5M.2)', () => {
 
   let prisma: {
     business: { findUnique: jest.Mock };
-    businessMembership: { findFirst: jest.Mock };
+    businessMembership: { findFirst: jest.Mock; findUnique: jest.Mock };
   };
   let cityScope: CityScopeService;
   let membership: BusinessMembershipService;
@@ -43,7 +43,7 @@ describe('BusinessAccessService (Stage 5M.2)', () => {
   beforeEach(() => {
     prisma = {
       business: { findUnique: jest.fn() },
-      businessMembership: { findFirst: jest.fn() },
+      businessMembership: { findFirst: jest.fn(), findUnique: jest.fn().mockResolvedValue(null) },
     };
     cityScope = new CityScopeService(prisma as never, {} as never);
     jest.spyOn(cityScope, 'assertBusinessInAdminScope').mockImplementation(async (_user, cityId) => {
@@ -87,11 +87,23 @@ describe('BusinessAccessService (Stage 5M.2)', () => {
     });
   }
 
-  it('legacy owner has all permissions', async () => {
+  it('legacy owner has all permissions when no membership row exists', async () => {
     prisma.business.findUnique.mockResolvedValue(businessUralsk);
+    prisma.businessMembership.findUnique.mockResolvedValue(null);
     const access = await service.resolveAccess(legacyOwner, businessUralsk.id);
     expect(access.accessRole).toBe('OWNER');
     expect(access.permissions).toContain(BusinessPermission.CATALOG_EDIT);
+  });
+
+  it('REVOKED OWNER denied even when ownerId matches (Stage 5N.1)', async () => {
+    prisma.business.findUnique.mockResolvedValue(businessUralsk);
+    prisma.businessMembership.findUnique.mockResolvedValue({
+      role: BusinessMembershipRole.OWNER,
+      status: BusinessMembershipStatus.REVOKED,
+    });
+    await expect(service.resolveAccess(legacyOwner, businessUralsk.id)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
   });
 
   it('ACTIVE MANAGER with CATALOG_EDIT may assert permission', async () => {

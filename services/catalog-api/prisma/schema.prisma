@@ -53,6 +53,14 @@ enum BusinessStatus {
   BLOCKED
 }
 
+enum BusinessApplicationStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
 enum BusinessPlanTier {
   FREE
   BASIC
@@ -205,7 +213,8 @@ model City {
   adPlacements       AdPlacement[]
   productPrices      ProductPrice[]
   adCampaigns        AdCampaign[]
-  auditLogs          AuditLog[]
+  auditLogs           AuditLog[]
+  businessApplications BusinessApplication[]
 }
 
 model User {
@@ -229,6 +238,8 @@ model User {
   orders          Order[]
   sentInvitations BusinessInvitation[] @relation("InvitationSender")
   auditLogsAsActor  AuditLog[]           @relation("AuditActor")
+  businessApplications BusinessApplication[] @relation("ApplicationApplicant")
+  reviewedBusinessApplications BusinessApplication[] @relation("ApplicationReviewer")
 }
 
 enum NotificationType {
@@ -282,6 +293,7 @@ model Category {
   adPlacements       AdPlacement[]
   productPrices      ProductPrice[]
   adCampaigns        AdCampaign[]
+  businessApplications BusinessApplication[]
 }
 
 model CategoryCityOrder {
@@ -343,9 +355,41 @@ model Business {
   memberships       BusinessMembership[]
   invitations       BusinessInvitation[]
   auditLogs         AuditLog[]
+  approvedFromApplication BusinessApplication? @relation("ApprovedBusinessApplication")
 
   @@index([cityId, status])
   @@index([categoryId])
+}
+
+model BusinessApplication {
+  id                 String                    @id @default(cuid())
+  applicantUserId    String
+  cityId             String
+  categoryId         String
+  title              String
+  shortDesc          String?
+  address            String
+  phone              String?
+  status             BusinessApplicationStatus @default(DRAFT)
+  dedupeKey          String
+  rejectionReason    String?
+  reviewedByUserId   String?
+  reviewedAt         DateTime?
+  approvedBusinessId String?                   @unique
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+  applicant          User                      @relation("ApplicationApplicant", fields: [applicantUserId], references: [id], onDelete: Cascade)
+  city               City                      @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  category           Category                  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  reviewedBy         User?                     @relation("ApplicationReviewer", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+  approvedBusiness   Business?                 @relation("ApprovedBusinessApplication", fields: [approvedBusinessId], references: [id], onDelete: SetNull)
+
+  @@index([applicantUserId])
+  @@index([status])
+  @@index([cityId])
+  @@index([createdAt])
+  @@index([cityId, status, createdAt])
+  @@index([dedupeKey])
 }
 
 model BusinessMembership {
@@ -792,6 +836,11 @@ enum AuditAction {
   CATEGORY_CREATE
   CATEGORY_UPDATE
   CATEGORY_DELETE
+
+  BUSINESS_APPLICATION_SUBMIT
+  BUSINESS_APPLICATION_APPROVE
+  BUSINESS_APPLICATION_REJECT
+  BUSINESS_APPLICATION_CANCEL
 }
 
 enum AuditResourceType {
@@ -799,6 +848,7 @@ enum AuditResourceType {
   BUSINESS
   BUSINESS_MEMBERSHIP
   BUSINESS_INVITATION
+  BUSINESS_APPLICATION
   SERVICE_ITEM
   SERVICE_MENU_GROUP
   BUSINESS_IMAGE

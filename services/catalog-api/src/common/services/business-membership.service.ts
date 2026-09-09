@@ -54,19 +54,24 @@ export class BusinessMembershipService {
   }
 
   /**
-   * Dual-read owner access during migration (Stage 5M.1).
-   * Legacy ownerId OR ACTIVE OWNER membership.
-   * MANAGER never grants access in 5M.1.
+   * Owner access with Stage 5N.1 membership-authoritative semantics.
+   *
+   * If a membership row exists for (user, business), only ACTIVE OWNER grants access.
+   * Legacy ownerId fallback applies only when no membership row exists.
    */
   async hasActiveOwnerAccess(
     userId: string,
     businessId: string,
     legacyOwnerId?: string | null,
   ): Promise<boolean> {
-    if (legacyOwnerId != null && legacyOwnerId === userId) {
-      return true;
+    const membership = await this.getMembership(userId, businessId);
+    if (membership) {
+      return (
+        membership.role === BusinessMembershipRole.OWNER &&
+        membership.status === BusinessMembershipStatus.ACTIVE
+      );
     }
-    return this.isActiveOwner(userId, businessId);
+    return legacyOwnerId != null && legacyOwnerId === userId;
   }
 
   listOwnerBusinessIds(userId: string) {

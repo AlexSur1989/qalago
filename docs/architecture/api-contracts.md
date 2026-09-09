@@ -235,7 +235,7 @@ Response: `{ "items": [...], "totalCount", "pagination": { ... } }`
 
 ### GET /businesses/my
 
-Auth: accessible businesses — legacy `Business.ownerId` **or** `ACTIVE` membership with `role=OWNER|MANAGER` (Stage 5M.2). Deduplicated.
+Auth: accessible businesses — `ACTIVE` membership with `role=OWNER|MANAGER`, or legacy `ownerId` **only when no membership row exists** (Stage 5N.1). Revoked/suspended memberships are not overridden by `ownerId`. Deduplicated.
 
 Response:
 ```json
@@ -287,6 +287,40 @@ Auth user recommendations (rule-based MVP; AI later). Cold start (no favorites):
 - `GET /admin/audit-logs` — **ADMIN** global; **CITY_ADMIN** scoped to `managedCityId`. Query: `page`, `limit` (default 50, max 100), `action`, `resourceType`, `businessId`, `cityId`, `actorUserId`, `dateFrom`, `dateTo`. Append-only; no PATCH/DELETE. Reading audit logs does not create audit rows.
 - `GET /admin/reviews?citySlug=&limit=` — reviews scoped by admin city; includes user + business
 - `DELETE /admin/reviews/:id` — remove review (city-scoped for CITY_ADMIN)
+
+### POST /businesses (legacy)
+
+**Deprecated (Stage 5N.1).** Direct create still supported for existing Flutter/Business Web clients until Stage 5N.4 onboarding migration. Prefer `POST /business-applications` flow. Immediately sets `ownerId`, ACTIVE OWNER membership, and may upgrade `USER → BUSINESS`.
+
+---
+
+## Business applications (Stage 5N.1)
+
+Safe new-business registration. No ownership until moderation approval.
+
+| Method | Path | Auth | Notes |
+|--------|------|------|-------|
+| POST | `/business-applications` | JWT | Creates `DRAFT` |
+| GET | `/business-applications/my` | JWT | Applicant's applications |
+| GET | `/business-applications/:id` | JWT | Own application only |
+| PATCH | `/business-applications/:id` | JWT | `DRAFT` or `REJECTED` → `DRAFT` |
+| POST | `/business-applications/:id/submit` | JWT | `DRAFT` → `PENDING` |
+| POST | `/business-applications/:id/cancel` | JWT | `DRAFT`/`PENDING` → `CANCELLED` |
+
+Applicant-editable body (create/patch): `title`, `categoryId`, `citySlug`/`cityId`, `address`, `shortDesc?`, `phone?`. Server sets `dedupeKey`, `status`, reviewer fields.
+
+Admin moderation (backend only in 5N.1):
+
+| Method | Path | Auth |
+|--------|------|------|
+| GET | `/admin/business-applications` | ADMIN, CITY_ADMIN (scoped), SUPER_ADMIN |
+| GET | `/admin/business-applications/:id` | same |
+| POST | `/admin/business-applications/:id/approve` | same |
+| POST | `/admin/business-applications/:id/reject` | same — body `{ rejectionReason }` |
+
+**Approval:** atomic transaction — create `Business`, ACTIVE OWNER membership, set `ownerId`, mark application `APPROVED`. Applicant `User.role` unchanged. LIVE city → `Business.status=ACTIVE`; COMING_SOON → `Business.status=PENDING` (not public).
+
+**Not implemented:** ownership claims (Stage 5N.2).
 
 ---
 

@@ -26,6 +26,7 @@ import { MonetizationModule } from './modules/monetization/monetization.module';
 import { AiModule } from './modules/ai/ai.module';
 import { CommonAccessModule } from './common/common-access.module';
 import { AuditLogModule } from './modules/audit-log/audit-log.module';
+import { BusinessApplicationsModule } from './modules/business-applications/business-applications.module';
 import { HealthController } from './modules/health/health.controller';
 
 @Module({
@@ -64,6 +65,7 @@ import { HealthController } from './modules/health/health.controller';
     MonetizationModule,
     AiModule,
     AuditLogModule,
+    BusinessApplicationsModule,
   ],
   controllers: [HealthController],
   providers: [

@@ -863,13 +863,20 @@ None for audit completion. Implementation blocked on explicit 5N.1 kickoff.
 - [x] Target architecture design
 - [x] This document
 
+## Stage 5N.1 implementation note (2026-09-09)
+
+- [x] `BusinessApplication` model + user/admin API
+- [x] Approval transaction (Business + membership + ownerId + AuditLog)
+- [x] P0 ownerId revocation bypass fix
+- [x] `POST /businesses` deprecated (legacy, not removed)
+- [ ] Ownership claims (5N.2)
+- [ ] Admin Web moderation UI (5N.3)
+- [ ] Flutter/Business Web onboarding (5N.4)
+
 ## NOT IMPLEMENTED (by design)
 
-- BusinessApplication / BusinessOwnershipClaim models
-- Migrations
-- API endpoints
-- Client UI
-- BusinessClaim
+- BusinessOwnershipClaim / claim flow (5N.2)
+- Client onboarding UI
 - UserRole.BUSINESS removal
 - Business.ownerId removal
 - MODERATOR role

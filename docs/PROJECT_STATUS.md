@@ -1,7 +1,7 @@
 # QalaGo — Project Status
 
-**Last updated:** 2026-09-08  
-**Stable checkpoint:** `1f726b5` — Add SUPER_ADMIN system role governance (Stage 5M.4)
+**Last updated:** 2026-09-09  
+**Stable checkpoint:** `c051fbd` — Stage 5N.0 audit (tag `stage-5m4-checkpoint` on 5M.4.1)
 
 ---
 
@@ -16,9 +16,11 @@
 | 5M.2.1 | `471f17f` | PostgreSQL migration/runtime verification, RolesGuard fix |
 | 5M.3 | `051f2a4`, `2bacbb3` | AuditLog foundation, admin/owner read APIs, wired mutations |
 | 5M.4 | `1f726b5` | SUPER_ADMIN governance; ADMIN operational-only; role-change SUPER_ADMIN-only |
+| 5N.0 | `c051fbd` | Business registration audit/design |
+| 5N.1 | (pending commit) | BusinessApplication backend, admin moderation API, ownerId fix |
 
 **Not started:** Stage 6 (release readiness)  
-**Not implemented:** `MODERATOR`
+**Not implemented:** `MODERATOR`, ownership claims (5N.2), onboarding UI (5N.4)
 
 ---
 
@@ -43,7 +45,7 @@ QalaGo/
 
 ## Database (Prisma)
 
-**11 migrations applied** (latest: `20260908190001_stage_5m4_super_admin_migrate`):
+**13 migrations applied** (latest: `20260909100100_stage_5n1_business_application`):
 
 1. `20260905120000_monetization_campaign_architecture`
 2. `20260906000000_business_plan_tier_stage_4c`

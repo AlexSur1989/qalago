@@ -62,6 +62,11 @@ export class BusinessesService {
     private readonly auditLog: AuditLogService,
   ) {}
 
+  /**
+   * @deprecated Stage 5N.1 — legacy direct business creation.
+   * Prefer POST /business-applications flow. Kept for existing Flutter/Business Web clients
+   * until Stage 5N.4 onboarding migration.
+   */
   async create(user: AuthUser, dto: CreateBusinessDto) {
     const cityId = await this.cityScope.resolveCityId({ citySlug: dto.citySlug });
 
@@ -239,22 +244,14 @@ export class BusinessesService {
       where: {
         OR: [
           { ownerId: user.id },
-          {
-            memberships: {
-              some: {
-                userId: user.id,
-                status: BusinessMembershipStatus.ACTIVE,
-                role: { in: [BusinessMembershipRole.OWNER, BusinessMembershipRole.MANAGER] },
-              },
-            },
-          },
+          { memberships: { some: { userId: user.id } } },
         ],
       },
       include: {
         category: true,
         city: { select: { slug: true, nameRu: true } },
         memberships: {
-          where: { userId: user.id, status: BusinessMembershipStatus.ACTIVE },
+          where: { userId: user.id },
           select: { role: true, permissions: true, status: true },
         },
       },
@@ -265,17 +262,32 @@ export class BusinessesService {
     const items = [];
     for (const row of businesses) {
       if (seen.has(row.id)) continue;
-      seen.add(row.id);
 
       const membership = row.memberships[0];
-      const isLegacyOwner = row.ownerId === user.id;
-      const accessRole =
-        isLegacyOwner || membership?.role === BusinessMembershipRole.OWNER ? 'OWNER' : 'MANAGER';
-      const permissions =
-        accessRole === 'OWNER'
-          ? ownerHasAllPermissions()
-          : (membership?.permissions ?? []);
+      let accessRole: 'OWNER' | 'MANAGER' | null = null;
+      let permissions: import('@prisma/client').BusinessPermission[] = [];
 
+      if (membership) {
+        if (membership.status !== BusinessMembershipStatus.ACTIVE) {
+          continue;
+        }
+        if (membership.role === BusinessMembershipRole.OWNER) {
+          accessRole = 'OWNER';
+          permissions = ownerHasAllPermissions();
+        } else if (membership.role === BusinessMembershipRole.MANAGER) {
+          accessRole = 'MANAGER';
+          permissions = membership.permissions ?? [];
+        } else {
+          continue;
+        }
+      } else if (row.ownerId === user.id) {
+        accessRole = 'OWNER';
+        permissions = ownerHasAllPermissions();
+      } else {
+        continue;
+      }
+
+      seen.add(row.id);
       const { memberships: _memberships, ...business } = row;
       items.push({
         business,

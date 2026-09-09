@@ -75,46 +75,70 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
     );
   });
 
-  it('findMy includes legacy ownerId businesses', async () => {
+  it('findMy includes legacy ownerId when no membership row exists', async () => {
     const { service, prisma } = createService();
     prisma.business.findMany = jest.fn().mockResolvedValue([
-      { id: 'b1', ownerId: 'owner-1', memberships: [] },
+      {
+        id: 'b1',
+        ownerId: 'owner-1',
+        title: 'Cafe',
+        memberships: [],
+        category: null,
+        city: null,
+      },
     ]);
 
-    await service.findMy({ id: 'owner-1', sub: 'owner-1', phone: '+7', role: UserRole.BUSINESS });
+    const result = await service.findMy({
+      id: 'owner-1',
+      sub: 'owner-1',
+      phone: '+7',
+      role: UserRole.BUSINESS,
+    });
 
-    expect(prisma.business.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          OR: expect.arrayContaining([{ ownerId: 'owner-1' }]),
-        }),
-      }),
-    );
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0].access.role).toBe('OWNER');
+  });
+
+  it('findMy excludes REVOKED OWNER even when ownerId matches', async () => {
+    const { service, prisma } = createService();
+    prisma.business.findMany = jest.fn().mockResolvedValue([
+      {
+        id: 'b1',
+        ownerId: 'owner-1',
+        title: 'Cafe',
+        memberships: [{ role: 'OWNER', status: 'REVOKED', permissions: [] }],
+        category: null,
+        city: null,
+      },
+    ]);
+
+    const result = await service.findMy({
+      id: 'owner-1',
+      sub: 'owner-1',
+      phone: '+7',
+      role: UserRole.USER,
+    });
+
+    expect(result.items).toHaveLength(0);
   });
 
   it('findMy includes ACTIVE MANAGER membership businesses', async () => {
     const { service, prisma } = createService();
-    prisma.business.findMany = jest.fn().mockResolvedValue([]);
+    prisma.business.findMany = jest.fn().mockResolvedValue([
+      {
+        id: 'b1',
+        ownerId: 'owner-1',
+        title: 'Cafe',
+        memberships: [{ role: 'MANAGER', status: 'ACTIVE', permissions: ['CATALOG_EDIT'] }],
+        category: null,
+        city: null,
+      },
+    ]);
 
-    await service.findMy({ id: 'mgr-1', sub: 'mgr-1', phone: '+7', role: UserRole.USER });
+    const result = await service.findMy({ id: 'mgr-1', sub: 'mgr-1', phone: '+7', role: UserRole.USER });
 
-    expect(prisma.business.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: {
-          OR: expect.arrayContaining([
-            {
-              memberships: {
-                some: {
-                  userId: 'mgr-1',
-                  status: 'ACTIVE',
-                  role: { in: ['OWNER', 'MANAGER'] },
-                },
-              },
-            },
-          ]),
-        },
-      }),
-    );
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0].access.role).toBe('MANAGER');
   });
 
   it('findMy returns items with access context', async () => {

@@ -32,7 +32,8 @@ A user may be `User.role = USER` while holding `BusinessMembership.role = OWNER`
 ## OWNER semantics
 
 - Implicit **all** `BusinessPermission` values (not stored in DB).
-- Dual-read with legacy `Business.ownerId` remains authoritative for owner access.
+- When a membership row exists for `(user, business)`, membership status/role is authoritative (Stage 5N.1).
+- Legacy `ownerId` fallback applies **only** when no membership row exists for that user/business pair.
 
 ## MANAGER semantics
 
@@ -51,9 +52,9 @@ Example: MANAGER with `ANALYTICS_EXPORT` on PREMIUM business → export denied (
 ## Legacy compatibility
 
 - `Business.ownerId` not removed.
-- Dual-read: `ownerId === user.id` OR ACTIVE OWNER membership.
-- Dual-write on create: `ownerId` + ACTIVE OWNER membership in one transaction.
-- Revoking membership alone does **not** remove access if legacy `ownerId` still matches (5M.1 caveat).
+- Owner access: ACTIVE OWNER membership, or `ownerId === user.id` when **no** membership row exists.
+- Dual-write on legacy create and application approval: `ownerId` + ACTIVE OWNER membership in one transaction.
+- **Fixed (5N.1):** REVOKED/SUSPENDED OWNER or ACTIVE MANAGER is **not** granted OWNER access via matching `ownerId`.
 
 ## Invitations (5M.2)
 
@@ -88,7 +89,7 @@ Example: MANAGER with `ANALYTICS_EXPORT` on PREMIUM business → export denied (
 }
 ```
 
-Includes ACTIVE OWNER and ACTIVE MANAGER memberships + legacy `ownerId`. Deduped.
+Includes ACTIVE OWNER and ACTIVE MANAGER memberships, plus legacy `ownerId` only when membership row absent. Excludes revoked/suspended. Deduped.
 
 ## System roles vs business permissions
 
