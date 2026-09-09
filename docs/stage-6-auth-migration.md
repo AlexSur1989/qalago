@@ -1,10 +1,11 @@
 # Stage 6 — Auth Migration (Google / Apple)
 
-## Current state (after 6.2B1)
+## Current state (after 6.2B2)
 
-- **Phone OTP** remains the active login method when `OTP_AUTH_ENABLED=true`
-- **Google/Apple endpoints** are NOT implemented yet
-- Foundation models are in place for future provider verification
+- **Phone OTP** remains available when `OTP_AUTH_ENABLED=true`
+- **Google backend** implemented: `POST /auth/google` (requires `GOOGLE_AUTH_ENABLED=true`)
+- **Apple backend** not implemented yet (B3)
+- **Flutter / Business Web social UI** deferred (B4/B5)
 
 ## Foundation (Stage 6.2B1)
 
@@ -77,12 +78,51 @@ Future Google/Apple login must check `AuthIdentityTombstone` before creating use
 | Stage | Scope |
 |-------|-------|
 | **6.2B1** ✅ | Schema, AuthIdentity, tombstones, nullable phone, flags |
-| **6.2B2** | Google backend token verification + endpoint |
+| **6.2B2** ✅ | Google backend token verification + `POST /auth/google` |
 | **6.2B3** | Apple backend token verification + endpoint |
 | **6.2B4** | Flutter Google + Apple UI |
 | **6.2B5** | Business Web social login |
 | **6.2B6** | Team invitation redesign (email/link) |
 | **6.2B7** | OTP deprecation, admin identity linking, QA |
+
+## POST /auth/google (Stage 6.2B2)
+
+Request: `{ "idToken": "..." }` only.
+
+Flow:
+
+1. Verify Google ID token server-side (`google-auth-library`)
+2. Check `AuthIdentityTombstone(GOOGLE, sub)`
+3. Find or create `AuthIdentity` + `User`
+4. Issue QalaGo JWT
+
+Config:
+
+| Variable | Purpose |
+|----------|---------|
+| `GOOGLE_AUTH_ENABLED` | Gate endpoint (default `false`) |
+| `GOOGLE_CLIENT_ID_ANDROID` | Allowed `aud` |
+| `GOOGLE_CLIENT_ID_IOS` | Allowed `aud` |
+| `GOOGLE_CLIENT_ID_WEB` | Allowed `aud` |
+| `GOOGLE_AUTH_IP_LIMIT` | Rate limit (default 20) |
+| `GOOGLE_AUTH_IP_WINDOW_SECONDS` | Window (default 900) |
+
+Production: if `GOOGLE_AUTH_ENABLED=true`, at least one client ID is required at startup.
+
+**No email auto-link.** Provider tokens are transient — never stored or logged.
+
+### Manual local test (when credentials exist)
+
+With `GOOGLE_AUTH_ENABLED=true` and valid client IDs, obtain a real ID token from a Google Sign-In client and:
+
+```http
+POST /api/v1/auth/google
+Content-Type: application/json
+
+{ "idToken": "<paste token here>" }
+```
+
+No debug bypass or magic tokens.
 
 ## JWT
 

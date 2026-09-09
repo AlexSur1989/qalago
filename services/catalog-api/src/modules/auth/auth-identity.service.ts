@@ -22,6 +22,41 @@ export class AuthIdentityService {
     });
   }
 
+  findIdentityWithUser(provider: AuthProvider, providerUserId: string) {
+    return this.prisma.authIdentity.findUnique({
+      where: {
+        provider_providerUserId: { provider, providerUserId },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            phone: true,
+            email: true,
+            name: true,
+            role: true,
+            isActive: true,
+          },
+        },
+      },
+    });
+  }
+
+  updateIdentityMetadata(
+    identityId: string,
+    metadata: { email?: string | null; emailVerified?: boolean | null },
+    tx?: Prisma.TransactionClient,
+  ) {
+    const client = tx ?? this.prisma;
+    return client.authIdentity.update({
+      where: { id: identityId },
+      data: {
+        email: metadata.email ?? null,
+        emailVerified: metadata.emailVerified ?? null,
+      },
+    });
+  }
+
   async isTombstoned(provider: AuthProvider, providerUserId: string): Promise<boolean> {
     const row = await this.prisma.authIdentityTombstone.findUnique({
       where: {

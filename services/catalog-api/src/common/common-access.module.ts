@@ -6,6 +6,7 @@ import { SystemAccessService } from './services/system-access.service';
 import { OnboardingRateLimitService } from './services/onboarding-rate-limit.service';
 import { SlidingWindowRateLimitService } from './services/sliding-window-rate-limit.service';
 import { OtpRateLimitService } from './services/otp-rate-limit.service';
+import { SocialAuthRateLimitService } from './services/social-auth-rate-limit.service';
 import { AuditLogModule } from '../modules/audit-log/audit-log.module';
 
 @Global()
@@ -19,6 +20,7 @@ import { AuditLogModule } from '../modules/audit-log/audit-log.module';
     OnboardingRateLimitService,
     SlidingWindowRateLimitService,
     OtpRateLimitService,
+    SocialAuthRateLimitService,
   ],
   exports: [
     CityScopeService,
@@ -28,6 +30,7 @@ import { AuditLogModule } from '../modules/audit-log/audit-log.module';
     OnboardingRateLimitService,
     SlidingWindowRateLimitService,
     OtpRateLimitService,
+    SocialAuthRateLimitService,
   ],
 })
 export class CommonAccessModule {}

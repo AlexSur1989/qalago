@@ -50,6 +50,25 @@ Response `200`:
 }
 ```
 
+### POST /auth/google
+
+**Stage 6.2B2.** Requires server flag `GOOGLE_AUTH_ENABLED=true`. When disabled, returns **404 Not Found**.
+
+Request:
+```json
+{ "idToken": "<Google ID token>" }
+```
+
+Only `idToken` is accepted — no `role`, `phone`, `email`, or `providerUserId` from client.
+
+Response `200`: same shape as `/auth/verify-code` (`accessToken`, `user`).
+
+New Google users receive `role: USER`, `phone: null`. Identity key is `GOOGLE` + verified Google `sub`. **No email auto-linking.**
+
+Rate limit: 20 attempts / IP / 15 minutes (configurable via `GOOGLE_AUTH_IP_*`).
+
+Requires at least one configured audience: `GOOGLE_CLIENT_ID_ANDROID`, `GOOGLE_CLIENT_ID_IOS`, or `GOOGLE_CLIENT_ID_WEB`.
+
 ### POST /auth/dev-login
 
 **Development only.** Requires server flag `DEV_LOGIN_ENABLED=true`. When disabled, returns **404 Not Found** (endpoint not advertised).

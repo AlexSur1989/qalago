@@ -5,11 +5,15 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { resolveRequestIp } from '../../common/utils/request-ip.util';
 import { AuthService } from './auth.service';
-import { SendCodeDto, VerifyCodeDto, DevLoginDto } from './dto/auth.dto';
+import { SendCodeDto, VerifyCodeDto, DevLoginDto, GoogleAuthDto } from './dto/auth.dto';
+import { GoogleAuthLoginService } from './social-auth/google-auth-login.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly googleAuthLogin: GoogleAuthLoginService,
+  ) {}
 
   @Public()
   @Post('send-code')
@@ -30,6 +34,12 @@ export class AuthController {
       throw new NotFoundException();
     }
     return this.authService.devLogin(dto);
+  }
+
+  @Public()
+  @Post('google')
+  googleAuth(@Body() dto: GoogleAuthDto, @Req() req: Request) {
+    return this.googleAuthLogin.loginWithGoogle(dto.idToken, resolveRequestIp(req));
   }
 
   @Get('me')

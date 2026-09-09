@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-09 — Stage 6.2B2: Google backend authentication
+
+- **Сделано:** `POST /auth/google`; `google-auth-library` ID token verification; `GoogleAuthLoginService`; IP rate limiting; production Google client ID validation; tombstone/inactive-user enforcement; no email auto-link.
+- **На будущее:** B3 Apple backend, B4 Flutter Google UI, B5 Business Web Google UI.
+
 ## 2026-09-09 — Stage 6.2B1: Social auth identity foundation
 
 - **Сделано:** `AuthProvider` enum; `AuthIdentity` + `AuthIdentityTombstone` models; `User.phone` nullable; optional `User.email`; `AuthIdentityService`; account deletion tombstones external identities; JWT/AuthUser optional phone; feature flags `OTP_AUTH_ENABLED`, `GOOGLE_AUTH_ENABLED`, `APPLE_AUTH_ENABLED`; OTP routes gated when disabled; client null-safe phone display.

@@ -71,6 +71,38 @@ describe('production-config.util', () => {
       ).toThrow(/DEV_LOGIN_ENABLED/);
     });
 
+    it('rejects production GOOGLE_AUTH_ENABLED without client IDs', () => {
+      expect(() =>
+        assertProductionConfig({
+          nodeEnv: 'production',
+          jwtSecret: 'a'.repeat(32),
+          corsOrigins: 'https://qalago.kz',
+          otpDebug: false,
+          devLoginEnabled: false,
+          mockPlanCheckoutEnabled: false,
+          googleAuthEnabled: true,
+          googleClientIdAndroid: '',
+          googleClientIdIos: '',
+          googleClientIdWeb: '',
+        }),
+      ).toThrow(/GOOGLE_CLIENT_ID/);
+    });
+
+    it('allows production GOOGLE_AUTH_ENABLED with at least one client ID', () => {
+      expect(() =>
+        assertProductionConfig({
+          nodeEnv: 'production',
+          jwtSecret: 'a'.repeat(32),
+          corsOrigins: 'https://qalago.kz',
+          otpDebug: false,
+          devLoginEnabled: false,
+          mockPlanCheckoutEnabled: false,
+          googleAuthEnabled: true,
+          googleClientIdWeb: 'web-client.apps.googleusercontent.com',
+        }),
+      ).not.toThrow();
+    });
+
     it('rejects weak JWT in production', () => {
       expect(() =>
         assertProductionConfig({

@@ -32,3 +32,9 @@ export class DevLoginDto {
   @Matches(/^\+?[0-9]{10,15}$/, { message: 'phone must be a valid E.164-like number' })
   phone!: string;
 }
+
+export class GoogleAuthDto {
+  @IsString()
+  @MinLength(10)
+  idToken!: string;
+}

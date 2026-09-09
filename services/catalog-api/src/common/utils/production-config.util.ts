@@ -12,6 +12,10 @@ export type ProductionConfigInput = {
   otpDebug: boolean;
   devLoginEnabled: boolean;
   mockPlanCheckoutEnabled: boolean;
+  googleAuthEnabled?: boolean;
+  googleClientIdAndroid?: string;
+  googleClientIdIos?: string;
+  googleClientIdWeb?: string;
 };
 
 export function assertProductionConfig(input: ProductionConfigInput): void {
@@ -50,6 +54,21 @@ export function assertProductionConfig(input: ProductionConfigInput): void {
   const lower = secret.toLowerCase();
   if (WEAK_JWT_PATTERNS.some((pattern) => lower.includes(pattern))) {
     errors.push('JWT_SECRET must not use a known development placeholder in production');
+  }
+
+  if (input.googleAuthEnabled) {
+    const googleClientIds = [
+      input.googleClientIdAndroid,
+      input.googleClientIdIos,
+      input.googleClientIdWeb,
+    ]
+      .map((id) => id?.trim())
+      .filter(Boolean);
+    if (googleClientIds.length === 0) {
+      errors.push(
+        'At least one GOOGLE_CLIENT_ID_* must be set when GOOGLE_AUTH_ENABLED=true in production',
+      );
+    }
   }
 
   if (errors.length > 0) {

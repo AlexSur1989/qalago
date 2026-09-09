@@ -11,6 +11,11 @@ export const validationSchema = Joi.object({
   DEV_LOGIN_ENABLED: Joi.boolean().truthy('true').falsy('false').default(false),
   OTP_AUTH_ENABLED: Joi.boolean().truthy('true').falsy('false').default(true),
   GOOGLE_AUTH_ENABLED: Joi.boolean().truthy('true').falsy('false').default(false),
+  GOOGLE_CLIENT_ID_ANDROID: Joi.string().allow('').default(''),
+  GOOGLE_CLIENT_ID_IOS: Joi.string().allow('').default(''),
+  GOOGLE_CLIENT_ID_WEB: Joi.string().allow('').default(''),
+  GOOGLE_AUTH_IP_LIMIT: Joi.number().integer().min(1).default(20),
+  GOOGLE_AUTH_IP_WINDOW_SECONDS: Joi.number().integer().min(60).default(900),
   APPLE_AUTH_ENABLED: Joi.boolean().truthy('true').falsy('false').default(false),
   MOCK_PLAN_CHECKOUT_ENABLED: Joi.boolean().truthy('true').falsy('false').default(false),
   OTP_SEND_COOLDOWN_SECONDS: Joi.number().integer().min(30).default(60),
@@ -43,6 +48,10 @@ export const validationSchema = Joi.object({
       otpDebug: value.OTP_DEBUG === true,
       devLoginEnabled: value.DEV_LOGIN_ENABLED === true,
       mockPlanCheckoutEnabled: value.MOCK_PLAN_CHECKOUT_ENABLED === true,
+      googleAuthEnabled: value.GOOGLE_AUTH_ENABLED === true,
+      googleClientIdAndroid: value.GOOGLE_CLIENT_ID_ANDROID ?? '',
+      googleClientIdIos: value.GOOGLE_CLIENT_ID_IOS ?? '',
+      googleClientIdWeb: value.GOOGLE_CLIENT_ID_WEB ?? '',
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Invalid production configuration';

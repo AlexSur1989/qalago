@@ -5,6 +5,8 @@ import { CommonAccessModule } from '../../common/common-access.module';
 import { AuthController } from './auth.controller';
 import { AuthIdentityService } from './auth-identity.service';
 import { AuthService } from './auth.service';
+import { GoogleAuthLoginService } from './social-auth/google-auth-login.service';
+import { GoogleIdTokenVerifierService } from './social-auth/google-id-token-verifier.service';
 
 @Module({
   imports: [
@@ -21,7 +23,12 @@ import { AuthService } from './auth.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, AuthIdentityService],
-  exports: [JwtModule, AuthService, AuthIdentityService],
+  providers: [
+    AuthService,
+    AuthIdentityService,
+    GoogleIdTokenVerifierService,
+    GoogleAuthLoginService,
+  ],
+  exports: [JwtModule, AuthService, AuthIdentityService, GoogleAuthLoginService],
 })
 export class AuthModule {}
