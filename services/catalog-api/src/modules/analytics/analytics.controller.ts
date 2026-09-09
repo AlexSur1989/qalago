@@ -6,9 +6,11 @@ import {
   Param,
   Post,
   Query,
+  Req,
   StreamableFile,
   UseGuards,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { UserRole } from '@prisma/client';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
@@ -25,8 +27,9 @@ export class AnalyticsController {
   @Public()
   @UseGuards(AnalyticsEventsRateLimitGuard)
   @Post('events')
-  track(@Body() dto: CreateAnalyticsEventDto) {
-    return this.analyticsService.track(dto);
+  track(@Body() dto: CreateAnalyticsEventDto, @Req() req: Request) {
+    const internalHeader = req.header('x-qalago-internal-analytics') === '1';
+    return this.analyticsService.track(dto, { internalHeader });
   }
 
   @Roles(UserRole.BUSINESS, UserRole.CITY_ADMIN, UserRole.ADMIN)

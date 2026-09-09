@@ -19,8 +19,28 @@ export type AudienceDistanceBucket =
   | 'GT_10_KM'
   | 'UNKNOWN';
 
+export type AnalyticsDiscoverySurface =
+  | 'HOME_FEED'
+  | 'HOME_RECOMMENDED'
+  | 'SEARCH_RESULTS'
+  | 'CATEGORY_LIST'
+  | 'MAP_PIN'
+  | 'NEARBY_LIST'
+  | 'FAVORITES_LIST'
+  | 'PROMOTION_LIST'
+  | 'PROMOTION_DETAIL'
+  | 'BUSINESS_DETAIL'
+  | 'DIRECT'
+  | 'OTHER';
+
+export type AnalyticsPlatform = 'IOS' | 'ANDROID' | 'WEB' | 'UNKNOWN';
+
 export type AnalyticsEventType =
   | 'VIEW_BUSINESS'
+  | 'BUSINESS_IMPRESSION'
+  | 'SEARCH_PERFORMED'
+  | 'SEARCH_RESULT_IMPRESSION'
+  | 'SEARCH_RESULT_OPEN'
   | 'CALL_CLICK'
   | 'WHATSAPP_CLICK'
   | 'ROUTE_CLICK'
@@ -28,7 +48,14 @@ export type AnalyticsEventType =
   | 'INSTAGRAM_CLICK'
   | 'FAVORITE_ADD'
   | 'FAVORITE_REMOVE'
-  | 'PROMOTION_VIEW';
+  | 'PROMOTION_VIEW'
+  | 'PROMOTION_IMPRESSION'
+  | 'PROMOTION_ACTION'
+  | 'CATALOG_ITEM_IMPRESSION'
+  | 'CATALOG_ITEM_VIEW'
+  | 'CATALOG_ITEM_ACTION'
+  | 'REVIEWS_VIEW'
+  | 'REVIEW_CREATED';
 
 export interface AnalyticsCapabilitiesDto {
   maxDays: number;

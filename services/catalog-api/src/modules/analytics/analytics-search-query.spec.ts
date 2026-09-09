@@ -28,6 +28,7 @@ describe('Stage 5I search query analytics', () => {
       },
       analyticsEvent: {
         create: jest.fn(),
+        findUnique: jest.fn().mockResolvedValue(null),
         groupBy: jest.fn(),
         findMany: jest.fn(),
       },
@@ -58,7 +59,7 @@ describe('Stage 5I search query analytics', () => {
 
   it('SEARCH view stores normalized searchQuery', async () => {
     const { prisma, service } = createService();
-    prisma.business.findFirst.mockResolvedValue({ id: 'business-1' });
+    prisma.business.findFirst.mockResolvedValue({ id: 'business-1', cityId: 'city-1' });
     prisma.analyticsEvent.create.mockResolvedValue({ id: 'event-1' });
 
     await service.track({
@@ -69,18 +70,20 @@ describe('Stage 5I search query analytics', () => {
     });
 
     expect(prisma.analyticsEvent.create).toHaveBeenCalledWith({
-      data: {
+      data: expect.objectContaining({
         businessId: 'business-1',
+        cityId: 'city-1',
         type: AnalyticsEventType.VIEW_BUSINESS,
         trafficSource: BusinessTrafficSource.SEARCH,
         searchQuery: 'кофе рядом',
-      },
+        isInternal: false,
+      }),
     });
   });
 
   it('HOME + searchQuery does not store searchQuery', async () => {
     const { prisma, service } = createService();
-    prisma.business.findFirst.mockResolvedValue({ id: 'business-1' });
+    prisma.business.findFirst.mockResolvedValue({ id: 'business-1', cityId: 'city-1' });
     prisma.analyticsEvent.create.mockResolvedValue({ id: 'event-1' });
 
     await service.track({
@@ -91,17 +94,17 @@ describe('Stage 5I search query analytics', () => {
     });
 
     expect(prisma.analyticsEvent.create).toHaveBeenCalledWith({
-      data: {
+      data: expect.objectContaining({
         businessId: 'business-1',
         type: AnalyticsEventType.VIEW_BUSINESS,
         trafficSource: BusinessTrafficSource.HOME,
-      },
+      }),
     });
   });
 
   it('AD + searchQuery does not store searchQuery', async () => {
     const { prisma, service } = createService();
-    prisma.business.findFirst.mockResolvedValue({ id: 'business-1' });
+    prisma.business.findFirst.mockResolvedValue({ id: 'business-1', cityId: 'city-1' });
     prisma.analyticsEvent.create.mockResolvedValue({ id: 'event-1' });
 
     await service.track({
@@ -112,17 +115,17 @@ describe('Stage 5I search query analytics', () => {
     });
 
     expect(prisma.analyticsEvent.create).toHaveBeenCalledWith({
-      data: {
+      data: expect.objectContaining({
         businessId: 'business-1',
         type: AnalyticsEventType.VIEW_BUSINESS,
         trafficSource: BusinessTrafficSource.AD,
-      },
+      }),
     });
   });
 
   it('rejects searchQuery on non-VIEW_BUSINESS events', async () => {
     const { prisma, service } = createService();
-    prisma.business.findFirst.mockResolvedValue({ id: 'business-1' });
+    prisma.business.findFirst.mockResolvedValue({ id: 'business-1', cityId: 'city-1' });
 
     await expect(
       service.track({

@@ -390,7 +390,10 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                               unawaited(
                                 ref
                                     .read(catalogRepositoryProvider)
-                                    .trackPromotionView(widget.id),
+                                    .trackPromotionView(
+                                      widget.id,
+                                      promotionId: promo.id,
+                                    ),
                               );
                             },
                           ),

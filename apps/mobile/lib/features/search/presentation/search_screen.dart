@@ -10,7 +10,7 @@ import '../../../core/location/user_location_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
-import '../../../shared/widgets/business_card.dart';
+import '../../analytics/widgets/tracked_business_card.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -319,8 +319,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     final business = data.items[index - 1];
                     final attributionQuery =
                         _resultAttributionQuery ?? query.search;
-                    return BusinessCard(
+                    return TrackedBusinessCard(
                       business: business,
+                      trafficSource: BusinessTrafficSource.search,
+                      searchQuery: attributionQuery,
+                      position: index - 1,
                       onTap: () => openBusiness(
                             context,
                             business.id,

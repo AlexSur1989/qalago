@@ -28,6 +28,7 @@ describe('Stage 5H traffic source attribution', () => {
       },
       analyticsEvent: {
         create: jest.fn(),
+        findUnique: jest.fn().mockResolvedValue(null),
         groupBy: jest.fn(),
         findMany: jest.fn(),
       },
@@ -69,7 +70,7 @@ describe('Stage 5H traffic source attribution', () => {
 
   it.each(viewSources)('VIEW_BUSINESS accepts %s', async (trafficSource) => {
     const { prisma, service } = createService();
-    prisma.business.findFirst.mockResolvedValue({ id: 'business-1' });
+    prisma.business.findFirst.mockResolvedValue({ id: 'business-1', cityId: 'city-1' });
     prisma.analyticsEvent.create.mockResolvedValue({ id: 'event-1' });
 
     await service.track({
@@ -79,17 +80,17 @@ describe('Stage 5H traffic source attribution', () => {
     });
 
     expect(prisma.analyticsEvent.create).toHaveBeenCalledWith({
-      data: {
+      data: expect.objectContaining({
         businessId: 'business-1',
         type: AnalyticsEventType.VIEW_BUSINESS,
         trafficSource,
-      },
+      }),
     });
   });
 
   it('legacy VIEW_BUSINESS without source remains valid', async () => {
     const { prisma, service } = createService();
-    prisma.business.findFirst.mockResolvedValue({ id: 'business-1' });
+    prisma.business.findFirst.mockResolvedValue({ id: 'business-1', cityId: 'city-1' });
     prisma.analyticsEvent.create.mockResolvedValue({ id: 'event-1' });
 
     await service.track({
@@ -98,16 +99,16 @@ describe('Stage 5H traffic source attribution', () => {
     });
 
     expect(prisma.analyticsEvent.create).toHaveBeenCalledWith({
-      data: {
+      data: expect.objectContaining({
         businessId: 'business-1',
         type: AnalyticsEventType.VIEW_BUSINESS,
-      },
+      }),
     });
   });
 
   it('rejects trafficSource on non-VIEW_BUSINESS events', async () => {
     const { prisma, service } = createService();
-    prisma.business.findFirst.mockResolvedValue({ id: 'business-1' });
+    prisma.business.findFirst.mockResolvedValue({ id: 'business-1', cityId: 'city-1' });
 
     await expect(
       service.track({

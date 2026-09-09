@@ -27,6 +27,16 @@
 
 ---
 
+## 2026-09-10 — Stage 6.5: Analytics data foundation
+
+- Extended `AnalyticsEvent` (promotionId, catalogItemId, clientEventId, visitorHash, discoverySurface, platform, isInternal).
+- Added `AnalyticsDailyMetric` + `AnalyticsDailyDimensionMetric` with timezone-aware rollup job.
+- Organic ingest: whitelist, idempotency, internal-traffic exclusion, promotion/catalog validation.
+- Fixed `popularTimes` to use `City.timezone` (not UTC).
+- Flutter: visitor/session providers, impression tracking, promotionId on promotion views.
+- Docs: `docs/analytics/stage-6-5-analytics-data-foundation.md`.
+- **Future:** Analytics 360 UI (6.6), scheduled raw-event retention job, new/returning visitor dimension.
+
 ## 2026-09-10 — Stage 6.4: Subscription plan redesign
 
 - **Сделано:** Canonical `PLAN_CATALOG` (FREE/BASIC/PREMIUM/VIP → Бесплатный/Бизнес/PRO/VIP); manager limits; review-reply entitlement; monthly ad bonus in catalog (display only); ad discount derived from catalog; consumer plan badge removed; Business/Admin/Flutter plan UX; docs + monthly ad bonus design note.

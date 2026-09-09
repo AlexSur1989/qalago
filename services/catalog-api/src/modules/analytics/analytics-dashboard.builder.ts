@@ -12,6 +12,7 @@ import {
 import { aggregateTrafficSources } from '../../common/utils/business-traffic-source.util';
 import { aggregateSearchQueries } from '../../common/utils/search-query-analytics.util';
 import { aggregateAudienceGeography } from '../../common/utils/audience-geography.util';
+import { toLocalHourAndWeekday } from '../../common/utils/analytics-timezone.util';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -41,6 +42,12 @@ export class AnalyticsDashboardBuilder {
     const from = windowStart(days, end);
     const to = new Date(end);
     to.setHours(23, 59, 59, 999);
+
+    const businessMeta = await this.prisma.business.findUnique({
+      where: { id: businessId },
+      select: { city: { select: { timezone: true } } },
+    });
+    const timezone = businessMeta?.city.timezone;
 
     const currentEvents = await this.fetchEvents(businessId, from, to);
     const counts = this.countByType(currentEvents);
@@ -81,7 +88,7 @@ export class AnalyticsDashboardBuilder {
       promotions = { promotionViews: counts[AnalyticsEventType.PROMOTION_VIEW] ?? 0 };
     }
     if (caps.popularTimes) {
-      popularTimes = this.buildPopularTimes(currentEvents);
+      popularTimes = this.buildPopularTimes(currentEvents, timezone);
     }
     if (caps.benchmark) {
       benchmark = await this.buildBenchmark(businessId, counts);
@@ -143,6 +150,7 @@ export class AnalyticsDashboardBuilder {
       where: {
         businessId,
         campaignId: null,
+        isInternal: false,
         type: AnalyticsEventType.VIEW_BUSINESS,
         createdAt: { gte: from, lte: to },
       },
@@ -164,6 +172,7 @@ export class AnalyticsDashboardBuilder {
       where: {
         businessId,
         campaignId: null,
+        isInternal: false,
         type: AnalyticsEventType.VIEW_BUSINESS,
         trafficSource: BusinessTrafficSource.SEARCH,
         searchQuery: { not: null },
@@ -188,6 +197,7 @@ export class AnalyticsDashboardBuilder {
       where: {
         businessId,
         campaignId: null,
+        isInternal: false,
         type: AnalyticsEventType.VIEW_BUSINESS,
         createdAt: { gte: from, lte: to },
       },
@@ -207,6 +217,7 @@ export class AnalyticsDashboardBuilder {
       where: {
         businessId,
         campaignId: null,
+        isInternal: false,
         createdAt: { gte: from, lte: to },
       },
       select: { type: true, createdAt: true },
@@ -402,7 +413,7 @@ export class AnalyticsDashboardBuilder {
     };
   }
 
-  private buildPopularTimes(events: EventRow[]) {
+  private buildPopularTimes(events: EventRow[], timezone?: string | null) {
     const byHour = Array.from({ length: 24 }, (_, hour) => ({ hour, count: 0 }));
     const byWeekday = Array.from({ length: 7 }, (_, weekday) => ({
       weekday,
@@ -412,8 +423,7 @@ export class AnalyticsDashboardBuilder {
 
     for (const event of events) {
       if (event.type !== AnalyticsEventType.VIEW_BUSINESS) continue;
-      const hour = event.createdAt.getUTCHours();
-      const weekday = event.createdAt.getUTCDay();
+      const { hour, weekday } = toLocalHourAndWeekday(event.createdAt, timezone);
       byHour[hour].count += 1;
       byWeekday[weekday].count += 1;
     }

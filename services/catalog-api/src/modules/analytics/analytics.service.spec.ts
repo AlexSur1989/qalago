@@ -37,8 +37,12 @@ describe('AnalyticsService', () => {
       },
       analyticsEvent: {
         create: jest.fn(),
+        findUnique: jest.fn(),
         groupBy: jest.fn(),
         findMany: jest.fn(),
+      },
+      analyticsDailyMetric: {
+        findMany: jest.fn().mockResolvedValue([]),
       },
     };
 
@@ -71,7 +75,8 @@ describe('AnalyticsService', () => {
 
   it('tracks public events for active businesses', async () => {
     const { prisma, service } = createService();
-    prisma.business.findFirst.mockResolvedValue({ id: 'business-1' });
+    prisma.business.findFirst.mockResolvedValue({ id: 'business-1', cityId: 'city-1' });
+    prisma.analyticsEvent.findUnique.mockResolvedValue(null);
     prisma.analyticsEvent.create.mockResolvedValue({ id: 'event-1' });
 
     await expect(
@@ -82,10 +87,12 @@ describe('AnalyticsService', () => {
     ).resolves.toEqual({ success: true });
 
     expect(prisma.analyticsEvent.create).toHaveBeenCalledWith({
-      data: {
+      data: expect.objectContaining({
         businessId: 'business-1',
+        cityId: 'city-1',
         type: AnalyticsEventType.CALL_CLICK,
-      },
+        isInternal: false,
+      }),
     });
   });
 
@@ -135,7 +142,10 @@ describe('AnalyticsService', () => {
 
   it('aggregates trends by UTC date and type', async () => {
     const { prisma, service } = createService();
-    prisma.business.findUnique.mockResolvedValue({ ownerId: 'other-owner' });
+    prisma.business.findUnique.mockResolvedValue({
+      ownerId: 'other-owner',
+      city: { timezone: 'Asia/Oral' },
+    });
     prisma.analyticsEvent.findMany.mockResolvedValue([
       { type: AnalyticsEventType.VIEW_BUSINESS, createdAt: new Date('2026-08-29T01:00:00.000Z') },
       { type: AnalyticsEventType.VIEW_BUSINESS, createdAt: new Date('2026-08-29T05:00:00.000Z') },
@@ -177,7 +187,10 @@ describe('AnalyticsService', () => {
 
   it('allows view trends for FREE tier', async () => {
     const { prisma, planLimits, service } = createService();
-    prisma.business.findUnique.mockResolvedValue({ ownerId: owner.id });
+    prisma.business.findUnique.mockResolvedValue({
+      ownerId: owner.id,
+      city: { timezone: 'Asia/Oral' },
+    });
     planLimits.getBusinessPlanContext = jest.fn().mockResolvedValue({
       effectiveTier: 'FREE',
       limits: { maxAnalyticsDays: 30, analyticsTier: 'BASIC' },

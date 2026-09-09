@@ -8,7 +8,7 @@ import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/utils/business_rank.dart';
-import '../../../shared/widgets/business_card.dart';
+import '../../analytics/widgets/tracked_business_card.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../ads/data/ad_models.dart';
@@ -177,8 +177,9 @@ class CategoryBusinessesScreen extends ConsumerWidget {
       for (final business in sorted)
         Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: BusinessCard(
+          child: TrackedBusinessCard(
             business: business,
+            trafficSource: BusinessTrafficSource.category,
             onTap: () => openBusiness(
                   context,
                   business.id,

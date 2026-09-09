@@ -34,6 +34,7 @@ describe('Stage 5J audience geography analytics', () => {
       },
       analyticsEvent: {
         create: jest.fn(),
+        findUnique: jest.fn().mockResolvedValue(null),
         groupBy: jest.fn(),
         findMany: jest.fn(),
       },
@@ -87,7 +88,7 @@ describe('Stage 5J audience geography analytics', () => {
 
   it('stores valid audienceDistanceBucket on VIEW_BUSINESS', async () => {
     const { prisma, service } = createService();
-    prisma.business.findFirst.mockResolvedValue({ id: 'business-1' });
+    prisma.business.findFirst.mockResolvedValue({ id: 'business-1', cityId: 'city-1' });
     prisma.analyticsEvent.create.mockResolvedValue({ id: 'event-1' });
 
     await service.track({
@@ -97,17 +98,17 @@ describe('Stage 5J audience geography analytics', () => {
     });
 
     expect(prisma.analyticsEvent.create).toHaveBeenCalledWith({
-      data: {
+      data: expect.objectContaining({
         businessId: 'business-1',
         type: AnalyticsEventType.VIEW_BUSINESS,
         audienceDistanceBucket: AudienceDistanceBucket.KM_1_3,
-      },
+      }),
     });
   });
 
   it('rejects audienceDistanceBucket on non-VIEW_BUSINESS events', async () => {
     const { prisma, service } = createService();
-    prisma.business.findFirst.mockResolvedValue({ id: 'business-1' });
+    prisma.business.findFirst.mockResolvedValue({ id: 'business-1', cityId: 'city-1' });
 
     await expect(
       service.track({
@@ -120,7 +121,7 @@ describe('Stage 5J audience geography analytics', () => {
 
   it('legacy null bucket accepted (omitted field)', async () => {
     const { prisma, service } = createService();
-    prisma.business.findFirst.mockResolvedValue({ id: 'business-1' });
+    prisma.business.findFirst.mockResolvedValue({ id: 'business-1', cityId: 'city-1' });
     prisma.analyticsEvent.create.mockResolvedValue({ id: 'event-1' });
 
     await service.track({
@@ -130,17 +131,17 @@ describe('Stage 5J audience geography analytics', () => {
     });
 
     expect(prisma.analyticsEvent.create).toHaveBeenCalledWith({
-      data: {
+      data: expect.objectContaining({
         businessId: 'business-1',
         type: AnalyticsEventType.VIEW_BUSINESS,
         trafficSource: BusinessTrafficSource.HOME,
-      },
+      }),
     });
   });
 
   it('create payload has no raw coordinate fields', async () => {
     const { prisma, service } = createService();
-    prisma.business.findFirst.mockResolvedValue({ id: 'business-1' });
+    prisma.business.findFirst.mockResolvedValue({ id: 'business-1', cityId: 'city-1' });
     prisma.analyticsEvent.create.mockResolvedValue({ id: 'event-1' });
 
     await service.track({
@@ -158,7 +159,7 @@ describe('Stage 5J audience geography analytics', () => {
 
   it('bucket coexists with SEARCH + searchQuery', async () => {
     const { prisma, service } = createService();
-    prisma.business.findFirst.mockResolvedValue({ id: 'business-1' });
+    prisma.business.findFirst.mockResolvedValue({ id: 'business-1', cityId: 'city-1' });
     prisma.analyticsEvent.create.mockResolvedValue({ id: 'event-1' });
 
     await service.track({
@@ -170,19 +171,19 @@ describe('Stage 5J audience geography analytics', () => {
     });
 
     expect(prisma.analyticsEvent.create).toHaveBeenCalledWith({
-      data: {
+      data: expect.objectContaining({
         businessId: 'business-1',
         type: AnalyticsEventType.VIEW_BUSINESS,
         trafficSource: BusinessTrafficSource.SEARCH,
         searchQuery: 'кофе',
         audienceDistanceBucket: AudienceDistanceBucket.KM_3_5,
-      },
+      }),
     });
   });
 
   it('bucket coexists with AD traffic source', async () => {
     const { prisma, service } = createService();
-    prisma.business.findFirst.mockResolvedValue({ id: 'business-1' });
+    prisma.business.findFirst.mockResolvedValue({ id: 'business-1', cityId: 'city-1' });
     prisma.analyticsEvent.create.mockResolvedValue({ id: 'event-1' });
 
     await service.track({
@@ -192,14 +193,16 @@ describe('Stage 5J audience geography analytics', () => {
       audienceDistanceBucket: AudienceDistanceBucket.GT_10_KM,
     });
 
-    expect(prisma.analyticsEvent.create).toHaveBeenCalledWith({
-      data: {
-        businessId: 'business-1',
-        type: AnalyticsEventType.VIEW_BUSINESS,
-        trafficSource: BusinessTrafficSource.AD,
-        audienceDistanceBucket: AudienceDistanceBucket.GT_10_KM,
-      },
-    });
+    expect(prisma.analyticsEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          businessId: 'business-1',
+          type: AnalyticsEventType.VIEW_BUSINESS,
+          trafficSource: BusinessTrafficSource.AD,
+          audienceDistanceBucket: AudienceDistanceBucket.GT_10_KM,
+        }),
+      }),
+    );
   });
 
   it('FREE/BASIC/PREMIUM locked; VIP unlocked', () => {

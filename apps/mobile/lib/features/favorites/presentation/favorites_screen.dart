@@ -7,7 +7,7 @@ import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/utils/consumer_discovery_utils.dart';
-import '../../../shared/widgets/business_card.dart';
+import '../../analytics/widgets/tracked_business_card.dart';
 import '../../../shared/widgets/city_picker.dart';
 import '../../../shared/widgets/qalago_logo.dart';
 import '../../../shared/widgets/error_view.dart';
@@ -149,8 +149,9 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
                       for (final business in businesses) ...[
                         Stack(
                           children: [
-                            BusinessCard(
+                            TrackedBusinessCard(
                               business: business,
+                              trafficSource: BusinessTrafficSource.favorites,
                               onTap: () =>
                                   openBusiness(
                                     context,

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../../../core/rbac/business_access.dart';
 import '../../../features/ads/data/ad_models.dart';
 import '../../../shared/models/models.dart';
@@ -190,6 +191,9 @@ class CatalogRepository {
     BusinessTrafficSource? trafficSource,
     String? searchQuery,
     AudienceDistanceBucket? audienceDistanceBucket,
+    String? discoverySurface,
+    String? visitorId,
+    String? sessionId,
   }) =>
       _trackAnalyticsEvent(
         businessId: businessId,
@@ -199,54 +203,233 @@ class CatalogRepository {
             ? searchQuery
             : null,
         audienceDistanceBucket: audienceDistanceBucket?.apiValue,
+        discoverySurface: discoverySurface ?? 'BUSINESS_DETAIL',
+        visitorId: visitorId,
+        sessionId: sessionId,
       );
 
-  Future<void> trackCallClick(String businessId) =>
-      _trackAnalyticsEvent(businessId: businessId, type: 'CALL_CLICK');
+  Future<void> trackBusinessImpression(
+    String businessId, {
+    required BusinessTrafficSource trafficSource,
+    String? discoverySurface,
+    String? searchQuery,
+    AudienceDistanceBucket? audienceDistanceBucket,
+    int? position,
+    String? visitorId,
+    String? sessionId,
+  }) =>
+      _trackAnalyticsEvent(
+        businessId: businessId,
+        type: trafficSource == BusinessTrafficSource.search
+            ? 'SEARCH_RESULT_IMPRESSION'
+            : 'BUSINESS_IMPRESSION',
+        trafficSource: trafficSource.apiValue,
+        discoverySurface: discoverySurface,
+        searchQuery: trafficSource == BusinessTrafficSource.search
+            ? searchQuery
+            : null,
+        audienceDistanceBucket: audienceDistanceBucket?.apiValue,
+        position: position,
+        visitorId: visitorId,
+        sessionId: sessionId,
+      );
 
-  Future<void> trackWhatsappClick(String businessId) =>
-      _trackAnalyticsEvent(businessId: businessId, type: 'WHATSAPP_CLICK');
+  Future<void> trackSearchPerformed({
+    required String cityId,
+    required String searchQuery,
+    String? visitorId,
+    String? sessionId,
+  }) =>
+      _trackAnalyticsEvent(
+        cityId: cityId,
+        type: 'SEARCH_PERFORMED',
+        searchQuery: searchQuery,
+        visitorId: visitorId,
+        sessionId: sessionId,
+      );
 
-  Future<void> trackRouteClick(String businessId) =>
-      _trackAnalyticsEvent(businessId: businessId, type: 'ROUTE_CLICK');
+  Future<void> trackCallClick(String businessId, {String? sessionId, String? visitorId}) =>
+      _trackAnalyticsEvent(
+        businessId: businessId,
+        type: 'CALL_CLICK',
+        sessionId: sessionId,
+        visitorId: visitorId,
+      );
 
-  Future<void> trackWebsiteClick(String businessId) =>
-      _trackAnalyticsEvent(businessId: businessId, type: 'WEBSITE_CLICK');
+  Future<void> trackWhatsappClick(String businessId, {String? sessionId, String? visitorId}) =>
+      _trackAnalyticsEvent(
+        businessId: businessId,
+        type: 'WHATSAPP_CLICK',
+        sessionId: sessionId,
+        visitorId: visitorId,
+      );
 
-  Future<void> trackInstagramClick(String businessId) =>
-      _trackAnalyticsEvent(businessId: businessId, type: 'INSTAGRAM_CLICK');
+  Future<void> trackRouteClick(String businessId, {String? sessionId, String? visitorId}) =>
+      _trackAnalyticsEvent(
+        businessId: businessId,
+        type: 'ROUTE_CLICK',
+        sessionId: sessionId,
+        visitorId: visitorId,
+      );
 
-  Future<void> trackFavoriteAdd(String businessId) =>
-      _trackAnalyticsEvent(businessId: businessId, type: 'FAVORITE_ADD');
+  Future<void> trackWebsiteClick(String businessId, {String? sessionId, String? visitorId}) =>
+      _trackAnalyticsEvent(
+        businessId: businessId,
+        type: 'WEBSITE_CLICK',
+        sessionId: sessionId,
+        visitorId: visitorId,
+      );
 
-  Future<void> trackFavoriteRemove(String businessId) =>
-      _trackAnalyticsEvent(businessId: businessId, type: 'FAVORITE_REMOVE');
+  Future<void> trackInstagramClick(String businessId, {String? sessionId, String? visitorId}) =>
+      _trackAnalyticsEvent(
+        businessId: businessId,
+        type: 'INSTAGRAM_CLICK',
+        sessionId: sessionId,
+        visitorId: visitorId,
+      );
 
-  Future<void> trackPromotionView(String businessId) =>
-      _trackAnalyticsEvent(businessId: businessId, type: 'PROMOTION_VIEW');
+  Future<void> trackFavoriteAdd(String businessId, {String? sessionId, String? visitorId}) =>
+      _trackAnalyticsEvent(
+        businessId: businessId,
+        type: 'FAVORITE_ADD',
+        sessionId: sessionId,
+        visitorId: visitorId,
+      );
+
+  Future<void> trackFavoriteRemove(String businessId, {String? sessionId, String? visitorId}) =>
+      _trackAnalyticsEvent(
+        businessId: businessId,
+        type: 'FAVORITE_REMOVE',
+        sessionId: sessionId,
+        visitorId: visitorId,
+      );
+
+  Future<void> trackPromotionView(
+    String businessId, {
+    String? promotionId,
+    String? sessionId,
+    String? visitorId,
+  }) =>
+      _trackAnalyticsEvent(
+        businessId: businessId,
+        type: 'PROMOTION_VIEW',
+        promotionId: promotionId,
+        sessionId: sessionId,
+        visitorId: visitorId,
+      );
+
+  Future<void> trackPromotionImpression(
+    String businessId, {
+    required String promotionId,
+    String? discoverySurface,
+    String? sessionId,
+    String? visitorId,
+  }) =>
+      _trackAnalyticsEvent(
+        businessId: businessId,
+        type: 'PROMOTION_IMPRESSION',
+        promotionId: promotionId,
+        discoverySurface: discoverySurface,
+        sessionId: sessionId,
+        visitorId: visitorId,
+      );
+
+  Future<void> trackCatalogItemView(
+    String businessId, {
+    required String catalogItemId,
+    String? sessionId,
+    String? visitorId,
+  }) =>
+      _trackAnalyticsEvent(
+        businessId: businessId,
+        type: 'CATALOG_ITEM_VIEW',
+        catalogItemId: catalogItemId,
+        sessionId: sessionId,
+        visitorId: visitorId,
+      );
+
+  Future<void> trackCatalogItemImpression(
+    String businessId, {
+    required String catalogItemId,
+    String? sessionId,
+    String? visitorId,
+  }) =>
+      _trackAnalyticsEvent(
+        businessId: businessId,
+        type: 'CATALOG_ITEM_IMPRESSION',
+        catalogItemId: catalogItemId,
+        sessionId: sessionId,
+        visitorId: visitorId,
+      );
+
+  Future<void> trackReviewsView(
+    String businessId, {
+    String? sessionId,
+    String? visitorId,
+  }) =>
+      _trackAnalyticsEvent(
+        businessId: businessId,
+        type: 'REVIEWS_VIEW',
+        sessionId: sessionId,
+        visitorId: visitorId,
+      );
 
   Future<void> _trackAnalyticsEvent({
-    required String businessId,
+    String? businessId,
+    String? cityId,
     required String type,
     String? trafficSource,
+    String? discoverySurface,
     String? searchQuery,
     String? audienceDistanceBucket,
+    String? promotionId,
+    String? catalogItemId,
+    int? position,
+    String? visitorId,
+    String? sessionId,
   }) async {
     try {
+      final clientEventId = _newClientEventId();
       await _dio.post(
         '/analytics/events',
         data: {
-          'businessId': businessId,
+          if (businessId != null) 'businessId': businessId,
+          if (cityId != null) 'cityId': cityId,
           'type': type,
+          'clientEventId': clientEventId,
           if (trafficSource != null) 'trafficSource': trafficSource,
+          if (discoverySurface != null) 'discoverySurface': discoverySurface,
           if (searchQuery != null && searchQuery.trim().isNotEmpty)
             'searchQuery': searchQuery.trim(),
           if (audienceDistanceBucket != null)
             'audienceDistanceBucket': audienceDistanceBucket,
+          if (promotionId != null) 'promotionId': promotionId,
+          if (catalogItemId != null) 'catalogItemId': catalogItemId,
+          if (position != null) 'position': position,
+          if (visitorId != null) 'visitorId': visitorId,
+          if (sessionId != null) 'sessionId': sessionId,
+          'platform': _analyticsPlatform(),
         },
       );
     } on DioException {
       // Analytics must never block a user action.
+    }
+  }
+
+  String _newClientEventId() {
+    final now = DateTime.now().microsecondsSinceEpoch;
+    return '$now-${identityHashCode(this)}';
+  }
+
+  String _analyticsPlatform() {
+    if (kIsWeb) return 'WEB';
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+        return 'IOS';
+      case TargetPlatform.android:
+        return 'ANDROID';
+      default:
+        return 'UNKNOWN';
     }
   }
 

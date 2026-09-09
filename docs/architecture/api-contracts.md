@@ -607,9 +607,17 @@ Legacy clients may omit it; stored as `null` and aggregated as `UNKNOWN` in owne
 `LT_1_KM`, `KM_1_3`, `KM_3_5`, `KM_5_10`, `GT_10_KM`, `UNKNOWN`. Computed on device; **no**
 `userLatitude`, `userLongitude`, or raw distance accepted or stored.
 
-Supported event types:
-`VIEW_BUSINESS`, `CALL_CLICK`, `WHATSAPP_CLICK`, `ROUTE_CLICK`,
-`FAVORITE_ADD`, `FAVORITE_REMOVE`, `PROMOTION_VIEW`.
+Supported organic event types (Stage 6.5):
+`VIEW_BUSINESS`, `BUSINESS_IMPRESSION`, `SEARCH_PERFORMED`, `SEARCH_RESULT_IMPRESSION`,
+`CALL_CLICK`, `WHATSAPP_CLICK`, `ROUTE_CLICK`, `WEBSITE_CLICK`, `INSTAGRAM_CLICK`,
+`FAVORITE_ADD`, `FAVORITE_REMOVE`, `PROMOTION_VIEW`, `PROMOTION_IMPRESSION`, `PROMOTION_ACTION`,
+`CATALOG_ITEM_IMPRESSION`, `CATALOG_ITEM_VIEW`, `REVIEWS_VIEW`, `REVIEW_CREATED`.
+
+Optional Stage 6.5 context fields:
+`clientEventId` (idempotency), `visitorId` (pseudonymized server-side), `sessionId`,
+`discoverySurface`, `promotionId`, `catalogItemId`, `platform`, `position`, `cityId` (for `SEARCH_PERFORMED`).
+
+Ad events (`AD_*`) remain on `POST /monetization/ads/events` only.
 
 Response `201`:
 ```json

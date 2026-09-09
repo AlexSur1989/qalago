@@ -19,6 +19,7 @@ import '../../../shared/widgets/city_picker.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/presentation/dev_quick_login_panel.dart';
+import '../../analytics/widgets/business_impression_host.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../categories/presentation/category_businesses_screen.dart';
 import '../../ads/providers/ad_serve_provider.dart';
@@ -103,7 +104,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final business = promotion.business;
     if (business == null) return;
     unawaited(
-      ref.read(catalogRepositoryProvider).trackPromotionView(business.id),
+      ref.read(catalogRepositoryProvider).trackPromotionView(
+            business.id,
+            promotionId: promotion.id,
+          ),
     );
     openBusiness(context, business.id, BusinessTrafficSource.promotions);
   }
@@ -759,9 +763,14 @@ class _PopularPlacesCarousel extends StatelessWidget {
                   children: [
                     for (var i = 0; i < visible.length; i++) ...[
                       Expanded(
-                        child: _PopularPlaceCard(
-                          business: visible[i].business,
-                          subtitle: visible[i].reason,
+                        child: BusinessImpressionHost(
+                          businessId: visible[i].business.id,
+                          trafficSource: BusinessTrafficSource.home,
+                          discoverySurface: 'HOME_RECOMMENDED',
+                          child: _PopularPlaceCard(
+                            business: visible[i].business,
+                            subtitle: visible[i].reason,
+                          ),
                         ),
                       ),
                       if (i != visible.length - 1) const SizedBox(width: 12),
@@ -940,7 +949,12 @@ class _NearbyBusinessList extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         for (final business in preview) ...[
-          _NearbyBusinessTile(business: business),
+          BusinessImpressionHost(
+            businessId: business.id,
+            trafficSource: BusinessTrafficSource.home,
+            discoverySurface: 'NEARBY_LIST',
+            child: _NearbyBusinessTile(business: business),
+          ),
           const SizedBox(height: 12),
         ],
       ],
