@@ -19,6 +19,7 @@ import { randomBytes } from 'crypto';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { BusinessMembershipService } from '../../common/services/business-membership.service';
+import { OnboardingRateLimitService } from '../../common/services/onboarding-rate-limit.service';
 import {
   buildApplicationDedupeKey,
   businessMatchesApplicationDedupe,
@@ -54,9 +55,12 @@ export class BusinessApplicationsService {
     private readonly membership: BusinessMembershipService,
     private readonly auditLog: AuditLogService,
     private readonly notifications: NotificationsService,
+    private readonly rateLimit: OnboardingRateLimitService,
   ) {}
 
   async createDraft(user: AuthUser, dto: CreateBusinessApplicationDto) {
+    this.rateLimit.assertApplicationCreate(user.id);
+
     const cityId = dto.cityId || dto.citySlug
       ? await this.resolveApplicationCityId(dto)
       : await this.cityScope.resolveCityId({ citySlug: 'uralsk' });
@@ -154,6 +158,8 @@ export class BusinessApplicationsService {
   }
 
   async submit(user: AuthUser, id: string) {
+    this.rateLimit.assertApplicationSubmit(user.id);
+
     const application = await this.getOwn(user, id);
     if (application.status !== BusinessApplicationStatus.DRAFT) {
       throw new BadRequestException('Only DRAFT applications can be submitted');

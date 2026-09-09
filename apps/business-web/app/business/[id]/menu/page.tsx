@@ -9,7 +9,9 @@ import {
   ManageMenuSection,
   ownerApi,
 } from '@/lib/api';
+import { canViewPayments } from '@/lib/business-access';
 import { hasMoreMenuPages, menuSectionLabel } from '@/lib/menu-utils';
+import { parseApiError } from '@/lib/monetization-utils';
 import { useOwnerBusiness } from '@/lib/use-owner-business';
 import { BusinessShell } from '@/components/business-shell';
 
@@ -18,7 +20,7 @@ const PAGE_SIZE = 20;
 export default function BusinessMenuPage() {
   const params = useParams<{ id: string }>();
   const businessId = params.id;
-  const { token, user, ready, logout, businesses, business, error, setError } =
+  const { token, user, ready, logout, businesses, business, access, error, setError } =
     useOwnerBusiness(businessId);
   const [planStatus, setPlanStatus] = useState<BusinessPlanStatus | null>(null);
   const [menuPage, setMenuPage] = useState<ManageMenuItemsPage | null>(null);
@@ -65,16 +67,20 @@ export default function BusinessMenuPage() {
   );
 
   const loadPlan = useCallback(async (t: string) => {
+    if (!canViewPayments(access)) {
+      setPlanStatus(null);
+      return;
+    }
     const plan = await ownerApi.getBusinessPlan(t, businessId);
     setPlanStatus(plan);
-  }, [businessId]);
+  }, [access, businessId]);
 
   useEffect(() => {
     if (!token) return;
     Promise.all([loadPlan(token), loadItems(token, 1, sectionId, search)]).catch((err) =>
-      setError(String(err)),
+      setError(parseApiError(err)),
     );
-  }, [token, businessId]);
+  }, [token, businessId, loadPlan, loadItems, sectionId, search, setError]);
 
   async function reloadAll() {
     if (!token) return;

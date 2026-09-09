@@ -245,8 +245,17 @@ export function packageHasPromotedPromotion(pkg: Pick<MonetizationPackage, 'item
 export function parseApiError(err: unknown): string {
   if (!(err instanceof Error)) return 'Неизвестная ошибка';
   const raw = err.message;
+  if (raw.includes('429') || raw.toLowerCase().includes('too many')) {
+    return 'Слишком много попыток. Попробуйте позже.';
+  }
+  if (raw.includes('PAYMENTS_VIEW') || raw.includes('Missing permission')) {
+    return 'Нет доступа к подписке и платежам. Обратитесь к владельцу бизнеса.';
+  }
   try {
-    const parsed = JSON.parse(raw) as { message?: string | string[] };
+    const parsed = JSON.parse(raw) as { message?: string | string[]; statusCode?: number };
+    if (parsed.statusCode === 429) {
+      return 'Слишком много попыток. Попробуйте позже.';
+    }
     if (Array.isArray(parsed.message)) return parsed.message.join(', ');
     if (parsed.message) return String(parsed.message);
   } catch {

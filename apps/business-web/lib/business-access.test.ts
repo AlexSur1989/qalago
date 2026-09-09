@@ -5,6 +5,7 @@ import {
   buildFooterNavItems,
   buildMainNavItems,
   canAccessNavItem,
+  canViewPayments,
   filterNavByAccess,
   hasPermission,
   isOwner,
@@ -31,6 +32,17 @@ describe('business-access', () => {
     expect(hasPermission(ownerAccess, BusinessPermission.ADS_MANAGE)).toBe(true);
     expect(hasPermission(managerCatalog, BusinessPermission.CATALOG_EDIT)).toBe(true);
     expect(hasPermission(managerCatalog, BusinessPermission.ADS_MANAGE)).toBe(false);
+  });
+
+  it('canViewPayments requires owner or PAYMENTS_VIEW', () => {
+    expect(canViewPayments(ownerAccess)).toBe(true);
+    expect(canViewPayments(managerCatalog)).toBe(false);
+    expect(
+      canViewPayments({
+        role: 'MANAGER',
+        permissions: [BusinessPermission.PAYMENTS_VIEW],
+      }),
+    ).toBe(true);
   });
 
   it('filterNavByAccess hides owner-only and permission-gated items for managers', () => {

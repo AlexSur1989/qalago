@@ -13,15 +13,6 @@ export type CityRow = {
   nameRu: string;
 };
 
-export type CreateBusinessPayload = {
-  title: string;
-  categoryId: string;
-  citySlug: string;
-  address: string;
-  shortDesc?: string;
-  phone?: string;
-};
-
 export type AuthUser = {
   id: string;
   phone: string;
@@ -573,13 +564,6 @@ export const ownerApi = {
   listCategories: () => api<CategoryRow[]>('/categories'),
 
   listCities: () => api<CityRow[]>('/cities'),
-
-  createBusiness: (token: string, data: CreateBusinessPayload) =>
-    api<BusinessRow>('/businesses', {
-      method: 'POST',
-      token,
-      body: JSON.stringify(data),
-    }),
 
   listMyBusinesses: (token: string) =>
     api<{ items: MyBusinessItem[] }>('/businesses/my', { token }),

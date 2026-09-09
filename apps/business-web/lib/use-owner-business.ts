@@ -14,6 +14,7 @@ export function useOwnerBusiness(businessId: string) {
   }, [items]);
 
   const business = businesses.find((b) => b.id === businessId) ?? null;
+  const access = items.find((item) => item.business.id === businessId)?.access ?? null;
 
   async function reloadBusinesses() {
     if (!token) return;
@@ -28,6 +29,7 @@ export function useOwnerBusiness(businessId: string) {
     logout,
     businesses,
     business,
+    access,
     error,
     setError,
     reloadBusinesses,

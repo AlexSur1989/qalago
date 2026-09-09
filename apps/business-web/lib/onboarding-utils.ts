@@ -67,6 +67,9 @@ export function mapOnboardingError(raw: string): string {
   if (lower.includes('not active') || lower.includes('inactive')) {
     return 'Этот бизнес пока недоступен для заявки.';
   }
+  if (raw.includes('429') || lower.includes('too many')) {
+    return 'Слишком много попыток. Попробуйте позже.';
+  }
   try {
     const parsed = JSON.parse(raw) as { message?: string | string[] };
     const msg = Array.isArray(parsed.message) ? parsed.message.join(', ') : parsed.message;

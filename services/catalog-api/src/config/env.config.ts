@@ -11,6 +11,30 @@ export default () => ({
     maxUploadMb: parseInt(process.env.MAX_UPLOAD_MB ?? '5', 10),
     aiOrchestratorUrl: process.env.AI_ORCHESTRATOR_URL ?? 'http://localhost:3004',
     internalServiceToken: process.env.QALAGO_INTERNAL_SERVICE_TOKEN ?? '',
+    businessApplicationCreateLimit: parseInt(
+      process.env.BUSINESS_APPLICATION_CREATE_LIMIT ?? '5',
+      10,
+    ),
+    businessApplicationCreateWindowSeconds: parseInt(
+      process.env.BUSINESS_APPLICATION_CREATE_WINDOW_SECONDS ?? '3600',
+      10,
+    ),
+    businessApplicationSubmitLimit: parseInt(
+      process.env.BUSINESS_APPLICATION_SUBMIT_LIMIT ?? '10',
+      10,
+    ),
+    businessApplicationSubmitWindowSeconds: parseInt(
+      process.env.BUSINESS_APPLICATION_SUBMIT_WINDOW_SECONDS ?? '3600',
+      10,
+    ),
+    ownershipClaimCreateLimit: parseInt(
+      process.env.OWNERSHIP_CLAIM_CREATE_LIMIT ?? '5',
+      10,
+    ),
+    ownershipClaimCreateWindowSeconds: parseInt(
+      process.env.OWNERSHIP_CLAIM_CREATE_WINDOW_SECONDS ?? '3600',
+      10,
+    ),
   },
   database: {
     url: process.env.DATABASE_URL,

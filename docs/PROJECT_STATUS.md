@@ -1,7 +1,7 @@
 # QalaGo — Project Status
 
 **Last updated:** 2026-09-09  
-**Stable checkpoint:** `00b6953` — Stage 5N.3 admin moderation UI (+ 5N.4 client onboarding pending commit)
+**Stable checkpoint:** `stage-5n-checkpoint` — Stage 5N complete (5N.5 security hardening)
 
 ---
 
@@ -20,10 +20,11 @@
 | 5N.1 | `44596c9` | BusinessApplication backend, admin moderation API, ownerId fix |
 | 5N.2 | `7a1ed6e` | BusinessOwnershipClaim backend, manual verification, plan preservation |
 | 5N.3 | `00b6953` | Admin Web moderation UI for applications + ownership claims |
-| 5N.4 | (pending commit) | Flutter + Business Web client onboarding (applications + claims) |
+| 5N.4 | `aac46fa` | Flutter + Business Web client onboarding (applications + claims) |
+| 5N.5 | (this commit) | Legacy cutover, rate limits, session cleanup, PAYMENTS_VIEW RBAC, 393 backend tests |
 
 **Not started:** Stage 6 (release readiness)  
-**Not implemented:** `MODERATOR`, verification/rate limits/cleanup (5N.5)
+**Deferred:** `MODERATOR`, document KYC, automatic phone ownership verification
 
 ---
 

@@ -27,6 +27,16 @@
 
 ---
 
+## 2026-09-09 — Stage 5N.5: Business onboarding security hardening
+
+- **Сделано:** `POST /businesses` закрыт для обычных пользователей (только ADMIN/SUPER_ADMIN import); `accountType=business` больше не повышает роль; удалены мёртвые client `createBusiness`; rate limits на create/submit applications и ownership claims (429, env-config); Flutter session cleanup через `userScopedCacheCleanupProvider` + auth-gated onboarding providers; PAYMENTS_VIEW RBAC на Business Web сохранён и расширен тестами; backend +7 тестов (393 total).
+- **На будущее:** read-only plan limits endpoint для менеджеров каталога без PAYMENTS_VIEW; постепенный отказ от `@Roles(BUSINESS)` на контроллерах.
+
+## 2026-09-09 — Business Web: plan page access (PAYMENTS_VIEW)
+
+- **Сделано:** страница «Тариф» и связанные экраны проверяют `PAYMENTS_VIEW` перед запросом `/businesses/:id/plan`; пункт меню «Тариф» скрывается для менеджеров без права; вместо JSON-403 показывается понятное сообщение на русском; checkout тарифа доступен только владельцу.
+- **На будущее:** отдельный read-only эндпоинт лимитов тарифа для менеджеров каталога/акций без доступа к платежам.
+
 ## 2026-09-09 — Stage 5N.4: Client business onboarding
 
 **Added**

@@ -46,6 +46,18 @@ void invalidateUserScopedProviders(Ref ref) {
   invalidateOnboardingProviders(ref);
 }
 
+/// Clears user-private caches when auth session ends or a new user logs in.
+/// Must run from a separate provider — invalidating from [AuthNotifier] causes
+/// Riverpod circular dependency errors.
+final userScopedCacheCleanupProvider = Provider<void>((ref) {
+  ref.listen<AuthState>(authProvider, (previous, next) {
+    final wasAuthed = previous?.isAuthenticated ?? false;
+    final isAuthed = next.isAuthenticated;
+    if (wasAuthed == isAuthed) return;
+    invalidateUserScopedProviders(ref);
+  });
+});
+
 void invalidateCityScopedProviders(Ref ref) {
   ref.invalidate(cityCatalogTotalProvider);
   ref.invalidate(categoriesProvider);
@@ -275,19 +287,16 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> _finishLogin(String token, UserModel user) async {
     await _storage.saveToken(token);
     state = AuthState(user: user, isAuthenticated: true);
-    invalidateUserScopedProviders(ref);
     await _syncSessionCityToProfile(user);
   }
 
   Future<void> logout() async {
     await _storage.clear();
-    invalidateUserScopedProviders(ref);
     clearSession();
   }
 
   Future<void> handleUnauthorized() async {
     await _storage.clear();
-    invalidateUserScopedProviders(ref);
     clearSession();
   }
 }

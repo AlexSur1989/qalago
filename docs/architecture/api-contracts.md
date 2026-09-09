@@ -40,7 +40,7 @@ Request:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `accountType` | `"user"` \| `"business"` | no | При **первой** регистрации задаёт роль `USER` или `BUSINESS`. Для существующего `USER` значение `business` повышает роль до `BUSINESS`. Роли `ADMIN`, `CITY_ADMIN`, `BUSINESS` не понижаются. |
+| `accountType` | `"user"` \| `"business"` | no | **Legacy (ignored since Stage 5N.5).** Новые пользователи всегда получают `USER`. Существующие роли `ADMIN`, `CITY_ADMIN`, `BUSINESS` сохраняются. Значение `business` не повышает роль. |
 
 Response `200`:
 ```json
@@ -288,9 +288,9 @@ Auth user recommendations (rule-based MVP; AI later). Cold start (no favorites):
 - `GET /admin/reviews?citySlug=&limit=` — reviews scoped by admin city; includes user + business
 - `DELETE /admin/reviews/:id` — remove review (city-scoped for CITY_ADMIN)
 
-### POST /businesses (legacy)
+### POST /businesses (privileged import only)
 
-**Deprecated (Stage 5N.1).** Direct create still supported for existing Flutter/Business Web clients until Stage 5N.4 onboarding migration. Prefer `POST /business-applications` flow. Immediately sets `ownerId`, ACTIVE OWNER membership, and may upgrade `USER → BUSINESS`.
+**Stage 5N.5.** Normal users (`USER`, `BUSINESS`, owners, managers) receive **403 Forbidden**. Only platform `ADMIN` / `SUPER_ADMIN` may create via this route (catalog import). Self-service: `POST /business-applications` → moderation → Business + ACTIVE OWNER membership. Does **not** mutate `User.role`.
 
 ---
 

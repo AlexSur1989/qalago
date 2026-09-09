@@ -282,10 +282,6 @@ class CatalogRepository {
     await _dio.delete('/service-menu-groups/$id');
   }
 
-  Future<void> createBusiness(Map<String, dynamic> data) async {
-    await _dio.post('/businesses', data: data);
-  }
-
   Future<List<Map<String, dynamic>>> fetchServiceItemsManage(
     String businessId,
   ) async {

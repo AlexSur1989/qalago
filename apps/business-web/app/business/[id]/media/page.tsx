@@ -5,6 +5,8 @@ import { ChangeEvent, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { BusinessImageRow, BusinessPlanStatus, ownerApi } from '@/lib/api';
 import { mediaUrl } from '@/lib/media';
+import { canViewPayments } from '@/lib/business-access';
+import { parseApiError } from '@/lib/monetization-utils';
 import { photoPublishLabel, photoPublishState } from '@/lib/owner-utils';
 import { useOwnerBusiness } from '@/lib/use-owner-business';
 import { BusinessShell } from '@/components/business-shell';
@@ -12,26 +14,27 @@ import { BusinessShell } from '@/components/business-shell';
 export default function BusinessMediaPage() {
   const params = useParams<{ id: string }>();
   const businessId = params.id;
-  const { token, user, ready, logout, businesses, business, error, setError, reloadBusinesses } =
+  const { token, user, ready, logout, businesses, business, access, error, setError, reloadBusinesses } =
     useOwnerBusiness(businessId);
   const [images, setImages] = useState<BusinessImageRow[]>([]);
   const [planStatus, setPlanStatus] = useState<BusinessPlanStatus | null>(null);
   const [uploading, setUploading] = useState(false);
 
   async function load(t: string) {
-    const [gallery, plan] = await Promise.all([
-      ownerApi.listBusinessImages(t, businessId),
-      ownerApi.getBusinessPlan(t, businessId),
-    ]);
+    const gallery = await ownerApi.listBusinessImages(t, businessId);
     setImages(gallery);
-    setPlanStatus(plan);
+    if (canViewPayments(access)) {
+      setPlanStatus(await ownerApi.getBusinessPlan(t, businessId));
+    } else {
+      setPlanStatus(null);
+    }
     await reloadBusinesses();
   }
 
   useEffect(() => {
     if (!token) return;
-    load(token).catch((err) => setError(String(err)));
-  }, [token, businessId]);
+    load(token).catch((err) => setError(parseApiError(err)));
+  }, [token, businessId, access]);
 
   const maxPhotos = planStatus?.limits.maxPhotos;
   const atPhotoLimit = maxPhotos != null && images.length >= maxPhotos;

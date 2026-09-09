@@ -178,8 +178,15 @@ export const PERMISSION_PRESETS: PermissionPreset[] = [
   },
 ];
 
+export const PAYMENTS_ACCESS_DENIED_RU =
+  'Нет доступа к подписке и платежам. Обратитесь к владельцу бизнеса.';
+
 export function isOwner(access: BusinessAccessContext | null | undefined): boolean {
   return access?.role === 'OWNER';
+}
+
+export function canViewPayments(access: BusinessAccessContext | null | undefined): boolean {
+  return hasPermission(access, BusinessPermission.PAYMENTS_VIEW);
 }
 
 export function hasPermission(

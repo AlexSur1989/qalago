@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -16,6 +17,7 @@ import {
 import { haversineMeters } from '../../common/utils/geo.utils';
 import { compareBusinessCatalogRank } from '../../common/utils/business-rank.util';
 import { AuthUser } from '../../common/types/jwt-payload.type';
+import { isGlobalAdmin } from '../../common/utils/system-access.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { changedFieldsFromDto, toMembershipRole } from '../audit-log/audit-log.util';
@@ -63,11 +65,16 @@ export class BusinessesService {
   ) {}
 
   /**
-   * @deprecated Stage 5N.1 — legacy direct business creation.
-   * Prefer POST /business-applications flow. Kept for existing Flutter/Business Web clients
-   * until Stage 5N.4 onboarding migration.
+   * Privileged platform import only (Stage 5N.5).
+   * Normal users must use POST /business-applications.
    */
   async create(user: AuthUser, dto: CreateBusinessDto) {
+    if (!isGlobalAdmin(user)) {
+      throw new ForbiddenException(
+        'Direct business creation is disabled. Submit a business application instead.',
+      );
+    }
+
     const cityId = await this.cityScope.resolveCityId({ citySlug: dto.citySlug });
 
     const category = await this.prisma.category.findUnique({
@@ -100,13 +107,6 @@ export class BusinessesService {
       });
 
       await this.membership.createActiveOwnerMembership(tx, user.id, business.id);
-
-      if (user.role === UserRole.USER) {
-        await tx.user.update({
-          where: { id: user.id },
-          data: { role: UserRole.BUSINESS },
-        });
-      }
 
       return business;
     });

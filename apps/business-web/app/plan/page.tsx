@@ -1,16 +1,23 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   BusinessPlanStatus,
-  BusinessRow,
-  myBusinessRows,
-  ownerApi,
   PlanCatalogRow,
+  ownerApi,
 } from '@/lib/api';
-import { useAuth } from '@/lib/use-auth';
-import { BusinessShell, useSelectedBusiness } from '@/components/business-shell';
+import {
+  buildFooterNavItems,
+  buildMainNavItems,
+  canViewPayments,
+  filterNavByAccess,
+  isOwner,
+  PAYMENTS_ACCESS_DENIED_RU,
+} from '@/lib/business-access';
+import { parseApiError } from '@/lib/monetization-utils';
+import { useBusinessAccess } from '@/lib/use-business-access';
+import { BusinessShell } from '@/components/business-shell';
 
 function formatPrice(priceKzt: number) {
   if (priceKzt === 0) return '0 ₸';
@@ -23,9 +30,7 @@ function formatPeriod(periodDays: number | null) {
 }
 
 export default function PlanPage() {
-  const { token, user, ready, logout } = useAuth();
-  const [businesses, setBusinesses] = useState<BusinessRow[]>([]);
-  const business = useSelectedBusiness(businesses);
+  const { token, user, ready, logout, business, access, businesses } = useBusinessAccess();
   const [catalog, setCatalog] = useState<PlanCatalogRow[]>([]);
   const [planStatus, setPlanStatus] = useState<BusinessPlanStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,39 +38,44 @@ export default function PlanPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const canView = canViewPayments(access);
+  const canManage = isOwner(access);
+
+  const mainNav = useMemo(
+    () => filterNavByAccess(buildMainNavItems(), access),
+    [access],
+  );
+  const footerNav = useMemo(
+    () => filterNavByAccess(buildFooterNavItems(), access),
+    [access],
+  );
+
   const load = useCallback(async () => {
-    if (!token) return;
+    if (!token || !business) return;
     setLoading(true);
     setError(null);
     try {
-      const [myBusinesses, plans] = await Promise.all([
-        ownerApi.listMyBusinesses(token),
-        ownerApi.listPlans(),
-      ]);
-      const rows = myBusinessRows(myBusinesses.items);
-      setBusinesses(rows);
+      const plans = await ownerApi.listPlans();
       setCatalog(plans);
 
-      const selectedId =
-        rows.find((b) => b.id === business?.id)?.id ?? rows[0]?.id;
-      if (selectedId) {
-        setPlanStatus(await ownerApi.getBusinessPlan(token, selectedId));
+      if (canView) {
+        setPlanStatus(await ownerApi.getBusinessPlan(token, business.id));
       } else {
         setPlanStatus(null);
       }
     } catch (err) {
-      setError(String(err));
+      setError(parseApiError(err));
     } finally {
       setLoading(false);
     }
-  }, [token, business?.id]);
+  }, [token, business?.id, canView]);
 
   useEffect(() => {
     load().catch(() => undefined);
   }, [load]);
 
   async function onCheckout(tier: string) {
-    if (!token || !planStatus) return;
+    if (!token || !planStatus || !canManage) return;
     setCheckoutTier(tier);
     setError(null);
     setMessage(null);
@@ -75,7 +85,7 @@ export default function PlanPage() {
       setMessage(result.message);
       await load();
     } catch (err) {
-      setError(String(err));
+      setError(parseApiError(err));
     } finally {
       setCheckoutTier(null);
     }
@@ -83,7 +93,7 @@ export default function PlanPage() {
 
   if (!ready || !token) return <p className="page-content">Загрузка…</p>;
 
-  const effectiveTier = planStatus?.effectiveTier ?? 'FREE';
+  const effectiveTier = planStatus?.effectiveTier;
 
   return (
     <BusinessShell
@@ -92,6 +102,8 @@ export default function PlanPage() {
       businesses={businesses}
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
+      mainNav={mainNav}
+      footerNav={footerNav}
     >
       <header className="page-header">
         <div>
@@ -111,6 +123,9 @@ export default function PlanPage() {
       </header>
 
       {loading && <p style={{ color: 'var(--text-muted)' }}>Загрузка тарифов…</p>}
+      {!loading && !canView && (
+        <div className="alert alert-error">{PAYMENTS_ACCESS_DENIED_RU}</div>
+      )}
       {error && <div className="alert alert-error">{error}</div>}
       {message && <div className="alert alert-success">{message}</div>}
 
@@ -148,9 +163,9 @@ export default function PlanPage() {
 
       <div className="plan-grid">
         {catalog.map((plan) => {
-          const isCurrent = effectiveTier === plan.tier;
+          const isCurrent = effectiveTier != null && effectiveTier === plan.tier;
           const isDowngrade =
-            plan.tier === 'FREE' && effectiveTier !== 'FREE';
+            plan.tier === 'FREE' && effectiveTier != null && effectiveTier !== 'FREE';
           return (
             <section
               key={plan.tier}
@@ -172,7 +187,11 @@ export default function PlanPage() {
                   Рекламные размещения приобретаются отдельно.
                 </p>
               )}
-              {isCurrent ? (
+              {!canView ? (
+                <button type="button" className="btn btn-ghost" disabled>
+                  Недоступно
+                </button>
+              ) : isCurrent ? (
                 <button type="button" className="btn btn-ghost" disabled>
                   Активен
                 </button>
@@ -180,16 +199,19 @@ export default function PlanPage() {
                 <button
                   type="button"
                   className="btn"
-                  disabled={!planStatus || checkoutTier === plan.tier}
+                  disabled={!planStatus || !canManage || checkoutTier === plan.tier}
                   onClick={() => onCheckout(plan.tier)}
+                  title={!canManage ? 'Изменить тариф может только владелец' : undefined}
                 >
                   {checkoutTier === plan.tier
                     ? 'Подключение…'
-                    : isDowngrade
-                      ? 'Вернуться на Free'
-                      : plan.priceKzt === 0
-                        ? 'Выбрать'
-                        : 'Подключить (тест)'}
+                    : !canManage
+                      ? 'Только для владельца'
+                      : isDowngrade
+                        ? 'Вернуться на Free'
+                        : plan.priceKzt === 0
+                          ? 'Выбрать'
+                          : 'Подключить (тест)'}
                 </button>
               )}
             </section>

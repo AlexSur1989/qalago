@@ -20,6 +20,7 @@ import {
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { BusinessMembershipService } from '../../common/services/business-membership.service';
+import { OnboardingRateLimitService } from '../../common/services/onboarding-rate-limit.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -57,9 +58,12 @@ export class OwnershipClaimsService {
     private readonly membership: BusinessMembershipService,
     private readonly auditLog: AuditLogService,
     private readonly notifications: NotificationsService,
+    private readonly rateLimit: OnboardingRateLimitService,
   ) {}
 
   async create(user: AuthUser, businessId: string, dto: CreateOwnershipClaimDto) {
+    this.rateLimit.assertOwnershipClaimCreate(user.id);
+
     const business = await this.loadBusinessForClaim(businessId);
     await this.assertCanClaim(user.id, business);
 

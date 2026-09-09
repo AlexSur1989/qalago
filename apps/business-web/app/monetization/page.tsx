@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { BusinessPlanStatus, MonetizationCampaign, MonetizationOrder, ownerApi } from '@/lib/api';
 import { useMonetizationContext } from '@/components/monetization/monetization-shell';
+import { canViewPayments } from '@/lib/business-access';
 import {
   campaignStatusLabel,
   formatDateTime,
@@ -15,7 +16,7 @@ import {
 } from '@/lib/monetization-utils';
 
 export default function MonetizationOverviewPage() {
-  const { token, business } = useMonetizationContext();
+  const { token, business, access } = useMonetizationContext();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [planStatus, setPlanStatus] = useState<BusinessPlanStatus | null>(null);
@@ -28,7 +29,9 @@ export default function MonetizationOverviewPage() {
     setError(null);
 
     Promise.all([
-      ownerApi.getBusinessPlan(token, business.id),
+      canViewPayments(access)
+        ? ownerApi.getBusinessPlan(token, business.id)
+        : Promise.resolve(null),
       ownerApi.listMonetizationOrders(token, business.id),
       ownerApi.listMonetizationCampaigns(token, business.id),
     ])
@@ -48,7 +51,7 @@ export default function MonetizationOverviewPage() {
     return () => {
       cancelled = true;
     };
-  }, [token, business.id]);
+  }, [token, business.id, access]);
 
   const activeCount = campaigns.filter(
     (c) => (c.effectiveStatus ?? c.status) === 'ACTIVE',

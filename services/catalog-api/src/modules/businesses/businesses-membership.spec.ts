@@ -52,9 +52,9 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
     return { service, prisma, tx, membership };
   }
 
-  it('create business sets ownerId and ACTIVE OWNER membership atomically', async () => {
+  it('create business sets ownerId and ACTIVE OWNER membership atomically for admin', async () => {
     const { service, tx } = createService();
-    const user = { id: 'owner-1', sub: 'owner-1', phone: '+7', role: UserRole.USER };
+    const user = { id: 'admin-1', sub: 'admin-1', phone: '+7', role: UserRole.ADMIN };
 
     await service.create(user, {
       title: 'New Cafe',
@@ -65,12 +65,12 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
 
     expect(tx.business.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ ownerId: 'owner-1' }),
+        data: expect.objectContaining({ ownerId: 'admin-1' }),
       }),
     );
     expect(membership.createActiveOwnerMembership).toHaveBeenCalledWith(
       tx,
-      'owner-1',
+      'admin-1',
       'biz-new',
     );
   });

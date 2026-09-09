@@ -2,14 +2,16 @@ import { UserRole } from '@prisma/client';
 
 export type AccountType = 'user' | 'business';
 
+/**
+ * Resolves persisted user role on login/signup.
+ * accountType is ignored for role elevation (Stage 5N.5) — new users are always USER.
+ */
 export function resolveAccountRole(
   existingRole: UserRole | null,
-  accountType?: AccountType,
+  _accountType?: AccountType,
 ): UserRole {
-  const desired = accountType === 'business' ? UserRole.BUSINESS : UserRole.USER;
-
   if (!existingRole) {
-    return desired;
+    return UserRole.USER;
   }
 
   if (
@@ -21,9 +23,5 @@ export function resolveAccountRole(
     return existingRole;
   }
 
-  if (existingRole === UserRole.USER && desired === UserRole.BUSINESS) {
-    return UserRole.BUSINESS;
-  }
-
-  return existingRole;
+  return UserRole.USER;
 }

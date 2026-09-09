@@ -120,18 +120,11 @@ export class AuthService {
         select: userSelect,
       });
     } else {
-      const updateData: { name?: string; role?: UserRole } = {};
-      if (options?.name) {
-        updateData.name = options.name;
-      }
-      if (existing.role === UserRole.USER && targetRole === UserRole.BUSINESS) {
-        updateData.role = UserRole.BUSINESS;
-      }
       user =
-        Object.keys(updateData).length > 0
+        options?.name
           ? await this.prisma.user.update({
               where: { phone },
-              data: updateData,
+              data: { name: options.name },
               select: userSelect,
             })
           : existing;

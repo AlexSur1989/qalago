@@ -11,8 +11,10 @@ import {
 import {
   buildFooterNavItems,
   buildMainNavItems,
+  canViewPayments,
   filterNavByAccess,
 } from '@/lib/business-access';
+import { parseApiError } from '@/lib/monetization-utils';
 import {
   buildRecentActions,
   formatNumber,
@@ -46,11 +48,13 @@ export default function DashboardPage() {
     if (!token || !business) return;
     (async () => {
       try {
-        const [s7, promos, plan, camps] = await Promise.all([
+        const [s7, promos, camps, plan] = await Promise.all([
           ownerApi.analyticsSummary(token, business.id, 7),
           ownerApi.listPromotions(token, business.id),
-          ownerApi.getBusinessPlan(token, business.id),
           ownerApi.listMonetizationCampaigns(token, business.id),
+          canViewPayments(access)
+            ? ownerApi.getBusinessPlan(token, business.id)
+            : Promise.resolve(null),
         ]);
         setSummary7({
           total: s7.total,
@@ -60,10 +64,10 @@ export default function DashboardPage() {
         setPlanStatus(plan);
         setCampaigns(camps);
       } catch (err) {
-        setError(String(err));
+        setError(parseApiError(err));
       }
     })();
-  }, [token, business?.id]);
+  }, [token, business?.id, access]);
 
   if (!ready || !token) {
     return <p className="page-content">Загрузка…</p>;

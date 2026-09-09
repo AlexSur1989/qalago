@@ -197,6 +197,49 @@ describe('AuthService', () => {
         service.verifyCode({ phone: 'bad', code: '1234' }),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
+
+    it('ignores accountType=business for new users (always USER)', async () => {
+      prisma.otpCode.findFirst.mockResolvedValue({ id: 'otp-1' });
+      prisma.otpCode.update.mockResolvedValue({});
+      prisma.user.findUnique.mockResolvedValue(null);
+      prisma.user.create.mockResolvedValue({
+        id: 'u-new',
+        phone: '+77008887766',
+        role: UserRole.USER,
+      });
+
+      await service.verifyCode({
+        phone: '+77008887766',
+        code: '1234',
+        accountType: 'business',
+      });
+
+      expect(prisma.user.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ role: UserRole.USER }),
+        }),
+      );
+      expect(prisma.user.update).not.toHaveBeenCalled();
+    });
+
+    it('preserves existing BUSINESS role on login', async () => {
+      prisma.otpCode.findFirst.mockResolvedValue({ id: 'otp-1' });
+      prisma.otpCode.update.mockResolvedValue({});
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'biz-user',
+        phone: '+77001234567',
+        role: UserRole.BUSINESS,
+      });
+
+      const result = await service.verifyCode({
+        phone: '+77001234567',
+        code: '1234',
+        accountType: 'user',
+      });
+
+      expect(result.user.role).toBe(UserRole.BUSINESS);
+      expect(prisma.user.update).not.toHaveBeenCalled();
+    });
   });
 
   describe('sendCode', () => {

@@ -1,15 +1,16 @@
 'use client';
 
-import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
-import { BusinessRow, myBusinessRows, ownerApi } from '@/lib/api';
-import { useAuth } from '@/lib/use-auth';
-import { BusinessShell, useSelectedBusiness } from '@/components/business-shell';
+import { ReactNode, createContext, useContext } from 'react';
+import { BusinessAccessInfo, BusinessRow, findMyBusinessItem } from '@/lib/api';
+import { useBusinessAccess } from '@/lib/use-business-access';
+import { BusinessShell } from '@/components/business-shell';
 import { MonetizationSubNav } from '@/components/monetization/monetization-subnav';
 
 type MonetizationContextValue = {
   token: string;
   business: BusinessRow;
   businesses: BusinessRow[];
+  access: BusinessAccessInfo | null;
 };
 
 const MonetizationContext = createContext<MonetizationContextValue | null>(null);
@@ -27,26 +28,13 @@ type MonetizationShellProps = {
 };
 
 export function MonetizationShell({ children }: MonetizationShellProps) {
-  const { token, user, ready, logout } = useAuth();
-  const [businesses, setBusinesses] = useState<BusinessRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const business = useSelectedBusiness(businesses);
-
-  useEffect(() => {
-    if (!token) return;
-    ownerApi
-      .listMyBusinesses(token)
-      .then((res) => setBusinesses(myBusinessRows(res.items)))
-      .catch(() => setBusinesses([]))
-      .finally(() => setLoading(false));
-  }, [token]);
+  const { token, user, ready, logout, business, businesses, items } = useBusinessAccess();
+  const access: BusinessAccessInfo | null = business
+    ? findMyBusinessItem(items, business.id)?.access ?? null
+    : null;
 
   if (!ready || !token) {
     return <p className="page-content">Загрузка…</p>;
-  }
-
-  if (loading) {
-    return <p className="page-content">Загрузка заведений…</p>;
   }
 
   if (!business) {
@@ -76,7 +64,7 @@ export function MonetizationShell({ children }: MonetizationShellProps) {
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
     >
-      <MonetizationContext.Provider value={{ token, business, businesses }}>
+      <MonetizationContext.Provider value={{ token, business, businesses, access }}>
         <MonetizationSubNav />
         {children}
       </MonetizationContext.Provider>

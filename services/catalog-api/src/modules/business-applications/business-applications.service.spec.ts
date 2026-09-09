@@ -57,6 +57,11 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
   const auditLog = { record: jest.fn().mockResolvedValue({}) };
   const membership = { createActiveOwnerMembership: jest.fn().mockResolvedValue({}) };
   const notifications = { create: jest.fn().mockResolvedValue({}) };
+  const rateLimit = {
+    assertApplicationCreate: jest.fn(),
+    assertApplicationSubmit: jest.fn(),
+    assertOwnershipClaimCreate: jest.fn(),
+  };
   const cityScope = {
     resolveCityId: jest.fn().mockResolvedValue('city-uralsk'),
     resolveAdminCityId: jest.fn().mockResolvedValue('city-uralsk'),
@@ -113,6 +118,7 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
       membership as never,
       auditLog as never,
       notifications as never,
+      rateLimit as never,
     );
   });
 

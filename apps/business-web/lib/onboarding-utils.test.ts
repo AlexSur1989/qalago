@@ -24,4 +24,10 @@ describe('onboarding-utils', () => {
   it('maps duplicate errors', () => {
     expect(mapOnboardingError('duplicate business already exists')).toContain('Похожий бизнес');
   });
+
+  it('maps rate limit errors', () => {
+    expect(mapOnboardingError('429 Too Many Requests')).toBe(
+      'Слишком много попыток. Попробуйте позже.',
+    );
+  });
 });

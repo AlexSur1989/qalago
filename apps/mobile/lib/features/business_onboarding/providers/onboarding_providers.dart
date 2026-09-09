@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/dio_provider.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../data/onboarding_repository.dart';
 
 final onboardingRepositoryProvider = Provider(
@@ -7,15 +8,24 @@ final onboardingRepositoryProvider = Provider(
 );
 
 final myApplicationsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>(
-  (ref) => ref.watch(onboardingRepositoryProvider).fetchMyApplications(),
+  (ref) async {
+    if (!ref.watch(authProvider).isAuthenticated) return [];
+    return ref.watch(onboardingRepositoryProvider).fetchMyApplications();
+  },
 );
 
 final myClaimsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>(
-  (ref) => ref.watch(onboardingRepositoryProvider).fetchMyClaims(),
+  (ref) async {
+    if (!ref.watch(authProvider).isAuthenticated) return [];
+    return ref.watch(onboardingRepositoryProvider).fetchMyClaims();
+  },
 );
 
 final applicationDetailProvider = FutureProvider.autoDispose
-    .family<Map<String, dynamic>, String>((ref, id) {
+    .family<Map<String, dynamic>, String>((ref, id) async {
+  if (!ref.watch(authProvider).isAuthenticated) {
+    throw StateError('Not authenticated');
+  }
   return ref.watch(onboardingRepositoryProvider).getApplication(id);
 });
 

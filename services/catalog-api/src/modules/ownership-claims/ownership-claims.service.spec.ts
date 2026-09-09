@@ -88,12 +88,19 @@ describe('OwnershipClaimsService (Stage 5N.2)', () => {
       $transaction: jest.fn(async (fn: (tx: typeof prisma) => unknown) => fn(prisma)),
     };
 
+    const rateLimit = {
+      assertApplicationCreate: jest.fn(),
+      assertApplicationSubmit: jest.fn(),
+      assertOwnershipClaimCreate: jest.fn(),
+    };
+
     service = new OwnershipClaimsService(
       prisma as never,
       cityScope as never,
       membership as never,
       auditLog as never,
       notifications as never,
+      rateLimit as never,
     );
   });
 

@@ -21,7 +21,7 @@ export class BusinessesController {
     private readonly auditLog: AuditLogService,
   ) {}
 
-  /** @deprecated Use POST /business-applications — legacy direct create until Stage 5N.4 */
+  /** Platform admin import only — normal users use POST /business-applications (Stage 5N.5). */
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() dto: CreateBusinessDto) {
     return this.businessesService.create(user, dto);

@@ -14,4 +14,10 @@ export const validationSchema = Joi.object({
   MAX_UPLOAD_MB: Joi.number().default(5),
   AI_ORCHESTRATOR_URL: Joi.string().uri().default('http://localhost:3004'),
   QALAGO_INTERNAL_SERVICE_TOKEN: Joi.string().allow('').default(''),
+  BUSINESS_APPLICATION_CREATE_LIMIT: Joi.number().integer().min(1).default(5),
+  BUSINESS_APPLICATION_CREATE_WINDOW_SECONDS: Joi.number().integer().min(1).default(3600),
+  BUSINESS_APPLICATION_SUBMIT_LIMIT: Joi.number().integer().min(1).default(10),
+  BUSINESS_APPLICATION_SUBMIT_WINDOW_SECONDS: Joi.number().integer().min(1).default(3600),
+  OWNERSHIP_CLAIM_CREATE_LIMIT: Joi.number().integer().min(1).default(5),
+  OWNERSHIP_CLAIM_CREATE_WINDOW_SECONDS: Joi.number().integer().min(1).default(3600),
 });

@@ -105,6 +105,7 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
+      container.read(userScopedCacheCleanupProvider);
 
       final before = await container.read(favoritesProvider.future);
       expect(before, hasLength(1));
@@ -124,6 +125,7 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
+      container.read(userScopedCacheCleanupProvider);
 
       final notifier = container.read(authProvider.notifier);
       await notifier.logout();
@@ -139,6 +141,7 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
+      container.read(userScopedCacheCleanupProvider);
 
       await container.read(authProvider.notifier).handleUnauthorized();
 

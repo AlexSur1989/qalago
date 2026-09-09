@@ -7,18 +7,22 @@ import {
   BusinessPlanStatus,
   BusinessRow,
   PromotionRow,
+  findMyBusinessItem,
   myBusinessRows,
   ownerApi,
 } from '@/lib/api';
+import { canViewPayments } from '@/lib/business-access';
+import { parseApiError } from '@/lib/monetization-utils';
 import { useAuth } from '@/lib/use-auth';
 import { BusinessShell } from '@/components/business-shell';
 
 export default function BusinessPromotionsPage() {
   const params = useParams<{ id: string }>();
   const businessId = params.id;
-  const { token, user, ready, logout } = useAuth();
+  const { token, user, ready, logout, items: myBusinessItems } = useAuth();
+  const access = findMyBusinessItem(myBusinessItems, businessId)?.access ?? null;
   const [businesses, setBusinesses] = useState<BusinessRow[]>([]);
-  const [items, setItems] = useState<PromotionRow[]>([]);
+  const [promotions, setPromotions] = useState<PromotionRow[]>([]);
   const [planStatus, setPlanStatus] = useState<BusinessPlanStatus | null>(null);
   const [title, setTitle] = useState('');
   const [discountText, setDiscountText] = useState('-20%');
@@ -26,7 +30,7 @@ export default function BusinessPromotionsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const business = businesses.find((b) => b.id === businessId) ?? null;
-  const activeCount = items.filter((p) => p.status === 'ACTIVE').length;
+  const activeCount = promotions.filter((p) => p.status === 'ACTIVE').length;
   const atActiveLimit =
     planStatus != null && activeCount >= planStatus.limits.maxActivePromotions;
 
@@ -36,18 +40,19 @@ export default function BusinessPromotionsPage() {
   }, [token]);
 
   async function load(t: string) {
-    const [promos, plan] = await Promise.all([
-      ownerApi.listPromotions(t, businessId),
-      ownerApi.getBusinessPlan(t, businessId),
-    ]);
-    setItems(promos.items);
-    setPlanStatus(plan);
+    const promos = await ownerApi.listPromotions(t, businessId);
+    setPromotions(promos.items);
+    if (canViewPayments(access)) {
+      setPlanStatus(await ownerApi.getBusinessPlan(t, businessId));
+    } else {
+      setPlanStatus(null);
+    }
   }
 
   useEffect(() => {
     if (!token) return;
-    load(token).catch((err) => setError(String(err)));
-  }, [token, businessId]);
+    load(token).catch((err) => setError(parseApiError(err)));
+  }, [token, businessId, access]);
 
   async function create(e: FormEvent) {
     e.preventDefault();
@@ -157,11 +162,11 @@ export default function BusinessPromotionsPage() {
       {error && <div className="alert alert-error">{error}</div>}
 
       <section className="form-card" style={{ maxWidth: 720 }}>
-        <h2 style={{ marginTop: 0 }}>Список ({items.length})</h2>
-        {items.length === 0 ? (
+        <h2 style={{ marginTop: 0 }}>Список ({promotions.length})</h2>
+        {promotions.length === 0 ? (
           <p style={{ color: 'var(--text-muted)' }}>Пока нет акций</p>
         ) : (
-          items.map((p) => (
+          promotions.map((p) => (
             <div
               key={p.id}
               className="promo-item"
