@@ -24,6 +24,7 @@ import { mapSocialAuthError } from '@/lib/social-auth/social-auth-errors';
 import { AppleLoginButton } from '@/components/social-login/apple-login-button';
 import { GoogleLoginButton } from '@/components/social-login/google-login-button';
 import { sanitizeInternalRedirect } from '@/lib/redirect-utils';
+import { LegalConsentFooter } from '@/components/legal-consent-footer';
 
 export default function LoginPage() {
   const inner = (
@@ -297,6 +298,8 @@ function LoginContent() {
             {error}
           </div>
         )}
+
+        <LegalConsentFooter />
 
         <p style={{ marginTop: 20, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
           Нет бизнеса в QalaGo?{' '}

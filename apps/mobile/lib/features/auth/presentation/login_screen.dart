@@ -12,6 +12,7 @@ import '../../../shared/utils/auth_utils.dart';
 import '../data/social_auth_platform.dart';
 import 'dev_quick_login_panel.dart';
 import '../providers/auth_provider.dart';
+import '../../../shared/widgets/legal_links.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -436,6 +437,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                     ],
+                    const LoginLegalConsentFooter(),
                     const SizedBox(height: 20),
                     OutlinedButton.icon(
                       onPressed: isBusy ? null : _continueAsGuest,

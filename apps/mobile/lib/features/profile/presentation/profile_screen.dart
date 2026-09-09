@@ -8,6 +8,7 @@ import '../../../shared/widgets/city_picker.dart';
 import '../../../shared/widgets/qalago_logo.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../business_onboarding/utils/onboarding_labels.dart';
+import '../../../shared/widgets/legal_links.dart';
 
 Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
   final first = await showDialog<bool>(
@@ -244,18 +245,9 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ],
             const SizedBox(height: 28),
-            OutlinedButton.icon(
-              onPressed: () => _confirmDeleteAccount(context, ref),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.red.shade700,
-                minimumSize: const Size.fromHeight(52),
-                side: BorderSide(color: Colors.red.shade200),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-              ),
-              icon: const Icon(Icons.delete_forever_outlined),
-              label: const Text('Удалить аккаунт'),
+            LegalLinksSection(
+              showAccountDeletion: true,
+              onDeleteAccount: () => _confirmDeleteAccount(context, ref),
             ),
             const SizedBox(height: 12),
             OutlinedButton.icon(
@@ -380,6 +372,8 @@ class _GuestProfileScreen extends StatelessWidget {
               ),
               child: const Text('О приложении'),
             ),
+            const SizedBox(height: 24),
+            const LegalLinksSection(),
           ],
         ),
       ),

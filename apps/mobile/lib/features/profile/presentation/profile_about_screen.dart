@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/legal_links.dart';
 
 class ProfileAboutScreen extends StatelessWidget {
   const ProfileAboutScreen({super.key});
@@ -78,6 +79,8 @@ class ProfileAboutScreen extends StatelessWidget {
             title: 'Языки',
             value: 'Русский (kk — скоро)',
           ),
+          const SizedBox(height: 24),
+          const LegalLinksSection(),
           const SizedBox(height: 24),
           Text(
             '© ${DateTime.now().year} QalaGo. Все права защищены.',

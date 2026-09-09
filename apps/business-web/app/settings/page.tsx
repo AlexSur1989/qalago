@@ -120,8 +120,24 @@ export default function SettingsPage() {
       <section className="form-card" style={{ maxWidth: 560 }}>
         <h3 style={{ marginTop: 0 }}>Безопасность</h3>
         <p style={{ margin: 0, color: 'var(--text-muted)' }}>
-          Вход по одноразовому SMS-коду. Для смены номера телефона обратитесь в поддержку.
+          Вход через Google, Apple или OTP (если включено). Удаление аккаунта потребителя —
+          в мобильном приложении QalaGo.
         </p>
+      </section>
+
+      <section className="form-card" style={{ maxWidth: 560, marginTop: '1rem' }}>
+        <h3 style={{ marginTop: 0 }}>Правовая информация</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <Link href="/privacy" target="_blank" rel="noopener noreferrer">
+            Политика конфиденциальности
+          </Link>
+          <Link href="/terms" target="_blank" rel="noopener noreferrer">
+            Условия использования
+          </Link>
+          <Link href="/account-deletion" target="_blank" rel="noopener noreferrer">
+            Удаление аккаунта
+          </Link>
+        </div>
       </section>
     </BusinessShell>
   );

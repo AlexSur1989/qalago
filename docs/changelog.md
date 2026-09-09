@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-10 — Stage 6.3: Privacy, terms, account deletion & store compliance foundation
+
+- **Сделано:** Public `/privacy`, `/terms`, `/account-deletion` (Business Web); Flutter/Business Web legal links and login consent; privacy data inventory; Google Play / Apple privacy drafts; store checklists; legal-review-required registry.
+- **Политика:** тексты отражают фактическое поведение репозитория; placeholders для оператора/контактов; без вымышленных legal claims.
+- **На будущее:** юридическая экспертиза, deploy qalago.kz, Apple revocation, in-app report review, kk translation.
+
 ## 2026-09-10 — Stage 6.2B7: Auth migration finalization
 
 - **Сделано:** Social-first auth policy documented; OTP independently disableable (backend + Business Web client flag); production validation requires ≥1 auth method; admin `authMethods` visibility; JWT guard tests; auth collision/tombstone tests; all-auth-off UX; invitation rate-limit IP fix.

@@ -1208,3 +1208,96 @@ select {
     margin-top: 8px;
   }
 }
+
+/* Stage 6.3 — public legal pages */
+.legal-page {
+  min-height: 100vh;
+  background: var(--bg);
+  padding: 2rem 1rem 3rem;
+}
+
+.legal-page-inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.legal-page-brand {
+  display: inline-block;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+.legal-page-header h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+}
+
+.legal-page-meta {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0 0 1rem;
+}
+
+.legal-page-draft {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: #fff8e6;
+  border: 1px solid #f0d78c;
+  color: #6b4f00;
+  font-size: 0.88rem;
+  margin: 0 0 1.5rem;
+}
+
+.legal-page-content h2 {
+  margin-top: 1.75rem;
+  font-size: 1.15rem;
+}
+
+.legal-page-content p,
+.legal-page-content li {
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.legal-page-content ul {
+  padding-left: 1.25rem;
+}
+
+.legal-page-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.legal-page-footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.legal-page-footer nav a {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.legal-page-footer-note {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.legal-consent-footer {
+  margin-top: 1.25rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.45;
+}
+
+.legal-consent-footer a {
+  color: var(--primary);
+  text-decoration: underline;
+}
