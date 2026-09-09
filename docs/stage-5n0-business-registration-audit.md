@@ -870,7 +870,7 @@ None for audit completion. Implementation blocked on explicit 5N.1 kickoff.
 - [x] P0 ownerId revocation bypass fix
 - [x] `POST /businesses` deprecated (legacy, not removed)
 - [x] Ownership claims backend (5N.2)
-- [ ] Admin Web moderation UI (5N.3)
+- [x] Admin Web moderation UI (5N.3)
 - [ ] Flutter/Business Web onboarding (5N.4)
 
 ## Stage 5N.2 implementation note (2026-09-09)
@@ -878,8 +878,16 @@ None for audit completion. Implementation blocked on explicit 5N.1 kickoff.
 - [x] `BusinessOwnershipClaim` + user/admin API
 - [x] Manual verification only; no phone auto-approval
 - [x] Approval preserves plan/content; ownerId set only if null
-- [ ] Admin Web UI (5N.3)
+- [x] Admin Web UI (5N.3)
 - [ ] Consumer claim CTA (5N.4)
+
+## Stage 5N.3 implementation note (2026-09-09)
+
+- [x] Admin Web «Заявки бизнеса» — applications + claims queues, detail, approve/reject
+- [x] CITY_ADMIN city lock; pending badges; Russian status labels
+- [ ] Dedicated admin business detail route after approval (shows title only)
+- [ ] Consumer/business onboarding (5N.4)
+- [ ] Verification/rate limits (5N.5)
 
 ## NOT IMPLEMENTED (by design)
 - Client onboarding UI

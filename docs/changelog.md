@@ -27,6 +27,19 @@
 
 ---
 
+## 2026-09-09 — Stage 5N.3: Admin business request moderation UI
+
+**Added**
+- Admin Web «Заявки бизнеса»: `/business-requests/applications`, `/business-requests/claims` (+ detail routes)
+- Paginated queues with status filters (default `PENDING`), city scope via shell picker (ADMIN/SUPER_ADMIN) or locked city (CITY_ADMIN)
+- Approve/reject dialogs with Russian copy, rejection reason validation (3–500), 409 stale-state handling
+- Pending count badges on nav + sub-tabs; vitest coverage for utils/API query mapping
+
+**Not implemented**
+- Consumer/business onboarding (5N.4), verification/rate limits (5N.5), dedicated admin business detail deep link
+
+---
+
 ## 2026-09-09 — Stage 5N.2: Business ownership claim backend foundation
 
 **Added**

@@ -309,7 +309,9 @@ Safe new-business registration. No ownership until moderation approval.
 
 Applicant-editable body (create/patch): `title`, `categoryId`, `citySlug`/`cityId`, `address`, `shortDesc?`, `phone?`. Server sets `dedupeKey`, `status`, reviewer fields.
 
-Admin moderation (backend only in 5N.1):
+Admin moderation:
+
+**Admin Web UI (5N.3):** `/business-requests/applications`, `/business-requests/applications/[id]`, `/business-requests/claims`, `/business-requests/claims/[id]` — SUPER_ADMIN, ADMIN, CITY_ADMIN (city-scoped).
 
 | Method | Path | Auth |
 |--------|------|------|
@@ -335,7 +337,9 @@ Safe ownership claims for **existing** businesses. No access until moderation ap
 
 Body (create): optional `claimantMessage` (max 500). Server sets `verificationMethod=MANUAL`.
 
-Admin moderation (backend only):
+Admin moderation:
+
+**Admin Web UI (5N.3):** same routes under `/business-requests/claims/*`.
 
 | Method | Path | Auth |
 |--------|------|------|
@@ -348,7 +352,7 @@ Admin moderation (backend only):
 
 **Eligibility:** ACTIVE business only; denies ACTIVE OWNER, legacy `ownerId` without membership, SUSPENDED/REVOKED memberships, INVITED; allows ACTIVE MANAGER co-owner claims.
 
-**Not implemented:** Admin Web UI (5N.3), consumer claim CTA (5N.4).
+**Not implemented:** consumer claim CTA (5N.4), verification hardening (5N.5).
 
 ---
 

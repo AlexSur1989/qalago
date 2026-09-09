@@ -1,7 +1,7 @@
 # QalaGo — Project Status
 
 **Last updated:** 2026-09-09  
-**Stable checkpoint:** `c051fbd` — Stage 5N.0 audit (tag `stage-5m4-checkpoint` on 5M.4.1)
+**Stable checkpoint:** `7a1ed6e` — Stage 5N.2 ownership claim backend (+ 5N.3 admin UI pending push)
 
 ---
 
@@ -18,10 +18,11 @@
 | 5M.4 | `1f726b5` | SUPER_ADMIN governance; ADMIN operational-only; role-change SUPER_ADMIN-only |
 | 5N.0 | `c051fbd` | Business registration audit/design |
 | 5N.1 | `44596c9` | BusinessApplication backend, admin moderation API, ownerId fix |
-| 5N.2 | (pending commit) | BusinessOwnershipClaim backend, manual verification, plan preservation |
+| 5N.2 | `7a1ed6e` | BusinessOwnershipClaim backend, manual verification, plan preservation |
+| 5N.3 | (pending commit) | Admin Web moderation UI for applications + ownership claims |
 
 **Not started:** Stage 6 (release readiness)  
-**Not implemented:** `MODERATOR`, onboarding UI (5N.3 admin UI, 5N.4 clients)
+**Not implemented:** `MODERATOR`, consumer/business onboarding (5N.4), verification/rate limits (5N.5)
 
 ---
 
@@ -155,9 +156,9 @@ See [RBAC](./architecture/rbac.md), [API contracts](./architecture/api-contracts
 
 | Suite | Result |
 |-------|--------|
-| catalog-api | **346/346** |
+| catalog-api | **386/386** |
 | business-web | **41/41** |
-| admin-web | build pass |
+| admin-web | **18/18** vitest + build pass |
 | Flutter | **227 pass, 3 fail** (pre-existing `auth_session_test.dart`; unrelated to 5M.4) |
 
 Run from repo root: `npm test`, `npm run build`. Flutter: `cd apps/mobile && flutter test && flutter analyze`.
@@ -172,7 +173,7 @@ Run from repo root: `npm test`, `npm run build`. Flutter: `cd apps/mobile && flu
 |--------|-------|
 | Mobile | Guest-first consumer; membership-aware owner cabinet; permission-aware nav; business switch refreshes access |
 | Business Web | Team management, permission-aware nav, team audit history (OWNER) |
-| Admin Web | Moderation, monetization, users, `/audit-logs` |
+| Admin Web | Moderation, `/business-requests` (applications + claims), monetization, users, `/audit-logs` |
 | Flutter owner team UI | **Deferred** (P2) |
 | Flutter AuditLog UI | **Not required** |
 

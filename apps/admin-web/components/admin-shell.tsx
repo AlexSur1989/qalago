@@ -30,6 +30,7 @@ type AdminShellProps = {
     reviews: number;
   };
   monetizationBadges?: Partial<Record<MonetizationSubNavId, number>>;
+  businessRequestBadges?: { applications?: number; claims?: number };
   onLogout: () => void;
   children: ReactNode;
 };
@@ -44,6 +45,7 @@ export function AdminShell({
   onCityChange,
   badges,
   monetizationBadges,
+  businessRequestBadges,
   onLogout,
   children,
 }: AdminShellProps) {
@@ -52,6 +54,9 @@ export function AdminShell({
 
   const monetizationBadgeTotal =
     (monetizationBadges?.orders ?? 0) + (monetizationBadges?.creatives ?? 0);
+
+  const businessRequestsBadgeTotal =
+    (businessRequestBadges?.applications ?? 0) + (businessRequestBadges?.claims ?? 0);
 
   const nav: NavItem[] = [
     { id: 'moderation', label: 'Модерация', icon: '📋', badge: badges.pending || null },
@@ -117,6 +122,16 @@ export function AdminShell({
                 </button>
               ),
             )}
+          <Link
+            href="/business-requests/applications"
+            className={`nav-item${pathname.startsWith('/business-requests') ? ' active' : ''}`}
+          >
+            <span className="nav-icon">📝</span>
+            <span>Заявки бизнеса</span>
+            {businessRequestsBadgeTotal > 0 && (
+              <span className="nav-badge">{businessRequestsBadgeTotal}</span>
+            )}
+          </Link>
           <Link
             href="/audit-logs"
             className={`nav-item${pathname.startsWith('/audit-logs') ? ' active' : ''}`}
