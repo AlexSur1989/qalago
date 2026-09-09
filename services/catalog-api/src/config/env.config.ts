@@ -13,6 +13,18 @@ export default () => ({
     googleAuthIpLimit: parseInt(process.env.GOOGLE_AUTH_IP_LIMIT ?? '20', 10),
     googleAuthIpWindowSeconds: parseInt(process.env.GOOGLE_AUTH_IP_WINDOW_SECONDS ?? '900', 10),
     appleAuthEnabled: process.env.APPLE_AUTH_ENABLED === 'true',
+    appleClientIdIos: process.env.APPLE_CLIENT_ID_IOS ?? '',
+    appleClientIdWeb: process.env.APPLE_CLIENT_ID_WEB ?? '',
+    socialAuthIpLimit: parseInt(
+      process.env.SOCIAL_AUTH_IP_LIMIT ?? process.env.GOOGLE_AUTH_IP_LIMIT ?? '20',
+      10,
+    ),
+    socialAuthIpWindowSeconds: parseInt(
+      process.env.SOCIAL_AUTH_IP_WINDOW_SECONDS ??
+        process.env.GOOGLE_AUTH_IP_WINDOW_SECONDS ??
+        '900',
+      10,
+    ),
     mockPlanCheckoutEnabled: process.env.MOCK_PLAN_CHECKOUT_ENABLED === 'true',
     otpSendCooldownSeconds: parseInt(process.env.OTP_SEND_COOLDOWN_SECONDS ?? '60', 10),
     otpSendPhoneLimit: parseInt(process.env.OTP_SEND_PHONE_LIMIT ?? '5', 10),

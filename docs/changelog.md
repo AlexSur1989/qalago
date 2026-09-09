@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-10 — Stage 6.2B3: Apple backend authentication
+
+- **Сделано:** `POST /auth/apple`; Apple JWKS verification via `jose`; `AppleIdentityTokenVerifierService`; shared `SocialAuthLoginService`; relay email support; partial AuthIdentity metadata updates; Apple production config validation; Google DI runtime fix.
+- **На будущее:** B4 Flutter social UI, B5 Business Web, Apple token revocation (App Store compliance).
+
 ## 2026-09-09 — Stage 6.2B2: Google backend authentication
 
 - **Сделано:** `POST /auth/google`; `google-auth-library` ID token verification; `GoogleAuthLoginService`; IP rate limiting; production Google client ID validation; tombstone/inactive-user enforcement; no email auto-link.

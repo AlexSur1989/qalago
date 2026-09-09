@@ -5,7 +5,14 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { resolveRequestIp } from '../../common/utils/request-ip.util';
 import { AuthService } from './auth.service';
-import { SendCodeDto, VerifyCodeDto, DevLoginDto, GoogleAuthDto } from './dto/auth.dto';
+import {
+  SendCodeDto,
+  VerifyCodeDto,
+  DevLoginDto,
+  GoogleAuthDto,
+  AppleAuthDto,
+} from './dto/auth.dto';
+import { AppleAuthLoginService } from './social-auth/apple-auth-login.service';
 import { GoogleAuthLoginService } from './social-auth/google-auth-login.service';
 
 @Controller('auth')
@@ -13,6 +20,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly googleAuthLogin: GoogleAuthLoginService,
+    private readonly appleAuthLogin: AppleAuthLoginService,
   ) {}
 
   @Public()
@@ -40,6 +48,12 @@ export class AuthController {
   @Post('google')
   googleAuth(@Body() dto: GoogleAuthDto, @Req() req: Request) {
     return this.googleAuthLogin.loginWithGoogle(dto.idToken, resolveRequestIp(req));
+  }
+
+  @Public()
+  @Post('apple')
+  appleAuth(@Body() dto: AppleAuthDto, @Req() req: Request) {
+    return this.appleAuthLogin.loginWithApple(dto.identityToken, resolveRequestIp(req));
   }
 
   @Get('me')

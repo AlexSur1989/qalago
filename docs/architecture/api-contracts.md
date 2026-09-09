@@ -69,6 +69,25 @@ Rate limit: 20 attempts / IP / 15 minutes (configurable via `GOOGLE_AUTH_IP_*`).
 
 Requires at least one configured audience: `GOOGLE_CLIENT_ID_ANDROID`, `GOOGLE_CLIENT_ID_IOS`, or `GOOGLE_CLIENT_ID_WEB`.
 
+### POST /auth/apple
+
+**Stage 6.2B3.** Requires server flag `APPLE_AUTH_ENABLED=true`. When disabled, returns **404 Not Found**.
+
+Request:
+```json
+{ "identityToken": "<Apple identity token>" }
+```
+
+Only `identityToken` is accepted. Do not send unverified `fullName` or other client profile fields.
+
+Response `200`: same shape as `/auth/verify-code` (`accessToken`, `user`).
+
+New Apple users receive `role: USER`, `phone: null`, `name: null`. Identity key is `APPLE` + verified Apple `sub`. Private relay emails are stored as provider metadata only. **No email auto-linking.**
+
+Rate limit: shared with Google — 20 attempts / IP / 15 minutes (`SOCIAL_AUTH_IP_*`).
+
+Requires at least one configured audience: `APPLE_CLIENT_ID_IOS` and/or `APPLE_CLIENT_ID_WEB`.
+
 ### POST /auth/dev-login
 
 **Development only.** Requires server flag `DEV_LOGIN_ENABLED=true`. When disabled, returns **404 Not Found** (endpoint not advertised).

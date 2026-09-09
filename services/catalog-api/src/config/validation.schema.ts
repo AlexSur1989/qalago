@@ -17,6 +17,10 @@ export const validationSchema = Joi.object({
   GOOGLE_AUTH_IP_LIMIT: Joi.number().integer().min(1).default(20),
   GOOGLE_AUTH_IP_WINDOW_SECONDS: Joi.number().integer().min(60).default(900),
   APPLE_AUTH_ENABLED: Joi.boolean().truthy('true').falsy('false').default(false),
+  APPLE_CLIENT_ID_IOS: Joi.string().allow('').default(''),
+  APPLE_CLIENT_ID_WEB: Joi.string().allow('').default(''),
+  SOCIAL_AUTH_IP_LIMIT: Joi.number().integer().min(1).default(20),
+  SOCIAL_AUTH_IP_WINDOW_SECONDS: Joi.number().integer().min(60).default(900),
   MOCK_PLAN_CHECKOUT_ENABLED: Joi.boolean().truthy('true').falsy('false').default(false),
   OTP_SEND_COOLDOWN_SECONDS: Joi.number().integer().min(30).default(60),
   OTP_SEND_PHONE_LIMIT: Joi.number().integer().min(1).default(5),
@@ -52,6 +56,9 @@ export const validationSchema = Joi.object({
       googleClientIdAndroid: value.GOOGLE_CLIENT_ID_ANDROID ?? '',
       googleClientIdIos: value.GOOGLE_CLIENT_ID_IOS ?? '',
       googleClientIdWeb: value.GOOGLE_CLIENT_ID_WEB ?? '',
+      appleAuthEnabled: value.APPLE_AUTH_ENABLED === true,
+      appleClientIdIos: value.APPLE_CLIENT_ID_IOS ?? '',
+      appleClientIdWeb: value.APPLE_CLIENT_ID_WEB ?? '',
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Invalid production configuration';

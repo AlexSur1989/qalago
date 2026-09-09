@@ -6,10 +6,16 @@ import { GoogleIdTokenVerifier, VerifiedGoogleClaims } from './social-auth.types
 
 @Injectable()
 export class GoogleIdTokenVerifierService implements GoogleIdTokenVerifier {
-  constructor(
-    private readonly config: ConfigService,
-    private readonly oauthClient: OAuth2Client = new OAuth2Client(),
-  ) {}
+  private oauthClient: OAuth2Client;
+
+  constructor(private readonly config: ConfigService) {
+    this.oauthClient = new OAuth2Client();
+  }
+
+  /** @internal Unit tests only — inject a mocked OAuth client. */
+  setOAuthClientForTests(client: OAuth2Client): void {
+    this.oauthClient = client;
+  }
 
   async verifyIdToken(idToken: string): Promise<VerifiedGoogleClaims> {
     const audiences = collectGoogleClientIds({

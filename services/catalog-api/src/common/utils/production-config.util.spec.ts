@@ -88,6 +88,37 @@ describe('production-config.util', () => {
       ).toThrow(/GOOGLE_CLIENT_ID/);
     });
 
+    it('rejects production APPLE_AUTH_ENABLED without client IDs', () => {
+      expect(() =>
+        assertProductionConfig({
+          nodeEnv: 'production',
+          jwtSecret: 'a'.repeat(32),
+          corsOrigins: 'https://qalago.kz',
+          otpDebug: false,
+          devLoginEnabled: false,
+          mockPlanCheckoutEnabled: false,
+          appleAuthEnabled: true,
+          appleClientIdIos: '',
+          appleClientIdWeb: '',
+        }),
+      ).toThrow(/APPLE_CLIENT_ID/);
+    });
+
+    it('allows production APPLE_AUTH_ENABLED with at least one client ID', () => {
+      expect(() =>
+        assertProductionConfig({
+          nodeEnv: 'production',
+          jwtSecret: 'a'.repeat(32),
+          corsOrigins: 'https://qalago.kz',
+          otpDebug: false,
+          devLoginEnabled: false,
+          mockPlanCheckoutEnabled: false,
+          appleAuthEnabled: true,
+          appleClientIdIos: 'kz.qalago.qalagoMobile',
+        }),
+      ).not.toThrow();
+    });
+
     it('allows production GOOGLE_AUTH_ENABLED with at least one client ID', () => {
       expect(() =>
         assertProductionConfig({

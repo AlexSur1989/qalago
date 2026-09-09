@@ -1,10 +1,10 @@
 # Stage 6 — Auth Migration (Google / Apple)
 
-## Current state (after 6.2B2)
+## Current state (after 6.2B3)
 
 - **Phone OTP** remains available when `OTP_AUTH_ENABLED=true`
 - **Google backend** implemented: `POST /auth/google` (requires `GOOGLE_AUTH_ENABLED=true`)
-- **Apple backend** not implemented yet (B3)
+- **Apple backend** implemented: `POST /auth/apple` (requires `APPLE_AUTH_ENABLED=true`)
 - **Flutter / Business Web social UI** deferred (B4/B5)
 
 ## Foundation (Stage 6.2B1)
@@ -79,7 +79,7 @@ Future Google/Apple login must check `AuthIdentityTombstone` before creating use
 |-------|-------|
 | **6.2B1** ✅ | Schema, AuthIdentity, tombstones, nullable phone, flags |
 | **6.2B2** ✅ | Google backend token verification + `POST /auth/google` |
-| **6.2B3** | Apple backend token verification + endpoint |
+| **6.2B3** ✅ | Apple backend identity token verification + `POST /auth/apple` |
 | **6.2B4** | Flutter Google + Apple UI |
 | **6.2B5** | Business Web social login |
 | **6.2B6** | Team invitation redesign (email/link) |
@@ -123,6 +123,43 @@ Content-Type: application/json
 ```
 
 No debug bypass or magic tokens.
+
+## POST /auth/apple (Stage 6.2B3)
+
+Request: `{ "identityToken": "..." }` only.
+
+Flow mirrors Google with Apple-specific verification via Apple JWKS (`jose`).
+
+Config:
+
+| Variable | Purpose |
+|----------|---------|
+| `APPLE_AUTH_ENABLED` | Gate endpoint (default `false`) |
+| `APPLE_CLIENT_ID_IOS` | iOS App ID / bundle audience (e.g. `kz.qalago.qalagoMobile`) |
+| `APPLE_CLIENT_ID_WEB` | Apple Service ID for web (future) |
+| `SOCIAL_AUTH_IP_LIMIT` | Shared social auth rate limit (default 20) |
+| `SOCIAL_AUTH_IP_WINDOW_SECONDS` | Shared window (default 900) |
+
+Apple identity key: **APPLE + sub** (never email).
+
+Relay emails (`@privaterelay.appleid.com`) are valid provider metadata.
+
+Later logins without email in the token do **not** erase stored `AuthIdentity.email`.
+
+`User.email` and `User.name` are not set from Apple in B3.
+
+### App bundle IDs (repository truth — do not change in auth stages)
+
+| Platform | Identifier |
+|----------|------------|
+| iOS | `kz.qalago.qalagoMobile` |
+| Android | `kz.qalago.qalago_mobile` |
+
+Use these when creating Apple/Google Developer credentials.
+
+### Apple token revocation — deferred (P1 before App Store)
+
+Account deletion tombstones prevent QalaGo account recreation, but **Apple authorization revocation** (requires `.p8` key + authorization code exchange) is **not** implemented in B3. Required before App Store deletion compliance sign-off.
 
 ## JWT
 

@@ -16,6 +16,9 @@ export type ProductionConfigInput = {
   googleClientIdAndroid?: string;
   googleClientIdIos?: string;
   googleClientIdWeb?: string;
+  appleAuthEnabled?: boolean;
+  appleClientIdIos?: string;
+  appleClientIdWeb?: string;
 };
 
 export function assertProductionConfig(input: ProductionConfigInput): void {
@@ -67,6 +70,17 @@ export function assertProductionConfig(input: ProductionConfigInput): void {
     if (googleClientIds.length === 0) {
       errors.push(
         'At least one GOOGLE_CLIENT_ID_* must be set when GOOGLE_AUTH_ENABLED=true in production',
+      );
+    }
+  }
+
+  if (input.appleAuthEnabled) {
+    const appleClientIds = [input.appleClientIdIos, input.appleClientIdWeb]
+      .map((id) => id?.trim())
+      .filter(Boolean);
+    if (appleClientIds.length === 0) {
+      errors.push(
+        'At least one APPLE_CLIENT_ID_* must be set when APPLE_AUTH_ENABLED=true in production',
       );
     }
   }

@@ -38,3 +38,9 @@ export class GoogleAuthDto {
   @MinLength(10)
   idToken!: string;
 }
+
+export class AppleAuthDto {
+  @IsString()
+  @MinLength(10)
+  identityToken!: string;
+}

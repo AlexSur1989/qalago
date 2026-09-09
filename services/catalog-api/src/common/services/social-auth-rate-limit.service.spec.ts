@@ -33,6 +33,16 @@ describe('SocialAuthRateLimitService', () => {
     );
   });
 
+  it('applies IP sliding window for Apple auth with provider-specific key', () => {
+    service.assertCanAttemptApple('203.0.113.11');
+    expect(limiter.assertAllowed).toHaveBeenCalledWith(
+      'apple-auth:ip:203.0.113.11',
+      20,
+      900_000,
+      'Too many requests',
+    );
+  });
+
   it('propagates rate limit errors', () => {
     limiter.assertAllowed.mockImplementation(() => {
       throw new HttpException('Too many requests', 429);

@@ -47,13 +47,21 @@ export class AuthIdentityService {
     metadata: { email?: string | null; emailVerified?: boolean | null },
     tx?: Prisma.TransactionClient,
   ) {
+    const data: Prisma.AuthIdentityUpdateInput = {};
+    if (metadata.email !== undefined) {
+      data.email = metadata.email;
+    }
+    if (metadata.emailVerified !== undefined) {
+      data.emailVerified = metadata.emailVerified;
+    }
+    if (Object.keys(data).length === 0) {
+      return Promise.resolve(null);
+    }
+
     const client = tx ?? this.prisma;
     return client.authIdentity.update({
       where: { id: identityId },
-      data: {
-        email: metadata.email ?? null,
-        emailVerified: metadata.emailVerified ?? null,
-      },
+      data,
     });
   }
 

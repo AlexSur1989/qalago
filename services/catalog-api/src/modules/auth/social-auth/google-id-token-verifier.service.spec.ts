@@ -16,10 +16,8 @@ describe('GoogleIdTokenVerifierService', () => {
       }),
     };
     oauthClient = { verifyIdToken: jest.fn() };
-    service = new GoogleIdTokenVerifierService(
-      config as unknown as ConfigService,
-      oauthClient as unknown as OAuth2Client,
-    );
+    service = new GoogleIdTokenVerifierService(config as unknown as ConfigService);
+    service.setOAuthClientForTests(oauthClient as unknown as OAuth2Client);
   });
 
   it('returns normalized claims for a valid token', async () => {
