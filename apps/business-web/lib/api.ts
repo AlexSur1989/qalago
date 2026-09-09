@@ -46,11 +46,20 @@ export type TeamMemberRow = {
 
 export type TeamInvitationRow = {
   invitationId: string;
-  phone: string;
+  phone: string | null;
+  email: string | null;
+  inviteType: 'email' | 'phone';
   permissions: string[];
   status: string;
   expiresAt: string;
   createdAt: string;
+};
+
+export type ResolvedInvitation = {
+  status: 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED';
+  businessName: string;
+  recipientEmailMasked: string | null;
+  expiresAt: string;
 };
 
 export type TeamListResponse = {
@@ -588,14 +597,34 @@ export const ownerApi = {
   inviteTeamMember: (
     token: string,
     businessId: string,
-    data: { phone: string; permissions: string[] },
+    data: { email?: string; phone?: string; permissions: string[] },
   ) =>
-    api<{ type: 'membership' | 'invitation'; membershipId?: string; invitationId?: string; expiresAt?: string }>(
-      `/businesses/${encodeURIComponent(businessId)}/team/invite`,
+    api<{
+      type: 'membership' | 'invitation';
+      membershipId?: string;
+      invitationId?: string;
+      expiresAt?: string;
+      inviteUrl?: string;
+      rawToken?: string;
+    }>(`/businesses/${encodeURIComponent(businessId)}/team/invite`, {
+      method: 'POST',
+      token,
+      body: JSON.stringify(data),
+    }),
+
+  resolveInvitation: (inviteToken: string) =>
+    api<ResolvedInvitation>('/invitations/resolve', {
+      method: 'POST',
+      body: JSON.stringify({ token: inviteToken }),
+    }),
+
+  acceptInvitation: (token: string, inviteToken: string) =>
+    api<{ businessId: string; membershipId: string; alreadyMember?: boolean; alreadyAccepted?: boolean }>(
+      '/invitations/accept',
       {
         method: 'POST',
         token,
-        body: JSON.stringify(data),
+        body: JSON.stringify({ token: inviteToken }),
       },
     ),
 

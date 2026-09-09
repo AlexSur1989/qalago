@@ -21,13 +21,7 @@ import {
 import { mapSocialAuthError } from '@/lib/social-auth/social-auth-errors';
 import { AppleLoginButton } from '@/components/social-login/apple-login-button';
 import { GoogleLoginButton } from '@/components/social-login/google-login-button';
-
-function sanitizeRedirect(raw: string | null): string | null {
-  if (!raw) return null;
-  if (!raw.startsWith('/')) return null;
-  if (raw.startsWith('//')) return null;
-  return raw;
-}
+import { sanitizeInternalRedirect } from '@/lib/redirect-utils';
 
 export default function LoginPage() {
   const inner = (
@@ -50,7 +44,7 @@ export default function LoginPage() {
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectParam = sanitizeRedirect(searchParams.get('redirect'));
+  const redirectParam = sanitizeInternalRedirect(searchParams.get('redirect'), '/home');
 
   const [phone, setPhone] = useState('+77000000002');
   const [code, setCode] = useState('');

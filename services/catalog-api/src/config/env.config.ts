@@ -35,6 +35,8 @@ export default () => ({
     otpVerifyWindowSeconds: parseInt(process.env.OTP_VERIFY_WINDOW_SECONDS ?? '900', 10),
     analyticsEventsIpLimit: parseInt(process.env.ANALYTICS_EVENTS_IP_LIMIT ?? '300', 10),
     analyticsEventsWindowSeconds: parseInt(process.env.ANALYTICS_EVENTS_WINDOW_SECONDS ?? '60', 10),
+    businessWebBaseUrl: process.env.BUSINESS_WEB_BASE_URL ?? 'http://localhost:3003',
+    teamInviteTtlDays: parseInt(process.env.TEAM_INVITE_TTL_DAYS ?? '7', 10),
     defaultCitySlug: process.env.DEFAULT_CITY_SLUG ?? 'uralsk',
     corsOrigins: process.env.CORS_ORIGINS ?? '',
     uploadDir: process.env.UPLOAD_DIR ?? './uploads',

@@ -57,4 +57,25 @@ describe('resolvePostLoginDestination', () => {
     );
     expect(result.path).toBe('/settings');
   });
+
+  it('preserves invite path after login', async () => {
+    vi.mocked(ownerApi.listMyBusinesses).mockResolvedValue({ items: [] });
+    const invitePath = '/invite/abc123token';
+    const result = await resolvePostLoginDestination(
+      'jwt',
+      { id: 'u1', role: 'USER', name: null, phone: null },
+      invitePath,
+    );
+    expect(result.path).toBe(invitePath);
+  });
+
+  it('rejects external redirect', async () => {
+    vi.mocked(ownerApi.listMyBusinesses).mockResolvedValue({ items: [] });
+    const result = await resolvePostLoginDestination(
+      'jwt',
+      { id: 'u1', role: 'USER', name: null, phone: null },
+      'https://evil.example',
+    );
+    expect(result.path).toBe('/onboarding');
+  });
 });

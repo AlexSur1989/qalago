@@ -70,9 +70,13 @@ Future Google/Apple login must check `AuthIdentityTombstone` before creating use
 - Storing provider OAuth/ID tokens in the database
 - Deriving ADMIN/BUSINESS roles from provider claims
 
-## Known transitional limitation
+## Team invitations (Stage 6.2B6)
 
-`BusinessInvitation` remains **phone-based**. Users without a phone cannot claim manager invitations until **Stage 6.2B6**.
+Email + secure one-time token invitations are implemented. See [stage-6-team-invitations.md](./stage-6-team-invitations.md).
+
+- New invites use **email + token link** (Business Web `/invite/:token`)
+- Legacy **phone** invitations still auto-claim via OTP login (`claimPendingInvitations`, `tokenHash: null` only)
+- **No email auto-linking** — invitation email is delivery context; acceptance uses token possession + authenticated user + explicit accept
 
 ## Implementation roadmap
 
@@ -84,7 +88,7 @@ Future Google/Apple login must check `AuthIdentityTombstone` before creating use
 | **6.2B4** ✅ | Flutter Google + Apple UI (see [stage-6-flutter-social-auth.md](./stage-6-flutter-social-auth.md)) |
 | **6.2B5** ✅ | Business Web Google + Apple UI (see [stage-6-business-web-social-auth.md](./stage-6-business-web-social-auth.md)) |
 | **6.2B5** | Business Web social login |
-| **6.2B6** | Team invitation redesign (email/link) |
+| **6.2B6** ✅ | Team invitation redesign (email/link) — see [stage-6-team-invitations.md](./stage-6-team-invitations.md) |
 | **6.2B7** | OTP deprecation, admin identity linking, QA |
 
 ## POST /auth/google (Stage 6.2B2)

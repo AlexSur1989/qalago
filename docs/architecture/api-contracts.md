@@ -311,9 +311,11 @@ OWNER `permissions` in response are the full enum (implicit all). MANAGER receiv
 | Method | Path | Auth |
 |--------|------|------|
 | GET | `/businesses/:businessId/team` | OWNER; ADMIN; CITY_ADMIN (scoped read) |
-| POST | `/businesses/:businessId/team/invite` | OWNER — body `{ phone, permissions[] }` |
+| POST | `/businesses/:businessId/team/invite` | OWNER — body `{ email?, phone?, permissions[] }` (email **or** phone; not both). Email invite returns one-time `{ inviteUrl, rawToken }`. |
 | PATCH | `/businesses/:businessId/team/:membershipId` | OWNER — body `{ permissions?, status? }` |
 | DELETE | `/businesses/:businessId/team/invitations/:invitationId` | OWNER |
+| POST | `/invitations/resolve` | Public — body `{ token }` — minimal preview (business name, masked email, status, expiresAt). Rate limited. |
+| POST | `/invitations/accept` | Auth — body `{ token }` — explicit accept; creates MANAGER membership. Rate limited. |
 | GET | `/businesses/:businessId/team/audit` | **OWNER only** — team-related audit rows; paginated (`page`, `limit` max 100) |
 
 ### PATCH /businesses/:id

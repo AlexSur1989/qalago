@@ -209,57 +209,58 @@ enum CityLaunchStatus {
 }
 
 model City {
-  id                 String              @id @default(cuid())
-  slug               String              @unique
-  nameRu             String
-  nameKk             String?
-  countryCode        String              @default("KZ")
-  centerLat          Decimal?            @db.Decimal(10, 7)
-  centerLng          Decimal?            @db.Decimal(10, 7)
-  timezone           String              @default("Asia/Oral")
-  isActive           Boolean             @default(true)
-  launchStatus       CityLaunchStatus    @default(LIVE)
-  launchDate         DateTime?
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  businesses         Business[]
-  users              User[]              @relation("PreferredCity")
-  cityAdmins         User[]              @relation("ManagedCity")
-  categoryCityOrders CategoryCityOrder[]
-  adPlacements       AdPlacement[]
-  productPrices      ProductPrice[]
-  adCampaigns        AdCampaign[]
-  auditLogs           AuditLog[]
+  id                   String                @id @default(cuid())
+  slug                 String                @unique
+  nameRu               String
+  nameKk               String?
+  countryCode          String                @default("KZ")
+  centerLat            Decimal?              @db.Decimal(10, 7)
+  centerLng            Decimal?              @db.Decimal(10, 7)
+  timezone             String                @default("Asia/Oral")
+  isActive             Boolean               @default(true)
+  launchStatus         CityLaunchStatus      @default(LIVE)
+  launchDate           DateTime?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  businesses           Business[]
+  users                User[]                @relation("PreferredCity")
+  cityAdmins           User[]                @relation("ManagedCity")
+  categoryCityOrders   CategoryCityOrder[]
+  adPlacements         AdPlacement[]
+  productPrices        ProductPrice[]
+  adCampaigns          AdCampaign[]
+  auditLogs            AuditLog[]
   businessApplications BusinessApplication[]
 }
 
 model User {
-  id              String         @id @default(cuid())
-  phone           String?        @unique
-  email           String?
-  name            String?
-  role            UserRole       @default(USER)
-  isActive        Boolean        @default(true)
-  preferredCityId String?
-  managedCityId   String?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  preferredCity   City?          @relation("PreferredCity", fields: [preferredCityId], references: [id], onDelete: SetNull)
-  managedCity     City?          @relation("ManagedCity", fields: [managedCityId], references: [id], onDelete: SetNull)
-  ownedBusinesses     Business[]           @relation("BusinessOwner")
-  businessMemberships BusinessMembership[]
-  favorites             Favorite[]
-  reviews         Review[]
-  notifications   Notification[]
-  otps            OtpCode[]
-  orders          Order[]
-  sentInvitations BusinessInvitation[] @relation("InvitationSender")
-  auditLogsAsActor  AuditLog[]           @relation("AuditActor")
-  businessApplications BusinessApplication[] @relation("ApplicationApplicant")
-  reviewedBusinessApplications BusinessApplication[] @relation("ApplicationReviewer")
-  ownershipClaims BusinessOwnershipClaim[] @relation("ClaimClaimant")
-  reviewedOwnershipClaims BusinessOwnershipClaim[] @relation("ClaimReviewer")
-  authIdentities  AuthIdentity[]
+  id                           String                   @id @default(cuid())
+  phone                        String?                  @unique
+  email                        String?
+  name                         String?
+  role                         UserRole                 @default(USER)
+  isActive                     Boolean                  @default(true)
+  preferredCityId              String?
+  managedCityId                String?
+  createdAt                    DateTime                 @default(now())
+  updatedAt                    DateTime                 @updatedAt
+  preferredCity                City?                    @relation("PreferredCity", fields: [preferredCityId], references: [id], onDelete: SetNull)
+  managedCity                  City?                    @relation("ManagedCity", fields: [managedCityId], references: [id], onDelete: SetNull)
+  ownedBusinesses              Business[]               @relation("BusinessOwner")
+  businessMemberships          BusinessMembership[]
+  favorites                    Favorite[]
+  reviews                      Review[]
+  notifications                Notification[]
+  otps                         OtpCode[]
+  orders                       Order[]
+  sentInvitations              BusinessInvitation[]     @relation("InvitationSender")
+  acceptedInvitations          BusinessInvitation[]     @relation("InvitationAcceptor")
+  auditLogsAsActor             AuditLog[]               @relation("AuditActor")
+  businessApplications         BusinessApplication[]    @relation("ApplicationApplicant")
+  reviewedBusinessApplications BusinessApplication[]    @relation("ApplicationReviewer")
+  ownershipClaims              BusinessOwnershipClaim[] @relation("ClaimClaimant")
+  reviewedOwnershipClaims      BusinessOwnershipClaim[] @relation("ClaimReviewer")
+  authIdentities               AuthIdentity[]
 }
 
 model AuthIdentity {
@@ -325,19 +326,19 @@ model OtpCode {
 }
 
 model Category {
-  id                 String              @id @default(cuid())
-  title              String
-  slug               String              @unique
-  icon               String?
-  sortOrder          Int                 @default(0)
-  isActive           Boolean             @default(true)
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  businesses         Business[]
-  categoryCityOrders CategoryCityOrder[]
-  adPlacements       AdPlacement[]
-  productPrices      ProductPrice[]
-  adCampaigns        AdCampaign[]
+  id                   String                @id @default(cuid())
+  title                String
+  slug                 String                @unique
+  icon                 String?
+  sortOrder            Int                   @default(0)
+  isActive             Boolean               @default(true)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  businesses           Business[]
+  categoryCityOrders   CategoryCityOrder[]
+  adPlacements         AdPlacement[]
+  productPrices        ProductPrice[]
+  adCampaigns          AdCampaign[]
   businessApplications BusinessApplication[]
 }
 
@@ -357,51 +358,51 @@ model CategoryCityOrder {
 }
 
 model Business {
-  id                String             @id @default(cuid())
-  cityId            String
-  ownerId           String?
-  categoryId        String
-  title             String
-  slug              String             @unique
-  shortDesc         String?
-  description       String?
-  address           String
-  latitude          Decimal?           @db.Decimal(10, 7)
-  longitude         Decimal?           @db.Decimal(10, 7)
-  phone             String?
-  whatsapp          String?
-  instagram         String?
-  website           String?
-  coverImageUrl     String?
-  workHours         Json?
-  status            BusinessStatus     @default(PENDING)
+  id                      String                   @id @default(cuid())
+  cityId                  String
+  ownerId                 String?
+  categoryId              String
+  title                   String
+  slug                    String                   @unique
+  shortDesc               String?
+  description             String?
+  address                 String
+  latitude                Decimal?                 @db.Decimal(10, 7)
+  longitude               Decimal?                 @db.Decimal(10, 7)
+  phone                   String?
+  whatsapp                String?
+  instagram               String?
+  website                 String?
+  coverImageUrl           String?
+  workHours               Json?
+  status                  BusinessStatus           @default(PENDING)
   /// @deprecated Legacy manual featured flag — not used for consumer catalog ranking (Stage 4C.1). Admin-only via PATCH /admin/businesses/:id/featured.
-  isFeatured        Boolean            @default(false)
+  isFeatured              Boolean                  @default(false)
   /// @deprecated Legacy city slot — not used for consumer catalog ranking (Stage 4C.1). Admin-only.
-  featuredSlot      Int?
-  planTier          BusinessPlanTier   @default(FREE)
-  planExpiresAt     DateTime?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  city              City               @relation(fields: [cityId], references: [id], onDelete: Restrict)
-  owner             User?              @relation("BusinessOwner", fields: [ownerId], references: [id], onDelete: SetNull)
-  category          Category           @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  images            BusinessImage[]
-  serviceMenuGroups ServiceMenuGroup[]
-  serviceItems      ServiceItem[]
-  promotions        Promotion[]
-  favorites         Favorite[]
-  reviews           Review[]
-  analytics         AnalyticsEvent[]
-  planPayments      PlanPayment[]
-  orders            Order[]
-  adCreatives       AdCreative[]
-  adCampaigns       AdCampaign[]
-  memberships       BusinessMembership[]
-  invitations       BusinessInvitation[]
-  auditLogs         AuditLog[]
-  approvedFromApplication BusinessApplication? @relation("ApprovedBusinessApplication")
-  ownershipClaims       BusinessOwnershipClaim[]
+  featuredSlot            Int?
+  planTier                BusinessPlanTier         @default(FREE)
+  planExpiresAt           DateTime?
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  city                    City                     @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  owner                   User?                    @relation("BusinessOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  category                Category                 @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  images                  BusinessImage[]
+  serviceMenuGroups       ServiceMenuGroup[]
+  serviceItems            ServiceItem[]
+  promotions              Promotion[]
+  favorites               Favorite[]
+  reviews                 Review[]
+  analytics               AnalyticsEvent[]
+  planPayments            PlanPayment[]
+  orders                  Order[]
+  adCreatives             AdCreative[]
+  adCampaigns             AdCampaign[]
+  memberships             BusinessMembership[]
+  invitations             BusinessInvitation[]
+  auditLogs               AuditLog[]
+  approvedFromApplication BusinessApplication?     @relation("ApprovedBusinessApplication")
+  ownershipClaims         BusinessOwnershipClaim[]
 
   @@index([cityId, status])
   @@index([categoryId])
@@ -481,20 +482,27 @@ model BusinessMembership {
 }
 
 model BusinessInvitation {
-  id              String                   @id @default(cuid())
-  businessId      String
-  phone           String
-  permissions     BusinessPermission[]
-  status          BusinessInvitationStatus @default(PENDING)
-  invitedByUserId String
-  expiresAt       DateTime
-  createdAt       DateTime                 @default(now())
-  updatedAt       DateTime                 @updatedAt
-  business        Business                 @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  invitedBy       User                     @relation("InvitationSender", fields: [invitedByUserId], references: [id], onDelete: Cascade)
+  id               String                   @id @default(cuid())
+  businessId       String
+  phone            String?
+  email            String?
+  tokenHash        String?                  @unique
+  permissions      BusinessPermission[]
+  status           BusinessInvitationStatus @default(PENDING)
+  invitedByUserId  String
+  acceptedByUserId String?
+  acceptedAt       DateTime?
+  expiresAt        DateTime
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  business         Business                 @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  invitedBy        User                     @relation("InvitationSender", fields: [invitedByUserId], references: [id], onDelete: Cascade)
+  acceptedBy       User?                    @relation("InvitationAcceptor", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
 
   @@index([businessId, phone])
+  @@index([businessId, email])
   @@index([phone, status])
+  @@index([email, status])
 }
 
 model BusinessImage {
@@ -581,20 +589,20 @@ model Review {
 }
 
 model AnalyticsEvent {
-  id            String                  @id @default(cuid())
-  businessId    String
-  userId        String?
-  type          AnalyticsEventType
+  id                     String                  @id @default(cuid())
+  businessId             String
+  userId                 String?
+  type                   AnalyticsEventType
   trafficSource          BusinessTrafficSource?
   searchQuery            String?
   audienceDistanceBucket AudienceDistanceBucket?
   campaignId             String?
-  placementId   String?
-  sessionId     String?
-  createdAt     DateTime                @default(now())
-  business      Business                @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  campaign      AdCampaign?             @relation(fields: [campaignId], references: [id], onDelete: SetNull)
-  placement     AdPlacement?            @relation(fields: [placementId], references: [id], onDelete: SetNull)
+  placementId            String?
+  sessionId              String?
+  createdAt              DateTime                @default(now())
+  business               Business                @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  campaign               AdCampaign?             @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  placement              AdPlacement?            @relation(fields: [placementId], references: [id], onDelete: SetNull)
 
   @@index([businessId, type])
   @@index([businessId, type, trafficSource])

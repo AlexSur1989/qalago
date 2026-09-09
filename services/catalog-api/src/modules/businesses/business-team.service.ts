@@ -27,8 +27,9 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { maskPhoneForAudit, permissionDiff } from '../audit-log/audit-log.util';
 import { InviteTeamMemberDto, UpdateTeamMemberDto } from './dto/team.dto';
+import { BusinessInvitationService, TEAM_INVITE_TTL_DAYS } from './business-invitation.service';
 
-const INVITE_TTL_DAYS = 7;
+const INVITE_TTL_DAYS = TEAM_INVITE_TTL_DAYS;
 
 @Injectable()
 export class BusinessTeamService {
@@ -37,6 +38,7 @@ export class BusinessTeamService {
     private readonly businessAccess: BusinessAccessService,
     private readonly membership: BusinessMembershipService,
     private readonly auditLog: AuditLogService,
+    private readonly invitations: BusinessInvitationService,
   ) {}
 
   async listTeam(user: AuthUser, businessId: string) {
@@ -75,7 +77,13 @@ export class BusinessTeamService {
       })),
       pendingInvitations: pendingInvites.map((inv) => ({
         invitationId: inv.id,
-        phone: maskPhone ? this.maskPhone(inv.phone) : inv.phone,
+        phone: inv.phone ? (maskPhone ? this.maskPhone(inv.phone) : inv.phone) : null,
+        email: inv.email
+          ? maskPhone
+            ? this.invitations.maskRecipient({ email: inv.email })
+            : inv.email
+          : null,
+        inviteType: inv.tokenHash ? ('email' as const) : ('phone' as const),
         permissions: inv.permissions,
         status: inv.status,
         expiresAt: inv.expiresAt,
@@ -88,6 +96,17 @@ export class BusinessTeamService {
     const business = await this.businessAccess.assertOwner(user, businessId);
     validatePermissionDependencies(dto.permissions);
     const permissions = normalizeBusinessPermissions(dto.permissions);
+
+    if (dto.email && dto.phone) {
+      throw new BadRequestException('Provide either email or phone, not both');
+    }
+    if (dto.email) {
+      return this.inviteManagerByEmail(user, business, businessId, dto.email, permissions);
+    }
+    if (!dto.phone) {
+      throw new BadRequestException('Email or phone is required');
+    }
+
     const phone = this.requirePhone(dto.phone);
 
     const existingUser = await this.prisma.user.findUnique({ where: { phone } });
@@ -187,6 +206,61 @@ export class BusinessTeamService {
     });
 
     return { type: 'invitation' as const, invitationId: invitation.id, expiresAt };
+  }
+
+  private async inviteManagerByEmail(
+    user: AuthUser,
+    business: { id: string; cityId: string },
+    businessId: string,
+    emailRaw: string,
+    permissions: BusinessPermission[],
+  ) {
+    const { normalized, rawToken, tokenHash, expiresAt } =
+      this.invitations.createEmailInvitationParams(emailRaw);
+
+    await this.prisma.businessInvitation.updateMany({
+      where: {
+        businessId,
+        email: normalized,
+        status: BusinessInvitationStatus.PENDING,
+      },
+      data: { status: BusinessInvitationStatus.REVOKED },
+    });
+
+    const invitation = await this.prisma.businessInvitation.create({
+      data: {
+        businessId,
+        email: normalized,
+        tokenHash,
+        permissions,
+        invitedByUserId: user.id,
+        expiresAt,
+      },
+    });
+
+    await this.auditLog.record({
+      actor: user,
+      action: AuditAction.TEAM_INVITE,
+      resourceType: AuditResourceType.BUSINESS_INVITATION,
+      resourceId: invitation.id,
+      businessId,
+      cityId: business.cityId,
+      membershipRole: BusinessMembershipRole.OWNER,
+      metadata: {
+        invitationId: invitation.id,
+        emailMasked: this.invitations.maskRecipient({ email: normalized }),
+        permissionCount: permissions.length,
+        inviteType: 'email',
+      },
+    });
+
+    return {
+      type: 'invitation' as const,
+      invitationId: invitation.id,
+      expiresAt,
+      inviteUrl: this.invitations.buildInviteUrl(rawToken),
+      rawToken,
+    };
   }
 
   async updateMember(
@@ -315,7 +389,10 @@ export class BusinessTeamService {
       membershipRole: BusinessMembershipRole.OWNER,
       metadata: {
         invitationId,
-        phoneMasked: maskPhoneForAudit(invitation.phone),
+        phoneMasked: invitation.phone ? maskPhoneForAudit(invitation.phone) : undefined,
+        emailMasked: invitation.email
+          ? this.invitations.maskRecipient({ email: invitation.email })
+          : undefined,
         oldStatus: BusinessInvitationStatus.PENDING,
         newStatus: BusinessInvitationStatus.REVOKED,
       },

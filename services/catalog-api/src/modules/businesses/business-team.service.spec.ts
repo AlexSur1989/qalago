@@ -35,6 +35,11 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
   let businessAccess: { assertOwner: jest.Mock; resolveAccess: jest.Mock };
   let membership: { getMembership: jest.Mock };
   let auditLog: { record: jest.Mock };
+  let invitations: {
+    createEmailInvitationParams: jest.Mock;
+    buildInviteUrl: jest.Mock;
+    maskRecipient: jest.Mock;
+  };
   let service: BusinessTeamService;
 
   beforeEach(() => {
@@ -61,11 +66,22 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
     };
     membership = { getMembership: jest.fn() };
     auditLog = { record: jest.fn().mockResolvedValue({ id: 'audit-1' }) };
+    invitations = {
+      createEmailInvitationParams: jest.fn().mockReturnValue({
+        normalized: 'manager@example.com',
+        rawToken: 'raw-token',
+        tokenHash: 'hash',
+        expiresAt: new Date(),
+      }),
+      buildInviteUrl: jest.fn().mockReturnValue('http://localhost:3003/invite/raw-token'),
+      maskRecipient: jest.fn().mockReturnValue('m***@example.com'),
+    };
     service = new BusinessTeamService(
       prisma as never,
       businessAccess as unknown as BusinessAccessService,
       membership as unknown as BusinessMembershipService,
       auditLog as never,
+      invitations as never,
     );
   });
 
@@ -106,6 +122,29 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
         permissions: [BusinessPermission.CATALOG_EDIT],
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('invite by email creates token invitation with one-time link', async () => {
+    prisma.businessInvitation.create.mockResolvedValue({ id: 'inv-email-1' });
+
+    const result = await service.inviteManager(owner, businessId, {
+      email: 'manager@example.com',
+      permissions: [BusinessPermission.CATALOG_EDIT],
+    });
+
+    expect(result.type).toBe('invitation');
+    expect('inviteUrl' in result && result.inviteUrl).toContain('/invite/');
+    expect('rawToken' in result && result.rawToken).toBe('raw-token');
+    expect(prisma.businessInvitation.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          email: 'manager@example.com',
+          tokenHash: 'hash',
+        }),
+      }),
+    );
+    const createArg = prisma.businessInvitation.create.mock.calls[0][0];
+    expect(createArg.data).not.toHaveProperty('phone');
   });
 
   it('invite unknown phone creates pending invitation', async () => {

@@ -31,7 +31,8 @@ export default function BusinessTeamPage() {
   const businessId = params.id;
   const { token, user, ready, logout, business, access, businesses } = useBusinessAccess();
   const [team, setTeam] = useState<TeamListResponse | null>(null);
-  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [createdInviteUrl, setCreatedInviteUrl] = useState<string | null>(null);
   const [selectedPermissions, setSelectedPermissions] = useState<BusinessPermission[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -108,15 +109,16 @@ export default function BusinessTeamPage() {
     setSuccess(null);
     try {
       const result = await ownerApi.inviteTeamMember(token, businessId, {
-        phone: phone.trim(),
+        email: email.trim(),
         permissions: selectedPermissions,
       });
-      setPhone('');
+      setEmail('');
       setSelectedPermissions([]);
+      setCreatedInviteUrl(result.inviteUrl ?? null);
       await loadTeam(token);
       setSuccess(
         result.type === 'invitation'
-          ? 'Приглашение отправлено. Менеджер получит доступ после входа по номеру телефона.'
+          ? 'Приглашение создано. Скопируйте ссылку и отправьте сотруднику.'
           : 'Менеджер добавлен в команду.',
       );
     } catch (err) {
@@ -372,7 +374,10 @@ export default function BusinessTeamPage() {
               <li key={inv.invitationId} className="action-item" style={{ alignItems: 'flex-start' }}>
                 <div className="action-icon">✉️</div>
                 <div className="action-text" style={{ flex: 1 }}>
-                  <strong>{inv.phone}</strong>
+                  <strong>{inv.email ?? inv.phone ?? '—'}</strong>
+                  <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                    {inv.inviteType === 'email' ? 'По ссылке (email)' : 'По телефону (legacy)'}
+                  </span>
                   <span>
                     до {new Date(inv.expiresAt).toLocaleDateString('ru-RU')} ·{' '}
                     {inv.permissions
@@ -402,8 +407,9 @@ export default function BusinessTeamPage() {
       <section className="form-card" style={{ maxWidth: 720 }}>
         <h2 style={{ marginTop: 0 }}>Пригласить менеджера</h2>
         <p style={{ color: 'var(--text-muted)', marginTop: 0 }}>
-          Укажите телефон в формате +7… и выберите права. Если пользователь уже зарегистрирован,
-          доступ будет выдан сразу.
+          Укажите email сотрудника и выберите права. После создания скопируйте ссылку и отправьте её
+          сотруднику (email, мессенджер и т.д.). Если пользователь уже зарегистрирован с этим email,
+          доступ может быть выдан сразу.
         </p>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
@@ -421,12 +427,67 @@ export default function BusinessTeamPage() {
           ))}
         </div>
 
+        {createdInviteUrl && (
+          <div
+            style={{
+              marginBottom: 16,
+              padding: 12,
+              borderRadius: 8,
+              background: 'var(--surface-muted, #f4f4f5)',
+              border: '1px solid var(--border, #e4e4e7)',
+            }}
+          >
+            <p style={{ margin: '0 0 8px', fontWeight: 600 }}>Ссылка приглашения</p>
+            <p style={{ margin: '0 0 8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+              Отправьте эту ссылку сотруднику. Она действует ограниченное время и одноразовая.
+            </p>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+              <code
+                style={{
+                  flex: 1,
+                  minWidth: 200,
+                  wordBreak: 'break-all',
+                  fontSize: '0.85rem',
+                  padding: 8,
+                  background: 'var(--surface, #fff)',
+                  borderRadius: 4,
+                }}
+              >
+                {createdInviteUrl}
+              </code>
+              <button
+                type="button"
+                className="btn btn-sm btn-primary"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(createdInviteUrl);
+                    setSuccess('Ссылка скопирована в буфер обмена.');
+                  } catch {
+                    setError('Не удалось скопировать ссылку.');
+                  }
+                }}
+              >
+                Скопировать ссылку
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm"
+                onClick={() => setCreatedInviteUrl(null)}
+              >
+                Скрыть
+              </button>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={submitInvite} className="form-grid">
           <input
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="Телефон менеджера (+7700…)"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email менеджера"
             required
+            autoComplete="email"
           />
 
           <div style={{ gridColumn: '1 / -1' }}>

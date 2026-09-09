@@ -1,5 +1,6 @@
 import { AuthUser, MyBusinessItem, ownerApi } from '@/lib/api';
 import { hasBusinessCabinetAccess } from '@/lib/use-auth';
+import { sanitizeInternalRedirect } from '@/lib/redirect-utils';
 
 export type LoginDestination = {
   path: string;
@@ -23,8 +24,9 @@ export async function resolvePostLoginDestination(
     return { path: '/login', error: 'Нет доступа к кабинету' };
   }
 
-  if (redirectParam) {
-    return { path: redirectParam };
+  const safeRedirect = sanitizeInternalRedirect(redirectParam);
+  if (safeRedirect) {
+    return { path: safeRedirect };
   }
 
   if (hasBusinessCabinetAccess(user, items)) {

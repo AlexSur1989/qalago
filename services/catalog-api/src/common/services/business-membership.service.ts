@@ -126,6 +126,7 @@ export class BusinessMembershipService {
     const pending = await this.prisma.businessInvitation.findMany({
       where: {
         phone,
+        tokenHash: null,
         status: BusinessInvitationStatus.PENDING,
         expiresAt: { gt: now },
       },

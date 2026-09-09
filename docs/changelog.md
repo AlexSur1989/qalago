@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-10 — Stage 6.2B6: Team invitations (email + secure token)
+
+- **Сделано:** Email-based manager invitations with cryptographically secure one-time tokens; `tokenHash` only in DB; `POST /invitations/resolve` and `/invitations/accept`; Business Web team page (copy link) and `/invite/[token]` acceptance flow; legacy phone invitations preserved via `claimPendingInvitations`; 7-day TTL; login redirect preservation.
+- **Политика:** token possession + authenticated user + explicit accept; invitation email — контекст доставки, не auth identity; без email auto-link.
+- **На будущее:** transactional email provider, Flutter deep links, stricter optional email-match signal (non-blocking).
+
 ## 2026-09-10 — Stage 6.2B5: Business Web social authentication
 
 - **Сделано:** Google/Apple login на Business Web; GIS + Apple JS; state/nonce; existing JWT session; OTP fallback.
