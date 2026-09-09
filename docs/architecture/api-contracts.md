@@ -352,7 +352,9 @@ Admin moderation:
 
 **Eligibility:** ACTIVE business only; denies ACTIVE OWNER, legacy `ownerId` without membership, SUSPENDED/REVOKED memberships, INVITED; allows ACTIVE MANAGER co-owner claims.
 
-**Not implemented:** consumer claim CTA (5N.4), verification hardening (5N.5).
+**Client onboarding (5N.4):** Flutter `/business/*` routes; Business Web `/onboarding/*`. Guest claim CTA → login redirect → claim form.
+
+**Not implemented:** verification hardening (5N.5).
 
 ---
 

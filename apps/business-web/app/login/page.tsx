@@ -1,32 +1,38 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { FormEvent, Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ownerApi, TOKEN_KEY } from '@/lib/api';
 import { businessWebDevLoginEnabled } from '@/lib/auth-config';
 import { devSeedAccounts } from '@/lib/dev-seed-accounts';
+import { hasBusinessCabinetAccess } from '@/lib/use-auth';
 
-type AccountType = 'user' | 'business';
+function sanitizeRedirect(raw: string | null): string | null {
+  if (!raw) return null;
+  if (!raw.startsWith('/')) return null;
+  if (raw.startsWith('//')) return null;
+  return raw;
+}
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<main className="login-page"><p>Загрузка…</p></main>}>
+      <LoginContent />
+    </Suspense>
+  );
+}
+
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectParam = sanitizeRedirect(searchParams.get('redirect'));
+
   const [phone, setPhone] = useState('+77000000002');
   const [code, setCode] = useState('');
-  const [accountType, setAccountType] = useState<AccountType>('business');
   const [debugCode, setDebugCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  function selectAccountType(next: AccountType) {
-    setAccountType(next);
-    if (next === 'business' && phone === '+77000000003') {
-      setPhone('+77000000002');
-    }
-    if (next === 'user' && phone === '+77000000002') {
-      setPhone('+77000000003');
-    }
-  }
 
   async function sendCode(e: FormEvent) {
     e.preventDefault();
@@ -46,39 +52,33 @@ export default function LoginPage() {
   }
 
   async function finishLogin(accessToken: string, user: Awaited<ReturnType<typeof ownerApi.verifyCode>>['user']) {
-    const legacyRole =
-      user.role === 'BUSINESS' || user.role === 'ADMIN' || user.role === 'CITY_ADMIN';
-
-    let membershipCount = 0;
+    let items: Awaited<ReturnType<typeof ownerApi.listMyBusinesses>>['items'] = [];
     try {
       const res = await ownerApi.listMyBusinesses(accessToken);
-      membershipCount = res.items.length;
+      items = res.items;
     } catch {
       setError('Не удалось проверить доступ к заведениям');
       return;
     }
 
-    const hasMembership = membershipCount > 0;
-
-    if (!legacyRole && !hasMembership && user.role !== 'USER') {
+    if (!hasBusinessCabinetAccess(user, items) && user.role !== 'USER') {
       setError('Нет доступа к кабинету');
       return;
     }
 
     localStorage.setItem(TOKEN_KEY, accessToken);
 
-    if (user.role === 'USER' && !hasMembership && accountType === 'business') {
-      router.push('/register');
+    if (redirectParam) {
+      router.push(redirectParam);
       return;
     }
 
-    if (user.role === 'USER' && !hasMembership) {
-      setError('Нет доступа к кабинету. Попросите владельца пригласить вас или зарегистрируйте заведение.');
-      localStorage.removeItem(TOKEN_KEY);
+    if (hasBusinessCabinetAccess(user, items)) {
+      router.push('/dashboard');
       return;
     }
 
-    router.push('/dashboard');
+    router.push('/onboarding');
   }
 
   async function verify(e: FormEvent) {
@@ -86,7 +86,7 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await ownerApi.verifyCode(phone, code, accountType);
+      const res = await ownerApi.verifyCode(phone, code, 'user');
       await finishLogin(res.accessToken, res.user);
     } catch (err) {
       setError(String(err));
@@ -112,26 +112,7 @@ export default function LoginPage() {
     <main className="login-page">
       <div className="login-card">
         <h1>QalaGo Business</h1>
-        <p>Кабинет владельца заведения · OTP (тест: +77000000002, код 1234)</p>
-
-        <div className="account-type-grid" style={{ marginBottom: 20 }}>
-          <button
-            type="button"
-            className={`account-type-card${accountType === 'business' ? ' selected' : ''}`}
-            onClick={() => selectAccountType('business')}
-          >
-            <strong>Бизнес</strong>
-            <span>Кабинет заведения</span>
-          </button>
-          <button
-            type="button"
-            className={`account-type-card${accountType === 'user' ? ' selected' : ''}`}
-            onClick={() => selectAccountType('user')}
-          >
-            <strong>Пользователь</strong>
-            <span>Только просмотр каталога</span>
-          </button>
-        </div>
+        <p>Вход по номеру телефона · OTP (тест: +77000000002, код 1234)</p>
 
         <form onSubmit={sendCode} className="form-grid" style={{ marginBottom: 24 }}>
           <input
@@ -151,7 +132,7 @@ export default function LoginPage() {
             placeholder="Код из SMS"
           />
           <button type="submit" disabled={loading} className="btn btn-primary">
-            {accountType === 'business' ? 'Войти / зарегистрироваться' : 'Войти'}
+            Войти
           </button>
         </form>
         {businessWebDevLoginEnabled && (
@@ -185,9 +166,9 @@ export default function LoginPage() {
         )}
         {error && <div className="alert alert-error" style={{ marginTop: 16 }}>{error}</div>}
         <p style={{ marginTop: 20, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-          Нет заведения?{' '}
-          <Link href="/register" style={{ color: 'var(--primary)' }}>
-            Зарегистрировать
+          Нет бизнеса в QalaGo?{' '}
+          <Link href="/onboarding" style={{ color: 'var(--primary)' }}>
+            Добавить или найти
           </Link>
         </p>
       </div>

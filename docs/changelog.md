@@ -27,6 +27,23 @@
 
 ---
 
+## 2026-09-09 — Stage 5N.4: Client business onboarding
+
+**Added**
+- Flutter: «Для бизнеса» profile section, `/business/start|search|apply|applications|claims`, claim CTA on business detail
+- Business Web: `/onboarding/*` (search, apply, claims, applications), zero-business empty states
+- Auth UX: removed account-type selector; login always as User (`accountType=user` internally)
+- Onboarding uses `BusinessApplication` + `OwnershipClaim` APIs (no direct `POST /businesses` in new flows)
+
+**Legacy preserved**
+- `UserRole.BUSINESS`, `Business.ownerId`, backend `POST /businesses` unchanged
+- Legacy BUSINESS users and repository helpers remain for compatibility
+
+**Deferred**
+- Stage 5N.5 verification/rate limits/cleanup; phone OTP auto-approval; document KYC
+
+---
+
 ## 2026-09-09 — Stage 5N.3: Admin business request moderation UI
 
 **Added**

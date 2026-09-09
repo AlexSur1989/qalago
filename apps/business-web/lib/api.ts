@@ -957,6 +957,126 @@ export const ownerApi = {
       token,
       body: JSON.stringify(body),
     }),
+
+  searchPublicBusinesses: (citySlug: string, search: string, limit = 20) => {
+    const qs = new URLSearchParams({ citySlug, limit: String(limit) });
+    if (search.trim()) qs.set('search', search.trim());
+    return api<{ items: BusinessRow[]; meta: { page: number; limit: number; total: number } }>(
+      `/businesses?${qs.toString()}`,
+    );
+  },
+
+  listMyApplications: (token: string) =>
+    api<BusinessApplicationRow[]>('/business-applications/my', { token }),
+
+  getApplication: (token: string, id: string) =>
+    api<BusinessApplicationRow>(`/business-applications/${id}`, { token }),
+
+  createApplication: (
+    token: string,
+    data: {
+      title?: string;
+      categoryId?: string;
+      citySlug?: string;
+      address?: string;
+      shortDesc?: string;
+      phone?: string;
+    },
+  ) =>
+    api<BusinessApplicationRow>('/business-applications', {
+      method: 'POST',
+      token,
+      body: JSON.stringify(data),
+    }),
+
+  updateApplication: (
+    token: string,
+    id: string,
+    data: {
+      title?: string;
+      categoryId?: string;
+      citySlug?: string;
+      address?: string;
+      shortDesc?: string;
+      phone?: string;
+    },
+  ) =>
+    api<BusinessApplicationRow>(`/business-applications/${id}`, {
+      method: 'PATCH',
+      token,
+      body: JSON.stringify(data),
+    }),
+
+  submitApplication: (token: string, id: string) =>
+    api<BusinessApplicationRow>(`/business-applications/${id}/submit`, {
+      method: 'POST',
+      token,
+    }),
+
+  cancelApplication: (token: string, id: string) =>
+    api<BusinessApplicationRow>(`/business-applications/${id}/cancel`, {
+      method: 'POST',
+      token,
+    }),
+
+  listMyClaims: (token: string, page = 1, limit = 20) =>
+    api<{ items: OwnershipClaimRow[]; meta: { page: number; limit: number; total: number } }>(
+      `/ownership-claims/my?page=${page}&limit=${limit}`,
+      { token },
+    ),
+
+  getClaim: (token: string, id: string) =>
+    api<OwnershipClaimRow>(`/ownership-claims/${id}`, { token }),
+
+  createOwnershipClaim: (
+    token: string,
+    businessId: string,
+    body: { claimantMessage?: string } = {},
+  ) =>
+    api<OwnershipClaimRow>(`/businesses/${encodeURIComponent(businessId)}/ownership-claims`, {
+      method: 'POST',
+      token,
+      body: JSON.stringify(body),
+    }),
+
+  cancelOwnershipClaim: (token: string, id: string) =>
+    api<OwnershipClaimRow>(`/ownership-claims/${id}/cancel`, {
+      method: 'POST',
+      token,
+    }),
+};
+
+export type BusinessApplicationRow = {
+  id: string;
+  title: string;
+  address: string;
+  shortDesc?: string | null;
+  phone?: string | null;
+  status: string;
+  rejectionReason?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  city?: CityRow & { launchStatus?: string };
+  category?: CategoryRow;
+  approvedBusiness?: { id: string; title: string; slug: string; status: string } | null;
+};
+
+export type OwnershipClaimRow = {
+  id: string;
+  businessId: string;
+  status: string;
+  verificationMethod: string;
+  claimantMessage?: string | null;
+  rejectionReason?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  business?: {
+    id: string;
+    title: string;
+    address: string;
+    status: string;
+    city?: CityRow;
+  } | null;
 };
 
 export const TOKEN_KEY = 'qalago_business_token';

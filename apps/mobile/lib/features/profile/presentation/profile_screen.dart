@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/city_picker.dart';
 import '../../../shared/widgets/qalago_logo.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../business_onboarding/utils/onboarding_labels.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -24,8 +25,8 @@ class ProfileScreen extends ConsumerWidget {
     final user = auth.user;
     final role = user?.role ?? 'USER';
     final city = ref.watch(cityProvider);
-    final canManageBusiness = ref.watch(hasBusinessCabinetAccessProvider);
     final canModerateRole = canModerate(role);
+    final entriesAsync = ref.watch(myBusinessEntriesProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -111,19 +112,72 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 12),
-            _BusinessActionCard(
-              title: canManageBusiness
-                  ? 'Кабинет бизнеса'
-                  : 'Добавить заведение',
-              subtitle: canManageBusiness
-                  ? 'Управляйте профилем и услугами'
-                  : 'Разместите свое заведение на QalaGo',
-              icon: canManageBusiness
-                  ? Icons.dashboard_outlined
-                  : Icons.storefront,
-              onTap: () => context.push(
-                canManageBusiness ? '/owner' : '/owner/create-business',
-              ),
+            entriesAsync.when(
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+              data: (entries) {
+                if (entries.isEmpty) {
+                  return Column(
+                    children: [
+                      _BusinessActionCard(
+                        title: 'Найти свой бизнес',
+                        subtitle: 'Если карточка уже есть в QalaGo',
+                        icon: Icons.search,
+                        onTap: () => context.push('/business/search'),
+                      ),
+                      const SizedBox(height: 12),
+                      _BusinessActionCard(
+                        title: 'Добавить бизнес',
+                        subtitle: 'Создать новую заявку на добавление',
+                        icon: Icons.storefront,
+                        onTap: () => context.push('/business/apply'),
+                      ),
+                    ],
+                  );
+                }
+                return Column(
+                  children: [
+                    _BusinessActionCard(
+                      title: 'Мои бизнесы',
+                      subtitle: 'Кабинет и управление',
+                      icon: Icons.dashboard_outlined,
+                      onTap: () => context.push('/owner'),
+                    ),
+                    const SizedBox(height: 12),
+                    ...entries.map(
+                      (entry) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _BusinessActionCard(
+                          title: entry.business['title'] as String? ?? 'Бизнес',
+                          subtitle: membershipRoleLabel(entry.access.role.apiValue),
+                          icon: Icons.store,
+                          onTap: () => context.push('/owner'),
+                        ),
+                      ),
+                    ),
+                    _BusinessActionCard(
+                      title: 'Добавить ещё бизнес',
+                      subtitle: 'Новая заявка на добавление',
+                      icon: Icons.add_business_outlined,
+                      onTap: () => context.push('/business/apply'),
+                    ),
+                    const SizedBox(height: 12),
+                    _BusinessActionCard(
+                      title: 'Найти существующий бизнес',
+                      subtitle: 'Подтвердить права владельца',
+                      icon: Icons.search,
+                      onTap: () => context.push('/business/search'),
+                    ),
+                    const SizedBox(height: 12),
+                    _BusinessActionCard(
+                      title: 'Мои заявки',
+                      subtitle: 'Статус заявок и подтверждений',
+                      icon: Icons.assignment_outlined,
+                      onTap: () => context.push('/business/start'),
+                    ),
+                  ],
+                );
+              },
             ),
             if (canModerateRole) ...[
               const SizedBox(height: 12),

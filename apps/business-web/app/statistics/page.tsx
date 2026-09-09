@@ -99,10 +99,10 @@ export default function StatisticsPage() {
 
       {!business ? (
         <div className="empty-state">
-          <h2>Нет заведений</h2>
-          <p>Зарегистрируйте заведение, чтобы видеть статистику.</p>
-          <Link href="/register" className="btn btn-primary" style={{ marginTop: 16 }}>
-            Зарегистрировать заведение
+          <h2>У вас пока нет бизнеса в QalaGo</h2>
+          <p>Добавьте или найдите бизнес, чтобы видеть статистику.</p>
+          <Link href="/onboarding" className="btn btn-primary" style={{ marginTop: 16 }}>
+            Перейти к онбордингу
           </Link>
         </div>
       ) : (

@@ -9,6 +9,7 @@ import '../../../shared/models/models.dart';
 import '../../ads/providers/ad_serve_provider.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../../recommendations/data/ai_repository.dart';
+import '../../business_onboarding/providers/onboarding_providers.dart';
 
 final authRepositoryProvider = Provider(
   (ref) => AuthRepository(ref.watch(dioProvider)),
@@ -42,6 +43,7 @@ void invalidateUserScopedProviders(Ref ref) {
   ref.invalidate(unreadNotificationsProvider);
   ref.invalidate(businessFavoriteProvider);
   ref.invalidate(adminPendingBusinessesProvider);
+  invalidateOnboardingProviders(ref);
 }
 
 void invalidateCityScopedProviders(Ref ref) {

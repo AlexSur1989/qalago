@@ -19,6 +19,7 @@ import '../../../shared/widgets/loading_view.dart';
 import '../../../core/auth/auth_prompt.dart';
 import '../../ads/utils/ad_url_utils.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../business_onboarding/presentation/business_claim_cta.dart';
 import '../widgets/catalog_item_card.dart';
 import '../../recommendations/data/ai_repository.dart';
 
@@ -439,6 +440,10 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                           websiteUrl: websiteUrl,
                           instagramUrl: instagramUrl,
                         ),
+                      ],
+                      if (!canManageMenu) ...[
+                        const SizedBox(height: 24),
+                        BusinessClaimCta(businessId: widget.id),
                       ],
                       if (latitude != null && longitude != null) ...[
                         const SizedBox(height: 24),

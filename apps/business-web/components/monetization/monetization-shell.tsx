@@ -58,7 +58,12 @@ export function MonetizationShell({ children }: MonetizationShellProps) {
         userName={user?.name ?? user?.phone ?? undefined}
         onLogout={logout}
       >
-        <div className="alert">Сначала добавьте заведение в кабинете.</div>
+        <div className="empty-state">
+          <p>У вас пока нет бизнеса в QalaGo.</p>
+          <a href="/onboarding" className="btn btn-primary">
+            Добавить или найти бизнес
+          </a>
+        </div>
       </BusinessShell>
     );
   }

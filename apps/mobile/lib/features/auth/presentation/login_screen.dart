@@ -24,7 +24,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _codeFocusNode = FocusNode();
   bool _codeSent = false;
   String? _normalizedPhone;
-  String _accountType = 'user';
   int _resendCooldownSec = 0;
   Timer? _resendTimer;
 
@@ -113,7 +112,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await ref.read(authProvider.notifier).verifyCode(
             phone,
             code,
-            accountType: _accountType,
+            accountType: 'user',
           );
     } catch (e) {
       _showError(mapAuthError(e));
@@ -192,44 +191,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 30),
-                    const Text(
-                      'Тип аккаунта',
-                      style: TextStyle(
-                        color: Color(0xFF5A6270),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _AccountTypeCard(
-                            selected: _accountType == 'user',
-                            icon: Icons.person_outline,
-                            title: 'Пользователь',
-                            subtitle: 'Каталог, карта, избранное',
-                            onTap: isBusy
-                                ? null
-                                : () => setState(() => _accountType = 'user'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _AccountTypeCard(
-                            selected: _accountType == 'business',
-                            icon: Icons.storefront_outlined,
-                            title: 'Бизнес',
-                            subtitle: 'Кабинет владельца заведения',
-                            onTap: isBusy
-                                ? null
-                                : () =>
-                                    setState(() => _accountType = 'business'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
                     TextField(
                       controller: _phoneController,
                       enabled: !isBusy && !_codeSent,

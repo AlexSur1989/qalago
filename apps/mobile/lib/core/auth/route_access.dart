@@ -29,6 +29,17 @@ bool isOwnerRoute(String location) => location.startsWith('/owner');
 
 bool isAdminRoute(String location) => location.startsWith('/admin');
 
+bool isBusinessOnboardingRoute(String location) {
+  final path = Uri.parse(location).path;
+  if (path == '/business/start') return true;
+  if (path == '/business/search') return true;
+  if (path == '/business/apply') return true;
+  if (path == '/business/applications') return true;
+  if (path == '/business/claims') return true;
+  if (RegExp(r'^/business/[^/]+/claim$').hasMatch(path)) return true;
+  return false;
+}
+
 String loginRedirectPath(String returnPath) {
   final encoded = Uri.encodeComponent(returnPath);
   return '/login?redirect=$encoded';

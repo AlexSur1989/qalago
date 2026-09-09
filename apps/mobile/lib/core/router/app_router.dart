@@ -26,6 +26,12 @@ import '../../features/promotions/presentation/promotions_screen.dart';
 import '../../core/rbac/role_permissions.dart';
 import '../../features/owner/presentation/owner_dashboard_screen.dart';
 import '../../features/owner/presentation/create_business_screen.dart';
+import '../../features/business_onboarding/presentation/business_start_screen.dart';
+import '../../features/business_onboarding/presentation/business_search_screen.dart';
+import '../../features/business_onboarding/presentation/business_apply_screen.dart';
+import '../../features/business_onboarding/presentation/business_applications_screen.dart';
+import '../../features/business_onboarding/presentation/business_claim_screen.dart';
+import '../../features/business_onboarding/presentation/business_claims_screen.dart';
 import '../../features/owner/presentation/owner_menu_screen.dart';
 import '../../features/owner/presentation/owner_gallery_screen.dart';
 import '../../features/owner/presentation/owner_analytics_screen.dart';
@@ -89,7 +95,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       if (!isAuthed) {
         if (isLoggingIn || isPublicConsumerRoute(location)) return null;
-        if (isOwnerRoute(location) || isAdminRoute(location) ||
+        if (isOwnerRoute(location) ||
+            isAdminRoute(location) ||
+            isBusinessOnboardingRoute(location) ||
             isAuthOnlyConsumerRoute(location)) {
           return loginRedirectPath(state.uri.toString());
         }
@@ -244,7 +252,41 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/owner/create-business',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const CreateBusinessScreen(),
+        redirect: (_, __) => '/business/apply',
+      ),
+      GoRoute(
+        path: '/business/start',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const BusinessStartScreen(),
+      ),
+      GoRoute(
+        path: '/business/search',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const BusinessSearchScreen(),
+      ),
+      GoRoute(
+        path: '/business/apply',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => BusinessApplyScreen(
+          applicationId: state.uri.queryParameters['id'],
+        ),
+      ),
+      GoRoute(
+        path: '/business/applications',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const BusinessApplicationsScreen(),
+      ),
+      GoRoute(
+        path: '/business/claims',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const BusinessClaimsScreen(),
+      ),
+      GoRoute(
+        path: '/business/:id/claim',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => BusinessClaimScreen(
+          businessId: state.pathParameters['id']!,
+        ),
       ),
       GoRoute(
         path: '/owner/edit/:businessId',

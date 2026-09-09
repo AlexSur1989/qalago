@@ -108,10 +108,10 @@ export default function SettingsPage() {
         ) : (
           <>
             <p style={{ margin: '0 0 12px', color: 'var(--text-muted)' }}>
-              У вас пока нет заведения. Подайте заявку — после модерации она появится в приложении.
+              У вас пока нет бизнеса. Подайте заявку — после модерации откроется кабинет.
             </p>
-            <Link href="/register" className="btn btn-primary">
-              Зарегистрировать заведение
+            <Link href="/onboarding" className="btn btn-primary">
+              Добавить или найти бизнес
             </Link>
           </>
         )}

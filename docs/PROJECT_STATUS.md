@@ -1,7 +1,7 @@
 # QalaGo — Project Status
 
 **Last updated:** 2026-09-09  
-**Stable checkpoint:** `7a1ed6e` — Stage 5N.2 ownership claim backend (+ 5N.3 admin UI pending push)
+**Stable checkpoint:** `00b6953` — Stage 5N.3 admin moderation UI (+ 5N.4 client onboarding pending commit)
 
 ---
 
@@ -19,10 +19,11 @@
 | 5N.0 | `c051fbd` | Business registration audit/design |
 | 5N.1 | `44596c9` | BusinessApplication backend, admin moderation API, ownerId fix |
 | 5N.2 | `7a1ed6e` | BusinessOwnershipClaim backend, manual verification, plan preservation |
-| 5N.3 | (pending commit) | Admin Web moderation UI for applications + ownership claims |
+| 5N.3 | `00b6953` | Admin Web moderation UI for applications + ownership claims |
+| 5N.4 | (pending commit) | Flutter + Business Web client onboarding (applications + claims) |
 
 **Not started:** Stage 6 (release readiness)  
-**Not implemented:** `MODERATOR`, consumer/business onboarding (5N.4), verification/rate limits (5N.5)
+**Not implemented:** `MODERATOR`, verification/rate limits/cleanup (5N.5)
 
 ---
 
@@ -157,8 +158,9 @@ See [RBAC](./architecture/rbac.md), [API contracts](./architecture/api-contracts
 | Suite | Result |
 |-------|--------|
 | catalog-api | **386/386** |
-| business-web | **41/41** |
+| business-web | **45/45** vitest + build pass |
 | admin-web | **18/18** vitest + build pass |
+| Flutter | **232 pass, 3 fail** (pre-existing `auth_session_test.dart`; +5 onboarding tests) |
 | Flutter | **227 pass, 3 fail** (pre-existing `auth_session_test.dart`; unrelated to 5M.4) |
 
 Run from repo root: `npm test`, `npm run build`. Flutter: `cd apps/mobile && flutter test && flutter analyze`.
@@ -171,8 +173,8 @@ Run from repo root: `npm test`, `npm run build`. Flutter: `cd apps/mobile && flu
 
 | Client | State |
 |--------|-------|
-| Mobile | Guest-first consumer; membership-aware owner cabinet; permission-aware nav; business switch refreshes access |
-| Business Web | Team management, permission-aware nav, team audit history (OWNER) |
+| Mobile | Guest-first consumer; «Для бизнеса» onboarding; membership-aware owner cabinet; claim CTA on detail |
+| Business Web | Onboarding (`/onboarding`), team management, permission-aware nav, team audit history (OWNER) |
 | Admin Web | Moderation, `/business-requests` (applications + claims), monetization, users, `/audit-logs` |
 | Flutter owner team UI | **Deferred** (P2) |
 | Flutter AuditLog UI | **Not required** |

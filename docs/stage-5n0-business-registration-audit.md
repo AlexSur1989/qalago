@@ -871,7 +871,7 @@ None for audit completion. Implementation blocked on explicit 5N.1 kickoff.
 - [x] `POST /businesses` deprecated (legacy, not removed)
 - [x] Ownership claims backend (5N.2)
 - [x] Admin Web moderation UI (5N.3)
-- [ ] Flutter/Business Web onboarding (5N.4)
+- [x] Flutter/Business Web onboarding (5N.4)
 
 ## Stage 5N.2 implementation note (2026-09-09)
 
@@ -886,8 +886,16 @@ None for audit completion. Implementation blocked on explicit 5N.1 kickoff.
 - [x] Admin Web «Заявки бизнеса» — applications + claims queues, detail, approve/reject
 - [x] CITY_ADMIN city lock; pending badges; Russian status labels
 - [ ] Dedicated admin business detail route after approval (shows title only)
-- [ ] Consumer/business onboarding (5N.4)
+- [x] Consumer/business onboarding (5N.4)
 - [ ] Verification/rate limits (5N.5)
+
+## Stage 5N.4 implementation note (2026-09-09)
+
+- [x] Flutter + Business Web onboarding (search-first, applications, claims)
+- [x] Auth UX: single User login (no account type selector)
+- [x] Membership-based cabinet access; no new `UserRole.BUSINESS` assignment in onboarding
+- [ ] Backend removal of legacy `POST /businesses` (5N.5)
+- [ ] Phone verification / rate limits (5N.5)
 
 ## NOT IMPLEMENTED (by design)
 - Client onboarding UI
