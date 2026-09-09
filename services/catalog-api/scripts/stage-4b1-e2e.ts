@@ -98,13 +98,13 @@ async function runPackageFlow(
     throw new Error(`Missing campaigns for ${packageCode}`);
   }
 
-  console.log('VIP status:', vip.status, '(expected PENDING_MODERATION)');
+  console.log('VIP status:', vip.status, '(expected SCHEDULED until creative submit)');
   console.log('TOP status:', top.status);
   console.log('FEATURED status:', featured.status);
   console.log('PROMOTION status:', promo.status);
 
-  if (vip.status !== AdCampaignStatus.PENDING_MODERATION) {
-    throw new Error(`VIP should wait, got ${vip.status}`);
+  if (vip.status !== AdCampaignStatus.SCHEDULED) {
+    throw new Error(`VIP should be scheduled until submit, got ${vip.status}`);
   }
   for (const c of [top, featured, promo]) {
     if (!['ACTIVE', 'SCHEDULED'].includes(c.status)) {
@@ -119,6 +119,19 @@ async function runPackageFlow(
     throw new Error('VIP served before creative approval');
   }
   console.log('Serve excludes waiting VIP: OK');
+
+  await api(businessToken, `/monetization/creatives/${creative.id}/submit`, {
+    method: 'POST',
+    body: JSON.stringify({}),
+  });
+
+  const vipSubmitted = await api(businessToken, `/monetization/campaigns/${vip.id}`) as {
+    status: string;
+  };
+  if (vipSubmitted.status !== AdCampaignStatus.PENDING_MODERATION) {
+    throw new Error(`VIP should enter moderation after submit, got ${vipSubmitted.status}`);
+  }
+  console.log('VIP after creative submit:', vipSubmitted.status);
 
   await api(adminToken, `/admin/monetization/creatives/${creative.id}/approve`, {
     method: 'POST',

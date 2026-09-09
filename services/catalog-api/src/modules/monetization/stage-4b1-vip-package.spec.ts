@@ -147,8 +147,8 @@ describe('Stage 4B.1 — package VIP creative activation', () => {
       (call) => call[0].data.creativeId,
     );
 
-    expect(statuses.filter((s) => s === AdCampaignStatus.PENDING_MODERATION)).toHaveLength(1);
-    expect(statuses.filter((s) => s !== AdCampaignStatus.PENDING_MODERATION)).toHaveLength(3);
+    expect(statuses.filter((s) => s === AdCampaignStatus.SCHEDULED)).toHaveLength(1);
+    expect(statuses.filter((s) => s !== AdCampaignStatus.SCHEDULED)).toHaveLength(3);
     expect(creativeIds.filter((id) => id === 'cr-vip')).toHaveLength(1);
     expect(creativeIds.filter((id) => id == null)).toHaveLength(3);
   });

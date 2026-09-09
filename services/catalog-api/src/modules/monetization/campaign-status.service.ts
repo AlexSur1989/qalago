@@ -41,8 +41,12 @@ export class CampaignStatusService {
           input.durationHours,
           input.durationDays,
         );
+        const awaitingModeration =
+          input.creativeModerationStatus === AdModerationStatus.PENDING;
         return {
-          status: AdCampaignStatus.PENDING_MODERATION,
+          status: awaitingModeration
+            ? AdCampaignStatus.PENDING_MODERATION
+            : AdCampaignStatus.SCHEDULED,
           startAt: anchor,
           endAt,
         };

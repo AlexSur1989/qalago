@@ -434,6 +434,7 @@ export type MonetizationCampaign = {
   startAt?: string | null;
   endAt?: string | null;
   requestedStartAt?: string | null;
+  effectivePeriodStarted?: boolean;
   product?: { code: string; name: string; type: string } | null;
   creative?: { id: string; title?: string; moderationStatus: string } | null;
   placements?: Array<{ code: string; name: string; nameRu?: string }>;
@@ -930,6 +931,12 @@ export const ownerApi = {
 
   getMonetizationCreative: (token: string, creativeId: string) =>
     api<MonetizationCreative>(`/monetization/creatives/${creativeId}`, { token }),
+
+  submitMonetizationCreative: (token: string, creativeId: string) =>
+    api<MonetizationCreative>(`/monetization/creatives/${creativeId}/submit`, {
+      method: 'POST',
+      token,
+    }),
 
   updateMonetizationCreative: (
     token: string,

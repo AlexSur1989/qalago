@@ -174,6 +174,12 @@ export default function MonetizationCreativesPage() {
                   <dd>{creativeStatusLabel(selected.moderationStatus)}</dd>
                 </dl>
 
+                {selected.moderationStatus === 'DRAFT' && (
+                  <p className="table-sub" style={{ marginTop: 12 }}>
+                    Бизнес ещё не отправил этот креатив на модерацию.
+                  </p>
+                )}
+
                 {selected.moderationStatus === 'PENDING' && (
                   <>
                     <label className="field-label">

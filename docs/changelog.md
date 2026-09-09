@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-09 — Hotfix: VIP creative moderation lifecycle sync
+
+- **Сделано:** `POST /monetization/creatives/:id/submit` (`DRAFT`/`REJECTED` → `PENDING`, ADS_MANAGE); VIP campaign при оплате с `DRAFT` креативом → `SCHEDULED` (не `PENDING_MODERATION`); submit синхронизирует кампанию в `PENDING_MODERATION`; admin approve/reject только для `PENDING`; Business Web — «Отправить на модерацию», корректный «Фактический период»; Admin Web — подсказка для `DRAFT`; +11 backend tests (405 total).
+- **На будущее:** submit из Flutter owner UI; data repair script для legacy `PENDING_MODERATION`+`DRAFT` пар.
+
 ## 2026-09-09 — Stage 5N.QA: Manual E2E verification (runtime)
 
 - **Сделано:** runtime QA script `services/catalog-api/scripts/stage-5n-qa-runtime.mjs` + fixture audit `stage-5n-qa-fixtures.mjs`; DEV stack verified (API :3002, Admin :3001, Business :3003, Flutter :8080); HTTP smoke on all web apps; API paths for application/claim lifecycle, POST `/businesses` matrix, PAYMENTS_VIEW RBAC, CITY_ADMIN scope, stale moderation, rate limit 429, accountType attack; **P1 fix:** `BusinessAccessService.assertBusinessPermission` возвращает generic `Insufficient permissions` вместо `Missing permission: PAYMENTS_VIEW` (+1 regression test, backend 394/394).

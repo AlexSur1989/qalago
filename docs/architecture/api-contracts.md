@@ -816,6 +816,7 @@ Returns products with available durations and `basePrice`. When `businessId` is 
 - `GET /monetization/creatives?businessId`
 - `GET /monetization/creatives/:id`
 - `PATCH /monetization/creatives/:id` — only `DRAFT`/`REJECTED`
+- `POST /monetization/creatives/:id/submit` — `DRAFT`/`REJECTED` → `PENDING`; syncs linked paid VIP campaigns to `PENDING_MODERATION`
 
 **Quote body:**
 ```json

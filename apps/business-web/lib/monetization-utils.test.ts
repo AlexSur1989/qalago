@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   analyticsActionLabel,
   campaignStatusLabel,
+  canSubmitCreative,
   creativeStatusLabel,
   formatDuration,
+  formatEffectivePeriod,
   formatKzt,
   orderStatusLabel,
   packageHasVip,
@@ -11,6 +13,8 @@ import {
   placementLabel,
   planTierLabel,
   productLabel,
+  vipCampaignDisplayStatus,
+  vipModerationNotice,
 } from './monetization-utils';
 
 describe('monetization-utils', () => {
@@ -67,6 +71,49 @@ describe('monetization-utils', () => {
 
   it('maps analytics actions', () => {
     expect(analyticsActionLabel('AD_CALL_CLICK')).toBe('Звонки');
+  });
+
+  it('VIP DRAFT shows awaiting submit, not moderation', () => {
+    expect(
+      vipCampaignDisplayStatus({
+        status: 'SCHEDULED',
+        product: { code: 'VIP_BANNER' },
+        creative: { moderationStatus: 'DRAFT' },
+      }),
+    ).toBe('Ожидает отправки креатива');
+    expect(
+      vipModerationNotice({
+        status: 'SCHEDULED',
+        product: { code: 'VIP_BANNER' },
+        creative: { moderationStatus: 'DRAFT' },
+      }),
+    ).toContain('Отправьте креатив');
+  });
+
+  it('VIP PENDING shows moderation state', () => {
+    expect(
+      vipCampaignDisplayStatus({
+        status: 'PENDING_MODERATION',
+        product: { code: 'VIP_BANNER' },
+        creative: { moderationStatus: 'PENDING' },
+      }),
+    ).toBe('На модерации');
+  });
+
+  it('canSubmitCreative only for DRAFT/REJECTED', () => {
+    expect(canSubmitCreative({ moderationStatus: 'DRAFT' })).toBe(true);
+    expect(canSubmitCreative({ moderationStatus: 'PENDING' })).toBe(false);
+    expect(canSubmitCreative({ moderationStatus: 'APPROVED' })).toBe(false);
+  });
+
+  it('formatEffectivePeriod before approval', () => {
+    expect(
+      formatEffectivePeriod({
+        startAt: '2026-09-09T00:00:00Z',
+        endAt: '2026-10-09T00:00:00Z',
+        effectivePeriodStarted: false,
+      }),
+    ).toBe('Начнётся после одобрения');
   });
 
   it('detects VIP in package', () => {

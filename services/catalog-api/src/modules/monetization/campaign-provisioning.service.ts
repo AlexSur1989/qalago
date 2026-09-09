@@ -398,4 +398,39 @@ export class CampaignProvisioningService {
       data: { status: AdCampaignStatus.REJECTED },
     });
   }
+
+  /** After creative submit: paid VIP campaigns enter moderation queue. */
+  async syncCampaignsOnCreativeSubmitted(creativeId: string) {
+    const campaigns = await this.prisma.adCampaign.findMany({
+      where: {
+        creativeId,
+        status: {
+          in: [
+            AdCampaignStatus.SCHEDULED,
+            AdCampaignStatus.PENDING_MODERATION,
+            AdCampaignStatus.REJECTED,
+          ],
+        },
+        product: { type: MonetizationProductType.VIP_BANNER },
+        orderItem: {
+          order: { status: OrderStatus.PAID },
+        },
+      },
+      select: { id: true, status: true },
+    });
+
+    const updated = [];
+    for (const campaign of campaigns) {
+      if (campaign.status === AdCampaignStatus.PENDING_MODERATION) {
+        updated.push(campaign);
+        continue;
+      }
+      const row = await this.prisma.adCampaign.update({
+        where: { id: campaign.id },
+        data: { status: AdCampaignStatus.PENDING_MODERATION },
+      });
+      updated.push(row);
+    }
+    return updated;
+  }
 }

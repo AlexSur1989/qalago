@@ -3,65 +3,92 @@
 import Link from 'next/link';
 import { Fragment } from 'react';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   MonetizationCampaign,
   MonetizationCampaignAnalytics,
   ownerApi,
 } from '@/lib/api';
+import { BusinessPermission, hasPermission } from '@/lib/business-access';
 import { useMonetizationContext } from '@/components/monetization/monetization-shell';
 import {
   analyticsActionLabel,
-  campaignStatusLabel,
+  canSubmitCreative,
   creativeStatusLabel,
-  formatDate,
   formatDateTime,
+  formatEffectivePeriod,
   monetizationStatusClass,
   parseApiError,
   placementLabel,
   productLabel,
+  vipCampaignDisplayStatus,
+  vipModerationNotice,
 } from '@/lib/monetization-utils';
 
 export default function MonetizationCampaignDetailPage() {
   const params = useParams<{ id: string }>();
   const campaignId = params.id;
-  const { token } = useMonetizationContext();
+  const { token, access } = useMonetizationContext();
   const [campaign, setCampaign] = useState<MonetizationCampaign | null>(null);
   const [analytics, setAnalytics] = useState<MonetizationCampaignAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
+  const canManageAds =
+    access?.role === 'OWNER' || hasPermission(access, BusinessPermission.ADS_MANAGE);
+
+  const load = useCallback(async () => {
     setLoading(true);
-    Promise.all([
-      ownerApi.getMonetizationCampaign(token, campaignId),
-      ownerApi.getMonetizationCampaignAnalytics(token, campaignId),
-    ])
-      .then(([c, a]) => {
-        if (!cancelled) {
-          setCampaign(c);
-          setAnalytics(a);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) setError(parseApiError(err));
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
+    setError(null);
+    try {
+      const [c, a] = await Promise.all([
+        ownerApi.getMonetizationCampaign(token, campaignId),
+        ownerApi.getMonetizationCampaignAnalytics(token, campaignId),
+      ]);
+      setCampaign(c);
+      setAnalytics(a);
+    } catch (err) {
+      setError(parseApiError(err));
+    } finally {
+      setLoading(false);
+    }
   }, [token, campaignId]);
 
-  if (loading) return <p style={{ color: 'var(--text-muted)' }}>Загрузка…</p>;
-  if (error || !campaign) {
-    return <div className="alert alert-error">{error ?? 'Кампания не найдена'}</div>;
+  useEffect(() => {
+    load().catch(() => undefined);
+  }, [load]);
+
+  async function onSubmitCreative() {
+    if (!campaign?.creative?.id || submitting) return;
+    setSubmitting(true);
+    setError(null);
+    setInfo(null);
+    try {
+      await ownerApi.submitMonetizationCreative(token, campaign.creative.id);
+      setInfo('Креатив отправлен на модерацию.');
+      await load();
+    } catch (err) {
+      setError(parseApiError(err));
+    } finally {
+      setSubmitting(false);
+    }
   }
 
-  const status = campaign.effectiveStatus ?? campaign.status;
+  if (loading) return <p style={{ color: 'var(--text-muted)' }}>Загрузка…</p>;
+  if (error && !campaign) {
+    return <div className="alert alert-error">{error}</div>;
+  }
+  if (!campaign) {
+    return <div className="alert alert-error">Кампания не найдена</div>;
+  }
+
   const isVip = campaign.product?.code === 'VIP_BANNER';
+  const displayStatus = vipCampaignDisplayStatus(campaign);
+  const moderationNotice = isVip ? vipModerationNotice(campaign) : null;
+  const showSubmit =
+    isVip && canManageAds && canSubmitCreative(campaign.creative) && !submitting;
   const actionEntries = analytics
     ? Object.entries(analytics.actions).filter(([, count]) => count > 0)
     : [];
@@ -78,12 +105,15 @@ export default function MonetizationCampaignDetailPage() {
         </Link>
       </header>
 
+      {error && <div className="alert alert-error">{error}</div>}
+      {info && <div className="alert alert-success">{info}</div>}
+
       <section className="form-card" style={{ marginBottom: 16 }}>
         <dl className="detail-grid">
-          <dt>Статус</dt>
+          <dt>Статус кампании</dt>
           <dd>
-            <span className={monetizationStatusClass(status)}>
-              {campaignStatusLabel(status)}
+            <span className={monetizationStatusClass(campaign.status)}>
+              {displayStatus}
             </span>
           </dd>
           {isVip && campaign.requestedStartAt && (
@@ -93,9 +123,7 @@ export default function MonetizationCampaignDetailPage() {
             </>
           )}
           <dt>Фактический период</dt>
-          <dd>
-            {formatDate(campaign.startAt)} — {formatDate(campaign.endAt)}
-          </dd>
+          <dd>{formatEffectivePeriod(campaign)}</dd>
           {campaign.placements && campaign.placements.length > 0 && (
             <>
               <dt>Размещения</dt>
@@ -119,9 +147,22 @@ export default function MonetizationCampaignDetailPage() {
           )}
         </dl>
 
-        {isVip && campaign.status === 'PENDING_MODERATION' && (
+        {showSubmit && (
+          <div className="action-row" style={{ marginTop: 12 }}>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              disabled={submitting}
+              onClick={() => onSubmitCreative()}
+            >
+              {submitting ? 'Отправка…' : 'Отправить на модерацию'}
+            </button>
+          </div>
+        )}
+
+        {moderationNotice && (
           <div className="alert" style={{ marginTop: 12 }}>
-            VIP-баннер ожидает одобрения креатива. Период размещения начнётся после модерации.
+            {moderationNotice}
           </div>
         )}
       </section>

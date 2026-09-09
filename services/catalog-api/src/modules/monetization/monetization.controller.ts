@@ -160,4 +160,10 @@ export class MonetizationController {
   ) {
     return this.creativeService.update(user, id, dto);
   }
+
+  @Roles(UserRole.BUSINESS, UserRole.ADMIN, UserRole.CITY_ADMIN)
+  @Post('creatives/:id/submit')
+  submitCreative(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.creativeService.submit(user, id);
+  }
 }

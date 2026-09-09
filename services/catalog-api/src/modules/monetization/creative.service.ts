@@ -10,6 +10,7 @@ import {
   monetizationBadRequest,
 } from './errors/monetization.errors';
 import { MonetizationAccessService } from './monetization-access.service';
+import { assertCreativeSubmittable } from './utils/creative-submit.util';
 
 @Injectable()
 export class CreativeService {
@@ -161,8 +162,38 @@ export class CreativeService {
     return this.formatCreative(updated);
   }
 
+  async submit(user: AuthUser, id: string) {
+    const creative = await this.access.assertCreativeAccess(user, id);
+    await this.access.assertCanManageBusiness(user, creative.businessId);
+
+    if (creative.moderationStatus === AdModerationStatus.PENDING) {
+      return this.formatCreative(creative);
+    }
+
+    assertCreativeSubmittable(creative);
+
+    const updated = await this.prisma.adCreative.update({
+      where: { id },
+      data: {
+        moderationStatus: AdModerationStatus.PENDING,
+        moderationComment: null,
+      },
+    });
+
+    await this.provisioning.syncCampaignsOnCreativeSubmitted(id);
+
+    return this.formatCreative(updated);
+  }
+
   async approve(user: AuthUser, id: string) {
     const scope = await this.access.assertCreativeAccess(user, id);
+
+    if (scope.moderationStatus !== AdModerationStatus.PENDING) {
+      monetizationBadRequest(
+        MonetizationErrorCode.CREATIVE_NOT_SUBMITTED,
+        'Only creatives pending moderation can be approved',
+      );
+    }
 
     const updated = await this.prisma.adCreative.update({
       where: { id },
@@ -194,6 +225,13 @@ export class CreativeService {
 
   async reject(user: AuthUser, id: string, comment?: string) {
     const scope = await this.access.assertCreativeAccess(user, id);
+
+    if (scope.moderationStatus !== AdModerationStatus.PENDING) {
+      monetizationBadRequest(
+        MonetizationErrorCode.CREATIVE_NOT_SUBMITTED,
+        'Only creatives pending moderation can be rejected',
+      );
+    }
 
     const updated = await this.prisma.adCreative.update({
       where: { id },

@@ -5,13 +5,13 @@ import { useEffect, useState } from 'react';
 import { MonetizationCampaign, ownerApi } from '@/lib/api';
 import { useMonetizationContext } from '@/components/monetization/monetization-shell';
 import {
-  campaignStatusLabel,
   creativeStatusLabel,
-  formatDateTime,
+  formatEffectivePeriod,
   monetizationStatusClass,
   parseApiError,
   placementLabel,
   productLabel,
+  vipCampaignDisplayStatus,
 } from '@/lib/monetization-utils';
 
 export default function MonetizationCampaignsPage() {
@@ -78,13 +78,13 @@ export default function MonetizationCampaignsPage() {
               </thead>
               <tbody>
                 {campaigns.map((c) => {
-                  const status = c.effectiveStatus ?? c.status;
+                  const displayStatus = vipCampaignDisplayStatus(c);
                   return (
                     <tr key={c.id}>
                       <td>{productLabel(c.product?.code)}</td>
                       <td>
-                        <span className={monetizationStatusClass(status)}>
-                          {campaignStatusLabel(status)}
+                        <span className={monetizationStatusClass(c.status)}>
+                          {displayStatus}
                         </span>
                         {c.creative && c.product?.code === 'VIP_BANNER' && (
                           <div className="table-sub">
@@ -96,9 +96,7 @@ export default function MonetizationCampaignsPage() {
                         {c.placements?.map((p) => placementLabel(p.code, p.name ?? p.nameRu)).join(', ') ||
                           '—'}
                       </td>
-                      <td>
-                        {formatDateTime(c.startAt)} — {formatDateTime(c.endAt)}
-                      </td>
+                      <td>{formatEffectivePeriod(c)}</td>
                       <td>{c.metrics?.qualifiedImpressions ?? 0}</td>
                       <td>
                         <Link href={`/monetization/campaigns/${c.id}`} className="btn btn-sm">
@@ -114,17 +112,17 @@ export default function MonetizationCampaignsPage() {
 
           <div className="mobile-only">
             {campaigns.map((c) => {
-              const status = c.effectiveStatus ?? c.status;
+              const displayStatus = vipCampaignDisplayStatus(c);
               return (
                 <section key={c.id} className="form-card" style={{ marginBottom: 12 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                     <strong>{productLabel(c.product?.code)}</strong>
-                    <span className={monetizationStatusClass(status)}>
-                      {campaignStatusLabel(status)}
+                    <span className={monetizationStatusClass(c.status)}>
+                      {displayStatus}
                     </span>
                   </div>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-                    {formatDateTime(c.startAt)} — {formatDateTime(c.endAt)}
+                    {formatEffectivePeriod(c)}
                   </p>
                   <Link href={`/monetization/campaigns/${c.id}`} className="btn btn-sm">
                     Детали

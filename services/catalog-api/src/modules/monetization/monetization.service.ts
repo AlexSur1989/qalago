@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
   AdCampaignStatus,
+  AdModerationStatus,
   AuditAction,
   AuditResourceType,
   MonetizationProductType,
@@ -520,6 +521,23 @@ export class MonetizationService {
     }
   }
 
+  private isEffectivePeriodStarted(
+    status: AdCampaignStatus,
+    productType: MonetizationProductType,
+    creativeStatus?: string | null,
+  ): boolean {
+    if (productType === MonetizationProductType.VIP_BANNER) {
+      if (creativeStatus !== AdModerationStatus.APPROVED) {
+        return false;
+      }
+    }
+    return (
+      status === AdCampaignStatus.ACTIVE ||
+      status === AdCampaignStatus.SCHEDULED ||
+      status === AdCampaignStatus.COMPLETED
+    );
+  }
+
   private formatCampaign(campaign: {
     id: string;
     businessId: string;
@@ -555,6 +573,12 @@ export class MonetizationService {
       }
     }
 
+    const effectivePeriodStarted = this.isEffectivePeriodStarted(
+      campaign.status,
+      campaign.product.type,
+      campaign.creative?.moderationStatus,
+    );
+
     return {
       id: campaign.id,
       businessId: campaign.businessId,
@@ -567,6 +591,7 @@ export class MonetizationService {
       startAt: campaign.startAt,
       endAt: campaign.endAt,
       requestedStartAt,
+      effectivePeriodStarted,
       product: campaign.product,
       creative: campaign.creative
         ? {

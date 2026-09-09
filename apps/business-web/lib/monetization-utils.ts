@@ -168,6 +168,56 @@ export function creativeStatusLabel(status: string): string {
   }
 }
 
+type VipCampaignLike = {
+  status: string;
+  effectiveStatus?: string | null;
+  product?: { code?: string | null } | null;
+  creative?: { moderationStatus?: string } | null;
+};
+
+/** Owner-facing VIP campaign label — keeps campaign/creative states distinct. */
+export function vipCampaignDisplayStatus(campaign: VipCampaignLike): string {
+  if (campaign.product?.code !== 'VIP_BANNER') {
+    return campaignStatusLabel(campaign.effectiveStatus ?? campaign.status);
+  }
+
+  const creativeStatus = campaign.creative?.moderationStatus;
+  if (creativeStatus === 'DRAFT' || creativeStatus === 'REJECTED') {
+    return 'Ожидает отправки креатива';
+  }
+  if (creativeStatus === 'PENDING' || campaign.status === 'PENDING_MODERATION') {
+    return 'На модерации';
+  }
+  return campaignStatusLabel(campaign.effectiveStatus ?? campaign.status);
+}
+
+export function canSubmitCreative(creative?: { moderationStatus?: string } | null): boolean {
+  return creative?.moderationStatus === 'DRAFT' || creative?.moderationStatus === 'REJECTED';
+}
+
+export function formatEffectivePeriod(campaign: {
+  startAt?: string | null;
+  endAt?: string | null;
+  effectivePeriodStarted?: boolean;
+}): string {
+  if (campaign.effectivePeriodStarted === false) {
+    return 'Начнётся после одобрения';
+  }
+  if (!campaign.startAt || !campaign.endAt) return '—';
+  return `${formatDate(campaign.startAt)} — ${formatDate(campaign.endAt)}`;
+}
+
+export function vipModerationNotice(campaign: VipCampaignLike): string | null {
+  const creativeStatus = campaign.creative?.moderationStatus;
+  if (creativeStatus === 'DRAFT' || creativeStatus === 'REJECTED') {
+    return 'Отправьте креатив на модерацию, чтобы начать проверку VIP-баннера.';
+  }
+  if (creativeStatus === 'PENDING' || campaign.status === 'PENDING_MODERATION') {
+    return 'VIP-баннер ожидает одобрения креатива. Период размещения начнётся после модерации.';
+  }
+  return null;
+}
+
 export function planTierLabel(tier?: string | null): string {
   switch (tier) {
     case 'FREE':

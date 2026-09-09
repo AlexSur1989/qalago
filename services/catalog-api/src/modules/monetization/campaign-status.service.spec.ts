@@ -19,11 +19,24 @@ describe('CampaignStatusService', () => {
 
   const service = new CampaignStatusService(availability);
 
-  it('28. VIP without approved creative stays PENDING_MODERATION', () => {
+  it('28. VIP with DRAFT creative stays SCHEDULED until submit', () => {
     const result = service.resolveInitialStatus({
       desiredStartAt: null,
       paidAt: new Date('2026-09-05T10:00:00Z'),
       creativeModerationStatus: AdModerationStatus.DRAFT,
+      productType: MonetizationProductType.VIP_BANNER,
+      durationDays: 7,
+      requiresCreative: true,
+    });
+
+    expect(result.status).toBe(AdCampaignStatus.SCHEDULED);
+  });
+
+  it('28b. VIP with PENDING creative enters PENDING_MODERATION', () => {
+    const result = service.resolveInitialStatus({
+      desiredStartAt: null,
+      paidAt: new Date('2026-09-05T10:00:00Z'),
+      creativeModerationStatus: AdModerationStatus.PENDING,
       productType: MonetizationProductType.VIP_BANNER,
       durationDays: 7,
       requiresCreative: true,
