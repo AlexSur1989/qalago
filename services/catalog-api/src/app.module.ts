@@ -27,6 +27,7 @@ import { AiModule } from './modules/ai/ai.module';
 import { CommonAccessModule } from './common/common-access.module';
 import { AuditLogModule } from './modules/audit-log/audit-log.module';
 import { BusinessApplicationsModule } from './modules/business-applications/business-applications.module';
+import { OwnershipClaimsModule } from './modules/ownership-claims/ownership-claims.module';
 import { HealthController } from './modules/health/health.controller';
 
 @Module({
@@ -66,6 +67,7 @@ import { HealthController } from './modules/health/health.controller';
     AiModule,
     AuditLogModule,
     BusinessApplicationsModule,
+    OwnershipClaimsModule,
   ],
   controllers: [HealthController],
   providers: [

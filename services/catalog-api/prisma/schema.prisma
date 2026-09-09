@@ -61,6 +61,17 @@ enum BusinessApplicationStatus {
   CANCELLED
 }
 
+enum BusinessOwnershipClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum BusinessOwnershipClaimVerificationMethod {
+  MANUAL
+}
+
 enum BusinessPlanTier {
   FREE
   BASIC
@@ -240,6 +251,8 @@ model User {
   auditLogsAsActor  AuditLog[]           @relation("AuditActor")
   businessApplications BusinessApplication[] @relation("ApplicationApplicant")
   reviewedBusinessApplications BusinessApplication[] @relation("ApplicationReviewer")
+  ownershipClaims BusinessOwnershipClaim[] @relation("ClaimClaimant")
+  reviewedOwnershipClaims BusinessOwnershipClaim[] @relation("ClaimReviewer")
 }
 
 enum NotificationType {
@@ -356,9 +369,34 @@ model Business {
   invitations       BusinessInvitation[]
   auditLogs         AuditLog[]
   approvedFromApplication BusinessApplication? @relation("ApprovedBusinessApplication")
+  ownershipClaims       BusinessOwnershipClaim[]
 
   @@index([cityId, status])
   @@index([categoryId])
+}
+
+model BusinessOwnershipClaim {
+  id                 String                                   @id @default(cuid())
+  businessId         String
+  claimantUserId     String
+  status             BusinessOwnershipClaimStatus             @default(PENDING)
+  verificationMethod BusinessOwnershipClaimVerificationMethod @default(MANUAL)
+  claimantMessage    String?
+  rejectionReason    String?
+  reviewedByUserId   String?
+  reviewedAt         DateTime?
+  createdAt          DateTime                                 @default(now())
+  updatedAt          DateTime                                 @updatedAt
+  business           Business                                 @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  claimant           User                                     @relation("ClaimClaimant", fields: [claimantUserId], references: [id], onDelete: Cascade)
+  reviewedBy         User?                                    @relation("ClaimReviewer", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([claimantUserId])
+  @@index([businessId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([businessId, status, createdAt])
+  @@index([claimantUserId, status, createdAt])
 }
 
 model BusinessApplication {
@@ -841,6 +879,11 @@ enum AuditAction {
   BUSINESS_APPLICATION_APPROVE
   BUSINESS_APPLICATION_REJECT
   BUSINESS_APPLICATION_CANCEL
+
+  BUSINESS_OWNERSHIP_CLAIM_SUBMIT
+  BUSINESS_OWNERSHIP_CLAIM_APPROVE
+  BUSINESS_OWNERSHIP_CLAIM_REJECT
+  BUSINESS_OWNERSHIP_CLAIM_CANCEL
 }
 
 enum AuditResourceType {
@@ -849,6 +892,7 @@ enum AuditResourceType {
   BUSINESS_MEMBERSHIP
   BUSINESS_INVITATION
   BUSINESS_APPLICATION
+  BUSINESS_OWNERSHIP_CLAIM
   SERVICE_ITEM
   SERVICE_MENU_GROUP
   BUSINESS_IMAGE

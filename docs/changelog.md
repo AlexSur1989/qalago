@@ -27,6 +27,22 @@
 
 ---
 
+## 2026-09-09 — Stage 5N.2: Business ownership claim backend foundation
+
+**Added**
+- `BusinessOwnershipClaim` model + migrations (`PENDING/APPROVED/REJECTED/CANCELLED`)
+- User API: `POST /businesses/:id/ownership-claims`, `GET /ownership-claims/my`, read, cancel
+- Admin API: `/admin/ownership-claims/*` (list, approve, reject)
+- Partial unique index: one PENDING claim per `(businessId, claimantUserId)`
+- Approval transaction: ACTIVE OWNER membership; `ownerId` set only if null; plan/content preserved
+- Audit actions: `BUSINESS_OWNERSHIP_CLAIM_SUBMIT/APPROVE/REJECT/CANCEL`
+- MVP verification: `MANUAL` only (no phone auto-approval, no documents)
+
+**Deferred**
+- Admin Web UI (5N.3), client onboarding (5N.4), rate limiting (5N.5)
+
+---
+
 ## 2026-09-09 — Stage 5N.1: Business application backend foundation
 
 **Added**

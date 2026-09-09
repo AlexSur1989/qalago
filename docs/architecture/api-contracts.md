@@ -320,7 +320,35 @@ Admin moderation (backend only in 5N.1):
 
 **Approval:** atomic transaction — create `Business`, ACTIVE OWNER membership, set `ownerId`, mark application `APPROVED`. Applicant `User.role` unchanged. LIVE city → `Business.status=ACTIVE`; COMING_SOON → `Business.status=PENDING` (not public).
 
-**Not implemented:** ownership claims (Stage 5N.2).
+---
+
+## Business ownership claims (Stage 5N.2)
+
+Safe ownership claims for **existing** businesses. No access until moderation approval.
+
+| Method | Path | Auth | Notes |
+|--------|------|------|-------|
+| POST | `/businesses/:businessId/ownership-claims` | JWT | Creates `PENDING`; ACTIVE businesses only |
+| GET | `/ownership-claims/my` | JWT | Paginated own claims |
+| GET | `/ownership-claims/:id` | JWT | Own claim only |
+| POST | `/ownership-claims/:id/cancel` | JWT | `PENDING` → `CANCELLED` |
+
+Body (create): optional `claimantMessage` (max 500). Server sets `verificationMethod=MANUAL`.
+
+Admin moderation (backend only):
+
+| Method | Path | Auth |
+|--------|------|------|
+| GET | `/admin/ownership-claims` | ADMIN, CITY_ADMIN (scoped), SUPER_ADMIN |
+| GET | `/admin/ownership-claims/:id` | same |
+| POST | `/admin/ownership-claims/:id/approve` | same |
+| POST | `/admin/ownership-claims/:id/reject` | same — body `{ rejectionReason }` |
+
+**Approval:** grants ACTIVE OWNER membership (promotes ACTIVE MANAGER if applicable). Sets `ownerId` only when currently null. Does **not** change `Business.status`, plan, ads, or content. Applicant `User.role` unchanged.
+
+**Eligibility:** ACTIVE business only; denies ACTIVE OWNER, legacy `ownerId` without membership, SUSPENDED/REVOKED memberships, INVITED; allows ACTIVE MANAGER co-owner claims.
+
+**Not implemented:** Admin Web UI (5N.3), consumer claim CTA (5N.4).
 
 ---
 

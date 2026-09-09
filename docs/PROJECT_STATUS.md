@@ -17,10 +17,11 @@
 | 5M.3 | `051f2a4`, `2bacbb3` | AuditLog foundation, admin/owner read APIs, wired mutations |
 | 5M.4 | `1f726b5` | SUPER_ADMIN governance; ADMIN operational-only; role-change SUPER_ADMIN-only |
 | 5N.0 | `c051fbd` | Business registration audit/design |
-| 5N.1 | (pending commit) | BusinessApplication backend, admin moderation API, ownerId fix |
+| 5N.1 | `44596c9` | BusinessApplication backend, admin moderation API, ownerId fix |
+| 5N.2 | (pending commit) | BusinessOwnershipClaim backend, manual verification, plan preservation |
 
 **Not started:** Stage 6 (release readiness)  
-**Not implemented:** `MODERATOR`, ownership claims (5N.2), onboarding UI (5N.4)
+**Not implemented:** `MODERATOR`, onboarding UI (5N.3 admin UI, 5N.4 clients)
 
 ---
 
@@ -45,7 +46,7 @@ QalaGo/
 
 ## Database (Prisma)
 
-**13 migrations applied** (latest: `20260909100100_stage_5n1_business_application`):
+**15 migrations applied** (latest: `20260909110100_stage_5n2_ownership_claim`):
 
 1. `20260905120000_monetization_campaign_architecture`
 2. `20260906000000_business_plan_tier_stage_4c`
