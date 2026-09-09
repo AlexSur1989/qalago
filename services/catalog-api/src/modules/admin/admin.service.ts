@@ -10,6 +10,7 @@ import {
 } from '@prisma/client';
 
 import { AuthUser } from '../../common/types/jwt-payload.type';
+import { deriveUserAuthMethods } from '../../common/utils/auth-methods.util';
 
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { SystemAccessService } from '../../common/services/system-access.service';
@@ -231,36 +232,27 @@ export class AdminService {
 
 
 
-  listUsers() {
-
-    return this.prisma.user.findMany({
-
+  async listUsers() {
+    const users = await this.prisma.user.findMany({
       select: {
-
         id: true,
-
         phone: true,
-
         name: true,
-
         role: true,
-
         isActive: true,
-
         createdAt: true,
-
         managedCityId: true,
-
         managedCity: { select: { id: true, slug: true, nameRu: true } },
-
+        authIdentities: { select: { provider: true } },
       },
-
       orderBy: { createdAt: 'desc' },
-
       take: 100,
-
     });
 
+    return users.map(({ authIdentities, ...user }) => ({
+      ...user,
+      authMethods: deriveUserAuthMethods(user.phone, authIdentities),
+    }));
   }
 
 

@@ -37,3 +37,15 @@ export const businessWebAppleAuthConfigured =
 
 export const businessWebSocialAuthConfigured =
   businessWebGoogleAuthConfigured || businessWebAppleAuthConfigured;
+
+/** Phone OTP fallback (requires backend OTP_AUTH_ENABLED). Default true when unset. */
+export const businessWebOtpAuthEnabled =
+  process.env.NEXT_PUBLIC_QALAGO_OTP_AUTH_ENABLED !== 'false';
+
+export const businessWebOtpAuthConfigured = businessWebOtpAuthEnabled;
+
+/** At least one login method may be shown (social, OTP, or dev login). */
+export const businessWebAnyLoginMethodConfigured =
+  businessWebSocialAuthConfigured ||
+  businessWebOtpAuthConfigured ||
+  businessWebDevLoginEnabled;

@@ -38,6 +38,17 @@ export function isPublicVisible(status: string): boolean {
   return status === 'ACTIVE';
 }
 
+const AUTH_METHOD_LABELS: Record<string, string> = {
+  GOOGLE: 'Google',
+  APPLE: 'Apple',
+  PHONE: 'Телефон',
+};
+
+export function formatUserAuthMethods(methods?: string[] | null): string {
+  if (!methods || methods.length === 0) return '—';
+  return methods.map((method) => AUTH_METHOD_LABELS[method] ?? method).join(' + ');
+}
+
 export function publicVisibilityLabel(status: string): string {
   return isPublicVisible(status) ? 'В приложении' : 'Не в приложении';
 }

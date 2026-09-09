@@ -19,6 +19,7 @@ import { CityNameAutocomplete } from '@/components/city-name-autocomplete';
 import {
   AdminTabId,
   confirmAction,
+  formatUserAuthMethods,
   planTierLabel,
   statusClass,
   statusLabel,
@@ -949,6 +950,7 @@ export default function DashboardPage() {
               <tr>
                 <th>Телефон</th>
                 <th>Имя</th>
+                <th>Вход</th>
                 <th>Роль</th>
                 <th>Город (CITY_ADMIN)</th>
                 <th>Новая роль</th>
@@ -959,6 +961,7 @@ export default function DashboardPage() {
                 <tr key={u.id}>
                   <td>{u.phone ?? '—'}</td>
                   <td>{u.name ?? '—'}</td>
+                  <td>{formatUserAuthMethods(u.authMethods)}</td>
                   <td>{u.role}</td>
                   <td>
                     {u.role === 'CITY_ADMIN' && canChangeRoles ? (

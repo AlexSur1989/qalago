@@ -1,5 +1,7 @@
 import { api } from './api-core';
 
+export type UserAuthMethod = 'GOOGLE' | 'APPLE' | 'PHONE';
+
 export type AuthUser = {
   id: string;
   phone?: string | null;
@@ -10,6 +12,7 @@ export type AuthUser = {
   createdAt?: string;
   managedCityId?: string | null;
   managedCity?: { slug: string; nameRu: string } | null;
+  authMethods?: UserAuthMethod[];
 };
 
 export const adminApi = {  sendCode: (phone: string) =>

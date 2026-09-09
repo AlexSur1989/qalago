@@ -139,7 +139,7 @@ Authenticated self-service account deletion.
 
 ### Admin (platform)
 
-- `GET /admin/users` — **ADMIN only**
+- `GET /admin/users` — **ADMIN only** — includes safe `authMethods: ('GOOGLE'|'APPLE'|'PHONE')[]` (no providerUserId)
 - `PATCH /admin/users/:id/role` — **ADMIN only**
 
 ---

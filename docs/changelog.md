@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-10 — Stage 6.2B7: Auth migration finalization
+
+- **Сделано:** Social-first auth policy documented; OTP independently disableable (backend + Business Web client flag); production validation requires ≥1 auth method; admin `authMethods` visibility; JWT guard tests; auth collision/tombstone tests; all-auth-off UX; invitation rate-limit IP fix.
+- **Политика:** Google/Apple primary; OTP transitional; no auto-linking; tombstones enforced; legacy phone invites require OTP path.
+- **На будущее:** real provider E2E, Apple revocation, admin social login, distributed rate limits, provider linking UX.
+
 ## 2026-09-10 — Stage 6.2B6: Team invitations (email + secure token)
 
 - **Сделано:** Email-based manager invitations with cryptographically secure one-time tokens; `tokenHash` only in DB; `POST /invitations/resolve` and `/invitations/accept`; Business Web team page (copy link) and `/invite/[token]` acceptance flow; legacy phone invitations preserved via `claimPendingInvitations`; 7-day TTL; login redirect preservation.

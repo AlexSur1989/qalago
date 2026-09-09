@@ -258,7 +258,7 @@ export default function BusinessTeamPage() {
                 <div className="action-text" style={{ flex: 1 }}>
                   <strong>{member.name ?? member.phone}</strong>
                   <span>
-                    {membershipRoleLabelRu(member.role)} · {member.phone} ·{' '}
+                    {membershipRoleLabelRu(member.role)} · {member.phone ?? '—'} ·{' '}
                     {membershipStatusLabelRu(member.status)}
                   </span>
                   {member.role === 'MANAGER' && member.permissions.length > 0 && (

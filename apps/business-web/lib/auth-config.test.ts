@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  businessWebAnyLoginMethodConfigured,
   businessWebAppleAuthConfigured,
   businessWebAppleAuthEnabled,
   businessWebDevLoginEnabled,
   businessWebGoogleAuthConfigured,
   businessWebGoogleAuthEnabled,
   businessWebMockPlanCheckoutEnabled,
+  businessWebOtpAuthEnabled,
   businessWebSocialAuthConfigured,
 } from './auth-config';
 
@@ -24,5 +26,13 @@ describe('auth-config', () => {
     expect(businessWebGoogleAuthConfigured).toBe(false);
     expect(businessWebAppleAuthConfigured).toBe(false);
     expect(businessWebSocialAuthConfigured).toBe(false);
+  });
+
+  it('OTP auth enabled by default on client', () => {
+    expect(businessWebOtpAuthEnabled).toBe(true);
+  });
+
+  it('OTP-only remains a configured login path when social is off', () => {
+    expect(businessWebAnyLoginMethodConfigured).toBe(true);
   });
 });

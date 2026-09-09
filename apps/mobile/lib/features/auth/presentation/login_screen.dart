@@ -43,6 +43,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   bool get _showSocial => _showGoogle || _showApple;
 
+  bool get _anyLoginMethod => _showSocial || _showOtp;
+
   @override
   void initState() {
     super.initState();
@@ -412,6 +414,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           const DevQuickLoginPanel(compact: true),
                         ],
                       ],
+                    ],
+                    if (!_anyLoginMethod) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF4E5),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFFFFD9A8)),
+                        ),
+                        child: const Text(
+                          'Вход через аккаунт временно недоступен в этой сборке. '
+                          'Можно продолжить как гость.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Color(0xFF7B5B2E),
+                            fontSize: 14,
+                            height: 1.35,
+                          ),
+                        ),
+                      ),
                     ],
                     const SizedBox(height: 20),
                     OutlinedButton.icon(

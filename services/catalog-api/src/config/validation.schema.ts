@@ -59,6 +59,7 @@ export const validationSchema = Joi.object({
       appleAuthEnabled: value.APPLE_AUTH_ENABLED === true,
       appleClientIdIos: value.APPLE_CLIENT_ID_IOS ?? '',
       appleClientIdWeb: value.APPLE_CLIENT_ID_WEB ?? '',
+      otpAuthEnabled: value.OTP_AUTH_ENABLED !== false,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Invalid production configuration';

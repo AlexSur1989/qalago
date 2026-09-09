@@ -37,7 +37,7 @@ export type TeamMemberRow = {
   membershipId: string;
   userId: string;
   name: string | null;
-  phone: string;
+  phone: string | null;
   role: BusinessAccessRole;
   status: string;
   permissions: string[];

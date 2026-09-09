@@ -134,6 +134,38 @@ describe('production-config.util', () => {
       ).not.toThrow();
     });
 
+    it('rejects production when all auth methods are disabled', () => {
+      expect(() =>
+        assertProductionConfig({
+          nodeEnv: 'production',
+          jwtSecret: 'a'.repeat(32),
+          corsOrigins: 'https://qalago.kz',
+          otpDebug: false,
+          devLoginEnabled: false,
+          mockPlanCheckoutEnabled: false,
+          otpAuthEnabled: false,
+          googleAuthEnabled: false,
+          appleAuthEnabled: false,
+        }),
+      ).toThrow(/At least one auth method must be enabled/);
+    });
+
+    it('allows production OTP-only auth', () => {
+      expect(() =>
+        assertProductionConfig({
+          nodeEnv: 'production',
+          jwtSecret: 'a'.repeat(32),
+          corsOrigins: 'https://qalago.kz',
+          otpDebug: false,
+          devLoginEnabled: false,
+          mockPlanCheckoutEnabled: false,
+          otpAuthEnabled: true,
+          googleAuthEnabled: false,
+          appleAuthEnabled: false,
+        }),
+      ).not.toThrow();
+    });
+
     it('rejects weak JWT in production', () => {
       expect(() =>
         assertProductionConfig({

@@ -6,10 +6,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ownerApi, TOKEN_KEY } from '@/lib/api';
 import {
+  businessWebAnyLoginMethodConfigured,
   businessWebAppleAuthConfigured,
   businessWebDevLoginEnabled,
   businessWebGoogleAuthConfigured,
   businessWebGoogleClientId,
+  businessWebOtpAuthConfigured,
   businessWebSocialAuthConfigured,
 } from '@/lib/auth-config';
 import { devSeedAccounts } from '@/lib/dev-seed-accounts';
@@ -51,7 +53,9 @@ function LoginContent() {
   const [debugCode, setDebugCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [otpExpanded, setOtpExpanded] = useState(!businessWebSocialAuthConfigured);
+  const [otpExpanded, setOtpExpanded] = useState(
+    !businessWebSocialAuthConfigured && businessWebOtpAuthConfigured,
+  );
 
   const finishLogin = useCallback(
     async (accessToken: string, user: Awaited<ReturnType<typeof ownerApi.verifyCode>>['user']) => {
@@ -156,8 +160,17 @@ function LoginContent() {
         <p className="login-lead">
           {businessWebSocialAuthConfigured
             ? 'Войдите, чтобы управлять заведением, командой и аналитикой.'
-            : 'Вход по номеру телефона · OTP (тест: +77000000002, код 1234)'}
+            : businessWebOtpAuthConfigured
+              ? 'Вход по номеру телефона · OTP (тест: +77000000002, код 1234)'
+              : 'Войдите через доступный способ авторизации.'}
         </p>
+
+        {!businessWebAnyLoginMethodConfigured && (
+          <div className="alert alert-error" style={{ marginBottom: 16 }}>
+            Вход временно недоступен: не настроен ни один способ авторизации. Обратитесь к
+            администратору QalaGo.
+          </div>
+        )}
 
         {businessWebGoogleAuthConfigured && (
           <GoogleLoginButton
@@ -174,7 +187,7 @@ function LoginContent() {
           />
         )}
 
-        {businessWebSocialAuthConfigured && (
+        {businessWebSocialAuthConfigured && businessWebOtpAuthConfigured && (
           <>
             <div className="login-divider">
               <span>или</span>
@@ -221,7 +234,7 @@ function LoginContent() {
           </>
         )}
 
-        {!businessWebSocialAuthConfigured && (
+        {!businessWebSocialAuthConfigured && businessWebOtpAuthConfigured && (
           <>
             <form onSubmit={sendCode} className="form-grid" style={{ marginBottom: 24 }}>
               <input

@@ -164,6 +164,16 @@ describe('SocialAuthLoginService', () => {
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
+  it('does not reveal tombstone details in error message', async () => {
+    authIdentity.isTombstoned.mockResolvedValue(true);
+    await expect(
+      service.completeSocialLogin({
+        provider: AuthProvider.GOOGLE,
+        claims: { providerUserId: 'google-sub-deleted' },
+      }),
+    ).rejects.toMatchObject({ message: 'Authentication failed' });
+  });
+
   it('blocks inactive user', async () => {
     authIdentity.findIdentityWithUser.mockResolvedValue({
       id: 'ai1',

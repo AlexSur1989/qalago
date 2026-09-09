@@ -19,6 +19,7 @@ export type ProductionConfigInput = {
   appleAuthEnabled?: boolean;
   appleClientIdIos?: string;
   appleClientIdWeb?: string;
+  otpAuthEnabled?: boolean;
 };
 
 export function assertProductionConfig(input: ProductionConfigInput): void {
@@ -83,6 +84,15 @@ export function assertProductionConfig(input: ProductionConfigInput): void {
         'At least one APPLE_CLIENT_ID_* must be set when APPLE_AUTH_ENABLED=true in production',
       );
     }
+  }
+
+  const otpEnabled = input.otpAuthEnabled !== false;
+  const googleEnabled = input.googleAuthEnabled === true;
+  const appleEnabled = input.appleAuthEnabled === true;
+  if (!otpEnabled && !googleEnabled && !appleEnabled) {
+    errors.push(
+      'At least one auth method must be enabled in production (OTP_AUTH_ENABLED, GOOGLE_AUTH_ENABLED, or APPLE_AUTH_ENABLED)',
+    );
   }
 
   if (errors.length > 0) {

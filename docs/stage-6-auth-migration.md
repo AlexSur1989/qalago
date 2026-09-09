@@ -1,6 +1,10 @@
 # Stage 6 — Auth Migration (Google / Apple)
 
-## Current state (after 6.2B5)
+## Current state (after 6.2B7)
+
+See [stage-6-auth-finalization.md](./stage-6-auth-finalization.md) for production flag matrix, credential checklist, and remaining blockers.
+
+## Historical state (after 6.2B5)
 
 - **Phone OTP** remains available when `OTP_AUTH_ENABLED=true` / client OTP flags
 - **Google backend** implemented: `POST /auth/google`
@@ -89,7 +93,7 @@ Email + secure one-time token invitations are implemented. See [stage-6-team-inv
 | **6.2B5** ✅ | Business Web Google + Apple UI (see [stage-6-business-web-social-auth.md](./stage-6-business-web-social-auth.md)) |
 | **6.2B5** | Business Web social login |
 | **6.2B6** ✅ | Team invitation redesign (email/link) — see [stage-6-team-invitations.md](./stage-6-team-invitations.md) |
-| **6.2B7** | OTP deprecation, admin identity linking, QA |
+| **6.2B7** ✅ | Auth finalization — OTP deprecation safety, flags, admin authMethods, QA — see [stage-6-auth-finalization.md](./stage-6-auth-finalization.md) |
 
 ## POST /auth/google (Stage 6.2B2)
 
