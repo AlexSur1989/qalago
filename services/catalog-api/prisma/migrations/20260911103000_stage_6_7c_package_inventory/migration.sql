@@ -62,12 +62,13 @@ ALTER TABLE "AdInventoryReservation" ADD CONSTRAINT "AdInventoryReservation_cate
 ALTER TABLE "AdInventoryReservation" ADD CONSTRAINT "AdInventoryReservation_promotionId_fkey" FOREIGN KEY ("promotionId") REFERENCES "Promotion"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 ALTER TABLE "AdInventoryReservation" ADD CONSTRAINT "AdInventoryReservation_productId_fkey" FOREIGN KEY ("productId") REFERENCES "MonetizationProduct"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE "AdCampaign" ADD CONSTRAINT "AdCampaign_promotionId_fkey" FOREIGN KEY ("promotionId") REFERENCES "Promotion"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- Best-effort backfill promotionId from order item metadata for existing promoted campaigns
+-- Best-effort backfill promotionId only when metadata points at an existing Promotion row
 UPDATE "AdCampaign" c
-SET "promotionId" = (oi.metadata->>'promotionId')
+SET "promotionId" = p.id
 FROM "OrderItem" oi
+INNER JOIN "Promotion" p ON p.id = (oi.metadata->>'promotionId')
 WHERE c."orderItemId" = oi.id
   AND c."promotionId" IS NULL
   AND oi.metadata->>'promotionId' IS NOT NULL;
+
+ALTER TABLE "AdCampaign" ADD CONSTRAINT "AdCampaign_promotionId_fkey" FOREIGN KEY ("promotionId") REFERENCES "Promotion"("id") ON DELETE SET NULL ON UPDATE CASCADE;
