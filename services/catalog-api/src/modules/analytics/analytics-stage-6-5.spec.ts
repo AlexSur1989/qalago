@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import {
   AnalyticsEventType,
   AnalyticsPlatform,
+  AnalyticsVisitorType,
   BusinessTrafficSource,
 } from '@prisma/client';
 import { toLocalHourAndWeekday, toLocalMetricDate } from '../../common/utils/analytics-timezone.util';
@@ -25,6 +26,11 @@ describe('Stage 6.5 analytics foundation', () => {
         findUnique: jest.fn(),
         groupBy: jest.fn(),
         findMany: jest.fn(),
+      },
+      analyticsBusinessVisitor: {
+        findUnique: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
       },
       analyticsDailyMetric: { findMany: jest.fn().mockResolvedValue([]) },
     };
@@ -128,6 +134,53 @@ describe('Stage 6.5 analytics foundation', () => {
     expect(normalizeSearchQueryForAnalytics('  Coffee   Shop ')).toBe('coffee shop');
   });
 
+  it('marks first VIEW_BUSINESS per visitor as NEW', async () => {
+    const { prisma, service } = createService();
+    prisma.business.findFirst.mockResolvedValue({ id: 'biz-1', cityId: 'city-1' });
+    prisma.analyticsEvent.findUnique.mockResolvedValue(null);
+    prisma.analyticsBusinessVisitor.findUnique.mockResolvedValue(null);
+    prisma.analyticsBusinessVisitor.create.mockResolvedValue({ id: 'bv-1' });
+    prisma.analyticsEvent.create.mockResolvedValue({ id: 'e1' });
+
+    await service.track({
+      businessId: 'biz-1',
+      type: AnalyticsEventType.VIEW_BUSINESS,
+      visitorId: 'a'.repeat(32),
+    });
+
+    expect(prisma.analyticsEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          visitorType: AnalyticsVisitorType.NEW,
+          visitorHash: hashVisitorId('a'.repeat(32)),
+        }),
+      }),
+    );
+  });
+
+  it('marks repeat VIEW_BUSINESS per visitor as RETURNING', async () => {
+    const { prisma, service } = createService();
+    prisma.business.findFirst.mockResolvedValue({ id: 'biz-1', cityId: 'city-1' });
+    prisma.analyticsEvent.findUnique.mockResolvedValue(null);
+    prisma.analyticsBusinessVisitor.findUnique.mockResolvedValue({ id: 'bv-1' });
+    prisma.analyticsBusinessVisitor.update.mockResolvedValue({ id: 'bv-1' });
+    prisma.analyticsEvent.create.mockResolvedValue({ id: 'e1' });
+
+    await service.track({
+      businessId: 'biz-1',
+      type: AnalyticsEventType.VIEW_BUSINESS,
+      visitorId: 'a'.repeat(32),
+    });
+
+    expect(prisma.analyticsEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          visitorType: AnalyticsVisitorType.RETURNING,
+        }),
+      }),
+    );
+  });
+
   it('marks internal traffic from header', async () => {
     const { prisma, service } = createService();
     prisma.business.findFirst.mockResolvedValue({ id: 'biz-1', cityId: 'city-1' });
@@ -172,6 +225,7 @@ describe('Stage 6.5 analytics foundation', () => {
             promotionId: null,
             catalogItemId: null,
             visitorHash: hashVisitorId('visitor-1'),
+            visitorType: 'NEW',
             sessionId: 'session-1',
             isInternal: false,
           },
@@ -184,6 +238,7 @@ describe('Stage 6.5 analytics foundation', () => {
             promotionId: null,
             catalogItemId: null,
             visitorHash: null,
+            visitorType: null,
             sessionId: null,
             isInternal: false,
           },

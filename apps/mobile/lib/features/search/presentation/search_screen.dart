@@ -10,6 +10,7 @@ import '../../../core/location/user_location_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
+import '../../analytics/providers/analytics_identity_provider.dart';
 import '../../analytics/widgets/tracked_business_card.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
@@ -40,6 +41,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   SearchRadiusMode _radiusMode = SearchRadiusMode.wholeCity;
   Timer? _debounce;
   bool _syncingRoute = false;
+  String? _lastSearchPerformedQuery;
 
   @override
   void initState() {
@@ -137,6 +139,40 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     _syncRoute();
   }
 
+  void _trackSearchPerformedIfNeeded(String? searchQuery) {
+    final normalized = searchQuery?.trim();
+    if (normalized == null || normalized.isEmpty) return;
+    if (_lastSearchPerformedQuery == normalized) return;
+    _lastSearchPerformedQuery = normalized;
+
+    final cities = ref.read(citiesProvider).valueOrNull;
+    if (cities == null || cities.isEmpty) return;
+    final citySlug = ref.read(cityProvider).slug;
+    Map<String, dynamic>? cityMatch;
+    for (final entry in cities) {
+      if (entry['slug'] == citySlug) {
+        cityMatch = entry;
+        break;
+      }
+    }
+    cityMatch ??= cities.first;
+    final cityId = cityMatch['id'] as String?;
+    if (cityId == null || cityId.isEmpty) return;
+
+    final repo = ref.read(catalogRepositoryProvider);
+    final sessionId = ref.read(analyticsSessionIdProvider);
+    unawaited(
+      ref.read(analyticsVisitorIdProvider.future).then(
+            (visitorId) => repo.trackSearchPerformed(
+              cityId: cityId,
+              searchQuery: normalized,
+              visitorId: visitorId,
+              sessionId: sessionId,
+            ),
+          ),
+    );
+  }
+
   String? _categoryTitle(List<CategoryModel> categories) {
     if (_categoryId == null) return null;
     for (final c in categories) {
@@ -154,9 +190,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
     ref.listen(businessesProvider(query), (previous, next) {
       next.whenData((_) {
-        if (mounted) {
-          setState(() => _resultAttributionQuery = query.search);
-        }
+        if (!mounted) return;
+        setState(() => _resultAttributionQuery = query.search);
+        _trackSearchPerformedIfNeeded(query.search);
       });
     });
 

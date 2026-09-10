@@ -151,6 +151,11 @@ enum AnalyticsPlatform {
   UNKNOWN
 }
 
+enum AnalyticsVisitorType {
+  NEW
+  RETURNING
+}
+
 enum AnalyticsDimensionType {
   SOURCE
   SEARCH_QUERY
@@ -440,6 +445,7 @@ model Business {
   analytics                 AnalyticsEvent[]
   analyticsDailyMetrics     AnalyticsDailyMetric[]
   analyticsDimensionMetrics AnalyticsDailyDimensionMetric[]
+  analyticsBusinessVisitors AnalyticsBusinessVisitor[]
   planPayments              PlanPayment[]
   orders                    Order[]
   adCreatives               AdCreative[]
@@ -652,6 +658,7 @@ model AnalyticsEvent {
   position               Int?
   platform               AnalyticsPlatform?
   visitorHash            String?
+  visitorType            AnalyticsVisitorType?
   sessionId              String?
   clientEventId          String?                    @unique
   isInternal             Boolean                    @default(false)
@@ -709,6 +716,19 @@ model AnalyticsDailyMetric {
 
   @@unique([businessId, metricDate])
   @@index([businessId, metricDate])
+}
+
+/// Privacy-safe first-seen state for new/returning visitor aggregates (hashed visitor only).
+model AnalyticsBusinessVisitor {
+  id          String   @id @default(cuid())
+  businessId  String
+  visitorHash String
+  firstSeenAt DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, visitorHash])
+  @@index([businessId])
 }
 
 model AnalyticsDailyDimensionMetric {

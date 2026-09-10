@@ -27,6 +27,14 @@
 
 ---
 
+## 2026-09-10 — Stage 6.5.1: Analytics instrumentation completion
+
+- Flutter: map impressions (`MapBusinessPreviewImpression`, list viewability), catalog (`TrackedCatalogItemCard`), reviews (`ReviewsViewTracker`, `REVIEW_CREATED` after API success).
+- Search funnel: `discoverySurface=SEARCH_RESULTS` on open, `SEARCH_PERFORMED` from search UI, visitor/session on views.
+- Backend: `AnalyticsBusinessVisitor` + `visitorType` on `VIEW_BUSINESS`; `VISITOR_TYPE` rollup dimension.
+- Tests: full Flutter suite + search funnel / visitor-type backend specs.
+- **Future:** Analytics 360 UI (6.6), `CATALOG_ITEM_ACTION` when UI adds meaningful actions.
+
 ## 2026-09-10 — Stage 6.5: Analytics data foundation
 
 - Extended `AnalyticsEvent` (promotionId, catalogItemId, clientEventId, visitorHash, discoverySurface, platform, isInternal).

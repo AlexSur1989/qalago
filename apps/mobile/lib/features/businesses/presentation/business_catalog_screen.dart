@@ -5,8 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
+import '../../analytics/widgets/tracked_catalog_item_card.dart';
 import '../providers/business_catalog_provider.dart';
-import '../widgets/catalog_item_card.dart';
 
 class BusinessCatalogScreen extends ConsumerStatefulWidget {
   const BusinessCatalogScreen({super.key, required this.businessId});
@@ -101,6 +101,7 @@ class _BusinessCatalogScreenState extends ConsumerState<BusinessCatalogScreen> {
         loading: () {
           if (_items.isNotEmpty) {
             return _CatalogBody(
+              businessId: widget.businessId,
               searchController: _searchController,
               sections: _sections,
               sectionId: _sectionId,
@@ -140,6 +141,7 @@ class _BusinessCatalogScreenState extends ConsumerState<BusinessCatalogScreen> {
           }
 
           return _CatalogBody(
+            businessId: widget.businessId,
             searchController: _searchController,
             sections: _sections,
             sectionId: _sectionId,
@@ -164,6 +166,7 @@ class _BusinessCatalogScreenState extends ConsumerState<BusinessCatalogScreen> {
 
 class _CatalogBody extends StatelessWidget {
   const _CatalogBody({
+    required this.businessId,
     required this.searchController,
     required this.sections,
     required this.sectionId,
@@ -174,6 +177,8 @@ class _CatalogBody extends StatelessWidget {
     required this.onSectionSelected,
     required this.onLoadMore,
   });
+
+  final String businessId;
 
   final TextEditingController searchController;
   final List<Map<String, dynamic>> sections;
@@ -255,7 +260,12 @@ class _CatalogBody extends StatelessWidget {
               style: const TextStyle(color: Color(0xFF687080), fontSize: 13),
             ),
             const SizedBox(height: 8),
-            for (final item in items) CatalogItemCard(item: item),
+            for (final item in items)
+              TrackedCatalogItemCard(
+                businessId: businessId,
+                item: item,
+                surface: 'CATALOG_SCREEN',
+              ),
             if (canLoadMore)
               Padding(
                 padding: const EdgeInsets.only(top: 8),

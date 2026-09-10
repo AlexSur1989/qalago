@@ -4,9 +4,10 @@ import '../../../core/constants/app_constants.dart';
 import '../../owner/presentation/widgets/service_menu_widgets.dart';
 
 class CatalogItemCard extends StatelessWidget {
-  const CatalogItemCard({super.key, required this.item});
+  const CatalogItemCard({super.key, required this.item, this.onTap});
 
   final Map<String, dynamic> item;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +19,7 @@ class CatalogItemCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       child: ListTile(
+        onTap: onTap,
         leading: imageUrl.isNotEmpty
             ? ClipRRect(
                 borderRadius: BorderRadius.circular(8),

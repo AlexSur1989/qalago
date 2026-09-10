@@ -18,6 +18,8 @@ import '../../../shared/utils/consumer_discovery_utils.dart';
 import '../../../shared/widgets/city_picker.dart';
 import '../../../shared/widgets/empty_city_view.dart';
 import '../../../shared/widgets/qalago_logo.dart';
+import '../../analytics/widgets/business_impression_host.dart';
+import '../../analytics/widgets/map_business_preview_impression.dart';
 import '../../auth/providers/auth_provider.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
@@ -295,18 +297,21 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               data: (data) {
                 if (selectedBusiness != null) {
                   final business = selectedBusiness;
-                  return _MapBusinessPreview(
-                    business: businessWithDistance(
-                      business,
-                      userLat: userPosition?.latitude,
-                      userLng: userPosition?.longitude,
+                  return MapBusinessPreviewImpression(
+                    businessId: business.id,
+                    child: _MapBusinessPreview(
+                      business: businessWithDistance(
+                        business,
+                        userLat: userPosition?.latitude,
+                        userLng: userPosition?.longitude,
+                      ),
+                      onClose: () => setState(() => _selectedBusinessId = null),
+                      onDetails: () => openBusiness(
+                            context,
+                            business.id,
+                            BusinessTrafficSource.map,
+                          ),
                     ),
-                    onClose: () => setState(() => _selectedBusinessId = null),
-                    onDetails: () => openBusiness(
-                          context,
-                          business.id,
-                          BusinessTrafficSource.map,
-                        ),
                   );
                 }
 
@@ -650,9 +655,14 @@ class _MapCitySheet extends StatelessWidget {
                         ),
                         itemBuilder: (context, index) {
                           final business = visible[index];
-                          return _MapCityTile(
-                            business: business,
-                            onTap: () => onSelect(business),
+                          return BusinessImpressionHost(
+                            businessId: business.id,
+                            trafficSource: BusinessTrafficSource.map,
+                            discoverySurface: 'MAP_PIN',
+                            child: _MapCityTile(
+                              business: business,
+                              onTap: () => onSelect(business),
+                            ),
                           );
                         },
                       ),

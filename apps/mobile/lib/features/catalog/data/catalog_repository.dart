@@ -374,6 +374,18 @@ class CatalogRepository {
         visitorId: visitorId,
       );
 
+  Future<void> trackReviewCreated(
+    String businessId, {
+    String? sessionId,
+    String? visitorId,
+  }) =>
+      _trackAnalyticsEvent(
+        businessId: businessId,
+        type: 'REVIEW_CREATED',
+        sessionId: sessionId,
+        visitorId: visitorId,
+      );
+
   Future<void> _trackAnalyticsEvent({
     String? businessId,
     String? cityId,

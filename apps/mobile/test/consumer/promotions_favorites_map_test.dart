@@ -14,6 +14,11 @@ import 'package:qalago_mobile/features/map/presentation/map_screen.dart';
 import 'package:qalago_mobile/features/promotions/presentation/promotions_screen.dart';
 import 'package:qalago_mobile/shared/models/models.dart';
 
+Future<void> _disposeTrackedImpressionTimers(WidgetTester tester) async {
+  await tester.pumpWidget(const SizedBox.shrink());
+  await tester.pump(const Duration(milliseconds: 700));
+}
+
 void main() {
   group('public routes', () {
     test('promotions and map accessible as guest', () {
@@ -206,6 +211,8 @@ void main() {
       expect(find.text('Uralsk Place'), findsOneWidget);
       expect(find.text('Aktobe Place'), findsNothing);
       expect(find.text('VIP'), findsNothing);
+
+      await _disposeTrackedImpressionTimers(tester);
     });
 
     testWidgets('no favorites in selected city shows city copy', (tester) async {
@@ -300,6 +307,8 @@ void main() {
       final aFinder = find.text('A Place');
       final zFinder = find.text('Z Place');
       expect(tester.getTopLeft(aFinder).dy < tester.getTopLeft(zFinder).dy, isTrue);
+
+      await _disposeTrackedImpressionTimers(tester);
     });
   });
 
@@ -336,6 +345,7 @@ void main() {
       expect(find.text('Заведения на карте'), findsOneWidget);
       expect(find.text('Map Cafe'), findsOneWidget);
       expect(find.text('VIP'), findsNothing);
+      await _disposeTrackedImpressionTimers(tester);
     });
 
     testWidgets('map error shows retry banner without removing map', (tester) async {
@@ -357,6 +367,7 @@ void main() {
       expect(find.textContaining('Не удалось загрузить заведения'), findsOneWidget);
       expect(find.text('Повторить'), findsOneWidget);
       expect(find.byType(fm.FlutterMap), findsOneWidget);
+      await _disposeTrackedImpressionTimers(tester);
     });
 
     testWidgets('marker tap shows preview with Подробнее', (tester) async {
@@ -408,6 +419,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Detail b1'), findsOneWidget);
+      await _disposeTrackedImpressionTimers(tester);
     });
 
     testWidgets('business without coordinates is skipped safely', (tester) async {
@@ -438,6 +450,7 @@ void main() {
 
       expect(find.text('Hidden Marker'), findsNothing);
       expect(find.text('Нет заведений с координатами'), findsOneWidget);
+      await _disposeTrackedImpressionTimers(tester);
     });
   });
 

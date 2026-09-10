@@ -19,6 +19,7 @@ type RollupEvent = {
   promotionId: string | null;
   catalogItemId: string | null;
   visitorHash: string | null;
+  visitorType: string | null;
   sessionId: string | null;
   isInternal: boolean;
 };
@@ -124,6 +125,7 @@ export class AnalyticsRollupService {
         promotionId: true,
         catalogItemId: true,
         visitorHash: true,
+        visitorType: true,
         sessionId: true,
         isInternal: true,
       },
@@ -234,6 +236,7 @@ export class AnalyticsRollupService {
     const catalogCounts = new Map<string, number>();
     const hourCounts = new Map<string, number>();
     const distanceCounts = new Map<string, number>();
+    const visitorTypeCounts = new Map<string, number>();
 
     for (const event of events) {
       const isViewLike =
@@ -264,6 +267,15 @@ export class AnalyticsRollupService {
         const { hour } = toLocalHourAndWeekday(event.createdAt, timezone);
         hourCounts.set(String(hour), (hourCounts.get(String(hour)) ?? 0) + 1);
       }
+      if (
+        event.type === AnalyticsEventType.VIEW_BUSINESS &&
+        event.visitorType
+      ) {
+        visitorTypeCounts.set(
+          event.visitorType,
+          (visitorTypeCounts.get(event.visitorType) ?? 0) + 1,
+        );
+      }
     }
 
     for (const [key, count] of sourceCounts) push(AnalyticsDimensionType.SOURCE, key, 'views', count);
@@ -279,6 +291,9 @@ export class AnalyticsRollupService {
     for (const [key, count] of hourCounts) push(AnalyticsDimensionType.HOUR, key, 'views', count);
     for (const [key, count] of distanceCounts) {
       push(AnalyticsDimensionType.DISTANCE_BUCKET, key, 'views', count);
+    }
+    for (const [key, count] of visitorTypeCounts) {
+      push(AnalyticsDimensionType.VISITOR_TYPE, key, 'views', count);
     }
 
     return rows;

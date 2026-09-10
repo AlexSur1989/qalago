@@ -18,9 +18,11 @@ import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../../core/auth/auth_prompt.dart';
 import '../../ads/utils/ad_url_utils.dart';
+import '../../analytics/providers/analytics_identity_provider.dart';
+import '../../analytics/widgets/reviews_view_tracker.dart';
+import '../../analytics/widgets/tracked_catalog_item_card.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../business_onboarding/presentation/business_claim_cta.dart';
-import '../widgets/catalog_item_card.dart';
 import '../../recommendations/data/ai_repository.dart';
 
 class BusinessDetailsScreen extends ConsumerStatefulWidget {
@@ -68,6 +70,9 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
 
     if (!mounted) return;
     final source = widget.trafficSource ?? BusinessTrafficSource.direct;
+    final sessionId = ref.read(analyticsSessionIdProvider);
+    final visitorId = await ref.read(analyticsVisitorIdProvider.future);
+    if (!mounted) return;
     unawaited(
       ref.read(catalogRepositoryProvider).trackBusinessView(
             widget.id,
@@ -76,6 +81,9 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                 ? widget.searchQuery
                 : null,
             audienceDistanceBucket: bucket,
+            discoverySurface: source.openDiscoverySurface,
+            visitorId: visitorId,
+            sessionId: sessionId,
           ),
     );
   }
@@ -137,13 +145,22 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
   }
 
   Future<void> _submitReview(String text) async {
-    await ref
-        .read(catalogRepositoryProvider)
-        .createReview(
-          businessId: widget.id,
-          rating: _rating,
-          text: text,
-        );
+    final analytics = ref.read(catalogRepositoryProvider);
+    await analytics.createReview(
+      businessId: widget.id,
+      rating: _rating,
+      text: text,
+    );
+    final sessionId = ref.read(analyticsSessionIdProvider);
+    unawaited(
+      ref.read(analyticsVisitorIdProvider.future).then(
+            (visitorId) => analytics.trackReviewCreated(
+              widget.id,
+              visitorId: visitorId,
+              sessionId: sessionId,
+            ),
+          ),
+    );
     ref.invalidate(businessDetailsProvider(widget.id));
     if (mounted) {
       ScaffoldMessenger.of(
@@ -392,7 +409,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                                     .read(catalogRepositoryProvider)
                                     .trackPromotionView(
                                       widget.id,
-                                      promotionId: promo.id,
+                                      promotionId: promo['id'] as String?,
                                     ),
                               );
                             },
@@ -420,7 +437,14 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                         ),
                         const SizedBox(height: 10),
                         for (final item in catalogItems)
-                          CatalogItemCard(item: item),
+                          TrackedCatalogItemCard(
+                            businessId: widget.id,
+                            item: item,
+                            surface: 'BUSINESS_DETAIL_PREVIEW',
+                            onTap: catalogTotal > catalogItems.length
+                                ? () => context.push('/business/${widget.id}/catalog')
+                                : null,
+                          ),
                       ],
                       if (hasHours) ...[
                         const SizedBox(height: 24),
@@ -490,9 +514,17 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                         ),
                       ],
                       const SizedBox(height: 24),
-                      _SectionHeaderRow(title: 'Отзывы'),
-                      const SizedBox(height: 8),
-                      _ReviewsPreviewBlock(reviews: reviewItems),
+                      ReviewsViewTracker(
+                        businessId: widget.id,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const _SectionHeaderRow(title: 'Отзывы'),
+                            const SizedBox(height: 8),
+                            _ReviewsPreviewBlock(reviews: reviewItems),
+                          ],
+                        ),
+                      ),
                       if (!canManageMenu) ...[
                         const SizedBox(height: 16),
                         if (isAuthenticated)

@@ -24,6 +24,26 @@ enum BusinessTrafficSource {
 
   static BusinessTrafficSource parseOrDirect(String? raw) =>
       tryParse(raw) ?? BusinessTrafficSource.direct;
+
+  /// Discovery surface for VIEW_BUSINESS attribution (Stage 6.5.1).
+  String get openDiscoverySurface {
+    switch (this) {
+      case BusinessTrafficSource.search:
+        return 'SEARCH_RESULTS';
+      case BusinessTrafficSource.map:
+        return 'MAP_PIN';
+      case BusinessTrafficSource.home:
+        return 'HOME_FEED';
+      case BusinessTrafficSource.category:
+        return 'CATEGORY_LIST';
+      case BusinessTrafficSource.favorites:
+        return 'FAVORITES_LIST';
+      case BusinessTrafficSource.promotions:
+        return 'PROMOTION_LIST';
+      default:
+        return 'BUSINESS_DETAIL';
+    }
+  }
 }
 
 String businessTrafficSourceLabel(BusinessTrafficSource source) {

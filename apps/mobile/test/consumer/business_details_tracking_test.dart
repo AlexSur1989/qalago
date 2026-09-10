@@ -40,12 +40,11 @@ void main() {
         searchQuery: 'кофе рядом',
       );
 
-      expect(dio.lastPayload, {
-        'businessId': 'biz-1',
-        'type': 'VIEW_BUSINESS',
-        'trafficSource': 'SEARCH',
-        'searchQuery': 'кофе рядом',
-      });
+      expect(dio.lastPayload?['businessId'], 'biz-1');
+      expect(dio.lastPayload?['type'], 'VIEW_BUSINESS');
+      expect(dio.lastPayload?['trafficSource'], 'SEARCH');
+      expect(dio.lastPayload?['searchQuery'], 'кофе рядом');
+      expect(dio.lastPayload?['discoverySurface'], 'BUSINESS_DETAIL');
     });
 
     test('trackBusinessView omits searchQuery for HOME source', () async {
@@ -58,11 +57,10 @@ void main() {
         searchQuery: 'кофе',
       );
 
-      expect(dio.lastPayload, {
-        'businessId': 'biz-1',
-        'type': 'VIEW_BUSINESS',
-        'trafficSource': 'HOME',
-      });
+      expect(dio.lastPayload?['businessId'], 'biz-1');
+      expect(dio.lastPayload?['type'], 'VIEW_BUSINESS');
+      expect(dio.lastPayload?['trafficSource'], 'HOME');
+      expect(dio.lastPayload?.containsKey('searchQuery'), isFalse);
     });
 
     test('trackBusinessView omits searchQuery when not provided for SEARCH', () async {
@@ -74,11 +72,10 @@ void main() {
         trafficSource: BusinessTrafficSource.search,
       );
 
-      expect(dio.lastPayload, {
-        'businessId': 'biz-1',
-        'type': 'VIEW_BUSINESS',
-        'trafficSource': 'SEARCH',
-      });
+      expect(dio.lastPayload?['businessId'], 'biz-1');
+      expect(dio.lastPayload?['type'], 'VIEW_BUSINESS');
+      expect(dio.lastPayload?['trafficSource'], 'SEARCH');
+      expect(dio.lastPayload?.containsKey('searchQuery'), isFalse);
     });
 
     test('trackBusinessView sends audienceDistanceBucket', () async {
@@ -92,13 +89,11 @@ void main() {
         audienceDistanceBucket: AudienceDistanceBucket.km1_3,
       );
 
-      expect(dio.lastPayload, {
-        'businessId': 'biz-1',
-        'type': 'VIEW_BUSINESS',
-        'trafficSource': 'SEARCH',
-        'searchQuery': 'кофе',
-        'audienceDistanceBucket': 'KM_1_3',
-      });
+      expect(dio.lastPayload?['businessId'], 'biz-1');
+      expect(dio.lastPayload?['type'], 'VIEW_BUSINESS');
+      expect(dio.lastPayload?['trafficSource'], 'SEARCH');
+      expect(dio.lastPayload?['searchQuery'], 'кофе');
+      expect(dio.lastPayload?['audienceDistanceBucket'], 'KM_1_3');
     });
 
     test('payload never includes raw coordinates', () async {
@@ -121,16 +116,23 @@ void main() {
 
       await repo.trackBusinessView('biz-1');
 
-      expect(dio.lastPayload, {
-        'businessId': 'biz-1',
-        'type': 'VIEW_BUSINESS',
-      });
+      expect(dio.lastPayload?['businessId'], 'biz-1');
+      expect(dio.lastPayload?['type'], 'VIEW_BUSINESS');
+      expect(dio.lastPayload?.containsKey('trafficSource'), isFalse);
     });
 
     test('all navigation sources map to API enum values', () {
       expect(BusinessTrafficSource.home.apiValue, 'HOME');
       expect(BusinessTrafficSource.ad.apiValue, 'AD');
       expect(BusinessTrafficSource.direct.apiValue, 'DIRECT');
+    });
+
+    test('openDiscoverySurface maps SEARCH to SEARCH_RESULTS', () {
+      expect(
+        BusinessTrafficSource.search.openDiscoverySurface,
+        'SEARCH_RESULTS',
+      );
+      expect(BusinessTrafficSource.map.openDiscoverySurface, 'MAP_PIN');
     });
   });
 }

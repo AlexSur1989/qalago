@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qalago_mobile/core/location/user_location_provider.dart';
 import 'package:qalago_mobile/core/providers/city_provider.dart';
+import 'package:qalago_mobile/features/analytics/providers/analytics_identity_provider.dart';
 import 'package:qalago_mobile/features/auth/providers/auth_provider.dart';
 import 'package:qalago_mobile/features/search/presentation/search_screen.dart';
 import 'package:qalago_mobile/shared/models/models.dart';
@@ -47,6 +48,12 @@ void main() {
           nearbySearchPositionProvider.overrideWith(
             (ref) => const UserPosition(latitude: 51.23, longitude: 51.38),
           ),
+          citiesProvider.overrideWith(
+            (ref) async => [
+              {'id': 'city-1', 'slug': 'uralsk', 'nameRu': 'Уральск'},
+            ],
+          ),
+          analyticsVisitorIdProvider.overrideWith((ref) async => 'a' * 32),
         ],
         child: MaterialApp.router(routerConfig: router),
       ),
@@ -57,6 +64,9 @@ void main() {
     expect(find.text('Найдено: 1'), findsOneWidget);
     expect(find.text('Coffee House'), findsOneWidget);
     expect(find.text('VIP'), findsNothing);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(milliseconds: 700));
   });
 
   testWidgets('narrow filters empty state offers reset', (tester) async {

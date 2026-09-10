@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import {
   AnalyticsEventType,
+  AnalyticsVisitorType,
   BusinessPermission,
   BusinessStatus,
   BusinessTrafficSource,
@@ -169,6 +170,16 @@ export class AnalyticsService {
       options?.user?.role === UserRole.ADMIN ||
       options?.user?.role === UserRole.CITY_ADMIN;
 
+    let visitorType: AnalyticsVisitorType | undefined;
+    if (
+      dto.type === AnalyticsEventType.VIEW_BUSINESS &&
+      visitorHash &&
+      business &&
+      !isInternal
+    ) {
+      visitorType = await this.resolveVisitorType(business.id, visitorHash);
+    }
+
     const data: Prisma.AnalyticsEventUncheckedCreateInput = {
       type: dto.type,
       isInternal,
@@ -194,6 +205,7 @@ export class AnalyticsService {
       ...(dto.position != null ? { position: dto.position } : {}),
       ...(dto.categoryId ? { categoryId: dto.categoryId } : {}),
       ...(visitorHash ? { visitorHash } : {}),
+      ...(visitorType ? { visitorType } : {}),
       ...(sessionId ? { sessionId } : {}),
       ...(dto.clientEventId ? { clientEventId: dto.clientEventId.trim() } : {}),
     };
@@ -212,6 +224,44 @@ export class AnalyticsService {
     }
 
     return { success: true };
+  }
+
+  /** First meaningful business view per hashed visitor → NEW; subsequent → RETURNING. */
+  private async resolveVisitorType(
+    businessId: string,
+    visitorHash: string,
+  ): Promise<AnalyticsVisitorType> {
+    const existing = await this.prisma.analyticsBusinessVisitor.findUnique({
+      where: { businessId_visitorHash: { businessId, visitorHash } },
+      select: { id: true },
+    });
+
+    if (existing) {
+      await this.prisma.analyticsBusinessVisitor.update({
+        where: { businessId_visitorHash: { businessId, visitorHash } },
+        data: { lastSeenAt: new Date() },
+      });
+      return AnalyticsVisitorType.RETURNING;
+    }
+
+    try {
+      await this.prisma.analyticsBusinessVisitor.create({
+        data: { businessId, visitorHash },
+      });
+      return AnalyticsVisitorType.NEW;
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        await this.prisma.analyticsBusinessVisitor.update({
+          where: { businessId_visitorHash: { businessId, visitorHash } },
+          data: { lastSeenAt: new Date() },
+        });
+        return AnalyticsVisitorType.RETURNING;
+      }
+      throw error;
+    }
   }
 
   private assertContextRules(dto: CreateAnalyticsEventDto) {
