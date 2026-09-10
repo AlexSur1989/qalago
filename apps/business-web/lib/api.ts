@@ -190,15 +190,21 @@ export type AnalyticsDashboard = {
     viewTrend: boolean;
     actions: boolean;
     actionTrend: boolean;
+    impressions?: boolean;
+    ctr?: boolean;
     trafficSources: boolean;
     conversion: boolean;
     periodComparison: boolean;
     promotionAnalytics: boolean;
+    promotionBreakdown?: boolean;
     popularTimes: boolean;
     benchmark: boolean;
     recommendations: boolean;
     searchQueries: boolean;
     audienceGeography: boolean;
+    audience?: boolean;
+    catalogAnalytics?: boolean;
+    visitorMetrics?: boolean;
     reportExport: boolean;
   };
   lockedSections: Array<{
@@ -208,7 +214,18 @@ export type AnalyticsDashboard = {
     message: string;
   }>;
   effectiveRange: { days: number; from: string; to: string };
-  overview: { views: number; totalCustomerActions?: number };
+  overview: {
+    views: number;
+    totalCustomerActions?: number;
+    actions?: number;
+    impressions?: number;
+    ctr?: number | null;
+    conversionRate?: number | null;
+    uniqueVisitorsDailySumApprox?: number;
+    sessionsDailySumApprox?: number;
+    uniqueVisitorsPeriodDistinct?: number | null;
+    sessionsPeriodDistinct?: number | null;
+  };
   actions: {
     total: number;
     calls: number;
@@ -240,10 +257,35 @@ export type AnalyticsDashboard = {
       deltaPercent: number | null;
     }>;
   } | null;
-  promotions: { promotionViews: number } | null;
+  promotions: {
+    promotionViews: number;
+    byPromotion?: Array<{
+      promotionId: string;
+      views: number;
+      impressions?: number | null;
+      actions?: number | null;
+    }>;
+    actionsAvailable?: boolean;
+  } | null;
+  catalog: {
+    items: Array<{
+      catalogItemId: string;
+      views: number;
+      impressions?: number | null;
+      actions?: number | null;
+    }>;
+    actionsAvailable?: boolean;
+  } | null;
+  audience: {
+    newVisitorViews: number;
+    returningVisitorViews: number;
+    totalClassified: number;
+    newShare: number | null;
+    returningShare: number | null;
+  } | null;
   popularTimes: {
     byHour: Array<{ hour: number; count: number }>;
-    byWeekday: Array<{ weekday: number; label: string; count: number }>;
+    byWeekday?: Array<{ weekday: number; label: string; count: number }>;
   } | null;
   benchmark: {
     status?: 'AVAILABLE' | 'INSUFFICIENT_DATA';

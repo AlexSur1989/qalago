@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-10 — Stage 6.6D: Business Web Analytics 360
+
+- Rebuilt `/statistics` with Analytics 360 sections, backend-driven capabilities/lockedSections, PRO+ export, manager `ANALYTICS_EXPORT`, intent actions, funnel, VIP audience/content.
+- Added `analytics-360-dashboard` component, extended `AnalyticsDashboard` types and `analytics-utils` tests.
+- Docs: `docs/analytics/stage-6-6d-business-web-analytics.md`.
+
 ## 2026-09-10 — Final mobile UI screen-by-screen cleanup
 
 - Migrated consumer/owner/profile/auth/onboarding screens from ad-hoc greys and hex literals to `AppTheme` + `ColorScheme` tokens; added surface/status/search tokens and `QalagoSearchField`.

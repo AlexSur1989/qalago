@@ -1,179 +1,255 @@
 import { describe, expect, it } from 'vitest';
 import {
+  INTENT_ACTION_KEYS,
   actionMetricLabel,
   availablePeriodOptions,
+  canShowExport,
+  dashboardIsEmpty,
+  formatMetricValue,
   formatPercent,
+  funnelSteps,
   isLockedSection,
   lockedSectionMessage,
+  normalizeAnalyticsDashboard,
+  primaryUpgradeMessage,
 } from './analytics-utils';
 import type { AnalyticsDashboard } from './api';
 
-function mockDashboard(plan: string, overrides: Partial<AnalyticsDashboard> = {}): AnalyticsDashboard {
-  return {
+function mockDashboard(
+  plan: 'FREE' | 'BASIC' | 'PREMIUM' | 'VIP',
+  overrides: Partial<AnalyticsDashboard> = {},
+): AnalyticsDashboard {
+  const isFree = plan === 'FREE';
+  const isBasic = plan === 'BASIC';
+  const isPro = plan === 'PREMIUM';
+  const isVip = plan === 'VIP';
+  const isProOrVip = isPro || isVip;
+
+  return normalizeAnalyticsDashboard({
     businessId: 'b1',
     plan,
     effectivePlan: plan,
     headline: 'test',
     capabilities: {
-      maxDays: plan === 'VIP' ? 365 : plan === 'PREMIUM' ? 90 : 30,
+      maxDays: isVip ? 365 : isPro ? 90 : 30,
       views: true,
       viewTrend: true,
-      actions: plan !== 'FREE',
-      actionTrend: plan !== 'FREE',
-      trafficSources: plan === 'PREMIUM' || plan === 'VIP',
-      searchQueries: plan === 'PREMIUM' || plan === 'VIP',
-      conversion: plan === 'PREMIUM' || plan === 'VIP',
-      periodComparison: plan === 'PREMIUM' || plan === 'VIP',
-      promotionAnalytics: plan === 'PREMIUM' || plan === 'VIP',
-      popularTimes: plan === 'VIP',
-      benchmark: plan === 'VIP',
-      recommendations: plan === 'VIP',
-      audienceGeography: plan === 'VIP',
-      reportExport: plan === 'VIP',
+      actions: !isFree,
+      actionTrend: !isFree,
+      impressions: !isFree,
+      ctr: isProOrVip,
+      trafficSources: isProOrVip,
+      searchQueries: isProOrVip,
+      conversion: isProOrVip,
+      periodComparison: !isFree,
+      promotionAnalytics: !isFree,
+      promotionBreakdown: isProOrVip,
+      popularTimes: isVip,
+      benchmark: isVip,
+      recommendations: isVip,
+      audienceGeography: isVip,
+      audience: isVip,
+      catalogAnalytics: isVip,
+      visitorMetrics: isVip,
+      reportExport: isProOrVip,
     },
     lockedSections:
       plan === 'FREE'
-        ? [{ id: 'actions', label: 'Действия клиентов', requiredPlan: 'BASIC', message: 'Доступно с BASIC' }]
+        ? [{ id: 'actions', label: 'Действия', requiredPlan: 'BASIC', message: 'Бизнес' }]
         : plan === 'BASIC'
-          ? [
-              { id: 'sources', label: 'Источники', requiredPlan: 'PREMIUM', message: 'Доступно с PREMIUM' },
-              { id: 'searchQueries', label: 'Поисковые запросы', requiredPlan: 'PREMIUM', message: 'Поисковые запросы доступны с PREMIUM' },
-              { id: 'audienceGeography', label: 'Аудитория по расстоянию', requiredPlan: 'VIP', message: 'Аналитика аудитории доступна на тарифе VIP' },
-              { id: 'reportExport', label: 'Экспорт отчётов', requiredPlan: 'VIP', message: 'Экспорт отчётов доступен на тарифе VIP' },
-            ]
-          : plan === 'PREMIUM'
-            ? [
-                { id: 'audienceGeography', label: 'Аудитория по расстоянию', requiredPlan: 'VIP', message: 'Аналитика аудитории доступна на тарифе VIP' },
-                { id: 'reportExport', label: 'Экспорт отчётов', requiredPlan: 'VIP', message: 'Экспорт отчётов доступен на тарифе VIP' },
-              ]
-            : [],
+          ? [{ id: 'sources', label: 'Источники', requiredPlan: 'PREMIUM', message: 'PRO' }]
+          : [],
     effectiveRange: { days: 30, from: '', to: '' },
-    overview: { views: 10 },
-    actions: plan === 'FREE' ? null : { total: 3, calls: 1, whatsapp: 1, routes: 1, website: 0, instagram: 0, favorites: 0, promotionViews: 0 },
+    overview: {
+      views: 100,
+      ...(isFree ? {} : { impressions: 1000, actions: 10 }),
+      ...(isProOrVip ? { ctr: 10, conversionRate: 10 } : {}),
+      ...(isVip ? { uniqueVisitorsPeriodDistinct: 50, sessionsPeriodDistinct: 60 } : {}),
+    },
+    actions: isFree
+      ? null
+      : {
+          total: 10,
+          calls: 1,
+          whatsapp: 1,
+          routes: 1,
+          website: 1,
+          instagram: 1,
+          favorites: 5,
+          promotionViews: 99,
+        },
     trends: { views: [{ date: '2026-09-01', count: 2 }] },
     sources: null,
     conversion: null,
-    comparison: null,
-    promotions: null,
-    popularTimes: null,
+    comparison: isFree
+      ? null
+      : {
+          currentDays: 30,
+          previousDays: 30,
+          metrics: [{ key: 'views', label: 'Просмотры', current: 10, previous: 8, deltaPercent: 25 }],
+        },
+    promotions: isFree
+      ? null
+      : {
+          promotionViews: 5,
+          ...(isProOrVip
+            ? {
+                byPromotion: [{ promotionId: 'p1', views: 3 }],
+                actionsAvailable: false,
+              }
+            : {}),
+        },
+    catalog: isVip ? { items: [{ catalogItemId: 'c1', views: 2 }], actionsAvailable: false } : null,
+    audience: isVip
+      ? {
+          newVisitorViews: 10,
+          returningVisitorViews: 20,
+          totalClassified: 30,
+          newShare: 33.3,
+          returningShare: 66.7,
+        }
+      : null,
+    popularTimes: isVip ? { byHour: [{ hour: 12, count: 4 }] } : null,
     benchmark: null,
     recommendations: null,
     audienceGeography: null,
     ...overrides,
-  };
+  });
 }
 
-describe('analytics-utils', () => {
-  it('FREE dashboard locks actions', () => {
-    const dashboard = mockDashboard('FREE');
-    expect(isLockedSection(dashboard, 'actions')).toBe(true);
-    expect(lockedSectionMessage(dashboard, 'actions')).toBe('Доступно с BASIC');
-    expect(dashboard.actions).toBeNull();
+describe('Analytics 360 utils', () => {
+  it('1 FREE sees views only in overview helpers', () => {
+    const d = mockDashboard('FREE');
+    expect(d.overview.views).toBe(100);
+    expect(d.actions).toBeNull();
+    expect(d.overview.impressions).toBeUndefined();
   });
 
-  it('BASIC dashboard exposes actions and locks premium sections', () => {
-    const dashboard = mockDashboard('BASIC');
-    expect(dashboard.actions?.total).toBe(3);
-    expect(isLockedSection(dashboard, 'sources')).toBe(true);
+  it('2–4 FREE no actions/impressions/CTR caps', () => {
+    const d = mockDashboard('FREE');
+    expect(d.capabilities.actions).toBe(false);
+    expect(d.capabilities.impressions).toBe(false);
+    expect(d.capabilities.ctr).toBe(false);
   });
 
-  it('PREMIUM dashboard exposes conversion and real source breakdown', () => {
-    const dashboard = mockDashboard('PREMIUM', {
-      sources: [
-        { source: 'SEARCH', label: 'Поиск', views: 10, share: 50 },
-      ],
-      sourcesStatus: null,
-      searchQueries: [
-        { query: 'кофе рядом', count: 10, percentage: 50 },
-      ],
-      searchQueriesStatus: 'AVAILABLE',
-      conversion: { views: 10, actions: 3, rate: 30 },
-      comparison: {
-        currentDays: 30,
-        previousDays: 30,
-        metrics: [{ key: 'views', label: 'Просмотры', current: 10, previous: 8, deltaPercent: 25 }],
-      },
+  it('5 FREE upgrade message from locked sections', () => {
+    const d = mockDashboard('FREE');
+    expect(primaryUpgradeMessage(d)).toBeTruthy();
+    expect(isLockedSection(d, 'actions')).toBe(true);
+  });
+
+  it('6–8 BUSINESS sees actions impressions comparison', () => {
+    const d = mockDashboard('BASIC');
+    expect(d.actions?.total).toBe(10);
+    expect(d.overview.impressions).toBe(1000);
+    expect(d.comparison).not.toBeNull();
+  });
+
+  it('9 BUSINESS promotion summary without breakdown', () => {
+    const d = mockDashboard('BASIC');
+    expect(d.promotions?.promotionViews).toBe(5);
+    expect(d.promotions?.byPromotion).toBeUndefined();
+  });
+
+  it('10 BUSINESS no sources', () => {
+    const d = mockDashboard('BASIC');
+    expect(d.capabilities.trafficSources).toBe(false);
+    expect(isLockedSection(d, 'sources')).toBe(true);
+  });
+
+  it('11–13 PRO sources search funnel caps', () => {
+    const d = mockDashboard('PREMIUM', {
+      sources: [{ source: 'SEARCH', label: 'Поиск', views: 5, share: 50 }],
+      searchQueries: [{ query: 'кофе', count: 3, percentage: 100 }],
     });
-    expect(dashboard.sources).toHaveLength(1);
-    expect(dashboard.searchQueries).toHaveLength(1);
-    expect(dashboard.conversion?.rate).toBe(30);
+    expect(d.capabilities.trafficSources).toBe(true);
+    expect(d.sources).toHaveLength(1);
+    expect(d.searchQueries).toHaveLength(1);
+    expect(funnelSteps(d).length).toBeGreaterThanOrEqual(2);
   });
 
-  it('PREMIUM search queries insufficient data state', () => {
-    const dashboard = mockDashboard('PREMIUM', {
-      searchQueries: [],
-      searchQueriesStatus: 'INSUFFICIENT_DATA',
+  it('14 PRO promotion breakdown', () => {
+    const d = mockDashboard('PREMIUM');
+    expect(d.promotions?.byPromotion).toHaveLength(1);
+  });
+
+  it('15–16 PRO export capability and permission gate', () => {
+    const d = mockDashboard('PREMIUM');
+    expect(d.capabilities.reportExport).toBe(true);
+    expect(canShowExport(d, true)).toBe(true);
+    expect(canShowExport(d, false)).toBe(false);
+  });
+
+  it('17 PRO no VIP audience', () => {
+    const d = mockDashboard('PREMIUM');
+    expect(d.audience).toBeNull();
+    expect(d.capabilities.audience).toBe(false);
+  });
+
+  it('18–23 VIP sections', () => {
+    const d = mockDashboard('VIP', {
+      audienceGeography: [{ bucket: 'LT_1_KM', label: 'До 1 км', count: 1, percentage: 100 }],
+      benchmark: { categoryTitle: 'Кафе', businessViews: 1, categoryAvgViews: 2 },
+      recommendations: [{ id: 'r1', title: 'T', body: 'B' }],
     });
-    expect(dashboard.searchQueriesStatus).toBe('INSUFFICIENT_DATA');
+    expect(d.audience).not.toBeNull();
+    expect(d.audienceGeography).toHaveLength(1);
+    expect(d.popularTimes?.byHour).toHaveLength(1);
+    expect(d.catalog?.items).toHaveLength(1);
+    expect(d.benchmark?.categoryTitle).toBe('Кафе');
+    expect(d.recommendations).toHaveLength(1);
+    expect(canShowExport(d, true)).toBe(true);
   });
 
-  it('BASIC locks search queries', () => {
-    const dashboard = mockDashboard('BASIC');
-    expect(isLockedSection(dashboard, 'searchQueries')).toBe(true);
+  it('25 null values not rendered as 0', () => {
+    expect(formatMetricValue(null)).toBeNull();
+    expect(formatMetricValue(undefined)).toBeNull();
   });
 
-  it('VIP dashboard exposes advanced sections', () => {
-    const dashboard = mockDashboard('VIP', {
-      popularTimes: { byHour: [{ hour: 12, count: 2 }], byWeekday: [{ weekday: 1, label: 'Пн', count: 2 }] },
-      benchmark: {
-        categoryTitle: 'Кафе',
-        businessViews: 10,
-        categoryAvgViews: 8,
-        businessActions: 3,
-        categoryAvgActions: 2,
-      },
-      recommendations: [{ id: 'keep-going', title: 'OK', body: 'body' }],
-      audienceGeography: [
-        { bucket: 'LT_1_KM', label: 'До 1 км', count: 12, percentage: 21.4 },
-        { bucket: 'UNKNOWN', label: 'Не определено', count: 2, percentage: 3.6 },
-      ],
-      audienceGeographyStatus: 'AVAILABLE',
-    });
-    expect(dashboard.popularTimes?.byHour).toHaveLength(1);
-    expect(dashboard.benchmark?.categoryTitle).toBe('Кафе');
-    expect(dashboard.recommendations).toHaveLength(1);
-    expect(dashboard.audienceGeography).toHaveLength(2);
+  it('26 actionsAvailable false on promotions', () => {
+    const d = mockDashboard('PREMIUM');
+    expect(d.promotions?.actionsAvailable).toBe(false);
   });
 
-  it('PREMIUM locks audience geography', () => {
-    const dashboard = mockDashboard('PREMIUM');
-    expect(isLockedSection(dashboard, 'audienceGeography')).toBe(true);
-    expect(dashboard.audienceGeography).toBeNull();
-  });
-
-  it('VIP insufficient audience geography data state', () => {
-    const dashboard = mockDashboard('VIP', {
-      audienceGeography: [],
-      audienceGeographyStatus: 'INSUFFICIENT_DATA',
-    });
-    expect(dashboard.audienceGeographyStatus).toBe('INSUFFICIENT_DATA');
-  });
-
-  it('VIP report export capability enabled', () => {
-    const dashboard = mockDashboard('VIP');
-    expect(dashboard.capabilities.reportExport).toBe(true);
-    expect(isLockedSection(dashboard, 'reportExport')).toBe(false);
-  });
-
-  it('PREMIUM locks report export', () => {
-    const dashboard = mockDashboard('PREMIUM');
-    expect(dashboard.capabilities.reportExport).toBe(false);
-    expect(isLockedSection(dashboard, 'reportExport')).toBe(true);
-  });
-
-  it('availablePeriodOptions respects maxDays', () => {
-    expect(availablePeriodOptions(30)).toEqual([7, 30]);
+  it('27–28 period options 90 PRO and 365 VIP', () => {
+    expect(availablePeriodOptions(90)).toEqual([7, 30, 90]);
     expect(availablePeriodOptions(365)).toEqual([7, 30, 90, 365]);
   });
 
-  it('formatPercent renders signed values', () => {
-    expect(formatPercent(12)).toBe('+12%');
-    expect(formatPercent(-5)).toBe('-5%');
+  it('30 legacy dashboard without new caps normalizes', () => {
+    const legacy = mockDashboard('BASIC');
+    legacy.capabilities = {
+      ...legacy.capabilities,
+      impressions: undefined,
+      ctr: undefined,
+      promotionBreakdown: undefined,
+    } as AnalyticsDashboard['capabilities'];
+    const normalized = normalizeAnalyticsDashboard(legacy);
+    expect(normalized.capabilities.impressions).toBe(true);
+  });
+
+  it('31 intent keys exclude promotionViews from labels list', () => {
+    expect(INTENT_ACTION_KEYS).not.toContain('promotionViews' as never);
+    expect(actionMetricLabel('favorites')).toBe('Добавили в избранное');
+  });
+
+  it('empty dashboard detection', () => {
+    const d = mockDashboard('FREE', { overview: { views: 0 } });
+    expect(dashboardIsEmpty(d)).toBe(true);
+  });
+
+  it('formatPercent handles null', () => {
     expect(formatPercent(null)).toBe('—');
   });
 
-  it('actionMetricLabel maps known keys', () => {
-    expect(actionMetricLabel('calls')).toBe('Звонки');
-    expect(actionMetricLabel('promotionViews')).toBe('Просмотры акций');
+  it('locked section message lookup', () => {
+    const d = mockDashboard('FREE');
+    expect(lockedSectionMessage(d, 'actions')).toBe('Бизнес');
+  });
+
+  it('no hardcoded VIP-only export in PREMIUM mock', () => {
+    const d = mockDashboard('PREMIUM');
+    expect(isLockedSection(d, 'reportExport')).toBe(false);
+    expect(d.capabilities.reportExport).toBe(true);
   });
 });

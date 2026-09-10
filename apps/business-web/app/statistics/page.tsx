@@ -1,57 +1,44 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { AnalyticsDashboard, BusinessRow, myBusinessRows, ownerApi } from '@/lib/api';
+import { useEffect, useMemo, useState } from 'react';
 import {
-  actionMetricLabel,
+  AnalyticsDashboard,
+  findMyBusinessItem,
+  myBusinessRows,
+  ownerApi,
+} from '@/lib/api';
+import {
   availablePeriodOptions,
-  formatPercent,
-  isLockedSection,
-  lockedSectionMessage,
+  canShowExport,
+  mapAnalyticsExportError,
+  mapAnalyticsLoadError,
+  normalizeAnalyticsDashboard,
+  syncPeriodToEffectiveRange,
 } from '@/lib/analytics-utils';
-import { formatNumber, formatTodayHeader } from '@/lib/business-utils';
+import {
+  BusinessPermission,
+  hasPermission,
+  isOwner,
+} from '@/lib/business-access';
+import { formatTodayHeader } from '@/lib/business-utils';
 import { useAuth } from '@/lib/use-auth';
+import { Analytics360Dashboard } from '@/components/analytics-360-dashboard';
 import { BusinessShell, useSelectedBusiness } from '@/components/business-shell';
-import { ViewsChart } from '@/components/views-chart';
-
-function LockedCard({
-  label,
-  message,
-}: {
-  label: string;
-  message: string;
-}) {
-  return (
-    <article className="card analytics-locked-card">
-      <div className="card-header">
-        <h2>{label}</h2>
-        <span className="badge badge-muted">{message}</span>
-      </div>
-      <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
-        Раздел недоступен на текущем тарифе.
-      </p>
-      <Link href="/plan" className="btn btn-primary btn-sm">
-        Улучшить тариф
-      </Link>
-    </article>
-  );
-}
 
 export default function StatisticsPage() {
-  const { token, user, ready, logout } = useAuth();
-  const [businesses, setBusinesses] = useState<BusinessRow[]>([]);
+  const { token, user, items, ready, logout } = useAuth();
+  const businesses = useMemo(() => myBusinessRows(items), [items]);
   const business = useSelectedBusiness(businesses);
+  const accessItem = business ? findMyBusinessItem(items, business.id) : null;
+  const access = accessItem?.access ?? null;
+
   const [days, setDays] = useState(30);
   const [dashboard, setDashboard] = useState<AnalyticsDashboard | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
-
-  useEffect(() => {
-    if (!token) return;
-    ownerApi.listMyBusinesses(token).then((res) => setBusinesses(myBusinessRows(res.items))).catch((err) => setError(String(err)));
-  }, [token]);
+  const [promotionTitles, setPromotionTitles] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!token || !business) return;
@@ -59,12 +46,30 @@ export default function StatisticsPage() {
     ownerApi
       .analyticsDashboard(token, business.id, days)
       .then((data) => {
-        setDashboard(data);
+        const normalized = normalizeAnalyticsDashboard(data);
+        setDashboard(normalized);
+        const effective = syncPeriodToEffectiveRange(days, normalized);
+        if (effective !== days) setDays(effective);
         setError(null);
       })
-      .catch((err) => setError(String(err)))
+      .catch((err) => setError(mapAnalyticsLoadError(err)))
       .finally(() => setLoading(false));
   }, [token, business?.id, days]);
+
+  useEffect(() => {
+    if (!token || !business || !dashboard?.promotions?.byPromotion?.length) {
+      setPromotionTitles({});
+      return;
+    }
+    ownerApi
+      .listPromotions(token, business.id)
+      .then((res) => {
+        const map: Record<string, string> = {};
+        for (const p of res.items) map[p.id] = p.title;
+        setPromotionTitles(map);
+      })
+      .catch(() => setPromotionTitles({}));
+  }, [token, business?.id, dashboard?.promotions?.byPromotion?.length]);
 
   if (!ready || !token) return <p className="page-content">Загрузка…</p>;
 
@@ -72,19 +77,34 @@ export default function StatisticsPage() {
     ? availablePeriodOptions(dashboard.capabilities.maxDays)
     : [7, 30];
 
-  const canExport = dashboard?.capabilities.reportExport === true;
+  const hasExportPermission =
+    isOwner(access) || hasPermission(access, BusinessPermission.ANALYTICS_EXPORT);
+  const exportAllowed = dashboard ? canShowExport(dashboard, hasExportPermission) : false;
 
   async function handleExport() {
-    if (!token || !business || exporting) return;
+    if (!token || !business || exporting || !exportAllowed) return;
     setExporting(true);
     setError(null);
     try {
       await ownerApi.downloadAnalyticsExport(token, business.id, days);
     } catch (err) {
-      setError(String(err));
+      setError(mapAnalyticsExportError(err));
     } finally {
       setExporting(false);
     }
+  }
+
+  function handleRetry() {
+    if (!token || !business) return;
+    setLoading(true);
+    ownerApi
+      .analyticsDashboard(token, business.id, days)
+      .then((data) => {
+        setDashboard(normalizeAnalyticsDashboard(data));
+        setError(null);
+      })
+      .catch((err) => setError(mapAnalyticsLoadError(err)))
+      .finally(() => setLoading(false));
   }
 
   return (
@@ -95,7 +115,14 @@ export default function StatisticsPage() {
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
     >
-      {error && <div className="alert alert-error">{error}</div>}
+      {error && (
+        <div className="alert alert-error" role="alert">
+          {error}
+          <button type="button" className="btn btn-ghost btn-sm" style={{ marginLeft: 12 }} onClick={handleRetry}>
+            Повторить
+          </button>
+        </div>
+      )}
 
       {!business ? (
         <div className="empty-state">
@@ -109,13 +136,13 @@ export default function StatisticsPage() {
         <>
           <header className="page-header">
             <div>
-              <h1>Статистика бизнеса</h1>
+              <h1>Статистика</h1>
               <p className="page-header-meta">
                 {formatTodayHeader()} · {business.title}
               </p>
-              {dashboard && (
+              {dashboard?.headline ? (
                 <p style={{ color: 'var(--text-muted)', marginTop: 4 }}>{dashboard.headline}</p>
-              )}
+              ) : null}
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <Link href="/monetization/campaigns" className="btn btn-ghost">
@@ -140,378 +167,17 @@ export default function StatisticsPage() {
             ))}
           </div>
 
-          {dashboard && (
-            <article className="card" style={{ marginBottom: 16 }}>
-              <div className="card-header">
-                <h2>Скачать отчёт</h2>
-              </div>
-              {canExport ? (
-                <>
-                  <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
-                    Отчёт за {days} дн. · CSV для Excel
-                  </p>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    disabled={exporting || loading}
-                    onClick={handleExport}
-                  >
-                    {exporting ? 'Формирование…' : 'Скачать CSV'}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
-                    Экспорт отчётов доступен на тарифе VIP
-                  </p>
-                  <Link href="/plan" className="btn btn-primary btn-sm">
-                    Улучшить тариф
-                  </Link>
-                </>
-              )}
-            </article>
-          )}
-
           {loading && !dashboard ? (
-            <p>Загрузка статистики…</p>
+            <p role="status">Загрузка статистики…</p>
           ) : dashboard ? (
-            <>
-              <section className="kpi-grid">
-                <article className="kpi-card">
-                  <div className="kpi-label">Просмотры</div>
-                  <div className="kpi-value">{formatNumber(dashboard.overview.views)}</div>
-                </article>
-                {dashboard.actions ? (
-                  <>
-                    <article className="kpi-card">
-                      <div className="kpi-label">Действия клиентов</div>
-                      <div className="kpi-value">{formatNumber(dashboard.actions.total)}</div>
-                    </article>
-                    {(
-                      [
-                        'calls',
-                        'whatsapp',
-                        'routes',
-                        'website',
-                        'instagram',
-                        'favorites',
-                        'promotionViews',
-                      ] as const
-                    ).map((key) => (
-                      <article key={key} className="kpi-card">
-                        <div className="kpi-label">{actionMetricLabel(key)}</div>
-                        <div className="kpi-value">{formatNumber(dashboard.actions![key])}</div>
-                      </article>
-                    ))}
-                  </>
-                ) : (
-                  <LockedCard
-                    label="Действия клиентов"
-                    message={lockedSectionMessage(dashboard, 'actions') ?? 'Доступно с BASIC'}
-                  />
-                )}
-              </section>
-
-              <article className="card" style={{ marginTop: 16 }}>
-                <div className="card-header">
-                  <h2>Просмотры за {dashboard.effectiveRange.days} дней</h2>
-                </div>
-                <ViewsChart items={dashboard.trends.views} days={dashboard.effectiveRange.days} />
-              </article>
-
-              {dashboard.trends.actions ? (
-                <article className="card" style={{ marginTop: 16 }}>
-                  <div className="card-header">
-                    <h2>Действия клиентов за {dashboard.effectiveRange.days} дней</h2>
-                  </div>
-                  <ViewsChart
-                    items={dashboard.trends.actions}
-                    days={dashboard.effectiveRange.days}
-                  />
-                </article>
-              ) : null}
-
-              {dashboard.sources && dashboard.sources.length > 0 ? (
-                <article className="card" style={{ marginTop: 16 }}>
-                  <div className="card-header">
-                    <h2>Источники просмотров</h2>
-                  </div>
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Источник</th>
-                        <th>Просмотры</th>
-                        <th>Доля</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {dashboard.sources.map((row) => (
-                        <tr key={row.source}>
-                          <td>{row.label}</td>
-                          <td>{formatNumber(row.views)}</td>
-                          <td>{row.share}%</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </article>
-              ) : dashboard.sourcesStatus === 'DEFERRED' ? (
-                <article className="card" style={{ marginTop: 16 }}>
-                  <div className="card-header">
-                    <h2>Источники просмотров</h2>
-                    <span className="badge badge-muted">Скоро</span>
-                  </div>
-                  <p style={{ color: 'var(--text-muted)' }}>
-                    Детальная атрибуция источников появится после внедрения отслеживания
-                    referrer. Сейчас доли по источникам не показываются, чтобы не вводить в
-                    заблуждение.
-                  </p>
-                </article>
-              ) : isLockedSection(dashboard, 'sources') ? (
-                <div style={{ marginTop: 16 }}>
-                  <LockedCard
-                    label="Источники"
-                    message={lockedSectionMessage(dashboard, 'sources') ?? 'Доступно с PREMIUM'}
-                  />
-                </div>
-              ) : dashboard.capabilities.trafficSources ? (
-                <article className="card" style={{ marginTop: 16 }}>
-                  <div className="card-header">
-                    <h2>Источники просмотров</h2>
-                  </div>
-                  <p style={{ color: 'var(--text-muted)' }}>Недостаточно данных</p>
-                </article>
-              ) : null}
-
-              {dashboard.searchQueries && dashboard.searchQueries.length > 0 ? (
-                <article className="card" style={{ marginTop: 16 }}>
-                  <div className="card-header">
-                    <h2>По каким запросам вас находят</h2>
-                  </div>
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Запрос</th>
-                        <th>Открытия</th>
-                        <th>Доля</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {dashboard.searchQueries.map((row) => (
-                        <tr key={row.query}>
-                          <td>{row.query}</td>
-                          <td>{formatNumber(row.count)}</td>
-                          <td>{row.percentage}%</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {dashboard.searchQueriesOtherCount != null &&
-                  dashboard.searchQueriesOtherCount > 0 ? (
-                    <p style={{ color: 'var(--text-muted)', marginTop: 12 }}>
-                      Другие запросы — {formatNumber(dashboard.searchQueriesOtherCount)}
-                    </p>
-                  ) : null}
-                </article>
-              ) : dashboard.searchQueriesStatus === 'INSUFFICIENT_DATA' ? (
-                <article className="card" style={{ marginTop: 16 }}>
-                  <div className="card-header">
-                    <h2>По каким запросам вас находят</h2>
-                  </div>
-                  <p style={{ color: 'var(--text-muted)' }}>
-                    Недостаточно данных для анализа поисковых запросов
-                  </p>
-                </article>
-              ) : isLockedSection(dashboard, 'searchQueries') ? (
-                <div style={{ marginTop: 16 }}>
-                  <LockedCard
-                    label="Поисковые запросы"
-                    message={
-                      lockedSectionMessage(dashboard, 'searchQueries') ??
-                      'Поисковые запросы доступны с PREMIUM'
-                    }
-                  />
-                </div>
-              ) : null}
-
-              {dashboard.audienceGeography && dashboard.audienceGeography.length > 0 ? (
-                <article className="card" style={{ marginTop: 16 }}>
-                  <div className="card-header">
-                    <h2>Аудитория по расстоянию</h2>
-                  </div>
-                  <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
-                    Показывает примерное расстояние пользователей от вашей компании в
-                    момент открытия карточки. Точные координаты не сохраняются.
-                  </p>
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Расстояние</th>
-                        <th>Открытия</th>
-                        <th>Доля</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {dashboard.audienceGeography.map((row) => (
-                        <tr key={row.bucket}>
-                          <td>{row.label}</td>
-                          <td>{formatNumber(row.count)}</td>
-                          <td>{row.percentage}%</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </article>
-              ) : dashboard.audienceGeographyStatus === 'INSUFFICIENT_DATA' ? (
-                <article className="card" style={{ marginTop: 16 }}>
-                  <div className="card-header">
-                    <h2>Аудитория по расстоянию</h2>
-                  </div>
-                  <p style={{ color: 'var(--text-muted)' }}>
-                    Недостаточно данных для анализа аудитории по расстоянию
-                  </p>
-                </article>
-              ) : isLockedSection(dashboard, 'audienceGeography') ? (
-                <div style={{ marginTop: 16 }}>
-                  <LockedCard
-                    label="Аудитория по расстоянию"
-                    message={
-                      lockedSectionMessage(dashboard, 'audienceGeography') ??
-                      'Аналитика аудитории доступна на тарифе VIP'
-                    }
-                  />
-                </div>
-              ) : null}
-
-              {dashboard.conversion ? (
-                <article className="card" style={{ marginTop: 16 }}>
-                  <div className="card-header">
-                    <h2>Конверсия</h2>
-                  </div>
-                  <p>
-                    {formatNumber(dashboard.conversion.actions)} действий из{' '}
-                    {formatNumber(dashboard.conversion.views)} просмотров —{' '}
-                    <strong>{dashboard.conversion.rate}%</strong>
-                  </p>
-                </article>
-              ) : isLockedSection(dashboard, 'conversion') ? (
-                <div style={{ marginTop: 16 }}>
-                  <LockedCard
-                    label="Конверсия"
-                    message={lockedSectionMessage(dashboard, 'conversion') ?? 'Доступно с PREMIUM'}
-                  />
-                </div>
-              ) : null}
-
-              {dashboard.comparison ? (
-                <article className="card" style={{ marginTop: 16 }}>
-                  <div className="card-header">
-                    <h2>Сравнение периодов</h2>
-                  </div>
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Метрика</th>
-                        <th>Текущий период</th>
-                        <th>Предыдущий</th>
-                        <th>Изменение</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {dashboard.comparison.metrics.map((row) => (
-                        <tr key={row.key}>
-                          <td>{row.label}</td>
-                          <td>{formatNumber(row.current)}</td>
-                          <td>{formatNumber(row.previous)}</td>
-                          <td>{formatPercent(row.deltaPercent)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </article>
-              ) : isLockedSection(dashboard, 'comparison') ? (
-                <div style={{ marginTop: 16 }}>
-                  <LockedCard
-                    label="Сравнение периодов"
-                    message={lockedSectionMessage(dashboard, 'comparison') ?? 'Доступно с PREMIUM'}
-                  />
-                </div>
-              ) : null}
-
-              {dashboard.popularTimes ? (
-                <article className="card" style={{ marginTop: 16 }}>
-                  <div className="card-header">
-                    <h2>Популярные дни и часы</h2>
-                  </div>
-                  <div className="kpi-grid">
-                    {dashboard.popularTimes.byWeekday.map((row) => (
-                      <article key={row.weekday} className="kpi-card">
-                        <div className="kpi-label">{row.label}</div>
-                        <div className="kpi-value">{formatNumber(row.count)}</div>
-                      </article>
-                    ))}
-                  </div>
-                </article>
-              ) : isLockedSection(dashboard, 'popularTimes') ? (
-                <div style={{ marginTop: 16 }}>
-                  <LockedCard
-                    label="Популярные часы"
-                    message={lockedSectionMessage(dashboard, 'popularTimes') ?? 'Доступно с VIP'}
-                  />
-                </div>
-              ) : null}
-
-              {dashboard.benchmark ? (
-                <article className="card" style={{ marginTop: 16 }}>
-                  <div className="card-header">
-                    <h2>Сравнение с категорией · {dashboard.benchmark.categoryTitle}</h2>
-                  </div>
-                  {dashboard.benchmark.status === 'INSUFFICIENT_DATA' ? (
-                    <p style={{ color: 'var(--text-muted)' }}>
-                      {dashboard.benchmark.message ??
-                        'Недостаточно данных для сравнения с категорией.'}
-                    </p>
-                  ) : (
-                    <>
-                      <p>
-                        Просмотры: {formatNumber(dashboard.benchmark.businessViews ?? 0)} vs
-                        среднее {formatNumber(dashboard.benchmark.categoryAvgViews ?? 0)}
-                      </p>
-                      <p>
-                        Действия: {formatNumber(dashboard.benchmark.businessActions ?? 0)} vs
-                        среднее {formatNumber(dashboard.benchmark.categoryAvgActions ?? 0)}
-                      </p>
-                    </>
-                  )}
-                </article>
-              ) : isLockedSection(dashboard, 'benchmark') ? (
-                <div style={{ marginTop: 16 }}>
-                  <LockedCard
-                    label="Сравнение с категорией"
-                    message={lockedSectionMessage(dashboard, 'benchmark') ?? 'Доступно с VIP'}
-                  />
-                </div>
-              ) : null}
-
-              {dashboard.recommendations ? (
-                <section style={{ marginTop: 16 }}>
-                  <h2>Рекомендации</h2>
-                  {dashboard.recommendations.map((item) => (
-                    <article key={item.id} className="card" style={{ marginTop: 8 }}>
-                      <h3>{item.title}</h3>
-                      <p style={{ color: 'var(--text-muted)' }}>{item.body}</p>
-                    </article>
-                  ))}
-                </section>
-              ) : isLockedSection(dashboard, 'recommendations') ? (
-                <div style={{ marginTop: 16 }}>
-                  <LockedCard
-                    label="Рекомендации"
-                    message={lockedSectionMessage(dashboard, 'recommendations') ?? 'Доступно с VIP'}
-                  />
-                </div>
-              ) : null}
-            </>
+            <Analytics360Dashboard
+              dashboard={dashboard}
+              days={days}
+              canExport={exportAllowed}
+              exporting={exporting}
+              onExport={handleExport}
+              promotionTitles={promotionTitles}
+            />
           ) : null}
         </>
       )}
