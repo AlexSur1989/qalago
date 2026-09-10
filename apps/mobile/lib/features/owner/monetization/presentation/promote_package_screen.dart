@@ -172,10 +172,7 @@ class _PromotePackageScreenState extends ConsumerState<PromotePackageScreen> {
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: _canContinue(pkg) ? () => _continue(pkg) : null,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.kzBlue,
-                  minimumSize: const Size.fromHeight(48),
-                ),
+                style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
                 child: Text(hasVip ? packageVipCta : 'Продолжить'),
               ),
             ],

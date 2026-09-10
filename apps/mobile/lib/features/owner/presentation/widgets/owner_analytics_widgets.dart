@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/theme_extensions.dart';
 import '../../owner_analytics_utils.dart';
 import 'owner_views_chart.dart';
 
@@ -19,7 +20,7 @@ class OwnerAnalyticsSectionTitle extends StatelessWidget {
           Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
           if (subtitle != null) ...[
             const SizedBox(height: 4),
-            Text(subtitle!, style: TextStyle(color: Colors.grey.shade700, fontSize: 13)),
+            Text(subtitle!, style: context.captionStyle),
           ],
         ],
       ),
@@ -39,9 +40,10 @@ class OwnerAnalyticsCompactUpgradeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = context.cs;
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      color: Colors.orange.shade50,
+      color: scheme.primary.withValues(alpha: 0.08),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -53,7 +55,7 @@ class OwnerAnalyticsCompactUpgradeCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(message, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  Text(message, style: context.sectionTitleStyle),
                   const SizedBox(height: 10),
                   TextButton(
                     onPressed: onUpgrade,
@@ -153,18 +155,18 @@ class _OverviewTile extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(label, style: TextStyle(color: Colors.grey.shade700, fontSize: 13)),
+                  child: Text(label, style: context.captionStyle),
                 ),
                 if (hint != null)
                   Tooltip(
                     message: hint!,
                     triggerMode: TooltipTriggerMode.tap,
-                    child: Icon(Icons.info_outline, size: 18, color: Colors.grey.shade600),
+                    child: Icon(Icons.info_outline, size: 18, color: context.cs.onSurfaceVariant),
                   ),
               ],
             ),
             const SizedBox(height: 6),
-            Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
+            Text(value, style: context.metricValueStyle?.copyWith(fontSize: 22)),
           ],
         ),
       ),
@@ -251,7 +253,7 @@ class OwnerAnalyticsActionsBreakdown extends StatelessWidget {
             title: Text(ownerAnalyticsActionLabel(key)),
             trailing: Text(
               ownerAnalyticsFormatCount(count),
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              style: context.metricValueStyle?.copyWith(fontSize: 18),
             ),
           ),
         );
@@ -307,7 +309,7 @@ class OwnerAnalyticsFunnelCard extends StatelessWidget {
               if (i < steps.length - 1)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Icon(Icons.arrow_downward, size: 18, color: Colors.grey.shade600),
+                  child: Icon(Icons.arrow_downward, size: 18, color: context.cs.onSurfaceVariant),
                 ),
             ],
             if (ctr != null || conversion != null) ...[
@@ -318,7 +320,7 @@ class OwnerAnalyticsFunnelCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Показатели рассчитаны по агрегированным данным периода.',
-              style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
+              style: context.captionStyle,
             ),
           ],
         ),
@@ -357,7 +359,7 @@ class OwnerAnalyticsComparisonCompact extends StatelessWidget {
                       delta ?? '—',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
-                        color: _deltaColor(row['deltaPercent'] as num?),
+                        color: _deltaColor(context, row['deltaPercent'] as num?),
                       ),
                     ),
                   ],
@@ -370,11 +372,12 @@ class OwnerAnalyticsComparisonCompact extends StatelessWidget {
     );
   }
 
-  Color _deltaColor(num? delta) {
-    if (delta == null) return Colors.grey;
-    if (delta > 0) return Colors.green.shade700;
-    if (delta < 0) return Colors.red.shade700;
-    return Colors.grey.shade700;
+  Color _deltaColor(BuildContext context, num? delta) {
+    final scheme = context.cs;
+    if (delta == null) return scheme.onSurfaceVariant;
+    if (delta > 0) return context.successColor;
+    if (delta < 0) return scheme.error;
+    return scheme.onSurfaceVariant;
   }
 }
 
@@ -396,7 +399,7 @@ class OwnerAnalyticsPopularHoursSection extends StatelessWidget {
             children: [
               const Text('Популярное время', style: TextStyle(fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
-              Text('Недостаточно данных', style: TextStyle(color: Colors.grey.shade700)),
+              Text('Недостаточно данных', style: context.captionStyle),
             ],
           ),
         ),
@@ -431,7 +434,7 @@ class OwnerAnalyticsPopularHoursSection extends StatelessWidget {
                         value: count / max,
                         minHeight: 8,
                         borderRadius: BorderRadius.circular(4),
-                        backgroundColor: Colors.grey.shade200,
+                        backgroundColor: context.cs.outlineVariant,
                         color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
@@ -507,7 +510,7 @@ class OwnerAnalyticsAudienceSection extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Text(
                 'Недостаточно данных для анализа аудитории по расстоянию',
-                style: TextStyle(color: Colors.grey.shade700),
+                style: context.captionStyle,
               ),
             ),
           ),
@@ -606,7 +609,7 @@ class _AudienceGeographyList extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               'Агрегированные интервалы без точных координат пользователей.',
-              style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+              style: context.captionStyle,
             ),
             const SizedBox(height: 8),
             ...items.whereType<Map>().map(
@@ -694,7 +697,7 @@ class _PromotionsBlock extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 'Действия по акциям пока не измеряются',
-                style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                style: context.captionStyle,
               ),
             ],
           ],
@@ -733,12 +736,12 @@ class _CatalogBlock extends StatelessWidget {
                 );
               })
             else
-              Text('Недостаточно данных', style: TextStyle(color: Colors.grey.shade700)),
+              Text('Недостаточно данных', style: context.captionStyle),
             if (actionsUnavailable) ...[
               const SizedBox(height: 8),
               Text(
                 'Действия по позициям каталога пока не измеряются',
-                style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                style: context.captionStyle,
               ),
             ],
           ],
@@ -759,7 +762,7 @@ class OwnerAnalyticsEmptyState extends StatelessWidget {
         child: Text(
           'Статистика появится после первых просмотров карточки.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.grey.shade700),
+          style: context.captionStyle,
         ),
       ),
     );

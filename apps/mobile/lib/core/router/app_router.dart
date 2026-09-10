@@ -438,10 +438,10 @@ class AppShell extends StatelessWidget {
       body: child,
       bottomNavigationBar: DecoratedBox(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
               blurRadius: 18,
               offset: const Offset(0, -6),
             ),
@@ -521,8 +521,10 @@ class _ShellTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final isSelected = selectedIndex == index;
-    final color = isSelected ? AppTheme.kzBlue : const Color(0xFF8A919F);
+    final color = isSelected ? scheme.primary : scheme.onSurfaceVariant;
 
     return Expanded(
       child: InkWell(
@@ -534,9 +536,8 @@ class _ShellTab extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               label,
-              style: TextStyle(
+              style: theme.textTheme.labelMedium?.copyWith(
                 color: color,
-                fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
               ),
             ),

@@ -90,15 +90,15 @@ class _MonetizationOrderConfirmScreenState
           ],
           if (_error != null) ...[
             const SizedBox(height: 12),
-            Text(_error!, style: const TextStyle(color: Colors.red)),
+            Text(
+              _error!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
           ],
           const SizedBox(height: 24),
           FilledButton(
             onPressed: _submitting ? null : _submitOrder,
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.kzBlue,
-              minimumSize: const Size.fromHeight(48),
-            ),
+            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             child: _submitting
                 ? const SizedBox(
                     height: 20,

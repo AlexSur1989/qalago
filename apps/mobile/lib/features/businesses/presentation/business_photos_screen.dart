@@ -87,7 +87,6 @@ class _BusinessPhotosScreenState extends ConsumerState<BusinessPhotosScreen> {
     final photosAsync = ref.watch(businessPhotosPageProvider(_query));
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Фотографии'),
         leading: IconButton(

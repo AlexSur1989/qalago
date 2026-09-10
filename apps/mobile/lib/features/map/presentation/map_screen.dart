@@ -202,7 +202,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
       body: Stack(
         children: [
           FlutterMap(

@@ -59,7 +59,6 @@ class CategoryBusinessesScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,7 +86,7 @@ class CategoryBusinessesScreen extends ConsumerWidget {
         ),
       ),
       body: RefreshIndicator(
-        color: AppTheme.kzBlue,
+        color: Theme.of(context).colorScheme.primary,
         onRefresh: () async {
           ref.invalidate(categoryBusinessesProvider(categoryId));
           invalidateAdProviders(ref);

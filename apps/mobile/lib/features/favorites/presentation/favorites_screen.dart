@@ -38,7 +38,6 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
 
     if (!isAuthed) {
       return Scaffold(
-        backgroundColor: Colors.white,
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
@@ -59,10 +58,9 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: RefreshIndicator(
-          color: AppTheme.kzBlue,
+          color: Theme.of(context).colorScheme.primary,
           onRefresh: () async => ref.invalidate(favoritesProvider),
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
@@ -169,9 +167,9 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
                                   tooltip: 'Убрать из избранного',
                                   onPressed: () =>
                                       _removeFavorite(business.id),
-                                  icon: const Icon(
+                                  icon: Icon(
                                     Icons.favorite,
-                                    color: AppTheme.kzBlue,
+                                    color: Theme.of(context).colorScheme.primary,
                                   ),
                                 ),
                               ),
@@ -228,9 +226,9 @@ class _GuestFavoritesPrompt extends StatelessWidget {
         CircleAvatar(
           radius: 42,
           backgroundColor: AppTheme.kzBlue.withValues(alpha: 0.1),
-          child: const Icon(
+          child: Icon(
             Icons.favorite_border,
-            color: AppTheme.kzBlue,
+            color: Theme.of(context).colorScheme.primary,
             size: 42,
           ),
         ),
@@ -274,9 +272,9 @@ class _EmptyFavoritesAll extends StatelessWidget {
           CircleAvatar(
             radius: 42,
             backgroundColor: AppTheme.kzBlue.withValues(alpha: 0.1),
-            child: const Icon(
+            child: Icon(
               Icons.favorite_border,
-              color: AppTheme.kzBlue,
+              color: Theme.of(context).colorScheme.primary,
               size: 42,
             ),
           ),
@@ -316,9 +314,9 @@ class _EmptyFavoritesInCity extends StatelessWidget {
           CircleAvatar(
             radius: 42,
             backgroundColor: AppTheme.kzBlue.withValues(alpha: 0.1),
-            child: const Icon(
+            child: Icon(
               Icons.location_city_outlined,
-              color: AppTheme.kzBlue,
+              color: Theme.of(context).colorScheme.primary,
               size: 42,
             ),
           ),

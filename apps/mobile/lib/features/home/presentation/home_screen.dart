@@ -134,10 +134,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         catalogTotalAsync.hasValue && catalogTotalAsync.value == 0;
 
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: RefreshIndicator(
-          color: AppTheme.kzBlue,
+          color: Theme.of(context).colorScheme.primary,
           onRefresh: () async {
             ref.invalidate(categoriesProvider);
             ref.invalidate(cityCatalogTotalProvider);
@@ -568,8 +567,8 @@ class _SectionHeader extends StatelessWidget {
               else
                 Text(
                   actionLabel!,
-                  style: const TextStyle(
-                    color: AppTheme.kzBlue,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -914,7 +913,7 @@ class _PopularPlaceCard extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.star,
-                        color: AppTheme.kzBlue,
+                        color: Theme.of(context).colorScheme.primary,
                         size: 17,
                       ),
                       const SizedBox(width: 4),

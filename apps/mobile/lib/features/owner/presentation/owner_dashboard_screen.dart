@@ -420,7 +420,6 @@ class _DashboardContent extends StatelessWidget {
                 const SizedBox(height: 12),
                 FilledButton(
                   onPressed: () => context.push('/owner/promote'),
-                  style: FilledButton.styleFrom(backgroundColor: AppTheme.kzBlue),
                   child: const Text('Открыть каталог'),
                 ),
                 const SizedBox(height: 8),

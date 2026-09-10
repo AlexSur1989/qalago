@@ -69,10 +69,9 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
     final city = ref.watch(cityProvider);
 
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: RefreshIndicator(
-          color: AppTheme.kzBlue,
+          color: Theme.of(context).colorScheme.primary,
           onRefresh: () async => ref.invalidate(promotionsProvider),
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
@@ -122,8 +121,8 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(
-                      color: AppTheme.kzBlue,
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
                       width: 1.4,
                     ),
                   ),
@@ -255,9 +254,9 @@ class _PromotionsEmptyCity extends StatelessWidget {
           CircleAvatar(
             radius: 42,
             backgroundColor: AppTheme.kzBlue.withValues(alpha: 0.1),
-            child: const Icon(
+            child: Icon(
               Icons.local_offer_outlined,
-              color: AppTheme.kzBlue,
+              color: Theme.of(context).colorScheme.primary,
               size: 42,
             ),
           ),
@@ -385,7 +384,7 @@ class _PromotionListCard extends StatelessWidget {
                         top: 8,
                         child: DecoratedBox(
                           decoration: BoxDecoration(
-                            color: AppTheme.kzBlue,
+                            color: Theme.of(context).colorScheme.primary,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Padding(
@@ -425,9 +424,9 @@ class _PromotionListCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const Icon(
+                        Icon(
                           Icons.chevron_right,
-                          color: AppTheme.kzBlue,
+                          color: Theme.of(context).colorScheme.primary,
                           size: 26,
                         ),
                       ],

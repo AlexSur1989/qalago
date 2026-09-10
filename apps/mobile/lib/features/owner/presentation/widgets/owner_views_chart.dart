@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_theme.dart';
+
 import '../../owner_utils.dart';
 
 class OwnerViewsChart extends StatelessWidget {
@@ -14,6 +14,7 @@ class OwnerViewsChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final dates = buildDateRange(days);
     final byDate = Map<String, int>.fromEntries(items);
     final values = dates.map((d) => byDate[d] ?? 0).toList();
@@ -23,7 +24,14 @@ class OwnerViewsChart extends StatelessWidget {
       height: 180,
       width: double.infinity,
       child: CustomPaint(
-        painter: _ViewsChartPainter(dates: dates, values: values, max: max),
+        painter: _ViewsChartPainter(
+          dates: dates,
+          values: values,
+          max: max,
+          lineColor: scheme.primary,
+          gridColor: scheme.outlineVariant,
+          labelColor: scheme.onSurfaceVariant,
+        ),
       ),
     );
   }
@@ -34,11 +42,17 @@ class _ViewsChartPainter extends CustomPainter {
     required this.dates,
     required this.values,
     required this.max,
+    required this.lineColor,
+    required this.gridColor,
+    required this.labelColor,
   });
 
   final List<String> dates;
   final List<int> values;
   final int max;
+  final Color lineColor;
+  final Color gridColor;
+  final Color labelColor;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -49,7 +63,7 @@ class _ViewsChartPainter extends CustomPainter {
     final chartH = size.height - padY - padBottom;
 
     final gridPaint = Paint()
-      ..color = const Color(0xFFE8ECF1)
+      ..color = gridColor
       ..strokeWidth = 1;
     for (var t = 0; t <= 4; t++) {
       final y = padY + chartH * (t / 4);
@@ -76,7 +90,7 @@ class _ViewsChartPainter extends CustomPainter {
       ..close();
     canvas.drawPath(
       areaPath,
-      Paint()..color = AppTheme.kzBlue.withValues(alpha: 0.12),
+      Paint()..color = lineColor.withValues(alpha: 0.12),
     );
 
     final linePath = Path()..moveTo(points.first.dx, points.first.dy);
@@ -86,14 +100,14 @@ class _ViewsChartPainter extends CustomPainter {
     canvas.drawPath(
       linePath,
       Paint()
-        ..color = AppTheme.kzBlue
+        ..color = lineColor
         ..strokeWidth = 2.5
         ..style = PaintingStyle.stroke
         ..strokeJoin = StrokeJoin.round
         ..strokeCap = StrokeCap.round,
     );
 
-    final dotPaint = Paint()..color = AppTheme.kzBlue;
+    final dotPaint = Paint()..color = lineColor;
     for (final p in points) {
       canvas.drawCircle(p, 4, dotPaint);
     }
@@ -106,7 +120,7 @@ class _ViewsChartPainter extends CustomPainter {
       final tp = TextPainter(
         text: TextSpan(
           text: label,
-          style: const TextStyle(fontSize: 10, color: Color(0xFF6B7280)),
+          style: TextStyle(fontSize: 10, color: labelColor),
         ),
         textDirection: TextDirection.ltr,
       )..layout();
@@ -116,5 +130,7 @@ class _ViewsChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _ViewsChartPainter oldDelegate) =>
-      oldDelegate.values != values || oldDelegate.dates != dates;
+      oldDelegate.values != values ||
+      oldDelegate.dates != dates ||
+      oldDelegate.lineColor != lineColor;
 }

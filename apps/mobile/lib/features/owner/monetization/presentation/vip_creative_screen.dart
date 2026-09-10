@@ -200,10 +200,7 @@ class _VipCreativeScreenState extends ConsumerState<VipCreativeScreen> {
           const SizedBox(height: 12),
           FilledButton(
             onPressed: _saving ? null : _continueToConfirm,
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.kzBlue,
-              minimumSize: const Size.fromHeight(48),
-            ),
+            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             child: _saving
                 ? const SizedBox(
                     height: 20,

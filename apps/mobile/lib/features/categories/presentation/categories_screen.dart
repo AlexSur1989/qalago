@@ -54,10 +54,9 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
         catalogTotalAsync.hasValue && catalogTotalAsync.value == 0;
 
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: RefreshIndicator(
-          color: AppTheme.kzBlue,
+          color: Theme.of(context).colorScheme.primary,
           onRefresh: () async {
             ref.invalidate(categoriesProvider);
             ref.invalidate(cityCatalogTotalProvider);
@@ -109,8 +108,8 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(
-                      color: AppTheme.kzBlue,
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
                       width: 1.4,
                     ),
                   ),

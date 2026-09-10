@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-10 — Mobile UI design system consistency
+
+- Expanded `AppTheme.light` (buttons, inputs, chips, dialogs, sheets, snackbars); `QalagoTheme` extensions; consumer shell nav + shared widgets aligned to `ColorScheme`.
+- Docs: `docs/mobile/ui-design-system-consistency.md`; widget tests `test/core/app_theme_test.dart`.
+- Будущее: migrate remaining screen-level `AppTheme.kzBlue` tints to `primarySurfaceTint` opportunistically.
+
 ## 2026-09-10 — Stage 6.6C: Flutter Owner Analytics 360 UI
 
 - Owner statistics screen restructured (Обзор / Привлечение / Аудитория / Контент / рекомендации); capabilities-driven period selector, PRO+ CSV export with RBAC, compact upgrade UX, hour-only popular times, promotion/catalog actions-unavailable copy.

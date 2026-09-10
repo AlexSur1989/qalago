@@ -191,7 +191,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final isBusy = auth.isLoading;
 
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -490,10 +489,10 @@ class _GoogleSignInButton extends StatelessWidget {
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        foregroundColor: Colors.black87,
-        backgroundColor: Colors.white,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         minimumSize: const Size.fromHeight(52),
-        side: BorderSide(color: Colors.black.withValues(alpha: 0.12)),
+        side: BorderSide(color: Theme.of(context).colorScheme.outline),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
       child: loading

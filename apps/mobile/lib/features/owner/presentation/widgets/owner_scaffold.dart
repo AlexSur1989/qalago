@@ -180,16 +180,19 @@ class _OwnerDrawer extends ConsumerWidget {
         label,
         style: TextStyle(
           fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-          color: selected ? AppTheme.kzBlue : null,
+          color: selected ? Theme.of(context).colorScheme.primary : null,
         ),
       ),
       trailing: badge > 0
           ? CircleAvatar(
               radius: 12,
-              backgroundColor: AppTheme.kzBlue,
+              backgroundColor: Theme.of(context).colorScheme.primary,
               child: Text(
                 '$badge',
-                style: const TextStyle(color: Colors.white, fontSize: 11),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                  fontSize: 11,
+                ),
               ),
             )
           : null,

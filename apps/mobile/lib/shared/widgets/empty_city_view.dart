@@ -91,14 +91,6 @@ class EmptyCityView extends ConsumerWidget {
             width: double.infinity,
             child: FilledButton(
               onPressed: onPickCity,
-              style: FilledButton.styleFrom(
-                backgroundColor: AppTheme.kzBlue,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
               child: const Text('Выбрать другой город'),
             ),
           ),

@@ -89,7 +89,6 @@ class _BusinessCatalogScreenState extends ConsumerState<BusinessCatalogScreen> {
     final catalogAsync = ref.watch(businessCatalogPageProvider(_query));
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Товары и услуги'),
         leading: IconButton(
@@ -198,7 +197,7 @@ class _CatalogBody extends StatelessWidget {
     final canLoadMore = page < totalPages;
 
     return RefreshIndicator(
-      color: AppTheme.kzBlue,
+      color: Theme.of(context).colorScheme.primary,
       onRefresh: () async => onSearch(),
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),

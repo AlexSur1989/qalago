@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import '../../core/constants/app_constants.dart';
+import '../../core/theme/theme_extensions.dart';
 import '../../core/location/user_location_provider.dart';
 import '../../features/ads/widgets/sponsored_label.dart';
 import '../../shared/models/models.dart';
@@ -58,10 +60,7 @@ class BusinessCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           business.title,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: context.cardTitleStyle?.copyWith(fontSize: 18),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -87,14 +86,14 @@ class BusinessCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.location_on_outlined, size: 16, color: Colors.grey.shade600),
+                      Icon(Icons.location_on_outlined, size: 16, color: context.cs.onSurfaceVariant),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
                           business.distanceMeters != null
                               ? '${formatDistanceMeters(business.distanceMeters)} · ${business.address}'
                               : business.address,
-                          style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                          style: context.bodySecondaryStyle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -105,7 +104,7 @@ class BusinessCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       business.shortDesc!,
-                      style: const TextStyle(fontSize: 14, color: Colors.black87),
+                      style: context.bodySecondaryStyle,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -120,13 +119,18 @@ class BusinessCard extends StatelessWidget {
   }
 
   Widget _buildPlaceholder() {
-    return Container(
-      height: 120,
-      width: double.infinity,
-      color: Colors.grey.shade200,
-      child: Center(
-        child: Icon(Icons.storefront, size: 48, color: Colors.grey.shade400),
-      ),
+    return Builder(
+      builder: (context) {
+        final scheme = context.cs;
+        return Container(
+          height: 120,
+          width: double.infinity,
+          color: scheme.surfaceContainerHighest,
+          child: Center(
+            child: Icon(Icons.storefront, size: 48, color: scheme.outline),
+          ),
+        );
+      },
     );
   }
 }

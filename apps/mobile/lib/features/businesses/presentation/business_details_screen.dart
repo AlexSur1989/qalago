@@ -182,7 +182,6 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
             );
 
     return Scaffold(
-      backgroundColor: Colors.white,
       body: detailsAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(

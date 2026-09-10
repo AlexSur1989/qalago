@@ -244,10 +244,7 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
                     isPromotedPromotion: isPromotedPromotion,
                   )
               : null,
-          style: FilledButton.styleFrom(
-            backgroundColor: AppTheme.kzBlue,
-            minimumSize: const Size.fromHeight(48),
-          ),
+          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
           child: Text(_quote == null ? 'Получить стоимость' : 'Продолжить'),
         ),
       ],

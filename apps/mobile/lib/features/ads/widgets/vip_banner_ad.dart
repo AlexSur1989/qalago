@@ -109,17 +109,6 @@ class VipBannerAd extends ConsumerWidget {
                               ? null
                               : () =>
                                   _handleTap(context, ref, context_, creative),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppTheme.kzBlue,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
                           child: Text(
                             creative.buttonText ?? 'Подробнее',
                             style: const TextStyle(fontWeight: FontWeight.w800),

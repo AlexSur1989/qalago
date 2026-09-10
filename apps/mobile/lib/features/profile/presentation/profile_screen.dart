@@ -40,7 +40,10 @@ Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
         TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Отмена')),
         FilledButton(
           onPressed: () => Navigator.pop(ctx, true),
-          style: FilledButton.styleFrom(backgroundColor: Colors.red),
+          style: FilledButton.styleFrom(
+            backgroundColor: Theme.of(ctx).colorScheme.error,
+            foregroundColor: Theme.of(ctx).colorScheme.onError,
+          ),
           child: const Text('Удалить'),
         ),
       ],
@@ -85,7 +88,6 @@ class ProfileScreen extends ConsumerWidget {
     final entriesAsync = ref.watch(myBusinessEntriesProvider);
 
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
@@ -285,7 +287,6 @@ class _GuestProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),

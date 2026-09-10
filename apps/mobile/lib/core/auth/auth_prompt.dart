@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../theme/app_theme.dart';
 import 'route_access.dart';
 
 /// Friendly login prompt for actions that require identity.
@@ -27,7 +26,6 @@ Future<void> showAuthRequiredDialog(
             Navigator.pop(ctx);
             context.push(loginRedirectPath(path));
           },
-          style: FilledButton.styleFrom(backgroundColor: AppTheme.kzBlue),
           child: const Text('Войти'),
         ),
       ],
