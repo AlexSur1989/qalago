@@ -143,12 +143,20 @@ describe('Stage 5K analytics CSV export', () => {
     expect(result.contentDisposition).toContain('attachment');
   });
 
-  it('rejects FREE/BASIC/PREMIUM export', async () => {
-    for (const tier of [
-      BusinessPlanTier.FREE,
-      BusinessPlanTier.BASIC,
-      BusinessPlanTier.PREMIUM,
-    ]) {
+  it('PREMIUM owner can export CSV', async () => {
+    const { prisma, planLimits, service } = createService();
+    mockPremiumContext(planLimits);
+    prisma.business.findUnique.mockResolvedValue({
+      title: 'Кофейня',
+      city: { nameRu: 'Уральск' },
+    });
+
+    const result = await service.exportCsv(owner, 'business-1', { days: 30 });
+    expect(result.body.startsWith(CSV_UTF8_BOM)).toBe(true);
+  });
+
+  it('rejects FREE/BASIC export', async () => {
+    for (const tier of [BusinessPlanTier.FREE, BusinessPlanTier.BASIC]) {
       const { prisma, planLimits, service } = createService();
       planLimits.getBusinessPlanContext = jest.fn().mockResolvedValue({
         tier,
@@ -249,8 +257,9 @@ describe('Stage 5K analytics CSV export', () => {
     );
   });
 
-  it('reportExport capability is VIP-only', () => {
+  it('reportExport capability is PRO+', () => {
     expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.VIP).reportExport).toBe(true);
-    expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.PREMIUM).reportExport).toBe(false);
+    expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.PREMIUM).reportExport).toBe(true);
+    expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.BASIC).reportExport).toBe(false);
   });
 });

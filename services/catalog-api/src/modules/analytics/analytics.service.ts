@@ -13,7 +13,10 @@ import {
   Prisma,
   UserRole,
 } from '@prisma/client';
-import { getAnalyticsCapabilitiesForPlan } from '../../common/utils/analytics-capabilities.util';
+import {
+  clampAnalyticsDays,
+  getAnalyticsCapabilitiesForPlan,
+} from '../../common/utils/analytics-capabilities.util';
 import {
   ATTRIBUTION_EVENT_TYPES,
   isOrganicAnalyticsEventType,
@@ -279,7 +282,8 @@ export class AnalyticsService {
 
     const requestedDays = query.days ?? 30;
     const ctx = await this.planLimits.getBusinessPlanContext(businessId);
-    const days = Math.min(requestedDays, ctx.limits.maxAnalyticsDays);
+    const caps = getAnalyticsCapabilitiesForPlan(ctx.effectiveTier);
+    const days = clampAnalyticsDays(requestedDays, caps);
     const createdAt = { gte: this.windowStart(days) };
     const grouped = await this.prisma.analyticsEvent.groupBy({
       by: ['type'],
@@ -287,7 +291,6 @@ export class AnalyticsService {
       _count: { _all: true },
     });
 
-    const caps = getAnalyticsCapabilitiesForPlan(ctx.effectiveTier);
     const byType = this.emptyCounts();
     for (const item of grouped) {
       byType[item.type] = item._count._all;
@@ -319,7 +322,7 @@ export class AnalyticsService {
     const ctx = await this.planLimits.getBusinessPlanContext(businessId);
     const caps = getAnalyticsCapabilitiesForPlan(ctx.effectiveTier);
     if (!caps.reportExport) {
-      throw new ForbiddenException('Экспорт отчётов доступен на тарифе VIP');
+      throw new ForbiddenException('Экспорт отчётов доступен на тарифах PRO и VIP');
     }
 
     const requestedDays = query.days ?? 30;
@@ -366,7 +369,7 @@ export class AnalyticsService {
     }
 
     const requestedDays = query.days ?? 30;
-    const days = Math.min(requestedDays, ctx.limits.maxAnalyticsDays);
+    const days = clampAnalyticsDays(requestedDays, caps);
     const business = await this.prisma.business.findUnique({
       where: { id: businessId },
       select: { city: { select: { timezone: true } } },

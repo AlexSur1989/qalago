@@ -8,15 +8,29 @@ export interface AnalyticsCapabilities {
   viewTrend: boolean;
   actions: boolean;
   actionTrend: boolean;
+  /** BUSINESS+ — card impressions in overview */
+  impressions: boolean;
+  /** PRO+ — period aggregate CTR in overview */
+  ctr: boolean;
   trafficSources: boolean;
   conversion: boolean;
+  /** BUSINESS+ — previous period comparison */
   periodComparison: boolean;
+  /** BUSINESS+ — promotionViews summary; PRO+ adds per-promotion breakdown */
   promotionAnalytics: boolean;
+  promotionBreakdown: boolean;
   popularTimes: boolean;
   benchmark: boolean;
   recommendations: boolean;
   searchQueries: boolean;
   audienceGeography: boolean;
+  /** VIP — new/returning visitor view counts */
+  audience: boolean;
+  /** VIP — catalog item breakdown */
+  catalogAnalytics: boolean;
+  /** VIP — UV/session approx + period distinct (≤90d) in overview */
+  visitorMetrics: boolean;
+  /** PRO+ plan entitlement; still requires ANALYTICS_EXPORT permission */
   reportExport: boolean;
   /** @deprecated use viewTrend / actionTrend */
   summary: boolean;
@@ -39,6 +53,7 @@ function catalogLimits(tier: BusinessPlanTier) {
   return PLAN_CATALOG.find((p) => p.tier === tier)!.limits;
 }
 
+/** Stage 6.6B — canonical analytics entitlements (backend authoritative). */
 export function getAnalyticsCapabilitiesForPlan(tier: BusinessPlanTier): AnalyticsCapabilities {
   const limits = catalogLimits(tier);
   const maxDays = limits.maxAnalyticsDays;
@@ -57,20 +72,34 @@ export function getAnalyticsCapabilitiesForPlan(tier: BusinessPlanTier): Analyti
     viewTrend: true,
     actions: isBasicOrAbove,
     actionTrend: isBasicOrAbove,
+    impressions: isBasicOrAbove,
+    ctr: isPremiumOrAbove,
     trafficSources: isPremiumOrAbove,
     conversion: isPremiumOrAbove,
-    periodComparison: isPremiumOrAbove,
-    promotionAnalytics: isPremiumOrAbove,
+    periodComparison: isBasicOrAbove,
+    promotionAnalytics: isBasicOrAbove,
+    promotionBreakdown: isPremiumOrAbove,
     popularTimes: isVip,
     benchmark: isVip,
     recommendations: isVip,
     searchQueries: isPremiumOrAbove,
     audienceGeography: isVip,
-    reportExport: isVip,
+    audience: isVip,
+    catalogAnalytics: isVip,
+    visitorMetrics: isVip,
+    reportExport: isPremiumOrAbove,
     summary: true,
     trends: isBasicOrAbove,
     tier: legacyTier,
   };
+}
+
+export function clampAnalyticsDays(
+  requestedDays: number,
+  caps: Pick<AnalyticsCapabilities, 'maxDays'>,
+): number {
+  if (!Number.isFinite(requestedDays) || requestedDays < 1) return 1;
+  return Math.min(Math.floor(requestedDays), caps.maxDays);
 }
 
 export function getAnalyticsHeadline(tier: BusinessPlanTier): string {
@@ -98,12 +127,32 @@ export function getAnalyticsLockedSections(
   const vipLabel = publicPlanLabelRu(BusinessPlanTier.VIP);
 
   if (tier === BusinessPlanTier.FREE) {
-    locked.push({
-      id: 'actions',
-      label: 'Действия посетителей',
-      requiredPlan: BusinessPlanTier.BASIC,
-      message: `Доступно с «${businessLabel}»`,
-    });
+    locked.push(
+      {
+        id: 'actions',
+        label: 'Действия посетителей',
+        requiredPlan: BusinessPlanTier.BASIC,
+        message: `Доступно с «${businessLabel}»`,
+      },
+      {
+        id: 'impressions',
+        label: 'Показы',
+        requiredPlan: BusinessPlanTier.BASIC,
+        message: `Доступно с «${businessLabel}»`,
+      },
+      {
+        id: 'comparison',
+        label: 'Сравнение периодов',
+        requiredPlan: BusinessPlanTier.BASIC,
+        message: `Доступно с «${businessLabel}»`,
+      },
+      {
+        id: 'promotions',
+        label: 'Акции',
+        requiredPlan: BusinessPlanTier.BASIC,
+        message: `Доступно с «${businessLabel}»`,
+      },
+    );
   }
 
   if (tier === BusinessPlanTier.FREE || tier === BusinessPlanTier.BASIC) {
@@ -121,8 +170,8 @@ export function getAnalyticsLockedSections(
         message: `Доступно с «${proLabel}»`,
       },
       {
-        id: 'comparison',
-        label: 'Сравнение периодов',
+        id: 'ctr',
+        label: 'CTR',
         requiredPlan: BusinessPlanTier.PREMIUM,
         message: `Доступно с «${proLabel}»`,
       },
@@ -132,11 +181,29 @@ export function getAnalyticsLockedSections(
         requiredPlan: BusinessPlanTier.PREMIUM,
         message: `Поисковые запросы доступны с «${proLabel}»`,
       },
+      {
+        id: 'reportExport',
+        label: 'Экспорт отчётов',
+        requiredPlan: BusinessPlanTier.PREMIUM,
+        message: `Экспорт отчётов доступен с «${proLabel}»`,
+      },
     );
   }
 
   if (tier !== BusinessPlanTier.VIP) {
     locked.push(
+      {
+        id: 'audience',
+        label: 'Новые и вернувшиеся',
+        requiredPlan: BusinessPlanTier.VIP,
+        message: `Доступно с «${vipLabel}»`,
+      },
+      {
+        id: 'catalog',
+        label: 'Каталог',
+        requiredPlan: BusinessPlanTier.VIP,
+        message: `Аналитика каталога доступна на «${vipLabel}»`,
+      },
       {
         id: 'popularTimes',
         label: 'Популярные часы',
@@ -162,10 +229,10 @@ export function getAnalyticsLockedSections(
         message: `Аналитика аудитории доступна на тарифе «${vipLabel}»`,
       },
       {
-        id: 'reportExport',
-        label: 'Экспорт отчётов',
+        id: 'visitorMetrics',
+        label: 'Посетители и сессии',
         requiredPlan: BusinessPlanTier.VIP,
-        message: `Экспорт отчётов доступен на тарифе «${vipLabel}»`,
+        message: `Доступно с «${vipLabel}»`,
       },
     );
   }

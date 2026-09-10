@@ -22,8 +22,9 @@ describe('Stage 5F entitlement matrix', () => {
     expect(caps.trafficSources).toBe(false);
     const locked = getAnalyticsLockedSections(BusinessPlanTier.BASIC);
     expect(locked.map((s) => s.id)).toEqual(
-      expect.arrayContaining(['sources', 'conversion', 'comparison']),
+      expect.arrayContaining(['sources', 'conversion']),
     );
+    expect(locked.some((s) => s.id === 'comparison')).toBe(false);
   });
 
   it('PREMIUM: 90-day window with advanced metrics, VIP locked', () => {
@@ -67,10 +68,11 @@ describe('Stage 5F entitlement matrix', () => {
     expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.VIP).audienceGeography).toBe(true);
   });
 
-  it('Stage 5K: report export VIP-only', () => {
+  it('Stage 6.6B: report export PRO+ with permission', () => {
     expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.VIP).reportExport).toBe(true);
-    expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.PREMIUM).reportExport).toBe(false);
-    expect(getAnalyticsLockedSections(BusinessPlanTier.PREMIUM).some((s) => s.id === 'reportExport')).toBe(
+    expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.PREMIUM).reportExport).toBe(true);
+    expect(getAnalyticsCapabilitiesForPlan(BusinessPlanTier.BASIC).reportExport).toBe(false);
+    expect(getAnalyticsLockedSections(BusinessPlanTier.BASIC).some((s) => s.id === 'reportExport')).toBe(
       true,
     );
     expect(getAnalyticsLockedSections(BusinessPlanTier.VIP)).toHaveLength(0);

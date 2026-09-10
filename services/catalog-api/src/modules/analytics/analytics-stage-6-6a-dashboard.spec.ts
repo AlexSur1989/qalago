@@ -185,9 +185,9 @@ describe('Stage 6.6A rollup-backed dashboard', () => {
 
     const dashboard = await builder.build('biz-1', 30);
     expect(dashboard.promotions).toEqual(
-      expect.objectContaining({ actionsAvailable: false, promotionViews: 4 }),
+      expect.objectContaining({ promotionViews: 4, actionsAvailable: false }),
     );
-    expect((dashboard.promotions as { byPromotion: Array<{ actions: null }> }).byPromotion[0].actions).toBeNull();
+    expect((dashboard.promotions as { byPromotion: Array<{ actions: null }> }).byPromotion[0]?.actions).toBeNull();
     expect(dashboard.catalog).toEqual(expect.objectContaining({ actionsAvailable: false }));
   });
 
@@ -257,12 +257,12 @@ describe('Stage 6.6A rollup-backed dashboard', () => {
     );
   });
 
-  it('returns null CTR when impressions are zero', async () => {
-    const { prisma, builder } = createBuilder(BusinessPlanTier.BASIC);
+  it('returns null CTR when impressions are zero (PRO+)', async () => {
+    const { prisma, builder } = createBuilder(BusinessPlanTier.PREMIUM);
     prisma.analyticsDailyMetric.findMany.mockResolvedValue([dailyRow({ views: 5, impressions: 0 })]);
     prisma.analyticsEvent.groupBy.mockResolvedValue([]);
 
-    const dashboard = await builder.build('biz-1', 7);
+    const dashboard = await builder.build('biz-1', 30);
     expect((dashboard.overview as { ctr: null }).ctr).toBeNull();
   });
 

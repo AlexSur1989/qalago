@@ -6,6 +6,7 @@ import {
 import {
   AnalyticsCapabilities,
   deltaPercent,
+  clampAnalyticsDays,
   getAnalyticsCapabilitiesForPlan,
   getAnalyticsHeadline,
   getAnalyticsLockedSections,
@@ -64,7 +65,7 @@ export class AnalyticsDashboardBuilder {
   async build(businessId: string, requestedDays: number) {
     const ctx = await this.planLimits.getBusinessPlanContext(businessId);
     const caps = getAnalyticsCapabilitiesForPlan(ctx.effectiveTier);
-    const days = Math.min(requestedDays, caps.maxDays);
+    const days = clampAnalyticsDays(requestedDays, caps);
     const end = new Date();
 
     const businessMeta = await this.prisma.business.findUnique({
@@ -162,10 +163,12 @@ export class AnalyticsDashboardBuilder {
       );
     }
     if (caps.promotionAnalytics) {
-      promotions = this.buildPromotionsSection(dailyTotals, dimensionRows);
+      promotions = this.buildPromotionsSection(dailyTotals, dimensionRows, caps);
     }
-    if (caps.recommendations) {
+    if (caps.catalogAnalytics) {
       catalog = this.buildCatalogSection(dimensionRows);
+    }
+    if (caps.audience) {
       audience = this.buildAudienceVisitorTypeSection(dimensionRows);
     }
     if (caps.popularTimes) {
@@ -296,10 +299,14 @@ export class AnalyticsDashboardBuilder {
       const actions = sumIntentActionsFromDaily(dailyTotals);
       overview.totalCustomerActions = actions;
       overview.actions = actions;
+    }
+
+    if (caps.impressions) {
       overview.impressions = dailyTotals.impressions;
+    }
+
+    if (caps.ctr) {
       overview.ctr = periodCtrPercent(views, dailyTotals.impressions);
-      overview.uniqueVisitorsDailySumApprox = dailyTotals.uniqueVisitorsApprox;
-      overview.sessionsDailySumApprox = dailyTotals.sessionsApprox;
     }
 
     if (caps.conversion) {
@@ -307,7 +314,21 @@ export class AnalyticsDashboardBuilder {
       overview.conversionRate = viewToIntentConversionPercent(actions, views);
     }
 
-    await this.attachPeriodDistinctVisitors(overview, caps, days, businessId, periodFrom, periodTo);
+    if (caps.visitorMetrics) {
+      overview.uniqueVisitorsDailySumApprox = dailyTotals.uniqueVisitorsApprox;
+      overview.sessionsDailySumApprox = dailyTotals.sessionsApprox;
+      await this.attachPeriodDistinctVisitors(
+        overview,
+        caps,
+        days,
+        businessId,
+        periodFrom,
+        periodTo,
+      );
+    } else {
+      overview.uniqueVisitorsPeriodDistinct = null;
+      overview.sessionsPeriodDistinct = null;
+    }
 
     return overview;
   }
@@ -320,7 +341,7 @@ export class AnalyticsDashboardBuilder {
     periodFrom: Date,
     periodTo: Date,
   ) {
-    if (!caps.actions || days > RAW_EVENT_FALLBACK_MAX_DAYS) {
+    if (!caps.visitorMetrics || days > RAW_EVENT_FALLBACK_MAX_DAYS) {
       overview.uniqueVisitorsPeriodDistinct = null;
       overview.sessionsPeriodDistinct = null;
       return;
@@ -510,7 +531,16 @@ export class AnalyticsDashboardBuilder {
   private buildPromotionsSection(
     dailyTotals: ReturnType<typeof emptyDailyTotals>,
     dimensionRows: DimensionMetricRow[],
+    caps: AnalyticsCapabilities,
   ) {
+    const base = {
+      promotionViews: dailyTotals.promotionViews,
+    };
+
+    if (!caps.promotionBreakdown) {
+      return base;
+    }
+
     const promoMap = aggregateDimensionCounts(dimensionRows, AnalyticsDimensionType.PROMOTION);
     const byPromotion = [...promoMap.entries()]
       .map(([promotionId, views]) => ({
@@ -522,7 +552,7 @@ export class AnalyticsDashboardBuilder {
       .sort((a, b) => b.views - a.views);
 
     return {
-      promotionViews: dailyTotals.promotionViews,
+      ...base,
       byPromotion,
       actionsAvailable: false,
     };

@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-10 — Stage 6.6B: Analytics entitlements & backend security
+
+- Canonical plan capabilities (`impressions`, `ctr`, `audience`, `catalogAnalytics`, `visitorMetrics`, `promotionBreakdown`); overview/section server-side gating; BASIC period comparison; PRO export + `reportExport` on PREMIUM/VIP.
+- Docs: `docs/analytics/stage-6-6b-entitlements.md`.
+- Будущее: 6.6C UI for PRO export and upgrade UX.
+
 ## 2026-09-10 — Stage 6.6A.1: Analytics action semantics fix
 
 - Canonical **business intent actions** exclude `PROMOTION_VIEW`, `FAVORITE_REMOVE`, and content events; shared util + dashboard/summary/trends alignment.

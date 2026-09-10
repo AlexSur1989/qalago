@@ -21,13 +21,22 @@ describe('analytics-capabilities.util', () => {
     expect(caps.trafficSources).toBe(false);
   });
 
-  it('PREMIUM unlocks sources, conversion and comparison', () => {
+  it('BASIC unlocks comparison and impressions', () => {
+    const caps = getAnalyticsCapabilitiesForPlan(BusinessPlanTier.BASIC);
+    expect(caps.periodComparison).toBe(true);
+    expect(caps.impressions).toBe(true);
+    expect(caps.ctr).toBe(false);
+  });
+
+  it('PREMIUM unlocks sources, CTR and export', () => {
     const caps = getAnalyticsCapabilitiesForPlan(BusinessPlanTier.PREMIUM);
     expect(caps.maxDays).toBe(90);
     expect(caps.trafficSources).toBe(true);
     expect(caps.conversion).toBe(true);
-    expect(caps.periodComparison).toBe(true);
+    expect(caps.ctr).toBe(true);
+    expect(caps.reportExport).toBe(true);
     expect(caps.popularTimes).toBe(false);
+    expect(caps.visitorMetrics).toBe(false);
   });
 
   it('VIP unlocks advanced insights', () => {
@@ -50,10 +59,10 @@ describe('analytics-capabilities.util', () => {
     );
   });
 
-  it('BASIC locks premium analytics sections', () => {
+  it('BASIC locks PRO analytics sections', () => {
     const locked = getAnalyticsLockedSections(BusinessPlanTier.BASIC);
     expect(locked.map((item) => item.id)).toEqual(
-      expect.arrayContaining(['sources', 'conversion', 'comparison']),
+      expect.arrayContaining(['sources', 'conversion', 'reportExport']),
     );
   });
 });

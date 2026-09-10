@@ -63,15 +63,21 @@ export interface AnalyticsCapabilitiesDto {
   viewTrend: boolean;
   actions: boolean;
   actionTrend: boolean;
+  impressions?: boolean;
+  ctr?: boolean;
   trafficSources: boolean;
   conversion: boolean;
   periodComparison: boolean;
   promotionAnalytics: boolean;
+  promotionBreakdown?: boolean;
   popularTimes: boolean;
   benchmark: boolean;
   recommendations: boolean;
   searchQueries: boolean;
   audienceGeography: boolean;
+  audience?: boolean;
+  catalogAnalytics?: boolean;
+  visitorMetrics?: boolean;
   reportExport: boolean;
 }
 
