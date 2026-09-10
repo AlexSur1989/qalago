@@ -170,17 +170,30 @@ export interface AnalyticsPopularTimesDto {
 }
 
 export interface AnalyticsBenchmarkDto {
+  status?: 'AVAILABLE' | 'INSUFFICIENT_DATA';
   categoryTitle: string;
+  cohortSize?: number;
+  message?: string;
   businessViews: number;
   categoryAvgViews: number;
+  viewsDeltaPercent?: number | null;
   businessActions: number;
   categoryAvgActions: number;
+  actionsDeltaPercent?: number | null;
+  businessConversionRate?: number | null;
+  categoryAvgConversionRate?: number | null;
+  conversionDeltaPercent?: number | null;
+  businessCtr?: number | null;
+  categoryAvgCtr?: number | null;
+  ctrDeltaPercent?: number | null;
 }
 
 export interface AnalyticsRecommendationDto {
   id: string;
   title: string;
   body: string;
+  severity?: 'issue' | 'opportunity' | 'insight';
+  metricBasis?: string;
 }
 
 export interface BusinessAnalyticsDashboardDto {

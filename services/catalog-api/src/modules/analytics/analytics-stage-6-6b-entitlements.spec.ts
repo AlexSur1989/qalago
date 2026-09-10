@@ -48,6 +48,7 @@ describe('Stage 6.6B analytics entitlements', () => {
       analyticsEvent: { findMany: jest.fn().mockResolvedValue([]), groupBy: jest.fn().mockResolvedValue([]) },
       analyticsDailyMetric: {
         findMany: jest.fn().mockResolvedValue([dailyRow()]),
+        groupBy: jest.fn().mockResolvedValue([]),
       },
       analyticsDailyDimensionMetric: {
         findMany: jest.fn().mockResolvedValue([

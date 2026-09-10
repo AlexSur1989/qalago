@@ -75,7 +75,10 @@ describe('Stage 6.6A.1 business intent action semantics', () => {
         findMany: jest.fn(),
         groupBy: jest.fn().mockResolvedValue([]),
       },
-      analyticsDailyMetric: { findMany: jest.fn().mockResolvedValue([]) },
+      analyticsDailyMetric: {
+        findMany: jest.fn().mockResolvedValue([]),
+        groupBy: jest.fn().mockResolvedValue([]),
+      },
       analyticsDailyDimensionMetric: { findMany: jest.fn().mockResolvedValue([]) },
     };
     const planLimits = {
@@ -217,7 +220,7 @@ describe('Stage 6.6A.1 business intent action semantics', () => {
 
     const dashboard = await builder.build('biz-1', 30);
     const recs = dashboard.recommendations as Array<{ id: string }>;
-    expect(recs.some((r) => r.id === 'no-actions')).toBe(true);
+    expect(recs.some((r) => r.id === 'no-intent-actions')).toBe(true);
     expect(recs.some((r) => r.id === 'keep-going')).toBe(false);
   });
 });

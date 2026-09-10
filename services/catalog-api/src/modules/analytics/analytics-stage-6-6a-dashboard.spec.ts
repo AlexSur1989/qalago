@@ -46,6 +46,7 @@ describe('Stage 6.6A rollup-backed dashboard', () => {
       },
       analyticsDailyMetric: {
         findMany: jest.fn().mockResolvedValue([]),
+        groupBy: jest.fn().mockResolvedValue([]),
       },
       analyticsDailyDimensionMetric: {
         findMany: jest.fn().mockResolvedValue([]),

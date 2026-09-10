@@ -34,6 +34,8 @@ import {
 import { aggregateTrafficSources } from '../../common/utils/business-traffic-source.util';
 import { aggregateSearchQueries } from '../../common/utils/search-query-analytics.util';
 import { aggregateAudienceGeography } from '../../common/utils/audience-geography.util';
+import { buildCategoryBenchmark } from '../../common/utils/analytics-benchmark.util';
+import { buildDeterministicRecommendations } from '../../common/utils/analytics-recommendations.util';
 import {
   isBusinessIntentActionEventType,
   sumBusinessIntentActionsFromCounts,
@@ -176,11 +178,25 @@ export class AnalyticsDashboardBuilder {
         ? this.buildPopularTimesFromDimensions(dimensionRows, currentEvents, timezone, !useRollups)
         : this.buildPopularTimesFromEvents(currentEvents, timezone);
     }
-    if (caps.benchmark) {
-      benchmark = await this.buildBenchmark(businessId, businessMeta, counts);
-    }
-    if (caps.recommendations) {
-      recommendations = this.buildRecommendations(counts, caps);
+    if (
+      caps.benchmark &&
+      businessMeta?.categoryId &&
+      businessMeta.cityId &&
+      businessMeta.category &&
+      dateRange.length > 0
+    ) {
+      const rangeStart = dateRange[0]!;
+      const rangeEnd = dateRange[dateRange.length - 1]!;
+      benchmark = await buildCategoryBenchmark({
+        prisma: this.prisma,
+        subjectBusinessId: businessId,
+        categoryId: businessMeta.categoryId,
+        cityId: businessMeta.cityId,
+        categoryTitle: businessMeta.category.title,
+        rangeStart,
+        rangeEnd,
+        subjectTotals: dailyTotals,
+      });
     }
     if (caps.audienceGeography) {
       const views = dailyTotals.views;
@@ -189,6 +205,36 @@ export class AnalyticsDashboardBuilder {
         : await this.buildAudienceGeographyRaw(businessId, periodFrom, periodTo, views);
       audienceGeography = geography.buckets;
       audienceGeographyStatus = geography.status;
+    }
+
+    if (caps.recommendations) {
+      const searchAttributedViews =
+        sources?.find((s) => s.source === 'SEARCH')?.views ?? null;
+      let peakHourLabel: string | null = null;
+      if (popularTimes?.byHour?.length) {
+        const peak = popularTimes.byHour.reduce((best, row) =>
+          row.count > best.count ? row : best,
+        );
+        if (peak.count > 0) {
+          peakHourLabel = `с ${peak.hour}:00 до ${peak.hour + 1}:00`;
+        }
+      }
+      recommendations = buildDeterministicRecommendations({
+        caps,
+        subjectTotals: dailyTotals,
+        benchmark,
+        promotionViews: dailyTotals.promotionViews,
+        searchAttributedViews,
+        returningShare:
+          audience && typeof audience === 'object' && 'returningShare' in audience
+            ? (audience.returningShare as number | null)
+            : null,
+        classifiedAudienceViews:
+          audience && typeof audience === 'object' && 'totalClassified' in audience
+            ? Number(audience.totalClassified) || 0
+            : 0,
+        peakHourLabel,
+      });
     }
 
     return {
@@ -693,68 +739,6 @@ export class AnalyticsDashboardBuilder {
     return sumBusinessIntentActionsFromCounts(counts);
   }
 
-  private async buildBenchmark(
-    businessId: string,
-    business: {
-      category: { title: string };
-      categoryId: string;
-      cityId: string;
-    } | null,
-    counts: Partial<Record<AnalyticsEventType, number>>,
-  ) {
-    if (!business?.category) return null;
-
-    const since = utcWindowForLocalDate(
-      buildLocalMetricDateRange(30)[0],
-      null,
-    ).from;
-
-    const peers = await this.prisma.analyticsEvent.groupBy({
-      by: ['businessId', 'type'],
-      where: {
-        businessId: { not: businessId },
-        campaignId: null,
-        createdAt: { gte: since },
-        business: { categoryId: business.categoryId, cityId: business.cityId },
-      },
-      _count: { _all: true },
-    });
-
-    const peerIds = new Set(peers.map((p) => p.businessId));
-    const peerCount = peerIds.size;
-    if (peerCount < 5) {
-      return {
-        status: 'INSUFFICIENT_DATA' as const,
-        categoryTitle: business.category.title,
-        cohortSize: peerCount,
-        message: 'Недостаточно данных для сравнения с категорией (минимум 5 заведений).',
-      };
-    }
-
-    let peerViews = 0;
-    let peerActions = 0;
-    for (const row of peers) {
-      if (row.type === AnalyticsEventType.VIEW_BUSINESS) {
-        peerViews += row._count._all;
-      } else if (isBusinessIntentActionEventType(row.type)) {
-        peerActions += row._count._all;
-      }
-    }
-
-    const businessViews = counts[AnalyticsEventType.VIEW_BUSINESS] ?? 0;
-    const businessActions = this.sumActions(counts);
-
-    return {
-      status: 'AVAILABLE' as const,
-      categoryTitle: business.category.title,
-      businessViews,
-      categoryAvgViews: Math.round(peerViews / peerCount),
-      businessActions,
-      categoryAvgActions: Math.round(peerActions / peerCount),
-      cohortSize: peerCount,
-    };
-  }
-
   private buildConversion(
     dailyTotals: ReturnType<typeof emptyDailyTotals>,
     counts: Partial<Record<AnalyticsEventType, number>>,
@@ -826,45 +810,4 @@ export class AnalyticsDashboardBuilder {
     };
   }
 
-  private buildRecommendations(
-    counts: Partial<Record<AnalyticsEventType, number>>,
-    caps: AnalyticsCapabilities,
-  ) {
-    const views = counts[AnalyticsEventType.VIEW_BUSINESS] ?? 0;
-    const actions = this.sumActions(counts);
-    const calls = counts[AnalyticsEventType.CALL_CLICK] ?? 0;
-    const whatsapp = counts[AnalyticsEventType.WHATSAPP_CLICK] ?? 0;
-    const promotionViews = counts[AnalyticsEventType.PROMOTION_VIEW] ?? 0;
-    const items: Array<{ id: string; title: string; body: string }> = [];
-
-    if (views >= 20 && actions === 0) {
-      items.push({
-        id: 'no-actions',
-        title: 'Много просмотров, мало действий',
-        body: 'Проверьте телефон, WhatsApp и актуальность акций в карточке — клиенты смотрят, но не связываются.',
-      });
-    }
-    if (views >= 10 && calls + whatsapp === 0 && caps.actions) {
-      items.push({
-        id: 'contact-clicks',
-        title: 'Добавьте способы связи',
-        body: 'Укажите телефон и WhatsApp — это самые частые действия после просмотра карточки.',
-      });
-    }
-    if (promotionViews === 0 && views >= 15) {
-      items.push({
-        id: 'promotions',
-        title: 'Акции привлекают внимание',
-        body: 'Создайте или продлите акцию — просмотры акций помогают конвертировать интерес в визиты.',
-      });
-    }
-    if (items.length === 0) {
-      items.push({
-        id: 'keep-going',
-        title: 'Стабильная активность',
-        body: 'Продолжайте обновлять карточку и отслеживать динамику — регулярные изменения поддерживают интерес.',
-      });
-    }
-    return items;
-  }
 }

@@ -27,6 +27,14 @@
 
 ---
 
+## 2026-09-10 — Stage 6.6E: VIP benchmark & recommendations
+
+- Rollup-backed category benchmark (`AnalyticsDailyMetric.groupBy`): same city + primary category, ACTIVE peers, subject excluded, same local period; min 5 peers; per-metric min 5 for CTR/conversion averages.
+- Deterministic VIP recommendations (max 5): visibility, CTR, intent conversion, search, promotions visibility, returning views, popular hours; centralized thresholds in `analytics-insights.constants.ts`; no LLM, no named competitors.
+- Shared types: additive optional fields on `AnalyticsBenchmarkDto` / `AnalyticsRecommendationDto`.
+- Docs: `docs/analytics/stage-6-6e-benchmark-recommendations.md`.
+- Будущее: cohort median; lost-demand analytics (explicitly deferred); promotion/catalog action instrumentation.
+
 ## 2026-09-10 — Stage 6.6D: Business Web Analytics 360
 
 - Rebuilt `/statistics` with Analytics 360 sections, backend-driven capabilities/lockedSections, PRO+ export, manager `ANALYTICS_EXPORT`, intent actions, funnel, VIP audience/content.
