@@ -18,6 +18,8 @@ import { MonetizationController } from './monetization.controller';
 import { MonetizationService } from './monetization.service';
 import { OrderService } from './order.service';
 import { PricingService } from './pricing.service';
+import { PurchaseIntegrityService } from './purchase-integrity.service';
+import { PurchaseScopeService } from './purchase-scope.service';
 
 @Module({
   imports: [PlansModule, ScheduleModule.forRoot()],
@@ -26,6 +28,8 @@ import { PricingService } from './pricing.service';
     MonetizationService,
     PricingService,
     AvailabilityService,
+    PurchaseScopeService,
+    PurchaseIntegrityService,
     OrderService,
     CampaignProvisioningService,
     CampaignStatusService,

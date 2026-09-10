@@ -27,6 +27,15 @@
 
 ---
 
+## 2026-09-11 — Stage 6.7B: Monetization purchase integrity core
+
+- Central purchase scopes + same-business overlap checks (409 `PURCHASE_CONFLICT` with `reasonCode`).
+- Pending-order dedupe and optional checkout `idempotencyKey` on `Payment`.
+- Transaction-safe placement availability counts; VIP capacity isolated per `cityId`.
+- Category/promotion validation on direct `createOrder`; package lines validated inside checkout transaction.
+- Docs: `docs/monetization/stage-6-7b-purchase-integrity-core.md` (+ 6.7A audit retained).
+- Future: package snapshots, promotion on campaign, inventory reservation, renewal UX (6.7C–6.7D).
+
 ## 2026-09-10 — Stage 6.6QA: Analytics 360 final QA
 
 - Adversarial regression suite `analytics-stage-6-6qa-final.spec.ts` (entitlements, downgrade leakage, privacy thresholds, export auth, rollup-first 365).

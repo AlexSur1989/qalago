@@ -12,6 +12,7 @@ import { CampaignStatusService } from './campaign-status.service';
 import { OrderService } from './order.service';
 import { MonetizationAccessService } from './monetization-access.service';
 import { PricingService } from './pricing.service';
+import { PurchaseIntegrityService } from './purchase-integrity.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
 describe('Stage 4B.2 — VIP inventory reservation + order validation', () => {
@@ -172,6 +173,15 @@ describe('Stage 4B.2 — VIP inventory reservation + order validation', () => {
       provisionOrderCampaigns: jest.fn(),
     } as unknown as CampaignProvisioningService;
 
+    const purchaseIntegrity = {
+      assertCategoryEligibleForBusiness: jest.fn().mockResolvedValue(undefined),
+      assertPromotionEligible: jest.fn().mockResolvedValue(undefined),
+      assertProductPurchaseAllowed: jest.fn().mockResolvedValue(undefined),
+      acquirePurchaseIntentLock: jest.fn().mockResolvedValue(undefined),
+      findReusablePendingOrder: jest.fn().mockResolvedValue(null),
+      findOrderByIdempotencyKey: jest.fn().mockResolvedValue(null),
+    } as unknown as PurchaseIntegrityService;
+
     const service = new OrderService(
       prisma,
       access,
@@ -179,6 +189,7 @@ describe('Stage 4B.2 — VIP inventory reservation + order validation', () => {
       availability,
       provisioning,
       asAuditLogService(createMockAuditLog()),
+      purchaseIntegrity,
     );
 
     const user = { id: 'user-1', role: UserRole.BUSINESS, phone: '+7700', sub: 'user-1' };
@@ -303,10 +314,35 @@ describe('Stage 4B.2 — VIP inventory reservation + order validation', () => {
         type: MonetizationProductType.PACKAGE,
         isActive: true,
       });
+      const businessPackage = {
+        code: 'BUSINESS',
+        isActive: true,
+        price: 9900,
+        durationDays: 7,
+        items: [
+          {
+            product: {
+              id: 'p1',
+              code: 'FEATURED_BUSINESS',
+              type: MonetizationProductType.FEATURED_BUSINESS,
+            },
+            durationDays: 7,
+          },
+        ],
+      };
       prisma.$transaction = jest.fn().mockImplementation(async (fn) => {
         const tx = {
-          business: { findUniqueOrThrow: jest.fn().mockResolvedValue({ cityId: 'city-1' }) },
+          business: {
+            findUniqueOrThrow: jest.fn().mockResolvedValue({
+              cityId: 'city-1',
+              categoryId: 'cat-1',
+            }),
+          },
+          promotionPackage: {
+            findUnique: jest.fn().mockResolvedValue(businessPackage),
+          },
           order: {
+            findMany: jest.fn().mockResolvedValue([]),
             findUnique: jest.fn().mockResolvedValue(null),
             create: jest.fn().mockResolvedValue({
               id: 'ord-biz',
@@ -365,10 +401,35 @@ describe('Stage 4B.2 — VIP inventory reservation + order validation', () => {
         type: MonetizationProductType.PACKAGE,
         isActive: true,
       });
+      const startPackage = {
+        code: 'START',
+        isActive: true,
+        price: 6900,
+        durationDays: 7,
+        items: [
+          {
+            product: {
+              id: 'p1',
+              code: 'TOP_CATEGORY',
+              type: MonetizationProductType.TOP_CATEGORY,
+            },
+            durationDays: 7,
+          },
+        ],
+      };
       prisma.$transaction = jest.fn().mockImplementation(async (fn) => {
         const tx = {
-          business: { findUniqueOrThrow: jest.fn().mockResolvedValue({ cityId: 'city-1' }) },
+          business: {
+            findUniqueOrThrow: jest.fn().mockResolvedValue({
+              cityId: 'city-1',
+              categoryId: 'cat-1',
+            }),
+          },
+          promotionPackage: {
+            findUnique: jest.fn().mockResolvedValue(startPackage),
+          },
           order: {
+            findMany: jest.fn().mockResolvedValue([]),
             findUnique: jest.fn().mockResolvedValue(null),
             create: jest.fn().mockResolvedValue({
               id: 'ord-1',
@@ -448,6 +509,7 @@ describe('Stage 4B.2 — VIP inventory reservation + order validation', () => {
       prisma,
       availability,
       campaignStatus,
+      { assertProductPurchaseAllowed: jest.fn() } as unknown as PurchaseIntegrityService,
     );
 
     it('rejectCampaignsForCreative sets REJECTED (not capacity-consuming)', async () => {

@@ -7,6 +7,7 @@ import {
 import { AvailabilityService } from './availability.service';
 import { CampaignProvisioningService } from './campaign-provisioning.service';
 import { CampaignStatusService } from './campaign-status.service';
+import { PurchaseIntegrityService } from './purchase-integrity.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
 describe('CampaignProvisioningService', () => {
@@ -31,10 +32,15 @@ describe('CampaignProvisioningService', () => {
 
   const campaignStatus = new CampaignStatusService(availability);
 
+  const purchaseIntegrity = {
+    assertProductPurchaseAllowed: jest.fn().mockResolvedValue(undefined),
+  } as unknown as PurchaseIntegrityService;
+
   const service = new CampaignProvisioningService(
     prisma,
     availability,
     campaignStatus,
+    purchaseIntegrity,
   );
 
   beforeEach(() => jest.clearAllMocks());

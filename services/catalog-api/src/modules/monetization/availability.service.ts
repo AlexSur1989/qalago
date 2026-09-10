@@ -29,6 +29,8 @@ export type AvailabilityResult = {
   maxActiveCampaigns?: number;
 };
 
+type DbLike = Pick<PrismaService, 'adPlacement' | 'adCampaign'>;
+
 function hashLockKey(parts: string[]): number {
   const str = parts.join(':');
   let hash = 0;
@@ -46,7 +48,7 @@ export class AvailabilityService {
     return PRODUCT_PLACEMENT_MAP[productType as keyof typeof PRODUCT_PLACEMENT_MAP];
   }
 
-  /** Placement-specific statuses that consume inventory capacity. */
+  /** Placement-specific statuses that consume shared placement capacity. */
   resolveCapacityStatuses(placementCode: string): readonly AdCampaignStatus[] {
     if (placementCode === VIP_CAPACITY_PLACEMENT_CODE) {
       return [...VIP_CAPACITY_CAMPAIGN_STATUSES];
@@ -54,15 +56,18 @@ export class AvailabilityService {
     return [...CAPACITY_CAMPAIGN_STATUSES];
   }
 
-  async getPlacementByCode(code: string) {
-    return this.prisma.adPlacement.findUnique({ where: { code } });
+  async getPlacementByCode(code: string, db: DbLike = this.prisma) {
+    return db.adPlacement.findUnique({ where: { code } });
   }
 
   overlaps(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date): boolean {
     return aStart < bEnd && aEnd > bStart;
   }
 
-  async checkAvailability(params: AvailabilityCheckParams): Promise<AvailabilityResult> {
+  async checkAvailability(
+    params: AvailabilityCheckParams,
+    db: DbLike = this.prisma,
+  ): Promise<AvailabilityResult> {
     const placementCode = this.resolvePlacementCode(params.productType);
     if (!placementCode) {
       return { available: true };
@@ -72,7 +77,7 @@ export class AvailabilityService {
       return { available: true, placementCode };
     }
 
-    const placement = await this.getPlacementByCode(placementCode);
+    const placement = await this.getPlacementByCode(placementCode, db);
     if (!placement || !placement.isActive) {
       return {
         available: false,
@@ -93,16 +98,19 @@ export class AvailabilityService {
     if (placementCode === 'CATEGORY_TOP') {
       where.cityId = params.cityId;
       where.categoryId = params.categoryId ?? undefined;
-    } else if (placementCode === 'HOME_FEATURED') {
+    } else if (
+      placementCode === 'HOME_FEATURED' ||
+      placementCode === 'HOME_VIP_BANNER'
+    ) {
       where.cityId = params.cityId;
     }
 
-    const activeCount = await this.prisma.adCampaign.count({ where });
+    const activeCount = await db.adCampaign.count({ where });
     const available = activeCount < placement.maxActiveCampaigns;
 
     let nextAvailableAt: Date | null | undefined;
     if (!available) {
-      const earliest = await this.prisma.adCampaign.findFirst({
+      const earliest = await db.adCampaign.findFirst({
         where,
         orderBy: { endAt: 'asc' },
         select: { endAt: true },
@@ -119,6 +127,10 @@ export class AvailabilityService {
     };
   }
 
+  /**
+   * Serializes conflicting placement capacity checks.
+   * Lock identity: placement + city + category (when applicable).
+   */
   async acquirePlacementLock(
     tx: Prisma.TransactionClient,
     placementCode: string,
@@ -145,7 +157,7 @@ export class AvailabilityService {
       params.categoryId,
     );
 
-    const result = await this.checkAvailability(params);
+    const result = await this.checkAvailability(params, tx);
     if (!result.available) {
       monetizationBadRequest(
         MonetizationErrorCode.PLACEMENT_UNAVAILABLE,

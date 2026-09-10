@@ -147,6 +147,12 @@ export class CreateOrderDto {
   @ValidateNested({ each: true })
   @Type(() => CreateOrderItemDto)
   items?: CreateOrderItemDto[];
+
+  /** Optional idempotent checkout key (stored on Payment). */
+  @IsOptional()
+  @IsString()
+  @Length(8, 128)
+  idempotencyKey?: string;
 }
 
 export class ListByBusinessQueryDto {

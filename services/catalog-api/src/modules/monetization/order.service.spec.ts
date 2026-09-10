@@ -6,11 +6,13 @@ import {
   UserRole,
   AdModerationStatus,
 } from '@prisma/client';
+import { BadRequestException } from '@nestjs/common';
 import { AvailabilityService } from './availability.service';
 import { CampaignProvisioningService } from './campaign-provisioning.service';
 import { OrderService } from './order.service';
 import { MonetizationAccessService } from './monetization-access.service';
 import { PricingService } from './pricing.service';
+import { PurchaseIntegrityService } from './purchase-integrity.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
 
@@ -53,7 +55,24 @@ describe('OrderService', () => {
     provisionOrderCampaigns: jest.fn().mockResolvedValue(undefined),
   } as unknown as CampaignProvisioningService;
 
-  const service = new OrderService(prisma, access, pricing, availability, provisioning, asAuditLogService(createMockAuditLog()));
+  const purchaseIntegrity = {
+    assertCategoryEligibleForBusiness: jest.fn().mockResolvedValue(undefined),
+    assertPromotionEligible: jest.fn().mockResolvedValue(undefined),
+    assertProductPurchaseAllowed: jest.fn().mockResolvedValue(undefined),
+    acquirePurchaseIntentLock: jest.fn().mockResolvedValue(undefined),
+    findReusablePendingOrder: jest.fn().mockResolvedValue(null),
+    findOrderByIdempotencyKey: jest.fn().mockResolvedValue(null),
+  } as unknown as PurchaseIntegrityService;
+
+  const service = new OrderService(
+    prisma,
+    access,
+    pricing,
+    availability,
+    provisioning,
+    asAuditLogService(createMockAuditLog()),
+    purchaseIntegrity,
+  );
 
   const user = { id: 'user-1', role: UserRole.BUSINESS, phone: '+7700', sub: 'user-1' };
   const business = { cityId: 'city-1', categoryId: 'cat-1', ownerId: 'user-1' };
@@ -62,6 +81,14 @@ describe('OrderService', () => {
     jest.clearAllMocks();
     availability.checkAvailability = jest.fn().mockResolvedValue({ available: true });
     availability.assertAvailableInTransaction = jest.fn().mockResolvedValue(undefined);
+    purchaseIntegrity.assertCategoryEligibleForBusiness = jest
+      .fn()
+      .mockResolvedValue(undefined);
+    purchaseIntegrity.assertPromotionEligible = jest.fn().mockResolvedValue(undefined);
+    purchaseIntegrity.assertProductPurchaseAllowed = jest.fn().mockResolvedValue(undefined);
+    purchaseIntegrity.acquirePurchaseIntentLock = jest.fn().mockResolvedValue(undefined);
+    purchaseIntegrity.findReusablePendingOrder = jest.fn().mockResolvedValue(null);
+    purchaseIntegrity.findOrderByIdempotencyKey = jest.fn().mockResolvedValue(null);
   });
 
   it('11. create order snapshot price', async () => {
@@ -253,7 +280,12 @@ describe('OrderService', () => {
       currency: 'KZT',
       productPriceId: 'price-1',
     });
-    availability.checkAvailability = jest.fn().mockResolvedValue({ available: false });
+    purchaseIntegrity.assertProductPurchaseAllowed = jest.fn().mockImplementation(() => {
+      throw new BadRequestException({
+        message: 'Placement slot unavailable',
+        code: 'PLACEMENT_UNAVAILABLE',
+      });
+    });
 
     await expect(
       service.createOrder(user, {

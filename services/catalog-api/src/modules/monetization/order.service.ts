@@ -17,11 +17,19 @@ import { PACKAGE_PRODUCT_CODE } from './constants/monetization.constants';
 import { CreateOrderDto, CreateOrderItemDto } from './dto/monetization.dto';
 import {
   MonetizationErrorCode,
+  PurchaseConflictReason,
+  PurchaseConflictReasonType,
   monetizationBadRequest,
   monetizationNotFound,
 } from './errors/monetization.errors';
 import { MonetizationAccessService } from './monetization-access.service';
 import { PricingService } from './pricing.service';
+import { PurchaseIntegrityService } from './purchase-integrity.service';
+import {
+  PurchaseIntent,
+  buildPackagePurchaseIntent,
+  buildProductPurchaseIntent,
+} from './utils/purchase-intent.util';
 import { calcDiscountAmount, sumFinalPrices } from './utils/money.util';
 import { generateUniqueOrderNumber } from './utils/order-number.util';
 
@@ -48,6 +56,7 @@ export class OrderService {
     private readonly availability: AvailabilityService,
     private readonly provisioning: CampaignProvisioningService,
     private readonly auditLog: AuditLogService,
+    private readonly purchaseIntegrity: PurchaseIntegrityService,
   ) {}
 
   async createOrder(user: AuthUser, dto: CreateOrderDto) {
@@ -65,7 +74,24 @@ export class OrderService {
     }
 
     const lines = await this.buildProductLines(dto.businessId, business, dto.items!);
-    return this.persistOrder(user, dto.businessId, lines);
+    const intent =
+      dto.items!.length === 1
+        ? buildProductPurchaseIntent({
+            businessId: dto.businessId,
+            productCode: dto.items![0].productCode,
+            durationHours: dto.items![0].durationHours,
+            durationDays: dto.items![0].durationDays,
+            categoryId:
+              dto.items![0].categoryId ?? business.categoryId,
+            promotionId: dto.items![0].promotionId,
+            creativeId: dto.items![0].creativeId,
+            desiredStartAt: dto.items![0].desiredStartAt,
+          })
+        : undefined;
+    return this.persistOrder(user, dto.businessId, lines, {
+      intent,
+      idempotencyKey: dto.idempotencyKey,
+    });
   }
 
   private async createPackageOrder(
@@ -104,15 +130,10 @@ export class OrderService {
       );
     }
     if (dto.promotionId) {
-      const promotion = await this.prisma.promotion.findFirst({
-        where: { id: dto.promotionId, businessId: dto.businessId },
-      });
-      if (!promotion) {
-        monetizationBadRequest(
-          MonetizationErrorCode.PROMOTION_NOT_OWNED,
-          'Promotion not found or not owned by business',
-        );
-      }
+      await this.purchaseIntegrity.assertPromotionEligible(
+        dto.businessId,
+        dto.promotionId,
+      );
     }
 
     const hasVipBanner = pkg!.items.some(
@@ -120,31 +141,6 @@ export class OrderService {
     );
     if (hasVipBanner) {
       await this.assertOwnedVipCreative(dto.businessId, dto.creativeId);
-    }
-
-    const desiredStartAt = dto.desiredStartAt
-      ? new Date(dto.desiredStartAt)
-      : new Date();
-
-    for (const item of pkg!.items) {
-      const desiredEndAt = this.availability.addDuration(
-        desiredStartAt,
-        item.durationHours,
-        item.durationDays,
-      );
-      const availability = await this.availability.checkAvailability({
-        productType: item.product.type,
-        cityId: business.cityId,
-        categoryId: business.categoryId,
-        desiredStartAt,
-        desiredEndAt,
-      });
-      if (!availability.available) {
-        monetizationBadRequest(
-          MonetizationErrorCode.PLACEMENT_UNAVAILABLE,
-          `Package item ${item.product.code} unavailable`,
-        );
-      }
     }
 
     const discountPercent = this.pricing.packageDiscountPercent();
@@ -172,7 +168,18 @@ export class OrderService {
       },
     ];
 
-    return this.persistOrder(user, dto.businessId, lines);
+    const intent = buildPackagePurchaseIntent({
+      businessId: dto.businessId,
+      packageCode: dto.packageCode!,
+      promotionId: dto.promotionId,
+      creativeId: dto.creativeId,
+      desiredStartAt: dto.desiredStartAt,
+    });
+
+    return this.persistOrder(user, dto.businessId, lines, {
+      intent,
+      idempotencyKey: dto.idempotencyKey,
+    });
   }
 
   private async buildProductLines(
@@ -200,6 +207,24 @@ export class OrderService {
       }
 
       const categoryId = item.categoryId ?? business.categoryId;
+      await this.purchaseIntegrity.assertCategoryEligibleForBusiness(
+        { id: businessId, categoryId: business.categoryId },
+        categoryId,
+      );
+
+      if (product!.type === MonetizationProductType.PROMOTED_PROMOTION) {
+        if (!item.promotionId) {
+          monetizationBadRequest(
+            MonetizationErrorCode.PROMOTION_NOT_OWNED,
+            'promotionId required for PROMOTED_PROMOTION',
+          );
+        }
+        await this.purchaseIntegrity.assertPromotionEligible(
+          businessId,
+          item.promotionId,
+        );
+      }
+
       const priced = await this.pricing.priceProductLine(businessId, {
         productId: product!.id,
         cityId: business.cityId,
@@ -217,19 +242,15 @@ export class OrderService {
         item.durationDays,
       );
 
-      const availability = await this.availability.checkAvailability({
+      await this.purchaseIntegrity.assertProductPurchaseAllowed(this.prisma, {
         productType: product!.type,
+        businessId,
         cityId: business.cityId,
         categoryId,
+        promotionId: item.promotionId,
         desiredStartAt,
         desiredEndAt,
       });
-      if (!availability.available) {
-        monetizationBadRequest(
-          MonetizationErrorCode.PLACEMENT_UNAVAILABLE,
-          `Placement unavailable for ${item.productCode}`,
-        );
-      }
 
       lines.push({
         productId: product!.id,
@@ -258,6 +279,10 @@ export class OrderService {
     user: AuthUser,
     businessId: string,
     lines: PricedOrderLine[],
+    options?: {
+      intent?: PurchaseIntent;
+      idempotencyKey?: string;
+    },
   ) {
     const subtotal = sumFinalPrices(lines.map((l) => l.basePrice * l.quantity));
     const discountAmount = sumFinalPrices(
@@ -266,31 +291,35 @@ export class OrderService {
     const totalAmount = subtotal - discountAmount;
 
     return this.prisma.$transaction(async (tx) => {
-      for (const line of lines) {
-        if (line.productType === MonetizationProductType.PACKAGE) continue;
-        const meta = line.metadata as {
-          desiredStartAt?: string;
-          categoryId?: string;
-        };
-        const desiredStartAt = meta.desiredStartAt
-          ? new Date(meta.desiredStartAt)
-          : new Date();
-        const desiredEndAt = this.availability.addDuration(
-          desiredStartAt,
-          line.durationHours,
-          line.durationDays,
+      if (options?.idempotencyKey) {
+        const existingPayment = await this.purchaseIntegrity.findOrderByIdempotencyKey(
+          tx,
+          options.idempotencyKey,
         );
-        await this.availability.assertAvailableInTransaction(tx, {
-          productType: line.productType,
-          cityId: (await tx.business.findUniqueOrThrow({
-            where: { id: businessId },
-            select: { cityId: true },
-          })).cityId,
-          categoryId: meta.categoryId,
-          desiredStartAt,
-          desiredEndAt,
-        });
+        if (existingPayment?.order) {
+          return this.formatOrderResponse(existingPayment.order, {
+            idempotentReplay: true,
+            existingOrderId: existingPayment.order.id,
+          });
+        }
       }
+
+      if (options?.intent) {
+        await this.purchaseIntegrity.acquirePurchaseIntentLock(tx, options.intent);
+        const pending = await this.purchaseIntegrity.findReusablePendingOrder(
+          tx,
+          options.intent,
+        );
+        if (pending) {
+          return this.formatOrderResponse(pending, {
+            reusedPendingOrder: true,
+            existingOrderId: pending.id,
+            reasonCode: PurchaseConflictReason.PENDING_ORDER_EXISTS,
+          });
+        }
+      }
+
+      await this.assertPurchaseLinesAllowedInTransaction(tx, businessId, lines);
 
       const orderNumber = await generateUniqueOrderNumber(async (num) => {
         const existing = await tx.order.findUnique({ where: { orderNumber: num } });
@@ -326,15 +355,37 @@ export class OrderService {
         },
       });
 
-      const payment = await tx.payment.create({
-        data: {
-          orderId: order.id,
-          provider: PaymentProvider.MANUAL,
-          amount: totalAmount,
-          currency: 'KZT',
-          status: PaymentStatus.PENDING,
-        },
-      });
+      let payment;
+      try {
+        payment = await tx.payment.create({
+          data: {
+            orderId: order.id,
+            provider: PaymentProvider.MANUAL,
+            amount: totalAmount,
+            currency: 'KZT',
+            status: PaymentStatus.PENDING,
+            idempotencyKey: options?.idempotencyKey ?? null,
+          },
+        });
+      } catch (err) {
+        if (
+          options?.idempotencyKey &&
+          err instanceof Prisma.PrismaClientKnownRequestError &&
+          err.code === 'P2002'
+        ) {
+          const replay = await this.purchaseIntegrity.findOrderByIdempotencyKey(
+            tx,
+            options.idempotencyKey,
+          );
+          if (replay?.order) {
+            return this.formatOrderResponse(replay.order, {
+              idempotentReplay: true,
+              existingOrderId: replay.order.id,
+            });
+          }
+        }
+        throw err;
+      }
 
       const businessScope = await tx.business.findUniqueOrThrow({
         where: { id: businessId },
@@ -357,8 +408,103 @@ export class OrderService {
         tx,
       });
 
-      return this.formatOrder({ ...order, payments: [payment] });
+      return this.formatOrderResponse({ ...order, payments: [payment] });
     });
+  }
+
+  private async assertPurchaseLinesAllowedInTransaction(
+    tx: Prisma.TransactionClient,
+    businessId: string,
+    lines: PricedOrderLine[],
+  ) {
+    const business = await tx.business.findUniqueOrThrow({
+      where: { id: businessId },
+      select: { cityId: true, categoryId: true },
+    });
+
+    for (const line of lines) {
+      if (line.productType === MonetizationProductType.PACKAGE) {
+        const meta = line.metadata as {
+          packageCode?: string;
+          desiredStartAt?: string;
+          promotionId?: string;
+        };
+        if (!meta.packageCode) continue;
+
+        const pkg = await tx.promotionPackage.findUnique({
+          where: { code: meta.packageCode },
+          include: { items: { include: { product: true } } },
+        });
+        if (!pkg) continue;
+
+        const desiredStartAt = meta.desiredStartAt
+          ? new Date(meta.desiredStartAt)
+          : new Date();
+
+        for (const pkgItem of pkg.items) {
+          const desiredEndAt = this.availability.addDuration(
+            desiredStartAt,
+            pkgItem.durationHours,
+            pkgItem.durationDays,
+          );
+          await this.purchaseIntegrity.assertProductPurchaseAllowed(tx, {
+            productType: pkgItem.product.type,
+            businessId,
+            cityId: business.cityId,
+            categoryId: business.categoryId,
+            promotionId:
+              pkgItem.product.type === MonetizationProductType.PROMOTED_PROMOTION
+                ? meta.promotionId
+                : undefined,
+            desiredStartAt,
+            desiredEndAt,
+          });
+        }
+        continue;
+      }
+
+      const meta = line.metadata as {
+        desiredStartAt?: string;
+        categoryId?: string;
+        promotionId?: string;
+      };
+      const desiredStartAt = meta.desiredStartAt
+        ? new Date(meta.desiredStartAt)
+        : new Date();
+      const desiredEndAt = this.availability.addDuration(
+        desiredStartAt,
+        line.durationHours,
+        line.durationDays,
+      );
+
+      await this.purchaseIntegrity.assertProductPurchaseAllowed(tx, {
+        productType: line.productType,
+        businessId,
+        cityId: business.cityId,
+        categoryId: meta.categoryId ?? business.categoryId,
+        promotionId: meta.promotionId,
+        desiredStartAt,
+        desiredEndAt,
+      });
+    }
+  }
+
+  private formatOrderResponse(
+    order: Parameters<OrderService['formatOrder']>[0],
+    extras?: {
+      reusedPendingOrder?: boolean;
+      idempotentReplay?: boolean;
+      existingOrderId?: string;
+      reasonCode?: PurchaseConflictReasonType;
+    },
+  ) {
+    return {
+      ...this.formatOrder(order),
+      reusedPendingOrder: extras?.reusedPendingOrder ?? false,
+      idempotentReplay: extras?.idempotentReplay ?? false,
+      existingOrderId: extras?.existingOrderId,
+      reasonCode: extras?.reasonCode,
+    };
   }
 
   async listOrders(user: AuthUser, businessId: string) {

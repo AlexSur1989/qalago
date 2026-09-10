@@ -9,6 +9,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { AvailabilityService } from './availability.service';
 import { CampaignStatusService } from './campaign-status.service';
+import { PurchaseIntegrityService } from './purchase-integrity.service';
 import { PRODUCT_PLACEMENT_MAP } from './constants/monetization.constants';
 import {
   MonetizationErrorCode,
@@ -32,6 +33,7 @@ export class CampaignProvisioningService {
     private readonly prisma: PrismaService,
     private readonly availability: AvailabilityService,
     private readonly campaignStatus: CampaignStatusService,
+    private readonly purchaseIntegrity: PurchaseIntegrityService,
   ) {}
 
   private parseMeta(metadata: Prisma.JsonValue | null): OrderItemMeta {
@@ -232,10 +234,12 @@ export class CampaignProvisioningService {
       ctx.durationDays,
     );
 
-    await this.availability.assertAvailableInTransaction(tx, {
+    await this.purchaseIntegrity.assertProductPurchaseAllowed(tx, {
       productType: ctx.product.type,
+      businessId: ctx.businessId,
       cityId: ctx.cityId,
       categoryId: ctx.categoryId,
+      promotionId: ctx.metadata.promotionId,
       desiredStartAt,
       desiredEndAt,
     });

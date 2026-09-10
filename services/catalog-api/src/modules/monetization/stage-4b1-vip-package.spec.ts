@@ -36,10 +36,15 @@ describe('Stage 4B.1 — package VIP creative activation', () => {
     order: { findUnique: jest.fn() },
   } as unknown as PrismaService;
 
+  const purchaseIntegrity = {
+    assertProductPurchaseAllowed: jest.fn().mockResolvedValue(undefined),
+  } as never;
+
   const service = new CampaignProvisioningService(
     prisma,
     availability,
     campaignStatus,
+    purchaseIntegrity,
   );
 
   const placement = (code: string) => ({

@@ -94,6 +94,28 @@ describe('AvailabilityService', () => {
     expect(result.available).toBe(true);
   });
 
+  it('6.7B HOME_VIP_BANNER capacity is city-scoped', async () => {
+    prisma.adPlacement.findUnique = jest.fn().mockResolvedValue({
+      id: 'pl-vip',
+      code: 'HOME_VIP_BANNER',
+      isActive: true,
+      maxActiveCampaigns: 3,
+    });
+    prisma.adCampaign.count = jest.fn().mockImplementation(({ where }) => {
+      expect(where.cityId).toBe('city-atyrau');
+      return Promise.resolve(0);
+    });
+
+    const result = await service.checkAvailability({
+      productType: MonetizationProductType.VIP_BANNER,
+      cityId: 'city-atyrau',
+      desiredStartAt: new Date('2026-09-05'),
+      desiredEndAt: new Date('2026-09-12'),
+    });
+
+    expect(result.available).toBe(true);
+  });
+
   it('4B.2 VIP PENDING_MODERATION counts toward HOME_VIP_BANNER capacity', async () => {
     prisma.adPlacement.findUnique = jest.fn().mockResolvedValue({
       id: 'pl-1',
@@ -141,15 +163,20 @@ describe('AvailabilityService', () => {
   });
 
   it('38. advisory lock invoked in transaction', async () => {
-    const tx = {
-      $executeRaw: jest.fn().mockResolvedValue(undefined),
-    };
-    prisma.adPlacement.findUnique = jest.fn().mockResolvedValue({
+    const placementRow = {
       id: 'pl-1',
       code: 'HOME_VIP_BANNER',
       isActive: true,
       maxActiveCampaigns: 5,
-    });
+    };
+    const tx = {
+      $executeRaw: jest.fn().mockResolvedValue(undefined),
+      adPlacement: {
+        findUnique: jest.fn().mockResolvedValue(placementRow),
+      },
+      adCampaign: { count: jest.fn().mockResolvedValue(0), findFirst: jest.fn() },
+    };
+    prisma.adPlacement.findUnique = jest.fn().mockResolvedValue(placementRow);
     prisma.adCampaign.count = jest.fn().mockResolvedValue(0);
 
     await service.assertAvailableInTransaction(tx as never, {

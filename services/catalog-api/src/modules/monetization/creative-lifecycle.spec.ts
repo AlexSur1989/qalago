@@ -199,6 +199,7 @@ describe('VIP creative lifecycle', () => {
       prisma as never,
       {} as never,
       {} as never,
+      { assertProductPurchaseAllowed: jest.fn() } as never,
     );
 
     it('promotes SCHEDULED VIP campaign to PENDING_MODERATION', async () => {

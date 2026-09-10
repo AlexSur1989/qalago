@@ -1,8 +1,21 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
+
+/** Machine-readable purchase conflict reasons (Stage 6.7B). */
+export const PurchaseConflictReason = {
+  PENDING_ORDER_EXISTS: 'PENDING_ORDER_EXISTS',
+  ALREADY_ACTIVE: 'ALREADY_ACTIVE',
+  ALREADY_SCHEDULED: 'ALREADY_SCHEDULED',
+  TARGET_ALREADY_PROMOTED: 'TARGET_ALREADY_PROMOTED',
+  CATEGORY_NOT_ELIGIBLE: 'CATEGORY_NOT_ELIGIBLE',
+} as const;
+
+export type PurchaseConflictReasonType =
+  (typeof PurchaseConflictReason)[keyof typeof PurchaseConflictReason];
 
 export const MonetizationErrorCode = {
   PRODUCT_NOT_FOUND: 'PRODUCT_NOT_FOUND',
@@ -34,12 +47,25 @@ export const MonetizationErrorCode = {
   INVALID_EVENT_TYPE: 'INVALID_EVENT_TYPE',
   CAMPAIGN_PLACEMENT_MISMATCH: 'CAMPAIGN_PLACEMENT_MISMATCH',
   CATEGORY_REQUIRED: 'CATEGORY_REQUIRED',
+  PURCHASE_CONFLICT: 'PURCHASE_CONFLICT',
+  PENDING_ORDER_EXISTS: 'PENDING_ORDER_EXISTS',
+  CATEGORY_NOT_ELIGIBLE: 'CATEGORY_NOT_ELIGIBLE',
+  PROMOTION_NOT_ELIGIBLE: 'PROMOTION_NOT_ELIGIBLE',
 } as const;
 
 export type MonetizationErrorCodeType =
   (typeof MonetizationErrorCode)[keyof typeof MonetizationErrorCode];
 
-type ErrorBody = { message: string; code: MonetizationErrorCodeType };
+type ErrorBody = {
+  message: string;
+  code: MonetizationErrorCodeType;
+  reasonCode?: PurchaseConflictReasonType;
+  existingCampaignId?: string;
+  existingOrderId?: string;
+  activeUntil?: string;
+  nextAvailableAt?: string;
+  canRenew?: boolean;
+};
 
 export function monetizationBadRequest(
   code: MonetizationErrorCodeType,
@@ -60,4 +86,18 @@ export function monetizationForbidden(
   message: string,
 ): never {
   throw new ForbiddenException({ message, code } satisfies ErrorBody);
+}
+
+export function monetizationConflict(
+  code: MonetizationErrorCodeType,
+  reasonCode: PurchaseConflictReasonType,
+  message: string,
+  extras?: Omit<ErrorBody, 'message' | 'code' | 'reasonCode'>,
+): never {
+  throw new ConflictException({
+    message,
+    code,
+    reasonCode,
+    ...extras,
+  } satisfies ErrorBody);
 }
