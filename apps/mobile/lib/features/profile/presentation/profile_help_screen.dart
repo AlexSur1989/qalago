@@ -63,7 +63,7 @@ class ProfileHelpScreen extends StatelessWidget {
           Text(
             'QalaGo — городской гид и маркетплейс. MVP запущен в Уральске.',
             style: TextStyle(
-              color: Colors.black.withValues(alpha: 0.55),
+              color: AppTheme.textDark.withValues(alpha: 0.55),
               height: 1.4,
             ),
           ),
@@ -99,7 +99,7 @@ class _HelpCard extends StatelessWidget {
             Text(
               body,
               style: TextStyle(
-                color: Colors.black.withValues(alpha: 0.65),
+                color: AppTheme.textDark.withValues(alpha: 0.65),
                 height: 1.35,
               ),
             ),

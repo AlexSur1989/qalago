@@ -23,7 +23,7 @@ Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
         TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Отмена')),
         TextButton(
           onPressed: () => Navigator.pop(ctx, true),
-          style: TextButton.styleFrom(foregroundColor: Colors.red),
+          style: TextButton.styleFrom(foregroundColor: AppTheme.error),
           child: const Text('Продолжить'),
         ),
       ],
@@ -101,7 +101,7 @@ class ProfileScreen extends ConsumerWidget {
             const Text(
               'Профиль',
               style: TextStyle(
-                color: Colors.black,
+                color: AppTheme.textDark,
                 fontSize: 34,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 0,
@@ -164,7 +164,7 @@ class ProfileScreen extends ConsumerWidget {
             const Text(
               'Для бизнеса',
               style: TextStyle(
-                color: Colors.black,
+                color: AppTheme.textDark,
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
               ),
@@ -260,7 +260,7 @@ class ProfileScreen extends ConsumerWidget {
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppTheme.kzBlue,
                 minimumSize: const Size.fromHeight(58),
-                side: BorderSide(color: Colors.black.withValues(alpha: 0.08)),
+                side: BorderSide(color: AppTheme.textDark.withValues(alpha: 0.08)),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18),
                 ),
@@ -297,7 +297,7 @@ class _GuestProfileScreen extends StatelessWidget {
             const Text(
               'Профиль',
               style: TextStyle(
-                color: Colors.black,
+                color: AppTheme.textDark,
                 fontSize: 34,
                 fontWeight: FontWeight.w900,
               ),
@@ -313,7 +313,7 @@ class _GuestProfileScreen extends StatelessWidget {
               'Войдите в QalaGo',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.black,
+                color: AppTheme.textDark,
                 fontSize: 24,
                 fontWeight: FontWeight.w900,
               ),
@@ -323,7 +323,7 @@ class _GuestProfileScreen extends StatelessWidget {
               'Сохраняйте избранное, оставляйте отзывы и используйте персональные функции.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Color(0xFF7B8291),
+                color: AppTheme.textMuted,
                 fontSize: 16,
                 height: 1.35,
               ),
@@ -402,7 +402,7 @@ class _ProfileHeader extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.black.withValues(alpha: 0.09)),
+            border: Border.all(color: AppTheme.textDark.withValues(alpha: 0.09)),
           ),
           child: Material(
             color: Colors.transparent,
@@ -418,7 +418,7 @@ class _ProfileHeader extends StatelessWidget {
                     Text(
                       cityName,
                       style: const TextStyle(
-                        color: Colors.black,
+                        color: AppTheme.textDark,
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
                       ),
@@ -493,7 +493,7 @@ class _UserCard extends StatelessWidget {
                     Text(
                       name,
                       style: const TextStyle(
-                        color: Colors.black,
+                        color: AppTheme.textDark,
                         fontSize: 22,
                         fontWeight: FontWeight.w900,
                       ),
@@ -502,7 +502,7 @@ class _UserCard extends StatelessWidget {
                     Text(
                       phone,
                       style: const TextStyle(
-                        color: Color(0xFF7B8291),
+                        color: AppTheme.textMuted,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
@@ -527,7 +527,7 @@ class _UserCard extends StatelessWidget {
                         const SizedBox(width: 8),
                         const Icon(
                           Icons.location_on_outlined,
-                          color: Color(0xFF8A919F),
+                          color: AppTheme.textMuted,
                           size: 18,
                         ),
                         const SizedBox(width: 2),
@@ -535,7 +535,7 @@ class _UserCard extends StatelessWidget {
                           child: Text(
                             cityName,
                             style: const TextStyle(
-                              color: Color(0xFF7B8291),
+                              color: AppTheme.textMuted,
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
                             ),
@@ -547,7 +547,7 @@ class _UserCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, color: Color(0xFF8A919F), size: 30),
+              const Icon(Icons.chevron_right, color: AppTheme.textMuted, size: 30),
             ],
           ),
         ),
@@ -573,7 +573,7 @@ class _ProfileMenu extends StatelessWidget {
           for (var i = 0; i < items.length; i++) ...[
             _ProfileMenuRow(item: items[i]),
             if (i != items.length - 1)
-              Divider(height: 1, color: Colors.black.withValues(alpha: 0.06)),
+              Divider(height: 1, color: AppTheme.textDark.withValues(alpha: 0.06)),
           ],
         ],
       ),
@@ -610,12 +610,12 @@ class _ProfileMenuRow extends StatelessWidget {
       title: Text(
         item.title,
         style: const TextStyle(
-          color: Colors.black,
+          color: AppTheme.textDark,
           fontSize: 16,
           fontWeight: FontWeight.w700,
         ),
       ),
-      trailing: const Icon(Icons.chevron_right, color: Color(0xFF8A919F)),
+      trailing: const Icon(Icons.chevron_right, color: AppTheme.textMuted),
       onTap: item.onTap,
     );
   }
@@ -654,16 +654,16 @@ class _BusinessActionCard extends StatelessWidget {
         title: Text(
           title,
           style: const TextStyle(
-            color: Colors.black,
+            color: AppTheme.textDark,
             fontSize: 16,
             fontWeight: FontWeight.w900,
           ),
         ),
         subtitle: Text(
           subtitle,
-          style: const TextStyle(color: Color(0xFF7B8291), height: 1.25),
+          style: const TextStyle(color: AppTheme.textMuted, height: 1.25),
         ),
-        trailing: const Icon(Icons.chevron_right, color: Color(0xFF8A919F)),
+        trailing: const Icon(Icons.chevron_right, color: AppTheme.textMuted),
         onTap: onTap,
       ),
     );

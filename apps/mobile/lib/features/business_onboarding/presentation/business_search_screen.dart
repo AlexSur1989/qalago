@@ -6,6 +6,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../shared/models/models.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../utils/onboarding_errors.dart';
+import '../../../core/theme/app_theme.dart';
 
 class BusinessSearchScreen extends ConsumerStatefulWidget {
   const BusinessSearchScreen({super.key});
@@ -72,7 +73,7 @@ class _BusinessSearchScreenState extends ConsumerState<BusinessSearchScreen> {
           ),
           if (_error != null) ...[
             const SizedBox(height: 12),
-            Text(_error!, style: const TextStyle(color: Colors.red)),
+            Text(_error!, style: TextStyle(color: AppTheme.error)),
           ],
           if (_searched && _items.isEmpty) ...[
             const SizedBox(height: 24),

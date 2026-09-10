@@ -74,9 +74,8 @@ class BusinessCard extends StatelessWidget {
                           ),
                           child: Text(
                             business.categoryTitle!,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontSize: 12,
+                            style: context.tt.labelMedium?.copyWith(
+                              color: context.cs.primary,
                               fontWeight: FontWeight.w600,
                             ),
                           ),

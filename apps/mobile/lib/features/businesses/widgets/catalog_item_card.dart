@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../owner/presentation/widgets/service_menu_widgets.dart';
@@ -42,7 +43,7 @@ class CatalogItemCard extends StatelessWidget {
             if (sectionTitle != null && sectionTitle.isNotEmpty)
               Text(
                 sectionTitle,
-                style: const TextStyle(fontSize: 12, color: Color(0xFF687080)),
+                style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
               ),
             if (item['description'] != null)
               Text(item['description'] as String),
@@ -55,7 +56,7 @@ class CatalogItemCard extends StatelessWidget {
               )
             : const Text(
                 'Цена по запросу',
-                style: TextStyle(fontSize: 12, color: Color(0xFF687080)),
+                style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
               ),
       ),
     );

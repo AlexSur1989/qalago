@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-10 — Final mobile UI screen-by-screen cleanup
+
+- Migrated consumer/owner/profile/auth/onboarding screens from ad-hoc greys and hex literals to `AppTheme` + `ColorScheme` tokens; added surface/status/search tokens and `QalagoSearchField`.
+- Unified search UI on home, categories, search, promotions; extended `app_theme_test` (scaffold, search field, card @320).
+- Docs: `docs/mobile/ui-design-system-consistency.md` § Final screen-by-screen cleanup.
+
 ## 2026-09-10 — Mobile navigation & back behavior
 
 - Shared `navigation_utils` (pop vs source-aware fallback); consistent `BackButton` on search, category, business subpages, owner screens; business detail deep-link fallback by traffic source.

@@ -127,7 +127,7 @@ class MonetizationOrderDetailScreen extends ConsumerWidget {
                   ),
                 ),
               const SizedBox(height: 20),
-              Text('К оплате:', style: TextStyle(color: Colors.grey.shade700)),
+              Text('К оплате:', style: TextStyle(color: AppTheme.textMuted)),
               Text(
                 formatKztPrice(order.totalAmount),
                 style: const TextStyle(
@@ -140,7 +140,7 @@ class MonetizationOrderDetailScreen extends ConsumerWidget {
               MonetizationStatusChip(
                 label: orderStatusLabel(order.status),
                 color: order.status == 'AWAITING_PAYMENT'
-                    ? Colors.orange.shade800
+                    ? AppSemanticColors.warning
                     : AppTheme.kzBlue,
               ),
               const SizedBox(height: 24),
@@ -151,7 +151,7 @@ class MonetizationOrderDetailScreen extends ConsumerWidget {
               const SizedBox(height: 12),
               Text(
                 paymentMethodUnavailableNotice,
-                style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                style: TextStyle(color: AppTheme.textMuted, fontSize: 13),
               ),
               const SizedBox(height: 24),
               OutlinedButton(

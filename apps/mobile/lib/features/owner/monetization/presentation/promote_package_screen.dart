@@ -122,7 +122,7 @@ class _PromotePackageScreenState extends ConsumerState<PromotePackageScreen> {
               Text(pkg.name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20)),
               if (pkg.description != null) ...[
                 const SizedBox(height: 8),
-                Text(pkg.description!, style: TextStyle(color: Colors.grey.shade700)),
+                Text(pkg.description!, style: TextStyle(color: AppTheme.textMuted)),
               ],
               const SizedBox(height: 12),
               Text(
@@ -147,7 +147,7 @@ class _PromotePackageScreenState extends ConsumerState<PromotePackageScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
+                    color: AppTheme.primaryTint,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Text(packageVipNotice),
@@ -163,7 +163,7 @@ class _PromotePackageScreenState extends ConsumerState<PromotePackageScreen> {
               ],
               const SizedBox(height: 20),
               if (_loading) const Center(child: CircularProgressIndicator()),
-              if (_error != null) Text(_error!, style: const TextStyle(color: Colors.red)),
+              if (_error != null) Text(_error!, style: TextStyle(color: AppTheme.error)),
               if (_quote != null) ...[
                 MonetizationAvailabilityBanner(quote: _quote!),
                 const SizedBox(height: 12),

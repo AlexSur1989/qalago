@@ -379,7 +379,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                         Text(
                           desc,
                           style: const TextStyle(
-                            color: Color(0xFF596170),
+                            color: AppTheme.textMuted,
                             fontSize: 15,
                             height: 1.45,
                           ),
@@ -598,7 +598,7 @@ class _ReviewsPreviewBlock extends StatelessWidget {
     if (reviews.isEmpty) {
       return const Text(
         'Пока нет отзывов',
-        style: TextStyle(color: Color(0xFF687080)),
+        style: TextStyle(color: AppTheme.textMuted),
       );
     }
 
@@ -612,9 +612,9 @@ class _ReviewsPreviewBlock extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: const Color(0xFFF7FAFC),
+            color: AppTheme.surfaceSubtle,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE8EBF0)),
+            border: Border.all(color: AppTheme.borderSubtle),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -737,7 +737,7 @@ class _HeroPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFEAF8FC),
+      color: AppTheme.primaryTint,
       child: const Center(
         child: Icon(Icons.storefront_rounded, size: 64, color: AppTheme.kzBlue),
       ),
@@ -797,7 +797,7 @@ class _TitleBlock extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.w800,
-                  color: Colors.black,
+                  color: AppTheme.textDark,
                   height: 1.08,
                 ),
               ),
@@ -814,7 +814,7 @@ class _TitleBlock extends StatelessWidget {
           Text(
             categoryTitle,
             style: const TextStyle(
-              color: Color(0xFF7A8190),
+              color: AppTheme.textMuted,
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
@@ -826,16 +826,16 @@ class _TitleBlock extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
               color: openStatus == BusinessOpenStatus.open
-                  ? const Color(0xFFE8F8EE)
-                  : const Color(0xFFFCEFEE),
+                  ? AppTheme.openStatusBg
+                  : AppTheme.closedStatusBg,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               openLabel,
               style: TextStyle(
                 color: openStatus == BusinessOpenStatus.open
-                    ? const Color(0xFF1B7F4A)
-                    : const Color(0xFFC0392B),
+                    ? AppTheme.openStatus
+                    : AppTheme.closedStatus,
                 fontWeight: FontWeight.w700,
                 fontSize: 13,
               ),
@@ -848,7 +848,7 @@ class _TitleBlock extends StatelessWidget {
             children: [
               const Icon(
                 Icons.location_on_outlined,
-                color: Color(0xFF808896),
+                color: AppTheme.textMuted,
                 size: 22,
               ),
               const SizedBox(width: 8),
@@ -856,7 +856,7 @@ class _TitleBlock extends StatelessWidget {
                 child: Text(
                   address,
                   style: const TextStyle(
-                    color: Color(0xFF6F7684),
+                    color: AppTheme.textMuted,
                     fontSize: 15,
                   ),
                 ),
@@ -887,7 +887,7 @@ class _RatingPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: const Color(0xFFE9F8FC),
+        color: AppTheme.primaryTint,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -907,7 +907,7 @@ class _RatingPill extends StatelessWidget {
               fontWeight: FontWeight.w700,
               fontSize: reviewCount == 0 ? 13 : 15,
               color: reviewCount == 0
-                  ? const Color(0xFF7A8190)
+                  ? AppTheme.textMuted
                   : Colors.black,
             ),
           ),
@@ -916,7 +916,7 @@ class _RatingPill extends StatelessWidget {
             Text(
               '($reviewCount)',
               style: const TextStyle(
-                color: Color(0xFF7A8190),
+                color: AppTheme.textMuted,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -1005,7 +1005,7 @@ class _PrimaryAction extends StatelessWidget {
       color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: Color(0xFFE4E8EE)),
+        side: const BorderSide(color: AppTheme.borderSubtle),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -1056,7 +1056,7 @@ class _MiniLinkButton extends StatelessWidget {
       label: Text(label),
       style: OutlinedButton.styleFrom(
         foregroundColor: AppTheme.kzBlue,
-        side: const BorderSide(color: Color(0xFFD6ECF3)),
+        side: const BorderSide(color: AppTheme.primaryTintBorder),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );
@@ -1075,7 +1075,7 @@ class _SectionTitle extends StatelessWidget {
       style: const TextStyle(
         fontSize: 21,
         fontWeight: FontWeight.w800,
-        color: Colors.black,
+        color: AppTheme.textDark,
       ),
     );
   }
@@ -1111,10 +1111,10 @@ class _PromotionTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE8EBF0)),
+        border: Border.all(color: AppTheme.borderSubtle),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: AppTheme.textDark.withValues(alpha: 0.04),
             blurRadius: 14,
             offset: const Offset(0, 6),
           ),
@@ -1184,7 +1184,7 @@ class _PromotionTile extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: Color(0xFF687080),
+                        color: AppTheme.textMuted,
                         fontSize: 13,
                         height: 1.25,
                       ),
@@ -1195,7 +1195,7 @@ class _PromotionTile extends StatelessWidget {
                     Text(
                       expiryLabel,
                       style: const TextStyle(
-                        color: Color(0xFF9AA1AD),
+                        color: AppTheme.textMuted,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1222,7 +1222,7 @@ class _OfferPlaceholder extends StatelessWidget {
     return Container(
       width: 118,
       height: 92,
-      color: const Color(0xFFEAF8FC),
+      color: AppTheme.primaryTint,
       child: const Icon(Icons.local_offer_rounded, color: AppTheme.kzBlue),
     );
   }
@@ -1247,9 +1247,9 @@ class _WorkHoursBlock extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: const Color(0xFFF7FAFC),
+            color: AppTheme.surfaceSubtle,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFFE8EBF0)),
+            border: Border.all(color: AppTheme.borderSubtle),
           ),
           child: Column(
             children: [
@@ -1257,7 +1257,7 @@ class _WorkHoursBlock extends StatelessWidget {
                 children: [
                   const Icon(
                     Icons.schedule_rounded,
-                    color: Color(0xFF808896),
+                    color: AppTheme.textMuted,
                     size: 22,
                   ),
                   const SizedBox(width: 10),
@@ -1273,7 +1273,7 @@ class _WorkHoursBlock extends StatelessWidget {
                   Text(
                     today.$2,
                     style: const TextStyle(
-                      color: Color(0xFF596170),
+                      color: AppTheme.textMuted,
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1294,7 +1294,7 @@ class _WorkHoursBlock extends StatelessWidget {
                             style: TextStyle(
                               color: row.$1.contains('сегодня')
                                   ? AppTheme.kzBlue
-                                  : const Color(0xFF7A8190),
+                                  : AppTheme.textMuted,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -1304,7 +1304,7 @@ class _WorkHoursBlock extends StatelessWidget {
                           child: Text(
                             row.$2,
                             style: const TextStyle(
-                              color: Color(0xFF596170),
+                              color: AppTheme.textMuted,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -1348,7 +1348,7 @@ class _PhotosStrip extends StatelessWidget {
               errorBuilder: (_, _, _) => Container(
                 width: 128,
                 height: 94,
-                color: const Color(0xFFEAF8FC),
+                color: AppTheme.primaryTint,
                 child: const Icon(Icons.image_outlined, color: AppTheme.kzBlue),
               ),
             ),
@@ -1466,9 +1466,9 @@ class _ReviewFormState extends ConsumerState<_ReviewForm> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFF7FAFC),
+        color: AppTheme.surfaceSubtle,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE8EBF0)),
+        border: Border.all(color: AppTheme.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1522,17 +1522,17 @@ class _ModerationHint extends StatelessWidget {
   Widget build(BuildContext context) {
     final (color, icon, title) = switch (analysis.suggestedAction) {
       'approve' => (
-          const Color(0xFF1B7F4A),
+          AppTheme.openStatus,
           Icons.check_circle_outline,
           'Отзыв выглядит нормально',
         ),
       'reject' => (
-          const Color(0xFFC0392B),
+          AppTheme.closedStatus,
           Icons.warning_amber_rounded,
           'Возможные нарушения',
         ),
       _ => (
-          const Color(0xFFB7791F),
+          AppSemanticColors.warning,
           Icons.info_outline,
           'Рекомендуем проверить текст',
         ),
@@ -1570,7 +1570,7 @@ class _ModerationHint extends StatelessWidget {
                 Text(
                   detail,
                   style: const TextStyle(
-                    color: Color(0xFF596170),
+                    color: AppTheme.textMuted,
                     fontSize: 13,
                     height: 1.3,
                   ),
@@ -1594,9 +1594,9 @@ class _LoginToReviewPrompt extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF7FAFC),
+        color: AppTheme.surfaceSubtle,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE8EBF0)),
+        border: Border.all(color: AppTheme.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1608,7 +1608,7 @@ class _LoginToReviewPrompt extends StatelessWidget {
           const SizedBox(height: 8),
           const Text(
             'Отзывы доступны авторизованным пользователям.',
-            style: TextStyle(color: Color(0xFF596170), height: 1.35),
+            style: TextStyle(color: AppTheme.textMuted, height: 1.35),
           ),
           const SizedBox(height: 12),
           FilledButton(onPressed: onLogin, child: const Text('Войти')),
@@ -1662,7 +1662,7 @@ class _CityPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: AppTheme.textDark.withValues(alpha: 0.08),
             blurRadius: 14,
             offset: const Offset(0, 6),
           ),
@@ -1728,13 +1728,13 @@ class _ContactRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: const Color(0xFF808896)),
+          Icon(icon, size: 20, color: AppTheme.textMuted),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               label,
               style: const TextStyle(
-                color: Color(0xFF596170),
+                color: AppTheme.textMuted,
                 fontWeight: FontWeight.w600,
               ),
             ),

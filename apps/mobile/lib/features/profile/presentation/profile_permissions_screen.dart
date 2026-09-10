@@ -29,14 +29,14 @@ class ProfilePermissionsScreen extends ConsumerWidget {
           _PermissionSection(
             title: 'Можно',
             icon: Icons.check_circle_outline,
-            color: const Color(0xFF1B7F4A),
+            color: AppTheme.openStatus,
             items: definition.can,
           ),
           const SizedBox(height: 20),
           _PermissionSection(
             title: 'Нельзя',
             icon: Icons.block,
-            color: const Color(0xFFC0392B),
+            color: AppTheme.closedStatus,
             items: definition.cannot,
           ),
           const SizedBox(height: 24),
@@ -77,14 +77,14 @@ class _RoleHeader extends StatelessWidget {
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w900,
-              color: Colors.black,
+              color: AppTheme.textDark,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             summary,
             style: const TextStyle(
-              color: Color(0xFF596170),
+              color: AppTheme.textMuted,
               height: 1.35,
               fontSize: 15,
             ),
@@ -93,7 +93,7 @@ class _RoleHeader extends StatelessWidget {
           Text(
             'Приложения: $apps',
             style: const TextStyle(
-              color: Color(0xFF7A8190),
+              color: AppTheme.textMuted,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -184,9 +184,9 @@ class _TestAccountsCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF7FAFC),
+        color: AppTheme.surfaceSubtle,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE8EBF0)),
+        border: Border.all(color: AppTheme.borderSubtle),
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,10 +196,10 @@ class _TestAccountsCard extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
           ),
           SizedBox(height: 10),
-          Text('USER · +77000000003', style: TextStyle(color: Color(0xFF596170))),
-          Text('BUSINESS · +77000000002', style: TextStyle(color: Color(0xFF596170))),
-          Text('CITY_ADMIN · +77000000004', style: TextStyle(color: Color(0xFF596170))),
-          Text('ADMIN · +77000000001', style: TextStyle(color: Color(0xFF596170))),
+          Text('USER · +77000000003', style: TextStyle(color: AppTheme.textMuted)),
+          Text('BUSINESS · +77000000002', style: TextStyle(color: AppTheme.textMuted)),
+          Text('CITY_ADMIN · +77000000004', style: TextStyle(color: AppTheme.textMuted)),
+          Text('ADMIN · +77000000001', style: TextStyle(color: AppTheme.textMuted)),
           SizedBox(height: 8),
           Text(
             'OTP-код: 1234',

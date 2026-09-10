@@ -106,7 +106,7 @@ class OwnerGalleryScreen extends ConsumerWidget {
             children: [
               if (maxPhotos != null)
                 Material(
-                  color: atLimit ? Colors.orange.shade50 : AppTheme.kzBlue.withValues(alpha: 0.08),
+                  color: atLimit ? AppSemanticColors.warning.withValues(alpha: 0.12) : AppTheme.kzBlue.withValues(alpha: 0.08),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     child: Text(
@@ -114,7 +114,7 @@ class OwnerGalleryScreen extends ConsumerWidget {
                       '${atLimit ? ' · лимит достигнут' : ''}',
                       style: TextStyle(
                         fontSize: 13,
-                        color: atLimit ? Colors.orange.shade900 : AppTheme.kzBlue,
+                        color: atLimit ? AppSemanticColors.warning : AppTheme.kzBlue,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -129,7 +129,7 @@ class OwnerGalleryScreen extends ConsumerWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.photo_library_outlined,
-                                  size: 64, color: Colors.grey.shade400),
+                                  size: 64, color: AppTheme.textMuted),
                               const SizedBox(height: 16),
                               const Text(
                                 'Галерея пустая',
@@ -140,7 +140,7 @@ class OwnerGalleryScreen extends ConsumerWidget {
                               const Text(
                                 'Добавьте фото интерьера, блюд или услуг',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(color: Colors.black54),
+                                style: TextStyle(color: AppTheme.textMuted),
                               ),
                             ],
                           ),
@@ -171,7 +171,7 @@ class OwnerGalleryScreen extends ConsumerWidget {
                                   imageUrl,
                                   fit: BoxFit.cover,
                                   errorBuilder: (_, __, ___) => Container(
-                                    color: Colors.grey.shade200,
+                                    color: AppTheme.borderSubtle,
                                     child: const Icon(Icons.broken_image_outlined),
                                   ),
                                 ),

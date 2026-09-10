@@ -97,7 +97,7 @@ class _OwnerReviewsScreenState extends ConsumerState<OwnerReviewsScreen> {
                 return Text(
                   '${reviews.length} отзывов${unanswered > 0 ? ' · $unanswered без ответа' : ''}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.black54,
+                        color: AppTheme.textMuted,
                       ),
                 );
               }

@@ -11,7 +11,7 @@ Future<void> showCityPickerSheet(BuildContext context, WidgetRef ref) async {
 
   await showModalBottomSheet<void>(
     context: context,
-    backgroundColor: Colors.white,
+    backgroundColor: Theme.of(context).colorScheme.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
@@ -47,7 +47,7 @@ Future<void> showCityPickerSheet(BuildContext context, WidgetRef ref) async {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              color: isSelected ? AppTheme.kzBlue : Colors.black87,
+                              color: isSelected ? AppTheme.kzBlue : AppTheme.textDark,
                             ),
                           ),
                         ),
@@ -55,7 +55,7 @@ Future<void> showCityPickerSheet(BuildContext context, WidgetRef ref) async {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.06),
+                              color: AppTheme.textDark.withValues(alpha: 0.06),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Text(
@@ -63,7 +63,7 @@ Future<void> showCityPickerSheet(BuildContext context, WidgetRef ref) async {
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFF7B8291),
+                                color: AppTheme.textMuted,
                               ),
                             ),
                           ),
@@ -131,7 +131,7 @@ class CityPill extends StatelessWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.black.withValues(alpha: 0.09)),
+            border: Border.all(color: AppTheme.textDark.withValues(alpha: 0.09)),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -143,7 +143,7 @@ class CityPill extends StatelessWidget {
                 Text(
                   cityName,
                   style: const TextStyle(
-                    color: Colors.black,
+                    color: AppTheme.textDark,
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
                   ),

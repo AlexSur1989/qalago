@@ -18,6 +18,16 @@ class AppTheme {
   static const Color textDark = Color(0xFF1A1A1A);
   static const Color textMuted = Color(0xFF6B7280);
   static const Color outlineLight = Color(0xFFE0E4EA);
+  /// Subtle filled surfaces (info blocks, chips).
+  static const Color surfaceSubtle = Color(0xFFF7FAFC);
+  static const Color borderSubtle = Color(0xFFE8EBF0);
+  static const Color primaryTint = Color(0xFFEAF8FC);
+  static const Color primaryTintBorder = Color(0xFFD6ECF3);
+  static const Color openStatus = Color(0xFF1B7F4A);
+  static const Color closedStatus = Color(0xFFC0392B);
+  static const Color openStatusBg = Color(0xFFE8F8EE);
+  static const Color closedStatusBg = Color(0xFFFCEFEE);
+  static const Color error = Color(0xFFB3261E);
 
   static const double cardRadius = 20;
   static const double buttonRadius = 16;

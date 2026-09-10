@@ -12,6 +12,7 @@ import '../../../shared/widgets/city_picker.dart';
 import '../../../shared/widgets/qalago_logo.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
+import '../../../shared/widgets/qalago_search_field.dart';
 import '../../auth/providers/auth_provider.dart';
 import 'category_businesses_screen.dart';
 
@@ -75,45 +76,29 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                 onNotificationsTap: () => context.push('/notifications'),
               ),
               const SizedBox(height: 20),
-              TextField(
+              QalagoSearchField(
                 controller: _searchController,
                 textInputAction: TextInputAction.search,
+                hintText: 'Фильтр по названию категории...',
                 onChanged: (value) => setState(() => _query = value),
                 onSubmitted: (value) {
                   final q = value.trim();
                   if (q.isEmpty) return;
                   context.push('/search?q=${Uri.encodeComponent(q)}');
                 },
-                decoration: InputDecoration(
-                  hintText: 'Фильтр по названию категории...',
-                  prefixIcon: const Icon(
-                    Icons.search,
-                    color: Color(0xFF8A919F),
-                  ),
-                  suffixIcon: _query.isNotEmpty
-                      ? IconButton(
-                          tooltip: 'Очистить',
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() => _query = '');
-                          },
-                          icon: const Icon(Icons.cancel, color: Color(0xFF8A919F)),
-                        )
-                      : null,
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: Colors.black.withValues(alpha: 0.08),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 1.4,
-                    ),
-                  ),
-                ),
+                suffixIcon: _query.isNotEmpty
+                    ? IconButton(
+                        tooltip: 'Очистить',
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _query = '');
+                        },
+                        icon: Icon(
+                          Icons.cancel,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      )
+                    : null,
               ),
               const SizedBox(height: 12),
               Align(
@@ -129,14 +114,14 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                 'Категории',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.w900,
-                      color: Colors.black,
+                      color: AppTheme.textDark,
                     ),
               ),
               const SizedBox(height: 4),
               Text(
                 city.nameRu,
                 style: TextStyle(
-                  color: Colors.black.withValues(alpha: 0.55),
+                  color: AppTheme.textDark.withValues(alpha: 0.55),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -228,7 +213,7 @@ class _NotificationButton extends StatelessWidget {
         child: const Icon(
           Icons.notifications_none_rounded,
           size: 31,
-          color: Colors.black,
+          color: AppTheme.textDark,
         ),
       ),
     );
@@ -263,7 +248,7 @@ class _CategoriesGrid extends StatelessWidget {
               onTap: () => openCategory(context, category),
               child: Ink(
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF0F2F5),
+                  color: AppTheme.background,
                   borderRadius: BorderRadius.circular(16),
                   image: imageUrl.isNotEmpty
                       ? DecorationImage(

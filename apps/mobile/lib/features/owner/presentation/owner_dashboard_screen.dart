@@ -95,7 +95,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
                 Text(
                   '${ownerStatusLabel(business['status'] as String? ?? '')} · ${model.address}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey.shade700,
+                        color: AppTheme.textMuted,
                       ),
                 ),
                 const SizedBox(height: 16),
@@ -137,7 +137,7 @@ class _EmptyOwnerState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.storefront_outlined, size: 64, color: Colors.grey.shade400),
+            Icon(Icons.storefront_outlined, size: 64, color: AppTheme.textMuted),
             const SizedBox(height: 16),
             const Text(
               'Нет заведений',
@@ -200,7 +200,7 @@ class _DashboardContent extends StatelessWidget {
       children: [
         Text(
           '$views просмотров · $totalActions действий за 7 дней',
-          style: TextStyle(color: Colors.grey.shade700),
+          style: TextStyle(color: AppTheme.textMuted),
         ),
         const SizedBox(height: 16),
         SizedBox(
@@ -237,8 +237,8 @@ class _DashboardContent extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 11,
                               color: current > previous
-                                  ? Colors.green.shade700
-                                  : Colors.grey.shade600,
+                                  ? AppTheme.openStatus
+                                  : AppTheme.textMuted,
                             ),
                           ),
                       ],
@@ -266,7 +266,7 @@ class _DashboardContent extends StatelessWidget {
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Text(
                       'График действий по дням доступен на тарифе «Бизнес» и выше.',
-                      style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                      style: TextStyle(color: AppTheme.textMuted, fontSize: 13),
                     ),
                   ),
                 OwnerViewsChart(items: trendItems),
@@ -291,13 +291,13 @@ class _DashboardContent extends StatelessWidget {
                   '${entitlements['photos']?['overLimit'] == true ? ' (опубл. ${entitlements['photos']?['published']})' : ''}'
                   '\nТовары и услуги: ${usage['serviceItems'] ?? 0}${maxServiceItems != null ? ' / $maxServiceItems' : ''}'
                   '\nАктивные акции: ${usage['activePromotions'] ?? 0} / ${limits['maxActivePromotions'] ?? 1}',
-                  style: TextStyle(color: Colors.grey.shade700),
+                  style: TextStyle(color: AppTheme.textMuted),
                 ),
                 if (entitlements['overLimitNotice'] != null) ...[
                   const SizedBox(height: 8),
                   Text(
                     entitlements['overLimitNotice'] as String,
-                    style: TextStyle(color: Colors.orange.shade900, fontSize: 13),
+                    style: TextStyle(color: AppSemanticColors.warning, fontSize: 13),
                   ),
                 ],
               ],
@@ -372,13 +372,13 @@ class _DashboardContent extends StatelessWidget {
                   ],
                 ),
                 if (activePromotions.isEmpty)
-                  Text('Нет активных акций', style: TextStyle(color: Colors.grey.shade600))
+                  Text('Нет активных акций', style: TextStyle(color: AppTheme.textMuted))
                 else ...[
                   Text(
                     feedHint,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey.shade600,
+                      color: AppTheme.textMuted,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -415,7 +415,7 @@ class _DashboardContent extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   'VIP-баннер, TOP категории, продвижение акций и пакеты',
-                  style: TextStyle(color: Colors.grey.shade800),
+                  style: TextStyle(color: AppTheme.textMuted),
                 ),
                 const SizedBox(height: 12),
                 FilledButton(

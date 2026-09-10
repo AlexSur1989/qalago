@@ -29,7 +29,7 @@ class ProfileAboutScreen extends StatelessWidget {
                       children: [
                         TextSpan(
                           text: 'Q',
-                          style: TextStyle(color: Colors.black),
+                          style: TextStyle(color: AppTheme.textDark),
                         ),
                         TextSpan(
                           text: 'G',
@@ -51,7 +51,7 @@ class ProfileAboutScreen extends StatelessWidget {
                 Text(
                   'Версия 1.0.0 (MVP)',
                   style: TextStyle(
-                    color: Colors.black.withValues(alpha: 0.5),
+                    color: AppTheme.textDark.withValues(alpha: 0.5),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -86,7 +86,7 @@ class ProfileAboutScreen extends StatelessWidget {
             '© ${DateTime.now().year} QalaGo. Все права защищены.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.black.withValues(alpha: 0.45),
+              color: AppTheme.textDark.withValues(alpha: 0.45),
               fontSize: 13,
             ),
           ),
@@ -122,7 +122,7 @@ class _AboutRow extends StatelessWidget {
           trailing: Text(
             value,
             style: TextStyle(
-              color: Colors.black.withValues(alpha: 0.65),
+              color: AppTheme.textDark.withValues(alpha: 0.65),
               fontWeight: FontWeight.w600,
             ),
           ),

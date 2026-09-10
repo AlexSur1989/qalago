@@ -6,6 +6,7 @@ import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../owner_utils.dart';
 import 'widgets/owner_scaffold.dart';
+import '../../../core/theme/app_theme.dart';
 
 class OwnerMessagesScreen extends ConsumerWidget {
   const OwnerMessagesScreen({super.key});
@@ -81,7 +82,7 @@ class OwnerMessagesScreen extends ConsumerWidget {
                         Text(
                           dateLabel,
                           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: Colors.grey,
+                                color: AppTheme.textMuted,
                               ),
                         ),
                     ],

@@ -242,7 +242,7 @@ class _EmptyHint extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: Text(text, style: TextStyle(color: Colors.grey.shade600)),
+      child: Text(text, style: TextStyle(color: AppTheme.textMuted)),
     );
   }
 }
@@ -340,12 +340,12 @@ class _MemberCardState extends ConsumerState<_MemberCard> {
                     children: [
                       Text(displayName, style: const TextStyle(fontWeight: FontWeight.w700)),
                       const SizedBox(height: 4),
-                      Text(subtitle, style: TextStyle(color: Colors.grey.shade700, fontSize: 13)),
+                      Text(subtitle, style: TextStyle(color: AppTheme.textMuted, fontSize: 13)),
                       if (m.isManager && m.permissions.isNotEmpty) ...[
                         const SizedBox(height: 6),
                         Text(
                           summarizePermissionsRu(m.permissions),
-                          style: TextStyle(fontSize: 12, color: Colors.grey.shade800),
+                          style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
                         ),
                       ],
                     ],

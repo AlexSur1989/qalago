@@ -5,6 +5,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/owner_providers.dart';
 import 'widgets/owner_scaffold.dart';
+import '../../../core/theme/app_theme.dart';
 
 class OwnerSettingsScreen extends ConsumerStatefulWidget {
   const OwnerSettingsScreen({super.key});
@@ -108,7 +109,7 @@ class _OwnerSettingsScreenState extends ConsumerState<OwnerSettingsScreen> {
                   if (business != null) ...[
                     Text(
                       'Редактируйте карточку, часы и контакты в профиле.',
-                      style: TextStyle(color: Colors.grey.shade700),
+                      style: TextStyle(color: AppTheme.textMuted),
                     ),
                     const SizedBox(height: 12),
                     Wrap(
@@ -140,7 +141,7 @@ class _OwnerSettingsScreenState extends ConsumerState<OwnerSettingsScreen> {
                   ] else ...[
                     Text(
                       'Нет заведения — подайте заявку на модерацию.',
-                      style: TextStyle(color: Colors.grey.shade700),
+                      style: TextStyle(color: AppTheme.textMuted),
                     ),
                     const SizedBox(height: 12),
                     FilledButton(
@@ -163,7 +164,7 @@ class _OwnerSettingsScreenState extends ConsumerState<OwnerSettingsScreen> {
                   const SizedBox(height: 8),
                   Text(
                     'Вход по SMS-коду. Для смены номера обратитесь в поддержку.',
-                    style: TextStyle(color: Colors.grey.shade700),
+                    style: TextStyle(color: AppTheme.textMuted),
                   ),
                 ],
               ),

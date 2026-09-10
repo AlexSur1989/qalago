@@ -213,7 +213,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       'Вход в QalaGo',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.black,
+                        color: AppTheme.textDark,
                         fontSize: 32,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 0,
@@ -224,7 +224,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       'Войдите, чтобы сохранять избранное, оставлять отзывы и управлять профилем.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Color(0xFF7B8291),
+                        color: AppTheme.textMuted,
                         fontSize: 16,
                         height: 1.35,
                         fontWeight: FontWeight.w500,
@@ -254,7 +254,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           children: [
                             Expanded(
                               child: Divider(
-                                color: Colors.black.withValues(alpha: 0.08),
+                                color: AppTheme.textDark.withValues(alpha: 0.08),
                               ),
                             ),
                             const Padding(
@@ -262,14 +262,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               child: Text(
                                 'или',
                                 style: TextStyle(
-                                  color: Color(0xFF7B8291),
+                                  color: AppTheme.textMuted,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
                             Expanded(
                               child: Divider(
-                                color: Colors.black.withValues(alpha: 0.08),
+                                color: AppTheme.textDark.withValues(alpha: 0.08),
                               ),
                             ),
                           ],
@@ -321,7 +321,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(18),
                               borderSide: BorderSide(
-                                color: Colors.black.withValues(alpha: 0.09),
+                                color: AppTheme.textDark.withValues(alpha: 0.09),
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
@@ -444,7 +444,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         foregroundColor: Colors.black,
                         minimumSize: const Size.fromHeight(58),
                         side: BorderSide(
-                          color: Colors.black.withValues(alpha: 0.09),
+                          color: AppTheme.textDark.withValues(alpha: 0.09),
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(18),
@@ -459,7 +459,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         'Локальная разработка: OTP может приходить через backend debug.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.black.withValues(alpha: 0.45),
+                          color: AppTheme.textDark.withValues(alpha: 0.45),
                           fontSize: 12,
                         ),
                       ),
@@ -550,7 +550,7 @@ class _QalaGoLogo extends StatelessWidget {
         children: const [
           TextSpan(
             text: 'Qala',
-            style: TextStyle(color: Colors.black),
+            style: TextStyle(color: AppTheme.textDark),
           ),
           TextSpan(
             text: 'Go',

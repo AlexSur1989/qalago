@@ -6,6 +6,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/onboarding_providers.dart';
 import '../utils/onboarding_errors.dart';
+import '../../../core/theme/app_theme.dart';
 
 class BusinessApplyScreen extends ConsumerStatefulWidget {
   const BusinessApplyScreen({super.key, this.applicationId});
@@ -74,11 +75,11 @@ class _BusinessApplyScreenState extends ConsumerState<BusinessApplyScreen> {
           children: [
             const Text(
               'Заявка будет проверена администрацией QalaGo. Доступ к кабинету появится после одобрения.',
-              style: TextStyle(color: Colors.black54),
+              style: TextStyle(color: AppTheme.textMuted),
             ),
             if (_rejectionReason != null) ...[
               const SizedBox(height: 12),
-              Text('Причина отклонения: $_rejectionReason', style: const TextStyle(color: Colors.red)),
+              Text('Причина отклонения: $_rejectionReason', style: TextStyle(color: AppTheme.error)),
             ],
             const SizedBox(height: 24),
             TextFormField(

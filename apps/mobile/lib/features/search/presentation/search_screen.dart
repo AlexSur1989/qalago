@@ -10,6 +10,8 @@ import '../../../shared/navigation/open_business.dart';
 import '../../../core/location/user_location_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/theme_extensions.dart';
+import '../../../shared/widgets/qalago_search_field.dart';
 import '../../../shared/models/models.dart';
 import '../../analytics/providers/analytics_identity_provider.dart';
 import '../../analytics/widgets/tracked_business_card.dart';
@@ -198,48 +200,26 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     });
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF5F7FA),
-        elevation: 0,
-        scrolledUnderElevation: 0,
         leading: qalagoBackLeading(context, fallbackLocation: '/home'),
-        title: TextField(
+        title: QalagoSearchField(
           controller: _controller,
           autofocus: _query.isEmpty && _categoryId == null,
           textInputAction: TextInputAction.search,
+          hintText: 'Поиск заведений и услуг...',
           onChanged: _onQueryChanged,
           onSubmitted: (value) {
             _debounce?.cancel();
             setState(() => _query = value.trim());
             _syncRoute();
           },
-          decoration: InputDecoration(
-            hintText: 'Поиск заведений и услуг...',
-            prefixIcon: const Icon(Icons.search, color: Color(0xFF8A919F)),
-            suffixIcon: _controller.text.isNotEmpty
-                ? IconButton(
-                    tooltip: 'Очистить',
-                    onPressed: _clearQuery,
-                    icon: const Icon(Icons.cancel, color: Color(0xFF8A919F)),
-                  )
-                : null,
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(vertical: 12),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.08)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.08)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppTheme.kzBlue, width: 1.4),
-            ),
-          ),
+          suffixIcon: _controller.text.isNotEmpty
+              ? IconButton(
+                  tooltip: 'Очистить',
+                  onPressed: _clearQuery,
+                  icon: Icon(Icons.cancel, color: context.cs.onSurfaceVariant),
+                )
+              : null,
         ),
       ),
       body: Column(
@@ -276,7 +256,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                 query: _query,
                               ),
                               style: const TextStyle(
-                                color: Color(0xFF596171),
+                                color: AppTheme.textMuted,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -307,7 +287,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       child: Text(
                         'Введите название или выберите категорию',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Color(0xFF7B8291)),
+                        style: TextStyle(color: AppTheme.textMuted),
                       ),
                     ),
                   );
@@ -322,7 +302,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           Text(
                             _emptyMessage(city.nameRu),
                             textAlign: TextAlign.center,
-                            style: const TextStyle(color: Color(0xFF7B8291)),
+                            style: const TextStyle(color: AppTheme.textMuted),
                           ),
                           if (_hasNarrowFilters) ...[
                             const SizedBox(height: 16),
@@ -345,7 +325,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       return Text(
                         'Найдено: ${data.total}',
                         style: const TextStyle(
-                          color: Color(0xFF7B8291),
+                          color: AppTheme.textMuted,
                           fontWeight: FontWeight.w600,
                         ),
                       );

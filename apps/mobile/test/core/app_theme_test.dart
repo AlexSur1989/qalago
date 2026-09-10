@@ -5,6 +5,8 @@ import 'package:qalago_mobile/features/auth/presentation/dev_quick_login_panel.d
 import 'package:qalago_mobile/shared/models/models.dart';
 import 'package:qalago_mobile/shared/widgets/business_card.dart';
 import 'package:qalago_mobile/shared/widgets/error_view.dart';
+import 'package:qalago_mobile/shared/widgets/qalago_search_field.dart';
+import 'package:qalago_mobile/core/theme/theme_extensions.dart';
 
 Widget _themed(Widget child) {
   return MaterialApp(theme: AppTheme.light, home: Scaffold(body: child));
@@ -85,6 +87,49 @@ void main() {
     );
     expect(find.byType(Card), findsOneWidget);
     expect(find.text('Повторить'), findsOneWidget);
+  });
+
+  testWidgets('Scaffold background matches AppTheme', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Builder(
+          builder: (context) {
+            expect(Theme.of(context).scaffoldBackgroundColor, AppTheme.background);
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
+  });
+
+  testWidgets('QalagoSearchField renders with hint', (tester) async {
+    await tester.pumpWidget(
+      _themed(
+        const QalagoSearchField(hintText: 'Search places'),
+      ),
+    );
+    expect(find.text('Search places'), findsOneWidget);
+    expect(find.byIcon(Icons.search), findsOneWidget);
+  });
+
+  testWidgets('QalagoSearchField filled decoration', (tester) async {
+    await tester.pumpWidget(
+      Builder(
+        builder: (context) {
+          return MaterialApp(
+            theme: AppTheme.light,
+            home: Scaffold(
+              body: TextField(
+                decoration: context.qalagoSearchDecoration(hintText: 'Q'),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.decoration?.filled, isTrue);
   });
 
   testWidgets('BusinessCard fits narrow width', (tester) async {

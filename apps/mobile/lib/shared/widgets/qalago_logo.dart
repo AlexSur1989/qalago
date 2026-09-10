@@ -27,7 +27,7 @@ class QalaGoLogo extends StatelessWidget {
         children: const [
           TextSpan(
             text: 'Qala',
-            style: TextStyle(color: Colors.black),
+            style: TextStyle(color: AppTheme.textDark),
           ),
           TextSpan(
             text: 'Go',

@@ -59,7 +59,7 @@ class ProfileReviewsScreen extends ConsumerWidget {
                       'Откройте карточку заведения и поделитесь впечатлениями',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.black.withValues(alpha: 0.55),
+                        color: AppTheme.textDark.withValues(alpha: 0.55),
                         height: 1.35,
                       ),
                     ),
@@ -148,7 +148,7 @@ class _ReviewCard extends StatelessWidget {
                 Text(
                   dateLabel,
                   style: TextStyle(
-                    color: Colors.black.withValues(alpha: 0.45),
+                    color: AppTheme.textDark.withValues(alpha: 0.45),
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -159,7 +159,7 @@ class _ReviewCard extends StatelessWidget {
                 Text(
                   review.text!,
                   style: TextStyle(
-                    color: Colors.black.withValues(alpha: 0.7),
+                    color: AppTheme.textDark.withValues(alpha: 0.7),
                     height: 1.35,
                   ),
                 ),
@@ -188,7 +188,7 @@ class _ReviewCard extends StatelessWidget {
                       Text(
                         review.ownerReply!,
                         style: TextStyle(
-                          color: Colors.black.withValues(alpha: 0.75),
+                          color: AppTheme.textDark.withValues(alpha: 0.75),
                           height: 1.35,
                         ),
                       ),

@@ -89,14 +89,48 @@ Use `LayoutBuilder`, `Wrap`, `Flexible` for &lt;360dp widths; avoid horizontal o
 - `apps/mobile/lib/core/theme/app_theme.dart`
 - `apps/mobile/lib/core/theme/theme_extensions.dart`
 - `apps/mobile/lib/core/theme/app_spacing.dart`
+- `apps/mobile/lib/shared/widgets/qalago_search_field.dart`
 - `apps/mobile/test/core/app_theme_test.dart`
+
+## Final screen-by-screen cleanup (2026-09-10)
+
+**Screens audited:** 52 presentation screens under `apps/mobile/lib/features/**` plus shared widgets (cards, city picker, empty states, search).
+
+**Categories of changes**
+
+- Replaced routine `Color(0xFF…)` / `Colors.grey|black` UI chrome with `AppTheme` tokens (`textMuted`, `surfaceSubtle`, `borderSubtle`, `primaryTint`, open/closed status) and `ColorScheme` roles.
+- Unified **search fields** via `QalagoSearchField` + `context.qalagoSearchDecoration` on Home (tap-through), Categories, Search AppBar, Promotions.
+- Owner cabinet + monetization: greys/oranges/blues on dashboards, team, plan, campaigns aligned to the same tokens and semantic colors.
+- Profile, auth (non-brand), favorites, onboarding forms: secondary text and borders migrated off raw greys.
+- Promotions: category chips and promo cards use `colorScheme` for selected/unselected and surfaces.
+
+**Search field standard**
+
+- Filled `surface`, radius `AppTheme.inputRadius`, prefix search icon `onSurfaceVariant`, soft border `softBorderColor`, focus ring `primary` 2px, optional clear suffix — see `qalago_search_field.dart`.
+
+**Intentional remaining hardcoded colors (~100 `Colors.*`, ~36 hex literals in lib)**
+
+| Area | Why kept |
+|------|----------|
+| `app_theme.dart` | Source of truth / `ColorScheme` construction |
+| Home / business detail / photos | Hero gradients, scrims, white text/icons on media, `barrierColor` |
+| Map | Pin clusters, sheet shadows, map-adjacent controls |
+| Ads (VIP / sponsored) | Campaign creative and label contrast |
+| Auth login | Google / social brand assets |
+| Owner gallery menu on photos | White icon on dark thumbnail overlay |
+| Drawer header on brand blue | `Colors.white` on `AppTheme.kzBlue` (const header) |
+| Rating star | `Colors.amber` on business detail |
+
+**Typography:** Screen-level `TextStyle(` count remains where roles are explicit (metrics, moderation hints, ad copy); prefer `QalagoTheme` extensions for new work.
+
+**Responsive:** Existing `LayoutBuilder` / narrow tests retained; `BusinessCard` @320px in `app_theme_test.dart`.
 
 ## Manual APK checklist
 
-**Consumer:** Home, Categories, Search, Map, Favorites, Profile, Business detail, Promotions — background, cards, buttons, text hierarchy, numbers.
+**Consumer:** Главная, Категории, Поиск, Карта, Избранное, Профиль, Бизнес, Акции, Каталог, Фото, Отзывы — background, title, cards, button hierarchy, primary/secondary text, numbers, icons, fields, chips, contrast @320dp.
 
-**Auth:** DEV Login, OTP/social — primary/secondary buttons, inputs.
+**Auth:** Login, DEV Login — theme buttons/inputs; Google/Apple branding unchanged.
 
-**Owner:** Dashboard, profile, catalog, promotions, photos, statistics, team, plan, settings — same system as consumer.
+**Owner:** Dashboard, профиль, каталог, акции, фото, отзывы, статистика, команда, тариф, монетизация, настройки — KPI cards, forms, empty/error same tokens as consumer.
 
-**States:** loading, empty, error, disabled, dialog, bottom sheet — consistent styling and contrast.
+**States:** loading (`LoadingView`), empty, error (`ErrorView`), disabled buttons, destructive dialogs, bottom sheets (city picker) — surface/radius/actions from theme.

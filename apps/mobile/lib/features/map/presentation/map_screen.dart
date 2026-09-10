@@ -124,7 +124,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               border: Border.all(color: Colors.white, width: 3),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
+                  color: AppTheme.textDark.withValues(alpha: 0.2),
                   blurRadius: 8,
                 ),
               ],
@@ -263,12 +263,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                           hintText: 'Поиск заведений и услуг...',
                           prefixIcon: const Icon(
                             Icons.search,
-                            color: Color(0xFF8A919F),
+                            color: AppTheme.textMuted,
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide(
-                              color: Colors.black.withValues(alpha: 0.08),
+                              color: AppTheme.textDark.withValues(alpha: 0.08),
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
@@ -279,7 +279,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                             ),
                           ),
                           filled: true,
-                          fillColor: Colors.white,
+                          fillColor: AppTheme.light.colorScheme.surface,
                         ),
                       ),
                     ),
@@ -403,7 +403,7 @@ class _MapPin extends StatelessWidget {
                     : null,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.18),
+                    color: AppTheme.textDark.withValues(alpha: 0.18),
                     blurRadius: 10,
                     offset: const Offset(0, 5),
                   ),
@@ -469,7 +469,7 @@ class _MapBusinessPreview extends StatelessWidget {
                 width: 58,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.14),
+                  color: AppTheme.textDark.withValues(alpha: 0.14),
                   borderRadius: BorderRadius.circular(20),
                 ),
               ),
@@ -507,7 +507,7 @@ class _MapBusinessPreview extends StatelessWidget {
                       Text(
                         business.title,
                         style: const TextStyle(
-                          color: Colors.black,
+                          color: AppTheme.textDark,
                           fontSize: 18,
                           fontWeight: FontWeight.w900,
                         ),
@@ -518,7 +518,7 @@ class _MapBusinessPreview extends StatelessWidget {
                       Text(
                         business.categoryTitle ?? 'Заведение',
                         style: const TextStyle(
-                          color: Color(0xFF7B8291),
+                          color: AppTheme.textMuted,
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                         ),
@@ -527,7 +527,7 @@ class _MapBusinessPreview extends StatelessWidget {
                       Text(
                         business.address,
                         style: const TextStyle(
-                          color: Color(0xFF596171),
+                          color: AppTheme.textMuted,
                           fontSize: 13,
                         ),
                         maxLines: 2,
@@ -626,7 +626,7 @@ class _MapCitySheet extends StatelessWidget {
                   width: 58,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.14),
+                    color: AppTheme.textDark.withValues(alpha: 0.14),
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
@@ -635,7 +635,7 @@ class _MapCitySheet extends StatelessWidget {
               const Text(
                 'Заведения на карте',
                 style: TextStyle(
-                  color: Colors.black,
+                  color: AppTheme.textDark,
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 0,
@@ -650,7 +650,7 @@ class _MapCitySheet extends StatelessWidget {
                         itemCount: visible.length,
                         separatorBuilder: (_, _) => Divider(
                           height: 18,
-                          color: Colors.black.withValues(alpha: 0.06),
+                          color: AppTheme.textDark.withValues(alpha: 0.06),
                         ),
                         itemBuilder: (context, index) {
                           final business = visible[index];
@@ -710,7 +710,7 @@ class _MapCityTile extends StatelessWidget {
                 Text(
                   business.title,
                   style: const TextStyle(
-                    color: Colors.black,
+                    color: AppTheme.textDark,
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
                   ),
@@ -721,7 +721,7 @@ class _MapCityTile extends StatelessWidget {
                 Text(
                   business.categoryTitle ?? 'Заведение',
                   style: const TextStyle(
-                    color: Color(0xFF7B8291),
+                    color: AppTheme.textMuted,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -752,9 +752,9 @@ Widget _mapImagePlaceholder() {
   return Container(
     width: 96,
     height: 72,
-    color: const Color(0xFFF0F2F5),
+    color: AppTheme.background,
     child: const Center(
-      child: Icon(Icons.storefront, color: Color(0xFF8A919F)),
+      child: Icon(Icons.storefront, color: AppTheme.textMuted),
     ),
   );
 }

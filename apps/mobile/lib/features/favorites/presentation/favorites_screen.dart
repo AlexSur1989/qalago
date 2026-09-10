@@ -76,7 +76,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
               const Text(
                 'Избранное',
                 style: TextStyle(
-                  color: Colors.black,
+                  color: AppTheme.textDark,
                   fontSize: 34,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 0,
@@ -88,7 +88,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
                   const Text(
                     'Сортировка:',
                     style: TextStyle(
-                      color: Color(0xFF7B8291),
+                      color: AppTheme.textMuted,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -237,7 +237,7 @@ class _GuestFavoritesPrompt extends StatelessWidget {
           'Войдите, чтобы сохранять избранное',
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: Colors.black,
+            color: AppTheme.textDark,
             fontSize: 20,
             fontWeight: FontWeight.w900,
           ),
@@ -246,7 +246,7 @@ class _GuestFavoritesPrompt extends StatelessWidget {
         const Text(
           'Добавляйте места в избранное и возвращайтесь к ним в один тап.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Color(0xFF7B8291), height: 1.35),
+          style: TextStyle(color: AppTheme.textMuted, height: 1.35),
         ),
         const SizedBox(height: 24),
         FilledButton(
@@ -283,7 +283,7 @@ class _EmptyFavoritesAll extends StatelessWidget {
             'У вас пока нет избранных мест',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.black,
+              color: AppTheme.textDark,
               fontSize: 22,
               fontWeight: FontWeight.w900,
             ),
@@ -292,7 +292,7 @@ class _EmptyFavoritesAll extends StatelessWidget {
           const Text(
             'Добавляйте места в избранное, чтобы быстро вернуться к ним.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Color(0xFF7B8291), height: 1.35),
+            style: TextStyle(color: AppTheme.textMuted, height: 1.35),
           ),
         ],
       ),
@@ -325,7 +325,7 @@ class _EmptyFavoritesInCity extends StatelessWidget {
             'В $cityName пока нет избранных мест',
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: Colors.black,
+              color: AppTheme.textDark,
               fontSize: 22,
               fontWeight: FontWeight.w900,
             ),
@@ -334,7 +334,7 @@ class _EmptyFavoritesInCity extends StatelessWidget {
           const Text(
             'Избранные из других городов сохранены — смените город, чтобы увидеть их.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Color(0xFF7B8291), height: 1.35),
+            style: TextStyle(color: AppTheme.textMuted, height: 1.35),
           ),
         ],
       ),

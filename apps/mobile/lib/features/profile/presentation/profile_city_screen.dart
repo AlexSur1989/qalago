@@ -48,7 +48,7 @@ class ProfileCityScreen extends ConsumerWidget {
                 child: ListTile(
                   leading: Icon(
                     Icons.location_city_outlined,
-                    color: isSelected ? AppTheme.kzBlue : Colors.black54,
+                    color: isSelected ? AppTheme.kzBlue : AppTheme.textMuted,
                   ),
                   title: Row(
                     children: [
@@ -69,7 +69,7 @@ class ProfileCityScreen extends ConsumerWidget {
                             vertical: 3,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.06),
+                            color: AppTheme.textDark.withValues(alpha: 0.06),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Text(
@@ -77,7 +77,7 @@ class ProfileCityScreen extends ConsumerWidget {
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF7B8291),
+                              color: AppTheme.textMuted,
                             ),
                           ),
                         ),

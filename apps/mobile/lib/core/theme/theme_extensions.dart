@@ -39,4 +39,31 @@ extension QalagoTheme on BuildContext {
 
   Color primarySurfaceTint([double alpha = 0.12]) =>
       cs.primary.withValues(alpha: alpha);
+
+  Color get softBorderColor => cs.outline.withValues(alpha: 0.55);
+
+  Color get cardShadowColor => cs.onSurface.withValues(alpha: 0.08);
+
+  /// Unified in-app search field decoration (home tap-through, categories, search, promotions).
+  InputDecoration qalagoSearchDecoration({
+    required String hintText,
+    Widget? suffixIcon,
+  }) {
+    return InputDecoration(
+      hintText: hintText,
+      prefixIcon: Icon(Icons.search, color: cs.onSurfaceVariant),
+      suffixIcon: suffixIcon,
+      filled: true,
+      fillColor: cs.surface,
+      contentPadding: const EdgeInsets.symmetric(vertical: 16),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppTheme.inputRadius),
+        borderSide: BorderSide(color: softBorderColor),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppTheme.inputRadius),
+        borderSide: BorderSide(color: cs.primary, width: 2),
+      ),
+    );
+  }
 }

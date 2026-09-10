@@ -272,7 +272,7 @@ class OwnerPromotionsScreen extends ConsumerWidget {
                       'Создайте первую акцию для привлечения гостей',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.black.withValues(alpha: 0.55),
+                        color: AppTheme.textDark.withValues(alpha: 0.55),
                       ),
                     ),
                   ],
@@ -356,8 +356,8 @@ class OwnerPromotionsScreen extends ConsumerWidget {
                               _statusLabel(promo),
                               style: TextStyle(
                                 color: ownerIsPromotionLiveNow(promo)
-                                    ? Colors.green.shade700
-                                    : Colors.black54,
+                                    ? AppTheme.openStatus
+                                    : AppTheme.textMuted,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 13,
                               ),

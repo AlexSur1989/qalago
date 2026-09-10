@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_extensions.dart';
 import '../../features/auth/providers/auth_provider.dart';
 
 class EmptyCityView extends ConsumerWidget {
@@ -47,7 +48,7 @@ class EmptyCityView extends ConsumerWidget {
             width: compact ? 56 : 72,
             height: compact ? 56 : 72,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.cs.surface,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
@@ -67,10 +68,8 @@ class EmptyCityView extends ConsumerWidget {
           Text(
             isComingSoon ? '$cityName скоро откроется' : '$cityName скоро в QalaGo',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: compact ? 18 : 22,
+            style: context.tt.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
-              color: AppTheme.textDark,
               height: 1.25,
             ),
           ),
@@ -80,11 +79,7 @@ class EmptyCityView extends ConsumerWidget {
                 ? 'Мы готовим запуск города в QalaGo. Подключайте заведение заранее или выберите другой город.'
                 : 'Мы добавляем заведения и услуги. Пока каталог пуст — выберите другой город или предложите своё место.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: compact ? 14 : 15,
-              color: Colors.black.withValues(alpha: 0.62),
-              height: 1.45,
-            ),
+            style: context.bodySecondaryStyle?.copyWith(height: 1.45),
           ),
           SizedBox(height: compact ? 18 : 22),
           SizedBox(

@@ -114,7 +114,7 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
       children: [
         Text(
           productDescription(widget.productCode),
-          style: TextStyle(color: Colors.grey.shade700, height: 1.35),
+          style: TextStyle(color: AppTheme.textMuted, height: 1.35),
         ),
         if (isTop) ...[
           const SizedBox(height: 10),
@@ -122,7 +122,7 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
             productTopCategoryNote,
             style: TextStyle(
               fontSize: 13,
-              color: Colors.grey.shade600,
+              color: AppTheme.textMuted,
               fontStyle: FontStyle.italic,
             ),
           ),
@@ -220,14 +220,14 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
         ],
         if (_quoteError != null) ...[
           const SizedBox(height: 8),
-          Text(_quoteError!, style: const TextStyle(color: Colors.red)),
+          Text(_quoteError!, style: TextStyle(color: AppTheme.error)),
         ],
         if (isVip && _quote != null && _quote!.availability.available) ...[
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.blue.shade50,
+              color: AppTheme.primaryTint,
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Text(vipModerationNotice),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/theme/app_theme.dart';
 
 import '../../../core/auth/route_access.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -120,7 +121,7 @@ class _OwnerInvitationScreenState extends ConsumerState<OwnerInvitationScreen> {
                       const SizedBox(height: 8),
                       Text(
                         'Действует до ${MaterialLocalizations.of(context).formatMediumDate(_resolved!.expiresAt)}',
-                        style: TextStyle(color: Colors.grey.shade700),
+                        style: TextStyle(color: AppTheme.textMuted),
                       ),
                       const Spacer(),
                       if (_resolved!.status != 'PENDING') ...[
@@ -147,7 +148,7 @@ class _OwnerInvitationScreenState extends ConsumerState<OwnerInvitationScreen> {
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: _acceptMessage!.contains('принято')
-                                  ? Colors.green.shade800
+                                  ? AppTheme.openStatus
                                   : Theme.of(context).colorScheme.error,
                             ),
                           ),

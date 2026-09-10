@@ -23,7 +23,7 @@ class PublicMenuView extends StatelessWidget {
     if (groups.isEmpty && ungrouped.isEmpty) {
       return Text(
         'Пока нет позиций в меню',
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.black54),
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textMuted),
       );
     }
 

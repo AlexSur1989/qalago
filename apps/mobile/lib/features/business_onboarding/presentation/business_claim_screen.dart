@@ -5,6 +5,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/onboarding_providers.dart';
 import '../utils/onboarding_errors.dart';
+import '../../../core/theme/app_theme.dart';
 
 class BusinessClaimScreen extends ConsumerStatefulWidget {
   const BusinessClaimScreen({super.key, required this.businessId});
@@ -83,11 +84,11 @@ class _BusinessClaimScreenState extends ConsumerState<BusinessClaimScreen> {
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),
-            Text(data['address'] as String? ?? '', style: const TextStyle(color: Colors.black54)),
+            Text(data['address'] as String? ?? '', style: const TextStyle(color: AppTheme.textMuted)),
             const SizedBox(height: 16),
             const Text(
               'Заявка будет проверена администрацией QalaGo.',
-              style: TextStyle(color: Colors.black54),
+              style: TextStyle(color: AppTheme.textMuted),
             ),
             const SizedBox(height: 16),
             TextField(

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/navigation/navigation_utils.dart';
 import '../../../shared/navigation/open_business.dart';
+import '../../../core/theme/app_theme.dart';
 
 import '../../../core/providers/city_provider.dart';
 import '../../../shared/models/models.dart';
@@ -69,7 +70,7 @@ class CategoryBusinessesScreen extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Colors.black.withValues(alpha: 0.55),
+                color: AppTheme.textDark.withValues(alpha: 0.55),
               ),
             ),
           ],
@@ -207,14 +208,14 @@ class _SectionTitle extends StatelessWidget {
           style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w900,
-            color: Colors.black,
+            color: AppTheme.textDark,
           ),
         ),
         if (subtitle != null) ...[
           const SizedBox(height: 4),
           Text(
             subtitle!,
-            style: TextStyle(color: Colors.black.withValues(alpha: 0.55)),
+            style: TextStyle(color: AppTheme.textDark.withValues(alpha: 0.55)),
           ),
         ],
       ],

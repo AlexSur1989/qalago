@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/theme/app_theme.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -124,7 +125,7 @@ class _AnalyticsBody extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             dashboard['headline'] as String,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.black54),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textMuted),
           ),
         ],
         const SizedBox(height: 12),
@@ -171,7 +172,7 @@ class _AnalyticsBody extends StatelessWidget {
           ] else if (ownerAnalyticsIsLocked(dashboard, 'actions'))
             Text(
               ownerAnalyticsLockedMessage(dashboard, 'actions') ?? 'Доступно в тарифе Бизнес',
-              style: TextStyle(color: Colors.grey.shade700),
+              style: TextStyle(color: AppTheme.textMuted),
             ),
         ],
         _AcquisitionBlock(dashboard: dashboard, onUpgrade: onUpgrade),
@@ -260,7 +261,7 @@ class _InlineLockedHint extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Text(message, style: TextStyle(color: Colors.grey.shade700)),
+      child: Text(message, style: TextStyle(color: AppTheme.textMuted)),
     );
   }
 }
@@ -368,7 +369,7 @@ class _SearchQueriesSection extends StatelessWidget {
             if (otherCount != null && otherCount! > 0)
               Text(
                 'Другие запросы — ${ownerAnalyticsFormatCount(otherCount)}',
-                style: TextStyle(color: Colors.grey.shade700),
+                style: TextStyle(color: AppTheme.textMuted),
               ),
           ],
         ),
@@ -393,7 +394,7 @@ class _DeferredSourcesSection extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Детальная атрибуция источников появится позже.',
-              style: TextStyle(color: Colors.grey.shade700),
+              style: TextStyle(color: AppTheme.textMuted),
             ),
           ],
         ),

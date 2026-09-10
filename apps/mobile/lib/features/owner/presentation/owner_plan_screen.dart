@@ -120,7 +120,7 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
               children: [
                 if (_message != null)
                   Card(
-                    color: Colors.green.shade50,
+                    color: AppTheme.openStatusBg,
                     child: Padding(
                       padding: const EdgeInsets.all(12),
                       child: Text(_message!),
@@ -147,14 +147,14 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                           '${entitlements['serviceItems']?['overLimit'] == true ? ' (публ. ${entitlements['serviceItems']?['published']})' : ''}'
                           ' · Акции: ${usage['activePromotions'] ?? 0} / ${limits['maxActivePromotions'] ?? 1}'
                           '${entitlements['activePromotions']?['overLimit'] == true ? ' (публ. ${entitlements['activePromotions']?['published']})' : ''}',
-                          style: TextStyle(color: Colors.grey.shade700),
+                          style: TextStyle(color: AppTheme.textMuted),
                         ),
                         if (entitlements['overLimitNotice'] != null) ...[
                           const SizedBox(height: 8),
                           Text(
                             entitlements['overLimitNotice'] as String,
                             style: TextStyle(
-                              color: Colors.orange.shade900,
+                              color: AppSemanticColors.warning,
                               fontSize: 13,
                             ),
                           ),
@@ -163,7 +163,7 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                           const SizedBox(height: 4),
                           Text(
                             'До ${DateTime.parse(expiresAt).toLocal().toString().split(' ').first}',
-                            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                            style: TextStyle(color: AppTheme.textMuted, fontSize: 13),
                           ),
                         ],
                       ],
@@ -195,7 +195,7 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                       side: BorderSide(
-                        color: isCurrent ? AppTheme.kzBlue : Colors.grey.shade200,
+                        color: isCurrent ? AppTheme.kzBlue : AppTheme.borderSubtle,
                         width: isCurrent ? 2 : 1,
                       ),
                     ),
@@ -233,7 +233,7 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                           ),
                           Text(
                             '${_formatPrice(price)} / ${_periodLabel(periodDays)}',
-                            style: TextStyle(color: Colors.grey.shade700),
+                            style: TextStyle(color: AppTheme.textMuted),
                           ),
                           const SizedBox(height: 10),
                           ...features.map(
@@ -253,7 +253,7 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                             Text(
                               'Рекламные размещения приобретаются отдельно.',
                               style: TextStyle(
-                                color: Colors.grey.shade600,
+                                color: AppTheme.textMuted,
                                 fontSize: 13,
                               ),
                             ),
@@ -300,7 +300,7 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                         Text(
                           'Рекламные размещения приобретаются отдельно. '
                           'Скидка тарифа применяется к отдельным рекламным продуктам согласно условиям.',
-                          style: TextStyle(color: Colors.grey.shade700),
+                          style: TextStyle(color: AppTheme.textMuted),
                         ),
                         const SizedBox(height: 10),
                         OutlinedButton(
@@ -325,7 +325,7 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                           const SizedBox(height: 8),
                           Text(
                             'Оплата имитируется без списания. Платные тарифы активируются на 30 дней.',
-                            style: TextStyle(color: Colors.grey.shade700),
+                            style: TextStyle(color: AppTheme.textMuted),
                           ),
                         ],
                       ),
@@ -338,7 +338,7 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                       child: Text(
                         'Оформление подписки в приложении пока недоступно. '
                         'Информация о тарифе отображается для справки.',
-                        style: TextStyle(color: Colors.grey.shade700),
+                        style: TextStyle(color: AppTheme.textMuted),
                       ),
                     ),
                   ),

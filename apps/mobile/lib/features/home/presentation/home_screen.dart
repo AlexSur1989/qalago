@@ -12,6 +12,7 @@ import '../../../core/location/user_location_provider.dart';
 import '../../../core/providers/city_catalog_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/qalago_search_field.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/utils/business_rank.dart';
 import '../../../shared/widgets/qalago_logo.dart';
@@ -342,11 +343,11 @@ class _NotificationIcon extends StatelessWidget {
         isLabelVisible: count > 0,
         label: Text('$count'),
         backgroundColor: AppTheme.kzGold,
-        textColor: Colors.black,
-        child: const Icon(
+        textColor: AppTheme.textDark,
+        child: Icon(
           Icons.notifications_none_rounded,
           size: 31,
-          color: Colors.black,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
     );
@@ -360,28 +361,10 @@ class _SearchBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return QalagoSearchField(
+      readOnly: true,
       onTap: onTap,
-      child: AbsorbPointer(
-        child: TextField(
-          readOnly: true,
-          decoration: InputDecoration(
-            hintText: 'Поиск заведений и услуг...',
-            prefixIcon: const Icon(Icons.search, color: Color(0xFF8A919F)),
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(vertical: 18),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.08)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: AppTheme.kzBlue, width: 1.4),
-            ),
-          ),
-        ),
-      ),
+      hintText: 'Поиск заведений и услуг...',
     );
   }
 }
@@ -460,11 +443,11 @@ class _CategoryPhotoCard extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            color: const Color(0xFFF0F2F5),
+            color: AppTheme.background,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: AppTheme.textDark.withValues(alpha: 0.08),
                 blurRadius: 16,
                 offset: const Offset(0, 8),
               ),
@@ -542,7 +525,7 @@ class _SectionHeader extends StatelessWidget {
               child: Text(
                 title,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Colors.black,
+                  color: AppTheme.textDark,
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 0,
@@ -578,7 +561,7 @@ class _SectionHeader extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             subtitle!,
-            style: TextStyle(color: Colors.black.withValues(alpha: 0.55)),
+            style: TextStyle(color: AppTheme.textDark.withValues(alpha: 0.55)),
           ),
         ],
       ],
@@ -686,7 +669,7 @@ class _PromotionCard extends StatelessWidget {
                     Text(
                       promotion.title,
                       style: const TextStyle(
-                        color: Colors.black,
+                        color: AppTheme.textDark,
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
                         height: 1.15,
@@ -698,7 +681,7 @@ class _PromotionCard extends StatelessWidget {
                     Text(
                       promotion.business?.title ?? 'QalaGo',
                       style: const TextStyle(
-                        color: Color(0xFF6F7683),
+                        color: AppTheme.textMuted,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -710,7 +693,7 @@ class _PromotionCard extends StatelessWidget {
                       Text(
                         promotion.description!,
                         style: const TextStyle(
-                          color: Color(0xFF6F7683),
+                          color: AppTheme.textMuted,
                           fontSize: 12,
                           height: 1.2,
                         ),
@@ -882,7 +865,7 @@ class _PopularPlaceCard extends StatelessWidget {
                           padding: EdgeInsets.all(5),
                           child: Icon(
                             Icons.favorite_border,
-                            color: Colors.black,
+                            color: AppTheme.textDark,
                             size: 19,
                           ),
                         ),
@@ -900,7 +883,7 @@ class _PopularPlaceCard extends StatelessWidget {
                   Text(
                     business.title,
                     style: const TextStyle(
-                      color: Colors.black,
+                      color: AppTheme.textDark,
                       fontSize: 15,
                       fontWeight: FontWeight.w900,
                       height: 1.1,
@@ -925,7 +908,7 @@ class _PopularPlaceCard extends StatelessWidget {
                                   business.categoryTitle ??
                                   'QalaGo'),
                           style: const TextStyle(
-                            color: Color(0xFF6F7683),
+                            color: AppTheme.textMuted,
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                           ),
@@ -1026,7 +1009,7 @@ class _NearbyBusinessTile extends StatelessWidget {
                     Text(
                       business.title,
                       style: const TextStyle(
-                        color: Colors.black,
+                        color: AppTheme.textDark,
                         fontSize: 17,
                         fontWeight: FontWeight.w900,
                       ),
@@ -1037,7 +1020,7 @@ class _NearbyBusinessTile extends StatelessWidget {
                     Text(
                       business.categoryTitle ?? 'Заведение',
                       style: const TextStyle(
-                        color: Color(0xFF7B8291),
+                        color: AppTheme.textMuted,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1049,7 +1032,7 @@ class _NearbyBusinessTile extends StatelessWidget {
                       Text(
                         business.shortDesc!,
                         style: const TextStyle(
-                          color: Color(0xFF596171),
+                          color: AppTheme.textMuted,
                           fontSize: 13,
                           height: 1.25,
                         ),
@@ -1062,7 +1045,7 @@ class _NearbyBusinessTile extends StatelessWidget {
                       children: [
                         const Icon(
                           Icons.location_on_outlined,
-                          color: Color(0xFF8A919F),
+                          color: AppTheme.textMuted,
                           size: 16,
                         ),
                         const SizedBox(width: 4),
@@ -1072,7 +1055,7 @@ class _NearbyBusinessTile extends StatelessWidget {
                                 ? '${formatDistanceMeters(business.distanceMeters)} · ${business.address}'
                                 : business.address,
                             style: const TextStyle(
-                              color: Color(0xFF8A919F),
+                              color: AppTheme.textMuted,
                               fontSize: 12,
                             ),
                             maxLines: 1,
@@ -1150,9 +1133,9 @@ Widget _imagePlaceholder(double? height, {double? width}) {
   return Container(
     width: width ?? double.infinity,
     height: height,
-    color: const Color(0xFFF0F2F5),
+    color: AppTheme.background,
     child: const Center(
-      child: Icon(Icons.storefront, color: Color(0xFF9AA1AD)),
+      child: Icon(Icons.storefront, color: AppTheme.textMuted),
     ),
   );
 }

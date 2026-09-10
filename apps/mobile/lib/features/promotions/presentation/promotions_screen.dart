@@ -15,6 +15,7 @@ import '../../../shared/widgets/city_picker.dart';
 import '../../../shared/widgets/qalago_logo.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
+import '../../../shared/widgets/qalago_search_field.dart';
 import '../../auth/providers/auth_provider.dart';
 
 class PromotionsScreen extends ConsumerStatefulWidget {
@@ -87,46 +88,30 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
               const Text(
                 'Акции',
                 style: TextStyle(
-                  color: Colors.black,
+                  color: AppTheme.textDark,
                   fontSize: 34,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 0,
                 ),
               ),
               const SizedBox(height: 16),
-              TextField(
+              QalagoSearchField(
                 controller: _searchController,
+                hintText: 'Поиск акций...',
                 onChanged: (value) => setState(() => _search = value),
-                decoration: InputDecoration(
-                  hintText: 'Поиск акций...',
-                  prefixIcon: const Icon(
-                    Icons.search,
-                    color: Color(0xFF8A919F),
-                  ),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          tooltip: 'Очистить',
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() => _search = '');
-                          },
-                          icon: const Icon(Icons.cancel),
-                        )
-                      : null,
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: Colors.black.withValues(alpha: 0.08),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 1.4,
-                    ),
-                  ),
-                ),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        tooltip: 'Очистить',
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _search = '');
+                        },
+                        icon: Icon(
+                          Icons.cancel,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      )
+                    : null,
               ),
               const SizedBox(height: 16),
               categoriesAsync.when(
@@ -161,7 +146,9 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
                                   setState(() => _categoryFilterId = null),
                               selectedColor: AppTheme.kzBlue,
                               labelStyle: TextStyle(
-                                color: selected ? Colors.white : Colors.black,
+                                color: selected
+                                    ? Theme.of(context).colorScheme.onPrimary
+                                    : Theme.of(context).colorScheme.onSurface,
                                 fontWeight: FontWeight.w700,
                               ),
                             );
@@ -178,7 +165,9 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
                             ),
                             selectedColor: AppTheme.kzBlue,
                             labelStyle: TextStyle(
-                              color: selected ? Colors.white : Colors.black,
+                              color: selected
+                                  ? Theme.of(context).colorScheme.onPrimary
+                                  : Theme.of(context).colorScheme.onSurface,
                               fontWeight: FontWeight.w700,
                             ),
                           );
@@ -213,7 +202,7 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
                       Text(
                         'Найдено ${items.length} акций',
                         style: const TextStyle(
-                          color: Color(0xFF6F7683),
+                          color: AppTheme.textMuted,
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
                         ),
@@ -265,7 +254,7 @@ class _PromotionsEmptyCity extends StatelessWidget {
             'В $cityName пока нет активных акций',
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: Colors.black,
+              color: AppTheme.textDark,
               fontSize: 20,
               fontWeight: FontWeight.w900,
             ),
@@ -274,7 +263,7 @@ class _PromotionsEmptyCity extends StatelessWidget {
           const Text(
             'Загляните позже — заведения регулярно добавляют новые предложения.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Color(0xFF7B8291), height: 1.35),
+            style: TextStyle(color: AppTheme.textMuted, height: 1.35),
           ),
         ],
       ),
@@ -291,12 +280,12 @@ class _PromotionsEmptyFilter extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 48),
       child: Column(
         children: [
-          Icon(Icons.search_off, size: 48, color: Color(0xFF8A919F)),
+          Icon(Icons.search_off, size: 48, color: AppTheme.textMuted),
           SizedBox(height: 16),
           Text(
             'Ничего не найдено',
             style: TextStyle(
-              color: Colors.black,
+              color: AppTheme.textDark,
               fontSize: 20,
               fontWeight: FontWeight.w900,
             ),
@@ -305,7 +294,7 @@ class _PromotionsEmptyFilter extends StatelessWidget {
           Text(
             'Попробуйте изменить поиск или категорию.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Color(0xFF7B8291), height: 1.35),
+            style: TextStyle(color: AppTheme.textMuted, height: 1.35),
           ),
         ],
       ),
@@ -352,10 +341,11 @@ class _PromotionListCard extends StatelessWidget {
     final validity = formatPromotionValidity(promotion);
     final benefit = promotion.description ?? promotion.discountText;
 
+    final cs = Theme.of(context).colorScheme;
     return Material(
-      color: Colors.white,
+      color: cs.surface,
       elevation: 2,
-      shadowColor: Colors.black.withValues(alpha: 0.1),
+      shadowColor: cs.onSurface.withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(18),
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
@@ -394,8 +384,8 @@ class _PromotionListCard extends StatelessWidget {
                             ),
                             child: Text(
                               promotion.discountText!,
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: cs.onPrimary,
                                 fontWeight: FontWeight.w900,
                               ),
                             ),
@@ -416,7 +406,7 @@ class _PromotionListCard extends StatelessWidget {
                           child: Text(
                             promotion.business?.title ?? 'QalaGo',
                             style: const TextStyle(
-                              color: Colors.black,
+                              color: AppTheme.textDark,
                               fontSize: 17,
                               fontWeight: FontWeight.w900,
                             ),
@@ -435,7 +425,7 @@ class _PromotionListCard extends StatelessWidget {
                     Text(
                       promotion.title,
                       style: const TextStyle(
-                        color: Colors.black,
+                        color: AppTheme.textDark,
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                         height: 1.15,
@@ -448,7 +438,7 @@ class _PromotionListCard extends StatelessWidget {
                       Text(
                         benefit,
                         style: const TextStyle(
-                          color: Color(0xFF6F7683),
+                          color: AppTheme.textMuted,
                           fontSize: 13,
                           height: 1.22,
                         ),
@@ -461,14 +451,14 @@ class _PromotionListCard extends StatelessWidget {
                       children: [
                         const Icon(
                           Icons.calendar_month_outlined,
-                          color: Color(0xFF8A919F),
+                          color: AppTheme.textMuted,
                           size: 17,
                         ),
                         const SizedBox(width: 5),
                         Text(
                           validity,
                           style: const TextStyle(
-                            color: Color(0xFF6F7683),
+                            color: AppTheme.textMuted,
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                           ),
@@ -490,9 +480,9 @@ Widget _promoPlaceholder() {
   return Container(
     width: 150,
     height: 126,
-    color: const Color(0xFFF0F2F5),
+    color: AppTheme.background,
     child: const Center(
-      child: Icon(Icons.local_offer_outlined, color: Color(0xFF8A919F)),
+      child: Icon(Icons.local_offer_outlined, color: AppTheme.textMuted),
     ),
   );
 }

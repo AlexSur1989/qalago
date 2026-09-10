@@ -187,7 +187,7 @@ class _PhotosGridBody extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Text(
                 'Всего: $totalCount',
-                style: const TextStyle(color: Color(0xFF687080)),
+                style: const TextStyle(color: AppTheme.textMuted),
               ),
             ),
           ),
@@ -212,7 +212,7 @@ class _PhotosGridBody extends StatelessWidget {
                         url,
                         fit: BoxFit.cover,
                         errorBuilder: (_, _, _) => Container(
-                          color: const Color(0xFFEAF8FC),
+                          color: AppTheme.primaryTint,
                           child: const Icon(Icons.broken_image_outlined),
                         ),
                       ),

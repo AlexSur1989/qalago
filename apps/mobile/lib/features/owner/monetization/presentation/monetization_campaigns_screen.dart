@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/theme/app_theme.dart';
 
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../shared/widgets/error_view.dart';
@@ -155,7 +156,7 @@ class _CampaignCard extends StatelessWidget {
               if (campaign.businessTitle != null) ...[
                 const SizedBox(height: 4),
                 Text(campaign.businessTitle!,
-                    style: TextStyle(color: Colors.grey.shade700)),
+                    style: TextStyle(color: AppTheme.textMuted)),
               ],
               const SizedBox(height: 8),
               Text(formatMonetizationDateRange(campaign.startAt, campaign.endAt)),
@@ -257,7 +258,7 @@ class _AnalyticsBody extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Статистика появится после начала показов.',
-            style: TextStyle(color: Colors.grey.shade700),
+            style: TextStyle(color: AppTheme.textMuted),
           ),
         ],
         const SizedBox(height: 16),

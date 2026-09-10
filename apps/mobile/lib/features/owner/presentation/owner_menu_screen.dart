@@ -512,7 +512,7 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
               child: Text(
                 emptyMessage,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.black54),
+                style: const TextStyle(color: AppTheme.textMuted),
               ),
             )
           else
@@ -597,7 +597,7 @@ class _OwnerItemTile extends StatelessWidget {
           style: TextStyle(
             fontWeight: FontWeight.w600,
             decoration: isActive ? null : TextDecoration.lineThrough,
-            color: isActive ? null : Colors.grey,
+            color: isActive ? null : AppTheme.textMuted,
           ),
         ),
         subtitle: Column(
@@ -605,7 +605,7 @@ class _OwnerItemTile extends StatelessWidget {
           children: [
             Text(
               itemSectionLabel(item),
-              style: const TextStyle(fontSize: 12, color: Colors.black54),
+              style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
             ),
             if (item['description'] != null) Text(item['description'] as String),
             if (price != null)

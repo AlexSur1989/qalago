@@ -249,14 +249,14 @@ class _CatalogBody extends StatelessWidget {
               child: Center(
                 child: Text(
                   'Ничего не найдено',
-                  style: TextStyle(color: Color(0xFF687080)),
+                  style: TextStyle(color: AppTheme.textMuted),
                 ),
               ),
             )
           else ...[
             Text(
               'Найдено: $total',
-              style: const TextStyle(color: Color(0xFF687080), fontSize: 13),
+              style: const TextStyle(color: AppTheme.textMuted, fontSize: 13),
             ),
             const SizedBox(height: 8),
             for (final item in items)

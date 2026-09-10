@@ -61,7 +61,7 @@ class _MonetizationOrderConfirmScreenState
         children: [
           Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20)),
           const SizedBox(height: 6),
-          Text(businessTitle, style: TextStyle(color: Colors.grey.shade700)),
+          Text(businessTitle, style: TextStyle(color: AppTheme.textMuted)),
           const SizedBox(height: 16),
           if (productCode != null) ...[
             _infoRow(
@@ -118,7 +118,7 @@ class _MonetizationOrderConfirmScreenState
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: Colors.grey.shade700)),
+          Text(label, style: TextStyle(color: AppTheme.textMuted)),
           Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
         ],
       ),

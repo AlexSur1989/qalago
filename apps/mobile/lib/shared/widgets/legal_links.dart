@@ -73,7 +73,7 @@ class LoginLegalConsentFooter extends StatelessWidget {
       child: Text.rich(
         TextSpan(
           style: TextStyle(
-            color: Colors.black.withValues(alpha: 0.55),
+            color: AppTheme.textDark.withValues(alpha: 0.55),
             fontSize: 13,
             height: 1.4,
           ),

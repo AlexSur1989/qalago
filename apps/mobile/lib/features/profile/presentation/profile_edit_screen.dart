@@ -119,7 +119,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
           Text(
             'Номер телефона меняется через поддержку или повторную регистрацию',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.black54,
+                  color: AppTheme.textMuted,
                 ),
           ),
           const SizedBox(height: 32),

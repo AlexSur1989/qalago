@@ -5,6 +5,7 @@ import '../../../core/rbac/business_access.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../utils/onboarding_labels.dart';
+import '../../../core/theme/app_theme.dart';
 
 class BusinessStartScreen extends ConsumerWidget {
   const BusinessStartScreen({super.key});
@@ -20,7 +21,7 @@ class BusinessStartScreen extends ConsumerWidget {
         children: [
           const Text(
             'Добавьте или найдите свой бизнес. Если он уже есть в QalaGo, запросите доступ вместо создания новой карточки.',
-            style: TextStyle(color: Colors.black54, height: 1.4),
+            style: TextStyle(color: AppTheme.textMuted, height: 1.4),
           ),
           const SizedBox(height: 24),
           entriesAsync.when(

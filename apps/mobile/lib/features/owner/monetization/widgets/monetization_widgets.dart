@@ -42,7 +42,7 @@ class MonetizationProductCard extends StatelessWidget {
                     Text(
                       productDescription(product.code),
                       style: TextStyle(
-                        color: Colors.grey.shade700,
+                        color: AppTheme.textMuted,
                         fontSize: 13,
                         height: 1.3,
                       ),
@@ -99,7 +99,7 @@ class MonetizationPackageCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   package.description!,
-                  style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                  style: TextStyle(color: AppTheme.textMuted, fontSize: 13),
                 ),
               ],
               const SizedBox(height: 8),
@@ -185,9 +185,9 @@ class MonetizationAvailabilityBanner extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.orange.shade50,
+        color: AppSemanticColors.warning.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange.shade200),
+        border: Border.all(color: AppSemanticColors.warning),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,16 +235,16 @@ class MonetizationStatusChip extends StatelessWidget {
 Color campaignStatusColor(String status) {
   switch (status) {
     case 'ACTIVE':
-      return Colors.green.shade700;
+      return AppTheme.openStatus;
     case 'SCHEDULED':
-      return Colors.blue.shade700;
+      return AppSemanticColors.info;
     case 'PENDING_MODERATION':
-      return Colors.orange.shade800;
+      return AppSemanticColors.warning;
     case 'COMPLETED':
-      return Colors.grey.shade700;
+      return AppTheme.textMuted;
     case 'REJECTED':
     case 'CANCELLED':
-      return Colors.red.shade700;
+      return AppTheme.error;
     default:
       return AppTheme.kzBlue;
   }
