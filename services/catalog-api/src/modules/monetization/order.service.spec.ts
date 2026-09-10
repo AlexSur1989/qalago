@@ -15,6 +15,10 @@ import { PricingService } from './pricing.service';
 import { PurchaseIntegrityService } from './purchase-integrity.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
+import {
+  createMockInventoryReservationService,
+  createMockPackageSnapshotService,
+} from './test-utils/mock-order-deps-6-7c';
 
 describe('OrderService', () => {
   const prisma = {
@@ -55,14 +59,35 @@ describe('OrderService', () => {
     provisionOrderCampaigns: jest.fn().mockResolvedValue(undefined),
   } as unknown as CampaignProvisioningService;
 
+  const defaultSchedule = (input: { desiredStartAt?: Date | null }) => {
+    const start = input.desiredStartAt ?? new Date('2026-09-05');
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+    return {
+      requestedStartAt: start,
+      projectedStartAt: start,
+      projectedEndAt: end,
+      conflictResolvedBy: 'NONE' as const,
+    };
+  };
+
   const purchaseIntegrity = {
     assertCategoryEligibleForBusiness: jest.fn().mockResolvedValue(undefined),
     assertPromotionEligible: jest.fn().mockResolvedValue(undefined),
-    assertProductPurchaseAllowed: jest.fn().mockResolvedValue(undefined),
+    assertProductPurchaseAllowed: jest.fn().mockImplementation((_db, input) =>
+      Promise.resolve(defaultSchedule(input)),
+    ),
+    resolveProductSchedule: jest.fn().mockImplementation((_db, input) =>
+      Promise.resolve(defaultSchedule(input)),
+    ),
     acquirePurchaseIntentLock: jest.fn().mockResolvedValue(undefined),
+    acquirePlacementScopeLock: jest.fn().mockResolvedValue(undefined),
     findReusablePendingOrder: jest.fn().mockResolvedValue(null),
     findOrderByIdempotencyKey: jest.fn().mockResolvedValue(null),
   } as unknown as PurchaseIntegrityService;
+
+  const packageSnapshot = createMockPackageSnapshotService();
+  const inventoryReservation = createMockInventoryReservationService();
 
   const service = new OrderService(
     prisma,
@@ -72,6 +97,8 @@ describe('OrderService', () => {
     provisioning,
     asAuditLogService(createMockAuditLog()),
     purchaseIntegrity,
+    packageSnapshot,
+    inventoryReservation,
   );
 
   const user = { id: 'user-1', role: UserRole.BUSINESS, phone: '+7700', sub: 'user-1' };
@@ -79,14 +106,28 @@ describe('OrderService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    Object.assign(
+      packageSnapshot,
+      createMockPackageSnapshotService(),
+    );
+    Object.assign(
+      inventoryReservation,
+      createMockInventoryReservationService(),
+    );
     availability.checkAvailability = jest.fn().mockResolvedValue({ available: true });
     availability.assertAvailableInTransaction = jest.fn().mockResolvedValue(undefined);
     purchaseIntegrity.assertCategoryEligibleForBusiness = jest
       .fn()
       .mockResolvedValue(undefined);
     purchaseIntegrity.assertPromotionEligible = jest.fn().mockResolvedValue(undefined);
-    purchaseIntegrity.assertProductPurchaseAllowed = jest.fn().mockResolvedValue(undefined);
+    purchaseIntegrity.assertProductPurchaseAllowed = jest
+      .fn()
+      .mockImplementation((_db, input) => Promise.resolve(defaultSchedule(input)));
+    purchaseIntegrity.resolveProductSchedule = jest
+      .fn()
+      .mockImplementation((_db, input) => Promise.resolve(defaultSchedule(input)));
     purchaseIntegrity.acquirePurchaseIntentLock = jest.fn().mockResolvedValue(undefined);
+    purchaseIntegrity.acquirePlacementScopeLock = jest.fn().mockResolvedValue(undefined);
     purchaseIntegrity.findReusablePendingOrder = jest.fn().mockResolvedValue(null);
     purchaseIntegrity.findOrderByIdempotencyKey = jest.fn().mockResolvedValue(null);
   });
@@ -110,7 +151,9 @@ describe('OrderService', () => {
 
     prisma.$transaction = jest.fn().mockImplementation(async (fn) => {
       const tx = {
-        business: { findUniqueOrThrow: jest.fn().mockResolvedValue({ cityId: 'city-1' }) },
+        business: {
+          findUniqueOrThrow: jest.fn().mockResolvedValue({ cityId: 'city-1', categoryId: 'cat-1' }),
+        },
         order: {
           findUnique: jest.fn().mockResolvedValue(null),
           create: jest.fn().mockResolvedValue({
@@ -188,7 +231,9 @@ describe('OrderService', () => {
 
     prisma.$transaction = jest.fn().mockImplementation(async (fn) => {
       const tx = {
-        business: { findUniqueOrThrow: jest.fn().mockResolvedValue({ cityId: 'city-1' }) },
+        business: {
+          findUniqueOrThrow: jest.fn().mockResolvedValue({ cityId: 'city-1', categoryId: 'cat-1' }),
+        },
         order: {
           findUnique: jest.fn().mockResolvedValue(null),
           create: jest.fn().mockImplementation(({ data }) => {
@@ -280,12 +325,7 @@ describe('OrderService', () => {
       currency: 'KZT',
       productPriceId: 'price-1',
     });
-    purchaseIntegrity.assertProductPurchaseAllowed = jest.fn().mockImplementation(() => {
-      throw new BadRequestException({
-        message: 'Placement slot unavailable',
-        code: 'PLACEMENT_UNAVAILABLE',
-      });
-    });
+    packageSnapshot.buildProductLineSnapshot = jest.fn().mockResolvedValue(null);
 
     await expect(
       service.createOrder(user, {
@@ -314,7 +354,9 @@ describe('OrderService', () => {
 
     prisma.$transaction = jest.fn().mockImplementation(async (fn) => {
       const tx = {
-        business: { findUniqueOrThrow: jest.fn().mockResolvedValue({ cityId: 'city-1' }) },
+        business: {
+          findUniqueOrThrow: jest.fn().mockResolvedValue({ cityId: 'city-1', categoryId: 'cat-1' }),
+        },
         order: {
           findUnique: jest.fn().mockResolvedValue(null),
           create: jest.fn().mockImplementation(({ data }) => {
@@ -382,7 +424,9 @@ describe('OrderService', () => {
         paidAt: null,
       });
       const tx = {
-        business: { findUniqueOrThrow: jest.fn().mockResolvedValue({ cityId: 'city-1' }) },
+        business: {
+          findUniqueOrThrow: jest.fn().mockResolvedValue({ cityId: 'city-1', categoryId: 'cat-1' }),
+        },
         order: {
           findUnique: jest.fn().mockResolvedValue(null),
           create: jest.fn().mockResolvedValue({

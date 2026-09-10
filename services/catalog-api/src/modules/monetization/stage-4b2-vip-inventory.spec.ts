@@ -14,15 +14,25 @@ import { MonetizationAccessService } from './monetization-access.service';
 import { PricingService } from './pricing.service';
 import { PurchaseIntegrityService } from './purchase-integrity.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PlacementCapacityService } from './placement-capacity.service';
+import {
+  createMockInventoryReservationService,
+  createMockPackageSnapshotService,
+} from './test-utils/mock-order-deps-6-7c';
 
 describe('Stage 4B.2 — VIP inventory reservation + order validation', () => {
   describe('AvailabilityService VIP capacity', () => {
     const prisma = {
       adPlacement: { findUnique: jest.fn() },
+      adPlacementCityConfig: { findUnique: jest.fn().mockResolvedValue(null) },
       adCampaign: { count: jest.fn(), findFirst: jest.fn() },
+      adInventoryReservation: {
+        count: jest.fn().mockResolvedValue(0),
+        findFirst: jest.fn().mockResolvedValue(null),
+      },
     } as unknown as PrismaService;
 
-    const service = new AvailabilityService(prisma);
+    const service = new AvailabilityService(prisma, new PlacementCapacityService(prisma));
 
     beforeEach(() => jest.clearAllMocks());
 
@@ -178,6 +188,13 @@ describe('Stage 4B.2 — VIP inventory reservation + order validation', () => {
       assertPromotionEligible: jest.fn().mockResolvedValue(undefined),
       assertProductPurchaseAllowed: jest.fn().mockResolvedValue(undefined),
       acquirePurchaseIntentLock: jest.fn().mockResolvedValue(undefined),
+      acquirePlacementScopeLock: jest.fn().mockResolvedValue(undefined),
+      resolveProductSchedule: jest.fn().mockResolvedValue({
+        requestedStartAt: new Date(),
+        projectedStartAt: new Date(),
+        projectedEndAt: new Date(),
+        conflictResolvedBy: 'NONE',
+      }),
       findReusablePendingOrder: jest.fn().mockResolvedValue(null),
       findOrderByIdempotencyKey: jest.fn().mockResolvedValue(null),
     } as unknown as PurchaseIntegrityService;
@@ -190,6 +207,8 @@ describe('Stage 4B.2 — VIP inventory reservation + order validation', () => {
       provisioning,
       asAuditLogService(createMockAuditLog()),
       purchaseIntegrity,
+      createMockPackageSnapshotService(),
+      createMockInventoryReservationService(),
     );
 
     const user = { id: 'user-1', role: UserRole.BUSINESS, phone: '+7700', sub: 'user-1' };

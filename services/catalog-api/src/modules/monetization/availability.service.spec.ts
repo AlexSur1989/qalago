@@ -1,14 +1,20 @@
 import { AdCampaignStatus, MonetizationProductType } from '@prisma/client';
 import { AvailabilityService } from './availability.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PlacementCapacityService } from './placement-capacity.service';
 
 describe('AvailabilityService', () => {
   const prisma = {
     adPlacement: { findUnique: jest.fn() },
+    adPlacementCityConfig: { findUnique: jest.fn().mockResolvedValue(null) },
     adCampaign: { count: jest.fn(), findFirst: jest.fn() },
+    adInventoryReservation: {
+      count: jest.fn().mockResolvedValue(0),
+      findFirst: jest.fn().mockResolvedValue(null),
+    },
   } as unknown as PrismaService;
 
-  const service = new AvailabilityService(prisma);
+  const service = new AvailabilityService(prisma, new PlacementCapacityService(prisma));
 
   beforeEach(() => jest.clearAllMocks());
 
@@ -174,7 +180,12 @@ describe('AvailabilityService', () => {
       adPlacement: {
         findUnique: jest.fn().mockResolvedValue(placementRow),
       },
+      adPlacementCityConfig: { findUnique: jest.fn().mockResolvedValue(null) },
       adCampaign: { count: jest.fn().mockResolvedValue(0), findFirst: jest.fn() },
+      adInventoryReservation: {
+        count: jest.fn().mockResolvedValue(0),
+        findFirst: jest.fn().mockResolvedValue(null),
+      },
     };
     prisma.adPlacement.findUnique = jest.fn().mockResolvedValue(placementRow);
     prisma.adCampaign.count = jest.fn().mockResolvedValue(0);

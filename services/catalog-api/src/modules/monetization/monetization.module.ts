@@ -20,6 +20,10 @@ import { OrderService } from './order.service';
 import { PricingService } from './pricing.service';
 import { PurchaseIntegrityService } from './purchase-integrity.service';
 import { PurchaseScopeService } from './purchase-scope.service';
+import { PurchaseSchedulingService } from './purchase-scheduling.service';
+import { PlacementCapacityService } from './placement-capacity.service';
+import { PackageSnapshotService } from './package-snapshot.service';
+import { InventoryReservationService } from './inventory-reservation.service';
 
 @Module({
   imports: [PlansModule, ScheduleModule.forRoot()],
@@ -30,6 +34,10 @@ import { PurchaseScopeService } from './purchase-scope.service';
     AvailabilityService,
     PurchaseScopeService,
     PurchaseIntegrityService,
+    PurchaseSchedulingService,
+    PlacementCapacityService,
+    PackageSnapshotService,
+    InventoryReservationService,
     OrderService,
     CampaignProvisioningService,
     CampaignStatusService,

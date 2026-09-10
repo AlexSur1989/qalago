@@ -251,6 +251,13 @@ enum AdCampaignStatus {
   REJECTED
 }
 
+enum AdInventoryReservationStatus {
+  HELD
+  CONVERTED
+  EXPIRED
+  CANCELLED
+}
+
 enum CityLaunchStatus {
   COMING_SOON
   LIVE
@@ -275,8 +282,10 @@ model City {
   cityAdmins           User[]                @relation("ManagedCity")
   categoryCityOrders   CategoryCityOrder[]
   adPlacements         AdPlacement[]
+  adPlacementCityConfigs AdPlacementCityConfig[]
   productPrices        ProductPrice[]
   adCampaigns          AdCampaign[]
+  adInventoryReservations AdInventoryReservation[]
   auditLogs            AuditLog[]
   businessApplications BusinessApplication[]
   analyticsEvents      AnalyticsEvent[]
@@ -388,6 +397,7 @@ model Category {
   adPlacements         AdPlacement[]
   productPrices        ProductPrice[]
   adCampaigns          AdCampaign[]
+  adInventoryReservations AdInventoryReservation[]
   businessApplications BusinessApplication[]
 }
 
@@ -450,6 +460,7 @@ model Business {
   orders                    Order[]
   adCreatives               AdCreative[]
   adCampaigns               AdCampaign[]
+  adInventoryReservations   AdInventoryReservation[]
   memberships               BusinessMembership[]
   invitations               BusinessInvitation[]
   auditLogs                 AuditLog[]
@@ -614,6 +625,8 @@ model Promotion {
   updatedAt       DateTime         @updatedAt
   business        Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
   analyticsEvents AnalyticsEvent[]
+  adCampaigns     AdCampaign[]
+  adInventoryReservations AdInventoryReservation[]
 }
 
 model Favorite {
@@ -783,9 +796,26 @@ model AdPlacement {
   campaignPlacements AdCampaignPlacement[]
   productPrices      ProductPrice[]
   analyticsEvents    AnalyticsEvent[]
+  cityConfigs        AdPlacementCityConfig[]
+  inventoryReservations AdInventoryReservation[]
 
   @@index([cityId, isActive])
   @@index([categoryId, isActive])
+}
+
+model AdPlacementCityConfig {
+  id                 String      @id @default(cuid())
+  placementId        String
+  cityId             String
+  maxActiveCampaigns Int?
+  isEnabled          Boolean     @default(true)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  placement          AdPlacement @relation(fields: [placementId], references: [id], onDelete: Cascade)
+  city               City        @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@unique([placementId, cityId])
+  @@index([cityId, isEnabled])
 }
 
 model MonetizationProduct {
@@ -802,6 +832,7 @@ model MonetizationProduct {
   orderItems            OrderItem[]
   adCampaigns           AdCampaign[]
   promotionPackageItems PromotionPackageItem[]
+  inventoryReservations AdInventoryReservation[]
 
   @@index([type, isActive])
 }
@@ -848,6 +879,7 @@ model Order {
   user           User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
   items          OrderItem[]
   payments       Payment[]
+  inventoryReservations AdInventoryReservation[]
 
   @@index([businessId])
   @@index([status])
@@ -866,10 +898,13 @@ model OrderItem {
   durationHours   Int?
   durationDays    Int?
   metadata        Json?
+  packageSnapshot Json?
+  lineSnapshot    Json?
   createdAt       DateTime            @default(now())
   order           Order               @relation(fields: [orderId], references: [id], onDelete: Restrict)
   product         MonetizationProduct @relation(fields: [productId], references: [id], onDelete: Restrict)
   adCampaigns     AdCampaign[]
+  inventoryReservations AdInventoryReservation[]
 
   @@index([orderId])
   @@index([productId])
@@ -918,12 +953,45 @@ model AdCreative {
   @@index([moderationStatus])
 }
 
+model AdInventoryReservation {
+  id          String                       @id @default(cuid())
+  orderId     String
+  orderItemId String?
+  businessId  String
+  cityId      String
+  placementId String
+  categoryId  String?
+  promotionId String?
+  productId   String
+  startAt     DateTime
+  endAt       DateTime
+  status      AdInventoryReservationStatus @default(HELD)
+  expiresAt   DateTime
+  createdAt   DateTime                     @default(now())
+  updatedAt   DateTime                     @updatedAt
+  order       Order                        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderItem   OrderItem?                   @relation(fields: [orderItemId], references: [id], onDelete: SetNull)
+  business    Business                     @relation(fields: [businessId], references: [id], onDelete: Restrict)
+  city        City                         @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  placement   AdPlacement                  @relation(fields: [placementId], references: [id], onDelete: Restrict)
+  category    Category?                    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  promotion   Promotion?                   @relation(fields: [promotionId], references: [id], onDelete: SetNull)
+  product     MonetizationProduct          @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([orderItemId])
+  @@index([placementId, cityId, status, expiresAt])
+  @@index([status, expiresAt])
+  @@index([businessId, placementId, status])
+}
+
 model AdCampaign {
   id                   String                @id @default(cuid())
   businessId           String
   orderItemId          String?
   productId            String
   creativeId           String?
+  promotionId          String?
   cityId               String
   categoryId           String?
   status               AdCampaignStatus      @default(PENDING_MODERATION)
@@ -941,6 +1009,7 @@ model AdCampaign {
   orderItem            OrderItem?            @relation(fields: [orderItemId], references: [id], onDelete: SetNull)
   product              MonetizationProduct   @relation(fields: [productId], references: [id], onDelete: Restrict)
   creative             AdCreative?           @relation(fields: [creativeId], references: [id], onDelete: SetNull)
+  promotion            Promotion?            @relation(fields: [promotionId], references: [id], onDelete: SetNull)
   city                 City                  @relation(fields: [cityId], references: [id], onDelete: Restrict)
   category             Category?             @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   campaignPlacements   AdCampaignPlacement[]
@@ -949,6 +1018,7 @@ model AdCampaign {
   @@index([status])
   @@index([cityId])
   @@index([categoryId])
+  @@index([promotionId])
   @@index([productId])
   @@index([startAt])
   @@index([endAt])

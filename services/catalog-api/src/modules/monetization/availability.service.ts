@@ -12,6 +12,7 @@ import {
   MonetizationErrorCode,
   monetizationBadRequest,
 } from './errors/monetization.errors';
+import { PlacementCapacityService } from './placement-capacity.service';
 
 export type AvailabilityCheckParams = {
   productType: keyof typeof PRODUCT_PLACEMENT_MAP & string;
@@ -29,7 +30,10 @@ export type AvailabilityResult = {
   maxActiveCampaigns?: number;
 };
 
-type DbLike = Pick<PrismaService, 'adPlacement' | 'adCampaign'>;
+type DbLike = Pick<
+  PrismaService,
+  'adPlacement' | 'adCampaign' | 'adPlacementCityConfig' | 'adInventoryReservation'
+>;
 
 function hashLockKey(parts: string[]): number {
   const str = parts.join(':');
@@ -42,7 +46,10 @@ function hashLockKey(parts: string[]): number {
 
 @Injectable()
 export class AvailabilityService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly placementCapacity: PlacementCapacityService,
+  ) {}
 
   resolvePlacementCode(productType: string): string | undefined {
     return PRODUCT_PLACEMENT_MAP[productType as keyof typeof PRODUCT_PLACEMENT_MAP];
@@ -86,36 +93,42 @@ export class AvailabilityService {
       };
     }
 
-    const capacityStatuses = this.resolveCapacityStatuses(placementCode);
+    const maxActiveCampaigns = await this.placementCapacity.resolveMaxActiveCampaigns(
+      db,
+      {
+        placementId: placement.id,
+        placementCode,
+        cityId: params.cityId,
+        categoryId: params.categoryId,
+      },
+    );
 
-    const where: Prisma.AdCampaignWhereInput = {
-      status: { in: [...capacityStatuses] },
-      startAt: { lt: params.desiredEndAt },
-      endAt: { gt: params.desiredStartAt },
-      campaignPlacements: { some: { placementId: placement.id } },
-    };
-
-    if (placementCode === 'CATEGORY_TOP') {
-      where.cityId = params.cityId;
-      where.categoryId = params.categoryId ?? undefined;
-    } else if (
-      placementCode === 'HOME_FEATURED' ||
-      placementCode === 'HOME_VIP_BANNER'
-    ) {
-      where.cityId = params.cityId;
-    }
-
-    const activeCount = await db.adCampaign.count({ where });
-    const available = activeCount < placement.maxActiveCampaigns;
+    const activeCount = await this.placementCapacity.countInventoryUsage(
+      db,
+      {
+        placementId: placement.id,
+        placementCode,
+        cityId: params.cityId,
+        categoryId: params.categoryId,
+      },
+      params.desiredStartAt,
+      params.desiredEndAt,
+    );
+    const available = activeCount < maxActiveCampaigns;
 
     let nextAvailableAt: Date | null | undefined;
     if (!available) {
-      const earliest = await db.adCampaign.findFirst({
-        where,
-        orderBy: { endAt: 'asc' },
-        select: { endAt: true },
-      });
-      nextAvailableAt = earliest?.endAt ?? null;
+      nextAvailableAt = await this.placementCapacity.findEarliestOverlappingRelease(
+        db,
+        {
+          placementId: placement.id,
+          placementCode,
+          cityId: params.cityId,
+          categoryId: params.categoryId,
+        },
+        params.desiredStartAt,
+        params.desiredEndAt,
+      );
     }
 
     return {
@@ -123,7 +136,7 @@ export class AvailabilityService {
       nextAvailableAt,
       placementCode,
       activeCount,
-      maxActiveCampaigns: placement.maxActiveCampaigns,
+      maxActiveCampaigns,
     };
   }
 

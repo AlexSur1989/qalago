@@ -25,6 +25,14 @@ import {
 import { MonetizationAccessService } from './monetization-access.service';
 import { PricingService } from './pricing.service';
 import { PurchaseIntegrityService } from './purchase-integrity.service';
+import { PackageSnapshotService } from './package-snapshot.service';
+import { InventoryReservationService } from './inventory-reservation.service';
+import {
+  PackageSnapshotV1,
+  ProductLineSnapshotV1,
+  parsePackageSnapshotV1,
+  parseProductLineSnapshotV1,
+} from './types/package-snapshot.types';
 import {
   PurchaseIntent,
   buildPackagePurchaseIntent,
@@ -45,6 +53,8 @@ type PricedOrderLine = {
   durationHours?: number | null;
   durationDays?: number | null;
   metadata: Record<string, unknown>;
+  packageSnapshot?: PackageSnapshotV1;
+  lineSnapshot?: ProductLineSnapshotV1;
 };
 
 @Injectable()
@@ -57,6 +67,8 @@ export class OrderService {
     private readonly provisioning: CampaignProvisioningService,
     private readonly auditLog: AuditLogService,
     private readonly purchaseIntegrity: PurchaseIntegrityService,
+    private readonly packageSnapshot: PackageSnapshotService,
+    private readonly inventoryReservation: InventoryReservationService,
   ) {}
 
   async createOrder(user: AuthUser, dto: CreateOrderDto) {
@@ -148,6 +160,28 @@ export class OrderService {
     const discountAmount = calcDiscountAmount(basePrice, discountPercent);
     const finalPrice = basePrice - discountAmount;
 
+    const snapshot = await this.packageSnapshot.buildPackageSnapshot(this.prisma, {
+      pkg: pkg!,
+      businessId: dto.businessId,
+      cityId: business.cityId,
+      categoryId: business.categoryId,
+      promotionId: dto.promotionId,
+      creativeId: dto.creativeId,
+      desiredStartAt: dto.desiredStartAt ? new Date(dto.desiredStartAt) : null,
+      currency: pkg!.currency ?? 'KZT',
+      packageBasePrice: basePrice,
+      packageDiscountPercent: discountPercent,
+      packageDiscountAmount: discountAmount,
+      packageFinalPrice: finalPrice,
+    });
+
+    if (!snapshot.items.length) {
+      monetizationBadRequest(
+        MonetizationErrorCode.PACKAGE_NOT_FOUND,
+        'Package has no provisionable items',
+      );
+    }
+
     const lines: PricedOrderLine[] = [
       {
         productId: packageProduct!.id,
@@ -159,6 +193,7 @@ export class OrderService {
         discountAmount,
         finalPrice,
         durationDays: pkg!.durationDays,
+        packageSnapshot: snapshot,
         metadata: {
           packageCode: pkg!.code,
           creativeId: dto.creativeId,
@@ -233,24 +268,27 @@ export class OrderService {
         durationDays: item.durationDays ?? null,
       });
 
-      const desiredStartAt = item.desiredStartAt
-        ? new Date(item.desiredStartAt)
-        : new Date();
-      const desiredEndAt = this.availability.addDuration(
-        desiredStartAt,
-        item.durationHours,
-        item.durationDays,
+      const lineSnapshot = await this.packageSnapshot.buildProductLineSnapshot(
+        this.prisma,
+        {
+          productCode: product!.code,
+          productType: product!.type,
+          businessId,
+          cityId: business.cityId,
+          categoryId,
+          promotionId: item.promotionId,
+          creativeId: item.creativeId,
+          desiredStartAt: item.desiredStartAt ? new Date(item.desiredStartAt) : null,
+          durationHours: item.durationHours ?? null,
+          durationDays: item.durationDays ?? null,
+        },
       );
-
-      await this.purchaseIntegrity.assertProductPurchaseAllowed(this.prisma, {
-        productType: product!.type,
-        businessId,
-        cityId: business.cityId,
-        categoryId,
-        promotionId: item.promotionId,
-        desiredStartAt,
-        desiredEndAt,
-      });
+      if (!lineSnapshot) {
+        monetizationBadRequest(
+          MonetizationErrorCode.PLACEMENT_UNAVAILABLE,
+          `Placement unavailable for ${item.productCode}`,
+        );
+      }
 
       lines.push({
         productId: product!.id,
@@ -263,8 +301,9 @@ export class OrderService {
         finalPrice: priced.finalPrice,
         durationHours: item.durationHours ?? null,
         durationDays: item.durationDays ?? null,
+        lineSnapshot: lineSnapshot ?? undefined,
         metadata: {
-          desiredStartAt: item.desiredStartAt,
+          desiredStartAt: lineSnapshot!.projectedStartAt,
           promotionId: item.promotionId,
           creativeId: item.creativeId,
           categoryId,
@@ -311,7 +350,15 @@ export class OrderService {
           options.intent,
         );
         if (pending) {
-          return this.formatOrderResponse(pending, {
+          await this.refreshOrderReservations(tx, pending.id);
+          const refreshed = await tx.order.findUniqueOrThrow({
+            where: { id: pending.id },
+            include: {
+              items: { include: { product: true } },
+              payments: true,
+            },
+          });
+          return this.formatOrderResponse(refreshed, {
             reusedPendingOrder: true,
             existingOrderId: pending.id,
             reasonCode: PurchaseConflictReason.PENDING_ORDER_EXISTS,
@@ -319,11 +366,17 @@ export class OrderService {
         }
       }
 
+      await this.inventoryReservation.expireStaleHeldInTransaction(tx);
       await this.assertPurchaseLinesAllowedInTransaction(tx, businessId, lines);
 
       const orderNumber = await generateUniqueOrderNumber(async (num) => {
         const existing = await tx.order.findUnique({ where: { orderNumber: num } });
         return !!existing;
+      });
+
+      const businessScope = await tx.business.findUniqueOrThrow({
+        where: { id: businessId },
+        select: { cityId: true },
       });
 
       const order = await tx.order.create({
@@ -346,6 +399,12 @@ export class OrderService {
               durationHours: line.durationHours,
               durationDays: line.durationDays,
               metadata: line.metadata as Prisma.InputJsonValue,
+              packageSnapshot: line.packageSnapshot
+                ? (line.packageSnapshot as Prisma.InputJsonValue)
+                : undefined,
+              lineSnapshot: line.lineSnapshot
+                ? (line.lineSnapshot as Prisma.InputJsonValue)
+                : undefined,
             })),
           },
         },
@@ -354,6 +413,23 @@ export class OrderService {
           payments: true,
         },
       });
+
+      const reservationExpiresAt = this.inventoryReservation.reservationExpiresAt();
+      for (let i = 0; i < order.items.length; i++) {
+        const createdItem = order.items[i];
+        const sourceLine = lines[i];
+        await this.inventoryReservation.syncReservationsForOrderItem(tx, {
+          orderId: order.id,
+          orderItemId: createdItem.id,
+          businessId,
+          cityId: businessScope.cityId,
+          productId: createdItem.productId,
+          productType: createdItem.product.type,
+          packageSnapshot: sourceLine.packageSnapshot,
+          lineSnapshot: sourceLine.lineSnapshot,
+          expiresAt: reservationExpiresAt,
+        });
+      }
 
       let payment;
       try {
@@ -387,11 +463,6 @@ export class OrderService {
         throw err;
       }
 
-      const businessScope = await tx.business.findUniqueOrThrow({
-        where: { id: businessId },
-        select: { cityId: true },
-      });
-
       await this.auditLog.record({
         actor: user,
         action: AuditAction.AD_ORDER_CREATE,
@@ -423,68 +494,151 @@ export class OrderService {
     });
 
     for (const line of lines) {
-      if (line.productType === MonetizationProductType.PACKAGE) {
-        const meta = line.metadata as {
-          packageCode?: string;
-          desiredStartAt?: string;
-          promotionId?: string;
-        };
-        if (!meta.packageCode) continue;
-
-        const pkg = await tx.promotionPackage.findUnique({
-          where: { code: meta.packageCode },
-          include: { items: { include: { product: true } } },
-        });
-        if (!pkg) continue;
-
-        const desiredStartAt = meta.desiredStartAt
-          ? new Date(meta.desiredStartAt)
-          : new Date();
-
-        for (const pkgItem of pkg.items) {
-          const desiredEndAt = this.availability.addDuration(
-            desiredStartAt,
-            pkgItem.durationHours,
-            pkgItem.durationDays,
+      if (line.productType === MonetizationProductType.PACKAGE && line.packageSnapshot) {
+        for (const item of line.packageSnapshot.items) {
+          const placementCode = item.placementCode;
+          await this.purchaseIntegrity.acquirePlacementScopeLock(
+            tx,
+            placementCode,
+            business.cityId,
+            item.categoryId ?? business.categoryId,
           );
-          await this.purchaseIntegrity.assertProductPurchaseAllowed(tx, {
-            productType: pkgItem.product.type,
+          await this.purchaseIntegrity.resolveProductSchedule(tx, {
+            productType: item.productType,
             businessId,
             cityId: business.cityId,
-            categoryId: business.categoryId,
-            promotionId:
-              pkgItem.product.type === MonetizationProductType.PROMOTED_PROMOTION
-                ? meta.promotionId
-                : undefined,
-            desiredStartAt,
-            desiredEndAt,
+            categoryId: item.categoryId ?? business.categoryId,
+            promotionId: item.promotionId ?? undefined,
+            desiredStartAt: new Date(item.projectedStartAt),
+            durationHours: item.durationHours,
+            durationDays: item.durationDays,
           });
         }
         continue;
       }
 
-      const meta = line.metadata as {
-        desiredStartAt?: string;
-        categoryId?: string;
-        promotionId?: string;
-      };
-      const desiredStartAt = meta.desiredStartAt
-        ? new Date(meta.desiredStartAt)
-        : new Date();
-      const desiredEndAt = this.availability.addDuration(
-        desiredStartAt,
-        line.durationHours,
-        line.durationDays,
-      );
+      if (line.lineSnapshot) {
+        await this.purchaseIntegrity.acquirePlacementScopeLock(
+          tx,
+          line.lineSnapshot.placementCode,
+          business.cityId,
+          line.lineSnapshot.categoryId ?? business.categoryId,
+        );
+        await this.purchaseIntegrity.resolveProductSchedule(tx, {
+          productType: line.productType,
+          businessId,
+          cityId: business.cityId,
+          categoryId: line.lineSnapshot.categoryId ?? business.categoryId,
+          promotionId: line.lineSnapshot.promotionId ?? undefined,
+          desiredStartAt: new Date(line.lineSnapshot.projectedStartAt),
+          durationHours: line.durationHours,
+          durationDays: line.durationDays,
+        });
+      }
+    }
+  }
 
-      await this.purchaseIntegrity.assertProductPurchaseAllowed(tx, {
-        productType: line.productType,
-        businessId,
-        cityId: business.cityId,
-        categoryId: meta.categoryId ?? business.categoryId,
-        promotionId: meta.promotionId,
-        desiredStartAt,
-        desiredEndAt,
+  private async refreshOrderReservations(
+    tx: Prisma.TransactionClient,
+    orderId: string,
+  ) {
+    await this.inventoryReservation.expireStaleHeldInTransaction(tx);
+    await this.revalidateOrderSchedules(tx, orderId);
+    const order = await tx.order.findUniqueOrThrow({
+      where: { id: orderId },
+      include: { items: { include: { product: true } }, business: true },
+    });
+    const expiresAt = this.inventoryReservation.reservationExpiresAt();
+    for (const item of order.items) {
+      await this.inventoryReservation.syncReservationsForOrderItem(tx, {
+        orderId: order.id,
+        orderItemId: item.id,
+        businessId: order.businessId,
+        cityId: order.business.cityId,
+        productId: item.productId,
+        productType: item.product.type,
+        packageSnapshot: item.packageSnapshot,
+        lineSnapshot: item.lineSnapshot,
+        expiresAt,
+      });
+    }
+  }
+
+  private async revalidateOrderSchedules(
+    tx: Prisma.TransactionClient,
+    orderId: string,
+  ) {
+    const order = await tx.order.findUniqueOrThrow({
+      where: { id: orderId },
+      include: {
+        items: { include: { product: true } },
+        business: { select: { cityId: true, categoryId: true } },
+      },
+    });
+
+    for (const item of order.items) {
+      const pkgSnapshot = parsePackageSnapshotV1(item.packageSnapshot);
+      if (pkgSnapshot) {
+        const meta = item.metadata as { creativeId?: string; promotionId?: string };
+        const pkg = await tx.promotionPackage.findUnique({
+          where: { code: pkgSnapshot.packageCode },
+          include: { items: { include: { product: true } } },
+        });
+        if (!pkg) continue;
+        const rebuilt = await this.packageSnapshot.buildPackageSnapshot(tx, {
+          pkg,
+          businessId: order.businessId,
+          cityId: order.business.cityId,
+          categoryId: order.business.categoryId,
+          promotionId: meta.promotionId ?? pkgSnapshot.promotionId,
+          creativeId: meta.creativeId ?? pkgSnapshot.creativeId,
+          desiredStartAt: pkgSnapshot.items[0]
+            ? new Date(pkgSnapshot.items[0].requestedStartAt ?? pkgSnapshot.items[0].projectedStartAt)
+            : null,
+          currency: pkgSnapshot.currency,
+          packageBasePrice: pkgSnapshot.packageBasePrice,
+          packageDiscountPercent: pkgSnapshot.packageDiscountPercent,
+          packageDiscountAmount: pkgSnapshot.packageDiscountAmount,
+          packageFinalPrice: pkgSnapshot.packageFinalPrice,
+          excludeOrderId: orderId,
+        });
+        await tx.orderItem.update({
+          where: { id: item.id },
+          data: { packageSnapshot: rebuilt as Prisma.InputJsonValue },
+        });
+        continue;
+      }
+
+      const lineSnapshot = parseProductLineSnapshotV1(item.lineSnapshot);
+      if (!lineSnapshot) continue;
+      const meta = item.metadata as { promotionId?: string; creativeId?: string };
+      const rebuiltLine = await this.packageSnapshot.buildProductLineSnapshot(tx, {
+        productCode: lineSnapshot.productCode,
+        productType: item.product.type,
+        businessId: order.businessId,
+        cityId: order.business.cityId,
+        categoryId: lineSnapshot.categoryId ?? order.business.categoryId,
+        promotionId: meta.promotionId ?? lineSnapshot.promotionId ?? undefined,
+        creativeId: meta.creativeId ?? lineSnapshot.creativeId ?? undefined,
+        desiredStartAt: lineSnapshot.requestedStartAt
+          ? new Date(lineSnapshot.requestedStartAt)
+          : new Date(lineSnapshot.projectedStartAt),
+        durationHours: item.durationHours,
+        durationDays: item.durationDays,
+        excludeOrderId: orderId,
+      });
+      if (!rebuiltLine) continue;
+      await tx.orderItem.update({
+        where: { id: item.id },
+        data: {
+          lineSnapshot: rebuiltLine as Prisma.InputJsonValue,
+          metadata: {
+            ...(typeof item.metadata === 'object' && item.metadata && !Array.isArray(item.metadata)
+              ? item.metadata
+              : {}),
+            desiredStartAt: rebuiltLine.projectedStartAt,
+          } as Prisma.InputJsonValue,
+        },
       });
     }
   }
@@ -706,7 +860,10 @@ export class OrderService {
         data: { status: OrderStatus.PAID, paidAt },
       });
 
+      await this.inventoryReservation.expireStaleHeldInTransaction(tx, paidAt);
+      await this.revalidateOrderSchedules(tx, order.id);
       await this.provisioning.provisionOrderCampaigns(tx, order.id, paidAt);
+      await this.inventoryReservation.convertHeldForOrder(tx, order.id);
 
       const businessScope = await this.prisma.business.findUnique({
         where: { id: order.businessId },

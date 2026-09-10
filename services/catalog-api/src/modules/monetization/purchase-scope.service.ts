@@ -94,13 +94,7 @@ export class PurchaseScopeService {
 
     if (input.productType === MonetizationProductType.PROMOTED_PROMOTION) {
       if (!input.scope.promotionId) return null;
-      where.product = { type: MonetizationProductType.PROMOTED_PROMOTION };
-      where.orderItem = {
-        metadata: {
-          path: ['promotionId'],
-          equals: input.scope.promotionId,
-        },
-      };
+      where.promotionId = input.scope.promotionId;
     }
 
     return db.adCampaign.findFirst({

@@ -8,6 +8,8 @@ import { AvailabilityService } from './availability.service';
 import { CampaignProvisioningService } from './campaign-provisioning.service';
 import { CampaignStatusService } from './campaign-status.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PRODUCT_PLACEMENT_MAP } from './constants/monetization.constants';
+import { PACKAGE_SNAPSHOT_SCHEMA_VERSION } from './types/package-snapshot.types';
 
 describe('Stage 4B.1 — package VIP creative activation', () => {
   const availability = {
@@ -37,7 +39,22 @@ describe('Stage 4B.1 — package VIP creative activation', () => {
   } as unknown as PrismaService;
 
   const purchaseIntegrity = {
-    assertProductPurchaseAllowed: jest.fn().mockResolvedValue(undefined),
+    assertProductPurchaseAllowed: jest.fn().mockImplementation((_db, input) =>
+      Promise.resolve({
+        requestedStartAt: input.desiredStartAt ?? new Date(),
+        projectedStartAt: input.desiredStartAt ?? new Date(),
+        projectedEndAt: new Date(),
+        conflictResolvedBy: 'NONE',
+      }),
+    ),
+    resolveProductSchedule: jest.fn().mockImplementation((_db, input) =>
+      Promise.resolve({
+        requestedStartAt: input.desiredStartAt ?? new Date(),
+        projectedStartAt: input.desiredStartAt ?? new Date(),
+        projectedEndAt: new Date(),
+        conflictResolvedBy: 'NONE',
+      }),
+    ),
   } as never;
 
   const service = new CampaignProvisioningService(
@@ -58,6 +75,38 @@ describe('Stage 4B.1 — package VIP creative activation', () => {
 
   function mockMaxPackageProvision(creativeId: string) {
     const paidAt = new Date('2026-09-05T10:00:00Z');
+    const isoStart = paidAt.toISOString();
+    const isoEnd = new Date('2026-09-12T10:00:00Z').toISOString();
+    const snapshotItems = [
+      MonetizationProductType.VIP_BANNER,
+      MonetizationProductType.TOP_CATEGORY,
+      MonetizationProductType.FEATURED_BUSINESS,
+      MonetizationProductType.PROMOTED_PROMOTION,
+    ].map((type) => {
+      const productId =
+        type === MonetizationProductType.VIP_BANNER
+          ? 'vip-prod'
+          : type === MonetizationProductType.TOP_CATEGORY
+            ? 'top-prod'
+            : type === MonetizationProductType.FEATURED_BUSINESS
+              ? 'feat-prod'
+              : 'promo-prod';
+      return {
+      productId,
+      productCode: type,
+      productType: type,
+      placementCode: PRODUCT_PLACEMENT_MAP[type],
+      durationDays: 7,
+      durationHours: null,
+      requestedStartAt: isoStart,
+      projectedStartAt: isoStart,
+      projectedEndAt: isoEnd,
+      conflictResolvedBy: 'NONE' as const,
+      promotionId: type === MonetizationProductType.PROMOTED_PROMOTION ? 'promo-1' : undefined,
+      categoryId: 'cat-1',
+      requiresCreative: type === MonetizationProductType.VIP_BANNER,
+    };
+    });
     const tx = {
       order: {
         findUnique: jest.fn().mockResolvedValue({
@@ -74,6 +123,23 @@ describe('Stage 4B.1 — package VIP creative activation', () => {
                 packageCode: 'MAX',
                 creativeId,
                 promotionId: 'promo-1',
+              },
+              packageSnapshot: {
+                schemaVersion: PACKAGE_SNAPSHOT_SCHEMA_VERSION,
+                packageCode: 'MAX',
+                packageName: 'MAX',
+                packageCatalogUpdatedAt: isoStart,
+                cityId: 'city-1',
+                categoryId: 'cat-1',
+                promotionId: 'promo-1',
+                creativeId,
+                currency: 'KZT',
+                packageBasePrice: 100,
+                packageDiscountPercent: 0,
+                packageDiscountAmount: 0,
+                packageFinalPrice: 100,
+                capturedAt: isoStart,
+                items: snapshotItems,
               },
             },
           ],

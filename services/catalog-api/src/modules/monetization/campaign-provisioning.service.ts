@@ -11,6 +11,7 @@ import { AvailabilityService } from './availability.service';
 import { CampaignStatusService } from './campaign-status.service';
 import { PurchaseIntegrityService } from './purchase-integrity.service';
 import { PRODUCT_PLACEMENT_MAP } from './constants/monetization.constants';
+import { parsePackageSnapshotV1, parseProductLineSnapshotV1 } from './types/package-snapshot.types';
 import {
   MonetizationErrorCode,
   monetizationBadRequest,
@@ -83,54 +84,51 @@ export class CampaignProvisioningService {
     item: {
       id: string;
       metadata: Prisma.JsonValue | null;
+      packageSnapshot: Prisma.JsonValue | null;
     },
     paidAt: Date,
   ) {
     const meta = this.parseMeta(item.metadata);
-    const packageCode = meta.packageCode;
-    if (!packageCode) return;
-
-    const pkg = await tx.promotionPackage.findUnique({
-      where: { code: packageCode },
-      include: {
-        items: { include: { product: true } },
-      },
-    });
-    if (!pkg) {
-      monetizationNotFound(
+    const snapshot = parsePackageSnapshotV1(item.packageSnapshot);
+    if (!snapshot?.items.length) {
+      monetizationBadRequest(
         MonetizationErrorCode.PACKAGE_NOT_FOUND,
-        'Package not found',
+        'Package snapshot missing on order item',
       );
     }
 
-    for (const pkgItem of pkg.items) {
-      if (pkgItem.product.type === MonetizationProductType.PROMOTED_PROMOTION) {
-        await this.assertPromotionOwned(tx, order.businessId, meta.promotionId);
+    for (const pkgItem of snapshot!.items) {
+      if (pkgItem.productType === MonetizationProductType.PROMOTED_PROMOTION) {
+        await this.assertPromotionOwned(
+          tx,
+          order.businessId,
+          pkgItem.promotionId ?? meta.promotionId ?? undefined,
+        );
       }
 
       const itemMeta: OrderItemMeta = {
-        packageCode,
-        desiredStartAt: meta.desiredStartAt,
-        promotionId:
-          pkgItem.product.type === MonetizationProductType.PROMOTED_PROMOTION
-            ? meta.promotionId
-            : undefined,
+        packageCode: snapshot!.packageCode,
+        desiredStartAt: pkgItem.projectedStartAt,
+        promotionId: pkgItem.promotionId ?? meta.promotionId,
         creativeId:
-          pkgItem.product.type === MonetizationProductType.VIP_BANNER
-            ? meta.creativeId
+          pkgItem.productType === MonetizationProductType.VIP_BANNER
+            ? meta.creativeId ?? snapshot!.creativeId ?? undefined
             : undefined,
+        categoryId: pkgItem.categoryId ?? order.business.categoryId,
       };
 
       await this.createCampaignForProduct(tx, {
         businessId: order.businessId,
         cityId: order.business.cityId,
-        categoryId: order.business.categoryId,
+        categoryId: pkgItem.categoryId ?? order.business.categoryId,
         orderItemId: item.id,
-        product: pkgItem.product,
+        orderId: order.id,
+        product: { id: pkgItem.productId, type: pkgItem.productType },
         durationHours: pkgItem.durationHours,
         durationDays: pkgItem.durationDays,
         metadata: itemMeta,
         paidAt,
+        promotionId: pkgItem.promotionId ?? meta.promotionId ?? null,
       });
     }
   }
@@ -148,18 +146,25 @@ export class CampaignProvisioningService {
       durationHours: number | null;
       durationDays: number | null;
       metadata: Prisma.JsonValue | null;
+      lineSnapshot: Prisma.JsonValue | null;
     },
     paidAt: Date,
   ) {
     const meta = this.parseMeta(item.metadata);
-    const categoryId = meta.categoryId ?? order.business.categoryId;
+    const lineSnapshot = parseProductLineSnapshotV1(item.lineSnapshot);
+    const categoryId =
+      lineSnapshot?.categoryId ?? meta.categoryId ?? order.business.categoryId;
 
     if (item.product.type === MonetizationProductType.PROMOTED_PROMOTION) {
       await this.assertPromotionOwned(
         tx,
         order.businessId,
-        meta.promotionId,
+        meta.promotionId ?? lineSnapshot?.promotionId ?? undefined,
       );
+    }
+
+    if (lineSnapshot) {
+      meta.desiredStartAt = lineSnapshot.projectedStartAt;
     }
 
     await this.createCampaignForProduct(tx, {
@@ -167,11 +172,13 @@ export class CampaignProvisioningService {
       cityId: order.business.cityId,
       categoryId,
       orderItemId: item.id,
+      orderId: order.id,
       product: item.product,
       durationHours: item.durationHours ?? meta.durationHours,
       durationDays: item.durationDays ?? meta.durationDays,
       metadata: meta,
       paidAt,
+      promotionId: meta.promotionId ?? lineSnapshot?.promotionId ?? null,
     });
   }
 
@@ -204,11 +211,13 @@ export class CampaignProvisioningService {
       cityId: string;
       categoryId: string;
       orderItemId: string;
+      orderId: string;
       product: { id: string; type: MonetizationProductType };
       durationHours?: number | null;
       durationDays?: number | null;
       metadata: OrderItemMeta;
       paidAt: Date;
+      promotionId?: string | null;
     },
   ) {
     const placementCode = PRODUCT_PLACEMENT_MAP[ctx.product.type];
@@ -228,20 +237,17 @@ export class CampaignProvisioningService {
     const desiredStartAt = ctx.metadata.desiredStartAt
       ? new Date(ctx.metadata.desiredStartAt)
       : ctx.paidAt;
-    const desiredEndAt = this.availability.addDuration(
-      desiredStartAt,
-      ctx.durationHours,
-      ctx.durationDays,
-    );
 
-    await this.purchaseIntegrity.assertProductPurchaseAllowed(tx, {
+    await this.purchaseIntegrity.resolveProductSchedule(tx, {
       productType: ctx.product.type,
       businessId: ctx.businessId,
       cityId: ctx.cityId,
       categoryId: ctx.categoryId,
-      promotionId: ctx.metadata.promotionId,
+      promotionId: ctx.promotionId ?? ctx.metadata.promotionId,
       desiredStartAt,
-      desiredEndAt,
+      durationHours: ctx.durationHours,
+      durationDays: ctx.durationDays,
+      excludeOrderId: ctx.orderId,
     });
 
     let creativeModerationStatus: AdModerationStatus | null = null;
@@ -286,6 +292,10 @@ export class CampaignProvisioningService {
         orderItemId: ctx.orderItemId,
         productId: ctx.product.id,
         creativeId,
+        promotionId:
+          ctx.product.type === MonetizationProductType.PROMOTED_PROMOTION
+            ? ctx.promotionId ?? ctx.metadata.promotionId ?? null
+            : null,
         cityId: ctx.cityId,
         categoryId:
           ctx.product.type === MonetizationProductType.TOP_CATEGORY ||
@@ -319,6 +329,22 @@ export class CampaignProvisioningService {
       return { durationDays: null, durationHours: null };
     }
 
+    const pkgSnapshot = parsePackageSnapshotV1(
+      (campaign.orderItem as { packageSnapshot?: Prisma.JsonValue }).packageSnapshot ?? null,
+    );
+    if (pkgSnapshot) {
+      const pkgItem = pkgSnapshot.items.find(
+        (item) =>
+          item.productId === campaign.productId ||
+          item.productType === campaign.product.type,
+      );
+      if (pkgItem) {
+        return {
+          durationDays: pkgItem.durationDays,
+          durationHours: pkgItem.durationHours,
+        };
+      }
+    }
     const meta = this.parseMeta(campaign.orderItem.metadata);
     if (meta.packageCode) {
       const pkg = await this.prisma.promotionPackage.findUnique({

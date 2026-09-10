@@ -27,6 +27,15 @@
 
 ---
 
+## 2026-09-11 — Stage 6.7C: Package and city inventory integrity
+
+- Immutable `packageSnapshot` / `lineSnapshot` on `OrderItem`; provisioning uses snapshots only.
+- `AdPlacementCityConfig` for per-city capacity; `AdInventoryReservation` (HELD/CONVERTED/EXPIRED/CANCELLED) with configurable TTL.
+- Schedule-after renewal for business-scope placements; capacity counts campaigns + active holds.
+- `AdCampaign.promotionId` FK; payment confirm revalidates schedules after expired holds.
+- Docs: `docs/monetization/stage-6-7c-package-inventory.md`.
+- Future: monetization UX (6.7D), adversarial QA (6.7QA), ad bonus spend.
+
 ## 2026-09-11 — Stage 6.7B: Monetization purchase integrity core
 
 - Central purchase scopes + same-business overlap checks (409 `PURCHASE_CONFLICT` with `reasonCode`).

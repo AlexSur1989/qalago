@@ -9,6 +9,7 @@ import { CampaignProvisioningService } from './campaign-provisioning.service';
 import { CampaignStatusService } from './campaign-status.service';
 import { PurchaseIntegrityService } from './purchase-integrity.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { createMockPlacementCapacity } from './test-utils/mock-placement-capacity';
 
 describe('CampaignProvisioningService', () => {
   const prisma = {
@@ -33,7 +34,22 @@ describe('CampaignProvisioningService', () => {
   const campaignStatus = new CampaignStatusService(availability);
 
   const purchaseIntegrity = {
-    assertProductPurchaseAllowed: jest.fn().mockResolvedValue(undefined),
+    assertProductPurchaseAllowed: jest.fn().mockImplementation((_db, input) =>
+      Promise.resolve({
+        requestedStartAt: input.desiredStartAt ?? new Date(),
+        projectedStartAt: input.desiredStartAt ?? new Date(),
+        projectedEndAt: new Date(),
+        conflictResolvedBy: 'NONE',
+      }),
+    ),
+    resolveProductSchedule: jest.fn().mockImplementation((_db, input) =>
+      Promise.resolve({
+        requestedStartAt: input.desiredStartAt ?? new Date(),
+        projectedStartAt: input.desiredStartAt ?? new Date(),
+        projectedEndAt: new Date(),
+        conflictResolvedBy: 'NONE',
+      }),
+    ),
   } as unknown as PurchaseIntegrityService;
 
   const service = new CampaignProvisioningService(
@@ -90,28 +106,28 @@ describe('CampaignProvisioningService', () => {
   });
 
   it('24. BOOST → CATEGORY_BOOST', () => {
-    const avail = new AvailabilityService(prisma);
+    const avail = new AvailabilityService(prisma, createMockPlacementCapacity());
     expect(avail.resolvePlacementCode(MonetizationProductType.BOOST)).toBe(
       'CATEGORY_BOOST',
     );
   });
 
   it('25. FEATURED → HOME_FEATURED', async () => {
-    const avail = new AvailabilityService(prisma);
+    const avail = new AvailabilityService(prisma, createMockPlacementCapacity());
     expect(avail.resolvePlacementCode(MonetizationProductType.FEATURED_BUSINESS)).toBe(
       'HOME_FEATURED',
     );
   });
 
   it('26. VIP → HOME_VIP_BANNER', async () => {
-    const avail = new AvailabilityService(prisma);
+    const avail = new AvailabilityService(prisma, createMockPlacementCapacity());
     expect(avail.resolvePlacementCode(MonetizationProductType.VIP_BANNER)).toBe(
       'HOME_VIP_BANNER',
     );
   });
 
   it('27. PROMOTED_PROMOTION → HOME_PROMOTIONS', async () => {
-    const avail = new AvailabilityService(prisma);
+    const avail = new AvailabilityService(prisma, createMockPlacementCapacity());
     expect(avail.resolvePlacementCode(MonetizationProductType.PROMOTED_PROMOTION)).toBe(
       'HOME_PROMOTIONS',
     );
@@ -131,23 +147,40 @@ describe('CampaignProvisioningService', () => {
               durationDays: 7,
               durationHours: null,
               metadata: { packageCode: 'START', promotionId: 'promo-1' },
-            },
-          ],
-        }),
-      },
-      promotionPackage: {
-        findUnique: jest.fn().mockResolvedValue({
-          code: 'START',
-          items: [
-            {
-              product: { id: 'p1', type: MonetizationProductType.TOP_CATEGORY },
-              durationDays: 7,
-              durationHours: null,
-            },
-            {
-              product: { id: 'p2', type: MonetizationProductType.PROMOTED_PROMOTION },
-              durationDays: 7,
-              durationHours: null,
+              packageSnapshot: {
+                schemaVersion: 1,
+                packageCode: 'START',
+                packageName: 'Start',
+                items: [
+                  {
+                    productId: 'p1',
+                    productCode: 'TOP_CATEGORY',
+                    productType: MonetizationProductType.TOP_CATEGORY,
+                    placementCode: 'CATEGORY_TOP',
+                    durationDays: 7,
+                    durationHours: null,
+                    requestedStartAt: null,
+                    projectedStartAt: new Date().toISOString(),
+                    projectedEndAt: new Date().toISOString(),
+                    conflictResolvedBy: 'NONE',
+                    requiresCreative: false,
+                  },
+                  {
+                    productId: 'p2',
+                    productCode: 'PROMOTED_PROMOTION',
+                    productType: MonetizationProductType.PROMOTED_PROMOTION,
+                    placementCode: 'HOME_PROMOTIONS',
+                    durationDays: 7,
+                    durationHours: null,
+                    promotionId: 'promo-1',
+                    requestedStartAt: null,
+                    projectedStartAt: new Date().toISOString(),
+                    projectedEndAt: new Date().toISOString(),
+                    conflictResolvedBy: 'NONE',
+                    requiresCreative: false,
+                  },
+                ],
+              },
             },
           ],
         }),

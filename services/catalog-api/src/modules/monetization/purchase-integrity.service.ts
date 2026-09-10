@@ -6,20 +6,20 @@ import {
   PromotionStatus,
 } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { AvailabilityService } from './availability.service';
+import { PlacementCapacityService } from './placement-capacity.service';
+import { PurchaseSchedulingService, ProjectedPeriodResult } from './purchase-scheduling.service';
 import {
   MonetizationErrorCode,
   PurchaseConflictReason,
-  PurchaseConflictReasonType,
   monetizationBadRequest,
   monetizationConflict,
 } from './errors/monetization.errors';
-import { PurchaseScopeService } from './purchase-scope.service';
 import {
   PurchaseIntent,
   orderMatchesPurchaseIntent,
   purchaseIntentFingerprint,
 } from './utils/purchase-intent.util';
+import { PRODUCT_PLACEMENT_MAP } from './constants/monetization.constants';
 
 function hashLockKey(parts: string[]): number {
   const str = parts.join(':');
@@ -38,13 +38,9 @@ export class PurchaseIntegrityService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly availability: AvailabilityService,
-    private readonly purchaseScope: PurchaseScopeService,
+    private readonly scheduling: PurchaseSchedulingService,
+    private readonly capacity: PlacementCapacityService,
   ) {}
-
-  private client(db?: DbClient): DbClient {
-    return db ?? this.prisma;
-  }
 
   async assertCategoryEligibleForBusiness(
     business: { id: string; categoryId: string },
@@ -69,10 +65,7 @@ export class PurchaseIntegrityService {
     }
   }
 
-  async assertPromotionEligible(
-    businessId: string,
-    promotionId: string,
-  ) {
+  async assertPromotionEligible(businessId: string, promotionId: string) {
     const promotion = await this.prisma.promotion.findFirst({
       where: { id: promotionId, businessId },
     });
@@ -99,10 +92,17 @@ export class PurchaseIntegrityService {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(${lockKey})`;
   }
 
-  async findOrderByIdempotencyKey(
+  async acquirePlacementScopeLock(
     tx: Prisma.TransactionClient,
-    idempotencyKey: string,
+    placementCode: string,
+    cityId: string,
+    categoryId?: string | null,
   ) {
+    const lockKey = hashLockKey(['placement-capacity', placementCode, cityId, categoryId ?? '']);
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(${lockKey})`;
+  }
+
+  async findOrderByIdempotencyKey(tx: Prisma.TransactionClient, idempotencyKey: string) {
     return tx.payment.findUnique({
       where: { idempotencyKey },
       include: {
@@ -116,10 +116,7 @@ export class PurchaseIntegrityService {
     });
   }
 
-  async findReusablePendingOrder(
-    tx: Prisma.TransactionClient,
-    intent: PurchaseIntent,
-  ) {
+  async findReusablePendingOrder(tx: Prisma.TransactionClient, intent: PurchaseIntent) {
     const pending = await tx.order.findMany({
       where: {
         businessId: intent.businessId,
@@ -135,17 +132,7 @@ export class PurchaseIntegrityService {
     return pending.find((order) => orderMatchesPurchaseIntent(order, intent)) ?? null;
   }
 
-  conflictReasonForStatus(status: string): PurchaseConflictReasonType {
-    if (status === 'SCHEDULED') {
-      return PurchaseConflictReason.ALREADY_SCHEDULED;
-    }
-    if (status === 'PENDING_MODERATION') {
-      return PurchaseConflictReason.ALREADY_SCHEDULED;
-    }
-    return PurchaseConflictReason.ALREADY_ACTIVE;
-  }
-
-  async assertNoScopeOverlap(
+  async resolveProductSchedule(
     db: DbClient,
     input: {
       productType: MonetizationProductType;
@@ -153,19 +140,13 @@ export class PurchaseIntegrityService {
       cityId: string;
       categoryId?: string | null;
       promotionId?: string | null;
-      desiredStartAt: Date;
-      desiredEndAt: Date;
+      desiredStartAt?: Date | null;
+      durationHours?: number | null;
+      durationDays?: number | null;
+      excludeOrderId?: string;
     },
-  ) {
-    const scope = this.purchaseScope.resolveScope({
-      productType: input.productType,
-      businessId: input.businessId,
-      cityId: input.cityId,
-      categoryId: input.categoryId,
-      promotionId: input.promotionId,
-    });
-    if (!scope) return;
-
+    now = new Date(),
+  ): Promise<ProjectedPeriodResult> {
     if (
       input.productType === MonetizationProductType.PROMOTED_PROMOTION &&
       !input.promotionId
@@ -176,73 +157,52 @@ export class PurchaseIntegrityService {
       );
     }
 
-    const placement = await this.client(db).adPlacement.findUnique({
-      where: { code: scope.placementCode },
-    });
-    if (!placement) return;
-
-    const existing = await this.purchaseScope.findOverlappingScopedCampaign(db, {
-      productType: input.productType,
-      scope,
-      desiredStartAt: input.desiredStartAt,
-      desiredEndAt: input.desiredEndAt,
-      placementId: placement.id,
-    });
-
-    if (existing) {
-      const reason =
-        input.productType === MonetizationProductType.PROMOTED_PROMOTION
-          ? PurchaseConflictReason.TARGET_ALREADY_PROMOTED
-          : this.conflictReasonForStatus(existing.status);
-
-      this.logger.warn(
-        `Purchase scope conflict product=${input.productType} businessId=${input.businessId} cityId=${input.cityId} reason=${reason}`,
-      );
-
-      monetizationConflict(
-        MonetizationErrorCode.PURCHASE_CONFLICT,
-        reason,
-        'An overlapping ad campaign already exists for this purchase scope',
-        {
-          existingCampaignId: existing.id,
-          activeUntil: existing.endAt.toISOString(),
-          nextAvailableAt: existing.endAt.toISOString(),
-          canRenew: false,
-        },
-      );
-    }
-  }
-
-  async assertProductPurchaseAllowed(
-    db: DbClient,
-    input: {
-      productType: MonetizationProductType;
-      businessId: string;
-      cityId: string;
-      categoryId?: string | null;
-      promotionId?: string | null;
-      desiredStartAt: Date;
-      desiredEndAt: Date;
-    },
-  ) {
-    await this.assertNoScopeOverlap(db, input);
-
-    const availability = await this.availability.checkAvailability(
-      {
-        productType: input.productType,
-        cityId: input.cityId,
-        categoryId: input.categoryId,
-        desiredStartAt: input.desiredStartAt,
-        desiredEndAt: input.desiredEndAt,
-      },
-      db,
-    );
-    if (!availability.available) {
+    const period = await this.scheduling.resolveProjectedPeriod(db, input, now);
+    if (!period) {
       monetizationBadRequest(
         MonetizationErrorCode.PLACEMENT_UNAVAILABLE,
-        'Placement slot unavailable for selected dates',
+        'Placement is not available',
       );
     }
+
+    const placementCode = PRODUCT_PLACEMENT_MAP[input.productType];
+    if (placementCode && this.capacity.usesSharedCapacity(placementCode)) {
+      const placement = await db.adPlacement.findUnique({
+        where: { code: placementCode },
+      });
+      if (placement) {
+        const ok = await this.capacity.isWindowAvailable(
+          db,
+          {
+            placementId: placement.id,
+            placementCode,
+            cityId: input.cityId,
+            categoryId: input.categoryId,
+          },
+          period!.projectedStartAt,
+          period!.projectedEndAt,
+          now,
+          input.excludeOrderId,
+        );
+        if (!ok) {
+          monetizationConflict(
+            MonetizationErrorCode.PLACEMENT_UNAVAILABLE,
+            PurchaseConflictReason.PLACEMENT_SOLD_OUT,
+            'Placement sold out for the requested period',
+            { nextAvailableAt: period!.projectedEndAt.toISOString() },
+          );
+        }
+      }
+    }
+
+    return period!;
   }
 
+  /** @deprecated name kept for callers — schedules instead of blocking overlap. */
+  async assertProductPurchaseAllowed(
+    db: DbClient,
+    input: Parameters<PurchaseIntegrityService['resolveProductSchedule']>[1],
+  ): Promise<ProjectedPeriodResult> {
+    return this.resolveProductSchedule(db, input);
+  }
 }

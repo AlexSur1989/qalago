@@ -7,6 +7,8 @@ import {
 } from '@prisma/client';
 import { ConflictException } from '@nestjs/common';
 import { AvailabilityService } from './availability.service';
+import { PlacementCapacityService } from './placement-capacity.service';
+import { PurchaseSchedulingService } from './purchase-scheduling.service';
 import { OrderService } from './order.service';
 import { PurchaseIntegrityService } from './purchase-integrity.service';
 import { PurchaseScopeService } from './purchase-scope.service';
@@ -15,6 +17,10 @@ import { PricingService } from './pricing.service';
 import { CampaignProvisioningService } from './campaign-provisioning.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
+import {
+  createMockInventoryReservationService,
+  createMockPackageSnapshotService,
+} from './test-utils/mock-order-deps-6-7c';
 import {
   buildProductPurchaseIntent,
   orderMatchesPurchaseIntent,
@@ -86,43 +92,62 @@ describe('Stage 6.7B — purchase integrity core', () => {
     });
   });
 
-  describe('PurchaseIntegrityService scope conflicts', () => {
+  describe('PurchaseIntegrityService scheduling (6.7C)', () => {
     const prisma = {
       adPlacement: { findUnique: jest.fn() },
-      adCampaign: { findFirst: jest.fn(), count: jest.fn() },
+      adCampaign: { findMany: jest.fn(), findFirst: jest.fn(), count: jest.fn() },
+      adInventoryReservation: { findMany: jest.fn(), count: jest.fn() },
+      adPlacementCityConfig: { findUnique: jest.fn() },
       category: { findUnique: jest.fn() },
       promotion: { findFirst: jest.fn() },
     } as unknown as PrismaService;
 
-    const availability = {
-      checkAvailability: jest.fn().mockResolvedValue({ available: true }),
-    } as unknown as AvailabilityService;
-
     const purchaseScope = new PurchaseScopeService();
-    const service = new PurchaseIntegrityService(prisma, availability, purchaseScope);
+    const availability = {
+      addDuration: (start: Date, _h?: number | null, days?: number | null) => {
+        const end = new Date(start);
+        if (days) end.setUTCDate(end.getUTCDate() + days);
+        return end;
+      },
+    } as unknown as import('./availability.service').AvailabilityService;
+    const capacity = new PlacementCapacityService(prisma);
+    const scheduling = new PurchaseSchedulingService(
+      availability,
+      purchaseScope,
+      capacity,
+    );
+    const service = new PurchaseIntegrityService(prisma, scheduling, capacity);
 
     beforeEach(() => jest.clearAllMocks());
 
-    it('blocks overlapping HOME_VIP_BANNER for same business+city', async () => {
+    it('schedules HOME_VIP_BANNER after active period for same business+city', async () => {
       prisma.adPlacement.findUnique = jest.fn().mockResolvedValue({
         id: 'pl-vip',
         code: 'HOME_VIP_BANNER',
+        isActive: true,
+        maxActiveCampaigns: 3,
       });
-      prisma.adCampaign.findFirst = jest.fn().mockResolvedValue({
-        id: 'camp-1',
-        status: AdCampaignStatus.ACTIVE,
-        endAt: new Date('2026-09-20'),
+      prisma.adCampaign.findFirst = jest
+        .fn()
+        .mockResolvedValueOnce({
+          endAt: new Date('2026-09-17T00:00:00.000Z'),
+        })
+        .mockResolvedValueOnce(null);
+      prisma.adCampaign.count = jest.fn().mockResolvedValue(0);
+      prisma.adInventoryReservation.count = jest.fn().mockResolvedValue(0);
+      prisma.adPlacementCityConfig.findUnique = jest.fn().mockResolvedValue(null);
+
+      const result = await service.resolveProductSchedule(prisma, {
+        productType: MonetizationProductType.VIP_BANNER,
+        businessId: 'biz-1',
+        cityId: 'city-1',
+        durationDays: 7,
+        desiredStartAt: new Date('2026-09-12T00:00:00.000Z'),
       });
 
-      await expect(
-        service.assertNoScopeOverlap(prisma, {
-          productType: MonetizationProductType.VIP_BANNER,
-          businessId: 'biz-1',
-          cityId: 'city-1',
-          desiredStartAt: new Date('2026-09-12'),
-          desiredEndAt: new Date('2026-09-19'),
-        }),
-      ).rejects.toBeInstanceOf(ConflictException);
+      expect(result.projectedStartAt.toISOString()).toBe('2026-09-17T00:00:00.000Z');
+      expect(result.projectedEndAt.toISOString()).toBe('2026-09-24T00:00:00.000Z');
+      expect(result.conflictResolvedBy).toBe('SCHEDULE_AFTER_EXISTING');
     });
 
     it('category mismatch rejected on create path helper', async () => {
@@ -187,6 +212,13 @@ describe('Stage 6.7B — purchase integrity core', () => {
       assertPromotionEligible: jest.fn().mockResolvedValue(undefined),
       assertProductPurchaseAllowed: jest.fn().mockResolvedValue(undefined),
       acquirePurchaseIntentLock: jest.fn().mockResolvedValue(undefined),
+      acquirePlacementScopeLock: jest.fn().mockResolvedValue(undefined),
+      resolveProductSchedule: jest.fn().mockResolvedValue({
+        requestedStartAt: new Date(),
+        projectedStartAt: new Date(),
+        projectedEndAt: new Date(),
+        conflictResolvedBy: 'NONE',
+      }),
       findReusablePendingOrder: jest.fn(),
       findOrderByIdempotencyKey: jest.fn(),
     } as unknown as PurchaseIntegrityService;
@@ -199,6 +231,8 @@ describe('Stage 6.7B — purchase integrity core', () => {
       provisioning,
       asAuditLogService(createMockAuditLog()),
       purchaseIntegrity,
+      createMockPackageSnapshotService(),
+      createMockInventoryReservationService(),
     );
 
     const user = { id: 'user-1', role: UserRole.BUSINESS, phone: '+7700', sub: 'user-1' };
@@ -236,7 +270,14 @@ describe('Stage 6.7B — purchase integrity core', () => {
       prisma.$transaction = jest.fn().mockImplementation(async (fn) => {
         const tx = {
           business: { findUniqueOrThrow: jest.fn().mockResolvedValue({ cityId: 'city-1', categoryId: 'cat-1' }) },
-          order: { findUnique: jest.fn(), create: jest.fn() },
+          order: {
+            findUnique: jest.fn(),
+            findUniqueOrThrow: jest.fn().mockResolvedValue({
+              ...pendingOrder,
+              items: [],
+            }),
+            create: jest.fn(),
+          },
           payment: { create: jest.fn() },
         };
         purchaseIntegrity.findReusablePendingOrder = jest.fn().mockResolvedValue(pendingOrder);

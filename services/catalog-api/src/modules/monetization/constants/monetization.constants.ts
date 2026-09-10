@@ -41,6 +41,17 @@ export const VIP_CAPACITY_PLACEMENT_CODE = 'HOME_VIP_BANNER';
 /** Monetization product code used for package order line items. */
 export const PACKAGE_PRODUCT_CODE = 'PACKAGE';
 
+/** Inventory hold TTL for AWAITING_PAYMENT checkout (configurable via env). */
+export function resolveInventoryReservationTtlMs(): number {
+  const raw = process.env.MONETIZATION_INVENTORY_RESERVATION_TTL_MS;
+  const parsed = raw ? Number.parseInt(raw, 10) : Number.NaN;
+  if (Number.isFinite(parsed) && parsed > 60_000) {
+    return parsed;
+  }
+  // Default: 24h — suitable for manual bank transfer while avoiding indefinite holds.
+  return 24 * 60 * 60 * 1000;
+}
+
 export const ORDER_NUMBER_PREFIX = 'QLG';
 
 /** Placements with active ad serving (Stage 3A). */
