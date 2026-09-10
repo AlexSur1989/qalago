@@ -46,7 +46,19 @@ class AppConstants {
 
   static String get _devHost {
     if (devHostOverride.isNotEmpty) return devHostOverride;
-    if (kIsWeb) return 'localhost';
+    if (kIsWeb) {
+      // Align API host with the page host (localhost vs 127.0.0.1) for local dev.
+      final pageHost = Uri.base.host;
+      if (pageHost == 'localhost' || pageHost == '127.0.0.1') {
+        return pageHost;
+      }
+      if (pageHost == '[::1]') return 'localhost';
+      return 'localhost';
+    }
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      // Android emulator loopback. Physical device MUST set QALAGO_DEV_HOST=LAN_IP.
+      return '10.0.2.2';
+    }
     return '127.0.0.1';
   }
 

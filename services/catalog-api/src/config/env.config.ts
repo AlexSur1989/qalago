@@ -1,6 +1,6 @@
 export default () => ({
   app: {
-    port: parseInt(process.env.PORT ?? '3000', 10),
+    port: parseInt(process.env.PORT ?? '3002', 10),
     jwtSecret: process.env.JWT_SECRET ?? 'dev-secret-change-me-32-chars-min',
     jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
     otpDebug: process.env.OTP_DEBUG === 'true',

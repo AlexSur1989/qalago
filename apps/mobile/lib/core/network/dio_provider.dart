@@ -1,5 +1,6 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/app_constants.dart';
 import '../storage/auth_storage.dart';
@@ -12,6 +13,13 @@ final authStorageProvider = Provider<AuthStorage>(
 );
 
 final dioProvider = Provider<Dio>((ref) {
+  assert(() {
+    debugPrint('[QalaGo] API baseUrl: ${AppConstants.baseUrl}');
+    debugPrint('[QalaGo] Media base: ${AppConstants.mediaBaseUrl}');
+    debugPrint('[QalaGo] AI base: ${AppConstants.aiOrchestratorBaseUrl}');
+    return true;
+  }());
+
   final dio = Dio(
     BaseOptions(
       baseUrl: AppConstants.baseUrl,

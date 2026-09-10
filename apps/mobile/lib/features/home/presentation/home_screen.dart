@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,6 +17,7 @@ import '../../../shared/utils/business_rank.dart';
 import '../../../shared/widgets/qalago_logo.dart';
 import '../../../shared/widgets/empty_city_view.dart';
 import '../../../shared/widgets/city_picker.dart';
+import '../../../shared/utils/network_error_utils.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/presentation/dev_quick_login_panel.dart';
@@ -182,10 +184,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       categoriesAsync.when(
                         loading: () =>
                             const SizedBox(height: 130, child: LoadingView()),
-                        error: (e, _) => ErrorView(
-                          message: '$e',
-                          onRetry: () => ref.invalidate(categoriesProvider),
-                        ),
+                        error: (e, _) {
+                          assert(() {
+                            debugPrint('[QalaGo Home] categories error: $e');
+                            return true;
+                          }());
+                          return ErrorView(
+                            message: mapUserFacingLoadError(e),
+                            onRetry: () => ref.invalidate(categoriesProvider),
+                          );
+                        },
                         data: (categories) => _CategoryPhotoStrip(
                           categories: categories,
                           onSelected: _openCategory,
@@ -201,12 +209,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       promotionsAsync.when(
                         loading: () =>
                             const SizedBox(height: 210, child: LoadingView()),
-                        error: (e, _) => Text(
-                          'Акции: $e',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                        ),
+                        error: (e, _) {
+                          assert(() {
+                            debugPrint('[QalaGo Home] promotions error: $e');
+                            return true;
+                          }());
+                          return ErrorView(
+                            message: mapUserFacingLoadError(e),
+                            onRetry: () => ref.invalidate(promotionsProvider),
+                          );
+                        },
                         data: (paginated) => _PromotionsStrip(
                           items: paginated.items.take(6).toList(),
                           onTap: _openPromotion,
@@ -224,13 +236,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       featuredAsync.when(
                         loading: () =>
                             const SizedBox(height: 194, child: LoadingView()),
-                        error: (e, _) => ErrorView(
-                          message: '$e',
-                          onRetry: () {
-                            ref.invalidate(homeOrganicRecommendationsProvider);
-                            ref.invalidate(recommendedBusinessesProvider);
-                          },
-                        ),
+                        error: (e, _) {
+                          assert(() {
+                            debugPrint('[QalaGo Home] featured error: $e');
+                            return true;
+                          }());
+                          return ErrorView(
+                            message: mapUserFacingLoadError(e),
+                            onRetry: () {
+                              ref.invalidate(homeOrganicRecommendationsProvider);
+                              ref.invalidate(recommendedBusinessesProvider);
+                            },
+                          );
+                        },
                         data: (items) {
                           _syncFeaturedItemsCount(items.length);
                           return _PopularPlacesCarousel(
@@ -250,10 +268,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       const SizedBox(height: 12),
                       businessesAsync.when(
                         loading: () => const LoadingView(),
-                        error: (e, _) => ErrorView(
-                          message: 'API недоступен.\n$e',
-                          onRetry: () => ref.invalidate(businessesProvider),
-                        ),
+                        error: (e, _) {
+                          assert(() {
+                            debugPrint('[QalaGo Home] nearby error: $e');
+                            return true;
+                          }());
+                          return ErrorView(
+                            message: mapUserFacingLoadError(e),
+                            onRetry: () => ref.invalidate(businessesProvider),
+                          );
+                        },
                         data: (data) => _NearbyBusinessList(items: data.items),
                       ),
                       ],
