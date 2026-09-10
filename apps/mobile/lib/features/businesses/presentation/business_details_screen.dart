@@ -10,8 +10,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/location/passive_user_position.dart';
 import '../../../core/location/user_location_provider.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
+import '../../../shared/navigation/navigation_utils.dart';
 import '../../../shared/utils/audience_distance_bucket.dart';
-import '../../../shared/models/models.dart';
 import '../../../shared/utils/json_parse.dart';
 import '../../../shared/utils/business_detail_utils.dart';
 import '../../../shared/widgets/error_view.dart';
@@ -276,13 +276,11 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                 imageUrl: coverUrl,
                 cityName: cityName,
                 isFavorite: favoriteAsync.value ?? false,
-                onBack: () {
-                  if (context.canPop()) {
-                    context.pop();
-                  } else {
-                    context.go('/home');
-                  }
-                },
+                onBack: () => qalagoPopBusinessDetail(
+                  context,
+                  widget.trafficSource ?? BusinessTrafficSource.direct,
+                  searchQuery: widget.searchQuery,
+                ),
                 onFavorite: () => unawaited(_toggleFavorite()),
                 onImageTap: photoUrls.isEmpty
                     ? null

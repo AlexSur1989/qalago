@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/navigation/navigation_utils.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/widgets/error_view.dart';
@@ -70,7 +71,10 @@ class _OwnerReviewsScreenState extends ConsumerState<OwnerReviewsScreen> {
     final reviewsAsync = ref.watch(ownerReviewsProvider(widget.businessId));
 
     return Scaffold(
-      appBar: AppBar(title: Text('Отзывы · ${widget.businessTitle}')),
+      appBar: AppBar(
+        leading: qalagoBackLeading(context, fallbackLocation: '/owner'),
+        title: Text('Отзывы · ${widget.businessTitle}'),
+      ),
       body: reviewsAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(

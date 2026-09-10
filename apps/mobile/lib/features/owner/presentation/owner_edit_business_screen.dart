@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/navigation/navigation_utils.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -149,7 +150,10 @@ class _OwnerEditBusinessScreenState
     final detailsAsync = ref.watch(businessDetailsProvider(widget.businessId));
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.businessTitle)),
+      appBar: AppBar(
+        leading: qalagoBackLeading(context, fallbackLocation: '/owner'),
+        title: Text(widget.businessTitle),
+      ),
       body: detailsAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(

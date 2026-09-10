@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/navigation/navigation_utils.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
@@ -347,7 +348,10 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
     });
 
     return Scaffold(
-      appBar: AppBar(title: Text('Товары и услуги · ${widget.businessTitle}')),
+      appBar: AppBar(
+        leading: qalagoBackLeading(context, fallbackLocation: '/owner'),
+        title: Text('Товары и услуги · ${widget.businessTitle}'),
+      ),
       body: catalogAsync.when(
         loading: () {
           if (_items.isNotEmpty) {

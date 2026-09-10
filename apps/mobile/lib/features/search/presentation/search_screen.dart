@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
+import '../../../shared/navigation/navigation_utils.dart';
 import '../../../shared/navigation/open_business.dart';
 
 import '../../../core/location/user_location_provider.dart';
@@ -202,10 +203,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         backgroundColor: const Color(0xFFF5F7FA),
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () => context.pop(),
-        ),
+        leading: qalagoBackLeading(context, fallbackLocation: '/home'),
         title: TextField(
           controller: _controller,
           autofocus: _query.isEmpty && _categoryId == null,

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/navigation/navigation_utils.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../analytics/widgets/tracked_catalog_item_card.dart';
@@ -91,9 +91,9 @@ class _BusinessCatalogScreenState extends ConsumerState<BusinessCatalogScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Товары и услуги'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+        leading: qalagoBackLeading(
+          context,
+          fallbackLocation: '/business/${widget.businessId}',
         ),
       ),
       body: catalogAsync.when(

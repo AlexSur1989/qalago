@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../shared/navigation/navigation_utils.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/error_view.dart';
@@ -88,7 +89,10 @@ class OwnerGalleryScreen extends ConsumerWidget {
     final photoUsage = planAsync.valueOrNull?['usage']?['photos'] as int?;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Галерея · $businessTitle')),
+      appBar: AppBar(
+        leading: qalagoBackLeading(context, fallbackLocation: '/owner'),
+        title: Text('Галерея · $businessTitle'),
+      ),
       body: galleryAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(

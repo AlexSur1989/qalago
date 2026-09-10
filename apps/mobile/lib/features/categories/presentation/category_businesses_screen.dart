@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
+import '../../../shared/navigation/navigation_utils.dart';
 import '../../../shared/navigation/open_business.dart';
 
 import '../../../core/providers/city_provider.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/utils/business_rank.dart';
 import '../../analytics/widgets/tracked_business_card.dart';
@@ -74,16 +74,7 @@ class CategoryBusinessesScreen extends ConsumerWidget {
             ),
           ],
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/categories');
-            }
-          },
-        ),
+        leading: qalagoBackLeading(context, fallbackLocation: '/categories'),
       ),
       body: RefreshIndicator(
         color: Theme.of(context).colorScheme.primary,

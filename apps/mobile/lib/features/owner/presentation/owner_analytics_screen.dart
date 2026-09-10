@@ -9,6 +9,7 @@ import '../../../shared/widgets/loading_view.dart';
 import '../owner_analytics_utils.dart';
 import '../../../core/rbac/business_access.dart';
 import '../providers/owner_providers.dart';
+import '../../../shared/navigation/navigation_utils.dart';
 import '../utils/analytics_export_download.dart';
 import 'widgets/owner_analytics_widgets.dart';
 
@@ -37,6 +38,7 @@ class _OwnerAnalyticsScreenState extends ConsumerState<OwnerAnalyticsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Статистика'),
+        leading: qalagoBackLeading(context, fallbackLocation: '/owner'),
         actions: [
           TextButton(
             onPressed: () => context.push('/owner/monetization/campaigns'),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../shared/navigation/navigation_utils.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
@@ -89,9 +89,9 @@ class _BusinessPhotosScreenState extends ConsumerState<BusinessPhotosScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Фотографии'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+        leading: qalagoBackLeading(
+          context,
+          fallbackLocation: '/business/${widget.businessId}',
         ),
       ),
       body: photosAsync.when(
@@ -277,11 +277,14 @@ class _FullscreenGalleryState extends State<_FullscreenGallery> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: true,
+      child: Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
+        automaticallyImplyLeading: true,
         title: Text('${_index + 1} / ${widget.urls.length}'),
       ),
       body: PageView.builder(
@@ -300,6 +303,7 @@ class _FullscreenGalleryState extends State<_FullscreenGallery> {
             ),
           );
         },
+      ),
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/auth/route_access.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/navigation/navigation_utils.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -88,7 +89,10 @@ class _OwnerInvitationScreenState extends ConsumerState<OwnerInvitationScreen> {
     final auth = ref.watch(authProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Приглашение в команду')),
+      appBar: AppBar(
+        leading: qalagoBackLeading(context, fallbackLocation: '/home'),
+        title: const Text('Приглашение в команду'),
+      ),
       body: _loading
           ? const LoadingView()
           : _loadError != null

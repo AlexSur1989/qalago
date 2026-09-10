@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/navigation/navigation_utils.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/widgets/error_view.dart';
@@ -208,7 +209,10 @@ class OwnerPromotionsScreen extends ConsumerWidget {
     final feedHint = planAsync.hasValue ? ownerPromotionFeedHint(plan) : null;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Акции · $businessTitle')),
+      appBar: AppBar(
+        leading: qalagoBackLeading(context, fallbackLocation: '/owner'),
+        title: Text('Акции · $businessTitle'),
+      ),
       floatingActionButton: promotionsAsync.maybeWhen(
         data: (promotions) {
           final activeCount = promotions

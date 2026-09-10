@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/rbac/business_access.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/navigation/navigation_utils.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../../providers/owner_providers.dart';
 
@@ -30,6 +31,9 @@ class OwnerScaffold extends ConsumerWidget {
       appBar: AppBar(
         title: Text(title),
         actions: actions,
+        leading: context.canPop()
+            ? qalagoBackLeading(context, fallbackLocation: '/owner')
+            : null,
       ),
       drawer: _OwnerDrawer(currentPath: location, unreadCount: unread),
       body: body,

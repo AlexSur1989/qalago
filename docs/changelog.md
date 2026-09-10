@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-10 — Mobile navigation & back behavior
+
+- Shared `navigation_utils` (pop vs source-aware fallback); consistent `BackButton` on search, category, business subpages, owner screens; business detail deep-link fallback by traffic source.
+- Docs: `docs/mobile/navigation-consistency.md`; tests `test/navigation/navigation_utils_test.dart`.
+
 ## 2026-09-10 — Mobile UI design system consistency
 
 - Expanded `AppTheme.light` (buttons, inputs, chips, dialogs, sheets, snackbars); `QalagoTheme` extensions; consumer shell nav + shared widgets aligned to `ColorScheme`.
