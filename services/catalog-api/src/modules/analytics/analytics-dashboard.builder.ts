@@ -760,7 +760,8 @@ export class AnalyticsDashboardBuilder {
   ) {
     const views = dailyTotals.views;
     const actions = sumIntentActionsFromDaily(dailyTotals);
-    const rate = views > 0 ? Math.round((actions / views) * 1000) / 10 : 0;
+    void counts;
+    const rate = viewToIntentConversionPercent(actions, views);
     return { views, actions, rate };
   }
 

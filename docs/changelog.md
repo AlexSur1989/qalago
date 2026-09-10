@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-10 — Stage 6.6QA: Analytics 360 final QA
+
+- Adversarial regression suite `analytics-stage-6-6qa-final.spec.ts` (entitlements, downgrade leakage, privacy thresholds, export auth, rollup-first 365).
+- Fixes: CSV export requires `ANALYTICS_VIEW` + `ANALYTICS_EXPORT`; conversion `rate` null when views=0 (no fake 0%).
+- Docs: `docs/analytics/stage-6-6qa-final-qa.md`.
+
 ## 2026-09-10 — Stage 6.6F: Analytics reporting & export foundation
 
 - Canonical `buildBusinessAnalyticsReport` (CUSTOM/WEEKLY/MONTHLY completed local periods) reuses dashboard rollup semantics; CSV serializes report payload.

@@ -243,7 +243,7 @@ describe('Stage 5K / 6.6F analytics CSV export', () => {
           searchQueriesStatus: 'INSUFFICIENT_DATA',
           audienceGeography: [],
           audienceGeographyStatus: 'INSUFFICIENT_DATA',
-          conversion: { views: 0, actions: 0, rate: 0 },
+          conversion: { views: 0, actions: 0, rate: null },
           trends: { views: [{ date: '2026-09-01', count: 0 }] },
         } as unknown as Record<string, unknown>,
       }),

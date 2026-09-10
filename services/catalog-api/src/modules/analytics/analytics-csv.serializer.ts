@@ -15,7 +15,7 @@ type DashboardSlice = {
     favorites: number;
     promotionViews: number;
   } | null;
-  conversion: { views: number; actions: number; rate: number } | null;
+  conversion: { views: number; actions: number; rate: number | null } | null;
   sources: Array<{ label: string; views: number; share: number }> | null;
   searchQueries: Array<{ query: string; count: number; percentage: number }> | null;
   searchQueriesOtherCount?: number | null;
@@ -127,7 +127,7 @@ export function buildAnalyticsExportCsv(report: BusinessAnalyticsReport): string
   if (dashboard.overview.ctr != null && dashboard.capabilities.ctr) {
     row(lines, 'CTR', `${dashboard.overview.ctr}%`);
   }
-  if (dashboard.conversion) {
+  if (dashboard.conversion && dashboard.conversion.rate != null) {
     row(lines, 'Конверсия просмотр → целевое действие', `${dashboard.conversion.rate}%`);
   }
   if (

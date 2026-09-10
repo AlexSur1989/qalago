@@ -143,7 +143,8 @@ export interface AnalyticsAudienceGeographyItemDto {
 export interface AnalyticsConversionDto {
   views: number;
   actions: number;
-  rate: number;
+  /** Null when views denominator is zero (not a fake 0%). */
+  rate: number | null;
 }
 
 export interface AnalyticsComparisonMetricDto {

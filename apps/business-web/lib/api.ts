@@ -245,7 +245,7 @@ export type AnalyticsDashboard = {
   searchQueries: Array<{ query: string; count: number; percentage: number }> | null;
   searchQueriesStatus?: 'AVAILABLE' | 'INSUFFICIENT_DATA' | null;
   searchQueriesOtherCount?: number | null;
-  conversion: { views: number; actions: number; rate: number } | null;
+  conversion: { views: number; actions: number; rate: number | null } | null;
   comparison: {
     currentDays: number;
     previousDays: number;

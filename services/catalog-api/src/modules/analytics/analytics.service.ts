@@ -316,6 +316,7 @@ export class AnalyticsService {
   }
 
   async exportCsv(user: AuthUser, businessId: string, query: AnalyticsWindowQueryDto) {
+    await this.assertCanViewBusinessAnalytics(user, businessId);
     await this.businessAccess.assertBusinessPermission(
       user,
       businessId,
