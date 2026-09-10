@@ -24,13 +24,19 @@ describe('Stage 5H traffic source attribution', () => {
     const prisma = {
       business: {
         findFirst: jest.fn(),
-        findUnique: jest.fn(),
+        findUnique: jest.fn().mockResolvedValue({ city: { timezone: 'Asia/Oral' } }),
       },
       analyticsEvent: {
         create: jest.fn(),
         findUnique: jest.fn().mockResolvedValue(null),
-        groupBy: jest.fn(),
+        groupBy: jest.fn().mockResolvedValue([]),
         findMany: jest.fn(),
+      },
+      analyticsDailyMetric: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+      analyticsDailyDimensionMetric: {
+        findMany: jest.fn().mockResolvedValue([]),
       },
     };
 
@@ -139,12 +145,15 @@ describe('Stage 5H traffic source attribution', () => {
     prisma.analyticsEvent.findMany.mockResolvedValue([
       { type: AnalyticsEventType.VIEW_BUSINESS, createdAt: new Date() },
     ]);
-    prisma.analyticsEvent.groupBy
-      .mockResolvedValueOnce([
-        { trafficSource: BusinessTrafficSource.SEARCH, _count: { _all: 4 } },
-        { trafficSource: null, _count: { _all: 1 } },
-      ])
-      .mockResolvedValue([]);
+    prisma.analyticsEvent.groupBy.mockImplementation((args: { by: string[] }) => {
+      if (args.by.includes('trafficSource')) {
+        return Promise.resolve([
+          { trafficSource: BusinessTrafficSource.SEARCH, _count: { _all: 4 } },
+          { trafficSource: null, _count: { _all: 1 } },
+        ]);
+      }
+      return Promise.resolve([]);
+    });
 
     const dashboard = await builder.build('business-1', 30);
 
@@ -166,11 +175,14 @@ describe('Stage 5H traffic source attribution', () => {
       limits: { maxAnalyticsDays: 365, analyticsTier: 'FULL' },
     });
     prisma.analyticsEvent.findMany.mockResolvedValue([]);
-    prisma.analyticsEvent.groupBy
-      .mockResolvedValueOnce([
-        { trafficSource: BusinessTrafficSource.AD, _count: { _all: 3 } },
-      ])
-      .mockResolvedValue([]);
+    prisma.analyticsEvent.groupBy.mockImplementation((args: { by: string[] }) => {
+      if (args.by.includes('trafficSource')) {
+        return Promise.resolve([
+          { trafficSource: BusinessTrafficSource.AD, _count: { _all: 3 } },
+        ]);
+      }
+      return Promise.resolve([]);
+    });
 
     const dashboard = await builder.build('business-1', 30);
     expect(dashboard.sources).toEqual([

@@ -35,6 +35,25 @@ function getPartsFormatter(timezone: string): Intl.DateTimeFormat {
   return formatter;
 }
 
+/** Inclusive local-metric-date range ending on the local day of `endUtc`. */
+export function buildLocalMetricDateRange(
+  days: number,
+  endUtc: Date = new Date(),
+  timezone?: string | null,
+): string[] {
+  if (days <= 0) return [];
+  const endLocal = toLocalMetricDate(endUtc, timezone);
+  const out: string[] = [];
+  let current = endLocal;
+  for (let i = 0; i < days; i++) {
+    out.unshift(current);
+    const [y, m, d] = current.split('-').map(Number);
+    const prev = new Date(Date.UTC(y, m - 1, d - 1));
+    current = prev.toISOString().slice(0, 10);
+  }
+  return out;
+}
+
 /** Returns YYYY-MM-DD in the business/city local timezone. */
 export function toLocalMetricDate(utcDate: Date, timezone?: string | null): string {
   const tz = timezone?.trim() || DEFAULT_ANALYTICS_TIMEZONE;

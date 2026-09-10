@@ -44,6 +44,9 @@ describe('AnalyticsService', () => {
       analyticsDailyMetric: {
         findMany: jest.fn().mockResolvedValue([]),
       },
+      analyticsDailyDimensionMetric: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
     };
 
     const planLimits = {

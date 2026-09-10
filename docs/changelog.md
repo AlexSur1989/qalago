@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-10 — Stage 6.6A: Analytics 360 dashboard data layer
+
+- `GET /analytics/business/:id/dashboard` reads historical metrics from `AnalyticsDailyMetric` / `AnalyticsDailyDimensionMetric` (365d without raw scan); ≤90d raw fallback when rollups empty.
+- Extended overview (impressions, CTR, conversion, UV/session approx + period distinct ≤90d), audience NEW/RETURNING view counts, promotion/catalog breakdowns with honest action unavailability.
+- Local timezone trends aligned with rollup `metricDate`; docs: `docs/analytics/stage-6-6a-dashboard-data-layer.md`.
+- Будущее: session funnel, lost demand, weekday popular times rollup, benchmark on rollups (6.6E).
+
 ## 2026-09-10 — Stage 6.5.2: Mobile owner team management
 
 - Flutter: экран «Команда» для OWNER (`/owner/team`), invite/edit/suspend/revoke, лимиты из plan API, presets прав, mobile `/invite/:token` accept flow.

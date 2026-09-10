@@ -30,13 +30,19 @@ describe('Stage 5J audience geography analytics', () => {
     const prisma = {
       business: {
         findFirst: jest.fn(),
-        findUnique: jest.fn(),
+        findUnique: jest.fn().mockResolvedValue({ city: { timezone: 'Asia/Oral' } }),
       },
       analyticsEvent: {
         create: jest.fn(),
         findUnique: jest.fn().mockResolvedValue(null),
-        groupBy: jest.fn(),
+        groupBy: jest.fn().mockResolvedValue([]),
         findMany: jest.fn(),
+      },
+      analyticsDailyMetric: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+      analyticsDailyDimensionMetric: {
+        findMany: jest.fn().mockResolvedValue([]),
       },
     };
 
@@ -221,18 +227,41 @@ describe('Stage 5J audience geography analytics', () => {
   it('VIP dashboard aggregates geography with 365-day cap', async () => {
     const { prisma, planLimits, builder } = createService();
     mockVipContext(planLimits);
-    prisma.analyticsEvent.findMany
-      .mockResolvedValueOnce(mockViewEvents(12))
-      .mockResolvedValueOnce([]);
-    prisma.analyticsEvent.groupBy.mockImplementation((args: { by: string[] }) => {
-      if (args.by.includes('audienceDistanceBucket')) {
-        return Promise.resolve([
-          { audienceDistanceBucket: AudienceDistanceBucket.KM_1_3, _count: { _all: 8 } },
-          { audienceDistanceBucket: null, _count: { _all: 4 } },
-        ]);
-      }
-      return Promise.resolve([]);
-    });
+    prisma.analyticsDailyMetric.findMany.mockResolvedValue([
+      {
+        metricDate: '2026-09-09',
+        impressions: 0,
+        views: 12,
+        callClicks: 0,
+        whatsappClicks: 0,
+        routeClicks: 0,
+        websiteClicks: 0,
+        instagramClicks: 0,
+        favoriteAdds: 0,
+        promotionImpressions: 0,
+        promotionViews: 0,
+        promotionActions: 0,
+        catalogImpressions: 0,
+        catalogViews: 0,
+        catalogActions: 0,
+        uniqueVisitorsApprox: 0,
+        sessionsApprox: 0,
+      },
+    ]);
+    prisma.analyticsDailyDimensionMetric.findMany.mockResolvedValue([
+      {
+        dimensionType: 'DISTANCE_BUCKET',
+        dimensionKey: AudienceDistanceBucket.KM_1_3,
+        metricKey: 'views',
+        count: 8,
+      },
+      {
+        dimensionType: 'DISTANCE_BUCKET',
+        dimensionKey: AudienceDistanceBucket.UNKNOWN,
+        metricKey: 'views',
+        count: 4,
+      },
+    ]);
 
     const dashboard = await builder.build('business-1', 365);
     expect(dashboard.effectiveRange.days).toBe(365);
@@ -293,24 +322,36 @@ describe('Stage 5J audience geography analytics', () => {
     expect(unknown?.percentage).toBe(40);
   });
 
-  it('geography groupBy scoped to owner business', async () => {
+  it('geography dimension query scoped to owner business', async () => {
     const { prisma, planLimits, builder } = createService();
     mockVipContext(planLimits);
-    prisma.analyticsEvent.findMany
-      .mockResolvedValueOnce(mockViewEvents(12))
-      .mockResolvedValueOnce([]);
-    prisma.analyticsEvent.groupBy.mockResolvedValue([]);
+    prisma.analyticsDailyMetric.findMany.mockResolvedValue([
+      {
+        metricDate: '2026-09-09',
+        impressions: 0,
+        views: 12,
+        callClicks: 0,
+        whatsappClicks: 0,
+        routeClicks: 0,
+        websiteClicks: 0,
+        instagramClicks: 0,
+        favoriteAdds: 0,
+        promotionImpressions: 0,
+        promotionViews: 0,
+        promotionActions: 0,
+        catalogImpressions: 0,
+        catalogViews: 0,
+        catalogActions: 0,
+        uniqueVisitorsApprox: 0,
+        sessionsApprox: 0,
+      },
+    ]);
 
     await builder.build('business-xyz', 30);
 
-    expect(prisma.analyticsEvent.groupBy).toHaveBeenCalledWith(
+    expect(prisma.analyticsDailyDimensionMetric.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        by: ['audienceDistanceBucket'],
-        where: expect.objectContaining({
-          businessId: 'business-xyz',
-          type: AnalyticsEventType.VIEW_BUSINESS,
-          campaignId: null,
-        }),
+        where: expect.objectContaining({ businessId: 'business-xyz' }),
       }),
     );
   });

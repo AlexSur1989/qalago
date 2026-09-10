@@ -24,13 +24,19 @@ describe('Stage 5I search query analytics', () => {
     const prisma = {
       business: {
         findFirst: jest.fn(),
-        findUnique: jest.fn(),
+        findUnique: jest.fn().mockResolvedValue({ city: { timezone: 'Asia/Oral' } }),
       },
       analyticsEvent: {
         create: jest.fn(),
         findUnique: jest.fn().mockResolvedValue(null),
-        groupBy: jest.fn(),
+        groupBy: jest.fn().mockResolvedValue([]),
         findMany: jest.fn(),
+      },
+      analyticsDailyMetric: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+      analyticsDailyDimensionMetric: {
+        findMany: jest.fn().mockResolvedValue([]),
       },
     };
 
@@ -144,12 +150,15 @@ describe('Stage 5I search query analytics', () => {
       limits: { maxAnalyticsDays: 90, analyticsTier: 'FULL' },
     });
     prisma.analyticsEvent.findMany.mockResolvedValue([]);
-    prisma.analyticsEvent.groupBy
-      .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([
-        { searchQuery: 'кофе рядом', _count: { _all: 5 } },
-        { searchQuery: 'кофейня', _count: { _all: 4 } },
-      ]);
+    prisma.analyticsEvent.groupBy.mockImplementation((args: { by: string[] }) => {
+      if (args.by.includes('searchQuery')) {
+        return Promise.resolve([
+          { searchQuery: 'кофе рядом', _count: { _all: 5 } },
+          { searchQuery: 'кофейня', _count: { _all: 4 } },
+        ]);
+      }
+      return Promise.resolve([]);
+    });
 
     const dashboard = await builder.build('business-1', 30);
 
