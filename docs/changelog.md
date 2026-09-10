@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-10 — Stage 6.5.2: Mobile owner team management
+
+- Flutter: экран «Команда» для OWNER (`/owner/team`), invite/edit/suspend/revoke, лимиты из plan API, presets прав, mobile `/invite/:token` accept flow.
+- Docs: `docs/mobile/stage-6-5-2-owner-team-management.md`.
+- Будущее: App Links для invite, audit history в mobile, transactional email.
+
 ## 2026-09-10 — Stage 6.5.1: Analytics instrumentation completion
 
 - Flutter: map impressions (`MapBusinessPreviewImpression`, list viewability), catalog (`TrackedCatalogItemCard`), reviews (`ReviewsViewTracker`, `REVIEW_CREATED` after API success).

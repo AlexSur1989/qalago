@@ -13,6 +13,7 @@ bool isPublicConsumerRoute(String location) {
   if (path == '/profile/help') return true;
   if (path == '/profile/about') return true;
   if (path == '/favorites') return true;
+  if (RegExp(r'^/invite/[^/]+$').hasMatch(path)) return true;
   return false;
 }
 

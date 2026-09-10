@@ -43,6 +43,8 @@ import '../../features/owner/presentation/owner_help_screen.dart';
 import '../../features/admin/presentation/admin_businesses_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/owner/presentation/owner_reviews_screen.dart';
+import '../../features/owner/presentation/owner_team_screen.dart';
+import '../../features/owner/presentation/owner_invitation_screen.dart';
 import '../../features/owner/monetization/presentation/promote_business_screen.dart';
 import '../../features/owner/monetization/presentation/promote_product_screen.dart';
 import '../../features/owner/monetization/presentation/promote_package_screen.dart';
@@ -232,6 +234,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/owner/plan',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const OwnerPlanScreen(),
+      ),
+      GoRoute(
+        path: '/owner/team',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const OwnerTeamScreen(),
+      ),
+      GoRoute(
+        path: '/invite/:token',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => OwnerInvitationScreen(
+          token: state.pathParameters['token']!,
+        ),
       ),
       GoRoute(
         path: '/owner/messages',

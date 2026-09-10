@@ -95,6 +95,7 @@ enum OwnerNavItem {
   promote,
   messages,
   plan,
+  team,
   settings,
   help,
   editProfile,
@@ -143,6 +144,9 @@ bool canAccessBusinessCabinet(String? userRole, List<MyBusinessEntry> entries) {
 
 List<OwnerNavItem> filterOwnerNavByPermission(BusinessAccess access) {
   return OwnerNavItem.values.where((item) {
+    if (item == OwnerNavItem.team) {
+      return isOwner(access);
+    }
     final required = _ownerNavPermissionRequirements[item];
     if (required == null) return true;
     return hasPermission(access, required);

@@ -126,6 +126,14 @@ class _OwnerDrawer extends ConsumerWidget {
                 path: '/owner/plan',
                 selected: currentPath == '/owner/plan',
               ),
+            if (canShow.contains(OwnerNavItem.team))
+              _navTile(
+                context,
+                icon: Icons.groups_outlined,
+                label: 'Команда',
+                path: '/owner/team',
+                selected: currentPath == '/owner/team',
+              ),
             if (canShow.contains(OwnerNavItem.settings))
               _navTile(
                 context,

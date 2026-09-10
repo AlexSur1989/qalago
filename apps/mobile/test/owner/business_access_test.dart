@@ -72,6 +72,7 @@ void main() {
       expect(allowed, isNot(contains(OwnerNavItem.analytics)));
       expect(allowed, isNot(contains(OwnerNavItem.promote)));
       expect(allowed, isNot(contains(OwnerNavItem.plan)));
+      expect(allowed, isNot(contains(OwnerNavItem.team)));
     });
 
     test('MANAGER with PAYMENTS_VIEW sees plan nav', () {

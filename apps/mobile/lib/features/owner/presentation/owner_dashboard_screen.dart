@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/rbac/business_access.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/navigation/open_business.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -477,7 +478,7 @@ class _SideCard extends StatelessWidget {
   }
 }
 
-class _ManagementGrid extends StatelessWidget {
+class _ManagementGrid extends ConsumerWidget {
   const _ManagementGrid({
     required this.businessId,
     required this.encodedTitle,
@@ -487,7 +488,8 @@ class _ManagementGrid extends StatelessWidget {
   final String encodedTitle;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final access = ref.watch(selectedBusinessAccessProvider);
     final items = [
       (Icons.storefront_outlined, 'Мой бизнес', '/owner/edit/$businessId?title=$encodedTitle'),
       (Icons.restaurant_menu, 'Товары и услуги', '/owner/menu/$businessId?title=$encodedTitle'),
@@ -495,6 +497,8 @@ class _ManagementGrid extends StatelessWidget {
       (Icons.local_offer_outlined, 'Акции', '/owner/promotions/$businessId?title=$encodedTitle'),
       (Icons.star_outline, 'Отзывы', '/owner/reviews/$businessId?title=$encodedTitle'),
       (Icons.bar_chart_outlined, 'Статистика', '/owner/analytics/$businessId?title=$encodedTitle'),
+      if (access != null && isOwner(access))
+        (Icons.groups_outlined, 'Команда', '/owner/team'),
     ];
 
     return GridView.count(

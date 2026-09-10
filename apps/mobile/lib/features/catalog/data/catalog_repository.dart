@@ -886,6 +886,67 @@ class CatalogRepository {
     final response = await _dio.patch('/monetization/creatives/$id', data: body);
     return response.data as Map<String, dynamic>;
   }
+
+  Future<Map<String, dynamic>> fetchTeam(String businessId) async {
+    final response = await _dio.get('/businesses/$businessId/team');
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> inviteTeamMember({
+    required String businessId,
+    required String email,
+    required List<String> permissions,
+  }) async {
+    final response = await _dio.post(
+      '/businesses/$businessId/team/invite',
+      data: {
+        'email': email,
+        'permissions': permissions,
+      },
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> updateTeamMember({
+    required String businessId,
+    required String membershipId,
+    List<String>? permissions,
+    String? status,
+  }) async {
+    final response = await _dio.patch(
+      '/businesses/$businessId/team/$membershipId',
+      data: {
+        if (permissions != null) 'permissions': permissions,
+        if (status != null) 'status': status,
+      },
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<void> revokeTeamInvitation({
+    required String businessId,
+    required String invitationId,
+  }) async {
+    await _dio.delete(
+      '/businesses/$businessId/team/invitations/$invitationId',
+    );
+  }
+
+  Future<Map<String, dynamic>> resolveInvitation(String token) async {
+    final response = await _dio.post(
+      '/invitations/resolve',
+      data: {'token': token},
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> acceptInvitation(String token) async {
+    final response = await _dio.post(
+      '/invitations/accept',
+      data: {'token': token},
+    );
+    return response.data as Map<String, dynamic>;
+  }
 }
 
 class FavoritesRepository {
