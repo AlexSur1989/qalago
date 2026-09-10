@@ -65,6 +65,7 @@ export class AnalyticsController {
   @Roles(UserRole.BUSINESS, UserRole.CITY_ADMIN, UserRole.ADMIN)
   @Get('business/:businessId/export')
   @Header('Content-Type', 'text/csv; charset=utf-8')
+  @Header('Cache-Control', 'private, no-store')
   async exportCsv(
     @CurrentUser() user: AuthUser,
     @Param('businessId') businessId: string,

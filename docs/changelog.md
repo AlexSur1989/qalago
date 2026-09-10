@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-10 — Stage 6.6F: Analytics reporting & export foundation
+
+- Canonical `buildBusinessAnalyticsReport` (CUSTOM/WEEKLY/MONTHLY completed local periods) reuses dashboard rollup semantics; CSV serializes report payload.
+- Export: PRO/VIP + `ANALYTICS_EXPORT`, UTF-8 BOM, semicolon delimiter, formula-injection safe cells, period range in filename, `Cache-Control: private, no-store`.
+- Docs: `docs/analytics/stage-6-6f-reporting-export.md`.
+- Будущее: email/PDF/scheduler delivery (6.6QA+), public GET `/report` if needed.
+
 ## 2026-09-10 — Stage 6.6E: VIP benchmark & recommendations
 
 - Rollup-backed category benchmark (`AnalyticsDailyMetric.groupBy`): same city + primary category, ACTIVE peers, subject excluded, same local period; min 5 peers; per-metric min 5 for CTR/conversion averages.

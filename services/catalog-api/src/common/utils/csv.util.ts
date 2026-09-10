@@ -36,11 +36,11 @@ export function sanitizeExportFilenamePart(value: string): string {
 export function buildAnalyticsExportFilename(
   businessId: string,
   businessTitle: string,
-  date = new Date(),
+  periodStart: string,
+  periodEnd: string,
 ): string {
   const slug = sanitizeExportFilenamePart(businessTitle) || businessId.slice(0, 8);
-  const iso = date.toISOString().slice(0, 10);
-  return `qalago-analytics-${slug}-${iso}.csv`;
+  return `qalago-analytics-${slug}-${periodStart}_${periodEnd}.csv`;
 }
 
 export function buildContentDisposition(filename: string): string {

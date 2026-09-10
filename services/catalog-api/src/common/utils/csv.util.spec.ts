@@ -52,8 +52,8 @@ describe('csv.util', () => {
 
   it('sanitizes filename parts', () => {
     expect(sanitizeExportFilenamePart('Кофейня / Test')).toMatch(/Кофейня/);
-    expect(buildAnalyticsExportFilename('biz1', 'Кофейня', new Date('2026-09-08'))).toBe(
-      'qalago-analytics-Кофейня-2026-09-08.csv',
+    expect(buildAnalyticsExportFilename('biz1', 'Кофейня', '2026-09-01', '2026-09-30')).toBe(
+      'qalago-analytics-Кофейня-2026-09-01_2026-09-30.csv',
     );
   });
 

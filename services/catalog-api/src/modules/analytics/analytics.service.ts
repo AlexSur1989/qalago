@@ -40,6 +40,7 @@ import { BusinessAccessService } from '../../common/services/business-access.ser
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AnalyticsDashboardBuilder } from './analytics-dashboard.builder';
+import { AnalyticsBusinessReportBuilder } from './analytics-business-report.builder';
 import {
   buildAnalyticsExportCsv,
   CSV_UTF8_BOM,
@@ -57,6 +58,7 @@ const ACTION_EVENT_TYPES = new Set<AnalyticsEventType>(BUSINESS_INTENT_ACTION_EV
 @Injectable()
 export class AnalyticsService {
   private readonly dashboardBuilder: AnalyticsDashboardBuilder;
+  readonly reportBuilder: AnalyticsBusinessReportBuilder;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -64,6 +66,7 @@ export class AnalyticsService {
     private readonly businessAccess: BusinessAccessService,
   ) {
     this.dashboardBuilder = new AnalyticsDashboardBuilder(prisma, planLimits);
+    this.reportBuilder = new AnalyticsBusinessReportBuilder(prisma, planLimits);
   }
 
   async track(dto: CreateAnalyticsEventDto, options?: { user?: AuthUser; internalHeader?: boolean }) {
@@ -330,25 +333,19 @@ export class AnalyticsService {
       throw new BadRequestException('Period must be between 1 and 365 days');
     }
 
-    const dashboard = await this.dashboardBuilder.build(businessId, requestedDays);
-    const business = await this.prisma.business.findUnique({
-      where: { id: businessId },
-      select: {
-        title: true,
-        city: { select: { nameRu: true } },
-      },
+    const report = await this.reportBuilder.buildBusinessAnalyticsReport({
+      businessId,
+      type: 'CUSTOM',
+      requestedDays,
     });
-    if (!business) {
-      throw new NotFoundException('Business not found');
-    }
 
-    const generatedAt = new Date();
-    const csvBody = buildAnalyticsExportCsv(dashboard, {
-      businessTitle: business.title,
-      cityName: business.city.nameRu,
-      generatedAt,
-    });
-    const filename = buildAnalyticsExportFilename(businessId, business.title, generatedAt);
+    const csvBody = buildAnalyticsExportCsv(report);
+    const filename = buildAnalyticsExportFilename(
+      businessId,
+      report.business.name,
+      report.period.startDate,
+      report.period.endDate,
+    );
 
     return {
       body: `${CSV_UTF8_BOM}${csvBody}`,

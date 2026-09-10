@@ -222,3 +222,30 @@ export interface BusinessAnalyticsDashboardDto {
   audienceGeography: AnalyticsAudienceGeographyItemDto[] | null;
   audienceGeographyStatus?: 'AVAILABLE' | 'INSUFFICIENT_DATA' | null;
 }
+
+export type AnalyticsReportPeriodType = 'CUSTOM' | 'WEEKLY' | 'MONTHLY';
+
+/** Stage 6.6F — internal/reporting payload (CSV foundation, no delivery). */
+export interface BusinessAnalyticsReportDto {
+  schemaVersion: 1;
+  business: {
+    id: string;
+    name: string;
+    cityName: string;
+    categoryTitle?: string | null;
+  };
+  period: {
+    type: AnalyticsReportPeriodType;
+    timezone: string;
+    startDate: string;
+    endDate: string;
+    days: number;
+    generatedAt: string;
+  };
+  previousPeriod?: {
+    startDate: string;
+    endDate: string;
+    days: number;
+  } | null;
+  summary?: string[];
+}

@@ -36,6 +36,7 @@ import { aggregateSearchQueries } from '../../common/utils/search-query-analytic
 import { aggregateAudienceGeography } from '../../common/utils/audience-geography.util';
 import { buildCategoryBenchmark } from '../../common/utils/analytics-benchmark.util';
 import { buildDeterministicRecommendations } from '../../common/utils/analytics-recommendations.util';
+import { enumerateInclusiveLocalMetricDates } from '../../common/utils/analytics-report-period.util';
 import {
   isBusinessIntentActionEventType,
   sumBusinessIntentActionsFromCounts,
@@ -58,13 +59,21 @@ export type DashboardOverview = {
   sessionsPeriodDistinct?: number | null;
 };
 
+export type DashboardBuildOptions = {
+  localMetricRange?: { start: string; end: string };
+};
+
 export class AnalyticsDashboardBuilder {
   constructor(
     private readonly prisma: PrismaService,
     private readonly planLimits: PlanLimitsService,
   ) {}
 
-  async build(businessId: string, requestedDays: number) {
+  async build(
+    businessId: string,
+    requestedDays: number,
+    options?: DashboardBuildOptions,
+  ) {
     const ctx = await this.planLimits.getBusinessPlanContext(businessId);
     const caps = getAnalyticsCapabilitiesForPlan(ctx.effectiveTier);
     const days = clampAnalyticsDays(requestedDays, caps);
@@ -81,7 +90,13 @@ export class AnalyticsDashboardBuilder {
     });
     const timezone = businessMeta?.city.timezone ?? null;
 
-    const dateRange = buildLocalMetricDateRange(days, end, timezone);
+    const dateRange = options?.localMetricRange
+      ? enumerateInclusiveLocalMetricDates(
+          options.localMetricRange.start,
+          options.localMetricRange.end,
+        )
+      : buildLocalMetricDateRange(days, end, timezone);
+    const rangeDays = dateRange.length || days;
     const rangeStart = dateRange[0] ?? toLocalMetricDate(end, timezone);
     const rangeEnd = dateRange[dateRange.length - 1] ?? rangeStart;
     const periodFrom = utcWindowForLocalDate(rangeStart, timezone).from;
@@ -93,7 +108,7 @@ export class AnalyticsDashboardBuilder {
     ]);
 
     const hasRollupRows = dailyRows.length > 0;
-    const useRollups = hasRollupRows || days > RAW_EVENT_FALLBACK_MAX_DAYS;
+    const useRollups = hasRollupRows || rangeDays > RAW_EVENT_FALLBACK_MAX_DAYS;
 
     let currentEvents: EventRow[] = [];
     let dailyTotals = emptyDailyTotals();
@@ -111,7 +126,7 @@ export class AnalyticsDashboardBuilder {
     const overview = await this.buildOverview(
       dailyTotals,
       caps,
-      days,
+      rangeDays,
       businessId,
       periodFrom,
       periodTo,
@@ -245,7 +260,7 @@ export class AnalyticsDashboardBuilder {
       capabilities: this.publicCapabilities(caps),
       lockedSections: getAnalyticsLockedSections(ctx.effectiveTier),
       effectiveRange: {
-        days,
+        days: rangeDays,
         from: periodFrom.toISOString(),
         to: periodTo.toISOString(),
       },
