@@ -79,9 +79,9 @@ describe('Stage 6.6A rollup-backed dashboard', () => {
     const overview = dashboard.overview as Record<string, number | null>;
     expect(overview.views).toBe(40);
     expect(overview.impressions).toBe(200);
-    expect(overview.actions).toBe(5);
+    expect(overview.actions).toBe(2);
     expect(overview.ctr).toBe(20);
-    expect(overview.conversionRate).toBe(12.5);
+    expect(overview.conversionRate).toBe(5);
     expect(prisma.analyticsEvent.findMany).not.toHaveBeenCalled();
   });
 

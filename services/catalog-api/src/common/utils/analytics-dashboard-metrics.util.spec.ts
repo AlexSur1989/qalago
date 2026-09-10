@@ -49,7 +49,7 @@ describe('analytics-dashboard-metrics.util', () => {
     ]);
     expect(totals.impressions).toBe(15);
     expect(totals.views).toBe(6);
-    expect(sumIntentActionsFromDaily(totals)).toBe(4);
+    expect(sumIntentActionsFromDaily(totals)).toBe(2);
     expect(totals.uniqueVisitorsApprox).toBe(5);
   });
 

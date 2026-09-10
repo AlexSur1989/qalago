@@ -8,7 +8,7 @@ Authoritative read path for `GET /api/v1/analytics/business/:businessId/dashboar
 |-----------------|--------|----------------------|
 | `overview.views` | `AnalyticsDailyMetric.views` (sum) | Exact for rolled-up days |
 | `overview.impressions` | Sum `impressions` (BUSINESS_IMPRESSION + SEARCH_RESULT_IMPRESSION at rollup) | Exact for rolled-up days |
-| `overview.actions` / `totalCustomerActions` | Sum intent clicks + `promotionViews` | Exact for rolled-up days |
+| `overview.actions` / `totalCustomerActions` | **Business intent actions** (see below) | Exact for rolled-up days |
 | `overview.ctr` | `views / impressions × 100` (period aggregate) | Exact; `null` if impressions = 0 |
 | `overview.conversionRate` | `actions / views × 100` (view → intent action) | Not purchase; `null` if views = 0 |
 | `overview.uniqueVisitorsDailySumApprox` | Sum of daily `uniqueVisitorsApprox` | **Approximate** — not period distinct |
@@ -25,13 +25,34 @@ Authoritative read path for `GET /api/v1/analytics/business/:businessId/dashboar
 | `promotions.byPromotion` | PROMOTION dimension | Views only; `actions: null`, `actionsAvailable: false` |
 | `catalog.items` | CATALOG_ITEM dimension | Views only; actions not instrumented |
 
+## Canonical Business Intent Action Definition (Stage 6.6A.1)
+
+**Business views** = `VIEW_BUSINESS` (rollup field `views` also includes `SEARCH_RESULT_OPEN` at ingest).
+
+**Business intent actions** (numerator for `actions`, `totalCustomerActions`, `conversionRate`, period comparison, benchmark actions, action trends):
+
+- `CALL_CLICK`
+- `WHATSAPP_CLICK`
+- `ROUTE_CLICK`
+- `WEBSITE_CLICK`
+- `INSTAGRAM_CLICK`
+- `FAVORITE_ADD`
+
+**Not** included in business intent actions:
+
+- `FAVORITE_REMOVE` (not a positive intent)
+- `PROMOTION_VIEW`, `PROMOTION_IMPRESSION`, `PROMOTION_ACTION` (promotion engagement — track via `promotionViews` / future promotion metrics)
+- `CATALOG_ITEM_*`, `REVIEWS_VIEW`, `REVIEW_CREATED`, search/impression events
+
+Implementation: `analytics-intent-actions.util.ts`; rollup uses separate daily counters (no migration).
+
 ## Formulas
 
 - **Impressions:** rollup field `impressions`.
-- **Views:** rollup field `views` (VIEW_BUSINESS + SEARCH_RESULT_OPEN at ingest).
-- **Actions:** call + WhatsApp + route + website + Instagram + favorite + promotion view clicks.
+- **Views:** rollup field `views`.
+- **Business intent actions:** sum of the six intent counters above (rollup or raw fallback).
 - **Period CTR:** `views / impressions × 100` (not session CTR).
-- **Conversion:** `actions / views × 100` (view → intent action).
+- **Business conversion rate:** `intent actions / views × 100` (`null` if views = 0; not purchase conversion).
 
 ## Timezone
 

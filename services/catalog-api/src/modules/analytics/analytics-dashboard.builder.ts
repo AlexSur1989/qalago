@@ -33,18 +33,12 @@ import {
 import { aggregateTrafficSources } from '../../common/utils/business-traffic-source.util';
 import { aggregateSearchQueries } from '../../common/utils/search-query-analytics.util';
 import { aggregateAudienceGeography } from '../../common/utils/audience-geography.util';
+import {
+  isBusinessIntentActionEventType,
+  sumBusinessIntentActionsFromCounts,
+} from '../../common/utils/analytics-intent-actions.util';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { PrismaService } from '../../prisma/prisma.service';
-
-const ACTION_TYPES: AnalyticsEventType[] = [
-  AnalyticsEventType.CALL_CLICK,
-  AnalyticsEventType.WHATSAPP_CLICK,
-  AnalyticsEventType.ROUTE_CLICK,
-  'WEBSITE_CLICK' as AnalyticsEventType,
-  'INSTAGRAM_CLICK' as AnalyticsEventType,
-  AnalyticsEventType.FAVORITE_ADD,
-  AnalyticsEventType.PROMOTION_VIEW,
-];
 
 type EventRow = { type: AnalyticsEventType; createdAt: Date };
 
@@ -418,7 +412,7 @@ export class AnalyticsDashboardBuilder {
       if (!viewMap.has(date)) continue;
       if (event.type === AnalyticsEventType.VIEW_BUSINESS) {
         viewMap.set(date, (viewMap.get(date) ?? 0) + 1);
-      } else if (caps.actionTrend && ACTION_TYPES.includes(event.type)) {
+      } else if (caps.actionTrend && isBusinessIntentActionEventType(event.type)) {
         actionMap.set(date, (actionMap.get(date) ?? 0) + 1);
       }
     }
@@ -666,7 +660,7 @@ export class AnalyticsDashboardBuilder {
   }
 
   private sumActions(counts: Partial<Record<AnalyticsEventType, number>>) {
-    return ACTION_TYPES.reduce((sum, type) => sum + (counts[type] ?? 0), 0);
+    return sumBusinessIntentActionsFromCounts(counts);
   }
 
   private async buildBenchmark(
@@ -712,7 +706,7 @@ export class AnalyticsDashboardBuilder {
     for (const row of peers) {
       if (row.type === AnalyticsEventType.VIEW_BUSINESS) {
         peerViews += row._count._all;
-      } else if (ACTION_TYPES.includes(row.type)) {
+      } else if (isBusinessIntentActionEventType(row.type)) {
         peerActions += row._count._all;
       }
     }

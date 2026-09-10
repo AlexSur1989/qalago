@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-10 — Stage 6.6A.1: Analytics action semantics fix
+
+- Canonical **business intent actions** exclude `PROMOTION_VIEW`, `FAVORITE_REMOVE`, and content events; shared util + dashboard/summary/trends alignment.
+- Docs: canonical definition in `docs/analytics/stage-6-6a-dashboard-data-layer.md`.
+
 ## 2026-09-10 — Stage 6.6A: Analytics 360 dashboard data layer
 
 - `GET /analytics/business/:id/dashboard` reads historical metrics from `AnalyticsDailyMetric` / `AnalyticsDailyDimensionMetric` (365d without raw scan); ≤90d raw fallback when rollups empty.

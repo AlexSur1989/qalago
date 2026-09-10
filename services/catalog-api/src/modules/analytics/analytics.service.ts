@@ -21,6 +21,11 @@ import {
   SEARCH_ATTRIBUTION_EVENT_TYPES,
 } from '../../common/utils/analytics-organic-events.util';
 import {
+  BUSINESS_INTENT_ACTION_EVENT_TYPES,
+  isBusinessIntentActionEventType,
+  sumBusinessIntentActionsFromDaily,
+} from '../../common/utils/analytics-intent-actions.util';
+import {
   hashVisitorId,
   isValidClientEventId,
   isValidSessionId,
@@ -44,17 +49,7 @@ import {
 
 const EVENT_TYPES = Object.values(AnalyticsEventType);
 
-const ACTION_EVENT_TYPES = new Set<AnalyticsEventType>([
-  AnalyticsEventType.CALL_CLICK,
-  AnalyticsEventType.WHATSAPP_CLICK,
-  AnalyticsEventType.ROUTE_CLICK,
-  AnalyticsEventType.WEBSITE_CLICK,
-  AnalyticsEventType.INSTAGRAM_CLICK,
-  AnalyticsEventType.FAVORITE_ADD,
-  AnalyticsEventType.FAVORITE_REMOVE,
-  AnalyticsEventType.PROMOTION_VIEW,
-  AnalyticsEventType.PROMOTION_ACTION,
-]);
+const ACTION_EVENT_TYPES = new Set<AnalyticsEventType>(BUSINESS_INTENT_ACTION_EVENT_TYPES);
 
 @Injectable()
 export class AnalyticsService {
@@ -397,13 +392,7 @@ export class AnalyticsService {
           });
         }
         if (caps.actionTrend) {
-          const actionTotal =
-            row.callClicks +
-            row.whatsappClicks +
-            row.routeClicks +
-            row.websiteClicks +
-            row.instagramClicks +
-            row.favoriteAdds;
+          const actionTotal = sumBusinessIntentActionsFromDaily(row);
           if (actionTotal > 0) {
             entries.push({
               date: row.metricDate,
@@ -442,7 +431,7 @@ export class AnalyticsService {
       })
       .filter((item) => {
         if (item.type === AnalyticsEventType.VIEW_BUSINESS) return caps.viewTrend;
-        return caps.actionTrend;
+        return caps.actionTrend && isBusinessIntentActionEventType(item.type);
       });
 
     return { businessId, days, analyticsTier: ctx.limits.analyticsTier, items };

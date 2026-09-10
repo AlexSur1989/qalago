@@ -80,23 +80,11 @@ export function sumDailyMetricRows(rows: DailyMetricRow[]): DailyMetricTotals {
   return totals;
 }
 
-/** Intent actions (view → action conversion numerator); excludes reviews / technical events. */
-export function sumIntentActionsFromDaily(totals: DailyMetricTotals): number {
-  return (
-    totals.callClicks +
-    totals.whatsappClicks +
-    totals.routeClicks +
-    totals.websiteClicks +
-    totals.instagramClicks +
-    totals.favoriteAdds +
-    totals.promotionViews
-  );
-}
+/** @deprecated use sumBusinessIntentActionsFromDaily from analytics-intent-actions.util */
+export { sumBusinessIntentActionsFromDaily as sumIntentActionsFromDaily } from './analytics-intent-actions.util';
 
-export function sumIntentActionsForDay(row: DailyMetricRow | undefined): number {
-  if (!row) return 0;
-  return sumIntentActionsFromDaily(row);
-}
+/** @deprecated use sumBusinessIntentActionsForDailyRow from analytics-intent-actions.util */
+export { sumBusinessIntentActionsForDailyRow as sumIntentActionsForDay } from './analytics-intent-actions.util';
 
 /** Period aggregate CTR: views / impressions × 100. */
 export function periodCtrPercent(views: number, impressions: number): number | null {
