@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-10 — Stage 6.6C: Flutter Owner Analytics 360 UI
+
+- Owner statistics screen restructured (Обзор / Привлечение / Аудитория / Контент / рекомендации); capabilities-driven period selector, PRO+ CSV export with RBAC, compact upgrade UX, hour-only popular times, promotion/catalog actions-unavailable copy.
+- Docs: `docs/analytics/stage-6-6c-flutter-analytics-ui.md`; Flutter tests in `owner_analytics_test.dart`.
+- Будущее: 6.6D (Business Web analytics); weekday heatmap when rollup ready; review analytics if added to API.
+
 ## 2026-09-10 — Stage 6.6B: Analytics entitlements & backend security
 
 - Canonical plan capabilities (`impressions`, `ctr`, `audience`, `catalogAnalytics`, `visitorMetrics`, `promotionBreakdown`); overview/section server-side gating; BASIC period comparison; PRO export + `reportExport` on PREMIUM/VIP.
