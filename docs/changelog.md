@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-11 — Stage 6.8A: Local security readiness audit
+
+- Read-only security audit across monorepo (auth, RBAC, IDOR patterns, uploads, CORS, deps, Docker, AI orchestrator, mobile/web token storage).
+- Risk register and release blockers in `docs/security/stage-6-8a-local-security-audit.md`.
+- npm audit: 19 findings (1 critical in Next.js chain); no code hardening in this stage.
+- Future: Stage 6.8B ordered hardening (secrets, deps, tokens, rate limits, uploads, headers).
+
 ## 2026-09-11 — Stage 6.7QA: Monetization + category adversarial QA
 
 - Added regression suites: `stage-6-7qa-purchase-adversarial`, `stage-6-7qa-category-discovery`, `stage-6-7qa-package-inventory`; Flutter `category_discovery_qa_test.dart`.
