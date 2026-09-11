@@ -1,9 +1,9 @@
 import { UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { AuthProvider, UserRole } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AuthIdentityService } from '../auth-identity.service';
 import { SocialAuthLoginService } from './social-auth-login.service';
+import { AuthSessionService } from '../auth-session.service';
 
 describe('SocialAuthLoginService', () => {
   let service: SocialAuthLoginService;
@@ -11,7 +11,7 @@ describe('SocialAuthLoginService', () => {
     $transaction: jest.Mock;
     user: { create: jest.Mock; findUnique: jest.Mock; findFirst: jest.Mock };
   };
-  let jwt: { signAsync: jest.Mock };
+  let authSession: { issueQalaGoSession: jest.Mock };
   let authIdentity: {
     isTombstoned: jest.Mock;
     findIdentityWithUser: jest.Mock;
@@ -24,7 +24,13 @@ describe('SocialAuthLoginService', () => {
       $transaction: jest.fn(),
       user: { create: jest.fn(), findUnique: jest.fn(), findFirst: jest.fn() },
     };
-    jwt = { signAsync: jest.fn().mockResolvedValue('qalago-jwt') };
+    authSession = {
+      issueQalaGoSession: jest.fn().mockImplementation(async (user) => ({
+        accessToken: 'qalago-jwt',
+        refreshToken: 'refresh',
+        user,
+      })),
+    };
     authIdentity = {
       isTombstoned: jest.fn().mockResolvedValue(false),
       findIdentityWithUser: jest.fn().mockResolvedValue(null),
@@ -34,8 +40,8 @@ describe('SocialAuthLoginService', () => {
 
     service = new SocialAuthLoginService(
       prisma as unknown as PrismaService,
-      jwt as unknown as JwtService,
       authIdentity as unknown as AuthIdentityService,
+      authSession as unknown as AuthSessionService,
     );
   });
 

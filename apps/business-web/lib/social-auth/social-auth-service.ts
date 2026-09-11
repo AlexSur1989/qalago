@@ -13,6 +13,7 @@ import {
 
 export type SocialAuthExchangeResult = {
   accessToken: string;
+  refreshToken?: string;
   user: AuthUser;
 };
 

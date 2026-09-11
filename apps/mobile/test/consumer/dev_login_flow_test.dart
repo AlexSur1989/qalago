@@ -176,7 +176,9 @@ class _FakeAuthRepo extends AuthRepository {
   final bool fail;
 
   @override
-  Future<({String token, UserModel user})> devLogin(String phone) async {
+  Future<({String token, String? refreshToken, UserModel user})> devLogin(
+    String phone,
+  ) async {
     if (fail) {
       throw DioException(
         requestOptions: RequestOptions(path: '/auth/dev-login'),
@@ -196,6 +198,7 @@ class _FakeAuthRepo extends AuthRepository {
 
     return (
       token: 'jwt-$phone',
+      refreshToken: 'refresh-$phone',
       user: UserModel(
         id: 'u-$phone',
         phone: phone,

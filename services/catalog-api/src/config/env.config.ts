@@ -2,7 +2,9 @@ export default () => ({
   app: {
     port: parseInt(process.env.PORT ?? '3002', 10),
     jwtSecret: process.env.JWT_SECRET ?? 'dev-secret-change-me-32-chars-min',
-    jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
+    jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '20m',
+    refreshTokenExpiresDays: parseInt(process.env.REFRESH_TOKEN_EXPIRES_DAYS ?? '30', 10),
+    redisUrl: process.env.REDIS_URL ?? '',
     otpDebug: process.env.OTP_DEBUG === 'true',
     devLoginEnabled: process.env.DEV_LOGIN_ENABLED === 'true',
     otpAuthEnabled: process.env.OTP_AUTH_ENABLED !== 'false',

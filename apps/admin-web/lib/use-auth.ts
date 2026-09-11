@@ -2,8 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { adminApi, AuthUser, TOKEN_KEY } from '@/lib/api';
+import { adminApi, AuthUser } from '@/lib/api';
 import { canAccessAdminWeb } from '@/lib/rbac';
+import {
+  clearWebAccessToken,
+  getWebAccessToken,
+  setWebAccessToken,
+} from '@/lib/web-auth-token';
 
 export function useAuth(redirectTo = '/login') {
   const router = useRouter();
@@ -12,31 +17,58 @@ export function useAuth(redirectTo = '/login') {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const t = localStorage.getItem(TOKEN_KEY);
-    if (!t) {
-      router.replace(redirectTo);
-      return;
-    }
-    setToken(t);
-    adminApi
-      .getMe(t)
-      .then((me) => {
-        if (!canAccessAdminWeb(me.role)) {
-          localStorage.removeItem(TOKEN_KEY);
+    async function bootstrap() {
+      let access = getWebAccessToken();
+      if (!access) {
+        try {
+          const res = await fetch('/api/auth/refresh', { method: 'POST' });
+          if (!res.ok) {
+            router.replace(redirectTo);
+            return;
+          }
+          const data = (await res.json()) as { accessToken: string; user: AuthUser };
+          access = data.accessToken;
+          setWebAccessToken(access);
+          if (!canAccessAdminWeb(data.user.role)) {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            clearWebAccessToken();
+            router.replace(redirectTo);
+            return;
+          }
+          setToken(access);
+          setUser(data.user);
+          setReady(true);
+          return;
+        } catch {
           router.replace(redirectTo);
           return;
         }
-        setUser(me);
-      })
-      .catch(() => {
-        localStorage.removeItem(TOKEN_KEY);
-        router.replace(redirectTo);
-      })
-      .finally(() => setReady(true));
+      }
+
+      setToken(access);
+      adminApi
+        .getMe(access)
+        .then((me) => {
+          if (!canAccessAdminWeb(me.role)) {
+            clearWebAccessToken();
+            router.replace(redirectTo);
+            return;
+          }
+          setUser(me);
+        })
+        .catch(async () => {
+          clearWebAccessToken();
+          router.replace(redirectTo);
+        })
+        .finally(() => setReady(true));
+    }
+
+    void bootstrap();
   }, [router, redirectTo]);
 
-  function logout() {
-    localStorage.removeItem(TOKEN_KEY);
+  async function logout() {
+    clearWebAccessToken();
+    await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/login');
   }
 

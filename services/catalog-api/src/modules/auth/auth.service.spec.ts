@@ -3,9 +3,9 @@ import { UserRole } from '@prisma/client';
 import { AuthService } from './auth.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 import { BusinessMembershipService } from '../../common/services/business-membership.service';
 import { OtpRateLimitService } from '../../common/services/otp-rate-limit.service';
+import { AuthSessionService } from './auth-session.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -23,7 +23,7 @@ describe('AuthService', () => {
       update: jest.Mock;
     };
   };
-  let jwt: { signAsync: jest.Mock };
+  let authSession: { issueQalaGoSession: jest.Mock };
   let config: { get: jest.Mock };
   let otpRateLimit: {
     assertCanSendCode: jest.Mock;
@@ -47,12 +47,19 @@ describe('AuthService', () => {
         update: jest.fn(),
       },
     };
-    jwt = { signAsync: jest.fn().mockResolvedValue('jwt-token') };
+    authSession = {
+      issueQalaGoSession: jest.fn().mockImplementation(async (user) => ({
+        accessToken: 'jwt-token',
+        refreshToken: 'refresh-token',
+        user,
+      })),
+    };
     config = {
       get: jest.fn((key: string) => {
         if (key === 'app.devLoginEnabled') return false;
         if (key === 'app.otpDebug') return false;
         if (key === 'app.otpAuthEnabled') return true;
+        if (key === 'NODE_ENV') return 'test';
         return undefined;
       }),
     };
@@ -71,10 +78,10 @@ describe('AuthService', () => {
 
     service = new AuthService(
       prisma as unknown as PrismaService,
-      jwt as unknown as JwtService,
       config as unknown as ConfigService,
       membership as unknown as BusinessMembershipService,
       otpRateLimit as unknown as OtpRateLimitService,
+      authSession as unknown as AuthSessionService,
     );
   });
 
@@ -160,10 +167,12 @@ describe('AuthService', () => {
       );
     });
 
-    it('issues JWT via same signer as OTP flow', async () => {
-      config.get.mockImplementation((key: string) =>
-        key === 'app.devLoginEnabled' ? true : false,
-      );
+    it('issues session via AuthSessionService on dev login', async () => {
+      config.get.mockImplementation((key: string) => {
+        if (key === 'app.devLoginEnabled') return true;
+        if (key === 'NODE_ENV') return 'development';
+        return false;
+      });
       prisma.user.findUnique.mockResolvedValue({
         id: 'u1',
         phone: '+77001234567',
@@ -172,11 +181,18 @@ describe('AuthService', () => {
       });
 
       await service.devLogin({ phone: '+77001234567' });
-      expect(jwt.signAsync).toHaveBeenCalledWith({
-        sub: 'u1',
-        phone: '+77001234567',
-        role: UserRole.USER,
+      expect(authSession.issueQalaGoSession).toHaveBeenCalled();
+    });
+
+    it('rejects dev login when NODE_ENV=production even if flag true', async () => {
+      config.get.mockImplementation((key: string) => {
+        if (key === 'app.devLoginEnabled') return true;
+        if (key === 'NODE_ENV') return 'production';
+        return false;
       });
+      await expect(service.devLogin({ phone: '+77001234567' })).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
     });
 
     it('does not create duplicate users on repeat login', async () => {

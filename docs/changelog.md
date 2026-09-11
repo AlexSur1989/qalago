@@ -27,6 +27,18 @@
 
 ---
 
+## 2026-09-11 — Stage 6.8B: Local security hardening
+
+- Production fail-closed: weak secrets, DEV login, mock checkout, AI internal token, CORS wildcard.
+- Auth: `AuthSession` refresh rotation (hashed tokens), short access JWT, logout/revocation APIs.
+- Admin/Business Web: HttpOnly refresh cookie via Next BFF; access token memory-only.
+- Mobile: secure storage for refresh; Dio refresh-on-401.
+- AI orchestrator: token required (explicit dev open flag); tightened CORS; constant-time compare.
+- Uploads: magic-byte validation, business-scoped uploads, rate limits.
+- Redis-ready rate limit store; Helmet + production error filter; log redaction util.
+- Docs: `docs/security/stage-6-8b-local-security-hardening.md`, backup/incident runbooks.
+- Future: 6.8C infra/CSP, 6.8D OAuth hardening, 7.x mandatory Redis/backups.
+
 ## 2026-09-11 — Stage 6.8A: Local security readiness audit
 
 - Read-only security audit across monorepo (auth, RBAC, IDOR patterns, uploads, CORS, deps, Docker, AI orchestrator, mobile/web token storage).

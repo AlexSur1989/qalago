@@ -4,6 +4,8 @@ import {
   isProductionNodeEnv,
 } from './production-config.util';
 
+const prodAiToken = 'a'.repeat(48);
+
 describe('production-config.util', () => {
   describe('assertProductionConfig', () => {
     it('allows development with empty CORS', () => {
@@ -115,6 +117,7 @@ describe('production-config.util', () => {
           mockPlanCheckoutEnabled: false,
           appleAuthEnabled: true,
           appleClientIdIos: 'kz.qalago.qalagoMobile',
+          internalServiceToken: prodAiToken,
         }),
       ).not.toThrow();
     });
@@ -130,6 +133,7 @@ describe('production-config.util', () => {
           mockPlanCheckoutEnabled: false,
           googleAuthEnabled: true,
           googleClientIdWeb: 'web-client.apps.googleusercontent.com',
+          internalServiceToken: prodAiToken,
         }),
       ).not.toThrow();
     });
@@ -162,6 +166,7 @@ describe('production-config.util', () => {
           otpAuthEnabled: true,
           googleAuthEnabled: false,
           appleAuthEnabled: false,
+          internalServiceToken: prodAiToken,
         }),
       ).not.toThrow();
     });

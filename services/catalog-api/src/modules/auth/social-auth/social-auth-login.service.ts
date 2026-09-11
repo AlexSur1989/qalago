@@ -1,8 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { AuthProvider, Prisma, User, UserRole } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AuthIdentityService } from '../auth-identity.service';
+import { AuthSessionService } from '../auth-session.service';
 import { SocialLoginClaims } from './social-auth.types';
 
 const userSelect = {
@@ -39,8 +39,8 @@ export type CompleteSocialLoginInput = {
 export class SocialAuthLoginService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly jwtService: JwtService,
     private readonly authIdentity: AuthIdentityService,
+    private readonly authSession: AuthSessionService,
   ) {}
 
   async completeSocialLogin(input: CompleteSocialLoginInput) {
@@ -58,13 +58,13 @@ export class SocialAuthLoginService {
 
     if (existingIdentity) {
       const user = await this.resolveActiveUserFromIdentity(existingIdentity, claims);
-      const accessToken = await this.signToken(user);
-      return { accessToken, user: this.toAuthUser(user) };
+      const session = await this.authSession.issueQalaGoSession(user);
+      return { ...session, user: this.toAuthUser(session.user) };
     }
 
     const user = await this.createSocialUser(provider, claims, input.initialName ?? null);
-    const accessToken = await this.signToken(user);
-    return { accessToken, user: this.toAuthUser(user) };
+    const session = await this.authSession.issueQalaGoSession(user);
+    return { ...session, user: this.toAuthUser(session.user) };
   }
 
   private async resolveActiveUserFromIdentity(
@@ -127,14 +127,6 @@ export class SocialAuthLoginService {
 
       return this.resolveActiveUserFromIdentity(racedIdentity, claims);
     }
-  }
-
-  private async signToken(user: Pick<User, 'id' | 'phone' | 'role'>) {
-    return this.jwtService.signAsync({
-      sub: user.id,
-      ...(user.phone != null ? { phone: user.phone } : {}),
-      role: user.role,
-    });
   }
 
   private toAuthUser(user: Pick<User, 'id' | 'phone' | 'email' | 'name' | 'role'>) {

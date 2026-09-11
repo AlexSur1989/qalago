@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { FormEvent, Suspense, useCallback, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { ownerApi, TOKEN_KEY } from '@/lib/api';
+import { ownerApi, AuthUser } from '@/lib/api';
+import { setWebAccessToken } from '@/lib/web-auth-token';
 import {
   businessWebAnyLoginMethodConfigured,
   businessWebAppleAuthConfigured,
@@ -59,7 +60,11 @@ function LoginContent() {
   );
 
   const finishLogin = useCallback(
-    async (accessToken: string, user: Awaited<ReturnType<typeof ownerApi.verifyCode>>['user']) => {
+    async (
+      accessToken: string,
+      refreshToken: string | undefined,
+      user: AuthUser,
+    ) => {
       const destination = await resolvePostLoginDestination(
         accessToken,
         user,
@@ -69,11 +74,34 @@ function LoginContent() {
         setError(destination.error);
         return;
       }
-      localStorage.setItem(TOKEN_KEY, accessToken);
+      setWebAccessToken(accessToken);
+      if (refreshToken) {
+        await fetch('/api/auth/establish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken }),
+        });
+      }
       router.push(destination.path);
     },
     [redirectParam, router],
   );
+
+  async function loginViaSession(mode: 'verify' | 'dev', payload: { phone: string; code?: string }) {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(
+        mode === 'dev'
+          ? { mode: 'dev', phone: payload.phone }
+          : { mode: 'verify', phone: payload.phone, code: payload.code },
+      ),
+    });
+    if (!res.ok) {
+      throw new Error(await res.text());
+    }
+    return res.json() as Promise<{ accessToken: string; user: AuthUser }>;
+  }
 
   async function sendCode(e: FormEvent) {
     e.preventDefault();
@@ -99,8 +127,8 @@ function LoginContent() {
     setLoading(true);
     setError(null);
     try {
-      const res = await ownerApi.verifyCode(phone, code, 'user');
-      await finishLogin(res.accessToken, res.user);
+      const res = await loginViaSession('verify', { phone, code });
+      await finishLogin(res.accessToken, undefined, res.user);
     } catch (err) {
       setError(String(err));
     } finally {
@@ -113,8 +141,8 @@ function LoginContent() {
     setLoading(true);
     setError(null);
     try {
-      const res = await ownerApi.devLogin(nextPhone);
-      await finishLogin(res.accessToken, res.user);
+      const res = await loginViaSession('dev', { phone: nextPhone });
+      await finishLogin(res.accessToken, undefined, res.user);
     } catch (err) {
       setError(String(err));
     } finally {
@@ -128,7 +156,7 @@ function LoginContent() {
     setError(null);
     try {
       const res = await exchangeGoogleIdToken(credential);
-      await finishLogin(res.accessToken, res.user);
+      await finishLogin(res.accessToken, res.refreshToken, res.user);
     } catch (err) {
       const message = mapSocialAuthError(err, 'Google');
       if (message) setError(message);
@@ -145,7 +173,7 @@ function LoginContent() {
     setError(null);
     try {
       const res = await exchangeAppleAuthorization(response);
-      await finishLogin(res.accessToken, res.user);
+      await finishLogin(res.accessToken, res.refreshToken, res.user);
     } catch (err) {
       const message = mapSocialAuthError(err, 'Apple');
       if (message) setError(message);

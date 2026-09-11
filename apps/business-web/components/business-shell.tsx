@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { ReactNode, useEffect, useState } from 'react';
-import { BusinessRow, SELECTED_BUSINESS_KEY, TOKEN_KEY, ownerApi } from '@/lib/api';
+import { BusinessRow, SELECTED_BUSINESS_KEY, ownerApi } from '@/lib/api';
+import { getWebAccessToken } from '@/lib/web-auth-token';
 import { businessInitials, statusLabel } from '@/lib/business-utils';
 
 export type NavId =
@@ -77,7 +78,7 @@ export function BusinessShell({
   const footerNavItems = footerNav ?? FOOTER_NAV;
 
   useEffect(() => {
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = getWebAccessToken();
     if (!token) return;
     ownerApi
       .unreadNotificationCount(token)

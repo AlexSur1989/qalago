@@ -280,7 +280,7 @@ class AuthNotifier extends Notifier<AuthState> {
         code: code,
         accountType: accountType,
       );
-      await _finishLogin(result.token, result.user);
+      await _finishLogin(result.token, result.user, refreshToken: result.refreshToken);
     } catch (e) {
       state = state.copyWith(isLoading: false);
       rethrow;
@@ -291,7 +291,7 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(isLoading: true);
     try {
       final result = await _repo.devLogin(phone);
-      await _finishLogin(result.token, result.user);
+      await _finishLogin(result.token, result.user, refreshToken: result.refreshToken);
     } catch (e) {
       state = state.copyWith(isLoading: false);
       rethrow;
@@ -314,7 +314,7 @@ class AuthNotifier extends Notifier<AuthState> {
         throw const SocialSignInNoToken();
       }
       final result = await _repo.signInWithGoogle(idToken);
-      await _finishLogin(result.token, result.user);
+      await _finishLogin(result.token, result.user, refreshToken: result.refreshToken);
     } catch (e) {
       if (state.isAuthenticated) return;
       state = state.copyWith(isLoading: false);
@@ -340,7 +340,7 @@ class AuthNotifier extends Notifier<AuthState> {
         throw const SocialSignInNoToken();
       }
       final result = await _repo.signInWithApple(identityToken);
-      await _finishLogin(result.token, result.user);
+      await _finishLogin(result.token, result.user, refreshToken: result.refreshToken);
     } catch (e) {
       if (state.isAuthenticated) return;
       state = state.copyWith(isLoading: false);
@@ -350,13 +350,26 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  Future<void> _finishLogin(String token, UserModel user) async {
+  Future<void> _finishLogin(
+    String token,
+    UserModel user, {
+    String? refreshToken,
+  }) async {
     await _storage.saveToken(token);
+    if (refreshToken != null && refreshToken.isNotEmpty) {
+      await _storage.saveRefreshToken(refreshToken);
+    }
     state = AuthState(user: user, isAuthenticated: true);
     await _syncSessionCityToProfile(user);
   }
 
   Future<void> logout() async {
+    final refresh = await _storage.readRefreshToken();
+    try {
+      await _repo.logoutSession(refresh);
+    } catch (_) {
+      // Best-effort server revocation.
+    }
     await _storage.clear();
     clearSession();
   }

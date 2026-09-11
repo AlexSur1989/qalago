@@ -44,3 +44,10 @@ export class AppleAuthDto {
   @MinLength(10)
   identityToken!: string;
 }
+
+export class RefreshTokenDto {
+  @IsOptional()
+  @IsString()
+  @MinLength(20)
+  refreshToken?: string;
+}

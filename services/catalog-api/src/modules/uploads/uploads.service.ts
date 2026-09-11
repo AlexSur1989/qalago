@@ -5,16 +5,21 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createWriteStream, existsSync, mkdirSync } from 'fs';
-import { join, extname } from 'path';
+import { join } from 'path';
 import { randomUUID } from 'crypto';
+import {
+  assertReasonableImageDimensions,
+  detectImageFormat,
+  extensionForFormat,
+} from '../../common/utils/image-magic-bytes.util';
 import { AuditAction, AuditResourceType, BusinessPermission } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { BusinessAccessService } from '../../common/services/business-access.service';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
-
-const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+import { RateLimitStoreService } from '../../common/services/rate-limit-store.service';
+import { RateLimitPolicy } from '../../common/services/rate-limit-policy';
 
 @Injectable()
 export class UploadsService {
@@ -24,6 +29,7 @@ export class UploadsService {
     private readonly planLimits: PlanLimitsService,
     private readonly businessAccess: BusinessAccessService,
     private readonly auditLog: AuditLogService,
+    private readonly rateLimits: RateLimitStoreService,
   ) {}
 
   getUploadDir(): string {
@@ -32,18 +38,31 @@ export class UploadsService {
     return dir;
   }
 
-  async saveFile(file: Express.Multer.File): Promise<{ url: string }> {
+  async saveFileForUser(
+    user: AuthUser,
+    file: Express.Multer.File,
+    businessId?: string,
+  ): Promise<{ url: string }> {
     if (!file) throw new BadRequestException('File required');
-    if (!ALLOWED_MIME.has(file.mimetype)) {
-      throw new BadRequestException('Only JPEG, PNG, WebP, GIF allowed');
-    }
+    await this.assertUploadAuthorized(user, businessId);
+
     const maxBytes = this.config.get<number>('app.maxUploadMb', 5) * 1024 * 1024;
     if (file.size > maxBytes) {
       throw new BadRequestException('File too large');
     }
 
-    const ext = extname(file.originalname) || '.jpg';
-    const filename = `${randomUUID()}${ext}`;
+    const buffer = file.buffer;
+    const format = detectImageFormat(buffer);
+    if (!format) {
+      throw new BadRequestException('Unsupported or invalid image content');
+    }
+    try {
+      assertReasonableImageDimensions(buffer, format);
+    } catch {
+      throw new BadRequestException('Image dimensions too large');
+    }
+
+    const filename = `${randomUUID()}${extensionForFormat(format)}`;
     const dir = this.getUploadDir();
     const filepath = join(dir, filename);
 
@@ -56,6 +75,32 @@ export class UploadsService {
     });
 
     return { url: `/uploads/${filename}` };
+  }
+
+  private async assertUploadAuthorized(user: AuthUser, businessId?: string): Promise<void> {
+    const isPlatformStaff =
+      user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' || user.role === 'CITY_ADMIN';
+    if (isPlatformStaff) {
+      return;
+    }
+    if (!businessId) {
+      throw new BadRequestException('businessId is required for business uploads');
+    }
+    await this.businessAccess.assertBusinessPermission(
+      user,
+      businessId,
+      BusinessPermission.PHOTOS_EDIT,
+    );
+
+    const policy = RateLimitPolicy.UPLOAD;
+    const key = `upload:${businessId}:${user.id}`;
+    const windowMs = policy.windowSeconds * 1000;
+    try {
+      await this.rateLimits.assertAllowed(key, policy.limit, windowMs);
+      await this.rateLimits.recordHit(key, windowMs);
+    } catch {
+      throw new BadRequestException('Upload quota exceeded for this business');
+    }
   }
 
   async attachToBusiness(user: AuthUser, businessId: string, imageUrl: string, asCover = false) {

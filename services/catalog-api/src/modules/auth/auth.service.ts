@@ -6,14 +6,15 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
-import { User, UserRole } from '@prisma/client';
+import { UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { BusinessMembershipService } from '../../common/services/business-membership.service';
 import { OtpRateLimitService } from '../../common/services/otp-rate-limit.service';
 import { AccountType, resolveAccountRole } from './auth-role.util';
 import { normalizeKazakhstanPhone } from './auth-phone.util';
 import { DevLoginDto, SendCodeDto, VerifyCodeDto } from './dto/auth.dto';
+import { AuthSessionService } from './auth-session.service';
+import { isProductionNodeEnv } from '../../common/utils/production-config.util';
 
 const OTP_TTL_SEC = 300;
 
@@ -29,13 +30,17 @@ const userSelect = {
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly jwtService: JwtService,
     private readonly config: ConfigService,
     private readonly businessMembershipService: BusinessMembershipService,
     private readonly otpRateLimit: OtpRateLimitService,
+    private readonly authSession: AuthSessionService,
   ) {}
 
   isDevLoginEnabled(): boolean {
+    const nodeEnv = this.config.get<string>('NODE_ENV', 'development');
+    if (isProductionNodeEnv(nodeEnv)) {
+      return false;
+    }
     return this.config.get<boolean>('app.devLoginEnabled') === true;
   }
 
@@ -162,11 +167,31 @@ export class AuthService {
           : existing;
     }
 
-    const accessToken = await this.signToken(user);
     if (phone) {
       await this.businessMembershipService.claimPendingInvitations(user.id, phone);
     }
-    return { accessToken, user };
+    return this.authSession.issueQalaGoSession(user);
+  }
+
+  async refresh(refreshToken: string, userAgent?: string) {
+    try {
+      return await this.authSession.refreshSession(refreshToken, { userAgent });
+    } catch (error) {
+      await this.authSession.handlePossibleReplay(refreshToken);
+      throw error;
+    }
+  }
+
+  async logout(refreshToken: string | undefined) {
+    if (refreshToken) {
+      await this.authSession.revokeRefreshToken(refreshToken);
+    }
+    return { success: true };
+  }
+
+  async logoutAll(userId: string) {
+    await this.authSession.revokeAllUserSessions(userId);
+    return { success: true };
   }
 
   async getMe(userId: string) {
@@ -193,13 +218,6 @@ export class AuthService {
     return normalized;
   }
 
-  private async signToken(user: Pick<User, 'id' | 'phone' | 'role'>) {
-    return this.jwtService.signAsync({
-      sub: user.id,
-      ...(user.phone != null ? { phone: user.phone } : {}),
-      role: user.role,
-    });
-  }
 
   private generateCode(): string {
     return String(randomInt(1000, 9999));

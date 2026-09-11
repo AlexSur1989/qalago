@@ -5,6 +5,7 @@ import { CommonAccessModule } from '../../common/common-access.module';
 import { AuthController } from './auth.controller';
 import { AuthIdentityService } from './auth-identity.service';
 import { AuthService } from './auth.service';
+import { AuthSessionService } from './auth-session.service';
 import { AppleAuthLoginService } from './social-auth/apple-auth-login.service';
 import { AppleIdentityTokenVerifierService } from './social-auth/apple-identity-token-verifier.service';
 import { GoogleAuthLoginService } from './social-auth/google-auth-login.service';
@@ -20,13 +21,14 @@ import { SocialAuthLoginService } from './social-auth/social-auth-login.service'
       useFactory: (config: ConfigService) => ({
         secret: config.getOrThrow<string>('app.jwtSecret'),
         signOptions: {
-          expiresIn: (config.get<string>('app.jwtExpiresIn') ?? '7d') as `${number}d`,
+          expiresIn: (config.get<string>('app.jwtExpiresIn') ?? '20m') as `${number}m`,
         },
       }),
     }),
   ],
   controllers: [AuthController],
   providers: [
+    AuthSessionService,
     AuthService,
     AuthIdentityService,
     SocialAuthLoginService,
@@ -37,6 +39,7 @@ import { SocialAuthLoginService } from './social-auth/social-auth-login.service'
   ],
   exports: [
     JwtModule,
+    AuthSessionService,
     AuthService,
     AuthIdentityService,
     GoogleAuthLoginService,

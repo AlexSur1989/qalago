@@ -6,7 +6,7 @@
     "build": "tsc",
     "start": "node dist/main.js",
     "start:dev": "ts-node --transpile-only src/main.ts",
-    "test": "npm run build && node --test dist/service-auth.test.js",
+    "test": "npm run build && node --test dist/service-auth.spec.js",
     "lint": "echo \"ok\""
   },
   "dependencies": {

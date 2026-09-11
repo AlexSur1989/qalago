@@ -2,7 +2,8 @@
 
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { adminApi, TOKEN_KEY } from '@/lib/api';
+import { adminApi, AuthUser } from '@/lib/api';
+import { setWebAccessToken } from '@/lib/web-auth-token';
 import { adminWebDevLoginEnabled, devSeedAccounts } from '@/lib/auth-config';
 import { canAccessAdminWeb } from '@/lib/rbac';
 
@@ -14,13 +15,29 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function finishLogin(accessToken: string, user: Awaited<ReturnType<typeof adminApi.verifyCode>>['user']) {
+  async function finishLogin(accessToken: string, user: AuthUser) {
     if (!canAccessAdminWeb(user.role)) {
       setError('Доступ только для администраторов платформы');
       return;
     }
-    localStorage.setItem(TOKEN_KEY, accessToken);
+    setWebAccessToken(accessToken);
     router.push('/dashboard');
+  }
+
+  async function loginViaSession(mode: 'verify' | 'dev', payload: { phone: string; code?: string }) {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(
+        mode === 'dev'
+          ? { mode: 'dev', phone: payload.phone }
+          : { mode: 'verify', phone: payload.phone, code: payload.code },
+      ),
+    });
+    if (!res.ok) {
+      throw new Error(await res.text());
+    }
+    return res.json() as Promise<{ accessToken: string; user: AuthUser }>;
   }
 
   async function sendCode(e: FormEvent) {
@@ -45,7 +62,7 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await adminApi.verifyCode(phone, code);
+      const res = await loginViaSession('verify', { phone, code });
       await finishLogin(res.accessToken, res.user);
     } catch (err) {
       setError(String(err));
@@ -58,7 +75,7 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await adminApi.devLogin(nextPhone);
+      const res = await loginViaSession('dev', { phone: nextPhone });
       await finishLogin(res.accessToken, res.user);
     } catch (err) {
       setError(String(err));

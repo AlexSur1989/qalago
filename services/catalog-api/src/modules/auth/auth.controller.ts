@@ -1,5 +1,14 @@
-import { Controller, Get, Post, Body, NotFoundException, Req } from '@nestjs/common';
-import { Request } from 'express';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  NotFoundException,
+  Req,
+  Res,
+  Headers,
+} from '@nestjs/common';
+import { Request, Response } from 'express';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
@@ -11,7 +20,9 @@ import {
   DevLoginDto,
   GoogleAuthDto,
   AppleAuthDto,
+  RefreshTokenDto,
 } from './dto/auth.dto';
+import { REFRESH_COOKIE_NAME, setRefreshCookie, clearRefreshCookie, readRefreshToken } from './auth-cookie.util';
 import { AppleAuthLoginService } from './social-auth/apple-auth-login.service';
 import { GoogleAuthLoginService } from './social-auth/google-auth-login.service';
 
@@ -56,6 +67,47 @@ export class AuthController {
     return this.appleAuthLogin.loginWithApple(dto.identityToken, resolveRequestIp(req));
   }
 
+  @Public()
+  @Post('refresh')
+  async refresh(
+    @Body() dto: RefreshTokenDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @Headers('x-qalago-auth-channel') channel?: string,
+  ) {
+    const refreshToken = dto.refreshToken ?? readRefreshToken(req);
+    if (!refreshToken) {
+      throw new NotFoundException();
+    }
+    const result = await this.authService.refresh(refreshToken, req.header('user-agent') ?? undefined);
+    if (channel === 'web') {
+      setRefreshCookie(res, result.refreshToken, req);
+      return { accessToken: result.accessToken, user: result.user };
+    }
+    return result;
+  }
+
+  @Public()
+  @Post('logout')
+  async logout(
+    @Body() dto: RefreshTokenDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = dto.refreshToken ?? readRefreshToken(req);
+    await this.authService.logout(refreshToken);
+    clearRefreshCookie(res);
+    return { success: true };
+  }
+
+  @Post('logout-all')
+  async logoutAll(@CurrentUser() user: AuthUser | undefined) {
+    if (!user) {
+      throw new NotFoundException();
+    }
+    return this.authService.logoutAll(user.id);
+  }
+
   @Get('me')
   async me(@CurrentUser() user: AuthUser | undefined) {
     if (!user) {
@@ -64,3 +116,5 @@ export class AuthController {
     return this.authService.getMe(user.id);
   }
 }
+
+export { REFRESH_COOKIE_NAME };

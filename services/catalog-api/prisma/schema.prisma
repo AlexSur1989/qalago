@@ -319,6 +319,26 @@ model User {
   ownershipClaims              BusinessOwnershipClaim[] @relation("ClaimClaimant")
   reviewedOwnershipClaims      BusinessOwnershipClaim[] @relation("ClaimReviewer")
   authIdentities               AuthIdentity[]
+  authSessions                 AuthSession[]
+}
+
+model AuthSession {
+  id            String    @id @default(cuid())
+  userId        String
+  tokenHash     String    @unique
+  familyId      String
+  rotatedFromId String?
+  userAgent     String?
+  createdAt     DateTime  @default(now())
+  expiresAt     DateTime
+  revokedAt     DateTime?
+  lastUsedAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+  @@index([expiresAt])
 }
 
 model AuthIdentity {

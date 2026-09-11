@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -39,8 +40,12 @@ export class UploadsController {
       limits: { fileSize: 5 * 1024 * 1024 },
     }),
   )
-  upload(@UploadedFile() file: Express.Multer.File) {
-    return this.uploadsService.saveFile(file);
+  upload(
+    @CurrentUser() user: AuthUser,
+    @UploadedFile() file: Express.Multer.File,
+    @Query('businessId') businessId?: string,
+  ) {
+    return this.uploadsService.saveFileForUser(user, file, businessId);
   }
 
   @Post('business/:businessId')

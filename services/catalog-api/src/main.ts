@@ -1,12 +1,23 @@
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { isProductionNodeEnv } from './common/utils/production-config.util';
+import { ProductionExceptionFilter } from './common/filters/production-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
+
+  app.use(cookieParser());
+  if (isProductionNodeEnv(config.get<string>('NODE_ENV'))) {
+    app.use(helmet({ contentSecurityPolicy: false }));
+  } else {
+    app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
+  }
+  app.useGlobalFilters(new ProductionExceptionFilter(config));
 
   app.setGlobalPrefix('api');
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });

@@ -39,9 +39,42 @@ final dioProvider = Provider<Dio>((ref) {
         handler.next(options);
       },
       onError: (error, handler) async {
-        if (error.response?.statusCode == 401) {
-          await ref.read(authStorageProvider).clear();
-          ref.read(sessionExpiredProvider.notifier).state++;
+        final status = error.response?.statusCode;
+        final path = error.requestOptions.path;
+        if (status == 401 && !path.contains('/auth/refresh')) {
+          final storage = ref.read(authStorageProvider);
+          final refresh = await storage.readRefreshToken();
+          if (refresh != null && refresh.isNotEmpty) {
+            try {
+              final refreshClient = Dio(
+                BaseOptions(
+                  baseUrl: AppConstants.baseUrl,
+                  headers: {'Content-Type': 'application/json'},
+                ),
+              );
+              final response = await refreshClient.post(
+                '/auth/refresh',
+                data: {'refreshToken': refresh},
+              );
+              final data = response.data as Map<String, dynamic>;
+              final rotated = (
+                token: data['accessToken'] as String,
+                refreshToken: data['refreshToken'] as String,
+              );
+              await storage.saveToken(rotated.token);
+              await storage.saveRefreshToken(rotated.refreshToken);
+              final req = error.requestOptions;
+              req.headers['Authorization'] = 'Bearer ${rotated.token}';
+              final clone = await dio.fetch(req);
+              return handler.resolve(clone);
+            } catch (_) {
+              await storage.clear();
+              ref.read(sessionExpiredProvider.notifier).state++;
+            }
+          } else {
+            await storage.clear();
+            ref.read(sessionExpiredProvider.notifier).state++;
+          }
         }
         handler.next(error);
       },

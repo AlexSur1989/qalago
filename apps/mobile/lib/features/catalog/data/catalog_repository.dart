@@ -15,7 +15,7 @@ class AuthRepository {
     return response.data as Map<String, dynamic>;
   }
 
-  Future<({String token, UserModel user})> verifyCode({
+  Future<({String token, String? refreshToken, UserModel user})> verifyCode({
     required String phone,
     required String code,
     String? name,
@@ -33,29 +33,52 @@ class AuthRepository {
     final data = response.data as Map<String, dynamic>;
     return (
       token: data['accessToken'] as String,
+      refreshToken: data['refreshToken'] as String?,
       user: UserModel.fromJson(data['user'] as Map<String, dynamic>),
     );
   }
 
-  Future<({String token, UserModel user})> devLogin(String phone) async {
+  Future<({String token, String? refreshToken, UserModel user})> devLogin(String phone) async {
     final response = await _dio.post('/auth/dev-login', data: {'phone': phone});
     final data = response.data as Map<String, dynamic>;
     return (
       token: data['accessToken'] as String,
+      refreshToken: data['refreshToken'] as String?,
       user: UserModel.fromJson(data['user'] as Map<String, dynamic>),
     );
   }
 
-  Future<({String token, UserModel user})> signInWithGoogle(String idToken) async {
+  Future<({String token, String refreshToken, UserModel user})> refreshSession(
+    String refreshToken,
+  ) async {
+    final response = await _dio.post(
+      '/auth/refresh',
+      data: {'refreshToken': refreshToken},
+    );
+    final data = response.data as Map<String, dynamic>;
+    return (
+      token: data['accessToken'] as String,
+      refreshToken: data['refreshToken'] as String,
+      user: UserModel.fromJson(data['user'] as Map<String, dynamic>),
+    );
+  }
+
+  Future<void> logoutSession(String? refreshToken) async {
+    if (refreshToken == null || refreshToken.isEmpty) return;
+    await _dio.post('/auth/logout', data: {'refreshToken': refreshToken});
+  }
+
+  Future<({String token, String? refreshToken, UserModel user})> signInWithGoogle(String idToken) async {
     final response = await _dio.post('/auth/google', data: {'idToken': idToken});
     final data = response.data as Map<String, dynamic>;
     return (
       token: data['accessToken'] as String,
+      refreshToken: data['refreshToken'] as String?,
       user: UserModel.fromJson(data['user'] as Map<String, dynamic>),
     );
   }
 
-  Future<({String token, UserModel user})> signInWithApple(
+  Future<({String token, String? refreshToken, UserModel user})> signInWithApple(
     String identityToken,
   ) async {
     final response = await _dio.post(
@@ -65,6 +88,7 @@ class AuthRepository {
     final data = response.data as Map<String, dynamic>;
     return (
       token: data['accessToken'] as String,
+      refreshToken: data['refreshToken'] as String?,
       user: UserModel.fromJson(data['user'] as Map<String, dynamic>),
     );
   }

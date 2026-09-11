@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-import { ownerApi, ResolvedInvitation, TOKEN_KEY } from '@/lib/api';
+import { ownerApi, ResolvedInvitation } from '@/lib/api';
+import { getWebAccessToken, setWebAccessToken } from '@/lib/web-auth-token';
 
 export default function InviteAcceptPage() {
   const params = useParams<{ token: string }>();
@@ -33,8 +34,24 @@ export default function InviteAcceptPage() {
   }, [inviteToken]);
 
   useEffect(() => {
-    setAuthToken(localStorage.getItem(TOKEN_KEY));
-    void loadInvitation();
+    async function bootstrapAuth() {
+      let token = getWebAccessToken();
+      if (!token) {
+        try {
+          const res = await fetch('/api/auth/refresh', { method: 'POST' });
+          if (res.ok) {
+            const data = (await res.json()) as { accessToken: string };
+            token = data.accessToken;
+            setWebAccessToken(token);
+          }
+        } catch {
+          token = null;
+        }
+      }
+      setAuthToken(token);
+      void loadInvitation();
+    }
+    void bootstrapAuth();
   }, [loadInvitation]);
 
   async function acceptInvite() {

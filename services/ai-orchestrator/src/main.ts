@@ -3,15 +3,21 @@ import { agents } from '@qalago/agents';
 import { recommend } from './recommendation.service';
 import { analyzeModeration } from './moderation.service';
 import { createContentDraft } from './content.service';
-import { extractServiceToken, verifyServiceToken } from './service-auth';
+import {
+  assertProductionServiceAuthConfig,
+  extractServiceToken,
+  verifyServiceToken,
+} from './service-auth';
 
 const port = Number(process.env.PORT ?? 3004);
 
 const app = express();
 
 app.use((_req, res, next) => {
-  const allowedOrigin = process.env.CORS_ORIGIN ?? '*';
-  res.header('Access-Control-Allow-Origin', allowedOrigin);
+  const configured = process.env.CORS_ORIGIN?.trim();
+  if (configured && configured !== '*') {
+    res.header('Access-Control-Allow-Origin', configured);
+  }
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-QalaGo-Service-Token');
   if (_req.method === 'OPTIONS') {
@@ -102,6 +108,8 @@ app.post('/api/v1/content/draft', async (req, res) => {
     res.status(502).json({ message: String(err) });
   }
 });
+
+assertProductionServiceAuthConfig();
 
 app.listen(port, () => {
   console.log(`QalaGo ai-orchestrator: http://localhost:${port}/api/v1/health`);

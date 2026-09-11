@@ -23,6 +23,10 @@ describe('UploadsService authorization', () => {
       { assertCanAddPhoto: jest.fn().mockResolvedValue(undefined) } as never,
       asBusinessAccessService(businessAccess),
       asAuditLogService(createMockAuditLog()),
+      {
+        assertAllowed: jest.fn().mockResolvedValue(undefined),
+        recordHit: jest.fn().mockResolvedValue(undefined),
+      } as never,
     );
   });
 

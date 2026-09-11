@@ -1,9 +1,4 @@
-const WEAK_JWT_PATTERNS = [
-  'dev-secret',
-  'change-me',
-  'qalago-staging-jwt',
-  'ci-test-secret',
-];
+import { isWeakSecretValue } from './secret-validation.util';
 
 export type ProductionConfigInput = {
   nodeEnv: string;
@@ -12,6 +7,9 @@ export type ProductionConfigInput = {
   otpDebug: boolean;
   devLoginEnabled: boolean;
   mockPlanCheckoutEnabled: boolean;
+  internalServiceToken?: string;
+  aiIntegrationEnabled?: boolean;
+  testAuthBypassEnabled?: boolean;
   googleAuthEnabled?: boolean;
   googleClientIdAndroid?: string;
   googleClientIdIos?: string;
@@ -38,6 +36,9 @@ export function assertProductionConfig(input: ProductionConfigInput): void {
   if (input.mockPlanCheckoutEnabled) {
     errors.push('MOCK_PLAN_CHECKOUT_ENABLED must be false in production');
   }
+  if (input.testAuthBypassEnabled) {
+    errors.push('TEST_AUTH_BYPASS_ENABLED must be false in production');
+  }
 
   const origins = input.corsOrigins
     .split(',')
@@ -52,12 +53,22 @@ export function assertProductionConfig(input: ProductionConfigInput): void {
   }
 
   const secret = input.jwtSecret.trim();
-  if (secret.length < 32) {
-    errors.push('JWT_SECRET must be at least 32 characters in production');
+  if (!secret) {
+    errors.push('JWT_SECRET must be set in production');
+  } else if (isWeakSecretValue(secret)) {
+    errors.push('JWT_SECRET must be a strong secret (min 32 chars, no known placeholders)');
   }
-  const lower = secret.toLowerCase();
-  if (WEAK_JWT_PATTERNS.some((pattern) => lower.includes(pattern))) {
-    errors.push('JWT_SECRET must not use a known development placeholder in production');
+
+  const aiEnabled = input.aiIntegrationEnabled !== false;
+  const internalToken = input.internalServiceToken?.trim() ?? '';
+  if (aiEnabled && !internalToken) {
+    errors.push(
+      'QALAGO_INTERNAL_SERVICE_TOKEN must be set in production when AI integration is enabled',
+    );
+  } else if (internalToken && isWeakSecretValue(internalToken)) {
+    errors.push(
+      'QALAGO_INTERNAL_SERVICE_TOKEN must not use a known development placeholder in production',
+    );
   }
 
   if (input.googleAuthEnabled) {

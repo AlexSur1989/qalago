@@ -16,7 +16,8 @@ RUN npm ci -w @qalago/catalog-api --omit=dev
 COPY --from=builder /app/services/catalog-api/dist ./services/catalog-api/dist
 COPY --from=builder /app/services/catalog-api/node_modules/.prisma ./services/catalog-api/node_modules/.prisma
 COPY services/catalog-api/prisma ./services/catalog-api/prisma
-RUN mkdir -p /app/services/catalog-api/uploads
+RUN mkdir -p /app/services/catalog-api/uploads && chown -R node:node /app
 WORKDIR /app/services/catalog-api
+USER node
 EXPOSE 3000
 CMD ["node", "dist/src/main.js"]
