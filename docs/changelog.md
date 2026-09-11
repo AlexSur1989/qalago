@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-11 — Stage 6.7QA: Monetization + category adversarial QA
+
+- Added regression suites: `stage-6-7qa-purchase-adversarial`, `stage-6-7qa-category-discovery`, `stage-6-7qa-package-inventory`; Flutter `category_discovery_qa_test.dart`.
+- catalog-api **681** tests passing; no integrity defects found in 6.7B/C/D scope.
+- Docs: `docs/monetization/stage-6-7qa-final-qa.md` (concurrency limits, limit=100 note, idempotency semantics).
+- Future: PostgreSQL parallel tests for last-slot race; DB pagination for large catalogs.
+
 ## 2026-09-11 — Stage 6.7D: Advertising and category discovery UX
 
 - Consumer category screen: «Рекомендуем» (organic), «Продвигаемые места» (paid), «Все места» with session sort chips (`recommended` / `nearest` / `rating` / `popular`).
