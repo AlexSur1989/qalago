@@ -50,6 +50,38 @@ export function formatDuration(days: number | null | undefined, hours: number | 
   return '—';
 }
 
+export function purchaseStateLabel(state?: string | null): string {
+  switch (state) {
+    case 'AVAILABLE':
+      return 'Доступно';
+    case 'ACTIVE':
+      return 'Активно';
+    case 'SCHEDULED':
+      return 'Запланировано';
+    case 'PENDING_PAYMENT':
+      return 'Ожидает оплаты';
+    case 'PENDING_APPROVAL':
+      return 'На модерации';
+    case 'SOLD_OUT':
+      return 'Мест нет';
+    default:
+      return state ?? '—';
+  }
+}
+
+export function purchaseActionLabel(action?: string | null): string {
+  switch (action) {
+    case 'BUY':
+      return 'Купить';
+    case 'CONTINUE_PAYMENT':
+      return 'Продолжить оплату';
+    case 'RENEW':
+      return 'Продлить';
+    default:
+      return '';
+  }
+}
+
 export function productLabel(code?: string | null): string {
   switch (code) {
     case 'BOOST':

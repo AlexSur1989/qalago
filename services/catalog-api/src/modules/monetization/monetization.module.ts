@@ -24,6 +24,7 @@ import { PurchaseSchedulingService } from './purchase-scheduling.service';
 import { PlacementCapacityService } from './placement-capacity.service';
 import { PackageSnapshotService } from './package-snapshot.service';
 import { InventoryReservationService } from './inventory-reservation.service';
+import { ProductPurchaseStateService } from './product-purchase-state.service';
 
 @Module({
   imports: [PlansModule, ScheduleModule.forRoot()],
@@ -38,6 +39,7 @@ import { InventoryReservationService } from './inventory-reservation.service';
     PlacementCapacityService,
     PackageSnapshotService,
     InventoryReservationService,
+    ProductPurchaseStateService,
     OrderService,
     CampaignProvisioningService,
     CampaignStatusService,

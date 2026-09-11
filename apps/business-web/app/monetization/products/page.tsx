@@ -4,25 +4,44 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { MonetizationProduct, ownerApi } from '@/lib/api';
 import { useMonetizationContext } from '@/components/monetization/monetization-shell';
-import { formatDuration, formatKzt, parseApiError, productLabel } from '@/lib/monetization-utils';
+import {
+  formatDate,
+  formatDuration,
+  formatKzt,
+  parseApiError,
+  productLabel,
+  purchaseActionLabel,
+  purchaseStateLabel,
+} from '@/lib/monetization-utils';
+import type { MonetizationPurchaseState } from '@/lib/api';
 
 export default function MonetizationProductsPage() {
   const { token, business } = useMonetizationContext();
   const [products, setProducts] = useState<MonetizationProduct[]>([]);
+  const [purchaseStates, setPurchaseStates] = useState<
+    Record<string, MonetizationPurchaseState>
+  >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    ownerApi
-      .listMonetizationProducts(token, {
+    Promise.all([
+      ownerApi.listMonetizationProducts(token, {
         businessId: business.id,
         citySlug: business.city?.slug,
         categoryId: business.categoryId,
-      })
-      .then((items) => {
-        if (!cancelled) setProducts(items);
+      }),
+      ownerApi.listMonetizationPurchaseStates(token, business.id),
+    ])
+      .then(([items, states]) => {
+        if (!cancelled) {
+          setProducts(items);
+          setPurchaseStates(
+            Object.fromEntries(states.map((s) => [s.productCode, s])),
+          );
+        }
       })
       .catch((err) => {
         if (!cancelled) setError(parseApiError(err));
@@ -60,11 +79,44 @@ export default function MonetizationProductsPage() {
             product.durations[0]?.finalPrice ?? Infinity,
           );
           const minDuration = product.durations[0];
+          const state = purchaseStates[product.code];
+          const detail =
+            state?.state === 'ACTIVE' && state.activeUntil
+              ? `Активно до ${formatDate(state.activeUntil)}`
+              : state?.state === 'SCHEDULED' && state.scheduledStart && state.scheduledEnd
+                ? `${formatDate(state.scheduledStart)} — ${formatDate(state.scheduledEnd)}`
+                : state?.state === 'SOLD_OUT' && state.nextAvailableAt
+                  ? `Ближайшая доступная дата: ${formatDate(state.nextAvailableAt)}`
+                  : null;
+          const href =
+            state?.primaryAction === 'CONTINUE_PAYMENT' && state.pendingOrderId
+              ? `/monetization/orders/${state.pendingOrderId}`
+              : `/monetization/products/${product.code}`;
+          const cta =
+            state?.primaryAction === 'CONTINUE_PAYMENT'
+              ? purchaseActionLabel(state.primaryAction)
+              : state?.primaryAction === 'RENEW'
+                ? purchaseActionLabel('RENEW')
+                : state?.state === 'SOLD_OUT'
+                  ? purchaseStateLabel(state.state)
+                  : 'Настроить';
           return (
             <section key={product.code} className="form-card catalog-card">
-              <h2 style={{ margin: '0 0 8px', fontSize: '1.05rem' }}>
-                {productLabel(product.code)}
-              </h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                <h2 style={{ margin: '0 0 8px', fontSize: '1.05rem' }}>
+                  {productLabel(product.code)}
+                </h2>
+                {state && (
+                  <span className="badge" style={{ alignSelf: 'flex-start' }}>
+                    {purchaseStateLabel(state.state)}
+                  </span>
+                )}
+              </div>
+              {detail && (
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', margin: '0 0 8px' }}>
+                  {detail}
+                </p>
+              )}
               {product.description && (
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{product.description}</p>
               )}
@@ -82,8 +134,12 @@ export default function MonetizationProductsPage() {
                   )}
                 </p>
               )}
-              <Link href={`/monetization/products/${product.code}`} className="btn btn-sm">
-                Настроить
+              <Link
+                href={href}
+                className={`btn btn-sm${state?.state === 'SOLD_OUT' ? ' btn-secondary' : ''}`}
+                aria-disabled={state?.state === 'SOLD_OUT'}
+              >
+                {cta}
               </Link>
             </section>
           );

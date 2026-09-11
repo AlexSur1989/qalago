@@ -15,6 +15,10 @@ import {
   HOURS_FIELDS,
 } from '../../common/utils/business-permission.util';
 import { haversineMeters } from '../../common/utils/geo.utils';
+import {
+  BusinessCatalogSort,
+  compareBusinessBySort,
+} from '../../common/utils/business-catalog-sort.util';
 import { compareBusinessCatalogRank } from '../../common/utils/business-rank.util';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { isGlobalAdmin } from '../../common/utils/system-access.util';
@@ -153,57 +157,160 @@ export class BusinessesService {
     limit: number,
     skip: number,
   ) {
-    const useGeo = query.latitude != null && query.longitude != null;
+    const hasGeo = query.latitude != null && query.longitude != null;
+    const sort =
+      query.sort ??
+      (hasGeo ? BusinessCatalogSort.NEAREST : BusinessCatalogSort.RECOMMENDED);
+    const useGeoSort = hasGeo && sort === BusinessCatalogSort.NEAREST;
+
     const allItems = await this.prisma.business.findMany({
       where,
       select: businessListSelect,
     });
 
-    if (!useGeo) {
-      const sorted = [...allItems].sort(compareBusinessCatalogRank);
-      const items = sorted.slice(skip, skip + limit);
-      return [items, sorted.length] as const;
+    const metrics =
+      sort === BusinessCatalogSort.RATING || sort === BusinessCatalogSort.POPULAR
+        ? await this.loadCatalogSortMetrics(allItems.map((i) => i.id))
+        : null;
+
+    if (useGeoSort) {
+      const radiusMeters = (query.radiusKm ?? 15) * 1000;
+      const ranked = allItems
+        .map((item) => {
+          const lat = item.latitude != null ? Number(item.latitude) : null;
+          const lng = item.longitude != null ? Number(item.longitude) : null;
+          if (lat == null || lng == null) {
+            return { item, distanceMeters: null as number | null };
+          }
+          const distanceMeters = haversineMeters(
+            query.latitude!,
+            query.longitude!,
+            lat,
+            lng,
+          );
+          return { item, distanceMeters };
+        })
+        .filter(({ distanceMeters }) =>
+          distanceMeters == null ? true : distanceMeters <= radiusMeters,
+        );
+
+      ranked.sort((a, b) =>
+        compareBusinessBySort(
+          this.toSortRow(a.item, a.distanceMeters, metrics),
+          this.toSortRow(b.item, b.distanceMeters, metrics),
+          BusinessCatalogSort.NEAREST,
+        ),
+      );
+
+      const items = ranked.slice(skip, skip + limit).map(({ item, distanceMeters }) => ({
+        ...item,
+        ...(distanceMeters != null
+          ? { distanceMeters: Math.round(distanceMeters) }
+          : {}),
+        ...(metrics?.ratings.get(item.id)
+          ? {
+              averageRating: metrics.ratings.get(item.id)!.averageRating,
+              reviewCount: metrics.ratings.get(item.id)!.reviewCount,
+            }
+          : {}),
+      }));
+
+      return [items, ranked.length] as const;
     }
 
-    const radiusMeters = (query.radiusKm ?? 15) * 1000;
-    const ranked = allItems
-      .map((item) => {
-        const lat = item.latitude != null ? Number(item.latitude) : null;
-        const lng = item.longitude != null ? Number(item.longitude) : null;
-        if (lat == null || lng == null) {
-          return { item, distanceMeters: null as number | null };
-        }
-        const distanceMeters = haversineMeters(
-          query.latitude!,
-          query.longitude!,
-          lat,
-          lng,
-        );
-        return { item, distanceMeters };
-      })
-      .filter(({ distanceMeters }) =>
-        distanceMeters == null ? true : distanceMeters <= radiusMeters,
-      )
-      .sort((a, b) => {
-        if (a.distanceMeters == null && b.distanceMeters == null) {
-          return a.item.title.localeCompare(b.item.title, 'ru');
-        }
-        if (a.distanceMeters == null) return 1;
-        if (b.distanceMeters == null) return -1;
-        if (a.distanceMeters !== b.distanceMeters) {
-          return a.distanceMeters - b.distanceMeters;
-        }
-        return a.item.title.localeCompare(b.item.title, 'ru');
-      });
+    const effectiveSort =
+      sort === BusinessCatalogSort.NEAREST && !hasGeo
+        ? BusinessCatalogSort.RECOMMENDED
+        : sort;
 
-    const items = ranked.slice(skip, skip + limit).map(({ item, distanceMeters }) => ({
+    const sorted = [...allItems].sort((a, b) =>
+      compareBusinessBySort(
+        this.toSortRow(a, null, metrics),
+        this.toSortRow(b, null, metrics),
+        effectiveSort,
+      ),
+    );
+
+    const items = sorted.slice(skip, skip + limit).map((item) => ({
       ...item,
-      ...(distanceMeters != null
-        ? { distanceMeters: Math.round(distanceMeters) }
+      ...(metrics?.ratings.get(item.id)
+        ? {
+            averageRating: metrics.ratings.get(item.id)!.averageRating,
+            reviewCount: metrics.ratings.get(item.id)!.reviewCount,
+          }
         : {}),
     }));
 
-    return [items, ranked.length] as const;
+    return [items, sorted.length] as const;
+  }
+
+  private toSortRow(
+    item: {
+      id: string;
+      title: string;
+      planTier: import('@prisma/client').BusinessPlanTier;
+      planExpiresAt: Date | null;
+      isFeatured: boolean;
+      featuredSlot: number | null;
+    },
+    distanceMeters: number | null,
+    metrics: Awaited<ReturnType<BusinessesService['loadCatalogSortMetrics']>> | null,
+  ) {
+    const rating = metrics?.ratings.get(item.id);
+    return {
+      id: item.id,
+      title: item.title,
+      planTier: item.planTier,
+      planExpiresAt: item.planExpiresAt,
+      isFeatured: item.isFeatured,
+      featuredSlot: item.featuredSlot,
+      distanceMeters,
+      averageRating: rating?.averageRating ?? null,
+      reviewCount: rating?.reviewCount ?? 0,
+      organicViews30d: metrics?.views.get(item.id) ?? 0,
+    };
+  }
+
+  private async loadCatalogSortMetrics(businessIds: string[]) {
+    const ratings = new Map<
+      string,
+      { averageRating: number | null; reviewCount: number }
+    >();
+    const views = new Map<string, number>();
+
+    if (!businessIds.length) {
+      return { ratings, views };
+    }
+
+    const ratingRows = await this.prisma.review.groupBy({
+      by: ['businessId'],
+      where: { businessId: { in: businessIds } },
+      _avg: { rating: true },
+      _count: { _all: true },
+    });
+    for (const row of ratingRows) {
+      ratings.set(row.businessId, {
+        averageRating: row._avg.rating,
+        reviewCount: row._count._all,
+      });
+    }
+
+    const since = new Date();
+    since.setUTCDate(since.getUTCDate() - 30);
+    const sinceKey = since.toISOString().slice(0, 10);
+    const viewRows = await this.prisma.analyticsDailyMetric.groupBy({
+      by: ['businessId'],
+      where: {
+        businessId: { in: businessIds },
+        metricDate: { gte: sinceKey },
+      },
+      _sum: { views: true },
+    });
+    for (const row of viewRows) {
+      views.set(row.businessId, row._sum.views ?? 0);
+    }
+
+    return { ratings, views };
   }
 
   async findOne(id: string) {

@@ -6,6 +6,18 @@ import '../data/monetization_models.dart';
 
 typedef MonetizationBusinessQuery = ({String businessId, String? citySlug, String? categoryId});
 
+final monetizationPurchaseStatesProvider =
+    FutureProvider.family<Map<String, MonetizationPurchaseState>, String>(
+  (ref, businessId) async {
+    final catalog = ref.watch(catalogRepositoryProvider);
+    final raw = await catalog.fetchMonetizationPurchaseStates(businessId);
+    return {
+      for (final row in raw)
+        row['productCode'] as String: MonetizationPurchaseState.fromJson(row),
+    };
+  },
+);
+
 final monetizationProductsProvider =
     FutureProvider.family<List<MonetizationProduct>, MonetizationBusinessQuery>(
   (ref, query) async {
@@ -95,6 +107,7 @@ final campaignAnalyticsProvider =
 
 void invalidateOwnerMonetization(WidgetRef ref, String businessId) {
   ref.invalidate(monetizationProductsProvider);
+  ref.invalidate(monetizationPurchaseStatesProvider(businessId));
   ref.invalidate(monetizationPackagesProvider);
   ref.invalidate(ownerMonetizationOrdersProvider(businessId));
   ref.invalidate(ownerMonetizationCampaignsProvider(businessId));

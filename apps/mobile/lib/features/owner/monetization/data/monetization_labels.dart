@@ -124,3 +124,64 @@ const paymentMethodUnavailableNotice =
 
 const ctrTooltip =
     'CTR — доля переходов от количества засчитанных просмотров рекламы.';
+
+String purchaseStateLabel(String state) {
+  switch (state) {
+    case 'AVAILABLE':
+      return 'Доступно';
+    case 'ACTIVE':
+      return 'Активно';
+    case 'SCHEDULED':
+      return 'Запланировано';
+    case 'PENDING_PAYMENT':
+      return 'Ожидает оплаты';
+    case 'PENDING_APPROVAL':
+      return 'На модерации';
+    case 'SOLD_OUT':
+      return 'Мест нет';
+    default:
+      return state;
+  }
+}
+
+String purchasePrimaryActionLabel(String action) {
+  switch (action) {
+    case 'BUY':
+      return 'Купить';
+    case 'CONTINUE_PAYMENT':
+      return 'Продолжить оплату';
+    case 'RENEW':
+      return 'Продлить';
+    default:
+      return '';
+  }
+}
+
+String monetizationReasonMessage(String? code) {
+  switch (code) {
+    case 'PENDING_ORDER_EXISTS':
+      return 'У вас уже есть неоплаченный заказ на это размещение.';
+    case 'PURCHASE_CONFLICT':
+      return 'Размещение конфликтует с текущим графиком.';
+    case 'ALREADY_ACTIVE':
+      return 'Размещение уже активно.';
+    case 'ALREADY_SCHEDULED':
+      return 'Размещение уже запланировано.';
+    case 'TARGET_ALREADY_PROMOTED':
+      return 'Эта акция уже продвигается.';
+    case 'CATEGORY_NOT_ELIGIBLE':
+      return 'Категория не подходит для этого продукта.';
+    case 'PROMOTION_NOT_ELIGIBLE':
+      return 'Акция недоступна для продвижения.';
+    case 'PLACEMENT_SOLD_OUT':
+      return 'Свободных мест нет на выбранный период.';
+    case 'PACKAGE_CONFLICT':
+      return 'Компоненты пакета не укладываются в доступные слоты.';
+    case 'RESERVATION_EXPIRED':
+      return 'Резерв места истёк — обновите статус и попробуйте снова.';
+    default:
+      return code == null || code.isEmpty
+          ? 'Не удалось выполнить операцию.'
+          : 'Не удалось выполнить операцию ($code).';
+  }
+}

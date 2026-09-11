@@ -21,6 +21,8 @@ import {
 } from './errors/monetization.errors';
 import { MonetizationAccessService } from './monetization-access.service';
 import { PricingService } from './pricing.service';
+import { PurchaseIntegrityService } from './purchase-integrity.service';
+import { PackageSnapshotService } from './package-snapshot.service';
 
 @Injectable()
 export class MonetizationService {
@@ -32,6 +34,8 @@ export class MonetizationService {
     private readonly access: MonetizationAccessService,
     private readonly campaignStatus: CampaignStatusService,
     private readonly auditLog: AuditLogService,
+    private readonly purchaseIntegrity: PurchaseIntegrityService,
+    private readonly packageSnapshot: PackageSnapshotService,
   ) {}
 
   async listProducts(
@@ -216,6 +220,19 @@ export class MonetizationService {
       desiredEndAt: calculatedEndAt,
     });
 
+    const schedule = await this.purchaseIntegrity.resolveProductSchedule(
+      this.prisma,
+      {
+        productType: product!.type,
+        businessId: dto.businessId,
+        cityId: business.cityId,
+        categoryId,
+        desiredStartAt: requestedStartAt,
+        durationHours: dto.durationHours ?? null,
+        durationDays: dto.durationDays ?? null,
+      },
+    );
+
     return {
       product: {
         code: product!.code,
@@ -234,6 +251,11 @@ export class MonetizationService {
       requestedStartAt,
       calculatedEndAt,
       availability,
+      schedule: {
+        projectedStartAt: schedule.projectedStartAt,
+        projectedEndAt: schedule.projectedEndAt,
+        conflictResolvedBy: schedule.conflictResolvedBy,
+      },
     };
   }
 
@@ -280,6 +302,25 @@ export class MonetizationService {
 
     const allAvailable = itemAvailability.every((a) => a.availability.available);
 
+    const desiredStartAt = dto.desiredStartAt
+      ? new Date(dto.desiredStartAt)
+      : new Date();
+    const snapshot = await this.packageSnapshot.buildPackageSnapshot(
+      this.prisma,
+      {
+        pkg: pkg!,
+        businessId: dto.businessId,
+        cityId: business.cityId,
+        categoryId: dto.categoryId ?? business.categoryId,
+        desiredStartAt,
+        currency: pkg!.currency,
+        packageBasePrice: priced.basePrice,
+        packageDiscountPercent: priced.discountPercent,
+        packageDiscountAmount: priced.discountAmount,
+        packageFinalPrice: priced.finalPrice,
+      },
+    );
+
     return {
       package: {
         code: pkg!.code,
@@ -293,6 +334,17 @@ export class MonetizationService {
       availability: {
         available: allAvailable,
         items: itemAvailability,
+      },
+      schedulePreview: {
+        items: snapshot.items.map((item) => ({
+          productCode: item.productCode,
+          placementCode: item.placementCode,
+          durationDays: item.durationDays,
+          durationHours: item.durationHours,
+          projectedStartAt: item.projectedStartAt,
+          projectedEndAt: item.projectedEndAt,
+          conflictResolvedBy: item.conflictResolvedBy,
+        })),
       },
     };
   }

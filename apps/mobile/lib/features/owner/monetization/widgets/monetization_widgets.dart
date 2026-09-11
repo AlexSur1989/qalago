@@ -10,10 +10,12 @@ class MonetizationProductCard extends StatelessWidget {
     super.key,
     required this.product,
     required this.onTap,
+    this.purchaseState,
   });
 
   final MonetizationProduct product;
   final VoidCallback onTap;
+  final MonetizationPurchaseState? purchaseState;
 
   @override
   Widget build(BuildContext context) {
@@ -31,13 +33,35 @@ class MonetizationProductCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      productTitle(product.code),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            productTitle(product.code),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        if (purchaseState != null)
+                          MonetizationStatusChip(
+                            label: purchaseStateLabel(purchaseState!.state),
+                            color: _purchaseStateColor(purchaseState!.state),
+                          ),
+                      ],
                     ),
+                    if (purchaseState != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        _purchaseStateDetail(purchaseState!),
+                        style: TextStyle(
+                          color: AppTheme.textMuted,
+                          fontSize: 12,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 6),
                     Text(
                       productDescription(product.code),
@@ -60,11 +84,109 @@ class MonetizationProductCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, color: AppTheme.kzBlue),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if (purchaseState != null &&
+                      purchasePrimaryActionLabel(purchaseState!.primaryAction)
+                          .isNotEmpty)
+                    Text(
+                      purchasePrimaryActionLabel(purchaseState!.primaryAction),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.kzBlue,
+                        fontSize: 13,
+                      ),
+                    ),
+                  const Icon(Icons.chevron_right, color: AppTheme.kzBlue),
+                ],
+              ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+Color _purchaseStateColor(String state) {
+  switch (state) {
+    case 'ACTIVE':
+      return AppTheme.openStatus;
+    case 'SCHEDULED':
+      return AppSemanticColors.info;
+    case 'PENDING_PAYMENT':
+    case 'PENDING_APPROVAL':
+      return AppSemanticColors.warning;
+    case 'SOLD_OUT':
+      return AppTheme.error;
+    default:
+      return AppTheme.kzBlue;
+  }
+}
+
+String _purchaseStateDetail(MonetizationPurchaseState state) {
+  if (state.state == 'ACTIVE' && state.activeUntil != null) {
+    return 'Активно до ${formatMonetizationDate(state.activeUntil!)}';
+  }
+  if (state.state == 'SCHEDULED' &&
+      state.scheduledStart != null &&
+      state.scheduledEnd != null) {
+    return '${formatMonetizationDate(state.scheduledStart!)} — ${formatMonetizationDate(state.scheduledEnd!)}';
+  }
+  if (state.state == 'SOLD_OUT' && state.nextAvailableAt != null) {
+    return 'Ближайшая доступная дата: ${formatMonetizationDate(state.nextAvailableAt!)}';
+  }
+  if (state.reservationExpiresAt != null &&
+      state.state == 'PENDING_PAYMENT') {
+    return 'Место зарезервировано до ${formatMonetizationDate(state.reservationExpiresAt!)}';
+  }
+  return '';
+}
+
+class MonetizationSchedulePreview extends StatelessWidget {
+  const MonetizationSchedulePreview({super.key, required this.quote});
+
+  final MonetizationQuote quote;
+
+  @override
+  Widget build(BuildContext context) {
+    if (quote.schedule != null) {
+      final s = quote.schedule!;
+      return _scheduleBox(
+        '${productTitle(quote.productCode ?? '')}: '
+        '${formatMonetizationDate(s.projectedStartAt)} — '
+        '${formatMonetizationDate(s.projectedEndAt)}',
+      );
+    }
+    final items = quote.packageSchedulePreview;
+    if (items == null || items.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final item in items)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: _scheduleBox(
+              '${productTitle(item.productCode)} — '
+              '${formatDurationLabel(durationDays: item.durationDays, durationHours: item.durationHours)}\n'
+              '${formatMonetizationDate(item.projectedStartAt)} — '
+              '${formatMonetizationDate(item.projectedEndAt)}',
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _scheduleBox(String text) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppTheme.kzBlue.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(text, style: const TextStyle(height: 1.35, fontSize: 13)),
     );
   }
 }

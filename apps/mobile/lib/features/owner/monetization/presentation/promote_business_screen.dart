@@ -7,7 +7,6 @@ import '../../../../shared/widgets/error_view.dart';
 import '../../../../shared/widgets/loading_view.dart';
 import '../../providers/owner_providers.dart';
 import '../../presentation/widgets/owner_scaffold.dart';
-import '../data/monetization_labels.dart';
 import '../providers/monetization_providers.dart';
 import '../widgets/monetization_widgets.dart';
 
@@ -38,12 +37,15 @@ class PromoteBusinessScreen extends ConsumerWidget {
       )),
     );
     final packagesAsync = ref.watch(monetizationPackagesProvider);
+    final purchaseStatesAsync =
+        ref.watch(monetizationPurchaseStatesProvider(businessId));
 
     return OwnerScaffold(
       title: 'Реклама и продвижение',
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(monetizationProductsProvider);
+          ref.invalidate(monetizationPurchaseStatesProvider(businessId));
           ref.invalidate(monetizationPackagesProvider);
         },
         child: ListView(
@@ -66,12 +68,24 @@ class PromoteBusinessScreen extends ConsumerWidget {
                 if (products.isEmpty) {
                   return const Text('Рекламные продукты временно недоступны.');
                 }
+                final states = purchaseStatesAsync.valueOrNull ?? {};
                 return Column(
                   children: products
                       .map(
                         (p) => MonetizationProductCard(
                           product: p,
-                          onTap: () => context.push('/owner/promote/${p.code}'),
+                          purchaseState: states[p.code],
+                          onTap: () {
+                            final state = states[p.code];
+                            if (state?.primaryAction == 'CONTINUE_PAYMENT' &&
+                                state?.pendingOrderId != null) {
+                              context.push(
+                                '/owner/monetization/orders/${state!.pendingOrderId}',
+                              );
+                              return;
+                            }
+                            context.push('/owner/promote/${p.code}');
+                          },
                         ),
                       )
                       .toList(),

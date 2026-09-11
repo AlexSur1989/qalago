@@ -39,11 +39,13 @@ void main() {
       ];
 
       final paidIds = collectPaidBusinessIds(ads);
-      final organic = allItems.where((b) => !paidIds.contains(b.id)).toList();
+      final recommendedOnly = allItems.where((b) => !paidIds.contains(b.id)).toList();
+      final allPlaces = allItems;
 
       expect(paidIds, {paidTop, paidBoost});
-      expect(organic, hasLength(1));
-      expect(organic.first.id, organicId);
+      expect(recommendedOnly, hasLength(1));
+      expect(recommendedOnly.first.id, organicId);
+      expect(allPlaces, hasLength(3));
     });
 
     test('sponsored ads carry display labels', () {

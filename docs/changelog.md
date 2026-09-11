@@ -27,6 +27,14 @@
 
 ---
 
+## 2026-09-11 — Stage 6.7D: Advertising and category discovery UX
+
+- Consumer category screen: «Рекомендуем» (organic), «Продвигаемые места» (paid), «Все места» with session sort chips (`recommended` / `nearest` / `rating` / `popular`).
+- `GET /businesses?sort=` organic comparators; default geo → nearest, else title recommended.
+- Owner UX: `GET /monetization/purchase-states`, quote/package schedule preview; Flutter + Business Web product cards.
+- Docs: `docs/monetization/stage-6-7d-advertising-category-ux.md`; API contracts updated.
+- Future: 6.7QA adversarial monetization/category tests on device.
+
 ## 2026-09-11 — Stage 6.7C: Package and city inventory integrity
 
 - Immutable `packageSnapshot` / `lineSnapshot` on `OrderItem`; provisioning uses snapshots only.

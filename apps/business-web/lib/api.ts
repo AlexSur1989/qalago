@@ -424,6 +424,23 @@ export type MonetizationDurationOption = {
   currency: string;
 };
 
+export type MonetizationPurchaseState = {
+  productCode: string;
+  productType: string;
+  state: string;
+  primaryAction: string;
+  canPurchase: boolean;
+  canRenew: boolean;
+  activeUntil?: string | null;
+  scheduledStart?: string | null;
+  scheduledEnd?: string | null;
+  pendingOrderId?: string | null;
+  nextAvailableAt?: string | null;
+  projectedStart?: string | null;
+  projectedEnd?: string | null;
+  reservationExpiresAt?: string | null;
+};
+
 export type MonetizationProduct = {
   code: string;
   name: string;
@@ -948,6 +965,12 @@ export const ownerApi = {
       token,
       body: JSON.stringify({ tier }),
     }),
+
+  listMonetizationPurchaseStates: (token: string, businessId: string) =>
+    api<MonetizationPurchaseState[]>(
+      `/monetization/purchase-states?businessId=${encodeURIComponent(businessId)}`,
+      { token },
+    ),
 
   listMonetizationProducts: (
     token: string,

@@ -232,12 +232,15 @@ Query:
 | featured | boolean |
 | status | ACTIVE (public default) |
 | citySlug / cityId | string |
-| latitude, longitude | number — user position; sorts by distance ascending |
+| latitude, longitude | number — user position; required for `sort=nearest` |
 | radiusKm | number (default 15) — max distance in km when geo params set |
+| sort | `recommended` \| `nearest` \| `rating` \| `popular` — organic catalog sort (Stage 6.7D) |
 
-When `latitude` and `longitude` are provided, each item may include `distanceMeters` (integer). Businesses without coordinates are listed after geo-sorted items.
+When `latitude` and `longitude` are provided, each item may include `distanceMeters` (integer). Businesses without coordinates are listed after geo-sorted items when `sort=nearest`.
 
-**Catalog sort order (all list modes):** organic only — title ascending (locale `ru`). With geo params: distance ascending, then title. Subscription tier, `isFeatured`, and `featuredSlot` do **not** affect order (Stage 4C.1). Consumer paid visibility comes from AdCampaign ad serving only.
+**Default sort (backward compatible):** without `sort`, if geo is provided → nearest (distance asc, title tie-break); otherwise → `recommended` (title `ru` asc, id tie-break). Explicit `sort=recommended` always uses title order even with geo.
+
+**Sort semantics:** `rating` — avg rating desc (businesses with no reviews last), review count desc, title asc; may include `averageRating`, `reviewCount`. `popular` — sum of organic `AnalyticsDailyMetric.views` last 30 days desc, title asc. Plan tier, ads, and subscriptions never affect organic order (Stage 4C.1 / 6.7D). Paid visibility via AdCampaign serve only.
 
 List items may include `planTier`, `planExpiresAt`, `featuredSlot`, `isFeatured` for display; these fields are deprecated for catalog ranking. Query param `featured` is ignored on public catalog.
 
@@ -868,7 +871,8 @@ Returns products with available durations and `basePrice`. When `businessId` is 
 
 ### Business owner (`BUSINESS`, `ADMIN`, `CITY_ADMIN`)
 
-- `POST /monetization/quote` — price quote (does not create order)
+- `GET /monetization/purchase-states?businessId` — backend-driven product UI states (`AVAILABLE`, `ACTIVE`, `SCHEDULED`, `PENDING_PAYMENT`, `PENDING_APPROVAL`, `SOLD_OUT`) with primary actions (Stage 6.7D)
+- `POST /monetization/quote` — price quote (does not create order); includes `schedule.projectedStartAt/projectedEndAt` for products and `schedulePreview.items[]` for packages (Stage 6.7D)
 - `POST /monetization/orders` — create order (`AWAITING_PAYMENT`) + auto `Payment` `PENDING`/`MANUAL`
 - `GET /monetization/orders?businessId`
 - `GET /monetization/orders/:id`

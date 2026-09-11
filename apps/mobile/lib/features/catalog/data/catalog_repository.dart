@@ -121,6 +121,7 @@ class CatalogRepository {
     double? longitude,
     double? radiusKm,
     int? limit,
+    String? sort,
   }) async {
     final response = await _dio.get(
       '/businesses',
@@ -132,6 +133,7 @@ class CatalogRepository {
         if (latitude != null) 'latitude': latitude,
         if (longitude != null) 'longitude': longitude,
         if (radiusKm != null) 'radiusKm': radiusKm,
+        if (sort != null && sort.isNotEmpty) 'sort': sort,
         'limit': limit ?? 50,
       },
     );
@@ -808,6 +810,16 @@ class CatalogRepository {
   ) async {
     final response = await _dio.post('/monetization/quote', data: body);
     return response.data as Map<String, dynamic>;
+  }
+
+  Future<List<Map<String, dynamic>>> fetchMonetizationPurchaseStates(
+    String businessId,
+  ) async {
+    final response = await _dio.get(
+      '/monetization/purchase-states',
+      queryParameters: {'businessId': businessId},
+    );
+    return (response.data as List<dynamic>).cast<Map<String, dynamic>>();
   }
 
   Future<Map<String, dynamic>> createMonetizationOrder(

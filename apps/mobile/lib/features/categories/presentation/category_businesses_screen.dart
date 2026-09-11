@@ -1,29 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../core/location/user_location_provider.dart';
+import '../../../core/providers/city_provider.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../shared/models/models.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/navigation/navigation_utils.dart';
 import '../../../shared/navigation/open_business.dart';
-import '../../../core/theme/app_theme.dart';
-
-import '../../../core/providers/city_provider.dart';
-import '../../../shared/models/models.dart';
-import '../../../shared/utils/business_rank.dart';
-import '../../analytics/widgets/tracked_business_card.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../ads/data/ad_models.dart';
 import '../../ads/data/ad_placement_codes.dart';
 import '../../ads/providers/ad_serve_provider.dart';
 import '../../ads/widgets/sponsored_business_section.dart';
+import '../../analytics/widgets/tracked_business_card.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../data/category_catalog_sort.dart';
+import '../data/category_discovery_strings.dart';
+import '../providers/category_sort_provider.dart';
+import '../utils/category_list_utils.dart';
+
+typedef CategoryBusinessesQuery = ({
+  String categoryId,
+  CategoryCatalogSort sort,
+  double? latitude,
+  double? longitude,
+});
+
+final categoryRecommendedProvider =
+    FutureProvider.family<List<BusinessModel>, String>((ref, categoryId) async {
+  final city = ref.watch(cityProvider);
+  final page = await ref.watch(catalogRepositoryProvider).fetchBusinesses(
+        citySlug: city.slug,
+        categoryId: categoryId,
+        sort: CategoryCatalogSort.recommended.apiValue,
+        limit: 20,
+      );
+  return page.items;
+});
 
 final categoryBusinessesProvider =
-    FutureProvider.family<PaginatedBusinesses, String>((ref, categoryId) async {
+    FutureProvider.family<PaginatedBusinesses, CategoryBusinessesQuery>(
+        (ref, query) async {
   final city = ref.watch(cityProvider);
   return ref.watch(catalogRepositoryProvider).fetchBusinesses(
         citySlug: city.slug,
-        categoryId: categoryId,
+        categoryId: query.categoryId,
+        sort: query.sort.apiValue,
+        latitude: query.latitude,
+        longitude: query.longitude,
         limit: 100,
       );
 });
@@ -40,8 +67,26 @@ class CategoryBusinessesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    const localeCode = 'ru';
     final city = ref.watch(cityProvider);
-    final businessesAsync = ref.watch(categoryBusinessesProvider(categoryId));
+    final sort = ref.watch(categoryCatalogSortProvider);
+    final userPosition = ref.watch(userLocationProvider).valueOrNull;
+    final lat = sort == CategoryCatalogSort.nearest
+        ? userPosition?.snapped.latitude
+        : null;
+    final lng = sort == CategoryCatalogSort.nearest
+        ? userPosition?.snapped.longitude
+        : null;
+
+    final businessesAsync = ref.watch(
+      categoryBusinessesProvider((
+        categoryId: categoryId,
+        sort: sort,
+        latitude: lat,
+        longitude: lng,
+      )),
+    );
+    final recommendedAsync = ref.watch(categoryRecommendedProvider(categoryId));
     final topAdsAsync = ref.watch(
       serveAdsProvider(
         AdServeScope(
@@ -58,6 +103,12 @@ class CategoryBusinessesScreen extends ConsumerWidget {
         ),
       ),
     );
+
+    void refresh() {
+      ref.invalidate(categoryBusinessesProvider);
+      ref.invalidate(categoryRecommendedProvider(categoryId));
+      invalidateAdProviders(ref);
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -79,34 +130,38 @@ class CategoryBusinessesScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         color: Theme.of(context).colorScheme.primary,
-        onRefresh: () async {
-          ref.invalidate(categoryBusinessesProvider(categoryId));
-          invalidateAdProviders(ref);
-        },
+        onRefresh: () async => refresh(),
         child: businessesAsync.when(
           loading: () => const LoadingView(),
           error: (e, _) => ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             children: [
-              ErrorView(
-                message: '$e',
-                onRetry: () =>
-                    ref.invalidate(categoryBusinessesProvider(categoryId)),
-              ),
+              ErrorView(message: '$e', onRetry: refresh),
             ],
           ),
           data: (data) {
             final topAds = topAdsAsync.valueOrNull ?? const [];
             final boostAds = boostAdsAsync.valueOrNull ?? const [];
-            final paidIds = collectPaidBusinessIds([...topAds, ...boostAds]);
+            final sponsoredAds = [...topAds, ...boostAds];
+            final paidIds = collectPaidBusinessIds(sponsoredAds);
 
-            final organicItems = data.items
-                .where((b) => !paidIds.contains(b.id))
-                .toList();
+            final recommendedOrganic = recommendedAsync.valueOrNull == null
+                ? const <BusinessModel>[]
+                : buildCategoryRecommendedOrganic(
+                    recommendedSorted: recommendedAsync.valueOrNull!,
+                    paidBusinessIds: paidIds,
+                  );
+
+            final allPlaces = categoryAllPlacesAfterSponsored(
+              allPlaces: data.items,
+              sponsoredBusinessIdsInOrder: sponsoredAds
+                  .map((ad) => ad.business?['id'] as String?)
+                  .whereType<String>(),
+            );
 
             if (data.items.isEmpty &&
-                topAds.isEmpty &&
-                boostAds.isEmpty) {
+                recommendedOrganic.isEmpty &&
+                sponsoredAds.isEmpty) {
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(24),
@@ -114,7 +169,10 @@ class CategoryBusinessesScreen extends ConsumerWidget {
                   const SizedBox(height: 80),
                   Center(
                     child: Text(
-                      'В категории «$categoryTitle» пока нет заведений\nв ${city.nameRu}',
+                      CategoryDiscoveryStrings.sectionTitle(
+                        CategoryDiscoveryStrings.emptyCategory,
+                        localeCode: localeCode,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -122,34 +180,69 @@ class CategoryBusinessesScreen extends ConsumerWidget {
               );
             }
 
+            final nearestBlocked = sort == CategoryCatalogSort.nearest &&
+                (lat == null || lng == null);
+
             return ListView(
               physics: const AlwaysScrollableScrollPhysics(
                 parent: BouncingScrollPhysics(),
               ),
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
               children: [
-                if (topAds.isNotEmpty) ...[
-                  SponsoredBusinessSection(
-                    title: 'Рекомендуемые',
-                    items: topAds,
+                _CategorySortBar(
+                  sort: sort,
+                  localeCode: localeCode,
+                  onSelected: (value) {
+                    ref.read(categoryCatalogSortProvider.notifier).state = value;
+                  },
+                ),
+                if (nearestBlocked) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    CategoryDiscoveryStrings.sectionTitle(
+                      CategoryDiscoveryStrings.nearestNeedsLocation,
+                      localeCode: localeCode,
+                    ),
+                    style: TextStyle(
+                      color: AppTheme.textDark.withValues(alpha: 0.65),
+                      fontSize: 13,
+                      height: 1.35,
+                    ),
                   ),
-                  const SizedBox(height: 20),
                 ],
-                if (boostAds.isNotEmpty) ...[
-                  SponsoredBusinessSection(
-                    title: 'Продвигаются',
-                    items: boostAds,
-                  ),
-                  const SizedBox(height: 20),
-                ],
-                if (organicItems.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                if (recommendedOrganic.isNotEmpty) ...[
                   _SectionTitle(
-                    title: 'Все места',
-                    subtitle:
-                        '${city.nameRu} · ${organicItems.length} ${_pluralPlaces(organicItems.length)}',
+                    title: CategoryDiscoveryStrings.sectionTitle(
+                      CategoryDiscoveryStrings.recommendedSection,
+                      localeCode: localeCode,
+                    ),
                   ),
                   const SizedBox(height: 12),
-                  ..._organicBusinessCards(context, organicItems),
+                  ..._organicBusinessCards(context, recommendedOrganic),
+                  const SizedBox(height: 20),
+                ],
+                if (sponsoredAds.isNotEmpty) ...[
+                  SponsoredBusinessSection(
+                    title: CategoryDiscoveryStrings.sectionTitle(
+                      CategoryDiscoveryStrings.sponsoredSection,
+                      localeCode: localeCode,
+                    ),
+                    items: sponsoredAds,
+                  ),
+                  const SizedBox(height: 20),
+                ],
+                if (allPlaces.isNotEmpty) ...[
+                  _SectionTitle(
+                    title: CategoryDiscoveryStrings.sectionTitle(
+                      CategoryDiscoveryStrings.allPlacesSection,
+                      localeCode: localeCode,
+                    ),
+                    subtitle:
+                        '${city.nameRu} · ${allPlaces.length} ${_pluralPlaces(allPlaces.length)}',
+                  ),
+                  const SizedBox(height: 12),
+                  ..._organicBusinessCards(context, allPlaces),
                 ],
               ],
             );
@@ -163,19 +256,18 @@ class CategoryBusinessesScreen extends ConsumerWidget {
     BuildContext context,
     List<BusinessModel> items,
   ) {
-    final sorted = sortNearbyBusinesses(items);
     return [
-      for (final business in sorted)
+      for (final business in items)
         Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: TrackedBusinessCard(
             business: business,
             trafficSource: BusinessTrafficSource.category,
             onTap: () => openBusiness(
-                  context,
-                  business.id,
-                  BusinessTrafficSource.category,
-                ),
+              context,
+              business.id,
+              BusinessTrafficSource.category,
+            ),
           ),
         ),
     ];
@@ -189,6 +281,56 @@ class CategoryBusinessesScreen extends ConsumerWidget {
       return 'места';
     }
     return 'мест';
+  }
+}
+
+class _CategorySortBar extends StatelessWidget {
+  const _CategorySortBar({
+    required this.sort,
+    required this.localeCode,
+    required this.onSelected,
+  });
+
+  final CategoryCatalogSort sort;
+  final String localeCode;
+  final ValueChanged<CategoryCatalogSort> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          CategoryDiscoveryStrings.sectionTitle(
+            CategoryDiscoveryStrings.sortLabel,
+            localeCode: localeCode,
+          ),
+          style: const TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 14,
+            color: AppTheme.textDark,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final option in CategoryCatalogSort.values)
+              ChoiceChip(
+                label: Text(
+                  CategoryDiscoveryStrings.sortOptionLabel(
+                    option,
+                    localeCode: localeCode,
+                  ),
+                ),
+                selected: sort == option,
+                onSelected: (_) => onSelected(option),
+              ),
+          ],
+        ),
+      ],
+    );
   }
 }
 

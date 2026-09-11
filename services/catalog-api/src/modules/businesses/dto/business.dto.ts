@@ -12,6 +12,7 @@ import {
   Min,
 } from 'class-validator';
 import { BusinessStatus } from '@prisma/client';
+import { BusinessCatalogSort } from '../../../common/utils/business-catalog-sort.util';
 
 export class CreateBusinessDto {
   @IsString()
@@ -99,6 +100,11 @@ export class ListBusinessesQueryDto {
   @Min(0.5)
   @Max(100)
   radiusKm?: number;
+
+  /** Organic catalog sort (default: recommended — title ru, plan-neutral). */
+  @IsOptional()
+  @IsEnum(BusinessCatalogSort)
+  sort?: BusinessCatalogSort;
 }
 
 export class UpdateBusinessDto {

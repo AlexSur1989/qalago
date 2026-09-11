@@ -108,10 +108,46 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
     final isPromotedPromotion = widget.productCode == 'PROMOTED_PROMOTION';
     final isVip = widget.productCode == 'VIP_BANNER';
     final isTop = widget.productCode == 'TOP_CATEGORY';
+    final purchaseState = ref
+        .watch(monetizationPurchaseStatesProvider(businessId))
+        .valueOrNull?[widget.productCode];
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.screen),
       children: [
+        if (purchaseState != null) ...[
+          MonetizationStatusChip(
+            label: purchaseStateLabel(purchaseState.state),
+            color: campaignStatusColor(
+              purchaseState.state == 'PENDING_APPROVAL'
+                  ? 'PENDING_MODERATION'
+                  : purchaseState.state == 'ACTIVE'
+                      ? 'ACTIVE'
+                      : purchaseState.state,
+            ),
+          ),
+          if (_purchaseStateDetailLine(purchaseState) != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _purchaseStateDetailLine(purchaseState)!,
+              style: TextStyle(color: AppTheme.textMuted, height: 1.35),
+            ),
+          ],
+          if (purchaseState.primaryAction == 'CONTINUE_PAYMENT' &&
+              purchaseState.pendingOrderId != null) ...[
+            const SizedBox(height: 12),
+            FilledButton(
+              onPressed: () => context.push(
+                '/owner/monetization/orders/${purchaseState.pendingOrderId}',
+              ),
+              child: Text(
+                purchasePrimaryActionLabel(purchaseState.primaryAction),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+          const SizedBox(height: 12),
+        ],
         Text(
           productDescription(widget.productCode),
           style: TextStyle(color: AppTheme.textMuted, height: 1.35),
@@ -211,6 +247,8 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
         else if (_quote != null) ...[
           MonetizationAvailabilityBanner(quote: _quote!),
           const SizedBox(height: 12),
+          MonetizationSchedulePreview(quote: _quote!),
+          const SizedBox(height: 12),
           MonetizationQuoteBreakdown(
             quote: _quote!,
             planDiscountLabel: _quote!.discountPercent > 0
@@ -234,29 +272,62 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
           ),
         ],
         const SizedBox(height: 24),
-        FilledButton(
-          onPressed: _canContinue(product, isPromotedPromotion)
-              ? () => _onContinue(
-                    businessId: businessId,
-                    categoryId: categoryId,
-                    citySlug: citySlug,
-                    isVip: isVip,
-                    isPromotedPromotion: isPromotedPromotion,
-                  )
-              : null,
-          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-          child: Text(_quote == null ? 'Получить стоимость' : 'Продолжить'),
-        ),
+        if (purchaseState?.state != 'SOLD_OUT' &&
+            purchaseState?.primaryAction != 'CONTINUE_PAYMENT')
+          FilledButton(
+            onPressed: _canContinue(product, isPromotedPromotion, purchaseState)
+                ? () => _onContinue(
+                      businessId: businessId,
+                      categoryId: categoryId,
+                      citySlug: citySlug,
+                      isVip: isVip,
+                      isPromotedPromotion: isPromotedPromotion,
+                      purchaseState: purchaseState,
+                    )
+                : null,
+            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+            child: Text(_primaryButtonLabel(purchaseState, _quote != null)),
+          ),
       ],
     );
   }
 
-  bool _canContinue(MonetizationProduct product, bool needsPromotion) {
+  bool _canContinue(
+    MonetizationProduct product,
+    bool needsPromotion,
+    MonetizationPurchaseState? purchaseState,
+  ) {
+    if (purchaseState?.state == 'SOLD_OUT') return false;
     if (_selectedDuration == null) return false;
     if (!_startAsap && _selectedDate == null) return false;
     if (needsPromotion && _selectedPromotionId == null) return false;
     if (_quote != null && !_quote!.availability.available) return false;
     return true;
+  }
+
+  String _primaryButtonLabel(MonetizationPurchaseState? state, bool hasQuote) {
+    if (state?.primaryAction == 'RENEW' && hasQuote) {
+      return purchasePrimaryActionLabel('RENEW');
+    }
+    if (state?.primaryAction == 'BUY' && hasQuote) {
+      return purchasePrimaryActionLabel('BUY');
+    }
+    return hasQuote ? 'Продолжить' : 'Получить стоимость';
+  }
+
+  String? _purchaseStateDetailLine(MonetizationPurchaseState state) {
+    if (state.state == 'ACTIVE' && state.activeUntil != null) {
+      return 'Активно до ${formatMonetizationDate(state.activeUntil!)}';
+    }
+    if (state.state == 'SCHEDULED' &&
+        state.scheduledStart != null &&
+        state.scheduledEnd != null) {
+      return '${formatMonetizationDate(state.scheduledStart!)} — ${formatMonetizationDate(state.scheduledEnd!)}';
+    }
+    if (state.state == 'SOLD_OUT' && state.nextAvailableAt != null) {
+      return 'Ближайшая доступная дата: ${formatMonetizationDate(state.nextAvailableAt!)}';
+    }
+    return null;
   }
 
   Future<void> _onContinue({
@@ -265,7 +336,15 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
     required String? citySlug,
     required bool isVip,
     required bool isPromotedPromotion,
+    MonetizationPurchaseState? purchaseState,
   }) async {
+    if (purchaseState?.primaryAction == 'CONTINUE_PAYMENT' &&
+        purchaseState?.pendingOrderId != null) {
+      context.push(
+        '/owner/monetization/orders/${purchaseState!.pendingOrderId}',
+      );
+      return;
+    }
     if (_quote == null) {
       await _fetchQuote(businessId, categoryId, citySlug);
       return;

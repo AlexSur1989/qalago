@@ -31,6 +31,7 @@ import {
 import { AdEventsRateLimitGuard } from './guards/ad-events-rate-limit.guard';
 import { MonetizationService } from './monetization.service';
 import { OrderService } from './order.service';
+import { ProductPurchaseStateService } from './product-purchase-state.service';
 
 @Controller('monetization')
 export class MonetizationController {
@@ -41,6 +42,7 @@ export class MonetizationController {
     private readonly adServingService: AdServingService,
     private readonly adEventsService: AdEventsService,
     private readonly adAnalyticsService: AdAnalyticsService,
+    private readonly productPurchaseState: ProductPurchaseStateService,
   ) {}
 
   @Public()
@@ -76,6 +78,15 @@ export class MonetizationController {
   @Get('packages')
   listPackages() {
     return this.monetizationService.listPackages();
+  }
+
+  @Roles(UserRole.BUSINESS, UserRole.ADMIN, UserRole.CITY_ADMIN)
+  @Get('purchase-states')
+  listPurchaseStates(
+    @CurrentUser() user: AuthUser,
+    @Query() query: ListByBusinessQueryDto,
+  ) {
+    return this.productPurchaseState.listForBusiness(user, query.businessId);
   }
 
   @Roles(UserRole.BUSINESS, UserRole.ADMIN, UserRole.CITY_ADMIN)

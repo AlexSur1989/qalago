@@ -147,6 +147,110 @@ class MonetizationAvailability {
   }
 }
 
+class MonetizationQuoteSchedule {
+  const MonetizationQuoteSchedule({
+    required this.projectedStartAt,
+    required this.projectedEndAt,
+    this.conflictResolvedBy,
+  });
+
+  final DateTime projectedStartAt;
+  final DateTime projectedEndAt;
+  final String? conflictResolvedBy;
+
+  factory MonetizationQuoteSchedule.fromJson(Map<String, dynamic> json) {
+    return MonetizationQuoteSchedule(
+      projectedStartAt: _parseDate(json['projectedStartAt'])!,
+      projectedEndAt: _parseDate(json['projectedEndAt'])!,
+      conflictResolvedBy: json['conflictResolvedBy'] as String?,
+    );
+  }
+}
+
+class MonetizationPackageSchedulePreviewItem {
+  const MonetizationPackageSchedulePreviewItem({
+    required this.productCode,
+    required this.placementCode,
+    this.durationDays,
+    this.durationHours,
+    required this.projectedStartAt,
+    required this.projectedEndAt,
+    this.conflictResolvedBy,
+  });
+
+  final String productCode;
+  final String placementCode;
+  final int? durationDays;
+  final int? durationHours;
+  final DateTime projectedStartAt;
+  final DateTime projectedEndAt;
+  final String? conflictResolvedBy;
+
+  factory MonetizationPackageSchedulePreviewItem.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return MonetizationPackageSchedulePreviewItem(
+      productCode: json['productCode'] as String,
+      placementCode: json['placementCode'] as String,
+      durationDays: (json['durationDays'] as num?)?.toInt(),
+      durationHours: (json['durationHours'] as num?)?.toInt(),
+      projectedStartAt: _parseDate(json['projectedStartAt'])!,
+      projectedEndAt: _parseDate(json['projectedEndAt'])!,
+      conflictResolvedBy: json['conflictResolvedBy'] as String?,
+    );
+  }
+}
+
+class MonetizationPurchaseState {
+  const MonetizationPurchaseState({
+    required this.productCode,
+    required this.state,
+    required this.primaryAction,
+    required this.canPurchase,
+    required this.canRenew,
+    this.activeUntil,
+    this.scheduledStart,
+    this.scheduledEnd,
+    this.pendingOrderId,
+    this.nextAvailableAt,
+    this.projectedStart,
+    this.projectedEnd,
+    this.reservationExpiresAt,
+  });
+
+  final String productCode;
+  final String state;
+  final String primaryAction;
+  final bool canPurchase;
+  final bool canRenew;
+  final DateTime? activeUntil;
+  final DateTime? scheduledStart;
+  final DateTime? scheduledEnd;
+  final String? pendingOrderId;
+  final DateTime? nextAvailableAt;
+  final DateTime? projectedStart;
+  final DateTime? projectedEnd;
+  final DateTime? reservationExpiresAt;
+
+  factory MonetizationPurchaseState.fromJson(Map<String, dynamic> json) {
+    return MonetizationPurchaseState(
+      productCode: json['productCode'] as String,
+      state: json['state'] as String? ?? 'AVAILABLE',
+      primaryAction: json['primaryAction'] as String? ?? 'NONE',
+      canPurchase: json['canPurchase'] as bool? ?? false,
+      canRenew: json['canRenew'] as bool? ?? false,
+      activeUntil: _parseDate(json['activeUntil']),
+      scheduledStart: _parseDate(json['scheduledStart']),
+      scheduledEnd: _parseDate(json['scheduledEnd']),
+      pendingOrderId: json['pendingOrderId'] as String?,
+      nextAvailableAt: _parseDate(json['nextAvailableAt']),
+      projectedStart: _parseDate(json['projectedStart']),
+      projectedEnd: _parseDate(json['projectedEnd']),
+      reservationExpiresAt: _parseDate(json['reservationExpiresAt']),
+    );
+  }
+}
+
 class MonetizationQuote {
   const MonetizationQuote({
     this.productCode,
@@ -164,6 +268,8 @@ class MonetizationQuote {
     this.requestedStartAt,
     this.calculatedEndAt,
     required this.availability,
+    this.schedule,
+    this.packageSchedulePreview,
   });
 
   final String? productCode;
@@ -181,11 +287,22 @@ class MonetizationQuote {
   final DateTime? requestedStartAt;
   final DateTime? calculatedEndAt;
   final MonetizationAvailability availability;
+  final MonetizationQuoteSchedule? schedule;
+  final List<MonetizationPackageSchedulePreviewItem>? packageSchedulePreview;
 
   factory MonetizationQuote.fromJson(Map<String, dynamic> json) {
     final product = json['product'] as Map<String, dynamic>?;
     final package = json['package'] as Map<String, dynamic>?;
     final duration = json['duration'] as Map<String, dynamic>?;
+    final scheduleJson = json['schedule'] as Map<String, dynamic>?;
+    final packagePreview = json['schedulePreview'] as Map<String, dynamic>?;
+    final previewItems = (packagePreview?['items'] as List<dynamic>? ?? [])
+        .map(
+          (e) => MonetizationPackageSchedulePreviewItem.fromJson(
+            e as Map<String, dynamic>,
+          ),
+        )
+        .toList();
     return MonetizationQuote(
       productCode: product?['code'] as String?,
       productName: product?['name'] as String?,
@@ -204,6 +321,11 @@ class MonetizationQuote {
       availability: MonetizationAvailability.fromJson(
         json['availability'] as Map<String, dynamic>? ?? {},
       ),
+      schedule: scheduleJson != null
+          ? MonetizationQuoteSchedule.fromJson(scheduleJson)
+          : null,
+      packageSchedulePreview:
+          previewItems.isEmpty ? null : previewItems,
     );
   }
 }
