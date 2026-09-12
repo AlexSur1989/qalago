@@ -28,7 +28,7 @@ export class ReviewsService {
 
   findByBusiness(businessId: string) {
     return this.prisma.review.findMany({
-      where: { businessId },
+      where: { businessId, moderationHidden: false },
       include: {
         user: { select: { id: true, name: true, avatarUrl: true } },
       },

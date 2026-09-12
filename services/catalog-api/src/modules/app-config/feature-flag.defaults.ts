@@ -14,6 +14,9 @@ export const FEATURE_FLAG_SAFE_DEFAULTS: Record<FeatureFlagKey, boolean> = {
   googleAuthEnabled: false,
   appleAuthEnabled: false,
   subcategoriesEnabled: false,
+  legalCenterEnabled: false,
+  reportingEnabled: false,
+  dataRightsEnabled: false,
 };
 
 export const FEATURE_FLAG_SEED: Array<{
@@ -37,4 +40,7 @@ export const FEATURE_FLAG_SEED: Array<{
     globalEnabled: false,
     description: 'Category subcategory chips and filters (6.8C.1)',
   },
+  { key: 'legalCenterEnabled', globalEnabled: false, description: 'Legal center UI (6.9)' },
+  { key: 'reportingEnabled', globalEnabled: false, description: 'Content reporting (6.9)' },
+  { key: 'dataRightsEnabled', globalEnabled: false, description: 'Data rights requests (6.9)' },
 ];

@@ -290,6 +290,7 @@ model City {
   businessApplications    BusinessApplication[]
   analyticsEvents         AnalyticsEvent[]
   featureFlagOverrides    CityFeatureFlagOverride[]
+  moderationCases         ModerationCase[]
 }
 
 model AppReleaseSettings {
@@ -364,6 +365,14 @@ model User {
   reviewedOwnershipClaims      BusinessOwnershipClaim[] @relation("ClaimReviewer")
   authIdentities               AuthIdentity[]
   authSessions                 AuthSession[]
+  legalAcceptances             LegalAcceptance[]
+  dataRightsRequests           DataRightsRequest[]
+  contentReports               ContentReport[]          @relation("ReportReporter")
+  moderationCasesAssigned      ModerationCase[]         @relation("ModerationAssignee")
+  moderationActions            ModerationAction[]       @relation("ModerationActionActor")
+  moderationAppeals            ModerationAppeal[]       @relation("ModerationAppellant")
+  governmentRequestsAssigned   GovernmentRequest[]      @relation("GovernmentAssignee")
+  securityIncidentsOwned       SecurityIncident[]       @relation("SecurityIncidentOwner")
 }
 
 model AuthSession {
@@ -664,12 +673,15 @@ model BusinessInvitation {
 }
 
 model BusinessImage {
-  id         String   @id @default(cuid())
-  businessId String
-  imageUrl   String
-  sortOrder  Int      @default(0)
-  createdAt  DateTime @default(now())
-  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  id                String   @id @default(cuid())
+  businessId        String
+  imageUrl          String
+  sortOrder         Int      @default(0)
+  moderationHidden  Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  business          Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId, moderationHidden])
 }
 
 model ServiceMenuGroup {
@@ -716,6 +728,7 @@ model Promotion {
   startDate               DateTime?
   endDate                 DateTime?
   status                  PromotionStatus          @default(DRAFT)
+  moderationHidden        Boolean                  @default(false)
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
   business                Business                 @relation(fields: [businessId], references: [id], onDelete: Cascade)
@@ -736,18 +749,20 @@ model Favorite {
 }
 
 model Review {
-  id         String   @id @default(cuid())
-  userId     String
-  businessId String
-  rating     Int
-  text       String?
-  ownerReply String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  id               String   @id @default(cuid())
+  userId           String
+  businessId       String
+  rating           Int
+  text             String?
+  ownerReply       String?
+  moderationHidden Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business         Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
   @@index([businessId])
+  @@index([businessId, moderationHidden])
 }
 
 model AnalyticsEvent {
@@ -1163,6 +1178,331 @@ model PromotionPackageItem {
   @@index([productId])
 }
 
+enum LegalDocumentType {
+  TERMS_OF_SERVICE
+  PRIVACY_POLICY
+  COMMUNITY_GUIDELINES
+  BUSINESS_TERMS
+  ADVERTISING_TERMS
+}
+
+enum LegalDocumentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum LegalLocale {
+  RU
+  KK
+}
+
+enum LegalAcceptanceSource {
+  SIGN_UP
+  LOGIN
+  PROFILE
+  BUSINESS_APPLICATION
+  CHECKOUT
+  RECONSENT
+}
+
+enum DataRightsRequestType {
+  ACCESS
+  EXPORT
+  CORRECTION
+  DELETE_ACCOUNT
+  DELETE_DATA
+  OTHER
+}
+
+enum DataRightsRequestStatus {
+  SUBMITTED
+  IDENTITY_VERIFICATION_REQUIRED
+  IN_REVIEW
+  APPROVED
+  PROCESSING
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+enum ContentReportTargetType {
+  BUSINESS
+  REVIEW
+  PROMOTION
+  MEDIA
+  USER
+}
+
+enum ContentReportReason {
+  SPAM
+  FRAUD_OR_SCAM
+  INAPPROPRIATE_CONTENT
+  HARASSMENT
+  FALSE_INFORMATION
+  IMPERSONATION
+  COPYRIGHT_OR_IP
+  PRIVACY
+  DANGEROUS_OR_ILLEGAL
+  OTHER
+}
+
+enum ContentReportStatus {
+  OPEN
+  LINKED_TO_CASE
+  DISMISSED
+  CLOSED
+}
+
+enum ModerationCaseType {
+  CONTENT_REPORT
+  MANUAL
+  APPEAL
+}
+
+enum ModerationCaseStatus {
+  OPEN
+  TRIAGED
+  IN_REVIEW
+  ACTION_REQUIRED
+  RESOLVED
+  DISMISSED
+  APPEALED
+}
+
+enum ModerationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum ModerationActionType {
+  NO_ACTION
+  CONTENT_HIDE
+  CONTENT_RESTORE
+  USER_SUSPEND
+  USER_RESTORE
+  BUSINESS_HIDE
+  BUSINESS_RESTORE
+  PROMOTION_HIDE
+  PROMOTION_RESTORE
+  REVIEW_HIDE
+  REVIEW_RESTORE
+  MEDIA_HIDE
+  MEDIA_RESTORE
+}
+
+enum ModerationAppealStatus {
+  SUBMITTED
+  IN_REVIEW
+  UPHELD
+  OVERTURNED
+  CANCELLED
+}
+
+enum GovernmentRequestStatus {
+  RECEIVED
+  VERIFICATION_REQUIRED
+  VERIFIED
+  IN_REVIEW
+  RESPONDED
+  REJECTED
+  CLOSED
+}
+
+enum SecurityIncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum SecurityIncidentStatus {
+  OPEN
+  INVESTIGATING
+  CONTAINED
+  RESOLVED
+  POSTMORTEM
+}
+
+model LegalDocument {
+  id                   String              @id @default(cuid())
+  type                 LegalDocumentType
+  version              String
+  locale               LegalLocale
+  title                String
+  content              String
+  status               LegalDocumentStatus @default(DRAFT)
+  requiresReacceptance Boolean             @default(false)
+  effectiveAt          DateTime?
+  publishedAt          DateTime?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  acceptances          LegalAcceptance[]
+
+  @@unique([type, version, locale])
+  @@index([type, status, effectiveAt])
+}
+
+model LegalAcceptance {
+  id               String                @id @default(cuid())
+  userId           String
+  documentId       String
+  documentVersion  String
+  acceptanceSource LegalAcceptanceSource
+  locale           LegalLocale
+  acceptedAt       DateTime              @default(now())
+  createdAt        DateTime              @default(now())
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document         LegalDocument         @relation(fields: [documentId], references: [id], onDelete: Restrict)
+
+  @@index([userId, documentId])
+  @@index([userId, acceptedAt])
+}
+
+model DataRightsRequest {
+  id          String                  @id @default(cuid())
+  userId      String
+  type        DataRightsRequestType
+  status      DataRightsRequestStatus @default(SUBMITTED)
+  reasonCode  String?
+  adminNote   String?
+  requestedAt DateTime                @default(now())
+  verifiedAt  DateTime?
+  completedAt DateTime?
+  rejectedAt  DateTime?
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+  user        User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([status, requestedAt])
+}
+
+model ContentReport {
+  id              String                  @id @default(cuid())
+  reporterUserId  String?
+  targetType      ContentReportTargetType
+  targetId        String
+  reason          ContentReportReason
+  details         String?
+  status          ContentReportStatus     @default(OPEN)
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  reporter        User?                   @relation("ReportReporter", fields: [reporterUserId], references: [id], onDelete: SetNull)
+  caseLinks       ModerationCaseReport[]
+
+  @@index([targetType, targetId, status])
+  @@index([reporterUserId, targetType, targetId])
+  @@index([status, createdAt])
+}
+
+model ModerationCase {
+  id               String               @id @default(cuid())
+  caseType         ModerationCaseType   @default(CONTENT_REPORT)
+  status           ModerationCaseStatus @default(OPEN)
+  priority         ModerationPriority   @default(NORMAL)
+  targetType       ContentReportTargetType
+  targetId         String
+  cityId           String?
+  assignedAdminId  String?
+  targetSnapshot   Json?
+  resolvedAt       DateTime?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  city             City?                @relation(fields: [cityId], references: [id], onDelete: SetNull)
+  assignedAdmin    User?                @relation("ModerationAssignee", fields: [assignedAdminId], references: [id], onDelete: SetNull)
+  reportLinks      ModerationCaseReport[]
+  actions          ModerationAction[]
+  appeals          ModerationAppeal[]
+
+  @@index([status, priority])
+  @@index([cityId, status])
+  @@index([targetType, targetId])
+}
+
+model ModerationCaseReport {
+  caseId   String
+  reportId String
+  case     ModerationCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  report   ContentReport  @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@id([caseId, reportId])
+}
+
+model ModerationAction {
+  id            String               @id @default(cuid())
+  caseId        String
+  actorAdminId  String
+  actionType    ModerationActionType
+  targetType    ContentReportTargetType
+  targetId      String
+  reasonCode    String?
+  internalNote  String?
+  expiresAt     DateTime?
+  createdAt     DateTime             @default(now())
+  case          ModerationCase       @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  actorAdmin    User                 @relation("ModerationActionActor", fields: [actorAdminId], references: [id], onDelete: Restrict)
+
+  @@index([caseId, createdAt])
+  @@index([targetType, targetId])
+}
+
+model ModerationAppeal {
+  id              String                 @id @default(cuid())
+  caseId          String
+  appellantUserId String
+  reason          String
+  status          ModerationAppealStatus @default(SUBMITTED)
+  decisionNote    String?
+  resolvedAt      DateTime?
+  resolvedById    String?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  case            ModerationCase         @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  appellant       User                   @relation("ModerationAppellant", fields: [appellantUserId], references: [id], onDelete: Cascade)
+
+  @@index([caseId, status])
+  @@index([appellantUserId, status])
+}
+
+model GovernmentRequest {
+  id                 String                  @id @default(cuid())
+  referenceNumber    String?
+  requestingAuthority String
+  requestType        String
+  status             GovernmentRequestStatus @default(RECEIVED)
+  receivedAt         DateTime                @default(now())
+  verifiedAt         DateTime?
+  dueAt              DateTime?
+  assignedAdminId    String?
+  legalBasisNote     String?
+  responseSummary    String?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  assignedAdmin      User?                   @relation("GovernmentAssignee", fields: [assignedAdminId], references: [id], onDelete: SetNull)
+
+  @@index([status, receivedAt])
+}
+
+model SecurityIncident {
+  id            String                   @id @default(cuid())
+  severity      SecurityIncidentSeverity
+  status        SecurityIncidentStatus   @default(OPEN)
+  title         String
+  summary       String?
+  detectedAt    DateTime                 @default(now())
+  containedAt   DateTime?
+  resolvedAt    DateTime?
+  ownerAdminId  String?
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+  ownerAdmin    User?                    @relation("SecurityIncidentOwner", fields: [ownerAdminId], references: [id], onDelete: SetNull)
+
+  @@index([status, severity])
+}
+
 enum AuditAction {
   TEAM_INVITE
   TEAM_INVITATION_ACCEPT
@@ -1224,6 +1564,18 @@ enum AuditAction {
   BUSINESS_OWNERSHIP_CLAIM_CANCEL
 
   RELEASE_CONFIG_UPDATE
+
+  LEGAL_DOCUMENT_CREATE
+  LEGAL_DOCUMENT_PUBLISH
+  LEGAL_DOCUMENT_ARCHIVE
+  DATA_REQUEST_STATUS_CHANGE
+  MODERATION_CASE_ASSIGN
+  MODERATION_ACTION_APPLY
+  MODERATION_ACTION_RESTORE
+  MODERATION_APPEAL_DECIDE
+  GOVERNMENT_REQUEST_UPDATE
+  SECURITY_INCIDENT_UPDATE
+  ACCOUNT_DELETION_EXECUTE
 }
 
 enum AuditResourceType {
@@ -1246,6 +1598,13 @@ enum AuditResourceType {
   CATEGORY
   REVIEW
   APP_RELEASE_CONFIG
+  LEGAL_DOCUMENT
+  DATA_RIGHTS_REQUEST
+  CONTENT_REPORT
+  MODERATION_CASE
+  MODERATION_APPEAL
+  GOVERNMENT_REQUEST
+  SECURITY_INCIDENT
 }
 
 model AuditLog {

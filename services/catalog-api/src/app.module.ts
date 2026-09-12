@@ -30,6 +30,7 @@ import { BusinessApplicationsModule } from './modules/business-applications/busi
 import { OwnershipClaimsModule } from './modules/ownership-claims/ownership-claims.module';
 import { HealthController } from './modules/health/health.controller';
 import { AppConfigModule } from './modules/app-config/app-config.module';
+import { SafetyModule } from './modules/safety/safety.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { AppConfigModule } from './modules/app-config/app-config.module';
     BusinessApplicationsModule,
     OwnershipClaimsModule,
     AppConfigModule,
+    SafetyModule,
   ],
   controllers: [HealthController],
   providers: [

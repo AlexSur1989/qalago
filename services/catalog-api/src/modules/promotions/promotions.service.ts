@@ -77,6 +77,14 @@ export class PromotionsService {
       };
     }
 
+    const ownerView =
+      query.businessId != null &&
+      (await this.canManageBusiness(user, query.businessId));
+
+    if (!ownerView) {
+      where.moderationHidden = false;
+    }
+
     if (query.activeNow) {
       where.status = PromotionStatus.ACTIVE;
       where.AND = [
@@ -119,10 +127,6 @@ export class PromotionsService {
         },
       };
     }
-
-    const ownerView =
-      query.businessId != null &&
-      (await this.canManageBusiness(user, query.businessId));
 
     if (ownerView || !query.businessId) {
       const [items, total] = await Promise.all([

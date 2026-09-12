@@ -143,12 +143,52 @@ Removes avatar; `{ "success": true }`.
 Authenticated self-service account deletion.
 
 - Success: `{ "success": true, "message": "..." }`
-- `409 Conflict` when user is sole owner of a business (must transfer ownership first)
+- `409 Conflict` when user is sole owner of a business — code `BUSINESS_OWNERSHIP_REQUIRES_RESOLUTION`
 - `409 Conflict` for admin roles (must contact support)
 - Idempotent if account already deleted
 - Revokes memberships, deletes favorites/reviews/notifications, cancels pending applications/claims
 - Anonymizes phone (`deleted:{userId}:{timestamp}`), sets `isActive=false`
+- Revokes all AuthSessions; clears `avatarUrl` (Stage 6.9)
 - Existing JWT stops working immediately (guard checks `isActive`)
+
+## Legal & safety (Stage 6.9)
+
+### GET /legal/documents/:type
+
+Public. Query `locale=RU|KK`. Returns published document only (404 for draft/missing).
+
+### GET /legal/me/status
+
+Authenticated — acceptance history + pending reacceptance list.
+
+### POST /legal/me/accept
+
+Body: `{ documentId, acceptanceSource, locale }`.
+
+### POST /reports
+
+Authenticated. Body: `{ targetType, targetId, reason, details? }`. Rate limited. Dedupes open reports per reporter+target.
+
+### POST /data-rights/requests
+
+Body: `{ type }` — `ACCESS|EXPORT|CORRECTION|DELETE_ACCOUNT|DELETE_DATA|OTHER`.
+
+### GET /data-rights/requests/me
+
+Authenticated list (no admin notes).
+
+### POST /moderation/cases/:caseId/appeals
+
+Body: `{ reason }` — eligible owner/affected user only.
+
+### Admin
+
+- `GET /admin/moderation/cases` — ADMIN, CITY_ADMIN (city scoped), SUPER_ADMIN
+- `POST /admin/moderation/cases/:id/actions` — apply moderation action
+- `POST /admin/legal/documents/:id/publish` — SUPER_ADMIN
+- `PATCH /admin/data-rights/requests/:id/status` — ADMIN, SUPER_ADMIN
+- `GET/PATCH /admin/legal/government-requests` — SUPER_ADMIN only
+- `GET/POST/PATCH /admin/legal/security-incidents` — SUPER_ADMIN only
 
 ### Admin (platform)
 

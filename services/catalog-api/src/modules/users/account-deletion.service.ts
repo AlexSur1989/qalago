@@ -13,6 +13,10 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthIdentityService } from '../auth/auth-identity.service';
+import { AuthSessionService } from '../auth/auth-session.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
+import { AuditAction, AuditResourceType } from '@prisma/client';
+import { SafetyErrorCode } from '../safety/safety-errors';
 export type AccountDeletionResult = {
   success: true;
   message: string;
@@ -23,6 +27,8 @@ export class AccountDeletionService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly authIdentity: AuthIdentityService,
+    private readonly authSession: AuthSessionService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   async deleteOwnAccount(userId: string): Promise<AccountDeletionResult> {
@@ -58,12 +64,16 @@ export class AccountDeletionService {
 
     const soleOwnerBusinessIds = await this.findSoleOwnerBusinessIds(userId);
     if (soleOwnerBusinessIds.length > 0) {
-      throw new ConflictException(
-        'Перед удалением аккаунта передайте управление заведением другому владельцу или обратитесь в поддержку.',
-      );
+      throw new ConflictException({
+        message:
+          'Перед удалением аккаунта передайте управление заведением другому владельцу или обратитесь в поддержку.',
+        code: SafetyErrorCode.BUSINESS_OWNERSHIP_REQUIRES_RESOLUTION,
+      });
     }
 
     const anonymizedPhone = `deleted:${userId}:${Date.now()}`;
+
+    await this.authSession.revokeAllUserSessions(userId);
 
     await this.prisma.$transaction(async (tx) => {
       await this.authIdentity.tombstoneUserIdentities(userId, tx);
@@ -111,9 +121,19 @@ export class AccountDeletionService {
           phone: anonymizedPhone,
           email: null,
           name: null,
+          avatarUrl: null,
           preferredCityId: null,
         },
       });
+    });
+
+    await this.auditLog.record({
+      actor: null,
+      action: AuditAction.ACCOUNT_DELETION_EXECUTE,
+      resourceType: AuditResourceType.USER,
+      resourceId: userId,
+      targetUserId: userId,
+      metadata: { role: user.role },
     });
 
     return {

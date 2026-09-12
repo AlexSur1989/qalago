@@ -31,6 +31,8 @@ type AdminShellProps = {
   };
   monetizationBadges?: Partial<Record<MonetizationSubNavId, number>>;
   businessRequestBadges?: { applications?: number; claims?: number };
+  moderationCaseBadge?: number;
+  legalDataRequestBadge?: number;
   onLogout: () => void;
   children: ReactNode;
 };
@@ -46,6 +48,8 @@ export function AdminShell({
   badges,
   monetizationBadges,
   businessRequestBadges,
+  moderationCaseBadge,
+  legalDataRequestBadge,
   onLogout,
   children,
 }: AdminShellProps) {
@@ -130,6 +134,26 @@ export function AdminShell({
             <span>Заявки бизнеса</span>
             {businessRequestsBadgeTotal > 0 && (
               <span className="nav-badge">{businessRequestsBadgeTotal}</span>
+            )}
+          </Link>
+          <Link
+            href="/moderation/cases"
+            className={`nav-item${pathname.startsWith('/moderation') ? ' active' : ''}`}
+          >
+            <span className="nav-icon">🚩</span>
+            <span>Модерация UGC</span>
+            {moderationCaseBadge != null && moderationCaseBadge > 0 && (
+              <span className="nav-badge">{moderationCaseBadge}</span>
+            )}
+          </Link>
+          <Link
+            href="/legal/documents"
+            className={`nav-item${pathname.startsWith('/legal') ? ' active' : ''}`}
+          >
+            <span className="nav-icon">⚖️</span>
+            <span>Legal</span>
+            {legalDataRequestBadge != null && legalDataRequestBadge > 0 && (
+              <span className="nav-badge">{legalDataRequestBadge}</span>
             )}
           </Link>
           <Link

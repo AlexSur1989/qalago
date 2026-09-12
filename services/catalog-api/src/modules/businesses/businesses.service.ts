@@ -297,7 +297,7 @@ export class BusinessesService {
 
     const ratingRows = await this.prisma.review.groupBy({
       by: ['businessId'],
-      where: { businessId: { in: businessIds } },
+      where: { businessId: { in: businessIds }, moderationHidden: false },
       _avg: { rating: true },
       _count: { _all: true },
     });

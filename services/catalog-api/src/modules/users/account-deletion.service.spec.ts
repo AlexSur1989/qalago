@@ -10,6 +10,8 @@ import {
 import { AccountDeletionService } from './account-deletion.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthIdentityService } from '../auth/auth-identity.service';
+import { AuthSessionService } from '../auth/auth-session.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
 
 describe('AccountDeletionService', () => {
   let service: AccountDeletionService;
@@ -48,6 +50,8 @@ describe('AccountDeletionService', () => {
     service = new AccountDeletionService(
       prisma as unknown as PrismaService,
       authIdentity as unknown as AuthIdentityService,
+      { revokeAllUserSessions: jest.fn() } as unknown as AuthSessionService,
+      { record: jest.fn() } as unknown as AuditLogService,
     );
   });
 

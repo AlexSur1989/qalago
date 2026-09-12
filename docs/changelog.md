@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-12 — Stage 6.9: Legal, safety & moderation foundation
+
+- Backend: legal documents/acceptance, data-rights requests, content reports, moderation cases/actions/appeals, government requests & security incidents (SUPER_ADMIN), account deletion hardening (sessions, avatar, ownership code).
+- Admin Web: moderation + legal admin sections; feature flags `legalCenterEnabled`, `reportingEnabled`, `dataRightsEnabled` (default OFF).
+- Docs: `docs/legal/*`, `docs/safety/moderation-system.md`; **LEGAL_REVIEW_REQUIRED** for published policy text and retention law.
+
 ## 2026-09-12 — Stage 6.8D.1: Flutter regression suite closure
 
 - Fixed stale `widget_test.dart` smoke: stub release gate + home providers so canonical Home search hint is reachable without live app-config network.

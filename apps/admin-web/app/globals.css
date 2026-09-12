@@ -974,3 +974,18 @@ select {
     grid-template-columns: 1fr;
   }
 }
+
+.report-text-block {
+  margin: 0;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--surface-muted, #f6f7f9);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  max-height: 320px;
+  overflow: auto;
+}
