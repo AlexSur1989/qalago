@@ -21,6 +21,7 @@ import {
 } from './reporting.constants';
 import { ReportingQueryService } from './reporting-query.service';
 import { ReportingScopeService } from './reporting-scope.service';
+import { StaffMfaService } from '../staff-mfa/staff-mfa.service';
 
 @Injectable()
 export class AdminReportingService {
@@ -29,6 +30,7 @@ export class AdminReportingService {
     private readonly queries: ReportingQueryService,
     private readonly prisma: PrismaService,
     private readonly appConfig: AppConfigService,
+    private readonly staffMfa: StaffMfaService,
   ) {}
 
   private range(filters: ReportFiltersDto) {
@@ -380,10 +382,11 @@ export class AdminReportingService {
       orderBy: { createdAt: 'desc' },
       take: 50,
     });
+    const mfaStatus = await this.staffMfa.reportMfaStatus(targetUserId);
     return {
       staff: {
         ...row,
-        mfaStatus: 'NOT_IMPLEMENTED' as const,
+        mfaStatus,
         cityScopes: scopes.map((s) => s.city),
         activeSessions: sessions,
       },

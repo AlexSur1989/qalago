@@ -25,14 +25,33 @@ export async function POST(request: Request) {
   }
 
   const data = JSON.parse(text) as {
-    accessToken: string;
-    refreshToken: string;
+    accessToken?: string;
+    refreshToken?: string;
     user: unknown;
+    mfaRequired?: boolean;
+    mfaChallengeToken?: string;
+    enrollmentRequired?: boolean;
   };
+
+  if (data.mfaRequired && data.mfaChallengeToken) {
+    return NextResponse.json({
+      mfaRequired: true,
+      mfaChallengeToken: data.mfaChallengeToken,
+      user: data.user,
+    });
+  }
+
+  if (!data.accessToken || !data.refreshToken) {
+    return new NextResponse('Incomplete auth response', { status: 502 });
+  }
 
   const secure = process.env.NODE_ENV === 'production';
   const jar = await cookies();
   jar.set(REFRESH_COOKIE_NAME, data.refreshToken, refreshCookieOptions(secure));
 
-  return NextResponse.json({ accessToken: data.accessToken, user: data.user });
+  return NextResponse.json({
+    accessToken: data.accessToken,
+    user: data.user,
+    enrollmentRequired: data.enrollmentRequired === true,
+  });
 }

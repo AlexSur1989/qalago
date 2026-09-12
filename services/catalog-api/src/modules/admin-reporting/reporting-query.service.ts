@@ -21,12 +21,14 @@ import {
   CANONICAL_AD_PLACEMENT_CODES,
   CRITICAL_STAFF_AUDIT_ACTIONS,
 } from './reporting.constants';
+import { StaffMfaService } from '../staff-mfa/staff-mfa.service';
 
 @Injectable()
 export class ReportingQueryService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly scopeService: ReportingScopeService,
+    private readonly staffMfa: StaffMfaService,
   ) {}
 
   private businessRelationFilter(scope: ReportScope): Prisma.BusinessWhereInput {
@@ -390,7 +392,7 @@ export class ReportingQueryService {
         count: r._count._all,
       })),
       recentCriticalActions: recentCritical,
-      mfaStatus: 'NOT_IMPLEMENTED' as const,
+      mfa: await this.staffMfa.staffOverviewMfaCounts(),
     };
   }
 

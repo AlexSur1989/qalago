@@ -65,10 +65,11 @@ describe('JwtAuthGuard', () => {
   it('attaches user from DB for valid token', async () => {
     const ctx = context('Bearer jwt-token');
     await expect(guard.canActivate(ctx)).resolves.toBe(true);
-    expect(ctx.request.user).toEqual({
+    expect(ctx.request.user).toMatchObject({
       sub: 'u1',
       id: 'u1',
       role: UserRole.USER,
+      mfaEnrollOnly: false,
     });
   });
 

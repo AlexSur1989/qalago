@@ -29,7 +29,7 @@ export class AuthSessionService {
 
   async issueQalaGoSession(
     user: SessionUser,
-    options?: { userAgent?: string; stepUpAt?: number },
+    options?: { userAgent?: string; stepUpAt?: number; mfaEnrollOnly?: boolean },
   ): Promise<QalaGoSessionResult> {
     const refreshToken = this.generateRefreshToken();
     const tokenHash = this.hashRefreshToken(refreshToken);
@@ -49,6 +49,7 @@ export class AuthSessionService {
     const accessToken = await this.signAccessToken(user, {
       sessionId: session.id,
       stepUpAt: options?.stepUpAt,
+      mfaEnrollOnly: options?.mfaEnrollOnly,
     });
     return { accessToken, refreshToken, user, sessionId: session.id };
   }
@@ -146,6 +147,11 @@ export class AuthSessionService {
     return this.signAccessToken(user, { sessionId, stepUpAt });
   }
 
+  async reissueStaffAccessToken(user: SessionUser, sessionId: string): Promise<string> {
+    await this.staffSession.assertStaffSessionActive(sessionId, user.id);
+    return this.signAccessToken(user, { sessionId });
+  }
+
   async revokeRefreshToken(refreshToken: string): Promise<void> {
     const tokenHash = this.hashRefreshToken(refreshToken);
     await this.prisma.authSession.updateMany({
@@ -191,7 +197,7 @@ export class AuthSessionService {
 
   private async signAccessToken(
     user: Pick<User, 'id' | 'phone' | 'role'>,
-    options: { sessionId: string; stepUpAt?: number },
+    options: { sessionId: string; stepUpAt?: number; mfaEnrollOnly?: boolean },
   ) {
     const expiresIn = (this.config.get<string>('app.jwtExpiresIn') ?? '20m') as `${number}m`;
     const authAt = Math.floor(Date.now() / 1000);
@@ -202,6 +208,7 @@ export class AuthSessionService {
       sid: options.sessionId,
       authAt,
       ...(options.stepUpAt != null ? { stepUpAt: options.stepUpAt } : {}),
+      ...(options.mfaEnrollOnly ? { mfaEnrollOnly: true } : {}),
     };
     return this.jwtService.signAsync(payload, { expiresIn });
   }

@@ -14,3 +14,7 @@ export const RequireStaffStepUp = () => SetMetadata(STAFF_STEP_UP_KEY, true);
 /** Marks controller/routes as staff-portal (active StaffAccess required). */
 export const ADMIN_STAFF_ROUTE_KEY = 'admin_staff_route';
 export const AdminStaffRoute = () => SetMetadata(ADMIN_STAFF_ROUTE_KEY, true);
+
+/** Staff MFA self-service (allowed while MFA enrollment is pending). */
+export const STAFF_MFA_SELF_ROUTE_KEY = 'staff_mfa_self_route';
+export const StaffMfaSelfRoute = () => SetMetadata(STAFF_MFA_SELF_ROUTE_KEY, true);

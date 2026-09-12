@@ -3,6 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { StaffPermission } from '@qalago/shared-types';
 import {
   ADMIN_STAFF_ROUTE_KEY,
+  STAFF_MFA_SELF_ROUTE_KEY,
   STAFF_PERMISSIONS_KEY,
   STAFF_STEP_UP_KEY,
 } from '../decorators/require-staff-permission.decorator';
@@ -33,8 +34,12 @@ export class StaffAuthorizationGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
+    const mfaSelfRoute = this.reflector.getAllAndOverride<boolean>(STAFF_MFA_SELF_ROUTE_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
-    if (!adminStaffRoute && !permissions?.length && !needsStepUp) {
+    if (!adminStaffRoute && !permissions?.length && !needsStepUp && !mfaSelfRoute) {
       return true;
     }
 
@@ -42,6 +47,20 @@ export class StaffAuthorizationGuard implements CanActivate {
     const user = request.user;
     if (!user) {
       throw staffForbidden(StaffAuthErrorCode.STAFF_ACCESS_REQUIRED, 'Authentication required');
+    }
+
+    if (mfaSelfRoute) {
+      if (!isStaffRole(user.role)) {
+        throw staffForbidden(StaffAuthErrorCode.STAFF_ACCESS_REQUIRED, 'Staff access required');
+      }
+      return true;
+    }
+
+    if (user.mfaEnrollOnly) {
+      throw staffForbidden(
+        StaffAuthErrorCode.MFA_REQUIRED,
+        'Complete MFA enrollment before accessing admin features',
+      );
     }
 
     if (adminStaffRoute || permissions?.length) {

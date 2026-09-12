@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-13 — Stage 6.9.1.2: Staff MFA & SUPER_ADMIN recovery hardening
+
+- TOTP MFA, encrypted secrets, recovery codes, login challenge, MFA step-up, admin reset, emergency CLI.
+- Admin-web `/mfa/setup`, login MFA screen, `/settings/security`.
+- Docs: `docs/security/staff-mfa.md`, `staff-mfa-recovery.md`.
+
 ## 2026-09-13 — Stage 6.9.2.1: Admin Reports UI & executive dashboard
 
 - Admin-web `/reports/*` — KPI cards, filters (URL query), recharts, role-aware nav, export UX, no raw JSON for operators.

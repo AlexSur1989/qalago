@@ -52,10 +52,20 @@ export class AppleAuthDto {
 }
 
 export class StaffStepUpDto {
+  @IsOptional()
   @IsString()
   @MinLength(4)
   @MaxLength(6)
-  code!: string;
+  code?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{6}$/)
+  totp?: string;
+
+  @IsOptional()
+  @IsString()
+  recoveryCode?: string;
 }
 
 export class RefreshTokenDto {

@@ -83,6 +83,12 @@ export default () => ({
       process.env.OWNERSHIP_CLAIM_CREATE_WINDOW_SECONDS ?? '3600',
       10,
     ),
+    staffMfaEncryptionKey: process.env.STAFF_MFA_ENCRYPTION_KEY ?? '',
+    staffMfaRequired: process.env.STAFF_MFA_REQUIRED === 'true',
+    staffMfaChallengeTtlSeconds: parseInt(process.env.STAFF_MFA_CHALLENGE_TTL_SECONDS ?? '300', 10),
+    mfaVerifyMaxAttempts: parseInt(process.env.MFA_VERIFY_MAX_ATTEMPTS ?? '10', 10),
+    mfaVerifyWindowSeconds: parseInt(process.env.MFA_VERIFY_WINDOW_SECONDS ?? '900', 10),
+    staffStepUpTtlSeconds: parseInt(process.env.STAFF_STEP_UP_TTL_SECONDS ?? '600', 10),
   },
   database: {
     url: process.env.DATABASE_URL,

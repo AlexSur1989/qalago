@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CommonAccessModule } from '../../common/common-access.module';
@@ -11,10 +11,12 @@ import { AppleIdentityTokenVerifierService } from './social-auth/apple-identity-
 import { GoogleAuthLoginService } from './social-auth/google-auth-login.service';
 import { GoogleIdTokenVerifierService } from './social-auth/google-id-token-verifier.service';
 import { SocialAuthLoginService } from './social-auth/social-auth-login.service';
+import { StaffMfaModule } from '../staff-mfa/staff-mfa.module';
 
 @Module({
   imports: [
     CommonAccessModule,
+    forwardRef(() => StaffMfaModule),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

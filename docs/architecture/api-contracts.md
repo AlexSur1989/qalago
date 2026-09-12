@@ -1134,6 +1134,10 @@ Query filters: `from`, `to`, `cityId`, `citySlug`, `businessId`, pagination on l
 
 Admin Web consumption (Stage 6.9.2.1): typed client `apps/admin-web/lib/reporting/reporting-api.ts`, routes `/reports/*`, role nav and filters documented in `docs/admin/reporting-ui.md`.
 
+### Staff MFA (Stage 6.9.1.2)
+
+See `docs/security/staff-mfa.md`. Login may return `{ mfaRequired, mfaChallengeToken }` or `{ enrollmentRequired, accessToken, refreshToken }` with JWT claim `mfaEnrollOnly`. Step-up body may include `totp` / `recoveryCode` when MFA enabled.
+
 ### Step-up
 
 - `POST /auth/staff/step-up` — body `{ "code": "<otp>" }`; returns `{ "accessToken", "stepUpAt" }`

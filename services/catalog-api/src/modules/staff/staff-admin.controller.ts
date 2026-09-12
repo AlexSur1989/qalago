@@ -13,11 +13,15 @@ import {
   UpdateStaffRoleDto,
 } from './dto/staff.dto';
 import { StaffAccessService } from './staff-access.service';
+import { StaffMfaService } from '../staff-mfa/staff-mfa.service';
 
 @Controller('admin/staff')
 @AdminStaffRoute()
 export class StaffAdminController {
-  constructor(private readonly staff: StaffAccessService) {}
+  constructor(
+    private readonly staff: StaffAccessService,
+    private readonly staffMfa: StaffMfaService,
+  ) {}
 
   @RequireStaffPermission(StaffPermission.STAFF_VIEW)
   @Get()
@@ -99,5 +103,12 @@ export class StaffAdminController {
     @Param('sessionId') sessionId: string,
   ) {
     return this.staff.revokeSession(user, userId, sessionId);
+  }
+
+  @RequireStaffPermission(StaffPermission.STAFF_UPDATE)
+  @RequireStaffStepUp()
+  @Post(':userId/mfa/reset')
+  resetMfa(@CurrentUser() user: AuthUser, @Param('userId') userId: string) {
+    return this.staffMfa.adminResetMfa(user, userId);
   }
 }

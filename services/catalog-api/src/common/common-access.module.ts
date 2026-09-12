@@ -9,6 +9,7 @@ import { StaffStepUpService } from './services/staff-step-up.service';
 import { OnboardingRateLimitService } from './services/onboarding-rate-limit.service';
 import { SlidingWindowRateLimitService } from './services/sliding-window-rate-limit.service';
 import { OtpRateLimitService } from './services/otp-rate-limit.service';
+import { MfaRateLimitService } from './services/mfa-rate-limit.service';
 import { SocialAuthRateLimitService } from './services/social-auth-rate-limit.service';
 import { RateLimitStoreService } from './services/rate-limit-store.service';
 import { AuditLogModule } from '../modules/audit-log/audit-log.module';
@@ -27,6 +28,7 @@ import { AuditLogModule } from '../modules/audit-log/audit-log.module';
     OnboardingRateLimitService,
     SlidingWindowRateLimitService,
     OtpRateLimitService,
+    MfaRateLimitService,
     SocialAuthRateLimitService,
     RateLimitStoreService,
   ],
@@ -41,6 +43,7 @@ import { AuditLogModule } from '../modules/audit-log/audit-log.module';
     OnboardingRateLimitService,
     SlidingWindowRateLimitService,
     OtpRateLimitService,
+    MfaRateLimitService,
     SocialAuthRateLimitService,
     RateLimitStoreService,
   ],

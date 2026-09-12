@@ -32,6 +32,10 @@ describe('AuthService', () => {
     recordVerifyFailure: jest.Mock;
     clearVerifyAttempts: jest.Mock;
   };
+  let staffSession: { assertStaffAccessActive: jest.Mock };
+  let staffMfa: { isMfaEnabled: jest.Mock };
+  let staffMfaPolicy: { loginDecision: jest.Mock };
+  let staffMfaChallenge: { issueLoginChallenge: jest.Mock };
 
   beforeEach(() => {
     prisma = {
@@ -76,6 +80,13 @@ describe('AuthService', () => {
       clearVerifyAttempts: jest.fn(),
     };
 
+    staffSession = {
+      assertStaffAccessActive: jest.fn().mockImplementation((_id, role) => Promise.resolve(role)),
+    };
+    staffMfa = { isMfaEnabled: jest.fn().mockResolvedValue(false) };
+    staffMfaPolicy = { loginDecision: jest.fn().mockReturnValue({ kind: 'full' }) };
+    staffMfaChallenge = { issueLoginChallenge: jest.fn() };
+
     service = new AuthService(
       prisma as unknown as PrismaService,
       config as unknown as ConfigService,
@@ -83,6 +94,10 @@ describe('AuthService', () => {
       otpRateLimit as unknown as OtpRateLimitService,
       authSession as unknown as AuthSessionService,
       { assertRecentStepUp: jest.fn(), recordStepUpVerified: jest.fn() } as never,
+      staffSession as never,
+      staffMfa as never,
+      staffMfaPolicy as never,
+      staffMfaChallenge as never,
     );
   });
 
@@ -122,7 +137,7 @@ describe('AuthService', () => {
       });
 
       const result = await service.devLogin({ phone: '87001234567' });
-      expect(result.accessToken).toBe('jwt-token');
+      expect('accessToken' in result && result.accessToken).toBe('jwt-token');
       expect(prisma.user.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ phone: '+77001234567', role: UserRole.USER }),
@@ -231,7 +246,7 @@ describe('AuthService', () => {
         },
         '127.0.0.1',
       );
-      expect(result.accessToken).toBe('jwt-token');
+      expect('accessToken' in result && result.accessToken).toBe('jwt-token');
       expect(prisma.otpCode.update).toHaveBeenCalled();
     });
 

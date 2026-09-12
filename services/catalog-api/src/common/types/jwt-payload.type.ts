@@ -10,6 +10,8 @@ export type JwtPayload = {
   authAt?: number;
   /** Unix seconds when step-up (OTP re-verify) last succeeded. */
   stepUpAt?: number;
+  /** Staff session limited to MFA enrollment until TOTP is configured. */
+  mfaEnrollOnly?: boolean;
 };
 
 export type AuthUser = JwtPayload & {

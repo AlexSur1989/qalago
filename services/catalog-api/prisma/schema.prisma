@@ -382,6 +382,7 @@ model User {
   governmentRequestsAssigned   GovernmentRequest[]      @relation("GovernmentAssignee")
   securityIncidentsOwned       SecurityIncident[]       @relation("SecurityIncidentOwner")
   staffAccess                  StaffAccess?
+  staffMfaCredential           StaffMfaCredential?
   staffCityScopes              StaffCityScope[]
   staffAccessCreated           StaffAccess[]            @relation("StaffCreatedBy")
 }
@@ -403,6 +404,55 @@ model StaffAccess {
   createdBy        User?     @relation("StaffCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
 
   @@index([staffRole, isActive])
+}
+
+enum StaffMfaMethod {
+  TOTP
+}
+
+model StaffMfaCredential {
+  id                     String               @id @default(cuid())
+  userId                 String               @unique
+  method                 StaffMfaMethod       @default(TOTP)
+  secretEncrypted        String?
+  pendingSecretEncrypted String?
+  pendingExpiresAt       DateTime?
+  enabledAt              DateTime?
+  verifiedAt             DateTime?
+  disabledAt             DateTime?
+  lastUsedAt             DateTime?
+  lastTotpStep           BigInt?
+  keyVersion             Int                  @default(1)
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+  user                   User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recoveryCodes          StaffMfaRecoveryCode[]
+
+  @@index([enabledAt])
+}
+
+model StaffMfaRecoveryCode {
+  id           String             @id @default(cuid())
+  userId       String
+  credentialId String
+  codeHash     String
+  usedAt       DateTime?
+  createdAt    DateTime           @default(now())
+  credential   StaffMfaCredential @relation(fields: [credentialId], references: [id], onDelete: Cascade)
+
+  @@index([userId, usedAt])
+  @@index([credentialId])
+}
+
+model StaffMfaChallengeJti {
+  jti       String   @id
+  userId    String
+  purpose   String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model StaffCityScope {
@@ -1628,6 +1678,15 @@ enum AuditAction {
   ADMIN_ASSIGNED
   STAFF_BOOTSTRAP
   STAFF_STEP_UP_VERIFIED
+  STAFF_MFA_ENROLL_STARTED
+  STAFF_MFA_ENABLED
+  STAFF_MFA_VERIFIED
+  STAFF_MFA_RECOVERY_CODE_USED
+  STAFF_MFA_RECOVERY_CODES_REGENERATED
+  STAFF_MFA_DISABLED
+  STAFF_MFA_RESET
+  STAFF_MFA_EMERGENCY_RESET
+  STAFF_MFA_VERIFICATION_FAILED
 }
 
 enum AuditResourceType {

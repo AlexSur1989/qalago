@@ -17,8 +17,12 @@ import { AuthSessionService } from './auth-session.service';
 import { isProductionNodeEnv } from '../../common/utils/production-config.util';
 import { AuthUser, JwtPayload } from '../../common/types/jwt-payload.type';
 import { StaffStepUpService } from '../../common/services/staff-step-up.service';
+import { StaffSessionService } from '../../common/services/staff-session.service';
 import { isStaffRole } from '../../common/utils/staff-access.util';
 import { staffForbidden, StaffAuthErrorCode } from '../../common/errors/staff-auth.errors';
+import { StaffMfaService } from '../staff-mfa/staff-mfa.service';
+import { StaffMfaPolicyService } from '../staff-mfa/staff-mfa-policy.service';
+import { StaffMfaChallengeService } from '../staff-mfa/staff-mfa-challenge.service';
 
 const OTP_TTL_SEC = 300;
 
@@ -39,6 +43,10 @@ export class AuthService {
     private readonly otpRateLimit: OtpRateLimitService,
     private readonly authSession: AuthSessionService,
     private readonly staffStepUp: StaffStepUpService,
+    private readonly staffSession: StaffSessionService,
+    private readonly staffMfa: StaffMfaService,
+    private readonly staffMfaPolicy: StaffMfaPolicyService,
+    private readonly staffMfaChallenge: StaffMfaChallengeService,
   ) {}
 
   isDevLoginEnabled(): boolean {
@@ -175,6 +183,27 @@ export class AuthService {
     if (phone) {
       await this.businessMembershipService.claimPendingInvitations(user.id, phone);
     }
+
+    if (isStaffRole(user.role)) {
+      await this.staffSession.assertStaffAccessActive(user.id, user.role);
+      const mfaEnabled = await this.staffMfa.isMfaEnabled(user.id);
+      const decision = this.staffMfaPolicy.loginDecision({
+        role: user.role,
+        mfaEnabled,
+      });
+      if (decision.kind === 'mfa_verify') {
+        return {
+          mfaRequired: true,
+          mfaChallengeToken: await this.staffMfaChallenge.issueLoginChallenge(user.id),
+          user,
+        };
+      }
+      if (decision.kind === 'enroll_required') {
+        const session = await this.authSession.issueQalaGoSession(user, { mfaEnrollOnly: true });
+        return { ...session, enrollmentRequired: true };
+      }
+    }
+
     return this.authSession.issueQalaGoSession(user);
   }
 
@@ -205,6 +234,25 @@ export class AuthService {
     }
     if (!actor.sid) {
       throw staffForbidden(StaffAuthErrorCode.STAFF_SESSION_REVOKED, 'Session binding required');
+    }
+    if (await this.staffMfa.isMfaEnabled(actor.id)) {
+      if (!dto.totp && !dto.recoveryCode) {
+        throw staffForbidden(
+          StaffAuthErrorCode.MFA_REQUIRED,
+          'MFA verification required for step-up',
+        );
+      }
+      const mfaResult = await this.staffMfa.verifyStepUp(
+        actor,
+        { totp: dto.totp, recoveryCode: dto.recoveryCode },
+        ip,
+      );
+      if (mfaResult) {
+        return mfaResult;
+      }
+    }
+    if (!dto.code) {
+      throw new UnauthorizedException('Verification code required');
     }
     const dbUser = await this.prisma.user.findUnique({
       where: { id: actor.id },

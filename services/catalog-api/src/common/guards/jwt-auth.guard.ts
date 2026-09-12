@@ -91,6 +91,7 @@ export class JwtAuthGuard implements CanActivate {
       sid: payload.sid,
       authAt: payload.authAt,
       stepUpAt: payload.stepUpAt,
+      mfaEnrollOnly: payload.mfaEnrollOnly === true,
     };
   }
 }

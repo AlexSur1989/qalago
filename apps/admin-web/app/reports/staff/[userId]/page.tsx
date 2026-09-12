@@ -33,7 +33,14 @@ export default function StaffMemberReportPage() {
         ← Staff
       </Link>
       <h1>Staff: {String((staff?.user as { name?: string })?.name ?? userId)}</h1>
-      <p className="muted">MFA: не настроено — функция ещё не внедрена</p>
+      <p className="muted">
+        MFA:{' '}
+        {String(staff?.mfaStatus ?? 'NOT_CONFIGURED') === 'ENABLED'
+          ? 'включена'
+          : String(staff?.mfaStatus) === 'ENROLLMENT_REQUIRED'
+            ? 'требуется настройка'
+            : 'не настроена'}
+      </p>
       {!detail ? (
         <ReportSkeleton rows={4} />
       ) : (
