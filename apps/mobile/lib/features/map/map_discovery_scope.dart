@@ -1,15 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Ephemeral category/subcategory context when opening Map from category discovery.
-/// Not used when user opens Map from bottom navigation (scope cleared).
+/// Category-originated map context (from «На карте» on category screen).
+/// [subcategoryId] null means «Все» within [categoryId].
 class MapDiscoveryScope {
   const MapDiscoveryScope({
     required this.categoryId,
-    required this.subcategoryId,
+    this.subcategoryId,
   });
 
   final String categoryId;
-  final String subcategoryId;
+  final String? subcategoryId;
 }
 
 final mapDiscoveryScopeProvider = StateProvider<MapDiscoveryScope?>((ref) => null);
@@ -26,20 +26,25 @@ class MapBusinessesFetchParams {
   final String? subcategoryId;
 }
 
-/// When flag OFF or no subcategory selected, map uses city-wide fetch (pre-6.8C.1).
+/// Global Map (no scope) → city-wide. Category Map → categoryId; optional subcategory when flag ON.
 MapBusinessesFetchParams resolveMapBusinessesFetchParams({
   required bool subcategoriesEnabled,
   required MapDiscoveryScope? scope,
   required String citySlug,
 }) {
-  if (!subcategoriesEnabled ||
-      scope == null ||
-      scope.subcategoryId.isEmpty) {
+  if (scope == null) {
     return MapBusinessesFetchParams(citySlug: citySlug);
   }
+
+  final subcategoryId = subcategoriesEnabled &&
+          scope.subcategoryId != null &&
+          scope.subcategoryId!.isNotEmpty
+      ? scope.subcategoryId
+      : null;
+
   return MapBusinessesFetchParams(
     citySlug: citySlug,
     categoryId: scope.categoryId,
-    subcategoryId: scope.subcategoryId,
+    subcategoryId: subcategoryId,
   );
 }

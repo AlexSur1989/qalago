@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-12 — Stage 6.8C.1.2: Category map scope fix
+
+- Category → Map with «Все» now scopes by `categoryId` only; global bottom-nav Map stays city-wide.
+- Feature flag OFF still applies category map scope; subcategory filter only when flag ON.
+
 ## 2026-09-12 — Stage 6.8C.1.1: Subcategory map integration closure
 
 - Flutter Map reuses catalog `subcategoryId` when opened from category with a subcategory chip selected (flag ON); bottom nav clears ephemeral scope.

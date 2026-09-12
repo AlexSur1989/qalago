@@ -22,7 +22,6 @@ import '../data/category_discovery_strings.dart';
 import '../providers/category_sort_provider.dart';
 import '../utils/category_list_utils.dart';
 import '../../map/map_discovery_scope.dart';
-import '../../../core/release/app_config_provider.dart';
 import 'category_subcategory_filter.dart';
 
 typedef CategoryBusinessesQuery = ({
@@ -153,16 +152,12 @@ class CategoryBusinessesScreen extends ConsumerWidget {
             tooltip: 'На карте',
             icon: const Icon(Icons.map_outlined),
             onPressed: () {
-              final enabled = ref.read(subcategoriesEnabledProvider);
               final sub = ref.read(categorySubcategoryFilterProvider(categoryId));
-              if (enabled && sub != null && sub.isNotEmpty) {
-                ref.read(mapDiscoveryScopeProvider.notifier).state = MapDiscoveryScope(
-                  categoryId: categoryId,
-                  subcategoryId: sub,
-                );
-              } else {
-                ref.read(mapDiscoveryScopeProvider.notifier).state = null;
-              }
+              ref.read(mapDiscoveryScopeProvider.notifier).state = MapDiscoveryScope(
+                categoryId: categoryId,
+                subcategoryId:
+                    sub != null && sub.isNotEmpty ? sub : null,
+              );
               context.push('/map');
             },
           ),

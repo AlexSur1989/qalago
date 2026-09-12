@@ -61,3 +61,13 @@
 1. Deploy backend + seed taxonomy.
 2. `PATCH /admin/release/feature-flags` or city override for pilot city.
 3. Ship mobile/web with flag-aware UI.
+
+## Map discovery scope (6.8C.1.2)
+
+| Entry | Scope | API fetch |
+|-------|--------|-----------|
+| Bottom nav **Карта** | none | city-wide |
+| Category **На карте** + «Все» | `categoryId`, `subcategoryId=null` | all businesses in category |
+| Category **На карте** + sub chip | `categoryId` + `subcategoryId` | filtered (sub only if `subcategoriesEnabled`) |
+
+Tapping bottom-nav **Карта** clears category discovery scope. Category → Map uses `push` and keeps scope until user opens global Map or another tab that clears it.

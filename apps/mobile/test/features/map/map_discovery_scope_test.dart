@@ -3,22 +3,13 @@ import 'package:qalago_mobile/features/map/map_discovery_scope.dart';
 
 void main() {
   group('resolveMapBusinessesFetchParams', () {
-    const scope = MapDiscoveryScope(
+    const autoAll = MapDiscoveryScope(categoryId: 'cat-auto');
+    const autoWash = MapDiscoveryScope(
       categoryId: 'cat-auto',
       subcategoryId: 'sub-wash',
     );
 
-    test('G: flag OFF → city-only (legacy map)', () {
-      final p = resolveMapBusinessesFetchParams(
-        subcategoriesEnabled: false,
-        scope: scope,
-        citySlug: 'uralsk',
-      );
-      expect(p.categoryId, isNull);
-      expect(p.subcategoryId, isNull);
-    });
-
-    test('C: no subcategory selected → city-only', () {
+    test('A: global Map — no scope → city-wide', () {
       final p = resolveMapBusinessesFetchParams(
         subcategoriesEnabled: true,
         scope: null,
@@ -28,14 +19,44 @@ void main() {
       expect(p.subcategoryId, isNull);
     });
 
-    test('H: flag ON + scope → category and subcategory', () {
+    test('B: Category AUTO + All → category only', () {
       final p = resolveMapBusinessesFetchParams(
         subcategoriesEnabled: true,
-        scope: scope,
+        scope: autoAll,
+        citySlug: 'uralsk',
+      );
+      expect(p.categoryId, 'cat-auto');
+      expect(p.subcategoryId, isNull);
+    });
+
+    test('C: Category AUTO + CAR_WASH → category + subcategory', () {
+      final p = resolveMapBusinessesFetchParams(
+        subcategoriesEnabled: true,
+        scope: autoWash,
         citySlug: 'uralsk',
       );
       expect(p.categoryId, 'cat-auto');
       expect(p.subcategoryId, 'sub-wash');
+    });
+
+    test('D: Category AUTO + All, flag OFF → category only', () {
+      final p = resolveMapBusinessesFetchParams(
+        subcategoriesEnabled: false,
+        scope: autoAll,
+        citySlug: 'uralsk',
+      );
+      expect(p.categoryId, 'cat-auto');
+      expect(p.subcategoryId, isNull);
+    });
+
+    test('E: selected subcategory with flag OFF → sub ignored, category kept', () {
+      final p = resolveMapBusinessesFetchParams(
+        subcategoriesEnabled: false,
+        scope: autoWash,
+        citySlug: 'uralsk',
+      );
+      expect(p.categoryId, 'cat-auto');
+      expect(p.subcategoryId, isNull);
     });
   });
 }
