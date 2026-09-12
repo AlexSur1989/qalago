@@ -81,7 +81,7 @@ See [provider-setup-checklist.md](./provider-setup-checklist.md).
 
 ## Test status
 
-Backend: verifier + social login + session specs (mocked verifiers). Flutter: social auth unit/notifier tests with mocks. **Real Google/Apple device login not verified in CI** without external credentials.
+Backend: verifier + social login + session specs (mocked verifiers). Flutter: social auth unit/notifier tests with mocks; **full Flutter regression suite green** after Stage 6.8D.1 (`widget_test` release-gate stubs). **Real Google/Apple device login not verified in CI** without external credentials.
 
 ## Deferred
 

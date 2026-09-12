@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-12 — Stage 6.8D.1: Flutter regression suite closure
+
+- Fixed stale `widget_test.dart` smoke: stub release gate + home providers so canonical Home search hint is reachable without live app-config network.
+- Full Flutter suite green (331 tests).
+
 ## 2026-09-12 — Stage 6.8D: Google & Apple auth integration foundation
 
 - Production architecture: server-side Google ID token and Apple identity token verification, `AuthIdentity` mapping, `issueQalaGoSession`, no email auto-linking, tombstone/inactive gates, rate limits, fail-closed prod config.
