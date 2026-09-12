@@ -51,4 +51,4 @@ CITY_ADMIN: city selector limited to assigned city; backend enforces scope.
 - User/business trend series not provided by API → empty/notes.
 - Subcategory rollup unsupported (backend).
 - Churn displayed as unavailable.
-- Staff anomalies list uses backend JSON signals (minimal formatting).
+- Staff anomalies: structured cards (code, «Требует проверки», link to staff detail); no raw JSON dump.
