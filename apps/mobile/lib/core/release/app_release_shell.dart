@@ -56,3 +56,41 @@ class _AppReleaseShellState extends ConsumerState<AppReleaseShell> {
     );
   }
 }
+
+class _OptionalUpdateHost extends StatefulWidget {
+  const _OptionalUpdateHost({
+    required this.enabled,
+    required this.child,
+    this.storeUrl,
+    required this.onShown,
+  });
+
+  final bool enabled;
+  final Widget child;
+  final String? storeUrl;
+  final VoidCallback onShown;
+
+  @override
+  State<_OptionalUpdateHost> createState() => _OptionalUpdateHostState();
+}
+
+class _OptionalUpdateHostState extends State<_OptionalUpdateHost> {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (widget.enabled) {
+      widget.onShown();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        showOptionalUpdateDialog(
+          context,
+          messageRu: 'Доступна новая версия QalaGo.',
+          storeUrl: widget.storeUrl,
+        );
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
