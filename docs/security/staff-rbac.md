@@ -30,9 +30,18 @@
 - Fields: `StaffAccess.mfaEnrolledAt`, `mfaRequired` (reserved).
 - `STEP_UP_REQUIRED_PERMISSIONS` listed in shared-types — enforcement is a future stage; no fake MFA UI.
 
+## Step-up (6.9.1.1)
+
+Sensitive staff mutations require OTP step-up within **600 seconds**. See [staff-step-up.md](./staff-step-up.md).
+
+## Session binding
+
+Staff JWTs include `sid` (AuthSession id). Disabled staff or revoked sessions are rejected on **every** staff request and on refresh.
+
 ## Known limitations
 
-- Fine-grained permission guard is wired on staff management and payment confirm; many legacy routes still use `@Roles()` hierarchy.
+- Mixed business/staff controllers still use `@Roles()` for owner flows — see [staff-roles-inventory.md](./staff-roles-inventory.md).
+- **STAFF MFA PENDING** — no TOTP/passkey enrollment yet.
 - Impersonation / login-as-user is not implemented.
 
 See also: [super-admin-bootstrap.md](./super-admin-bootstrap.md), [admin-access.md](./admin-access.md).

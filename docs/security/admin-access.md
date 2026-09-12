@@ -6,8 +6,13 @@
 - **Authorization is separate**: after login, `canAccessAdminWeb(role)` requires a **staff role**.
 - Authenticated `USER` without staff access receives **403** on admin API routes and is rejected in admin-web client guard.
 
+## Step-up
+
+Sensitive staff actions require OTP step-up (`POST /auth/staff/step-up`) within **600 seconds**. See [staff-step-up.md](./staff-step-up.md). **STAFF MFA PENDING.**
+
 ## Sessions
 
+- Staff access tokens bind to `AuthSession` id (`sid`) for immediate revocation when disabled.
 - Refresh tokens remain HttpOnly per existing auth architecture.
 - SUPER_ADMIN may revoke staff sessions via `POST /admin/staff/:userId/sessions/revoke-all`.
 - Disabling staff revokes all sessions and sets `User.role` to `USER`.

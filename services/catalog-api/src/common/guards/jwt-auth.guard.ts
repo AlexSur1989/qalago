@@ -11,6 +11,8 @@ import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { AuthUser, JwtPayload } from '../types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { isStaffRole } from '../utils/staff-access.util';
+import { StaffSessionService } from '../services/staff-session.service';
+import { staffUnauthorized, StaffAuthErrorCode } from '../errors/staff-auth.errors';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -19,6 +21,7 @@ export class JwtAuthGuard implements CanActivate {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
+    private readonly staffSession: StaffSessionService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -60,7 +63,7 @@ export class JwtAuthGuard implements CanActivate {
   }
 
   private async attachUserFromToken(
-    request: { user?: AuthUser },
+    request: { user?: AuthUser & JwtPayload },
     token: string,
   ) {
     const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
@@ -73,20 +76,21 @@ export class JwtAuthGuard implements CanActivate {
     if (!dbUser?.isActive) {
       throw new UnauthorizedException('User inactive');
     }
+
+    let effectiveRole = dbUser.role;
     if (isStaffRole(dbUser.role)) {
-      const staff = await this.prisma.staffAccess.findUnique({
-        where: { userId: dbUser.id },
-        select: { isActive: true },
-      });
-      if (staff && !staff.isActive) {
-        throw new UnauthorizedException('Staff access disabled');
-      }
+      effectiveRole = await this.staffSession.assertStaffAccessActive(dbUser.id, dbUser.role);
+      await this.staffSession.assertStaffSessionActive(payload.sid, dbUser.id);
     }
+
     request.user = {
       sub: dbUser.id,
       id: dbUser.id,
       ...(dbUser.phone != null ? { phone: dbUser.phone } : {}),
-      role: dbUser.role,
+      role: effectiveRole,
+      sid: payload.sid,
+      authAt: payload.authAt,
+      stepUpAt: payload.stepUpAt,
     };
   }
 }

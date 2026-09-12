@@ -82,6 +82,7 @@ describe('AuthService', () => {
       membership as unknown as BusinessMembershipService,
       otpRateLimit as unknown as OtpRateLimitService,
       authSession as unknown as AuthSessionService,
+      { assertRecentStepUp: jest.fn(), recordStepUpVerified: jest.fn() } as never,
     );
   });
 

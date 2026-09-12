@@ -3,12 +3,14 @@ import { AuditAction, AuditResourceType, UserRole } from '@prisma/client';
 import { AdminService } from './admin.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 
-describe('AdminService.updateUserRole (Stage 5M.4)', () => {
+describe('AdminService.updateUserRole (Stage 6.9.1.1)', () => {
   const superAdmin: AuthUser = {
     id: 'sa-1',
     sub: 'sa-1',
     role: UserRole.SUPER_ADMIN,
     phone: '+77000000001',
+    stepUpAt: Math.floor(Date.now() / 1000),
+    sid: 'sess-1',
   };
 
   const platformAdmin: AuthUser = {
@@ -24,6 +26,7 @@ describe('AdminService.updateUserRole (Stage 5M.4)', () => {
     assertCanDemoteSuperAdmin: jest.fn(),
     validateCityAdminAssignment: jest.fn(),
   };
+  const staffStepUp = { assertRecentStepUp: jest.fn() };
 
   let prisma: {
     user: { findUnique: jest.Mock; update: jest.Mock };
@@ -34,6 +37,7 @@ describe('AdminService.updateUserRole (Stage 5M.4)', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    staffStepUp.assertRecentStepUp.mockImplementation(() => undefined);
     prisma = {
       user: {
         findUnique: jest.fn(),
@@ -48,6 +52,7 @@ describe('AdminService.updateUserRole (Stage 5M.4)', () => {
             upsert: jest.fn().mockResolvedValue({}),
             updateMany: jest.fn().mockResolvedValue({ count: 0 }),
           },
+          staffCityScope: { deleteMany: jest.fn().mockResolvedValue({ count: 0 }) },
         }),
       ),
     };
@@ -64,6 +69,7 @@ describe('AdminService.updateUserRole (Stage 5M.4)', () => {
       systemAccess as never,
       {} as never,
       {} as never,
+      staffStepUp as never,
     );
   });
 
@@ -81,11 +87,30 @@ describe('AdminService.updateUserRole (Stage 5M.4)', () => {
     systemAccess.assertSuperAdmin.mockImplementation(() => undefined);
 
     await expect(
-      service.updateUserRole(superAdmin, superAdmin.id, { role: UserRole.ADMIN }),
-    ).rejects.toThrow('Cannot change your own system role');
+      service.updateUserRole(superAdmin, superAdmin.id, { role: UserRole.USER }),
+    ).rejects.toMatchObject({
+      response: expect.objectContaining({
+        code: 'STAFF_SELF_ROLE_CHANGE_FORBIDDEN',
+      }),
+    });
   });
 
-  it('audits successful role change by super admin', async () => {
+  it('rejects staff role assignment via legacy endpoint', async () => {
+    systemAccess.assertSuperAdmin.mockImplementation(() => undefined);
+    prisma.user.findUnique.mockResolvedValue({
+      id: 'target-1',
+      role: UserRole.USER,
+      managedCityId: null,
+    });
+
+    await expect(
+      service.updateUserRole(superAdmin, 'target-1', { role: UserRole.ADMIN }),
+    ).rejects.toMatchObject({
+      response: expect.objectContaining({ code: 'STAFF_PERMISSION_DENIED' }),
+    });
+  });
+
+  it('audits successful consumer role change by super admin', async () => {
     systemAccess.assertSuperAdmin.mockImplementation(() => undefined);
     prisma.user.findUnique.mockResolvedValue({
       id: 'target-1',
@@ -96,12 +121,12 @@ describe('AdminService.updateUserRole (Stage 5M.4)', () => {
       id: 'target-1',
       phone: '+77000000099',
       name: 'User',
-      role: UserRole.ADMIN,
+      role: UserRole.BUSINESS,
       managedCityId: null,
       managedCity: null,
     });
 
-    await service.updateUserRole(superAdmin, 'target-1', { role: UserRole.ADMIN });
+    await service.updateUserRole(superAdmin, 'target-1', { role: UserRole.BUSINESS });
 
     expect(auditLog.record).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -111,44 +136,25 @@ describe('AdminService.updateUserRole (Stage 5M.4)', () => {
         targetUserId: 'target-1',
         metadata: expect.objectContaining({
           oldRole: UserRole.USER,
-          newRole: UserRole.ADMIN,
+          newRole: UserRole.BUSINESS,
         }),
       }),
     );
   });
 
-  it('enforces last super admin invariant', async () => {
+  it('rejects demoting staff via legacy endpoint', async () => {
     systemAccess.assertSuperAdmin.mockImplementation(() => undefined);
     prisma.user.findUnique.mockResolvedValue({
       id: 'sa-2',
       role: UserRole.SUPER_ADMIN,
       managedCityId: null,
     });
-    systemAccess.assertCanDemoteSuperAdmin.mockRejectedValue(
-      new ForbiddenException('Cannot demote the last super administrator'),
-    );
 
     await expect(
-      service.updateUserRole(superAdmin, 'sa-2', { role: UserRole.ADMIN }),
-    ).rejects.toThrow('Cannot demote the last super administrator');
-  });
-
-  it('requires managed city for CITY_ADMIN assignment', async () => {
-    systemAccess.assertSuperAdmin.mockImplementation(() => undefined);
-    prisma.user.findUnique.mockResolvedValue({
-      id: 'target-1',
-      role: UserRole.USER,
-      managedCityId: null,
+      service.updateUserRole(superAdmin, 'sa-2', { role: UserRole.USER }),
+    ).rejects.toMatchObject({
+      response: expect.objectContaining({ code: 'STAFF_PERMISSION_DENIED' }),
     });
-    systemAccess.validateCityAdminAssignment.mockRejectedValue(
-      new BadRequestException('managedCityId is required for CITY_ADMIN'),
-    );
-
-    await expect(
-      service.updateUserRole(superAdmin, 'target-1', {
-        role: UserRole.CITY_ADMIN,
-      }),
-    ).rejects.toThrow(BadRequestException);
   });
 
   it('throws when target user missing', async () => {

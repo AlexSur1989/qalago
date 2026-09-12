@@ -7,6 +7,7 @@ import envConfig from './config/env.config';
 import { validationSchema } from './config/validation.schema';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
+import { StaffAuthorizationGuard } from './common/guards/staff-authorization.guard';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
@@ -79,6 +80,7 @@ import { StaffModule } from './modules/staff/staff.module';
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: StaffAuthorizationGuard },
   ],
 })
 export class AppModule {}

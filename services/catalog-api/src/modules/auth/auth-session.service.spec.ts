@@ -12,11 +12,17 @@ describe('AuthSessionService', () => {
     }),
   };
 
+  const staffSession = {
+    assertStaffAccessActive: jest.fn(async (_id: string, role: UserRole) => role),
+    assertStaffSessionActive: jest.fn(),
+  };
+
   function createService(prisma: object) {
     return new AuthSessionService(
       prisma as never,
       jwt as never,
       config as never,
+      staffSession as never,
     );
   }
 

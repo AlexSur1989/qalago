@@ -2,8 +2,12 @@ import { createHash, randomBytes, randomUUID } from 'crypto';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
+import { User, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { JwtPayload } from '../../common/types/jwt-payload.type';
+import { StaffSessionService } from '../../common/services/staff-session.service';
+import { isStaffRole } from '../../common/utils/staff-access.util';
+import { staffUnauthorized, StaffAuthErrorCode } from '../../common/errors/staff-auth.errors';
 
 export type SessionUser = Pick<User, 'id' | 'phone' | 'email' | 'name' | 'role'>;
 
@@ -11,6 +15,7 @@ export type QalaGoSessionResult = {
   accessToken: string;
   refreshToken: string;
   user: SessionUser;
+  sessionId: string;
 };
 
 @Injectable()
@@ -19,18 +24,19 @@ export class AuthSessionService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
+    private readonly staffSession: StaffSessionService,
   ) {}
 
   async issueQalaGoSession(
     user: SessionUser,
-    options?: { userAgent?: string },
+    options?: { userAgent?: string; stepUpAt?: number },
   ): Promise<QalaGoSessionResult> {
     const refreshToken = this.generateRefreshToken();
     const tokenHash = this.hashRefreshToken(refreshToken);
     const familyId = randomUUID();
     const expiresAt = this.refreshExpiresAt();
 
-    await this.prisma.authSession.create({
+    const session = await this.prisma.authSession.create({
       data: {
         userId: user.id,
         tokenHash,
@@ -40,8 +46,11 @@ export class AuthSessionService {
       },
     });
 
-    const accessToken = await this.signAccessToken(user);
-    return { accessToken, refreshToken, user };
+    const accessToken = await this.signAccessToken(user, {
+      sessionId: session.id,
+      stepUpAt: options?.stepUpAt,
+    });
+    return { accessToken, refreshToken, user, sessionId: session.id };
   }
 
   async refreshSession(
@@ -74,6 +83,22 @@ export class AuthSessionService {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
+    let effectiveRole = session.user.role;
+    if (isStaffRole(session.user.role)) {
+      try {
+        effectiveRole = await this.staffSession.assertStaffAccessActive(
+          session.user.id,
+          session.user.role,
+        );
+      } catch {
+        await this.revokeSessionFamily(session.familyId);
+        throw staffUnauthorized(
+          StaffAuthErrorCode.STAFF_ACCESS_DISABLED,
+          'Staff access disabled',
+        );
+      }
+    }
+
     const now = new Date();
     await this.prisma.authSession.update({
       where: { id: session.id },
@@ -84,7 +109,7 @@ export class AuthSessionService {
     const newHash = this.hashRefreshToken(newRefreshToken);
     const expiresAt = this.refreshExpiresAt();
 
-    await this.prisma.authSession.create({
+    const newSession = await this.prisma.authSession.create({
       data: {
         userId: session.userId,
         tokenHash: newHash,
@@ -100,11 +125,25 @@ export class AuthSessionService {
       phone: session.user.phone,
       email: session.user.email,
       name: session.user.name,
-      role: session.user.role,
+      role: effectiveRole,
     };
 
-    const accessToken = await this.signAccessToken(user);
-    return { accessToken, refreshToken: newRefreshToken, user };
+    const accessToken = await this.signAccessToken(user, { sessionId: newSession.id });
+    return {
+      accessToken,
+      refreshToken: newRefreshToken,
+      user,
+      sessionId: newSession.id,
+    };
+  }
+
+  async issueStepUpAccessToken(
+    user: SessionUser,
+    sessionId: string,
+    stepUpAt: number,
+  ): Promise<string> {
+    await this.staffSession.assertStaffSessionActive(sessionId, user.id);
+    return this.signAccessToken(user, { sessionId, stepUpAt });
   }
 
   async revokeRefreshToken(refreshToken: string): Promise<void> {
@@ -122,7 +161,6 @@ export class AuthSessionService {
     });
   }
 
-  /** Detect refresh replay: token already revoked but family still active elsewhere. */
   async handlePossibleReplay(refreshToken: string): Promise<void> {
     const tokenHash = this.hashRefreshToken(refreshToken);
     const session = await this.prisma.authSession.findUnique({ where: { tokenHash } });
@@ -151,15 +189,20 @@ export class AuthSessionService {
     return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
   }
 
-  private async signAccessToken(user: Pick<User, 'id' | 'phone' | 'role'>) {
+  private async signAccessToken(
+    user: Pick<User, 'id' | 'phone' | 'role'>,
+    options: { sessionId: string; stepUpAt?: number },
+  ) {
     const expiresIn = (this.config.get<string>('app.jwtExpiresIn') ?? '20m') as `${number}m`;
-    return this.jwtService.signAsync(
-      {
-        sub: user.id,
-        ...(user.phone != null ? { phone: user.phone } : {}),
-        role: user.role,
-      },
-      { expiresIn },
-    );
+    const authAt = Math.floor(Date.now() / 1000);
+    const payload: JwtPayload = {
+      sub: user.id,
+      ...(user.phone != null ? { phone: user.phone } : {}),
+      role: user.role as UserRole,
+      sid: options.sessionId,
+      authAt,
+      ...(options.stepUpAt != null ? { stepUpAt: options.stepUpAt } : {}),
+    };
+    return this.jwtService.signAsync(payload, { expiresIn });
   }
 }

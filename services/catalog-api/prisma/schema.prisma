@@ -1627,6 +1627,7 @@ enum AuditAction {
   SUPER_ADMIN_ASSIGNED
   ADMIN_ASSIGNED
   STAFF_BOOTSTRAP
+  STAFF_STEP_UP_VERIFIED
 }
 
 enum AuditResourceType {

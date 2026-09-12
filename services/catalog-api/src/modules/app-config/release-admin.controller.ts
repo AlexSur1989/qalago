@@ -1,7 +1,11 @@
 import { Body, Controller, Param, Patch } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { StaffPermission } from '@qalago/shared-types';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { Roles } from '../../common/decorators/roles.decorator';
+import {
+  AdminStaffRoute,
+  RequireStaffPermission,
+  RequireStaffStepUp,
+} from '../../common/decorators/require-staff-permission.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import {
   UpdateReleaseSettingsDto,
@@ -14,19 +18,24 @@ import { ReleaseAdminService } from './release-admin.service';
 export class ReleaseAdminController {
   constructor(private readonly releaseAdmin: ReleaseAdminService) {}
 
-  @Roles(UserRole.SUPER_ADMIN)
+  @AdminStaffRoute()
+  @RequireStaffPermission(StaffPermission.RELEASE_CONFIG_EDIT)
+  @RequireStaffStepUp()
   @Patch('settings')
   updateSettings(@CurrentUser() user: AuthUser, @Body() dto: UpdateReleaseSettingsDto) {
     return this.releaseAdmin.updateReleaseSettings(user, dto);
   }
 
-  @Roles(UserRole.SUPER_ADMIN)
+  @AdminStaffRoute()
+  @RequireStaffPermission(StaffPermission.FEATURE_FLAG_EDIT)
+  @RequireStaffStepUp()
   @Patch('feature-flags')
   upsertFeatureFlag(@CurrentUser() user: AuthUser, @Body() dto: UpsertFeatureFlagDto) {
     return this.releaseAdmin.upsertGlobalFeatureFlag(user, dto);
   }
 
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.CITY_ADMIN)
+  @AdminStaffRoute()
+  @RequireStaffPermission(StaffPermission.FEATURE_FLAG_EDIT)
   @Patch('cities/:cityId/feature-flags')
   upsertCityFeatureFlag(
     @CurrentUser() user: AuthUser,

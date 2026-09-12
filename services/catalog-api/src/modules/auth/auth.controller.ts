@@ -21,6 +21,7 @@ import {
   GoogleAuthDto,
   AppleAuthDto,
   RefreshTokenDto,
+  StaffStepUpDto,
 } from './dto/auth.dto';
 import { REFRESH_COOKIE_NAME, setRefreshCookie, clearRefreshCookie, readRefreshToken } from './auth-cookie.util';
 import { AppleAuthLoginService } from './social-auth/apple-auth-login.service';
@@ -102,6 +103,15 @@ export class AuthController {
     await this.authService.logout(refreshToken);
     clearRefreshCookie(res);
     return { success: true };
+  }
+
+  @Post('staff/step-up')
+  staffStepUp(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: StaffStepUpDto,
+    @Req() req: Request,
+  ) {
+    return this.authService.staffStepUpVerify(user, dto, resolveRequestIp(req));
   }
 
   @Post('logout-all')

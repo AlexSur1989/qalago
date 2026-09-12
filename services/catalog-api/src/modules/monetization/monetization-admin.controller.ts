@@ -1,7 +1,11 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { StaffPermission } from '@qalago/shared-types';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { Roles } from '../../common/decorators/roles.decorator';
+import {
+  AdminStaffRoute,
+  RequireStaffPermission,
+  RequireStaffStepUp,
+} from '../../common/decorators/require-staff-permission.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { CreativeService } from './creative.service';
 import {
@@ -18,12 +22,7 @@ import { MonetizationService } from './monetization.service';
 import { OrderService } from './order.service';
 
 @Controller('admin/monetization')
-@Roles(
-  UserRole.ADMIN,
-  UserRole.CITY_ADMIN,
-  UserRole.FINANCE,
-  UserRole.SALES_MANAGER,
-)
+@AdminStaffRoute()
 export class MonetizationAdminController {
   constructor(
     private readonly orderService: OrderService,
@@ -32,6 +31,7 @@ export class MonetizationAdminController {
     private readonly adAnalyticsService: AdAnalyticsService,
   ) {}
 
+  @RequireStaffPermission(StaffPermission.ORDER_VIEW)
   @Get('orders')
   listOrders(
     @CurrentUser() user: AuthUser,
@@ -40,11 +40,13 @@ export class MonetizationAdminController {
     return this.orderService.listAdminOrders(user, query);
   }
 
+  @RequireStaffPermission(StaffPermission.ORDER_VIEW)
   @Get('orders/:id')
   getOrder(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.orderService.getAdminOrder(user, id);
   }
 
+  @RequireStaffPermission(StaffPermission.PAYMENT_VIEW)
   @Get('payments')
   listPayments(
     @CurrentUser() user: AuthUser,
@@ -53,11 +55,14 @@ export class MonetizationAdminController {
     return this.orderService.listAdminPayments(user, query);
   }
 
+  @RequireStaffPermission(StaffPermission.PAYMENT_VIEW)
   @Get('payments/:id')
   getPayment(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.orderService.getAdminPayment(user, id);
   }
 
+  @RequireStaffPermission(StaffPermission.PAYMENT_CONFIRM)
+  @RequireStaffStepUp()
   @Post('payments/:id/confirm')
   confirmPayment(
     @CurrentUser() user: AuthUser,
@@ -67,6 +72,7 @@ export class MonetizationAdminController {
     return this.orderService.confirmManualPayment(user, id);
   }
 
+  @RequireStaffPermission(StaffPermission.AD_VIEW)
   @Get('campaigns')
   listCampaigns(
     @CurrentUser() user: AuthUser,
@@ -75,11 +81,13 @@ export class MonetizationAdminController {
     return this.monetizationService.listAdminCampaigns(user, query);
   }
 
+  @RequireStaffPermission(StaffPermission.AD_VIEW)
   @Get('campaigns/:id')
   getCampaign(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.monetizationService.getAdminCampaign(user, id);
   }
 
+  @RequireStaffPermission(StaffPermission.ANALYTICS_VIEW)
   @Get('campaigns/:id/analytics')
   getCampaignAnalytics(
     @CurrentUser() user: AuthUser,
@@ -92,26 +100,31 @@ export class MonetizationAdminController {
     });
   }
 
+  @RequireStaffPermission(StaffPermission.AD_MANAGE)
   @Post('campaigns/:id/pause')
   pauseCampaign(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.monetizationService.pauseCampaign(user, id);
   }
 
+  @RequireStaffPermission(StaffPermission.AD_MANAGE)
   @Post('campaigns/:id/resume')
   resumeCampaign(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.monetizationService.resumeCampaign(user, id);
   }
 
+  @RequireStaffPermission(StaffPermission.AD_MANAGE)
   @Post('campaigns/:id/cancel')
   cancelCampaign(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.monetizationService.cancelCampaign(user, id);
   }
 
+  @RequireStaffPermission(StaffPermission.AD_MODERATE)
   @Post('creatives/:id/approve')
   approveCreative(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.creativeService.approve(user, id);
   }
 
+  @RequireStaffPermission(StaffPermission.AD_MODERATE)
   @Post('creatives/:id/reject')
   rejectCreative(
     @CurrentUser() user: AuthUser,
@@ -121,6 +134,7 @@ export class MonetizationAdminController {
     return this.creativeService.reject(user, id, dto.moderationComment);
   }
 
+  @RequireStaffPermission(StaffPermission.AD_VIEW)
   @Get('creatives')
   listCreatives(
     @CurrentUser() user: AuthUser,
@@ -129,11 +143,13 @@ export class MonetizationAdminController {
     return this.creativeService.listAdminCreatives(user, query);
   }
 
+  @RequireStaffPermission(StaffPermission.AD_VIEW)
   @Get('creatives/:id')
   getCreative(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.creativeService.getAdminCreative(user, id);
   }
 
+  @RequireStaffPermission(StaffPermission.AD_VIEW)
   @Get('placements')
   listPlacements(@CurrentUser() user: AuthUser) {
     return this.monetizationService.listAdminPlacements(user);

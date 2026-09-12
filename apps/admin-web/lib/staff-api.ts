@@ -28,6 +28,14 @@ export type StaffOverview = {
   recentLogins: { userId: string; lastStaffLoginAt: string | null; staffRole: string }[];
 };
 
+export async function staffStepUp(token: string, code: string): Promise<{ accessToken: string }> {
+  return api<{ accessToken: string; stepUpAt: number }>('/auth/staff/step-up', {
+    token,
+    method: 'POST',
+    body: JSON.stringify({ code }),
+  });
+}
+
 export const staffApi = {
   list: (token: string) => api<StaffListRow[]>('/admin/staff', { token }),
   overview: (token: string) => api<StaffOverview>('/admin/staff/overview', { token }),

@@ -4,6 +4,8 @@ import { BusinessMembershipService } from './services/business-membership.servic
 import { CityScopeService } from './services/city-scope.service';
 import { SystemAccessService } from './services/system-access.service';
 import { StaffPolicyService } from './services/staff-policy.service';
+import { StaffSessionService } from './services/staff-session.service';
+import { StaffStepUpService } from './services/staff-step-up.service';
 import { OnboardingRateLimitService } from './services/onboarding-rate-limit.service';
 import { SlidingWindowRateLimitService } from './services/sliding-window-rate-limit.service';
 import { OtpRateLimitService } from './services/otp-rate-limit.service';
@@ -20,6 +22,8 @@ import { AuditLogModule } from '../modules/audit-log/audit-log.module';
     BusinessAccessService,
     SystemAccessService,
     StaffPolicyService,
+    StaffSessionService,
+    StaffStepUpService,
     OnboardingRateLimitService,
     SlidingWindowRateLimitService,
     OtpRateLimitService,
@@ -32,6 +36,8 @@ import { AuditLogModule } from '../modules/audit-log/audit-log.module';
     BusinessAccessService,
     SystemAccessService,
     StaffPolicyService,
+    StaffSessionService,
+    StaffStepUpService,
     OnboardingRateLimitService,
     SlidingWindowRateLimitService,
     OtpRateLimitService,

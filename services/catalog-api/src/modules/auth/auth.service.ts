@@ -12,9 +12,13 @@ import { BusinessMembershipService } from '../../common/services/business-member
 import { OtpRateLimitService } from '../../common/services/otp-rate-limit.service';
 import { AccountType, resolveAccountRole } from './auth-role.util';
 import { normalizeKazakhstanPhone } from './auth-phone.util';
-import { DevLoginDto, SendCodeDto, VerifyCodeDto } from './dto/auth.dto';
+import { DevLoginDto, SendCodeDto, StaffStepUpDto, VerifyCodeDto } from './dto/auth.dto';
 import { AuthSessionService } from './auth-session.service';
 import { isProductionNodeEnv } from '../../common/utils/production-config.util';
+import { AuthUser, JwtPayload } from '../../common/types/jwt-payload.type';
+import { StaffStepUpService } from '../../common/services/staff-step-up.service';
+import { isStaffRole } from '../../common/utils/staff-access.util';
+import { staffForbidden, StaffAuthErrorCode } from '../../common/errors/staff-auth.errors';
 
 const OTP_TTL_SEC = 300;
 
@@ -34,6 +38,7 @@ export class AuthService {
     private readonly businessMembershipService: BusinessMembershipService,
     private readonly otpRateLimit: OtpRateLimitService,
     private readonly authSession: AuthSessionService,
+    private readonly staffStepUp: StaffStepUpService,
   ) {}
 
   isDevLoginEnabled(): boolean {
@@ -192,6 +197,48 @@ export class AuthService {
   async logoutAll(userId: string) {
     await this.authSession.revokeAllUserSessions(userId);
     return { success: true };
+  }
+
+  async staffStepUpVerify(actor: AuthUser & JwtPayload, dto: StaffStepUpDto, ip: string) {
+    if (!isStaffRole(actor.role)) {
+      throw staffForbidden(StaffAuthErrorCode.STAFF_ACCESS_REQUIRED, 'Staff access required');
+    }
+    if (!actor.sid) {
+      throw staffForbidden(StaffAuthErrorCode.STAFF_SESSION_REVOKED, 'Session binding required');
+    }
+    const dbUser = await this.prisma.user.findUnique({
+      where: { id: actor.id },
+      select: { phone: true, id: true, email: true, name: true, role: true },
+    });
+    if (!dbUser?.phone) {
+      throw new UnauthorizedException('Phone verification required for step-up');
+    }
+    this.assertOtpAuthEnabled();
+    const phone = dbUser.phone;
+    this.otpRateLimit.assertCanVerifyCode(phone, ip);
+    const codeHash = this.hashCode(dto.code);
+    const otp = await this.prisma.otpCode.findFirst({
+      where: {
+        phone,
+        codeHash,
+        consumed: false,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!otp) {
+      this.otpRateLimit.recordVerifyFailure(phone, ip);
+      throw new UnauthorizedException('Invalid or expired verification code');
+    }
+    await this.prisma.otpCode.update({
+      where: { id: otp.id },
+      data: { consumed: true },
+    });
+    this.otpRateLimit.clearVerifyAttempts(phone, ip);
+    const stepUpAt = Math.floor(Date.now() / 1000);
+    await this.staffStepUp.recordStepUpVerified(actor);
+    const accessToken = await this.authSession.issueStepUpAccessToken(dbUser, actor.sid, stepUpAt);
+    return { accessToken, stepUpAt };
   }
 
   async getMe(userId: string) {

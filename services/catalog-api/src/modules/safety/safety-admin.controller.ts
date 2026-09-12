@@ -1,7 +1,11 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { StaffPermission } from '@qalago/shared-types';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { Roles } from '../../common/decorators/roles.decorator';
+import {
+  AdminStaffRoute,
+  RequireStaffPermission,
+  RequireStaffStepUp,
+} from '../../common/decorators/require-staff-permission.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import {
   ApplyModerationActionDto,
@@ -25,21 +29,23 @@ export class SafetyAdminController {
     private readonly restricted: RestrictedAdminService,
   ) {}
 
+  @AdminStaffRoute()
+  @RequireStaffPermission(StaffPermission.MODERATION_VIEW)
   @Get('moderation/cases')
-  @Roles(UserRole.ADMIN, UserRole.CITY_ADMIN, UserRole.SUPER_ADMIN, UserRole.MODERATOR)
   listCases(@CurrentUser() user: AuthUser, @Query() query: ListModerationCasesQueryDto) {
     return this.moderation.listCases(user, query);
   }
 
+  @AdminStaffRoute()
+  @RequireStaffPermission(StaffPermission.MODERATION_VIEW)
   @Get('moderation/cases/:id')
-  @Roles(UserRole.ADMIN, UserRole.CITY_ADMIN, UserRole.SUPER_ADMIN, UserRole.MODERATOR)
   async getCase(@CurrentUser() user: AuthUser, @Param('id') id: string) {
-    const row = await this.moderation.assertCanAccessCase(user, id);
-    return row;
+    return this.moderation.assertCanAccessCase(user, id);
   }
 
+  @AdminStaffRoute()
+  @RequireStaffPermission(StaffPermission.MODERATION_ACT)
   @Post('moderation/cases/:id/actions')
-  @Roles(UserRole.ADMIN, UserRole.CITY_ADMIN, UserRole.SUPER_ADMIN, UserRole.MODERATOR)
   applyAction(
     @CurrentUser() user: AuthUser,
     @Param('id') id: string,
@@ -48,14 +54,17 @@ export class SafetyAdminController {
     return this.moderation.applyAction(user, id, dto);
   }
 
+  @AdminStaffRoute()
+  @RequireStaffPermission(StaffPermission.LEGAL_PUBLISH)
+  @RequireStaffStepUp()
   @Post('legal/documents/:id/publish')
-  @Roles(UserRole.SUPER_ADMIN)
   publishLegal(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.legal.publishDocument(user, id);
   }
 
+  @AdminStaffRoute()
+  @RequireStaffPermission(StaffPermission.DATA_RIGHTS_MANAGE)
   @Patch('data-rights/requests/:id/status')
-  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   updateDataRequest(
     @CurrentUser() user: AuthUser,
     @Param('id') id: string,
@@ -64,14 +73,17 @@ export class SafetyAdminController {
     return this.dataRights.updateStatus(user, id, status);
   }
 
+  @AdminStaffRoute()
+  @RequireStaffPermission(StaffPermission.GOVERNMENT_REQUEST_MANAGE)
   @Get('legal/government-requests')
-  @Roles(UserRole.SUPER_ADMIN)
   listGovernment(@CurrentUser() user: AuthUser) {
     return this.restricted.listGovernmentRequests(user);
   }
 
+  @AdminStaffRoute()
+  @RequireStaffPermission(StaffPermission.GOVERNMENT_REQUEST_MANAGE)
+  @RequireStaffStepUp()
   @Patch('legal/government-requests/:id')
-  @Roles(UserRole.SUPER_ADMIN)
   updateGovernment(
     @CurrentUser() user: AuthUser,
     @Param('id') id: string,
@@ -80,20 +92,25 @@ export class SafetyAdminController {
     return this.restricted.updateGovernmentRequest(user, id, dto);
   }
 
+  @AdminStaffRoute()
+  @RequireStaffPermission(StaffPermission.SECURITY_INCIDENT_MANAGE)
   @Get('legal/security-incidents')
-  @Roles(UserRole.SUPER_ADMIN)
   listIncidents(@CurrentUser() user: AuthUser) {
     return this.restricted.listSecurityIncidents(user);
   }
 
+  @AdminStaffRoute()
+  @RequireStaffPermission(StaffPermission.SECURITY_INCIDENT_MANAGE)
+  @RequireStaffStepUp()
   @Post('legal/security-incidents')
-  @Roles(UserRole.SUPER_ADMIN)
   createIncident(@CurrentUser() user: AuthUser, @Body() dto: CreateSecurityIncidentDto) {
     return this.restricted.createSecurityIncident(user, dto);
   }
 
+  @AdminStaffRoute()
+  @RequireStaffPermission(StaffPermission.SECURITY_INCIDENT_MANAGE)
+  @RequireStaffStepUp()
   @Patch('legal/security-incidents/:id')
-  @Roles(UserRole.SUPER_ADMIN)
   updateIncident(
     @CurrentUser() user: AuthUser,
     @Param('id') id: string,

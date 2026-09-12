@@ -1,4 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { isStaffRole } from '@qalago/shared-types';
 import {
   AuditAction,
   AuditResourceType,
@@ -31,6 +32,9 @@ import { GeoService } from '../geo/geo.service';
 import { PlansService } from '../plans/plans.service';
 
 import { AuditLogService } from '../audit-log/audit-log.service';
+import { StaffStepUpService } from '../../common/services/staff-step-up.service';
+import { staffForbidden, StaffAuthErrorCode } from '../../common/errors/staff-auth.errors';
+import { JwtPayload } from '../../common/types/jwt-payload.type';
 
 import { CreateCityDto, UpdateCityDto } from '../cities/dto/city.dto';
 
@@ -79,6 +83,8 @@ export class AdminService {
     private readonly subcategories: SubcategoriesService,
 
     private readonly businessSubcategories: BusinessSubcategoryService,
+
+    private readonly staffStepUp: StaffStepUpService,
 
   ) {}
 
@@ -267,9 +273,13 @@ export class AdminService {
 
   async updateUserRole(actor: AuthUser, id: string, dto: UpdateUserRoleDto) {
     this.systemAccess.assertSuperAdmin(actor);
+    this.staffStepUp.assertRecentStepUp(actor as AuthUser & JwtPayload);
 
     if (actor.id === id) {
-      throw new ForbiddenException('Cannot change your own system role');
+      throw staffForbidden(
+        StaffAuthErrorCode.STAFF_SELF_ROLE_CHANGE_FORBIDDEN,
+        'Cannot change your own system role',
+      );
     }
 
     const target = await this.prisma.user.findUnique({ where: { id } });
@@ -277,54 +287,32 @@ export class AdminService {
       throw new NotFoundException('User not found');
     }
 
-    if (target.role === UserRole.SUPER_ADMIN && dto.role !== UserRole.SUPER_ADMIN) {
-      await this.systemAccess.assertCanDemoteSuperAdmin(target.id);
+    if (isStaffRole(dto.role) || isStaffRole(target.role)) {
+      throw staffForbidden(
+        StaffAuthErrorCode.STAFF_PERMISSION_DENIED,
+        'Staff roles must be changed via /admin/staff',
+      );
     }
 
-    let managedCityId: string | null = null;
-    if (dto.role === UserRole.CITY_ADMIN) {
-      managedCityId = await this.systemAccess.validateCityAdminAssignment(dto.managedCityId);
+    if (dto.role !== UserRole.USER && dto.role !== UserRole.BUSINESS) {
+      throw staffForbidden(
+        StaffAuthErrorCode.STAFF_PERMISSION_DENIED,
+        'Legacy role endpoint only supports USER or BUSINESS',
+      );
     }
 
     return this.prisma.$transaction(async (tx) => {
-      if (
-        dto.role === UserRole.SUPER_ADMIN ||
-        dto.role === UserRole.ADMIN ||
-        dto.role === UserRole.CITY_ADMIN ||
-        dto.role === UserRole.MODERATOR ||
-        dto.role === UserRole.SALES_MANAGER ||
-        dto.role === UserRole.CONTENT_MANAGER ||
-        dto.role === UserRole.FINANCE ||
-        dto.role === UserRole.SUPPORT ||
-        dto.role === UserRole.ANALYST ||
-        dto.role === UserRole.TECH_ADMIN
-      ) {
-        await tx.staffAccess.upsert({
-          where: { userId: id },
-          create: {
-            userId: id,
-            staffRole: dto.role,
-            isActive: true,
-            createdByUserId: actor.id,
-          },
-          update: {
-            staffRole: dto.role,
-            isActive: true,
-            disabledAt: null,
-          },
-        });
-      } else {
-        await tx.staffAccess.updateMany({
-          where: { userId: id },
-          data: { isActive: false, disabledAt: new Date() },
-        });
-      }
+      await tx.staffAccess.updateMany({
+        where: { userId: id },
+        data: { isActive: false, disabledAt: new Date() },
+      });
+      await tx.staffCityScope.deleteMany({ where: { userId: id } });
 
       const updated = await tx.user.update({
         where: { id },
         data: {
           role: dto.role,
-          managedCityId,
+          managedCityId: null,
         },
         select: {
           id: true,
@@ -346,7 +334,7 @@ export class AdminService {
           oldRole: target.role,
           newRole: dto.role,
           oldManagedCityId: target.managedCityId,
-          newManagedCityId: managedCityId,
+          newManagedCityId: null,
         },
         tx,
       });

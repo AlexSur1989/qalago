@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-13 — Stage 6.9.1.1: Staff permission guard & step-up hardening
+
+- `@RequireStaffPermission` / `@AdminStaffRoute` / `@RequireStaffStepUp` on staff admin controllers; legacy `updateUserRole` limited to USER/BUSINESS.
+- JWT staff session binding (`sid`); disabled staff and revoked sessions fail access + refresh immediately.
+- OTP step-up: `POST /auth/staff/step-up`, TTL **600s**; audit `STAFF_STEP_UP_VERIFIED`. **STAFF MFA PENDING.**
+- Docs: `staff-step-up.md`, `staff-roles-inventory.md`, api-contracts staff section.
+
 ## 2026-09-13 — Stage 6.9.1: Staff RBAC & SUPER_ADMIN access foundation
 
 - Added `StaffAccess`, `StaffCityScope`, extended `UserRole` staff roles, staff audit actions, migration `20260913030000_stage_6_9_1_staff_rbac`.

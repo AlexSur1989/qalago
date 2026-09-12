@@ -1,7 +1,13 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
+import { StaffPermission } from '@qalago/shared-types';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
+import {
+  AdminStaffRoute,
+  RequireStaffPermission,
+  RequireStaffStepUp,
+} from '../../common/decorators/require-staff-permission.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import {
   AdminListBusinessesQueryDto,
@@ -22,13 +28,14 @@ import { AdminService } from './admin.service';
 import { SystemAccessService } from '../../common/services/system-access.service';
 
 @Controller('admin')
-@Roles(UserRole.ADMIN, UserRole.CITY_ADMIN)
+@AdminStaffRoute()
 export class AdminController {
   constructor(
     private readonly adminService: AdminService,
     private readonly systemAccess: SystemAccessService,
   ) {}
 
+  @RequireStaffPermission(StaffPermission.BUSINESS_VIEW)
   @Get('businesses')
   listBusinesses(
     @CurrentUser() user: AuthUser,
@@ -37,6 +44,7 @@ export class AdminController {
     return this.adminService.listBusinesses(user, query);
   }
 
+  @RequireStaffPermission(StaffPermission.BUSINESS_EDIT)
   @Patch('businesses/:id/status')
   updateStatus(
     @CurrentUser() user: AuthUser,
@@ -46,6 +54,7 @@ export class AdminController {
     return this.adminService.updateBusinessStatus(user, id, dto);
   }
 
+  @RequireStaffPermission(StaffPermission.BUSINESS_EDIT)
   @Patch('businesses/:id/featured')
   updateFeatured(
     @CurrentUser() user: AuthUser,
@@ -55,6 +64,7 @@ export class AdminController {
     return this.adminService.updateBusinessFeatured(user, id, dto);
   }
 
+  @RequireStaffPermission(StaffPermission.BUSINESS_EDIT)
   @Patch('businesses/:id/plan')
   updatePlan(
     @CurrentUser() user: AuthUser,
@@ -64,7 +74,7 @@ export class AdminController {
     return this.adminService.updateBusinessPlan(user, id, dto);
   }
 
-  @Roles(UserRole.ADMIN)
+  @RequireStaffPermission(StaffPermission.CATEGORY_EDIT)
   @Patch('businesses/:id/taxonomy')
   updateBusinessTaxonomy(
     @CurrentUser() user: AuthUser,
@@ -74,7 +84,7 @@ export class AdminController {
     return this.adminService.updateBusinessTaxonomy(user, id, dto);
   }
 
-  @Roles(UserRole.ADMIN)
+  @RequireStaffPermission(StaffPermission.CATEGORY_VIEW)
   @Get('categories/:categoryId/subcategories')
   listSubcategories(
     @CurrentUser() user: AuthUser,
@@ -83,7 +93,7 @@ export class AdminController {
     return this.adminService.listSubcategories(user, categoryId);
   }
 
-  @Roles(UserRole.ADMIN)
+  @RequireStaffPermission(StaffPermission.CATEGORY_EDIT)
   @Post('categories/:categoryId/subcategories')
   createSubcategory(
     @CurrentUser() user: AuthUser,
@@ -93,7 +103,7 @@ export class AdminController {
     return this.adminService.createSubcategory(user, { ...dto, categoryId });
   }
 
-  @Roles(UserRole.ADMIN)
+  @RequireStaffPermission(StaffPermission.CATEGORY_EDIT)
   @Patch('subcategories/:id')
   updateSubcategory(
     @CurrentUser() user: AuthUser,
@@ -103,26 +113,27 @@ export class AdminController {
     return this.adminService.updateSubcategory(user, id, dto);
   }
 
-  @Roles(UserRole.ADMIN)
+  @RequireStaffPermission(StaffPermission.CATEGORY_EDIT)
   @Patch('subcategories/:id/deactivate')
   deactivateSubcategory(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.adminService.deactivateSubcategory(user, id);
   }
 
-  @Roles(UserRole.SUPER_ADMIN)
+  @RequireStaffPermission(StaffPermission.CATEGORY_EDIT)
+  @RequireStaffStepUp()
   @Delete('subcategories/:id')
   deleteSubcategory(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.adminService.deleteSubcategory(user, id);
   }
 
-  @Roles(UserRole.ADMIN)
+  @RequireStaffPermission(StaffPermission.USER_VIEW)
   @Get('users')
   listUsers(@CurrentUser() user: AuthUser) {
-    this.systemAccess.assertGlobalAdmin(user);
     return this.adminService.listUsers();
   }
 
-  @Roles(UserRole.SUPER_ADMIN)
+  @RequireStaffPermission(StaffPermission.STAFF_ROLE_ASSIGN)
+  @RequireStaffStepUp()
   @Patch('users/:id/role')
   updateUserRole(
     @CurrentUser() user: AuthUser,
@@ -132,6 +143,7 @@ export class AdminController {
     return this.adminService.updateUserRole(user, id, dto);
   }
 
+  @RequireStaffPermission(StaffPermission.MODERATION_VIEW)
   @Get('reviews')
   listReviews(
     @CurrentUser() user: AuthUser,
@@ -140,11 +152,13 @@ export class AdminController {
     return this.adminService.listReviews(user, query);
   }
 
+  @RequireStaffPermission(StaffPermission.MODERATION_ACT)
   @Delete('reviews/:id')
   deleteReview(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.adminService.deleteReview(user, id);
   }
 
+  @RequireStaffPermission(StaffPermission.CATEGORY_VIEW)
   @Get('categories')
   listCategories(
     @CurrentUser() user: AuthUser,
@@ -153,6 +167,7 @@ export class AdminController {
     return this.adminService.listCategories(user, query.citySlug);
   }
 
+  @RequireStaffPermission(StaffPermission.CATEGORY_EDIT)
   @Patch('categories/:id/city-order')
   updateCategoryCityOrder(
     @CurrentUser() user: AuthUser,
@@ -162,6 +177,7 @@ export class AdminController {
     return this.adminService.updateCategoryCityOrder(user, id, dto);
   }
 
+  @RequireStaffPermission(StaffPermission.CATEGORY_EDIT)
   @Patch('categories/:id/city-visibility')
   updateCategoryCityVisibility(
     @CurrentUser() user: AuthUser,
@@ -171,25 +187,27 @@ export class AdminController {
     return this.adminService.updateCategoryCityVisibility(user, id, dto);
   }
 
-  @Roles(UserRole.SUPER_ADMIN)
+  @RequireStaffPermission(StaffPermission.STAFF_VIEW)
   @Get('geo/search')
   searchGeo(@Query() query: GeoSearchQueryDto) {
     return this.adminService.searchGeoPlaces(query.q, query.country ?? 'kz');
   }
 
-  @Roles(UserRole.SUPER_ADMIN)
+  @RequireStaffPermission(StaffPermission.STAFF_VIEW)
   @Get('cities')
   listCitiesAdmin() {
     return this.adminService.listCitiesAdmin();
   }
 
-  @Roles(UserRole.SUPER_ADMIN)
+  @RequireStaffPermission(StaffPermission.STAFF_VIEW)
+  @RequireStaffStepUp()
   @Post('cities')
   createCity(@CurrentUser() user: AuthUser, @Body() dto: CreateCityDto) {
     return this.adminService.createCity(user, dto);
   }
 
-  @Roles(UserRole.SUPER_ADMIN)
+  @RequireStaffPermission(StaffPermission.STAFF_VIEW)
+  @RequireStaffStepUp()
   @Patch('cities/:id')
   updateCity(
     @CurrentUser() user: AuthUser,

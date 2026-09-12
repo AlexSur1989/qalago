@@ -1101,6 +1101,46 @@ Domain errors include stable `code` in body:
 
 ---
 
+## Staff admin & authorization (Stage 6.9.1 / 6.9.1.1)
+
+Staff routes require active `StaffAccess`, permission checks, and (for sensitive mutations) recent step-up.
+
+### Staff management (SUPER_ADMIN permissions)
+
+- `GET /admin/staff` — `STAFF_VIEW`
+- `GET /admin/staff/overview` — `STAFF_VIEW`
+- `GET /admin/staff/:userId` — `STAFF_VIEW`
+- `POST /admin/staff` — `STAFF_CREATE`, `STAFF_ROLE_ASSIGN`, **step-up**
+- `PUT /admin/staff/:userId/role` — `STAFF_ROLE_ASSIGN`, **step-up**
+- `PUT /admin/staff/:userId/city-scopes` — `STAFF_CITY_SCOPE_ASSIGN`, **step-up**
+- `POST /admin/staff/:userId/disable` — `STAFF_DISABLE`, **step-up**
+- `POST /admin/staff/:userId/restore` — `STAFF_UPDATE`, **step-up**
+- `POST /admin/staff/:userId/sessions/revoke-all` — `STAFF_SESSION_REVOKE`, **step-up**
+
+Legacy `PATCH /admin/users/:id/role` — **USER/BUSINESS only**; staff roles must use `/admin/staff`.
+
+### Step-up
+
+- `POST /auth/staff/step-up` — body `{ "code": "<otp>" }`; returns `{ "accessToken", "stepUpAt" }`
+- TTL: **600 seconds** (10 minutes) unless configured via `app.staffStepUpTtlSeconds`
+
+### Staff error codes (403/401 body)
+
+| Code | Meaning |
+|------|---------|
+| `STAFF_ACCESS_REQUIRED` | Not staff / missing staff portal access |
+| `STAFF_ACCESS_DISABLED` | StaffAccess inactive |
+| `STAFF_PERMISSION_DENIED` | Missing permission for action |
+| `STAFF_CITY_SCOPE_DENIED` | CITY_ADMIN outside assigned cities |
+| `STAFF_SELF_ROLE_CHANGE_FORBIDDEN` | Self role/scope change blocked |
+| `STEP_UP_REQUIRED` | Recent OTP step-up required |
+| `STAFF_SESSION_REVOKED` | JWT session binding invalid/revoked |
+| `MFA_REQUIRED` | Reserved (MFA not implemented) |
+
+Access tokens for staff include claim `sid` (AuthSession id) for immediate revocation after disable.
+
+---
+
 ## Health
 
 - `GET /health` — `{ "status": "ok" }`

@@ -1,7 +1,11 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
 import { Public } from '../../common/decorators/public.decorator';
-import { Roles } from '../../common/decorators/roles.decorator';
+import { StaffPermission } from '@qalago/shared-types';
+import {
+  AdminStaffRoute,
+  RequireStaffPermission,
+  RequireStaffStepUp,
+} from '../../common/decorators/require-staff-permission.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { CategoriesService } from './categories.service';
@@ -27,13 +31,16 @@ export class CategoriesController {
     return this.subcategoriesService.listPublicByCategory(categoryId);
   }
 
-  @Roles(UserRole.SUPER_ADMIN)
+  @AdminStaffRoute()
+  @RequireStaffPermission(StaffPermission.CATEGORY_EDIT)
+  @RequireStaffStepUp()
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() dto: CreateCategoryDto) {
     return this.categoriesService.create(user, dto);
   }
 
-  @Roles(UserRole.ADMIN)
+  @AdminStaffRoute()
+  @RequireStaffPermission(StaffPermission.CATEGORY_EDIT)
   @Patch(':id')
   update(
     @CurrentUser() user: AuthUser,
@@ -43,7 +50,9 @@ export class CategoriesController {
     return this.categoriesService.update(user, id, dto);
   }
 
-  @Roles(UserRole.SUPER_ADMIN)
+  @AdminStaffRoute()
+  @RequireStaffPermission(StaffPermission.CATEGORY_EDIT)
+  @RequireStaffStepUp()
   @Delete(':id')
   remove(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.categoriesService.remove(user, id);

@@ -10,6 +10,10 @@ describe('JwtAuthGuard', () => {
   let reflector: { getAllAndOverride: jest.Mock };
   let jwt: { verifyAsync: jest.Mock };
   let prisma: { user: { findUnique: jest.Mock } };
+  let staffSession: {
+    assertStaffAccessActive: jest.Mock;
+    assertStaffSessionActive: jest.Mock;
+  };
 
   const context = (authHeader?: string) => {
     const request: {
@@ -40,11 +44,16 @@ describe('JwtAuthGuard', () => {
         }),
       },
     };
+    staffSession = {
+      assertStaffAccessActive: jest.fn(),
+      assertStaffSessionActive: jest.fn(),
+    };
     guard = new JwtAuthGuard(
       reflector as unknown as Reflector,
       jwt as unknown as JwtService,
       { get: () => 'secret' } as unknown as ConfigService,
       prisma as never,
+      staffSession as never,
     );
   });
 

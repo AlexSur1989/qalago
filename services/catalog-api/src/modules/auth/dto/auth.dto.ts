@@ -51,6 +51,13 @@ export class AppleAuthDto {
   firstLoginDisplayName?: string;
 }
 
+export class StaffStepUpDto {
+  @IsString()
+  @MinLength(4)
+  @MaxLength(6)
+  code!: string;
+}
+
 export class RefreshTokenDto {
   @IsOptional()
   @IsString()
