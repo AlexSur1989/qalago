@@ -1,5 +1,6 @@
 import { BusinessStatus, BusinessPlanTier, BusinessMembershipRole, BusinessMembershipStatus, PrismaClient, PromotionStatus, UserRole } from '@prisma/client';
 import { seedMonetizationCatalog } from './seed-monetization';
+import { seedSubcategories } from './seed-subcategories';
 
 const prisma = new PrismaClient();
 
@@ -1055,6 +1056,8 @@ async function main() {
     });
   }
 
+  const subcategorySeed = await seedSubcategories(prisma);
+
   await seedMonetizationCatalog({ prisma, uralskCityId: city.id });
 
   const qaPlanTiers: Array<{ slug: string; title: string; tier: BusinessPlanTier }> = [
@@ -1113,6 +1116,7 @@ async function main() {
     admin: admin.phone,
     owner: owner.phone,
     categories: categories.length,
+    subcategories: subcategorySeed.upserted,
     businesses: businesses.length + aktobeBusinesses.length,
     promotions: promotions.length,
   });

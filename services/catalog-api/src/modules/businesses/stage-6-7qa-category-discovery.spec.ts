@@ -9,6 +9,7 @@ import { BusinessPublicContentService } from './business-public-content.service'
 import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
 import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
 import { ListBusinessesQueryDto } from './dto/business.dto';
+import { createMockSubcategoryDeps } from '../../test-utils/mock-subcategory-deps';
 import { BusinessCatalogSort } from '../../common/utils/business-catalog-sort.util';
 
 describe('Stage 6.7QA — category discovery adversarial', () => {
@@ -38,6 +39,7 @@ describe('Stage 6.7QA — category discovery adversarial', () => {
   }
 
   function buildService(prisma: PrismaService) {
+    const subDeps = createMockSubcategoryDeps();
     return new BusinessesService(
       prisma,
       cityScope,
@@ -46,6 +48,8 @@ describe('Stage 6.7QA — category discovery adversarial', () => {
       {} as PlanLimitsService,
       {} as BusinessPublicContentService,
       asAuditLogService(createMockAuditLog()),
+      subDeps.businessSubcategories,
+      subDeps.subcategories,
     );
   }
 

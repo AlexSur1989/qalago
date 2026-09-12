@@ -1,6 +1,15 @@
 import { BusinessStatus, BusinessPlanTier, UserRole } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Length, Min } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  Length,
+  Min,
+} from 'class-validator';
 
 export class AdminListBusinessesQueryDto {
   @IsOptional()
@@ -97,4 +106,15 @@ export class UpdateCategoryCityVisibilityDto {
   @Transform(({ value }) => value === true || value === 'true')
   @IsBoolean()
   isHidden!: boolean;
+}
+
+export class UpdateBusinessTaxonomyDto {
+  @IsOptional()
+  @IsString()
+  categoryId?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  subcategoryIds?: string[];
 }

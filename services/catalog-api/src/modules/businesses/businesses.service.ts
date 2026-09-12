@@ -27,6 +27,8 @@ import { AuditLogService } from '../audit-log/audit-log.service';
 import { changedFieldsFromDto, toMembershipRole } from '../audit-log/audit-log.util';
 import { CreateBusinessDto, ListBusinessesQueryDto, UpdateBusinessDto } from './dto/business.dto';
 import { BusinessPublicContentService } from './business-public-content.service';
+import { BusinessSubcategoryService } from './business-subcategory.service';
+import { SubcategoriesService } from '../categories/subcategories.service';
 import { randomBytes } from 'crypto';
 
 const businessListSelect = {
@@ -66,6 +68,8 @@ export class BusinessesService {
     private readonly planLimits: PlanLimitsService,
     private readonly publicContent: BusinessPublicContentService,
     private readonly auditLog: AuditLogService,
+    private readonly businessSubcategories: BusinessSubcategoryService,
+    private readonly subcategories: SubcategoriesService,
   ) {}
 
   /**
@@ -133,6 +137,15 @@ export class BusinessesService {
 
     if (query.categoryId) {
       where.categoryId = query.categoryId;
+    }
+    if (query.subcategoryId) {
+      await this.subcategories.assertSubcategoryFilter(
+        query.subcategoryId,
+        query.categoryId,
+      );
+      where.businessSubcategories = {
+        some: { subcategoryId: query.subcategoryId },
+      };
     }
     if (query.search) {
       where.OR = [
@@ -336,6 +349,8 @@ export class BusinessesService {
       galleryPreview.items,
     );
 
+    const subcategories = await this.businessSubcategories.listForBusiness(id);
+
     return {
       ...business,
       coverImageUrl,
@@ -343,6 +358,7 @@ export class BusinessesService {
       catalogPreview,
       promotionsPreview,
       reviewsPreview,
+      subcategories: subcategories.filter((s) => s.isActive),
     };
   }
 
@@ -450,15 +466,23 @@ export class BusinessesService {
     const access = await this.businessAccess.resolveAccess(user, id);
     const changedKeys = changedFieldsFromDto(dto as Record<string, unknown>);
 
+    const { subcategoryIds, ...patch } = dto;
+
     const updated = await this.prisma.business.update({
       where: { id },
       data: {
-        ...dto,
+        ...patch,
         latitude: dto.latitude !== undefined ? dto.latitude : undefined,
         longitude: dto.longitude !== undefined ? dto.longitude : undefined,
       },
       include: businessDetailInclude,
     });
+
+    await this.businessSubcategories.syncForBusiness(
+      id,
+      updated.categoryId,
+      subcategoryIds,
+    );
 
     const membershipRole = toMembershipRole(access.accessRole);
     const profileChanged = changedKeys.filter((k) => PROFILE_FIELDS.has(k));

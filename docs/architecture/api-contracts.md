@@ -123,7 +123,17 @@ Includes `preferredCity`, and for `CITY_ADMIN` also `managedCity` (city scope fo
 
 ### PATCH /users/me
 
-Body: `{ "name": "string", "preferredCityId": "string?" }`
+Body: `{ "name": "string", "preferredCityId": "string?" }` — does **not** accept `avatarUrl` (server-owned).
+
+Response includes optional `avatarUrl` (path under `/uploads/…`). Stage 6.8C.1.
+
+### POST /users/me/avatar
+
+Multipart `file` (JPEG/PNG/WebP). Session user only. Returns `{ "avatarUrl": "/uploads/…" }`.
+
+### DELETE /users/me/avatar
+
+Removes avatar; `{ "success": true }`.
 
 ### DELETE /users/me
 
@@ -207,7 +217,20 @@ Geocoding via OpenStreetMap Nominatim. Returns city suggestions with coordinates
 
 Query: `citySlug` (optional, default `uralsk`). Returns active categories visible in the city, sorted by city-specific order when set.
 
+### GET /categories/:categoryId/subcategories
+
+Public list of **active** subcategories for a category (`id`, `categoryId`, `slug`, `nameRu`, `nameKk`, `icon`, `sortOrder`). Stage 6.8C.1.
+
+### Admin subcategories (Stage 6.8C.1)
+
+- `GET /admin/categories/:categoryId/subcategories` — all subs (incl. inactive)
+- `POST /admin/categories/:categoryId/subcategories` — body `{ slug, nameRu, nameKk, sortOrder?, icon? }`
+- `PATCH /admin/subcategories/:id` — update / deactivate
+- `PATCH /admin/subcategories/:id/deactivate`
+- `DELETE /admin/subcategories/:id` — SUPER_ADMIN; blocked when businesses assigned
+
 ### Admin
+
 
 - `POST /categories`
 - `PATCH /categories/:id`
@@ -228,6 +251,7 @@ Query:
 |-------|------|
 | page, limit | number |
 | categoryId | string |
+| subcategoryId | string (optional) — filter businesses assigned to subcategory; if `categoryId` also set, sub must belong to category (400 otherwise) |
 | search | string |
 | featured | boolean |
 | status | ACTIVE (public default) |
@@ -244,9 +268,19 @@ When `latitude` and `longitude` are provided, each item may include `distanceMet
 
 List items may include `planTier`, `planExpiresAt`, `featuredSlot`, `isFeatured` for display; these fields are deprecated for catalog ranking. Query param `featured` is ignored on public catalog.
 
+### PATCH /businesses/:id
+
+Owner/manager patch may include optional `subcategoryIds: string[]` (requires `BUSINESS_PROFILE_EDIT`). Empty array clears assignments. Subcategories must belong to business `categoryId`.
+
+### PATCH /admin/businesses/:id/taxonomy
+
+Platform admin: optional `categoryId`, `subcategoryIds`. Reconciles invalid subs on category change.
+
 ### GET /businesses/:id
 
 Public business detail summary (Stage 5G). Returns core business fields plus **bounded previews** — not full collections:
+
+Response includes optional `subcategories[]` (active public shape) when assigned. Stage 6.8C.1.
 
 ```json
 {

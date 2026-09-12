@@ -233,6 +233,26 @@ class AuthNotifier extends Notifier<AuthState> {
     );
   }
 
+  Future<void> uploadAvatar(List<int> bytes, String filename) async {
+    final avatarUrl = await _repo.uploadAvatar(bytes, filename);
+    final current = state.user;
+    if (current != null) {
+      state = state.copyWith(user: current.copyWith(avatarUrl: avatarUrl));
+    } else {
+      await refreshUser();
+    }
+  }
+
+  Future<void> deleteAvatar() async {
+    await _repo.deleteAvatar();
+    final current = state.user;
+    if (current != null) {
+      state = state.copyWith(user: current.copyWith(clearAvatar: true));
+    } else {
+      await refreshUser();
+    }
+  }
+
   Future<void> setPreferredCity({
     required String cityId,
     required String slug,

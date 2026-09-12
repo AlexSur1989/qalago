@@ -264,52 +264,52 @@ enum CityLaunchStatus {
 }
 
 model City {
-  id                   String                @id @default(cuid())
-  slug                 String                @unique
-  nameRu               String
-  nameKk               String?
-  countryCode          String                @default("KZ")
-  centerLat            Decimal?              @db.Decimal(10, 7)
-  centerLng            Decimal?              @db.Decimal(10, 7)
-  timezone             String                @default("Asia/Oral")
-  isActive             Boolean               @default(true)
-  launchStatus         CityLaunchStatus      @default(LIVE)
-  launchDate           DateTime?
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  businesses           Business[]
-  users                User[]                @relation("PreferredCity")
-  cityAdmins           User[]                @relation("ManagedCity")
-  categoryCityOrders   CategoryCityOrder[]
-  adPlacements         AdPlacement[]
-  adPlacementCityConfigs AdPlacementCityConfig[]
-  productPrices        ProductPrice[]
-  adCampaigns          AdCampaign[]
+  id                      String                    @id @default(cuid())
+  slug                    String                    @unique
+  nameRu                  String
+  nameKk                  String?
+  countryCode             String                    @default("KZ")
+  centerLat               Decimal?                  @db.Decimal(10, 7)
+  centerLng               Decimal?                  @db.Decimal(10, 7)
+  timezone                String                    @default("Asia/Oral")
+  isActive                Boolean                   @default(true)
+  launchStatus            CityLaunchStatus          @default(LIVE)
+  launchDate              DateTime?
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
+  businesses              Business[]
+  users                   User[]                    @relation("PreferredCity")
+  cityAdmins              User[]                    @relation("ManagedCity")
+  categoryCityOrders      CategoryCityOrder[]
+  adPlacements            AdPlacement[]
+  adPlacementCityConfigs  AdPlacementCityConfig[]
+  productPrices           ProductPrice[]
+  adCampaigns             AdCampaign[]
   adInventoryReservations AdInventoryReservation[]
-  auditLogs            AuditLog[]
-  businessApplications BusinessApplication[]
-  analyticsEvents      AnalyticsEvent[]
-  featureFlagOverrides CityFeatureFlagOverride[]
+  auditLogs               AuditLog[]
+  businessApplications    BusinessApplication[]
+  analyticsEvents         AnalyticsEvent[]
+  featureFlagOverrides    CityFeatureFlagOverride[]
 }
 
 model AppReleaseSettings {
-  id                    String   @id @default("global")
-  maintenanceEnabled    Boolean  @default(false)
+  id                    String    @id @default("global")
+  maintenanceEnabled    Boolean   @default(false)
   maintenanceMessageRu  String?
   maintenanceMessageKk  String?
   maintenanceEndsAt     DateTime?
-  androidMinimumVersion String   @default("1.0.0")
-  androidLatestVersion  String   @default("1.0.0")
+  androidMinimumVersion String    @default("1.0.0")
+  androidLatestVersion  String    @default("1.0.0")
   androidMinimumBuild   Int?
   androidLatestBuild    Int?
   androidStoreUrl       String?
-  iosMinimumVersion     String   @default("1.0.0")
-  iosLatestVersion      String   @default("1.0.0")
+  iosMinimumVersion     String    @default("1.0.0")
+  iosLatestVersion      String    @default("1.0.0")
   iosMinimumBuild       Int?
   iosLatestBuild        Int?
   iosStoreUrl           String?
-  configRevision        Int      @default(1)
-  updatedAt             DateTime @updatedAt
+  configRevision        Int       @default(1)
+  updatedAt             DateTime  @updatedAt
   updatedByUserId       String?
 }
 
@@ -323,11 +323,11 @@ model FeatureFlagDefinition {
 }
 
 model CityFeatureFlagOverride {
-  id      String @id @default(cuid())
+  id      String  @id @default(cuid())
   cityId  String
   flagKey String
   enabled Boolean
-  city    City   @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  city    City    @relation(fields: [cityId], references: [id], onDelete: Cascade)
 
   @@unique([cityId, flagKey])
   @@index([flagKey])
@@ -338,6 +338,8 @@ model User {
   phone                        String?                  @unique
   email                        String?
   name                         String?
+  /// Server-owned path e.g. /uploads/{uuid}.webp — never client-supplied URL on PATCH.
+  avatarUrl                    String?
   role                         UserRole                 @default(USER)
   isActive                     Boolean                  @default(true)
   preferredCityId              String?
@@ -446,21 +448,51 @@ model OtpCode {
 }
 
 model Category {
-  id                   String                @id @default(cuid())
-  title                String
-  slug                 String                @unique
-  icon                 String?
-  sortOrder            Int                   @default(0)
-  isActive             Boolean               @default(true)
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  businesses           Business[]
-  categoryCityOrders   CategoryCityOrder[]
-  adPlacements         AdPlacement[]
-  productPrices        ProductPrice[]
-  adCampaigns          AdCampaign[]
+  id                      String                   @id @default(cuid())
+  title                   String
+  slug                    String                   @unique
+  icon                    String?
+  sortOrder               Int                      @default(0)
+  isActive                Boolean                  @default(true)
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  businesses              Business[]
+  categoryCityOrders      CategoryCityOrder[]
+  adPlacements            AdPlacement[]
+  productPrices           ProductPrice[]
+  adCampaigns             AdCampaign[]
   adInventoryReservations AdInventoryReservation[]
-  businessApplications BusinessApplication[]
+  businessApplications    BusinessApplication[]
+  subcategories           Subcategory[]
+}
+
+model Subcategory {
+  id         String                @id @default(cuid())
+  categoryId String
+  slug       String
+  nameRu     String
+  nameKk     String
+  icon       String?
+  sortOrder  Int                   @default(0)
+  isActive   Boolean               @default(true)
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+  category   Category              @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  businesses BusinessSubcategory[]
+
+  @@unique([categoryId, slug])
+  @@index([categoryId, isActive])
+}
+
+model BusinessSubcategory {
+  businessId    String
+  subcategoryId String
+  createdAt     DateTime    @default(now())
+  business      Business    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  subcategory   Subcategory @relation(fields: [subcategoryId], references: [id], onDelete: Restrict)
+
+  @@id([businessId, subcategoryId])
+  @@index([subcategoryId])
 }
 
 model CategoryCityOrder {
@@ -528,6 +560,7 @@ model Business {
   auditLogs                 AuditLog[]
   approvedFromApplication   BusinessApplication?            @relation("ApprovedBusinessApplication")
   ownershipClaims           BusinessOwnershipClaim[]
+  businessSubcategories     BusinessSubcategory[]
 
   @@index([cityId, status])
   @@index([categoryId])
@@ -674,20 +707,20 @@ model ServiceItem {
 }
 
 model Promotion {
-  id              String           @id @default(cuid())
-  businessId      String
-  title           String
-  description     String?
-  imageUrl        String?
-  discountText    String?
-  startDate       DateTime?
-  endDate         DateTime?
-  status          PromotionStatus  @default(DRAFT)
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  business        Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  analyticsEvents AnalyticsEvent[]
-  adCampaigns     AdCampaign[]
+  id                      String                   @id @default(cuid())
+  businessId              String
+  title                   String
+  description             String?
+  imageUrl                String?
+  discountText            String?
+  startDate               DateTime?
+  endDate                 DateTime?
+  status                  PromotionStatus          @default(DRAFT)
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  business                Business                 @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  analyticsEvents         AnalyticsEvent[]
+  adCampaigns             AdCampaign[]
   adInventoryReservations AdInventoryReservation[]
 }
 
@@ -842,23 +875,23 @@ model PlanPayment {
 // ---------------------------------------------------------------------------
 
 model AdPlacement {
-  id                 String                @id @default(cuid())
-  code               String                @unique
-  name               String
-  description        String?
-  cityId             String?
-  categoryId         String?
-  maxVisible         Int                   @default(1)
-  maxActiveCampaigns Int                   @default(10)
-  isActive           Boolean               @default(true)
-  createdAt          DateTime              @default(now())
-  updatedAt          DateTime              @updatedAt
-  city               City?                 @relation(fields: [cityId], references: [id], onDelete: SetNull)
-  category           Category?             @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  campaignPlacements AdCampaignPlacement[]
-  productPrices      ProductPrice[]
-  analyticsEvents    AnalyticsEvent[]
-  cityConfigs        AdPlacementCityConfig[]
+  id                    String                   @id @default(cuid())
+  code                  String                   @unique
+  name                  String
+  description           String?
+  cityId                String?
+  categoryId            String?
+  maxVisible            Int                      @default(1)
+  maxActiveCampaigns    Int                      @default(10)
+  isActive              Boolean                  @default(true)
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+  city                  City?                    @relation(fields: [cityId], references: [id], onDelete: SetNull)
+  category              Category?                @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  campaignPlacements    AdCampaignPlacement[]
+  productPrices         ProductPrice[]
+  analyticsEvents       AnalyticsEvent[]
+  cityConfigs           AdPlacementCityConfig[]
   inventoryReservations AdInventoryReservation[]
 
   @@index([cityId, isActive])
@@ -881,15 +914,15 @@ model AdPlacementCityConfig {
 }
 
 model MonetizationProduct {
-  id                    String                  @id @default(cuid())
-  code                  String                  @unique
+  id                    String                   @id @default(cuid())
+  code                  String                   @unique
   name                  String
   description           String?
   type                  MonetizationProductType
-  isActive              Boolean                 @default(true)
-  sortOrder             Int                     @default(0)
-  createdAt             DateTime                @default(now())
-  updatedAt             DateTime                @updatedAt
+  isActive              Boolean                  @default(true)
+  sortOrder             Int                      @default(0)
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
   prices                ProductPrice[]
   orderItems            OrderItem[]
   adCampaigns           AdCampaign[]
@@ -924,23 +957,23 @@ model ProductPrice {
 }
 
 model Order {
-  id             String      @id @default(cuid())
-  orderNumber    String      @unique
-  businessId     String
-  userId         String?
-  status         OrderStatus @default(DRAFT)
-  currency       String      @default("KZT")
-  subtotal       Int         @default(0)
-  discountAmount Int         @default(0)
-  totalAmount    Int         @default(0)
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
-  paidAt         DateTime?
-  cancelledAt    DateTime?
-  business       Business    @relation(fields: [businessId], references: [id], onDelete: Restrict)
-  user           User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
-  items          OrderItem[]
-  payments       Payment[]
+  id                    String                   @id @default(cuid())
+  orderNumber           String                   @unique
+  businessId            String
+  userId                String?
+  status                OrderStatus              @default(DRAFT)
+  currency              String                   @default("KZT")
+  subtotal              Int                      @default(0)
+  discountAmount        Int                      @default(0)
+  totalAmount           Int                      @default(0)
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+  paidAt                DateTime?
+  cancelledAt           DateTime?
+  business              Business                 @relation(fields: [businessId], references: [id], onDelete: Restrict)
+  user                  User?                    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items                 OrderItem[]
+  payments              Payment[]
   inventoryReservations AdInventoryReservation[]
 
   @@index([businessId])
@@ -949,23 +982,23 @@ model Order {
 }
 
 model OrderItem {
-  id              String              @id @default(cuid())
-  orderId         String
-  productId       String
-  quantity        Int                 @default(1)
-  basePrice       Int
-  discountPercent Int                 @default(0)
-  discountAmount  Int                 @default(0)
-  finalPrice      Int
-  durationHours   Int?
-  durationDays    Int?
-  metadata        Json?
-  packageSnapshot Json?
-  lineSnapshot    Json?
-  createdAt       DateTime            @default(now())
-  order           Order               @relation(fields: [orderId], references: [id], onDelete: Restrict)
-  product         MonetizationProduct @relation(fields: [productId], references: [id], onDelete: Restrict)
-  adCampaigns     AdCampaign[]
+  id                    String                   @id @default(cuid())
+  orderId               String
+  productId             String
+  quantity              Int                      @default(1)
+  basePrice             Int
+  discountPercent       Int                      @default(0)
+  discountAmount        Int                      @default(0)
+  finalPrice            Int
+  durationHours         Int?
+  durationDays          Int?
+  metadata              Json?
+  packageSnapshot       Json?
+  lineSnapshot          Json?
+  createdAt             DateTime                 @default(now())
+  order                 Order                    @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  product               MonetizationProduct      @relation(fields: [productId], references: [id], onDelete: Restrict)
+  adCampaigns           AdCampaign[]
   inventoryReservations AdInventoryReservation[]
 
   @@index([orderId])

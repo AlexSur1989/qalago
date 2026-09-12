@@ -21,20 +21,29 @@ import '../data/category_catalog_sort.dart';
 import '../data/category_discovery_strings.dart';
 import '../providers/category_sort_provider.dart';
 import '../utils/category_list_utils.dart';
+import 'category_subcategory_filter.dart';
 
 typedef CategoryBusinessesQuery = ({
   String categoryId,
+  String? subcategoryId,
   CategoryCatalogSort sort,
   double? latitude,
   double? longitude,
 });
 
+typedef CategoryRecommendedQuery = ({
+  String categoryId,
+  String? subcategoryId,
+});
+
 final categoryRecommendedProvider =
-    FutureProvider.family<List<BusinessModel>, String>((ref, categoryId) async {
+    FutureProvider.family<List<BusinessModel>, CategoryRecommendedQuery>(
+        (ref, query) async {
   final city = ref.watch(cityProvider);
   final page = await ref.watch(catalogRepositoryProvider).fetchBusinesses(
         citySlug: city.slug,
-        categoryId: categoryId,
+        categoryId: query.categoryId,
+        subcategoryId: query.subcategoryId,
         sort: CategoryCatalogSort.recommended.apiValue,
         limit: 20,
       );
@@ -48,6 +57,7 @@ final categoryBusinessesProvider =
   return ref.watch(catalogRepositoryProvider).fetchBusinesses(
         citySlug: city.slug,
         categoryId: query.categoryId,
+        subcategoryId: query.subcategoryId,
         sort: query.sort.apiValue,
         latitude: query.latitude,
         longitude: query.longitude,
@@ -78,15 +88,23 @@ class CategoryBusinessesScreen extends ConsumerWidget {
         ? userPosition?.snapped.longitude
         : null;
 
+    final subcategoryId = ref.watch(categorySubcategoryFilterProvider(categoryId));
+
     final businessesAsync = ref.watch(
       categoryBusinessesProvider((
         categoryId: categoryId,
+        subcategoryId: subcategoryId,
         sort: sort,
         latitude: lat,
         longitude: lng,
       )),
     );
-    final recommendedAsync = ref.watch(categoryRecommendedProvider(categoryId));
+    final recommendedAsync = ref.watch(
+      categoryRecommendedProvider((
+        categoryId: categoryId,
+        subcategoryId: subcategoryId,
+      )),
+    );
     final topAdsAsync = ref.watch(
       serveAdsProvider(
         AdServeScope(
@@ -106,7 +124,8 @@ class CategoryBusinessesScreen extends ConsumerWidget {
 
     void refresh() {
       ref.invalidate(categoryBusinessesProvider);
-      ref.invalidate(categoryRecommendedProvider(categoryId));
+      ref.invalidate(categoryRecommendedProvider);
+      ref.invalidate(categorySubcategoriesProvider(categoryId));
       invalidateAdProviders(ref);
     }
 
@@ -159,18 +178,35 @@ class CategoryBusinessesScreen extends ConsumerWidget {
                   .whereType<String>(),
             );
 
-            if (data.items.isEmpty &&
-                recommendedOrganic.isEmpty &&
-                sponsoredAds.isEmpty) {
+            final subFilterActive = subcategoryId != null && subcategoryId.isNotEmpty;
+            final listEmpty =
+                data.items.isEmpty && recommendedOrganic.isEmpty && sponsoredAds.isEmpty;
+
+            if (listEmpty) {
+              final emptyMessage = subFilterActive
+                  ? CategoryDiscoveryStrings.emptySubcategoryFilter
+                  : CategoryDiscoveryStrings.emptyCategory;
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(24),
                 children: [
+                  CategorySubcategoryFilterBar(
+                    categoryId: categoryId,
+                    localeCode: localeCode,
+                  ),
+                  const SizedBox(height: 16),
+                  _CategorySortBar(
+                    sort: sort,
+                    localeCode: localeCode,
+                    onSelected: (value) {
+                      ref.read(categoryCatalogSortProvider.notifier).state = value;
+                    },
+                  ),
                   const SizedBox(height: 80),
                   Center(
                     child: Text(
                       CategoryDiscoveryStrings.sectionTitle(
-                        CategoryDiscoveryStrings.emptyCategory,
+                        emptyMessage,
                         localeCode: localeCode,
                       ),
                       textAlign: TextAlign.center,
@@ -189,6 +225,11 @@ class CategoryBusinessesScreen extends ConsumerWidget {
               ),
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
               children: [
+                CategorySubcategoryFilterBar(
+                  categoryId: categoryId,
+                  localeCode: localeCode,
+                ),
+                const SizedBox(height: 12),
                 _CategorySortBar(
                   sort: sort,
                   localeCode: localeCode,

@@ -30,7 +30,7 @@ export class ReviewsService {
     return this.prisma.review.findMany({
       where: { businessId },
       include: {
-        user: { select: { id: true, name: true } },
+        user: { select: { id: true, name: true, avatarUrl: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -59,7 +59,7 @@ export class ReviewsService {
         rating: dto.rating,
         text: dto.text,
       },
-      include: { user: { select: { id: true, name: true } } },
+      include: { user: { select: { id: true, name: true, avatarUrl: true } } },
     });
 
     if (business.ownerId) {

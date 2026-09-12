@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { BusinessRow, myBusinessRows, ownerApi } from '@/lib/api';
+import { BusinessRow, myBusinessRows, ownerApi, SubcategoryRow } from '@/lib/api';
 import { useAuth } from '@/lib/use-auth';
 import { BusinessShell } from '@/components/business-shell';
 
@@ -36,6 +36,9 @@ export default function BusinessEditPage() {
   });
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [subcategories, setSubcategories] = useState<SubcategoryRow[]>([]);
+  const [selectedSubcategoryIds, setSelectedSubcategoryIds] = useState<string[]>([]);
+  const [taxonomySaved, setTaxonomySaved] = useState(false);
 
   const business = businesses.find((b) => b.id === id) ?? null;
 
@@ -61,11 +64,41 @@ export default function BusinessEditPage() {
           website: b.website ?? '',
           ...hours,
         });
+        const categoryId = b.categoryId ?? b.category?.id;
+        if (categoryId) {
+          const subs = await ownerApi.listSubcategories(categoryId);
+          setSubcategories(subs);
+        } else {
+          setSubcategories([]);
+        }
+        const assigned = (b.subcategories ?? []).map((s) => s.id);
+        setSelectedSubcategoryIds(assigned);
       } catch (err) {
         setError(String(err));
       }
     })();
   }, [token, id]);
+
+  function toggleSubcategory(subId: string) {
+    setSelectedSubcategoryIds((prev) =>
+      prev.includes(subId) ? prev.filter((x) => x !== subId) : [...prev, subId],
+    );
+    setTaxonomySaved(false);
+  }
+
+  async function saveSubcategories() {
+    if (!token) return;
+    setError(null);
+    setTaxonomySaved(false);
+    try {
+      await ownerApi.updateBusiness(token, id, { subcategoryIds: selectedSubcategoryIds });
+      setTaxonomySaved(true);
+      const b = await ownerApi.getBusiness(token, id);
+      setSelectedSubcategoryIds((b.subcategories ?? []).map((s) => s.id));
+    } catch (err) {
+      setError(String(err));
+    }
+  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -137,6 +170,35 @@ export default function BusinessEditPage() {
           </Link>
         </div>
       </section>
+
+      {subcategories.length > 0 && (
+        <section className="form-card form-grid" style={{ maxWidth: 720, marginBottom: 16 }}>
+          <h3 className="form-section-title">Подкатегории</h3>
+          <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: 14 }}>
+            Выберите типы заведения внутри категории — так пользователи быстрее найдут вас в
+            приложении.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {subcategories.map((sub) => {
+              const active = selectedSubcategoryIds.includes(sub.id);
+              return (
+                <button
+                  key={sub.id}
+                  type="button"
+                  className={`btn btn-sm ${active ? 'btn-primary' : ''}`}
+                  onClick={() => toggleSubcategory(sub.id)}
+                >
+                  {sub.nameRu}
+                </button>
+              );
+            })}
+          </div>
+          <button type="button" className="btn btn-primary" onClick={() => void saveSubcategories()}>
+            Сохранить подкатегории
+          </button>
+          {taxonomySaved && <div className="alert alert-success">Подкатегории сохранены</div>}
+        </section>
+      )}
 
       <form onSubmit={onSubmit} className="form-card form-grid" style={{ maxWidth: 720 }}>
         {field('Название', form.title, (v) => setForm({ ...form, title: v }))}

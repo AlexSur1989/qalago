@@ -21,6 +21,41 @@ class CategoryModel {
   );
 }
 
+class SubcategoryModel {
+  SubcategoryModel({
+    required this.id,
+    required this.categoryId,
+    required this.slug,
+    required this.nameRu,
+    required this.nameKk,
+    this.icon,
+    this.sortOrder = 0,
+  });
+
+  final String id;
+  final String categoryId;
+  final String slug;
+  final String nameRu;
+  final String nameKk;
+  final String? icon;
+  final int sortOrder;
+
+  String displayName({String localeCode = 'ru'}) {
+    if (localeCode.startsWith('kk')) return nameKk;
+    return nameRu;
+  }
+
+  factory SubcategoryModel.fromJson(Map<String, dynamic> json) => SubcategoryModel(
+        id: json['id'] as String,
+        categoryId: json['categoryId'] as String,
+        slug: json['slug'] as String,
+        nameRu: json['nameRu'] as String,
+        nameKk: json['nameKk'] as String,
+        icon: json['icon'] as String?,
+        sortOrder: json['sortOrder'] as int? ?? 0,
+      );
+}
+
 class RecommendedBusiness {
   const RecommendedBusiness({
     required this.business,
@@ -128,6 +163,7 @@ class UserModel {
     this.phone,
     this.email,
     this.name,
+    this.avatarUrl,
     required this.role,
     this.preferredCityId,
     this.preferredCitySlug,
@@ -141,6 +177,7 @@ class UserModel {
   final String? phone;
   final String? email;
   final String? name;
+  final String? avatarUrl;
   final String role;
   final String? preferredCityId;
   final String? preferredCitySlug;
@@ -157,6 +194,7 @@ class UserModel {
       phone: json['phone'] as String?,
       email: json['email'] as String?,
       name: json['name'] as String?,
+      avatarUrl: json['avatarUrl'] as String?,
       role: json['role'] as String,
       preferredCityId: json['preferredCityId'] as String? ?? preferredCity?['id'] as String?,
       preferredCitySlug: preferredCity?['slug'] as String?,
@@ -169,6 +207,8 @@ class UserModel {
 
   UserModel copyWith({
     String? name,
+    String? avatarUrl,
+    bool clearAvatar = false,
     String? preferredCityId,
     String? preferredCitySlug,
     String? preferredCityName,
@@ -179,7 +219,9 @@ class UserModel {
     return UserModel(
       id: id,
       phone: phone,
+      email: email,
       name: name ?? this.name,
+      avatarUrl: clearAvatar ? null : (avatarUrl ?? this.avatarUrl),
       role: role,
       preferredCityId: preferredCityId ?? this.preferredCityId,
       preferredCitySlug: preferredCitySlug ?? this.preferredCitySlug,

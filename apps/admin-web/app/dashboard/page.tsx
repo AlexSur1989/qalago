@@ -9,6 +9,7 @@ import {
   AuthUser,
   BusinessRow,
   CategoryRow,
+  SubcategoryAdminRow,
   CityRow,
   EditorialDraft,
   GeoPlaceSuggestion,
@@ -42,6 +43,11 @@ export default function DashboardPage() {
   const [categories, setCategories] = useState<CategoryRow[]>([]);
   const [catTitle, setCatTitle] = useState('');
   const [catSlug, setCatSlug] = useState('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [subcategories, setSubcategories] = useState<SubcategoryAdminRow[]>([]);
+  const [subNameRu, setSubNameRu] = useState('');
+  const [subNameKk, setSubNameKk] = useState('');
+  const [subSlug, setSubSlug] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [contentTopic, setContentTopic] = useState('weekend');
   const [contentDraft, setContentDraft] = useState<EditorialDraft | null>(null);
@@ -282,6 +288,34 @@ export default function DashboardPage() {
     setCatTitle('');
     setCatSlug('');
     setCategories(await adminApi.listCategoriesAdmin(token, citySlug));
+  }
+
+  async function loadSubcategoriesForCategory(categoryId: string) {
+    if (!token) return;
+    setSelectedCategoryId(categoryId);
+    const rows = await adminApi.listSubcategoriesAdmin(token, categoryId);
+    setSubcategories(rows);
+  }
+
+  async function createSubcategory(e: FormEvent) {
+    e.preventDefault();
+    if (!token || !selectedCategoryId) return;
+    if (!subNameRu.trim() || !subNameKk.trim() || !subSlug.trim()) return;
+    await adminApi.createSubcategoryAdmin(token, selectedCategoryId, {
+      nameRu: subNameRu.trim(),
+      nameKk: subNameKk.trim(),
+      slug: subSlug.trim().toLowerCase(),
+    });
+    setSubNameRu('');
+    setSubNameKk('');
+    setSubSlug('');
+    setSubcategories(await adminApi.listSubcategoriesAdmin(token, selectedCategoryId));
+  }
+
+  async function toggleSubcategoryActive(sub: SubcategoryAdminRow) {
+    if (!token || !selectedCategoryId) return;
+    await adminApi.updateSubcategoryAdmin(token, sub.id, { isActive: !sub.isActive });
+    setSubcategories(await adminApi.listSubcategoriesAdmin(token, selectedCategoryId));
   }
 
   async function toggleCategoryActive(category: CategoryRow) {
@@ -872,6 +906,13 @@ export default function DashboardPage() {
                     <td style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                       <button
                         type="button"
+                        className={`btn btn-sm ${selectedCategoryId === c.id ? 'btn-primary' : ''}`}
+                        onClick={() => void loadSubcategoriesForCategory(c.id)}
+                      >
+                        Подкатегории
+                      </button>
+                      <button
+                        type="button"
                         className="btn btn-sm"
                         onClick={() => toggleCategoryCityVisibility(c)}
                       >
@@ -899,6 +940,86 @@ export default function DashboardPage() {
               </tbody>
             </table>
           </section>
+          {selectedCategoryId && (
+            <section className="card">
+              <h2>
+                Подкатегории ·{' '}
+                {categories.find((c) => c.id === selectedCategoryId)?.title ?? selectedCategoryId}
+              </h2>
+              {canEditGlobalCategories && (
+                <form
+                  onSubmit={createSubcategory}
+                  className="form-grid"
+                  style={{ maxWidth: 560, marginBottom: 16 }}
+                >
+                  <input
+                    value={subNameRu}
+                    onChange={(e) => setSubNameRu(e.target.value)}
+                    placeholder="Название (RU)"
+                  />
+                  <input
+                    value={subNameKk}
+                    onChange={(e) => setSubNameKk(e.target.value)}
+                    placeholder="Атауы (KK)"
+                  />
+                  <input
+                    value={subSlug}
+                    onChange={(e) => setSubSlug(e.target.value)}
+                    placeholder="slug, например coffee-shops"
+                  />
+                  <button type="submit" className="btn btn-primary">
+                    Добавить подкатегорию
+                  </button>
+                </form>
+              )}
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>RU</th>
+                    <th>KK</th>
+                    <th>Slug</th>
+                    <th>Порядок</th>
+                    <th>Статус</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {subcategories.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ color: 'var(--text-muted)' }}>
+                        Подкатегорий пока нет
+                      </td>
+                    </tr>
+                  ) : (
+                    subcategories.map((sub) => (
+                      <tr key={sub.id} style={!sub.isActive ? { opacity: 0.65 } : undefined}>
+                        <td>{sub.nameRu}</td>
+                        <td>{sub.nameKk}</td>
+                        <td>{sub.slug}</td>
+                        <td>{sub.sortOrder}</td>
+                        <td>
+                          {sub.isActive ? (
+                            <span className="tag tag-success">Активна</span>
+                          ) : (
+                            <span className="tag tag-muted">Скрыта</span>
+                          )}
+                        </td>
+                        <td>
+                          <button
+                            type="button"
+                            className="btn btn-sm"
+                            onClick={() => void toggleSubcategoryActive(sub)}
+                          >
+                            {sub.isActive ? 'Скрыть' : 'Показать'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </section>
+          )}
         </>
       )}
 

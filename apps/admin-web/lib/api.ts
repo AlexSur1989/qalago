@@ -220,6 +220,45 @@ export const adminApi = {  sendCode: (phone: string) =>
       body: JSON.stringify(data),
     }),
 
+  listSubcategoriesAdmin: (token: string, categoryId: string) =>
+    api<SubcategoryAdminRow[]>(
+      `/admin/categories/${encodeURIComponent(categoryId)}/subcategories`,
+      { token },
+    ),
+
+  createSubcategoryAdmin: (
+    token: string,
+    categoryId: string,
+    data: { slug: string; nameRu: string; nameKk: string; icon?: string; sortOrder?: number },
+  ) =>
+    api<SubcategoryAdminRow>(`/admin/categories/${encodeURIComponent(categoryId)}/subcategories`, {
+      method: 'POST',
+      token,
+      body: JSON.stringify({ ...data, categoryId }),
+    }),
+
+  updateSubcategoryAdmin: (
+    token: string,
+    id: string,
+    data: Partial<{ nameRu: string; nameKk: string; icon: string; sortOrder: number; isActive: boolean }>,
+  ) =>
+    api<SubcategoryAdminRow>(`/admin/subcategories/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      token,
+      body: JSON.stringify(data),
+    }),
+
+  patchBusinessTaxonomy: (
+    token: string,
+    businessId: string,
+    data: { subcategoryIds: string[] },
+  ) =>
+    api<BusinessRow>(`/admin/businesses/${encodeURIComponent(businessId)}/taxonomy`, {
+      method: 'PATCH',
+      token,
+      body: JSON.stringify(data),
+    }),
+
   listReviews: (token: string, citySlug?: string, limit = 50) => {
     const params = new URLSearchParams({ limit: String(limit) });
     if (citySlug) params.set('citySlug', citySlug);
@@ -336,6 +375,19 @@ export type CategoryRow = {
   citySortOrder?: number | null;
   cityIsHidden?: boolean;
   effectiveSortOrder?: number;
+};
+
+export type SubcategoryAdminRow = {
+  id: string;
+  categoryId: string;
+  slug: string;
+  nameRu: string;
+  nameKk: string;
+  icon?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type AdminReviewRow = {

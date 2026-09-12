@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/utils/auth_utils.dart';
 import '../../auth/providers/auth_provider.dart';
+import 'profile_edit_strings.dart';
 import 'profile_helpers.dart';
 
 class ProfileEditScreen extends ConsumerStatefulWidget {
@@ -16,7 +20,9 @@ class ProfileEditScreen extends ConsumerStatefulWidget {
 class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   final _nameController = TextEditingController();
   bool _saving = false;
+  bool _avatarBusy = false;
   bool _initialized = false;
+  static const _localeCode = 'ru';
 
   @override
   void dispose() {
@@ -61,9 +67,133 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     }
   }
 
+  Future<void> _pickAvatar(ImageSource source) async {
+    final picker = ImagePicker();
+    final file = await picker.pickImage(source: source, maxWidth: 1024, maxHeight: 1024);
+    if (file == null || !mounted) return;
+
+    setState(() => _avatarBusy = true);
+    try {
+      final bytes = await file.readAsBytes();
+      await ref.read(authProvider.notifier).uploadAvatar(bytes, file.name);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              ProfileEditStrings.label(
+                ProfileEditStrings.avatarUpdated,
+                localeCode: _localeCode,
+              ),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${ProfileEditStrings.label(ProfileEditStrings.avatarUploadError, localeCode: _localeCode)}: $e',
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _avatarBusy = false);
+    }
+  }
+
+  Future<void> _removeAvatar() async {
+    setState(() => _avatarBusy = true);
+    try {
+      await ref.read(authProvider.notifier).deleteAvatar();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              ProfileEditStrings.label(
+                ProfileEditStrings.avatarRemoved,
+                localeCode: _localeCode,
+              ),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(mapAuthError(e))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _avatarBusy = false);
+    }
+  }
+
+  Future<void> _showAvatarActions(String? avatarUrl) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: Text(
+                  ProfileEditStrings.label(
+                    ProfileEditStrings.fromGallery,
+                    localeCode: _localeCode,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickAvatar(ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera_outlined),
+                title: Text(
+                  ProfileEditStrings.label(
+                    ProfileEditStrings.takePhoto,
+                    localeCode: _localeCode,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickAvatar(ImageSource.camera);
+                },
+              ),
+              if (avatarUrl != null && avatarUrl.isNotEmpty)
+                ListTile(
+                  leading: const Icon(Icons.delete_outline),
+                  title: Text(
+                    ProfileEditStrings.label(
+                      ProfileEditStrings.removePhoto,
+                      localeCode: _localeCode,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _removeAvatar();
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authProvider).user;
+    final avatarUrl = user?.avatarUrl;
+    final resolvedAvatar =
+        avatarUrl != null && avatarUrl.isNotEmpty
+            ? AppConstants.resolveMediaUrl(avatarUrl)
+            : null;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Личные данные')),
@@ -71,25 +201,62 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         padding: const EdgeInsets.all(AppSpacing.screen),
         children: [
           Center(
-            child: CircleAvatar(
-              radius: 48,
-              backgroundColor: AppTheme.kzBlue.withValues(alpha: 0.12),
-              child: Text(
-                (_nameController.text.isNotEmpty
-                        ? _nameController.text
-                        : user?.name ?? 'Q')
-                    .characters
-                    .first
-                    .toUpperCase(),
-                style: const TextStyle(
+            child: Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                CircleAvatar(
+                  radius: 48,
+                  backgroundColor: AppTheme.kzBlue.withValues(alpha: 0.12),
+                  backgroundImage:
+                      resolvedAvatar != null && resolvedAvatar.isNotEmpty
+                          ? NetworkImage(resolvedAvatar)
+                          : null,
+                  child: _avatarBusy
+                      ? const CircularProgressIndicator(strokeWidth: 2)
+                      : (resolvedAvatar == null || resolvedAvatar.isEmpty)
+                          ? Text(
+                              (_nameController.text.isNotEmpty
+                                      ? _nameController.text
+                                      : user?.name ?? 'Q')
+                                  .characters
+                                  .first
+                                  .toUpperCase(),
+                              style: const TextStyle(
+                                color: AppTheme.kzBlue,
+                                fontSize: 36,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            )
+                          : null,
+                ),
+                Material(
                   color: AppTheme.kzBlue,
-                  fontSize: 36,
-                  fontWeight: FontWeight.w900,
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    onTap: _avatarBusy ? null : () => _showAvatarActions(avatarUrl),
+                    child: const Padding(
+                      padding: EdgeInsets.all(8),
+                      child: Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Center(
+            child: TextButton(
+              onPressed: _avatarBusy ? null : () => _showAvatarActions(avatarUrl),
+              child: Text(
+                ProfileEditStrings.label(
+                  ProfileEditStrings.changePhoto,
+                  localeCode: _localeCode,
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 4),
           Center(
             child: Chip(
               label: Text(profileRoleLabel(user?.role ?? 'USER')),

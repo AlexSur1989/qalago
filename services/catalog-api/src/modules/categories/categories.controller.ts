@@ -5,16 +5,26 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { CategoriesService } from './categories.service';
+import { SubcategoriesService } from './subcategories.service';
 import { CreateCategoryDto, ListCategoriesQueryDto, UpdateCategoryDto } from './dto/category.dto';
 
 @Controller('categories')
 export class CategoriesController {
-  constructor(private readonly categoriesService: CategoriesService) {}
+  constructor(
+    private readonly categoriesService: CategoriesService,
+    private readonly subcategoriesService: SubcategoriesService,
+  ) {}
 
   @Public()
   @Get()
   findAll(@Query() query: ListCategoriesQueryDto) {
     return this.categoriesService.findAll({ citySlug: query.citySlug });
+  }
+
+  @Public()
+  @Get(':categoryId/subcategories')
+  listSubcategories(@Param('categoryId') categoryId: string) {
+    return this.subcategoriesService.listPublicByCategory(categoryId);
   }
 
   @Roles(UserRole.SUPER_ADMIN)

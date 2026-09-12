@@ -13,6 +13,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CityScopeService } from '../services/city-scope.service';
 import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
 import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
+import { createMockSubcategoryDeps } from '../../test-utils/mock-subcategory-deps';
 
 describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
   const now = new Date('2026-09-06T12:00:00Z');
@@ -351,6 +352,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
         resolveCoverImageUrl: jest.fn().mockResolvedValue('https://cdn.example/cover.jpg'),
       };
 
+      const subDeps = createMockSubcategoryDeps();
       const businessesService = new BusinessesService(
         prisma,
         { resolveCityId: jest.fn() } as never,
@@ -359,6 +361,8 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
         planLimits,
         publicContent as never,
         asAuditLogService(createMockAuditLog()),
+        subDeps.businessSubcategories,
+        subDeps.subcategories,
       );
 
       const result = await businessesService.findOne('b1');

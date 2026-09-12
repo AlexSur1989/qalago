@@ -21,6 +21,11 @@ class CategoryDiscoveryStrings {
     ru: 'В этой категории пока нет мест',
     kk: 'Бұл санатта әлі орындар жоқ',
   );
+  static const emptySubcategoryFilter = _L10nPair(
+    ru: 'В этой подкатегории пока нет мест',
+    kk: 'Бұл ішкі санатта әлі орындар жоқ',
+  );
+  static const subcategoryAll = _L10nPair(ru: 'Все', kk: 'Барлығы');
   static const nearestNeedsLocation = _L10nPair(
     ru: 'Разрешите доступ к геопозиции, чтобы показать ближайшие места',
     kk: 'Ең жақын орындарды көрсету үшін геопозицияға рұқсат беріңіз',

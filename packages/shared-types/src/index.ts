@@ -54,11 +54,19 @@ export interface CitySummary {
   launchStatus?: 'COMING_SOON' | 'LIVE';
 }
 
+/** Safe public user identity for reviews and member lists. */
+export interface PublicUserDto {
+  id: string;
+  name?: string | null;
+  avatarUrl?: string | null;
+}
+
 export interface UserSummary {
   id: string;
   phone?: string | null;
   email?: string | null;
   name?: string | null;
+  avatarUrl?: string | null;
   role: UserRole;
   preferredCityId?: string | null;
   managedCityId?: string | null;
@@ -166,6 +174,8 @@ export {
   type AppConfigResponseDto,
   type ServiceVersionDto,
 } from './release-config';
+
+export type { SubcategoryPublicDto, SubcategoryAdminDto } from './subcategory';
 
 export {
   BusinessPlanTier,

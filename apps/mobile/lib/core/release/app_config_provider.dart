@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../network/dio_provider.dart';
 import 'app_config_models.dart';
 import 'app_config_repository.dart';
+import 'semver.dart';
 
 final appConfigRepositoryProvider = Provider(
   (ref) => AppConfigRepository(ref.watch(dioProvider)),
@@ -49,4 +50,9 @@ final appReleaseGateProvider =
 final featureFlagsProvider = Provider<Map<String, bool>>((ref) {
   final gate = ref.watch(appReleaseGateProvider).valueOrNull;
   return gate?.config?.featureFlags ?? const {};
+});
+
+final subcategoriesEnabledProvider = Provider<bool>((ref) {
+  final flags = ref.watch(featureFlagsProvider);
+  return flags['subcategoriesEnabled'] == true;
 });

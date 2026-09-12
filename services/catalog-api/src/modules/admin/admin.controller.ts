@@ -13,8 +13,10 @@ import {
   UpdateBusinessStatusDto,
   UpdateCategoryCityOrderDto,
   UpdateCategoryCityVisibilityDto,
+  UpdateBusinessTaxonomyDto,
   UpdateUserRoleDto,
 } from './dto/admin.dto';
+import { CreateSubcategoryDto, UpdateSubcategoryDto } from '../categories/dto/subcategory.dto';
 import { CreateCityDto, UpdateCityDto } from '../cities/dto/city.dto';
 import { AdminService } from './admin.service';
 import { SystemAccessService } from '../../common/services/system-access.service';
@@ -60,6 +62,57 @@ export class AdminController {
     @Body() dto: UpdateBusinessPlanDto,
   ) {
     return this.adminService.updateBusinessPlan(user, id, dto);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Patch('businesses/:id/taxonomy')
+  updateBusinessTaxonomy(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateBusinessTaxonomyDto,
+  ) {
+    return this.adminService.updateBusinessTaxonomy(user, id, dto);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Get('categories/:categoryId/subcategories')
+  listSubcategories(
+    @CurrentUser() user: AuthUser,
+    @Param('categoryId') categoryId: string,
+  ) {
+    return this.adminService.listSubcategories(user, categoryId);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Post('categories/:categoryId/subcategories')
+  createSubcategory(
+    @CurrentUser() user: AuthUser,
+    @Param('categoryId') categoryId: string,
+    @Body() dto: CreateSubcategoryDto,
+  ) {
+    return this.adminService.createSubcategory(user, { ...dto, categoryId });
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Patch('subcategories/:id')
+  updateSubcategory(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateSubcategoryDto,
+  ) {
+    return this.adminService.updateSubcategory(user, id, dto);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Patch('subcategories/:id/deactivate')
+  deactivateSubcategory(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.adminService.deactivateSubcategory(user, id);
+  }
+
+  @Roles(UserRole.SUPER_ADMIN)
+  @Delete('subcategories/:id')
+  deleteSubcategory(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.adminService.deleteSubcategory(user, id);
   }
 
   @Roles(UserRole.ADMIN)

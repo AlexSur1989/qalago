@@ -27,6 +27,15 @@
 
 ---
 
+## 2026-09-12 — Stage 6.8C.1: Subcategories & user profile photo
+
+- Prisma: `Subcategory`, `BusinessSubcategory`, `User.avatarUrl`; idempotent seed taxonomy (RU/KK).
+- Feature flag `subcategoriesEnabled` (global OFF); public/admin subcategory APIs; business filter `subcategoryId`.
+- User avatar POST/DELETE `/users/me/avatar` with sharp WebP normalize and upload hardening.
+- Mobile category chips + profile avatar; Admin/Business web taxonomy editors.
+- Docs: `docs/catalog/stage-6-8c-1-subcategories-and-user-avatar.md`.
+- Future: subcategory ad targeting, 6.8D OAuth avatars, enable flag per city rollout.
+
 ## 2026-09-12 — Stage 6.8C: Release architecture foundation
 
 - Shared release types; semver/update-mode utilities; `GET /app-config` and `/version`.

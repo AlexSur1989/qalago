@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'app_config_models.dart';
 import 'app_config_provider.dart';
+import 'semver.dart';
 import 'release_gate_screens.dart';
 
 class AppReleaseShell extends ConsumerStatefulWidget {

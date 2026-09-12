@@ -58,6 +58,8 @@ describe('AdminService.updateUserRole (Stage 5M.4)', () => {
       {} as never,
       auditLog as never,
       systemAccess as never,
+      {} as never,
+      {} as never,
     );
   });
 

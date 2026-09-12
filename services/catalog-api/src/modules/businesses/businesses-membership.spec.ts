@@ -7,6 +7,7 @@ import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { BusinessPublicContentService } from './business-public-content.service';
 import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
 import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
+import { createMockSubcategoryDeps } from '../../test-utils/mock-subcategory-deps';
 
 describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
   const cityScope = {
@@ -39,6 +40,7 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
       category: { findUnique: jest.fn().mockResolvedValue({ id: 'cat-1' }) },
     } as unknown as PrismaService;
 
+    const subDeps = createMockSubcategoryDeps();
     const service = new BusinessesService(
       prisma,
       cityScope,
@@ -47,6 +49,8 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
       {} as PlanLimitsService,
       {} as BusinessPublicContentService,
       asAuditLogService(createMockAuditLog()),
+      subDeps.businessSubcategories,
+      subDeps.subcategories,
     );
 
     return { service, prisma, tx, membership };

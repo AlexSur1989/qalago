@@ -97,6 +97,18 @@ export type BusinessRow = {
   city?: { slug: string; nameRu: string } | null;
   categoryId?: string;
   category?: { id: string; slug: string; title: string } | null;
+  subcategories?: SubcategoryRow[];
+};
+
+export type SubcategoryRow = {
+  id: string;
+  categoryId: string;
+  slug: string;
+  nameRu: string;
+  nameKk: string;
+  icon?: string | null;
+  sortOrder?: number;
+  isActive?: boolean;
 };
 
 export type PlanDisplayRow = {
@@ -665,6 +677,9 @@ export const ownerApi = {
     }),
 
   listCategories: () => api<CategoryRow[]>('/categories'),
+
+  listSubcategories: (categoryId: string) =>
+    api<SubcategoryRow[]>(`/categories/${encodeURIComponent(categoryId)}/subcategories`),
 
   listCities: () => api<CityRow[]>('/cities'),
 

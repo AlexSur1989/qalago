@@ -1,5 +1,6 @@
 import { Transform, Type } from 'class-transformer';
 import {
+  IsArray,
   IsBoolean,
   IsEnum,
   IsInt,
@@ -62,6 +63,10 @@ export class ListBusinessesQueryDto {
   @IsOptional()
   @IsString()
   categoryId?: string;
+
+  @IsOptional()
+  @IsString()
+  subcategoryId?: string;
 
   @IsOptional()
   @IsString()
@@ -158,4 +163,10 @@ export class UpdateBusinessDto {
   @IsOptional()
   @IsObject()
   workHours?: Record<string, string>;
+
+  /** Optional multi-select; empty array clears assignments. */
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  subcategoryIds?: string[];
 }

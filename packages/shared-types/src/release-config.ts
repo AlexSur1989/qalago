@@ -28,6 +28,7 @@ export const FEATURE_FLAG_KEYS = [
   'analyticsEnabled',
   'googleAuthEnabled',
   'appleAuthEnabled',
+  'subcategoriesEnabled',
 ] as const;
 
 export type FeatureFlagKey = (typeof FEATURE_FLAG_KEYS)[number];

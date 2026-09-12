@@ -109,6 +109,19 @@ class AuthRepository {
     return UserModel.fromJson(response.data as Map<String, dynamic>);
   }
 
+  Future<String> uploadAvatar(List<int> bytes, String filename) async {
+    final formData = FormData.fromMap({
+      'file': MultipartFile.fromBytes(bytes, filename: filename),
+    });
+    final response = await _dio.post('/users/me/avatar', data: formData);
+    final data = response.data as Map<String, dynamic>;
+    return data['avatarUrl'] as String;
+  }
+
+  Future<void> deleteAvatar() async {
+    await _dio.delete('/users/me/avatar');
+  }
+
   Future<Map<String, dynamic>> deleteAccount() async {
     final response = await _dio.delete('/users/me');
     return response.data as Map<String, dynamic>;
@@ -140,6 +153,7 @@ class CatalogRepository {
     required String citySlug,
     String? search,
     String? categoryId,
+    String? subcategoryId,
     bool? featured,
     double? latitude,
     double? longitude,
@@ -153,6 +167,7 @@ class CatalogRepository {
         'citySlug': citySlug,
         if (search != null && search.isNotEmpty) 'search': search,
         if (categoryId != null) 'categoryId': categoryId,
+        if (subcategoryId != null && subcategoryId.isNotEmpty) 'subcategoryId': subcategoryId,
         if (featured == true) 'featured': 'true',
         if (latitude != null) 'latitude': latitude,
         if (longitude != null) 'longitude': longitude,
@@ -162,6 +177,13 @@ class CatalogRepository {
       },
     );
     return PaginatedBusinesses.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<List<SubcategoryModel>> fetchSubcategories(String categoryId) async {
+    final response = await _dio.get('/categories/$categoryId/subcategories');
+    return (response.data as List<dynamic>)
+        .map((e) => SubcategoryModel.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<List<MyBusinessEntry>> fetchMyBusinesses() async {

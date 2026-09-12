@@ -20,6 +20,9 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
 import { CategoriesService } from '../categories/categories.service';
+import { SubcategoriesService } from '../categories/subcategories.service';
+import { BusinessSubcategoryService } from '../businesses/business-subcategory.service';
+import { CreateSubcategoryDto, UpdateSubcategoryDto } from '../categories/dto/subcategory.dto';
 
 import { CitiesService } from '../cities/cities.service';
 
@@ -42,6 +45,7 @@ import {
 
   UpdateCategoryCityOrderDto,
   UpdateCategoryCityVisibilityDto,
+  UpdateBusinessTaxonomyDto,
   UpdateUserRoleDto,
 
 } from './dto/admin.dto';
@@ -71,6 +75,10 @@ export class AdminService {
     private readonly auditLog: AuditLogService,
 
     private readonly systemAccess: SystemAccessService,
+
+    private readonly subcategories: SubcategoriesService,
+
+    private readonly businessSubcategories: BusinessSubcategoryService,
 
   ) {}
 
@@ -465,6 +473,56 @@ export class AdminService {
 
   searchGeoPlaces(query: string, country = 'kz') {
     return this.geo.searchCities(query, country);
+  }
+
+  listSubcategories(_user: AuthUser, categoryId: string) {
+    return this.subcategories.listAdminByCategory(categoryId);
+  }
+
+  createSubcategory(user: AuthUser, dto: CreateSubcategoryDto) {
+    return this.subcategories.create(user, dto);
+  }
+
+  updateSubcategory(user: AuthUser, id: string, dto: UpdateSubcategoryDto) {
+    return this.subcategories.update(user, id, dto);
+  }
+
+  deactivateSubcategory(user: AuthUser, id: string) {
+    return this.subcategories.deactivate(user, id);
+  }
+
+  deleteSubcategory(user: AuthUser, id: string) {
+    return this.subcategories.remove(user, id);
+  }
+
+  async updateBusinessTaxonomy(user: AuthUser, businessId: string, dto: UpdateBusinessTaxonomyDto) {
+    this.systemAccess.assertGlobalAdmin(user);
+    const business = await this.ensureBusiness(businessId);
+
+    let categoryId = business.categoryId;
+    if (dto.categoryId && dto.categoryId !== business.categoryId) {
+      const category = await this.prisma.category.findUnique({ where: { id: dto.categoryId } });
+      if (!category) {
+        throw new NotFoundException('Category not found');
+      }
+      categoryId = dto.categoryId;
+      await this.prisma.business.update({
+        where: { id: businessId },
+        data: { categoryId },
+      });
+    }
+
+    if (dto.subcategoryIds !== undefined) {
+      await this.businessSubcategories.syncForBusiness(
+        businessId,
+        categoryId,
+        dto.subcategoryIds,
+      );
+    } else if (dto.categoryId) {
+      await this.businessSubcategories.reconcileAfterCategoryChange(businessId, categoryId);
+    }
+
+    return this.businessSubcategories.listForBusiness(businessId);
   }
 
   private async ensureBusiness(id: string) {

@@ -54,6 +54,9 @@ export function getRequiredPermissionsForPatch(dto: UpdateBusinessDto): Business
     if (HOURS_FIELDS.has(key)) {
       required.add(BusinessPermission.BUSINESS_HOURS_EDIT);
     }
+    if (key === 'subcategoryIds') {
+      required.add(BusinessPermission.BUSINESS_PROFILE_EDIT);
+    }
   }
   return [...required];
 }

@@ -6,6 +6,7 @@ import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { BusinessPublicContentService } from './business-public-content.service';
 import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
 import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
+import { createMockSubcategoryDeps } from '../../test-utils/mock-subcategory-deps';
 
 describe('BusinessesService.findAll', () => {
   const cityScope = {
@@ -22,6 +23,7 @@ describe('BusinessesService.findAll', () => {
   const serviceMenuService = {} as BusinessPublicContentService;
   const planLimits = {} as PlanLimitsService;
   const publicContent = {} as BusinessPublicContentService;
+  const subDeps = createMockSubcategoryDeps();
   const service = new BusinessesService(
     prisma,
     cityScope,
@@ -30,6 +32,8 @@ describe('BusinessesService.findAll', () => {
     planLimits,
     publicContent,
     asAuditLogService(createMockAuditLog()),
+    subDeps.businessSubcategories,
+    subDeps.subcategories,
   );
 
   const category = { id: 'cat-1', title: 'Кафе', slug: 'cafe', icon: null };
@@ -210,6 +214,7 @@ describe('BusinessesService.recommended', () => {
     business: { findMany: jest.fn() },
   } as unknown as PrismaService;
 
+  const subDeps2 = createMockSubcategoryDeps();
   const service = new BusinessesService(
     prisma,
     cityScope,
@@ -218,6 +223,8 @@ describe('BusinessesService.recommended', () => {
     {} as PlanLimitsService,
     {} as BusinessPublicContentService,
     asAuditLogService(createMockAuditLog()),
+    subDeps2.businessSubcategories,
+    subDeps2.subcategories,
   );
 
   const category = { id: 'cat-1', title: 'Кафе', slug: 'cafe', icon: null };

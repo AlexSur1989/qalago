@@ -13,6 +13,7 @@ export const FEATURE_FLAG_SAFE_DEFAULTS: Record<FeatureFlagKey, boolean> = {
   analyticsEnabled: true,
   googleAuthEnabled: false,
   appleAuthEnabled: false,
+  subcategoriesEnabled: false,
 };
 
 export const FEATURE_FLAG_SEED: Array<{
@@ -31,4 +32,9 @@ export const FEATURE_FLAG_SEED: Array<{
   { key: 'analyticsEnabled', globalEnabled: true, description: 'Owner analytics ingest' },
   { key: 'googleAuthEnabled', globalEnabled: false, description: 'Google sign-in (6.8D)' },
   { key: 'appleAuthEnabled', globalEnabled: false, description: 'Apple sign-in (6.8D)' },
+  {
+    key: 'subcategoriesEnabled',
+    globalEnabled: false,
+    description: 'Category subcategory chips and filters (6.8C.1)',
+  },
 ];
