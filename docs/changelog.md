@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-13 — Stage 6.9.2.1: Admin Reports UI & executive dashboard
+
+- Admin-web `/reports/*` — KPI cards, filters (URL query), recharts, role-aware nav, export UX, no raw JSON for operators.
+- Docs: `docs/admin/reporting-ui.md`.
+
 ## 2026-09-13 — Stage 6.9.2: Admin reporting & staff oversight foundation
 
 - `REPORT_*` permissions in `@qalago/shared-types`; module `services/catalog-api/src/modules/admin-reporting/` (scope, query, read-only endpoints, CSV export).

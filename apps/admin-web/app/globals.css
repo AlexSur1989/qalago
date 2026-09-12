@@ -989,3 +989,237 @@ select {
   max-height: 320px;
   overflow: auto;
 }
+
+.report-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.report-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 1rem 0;
+}
+
+.report-sidebar-head {
+  padding: 0 1rem 0.75rem;
+}
+
+.report-sidebar-head h2 {
+  margin: 0.5rem 0 0;
+  font-size: 1.1rem;
+}
+
+.report-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.report-nav-item {
+  display: block;
+  padding: 0.55rem 1rem;
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.report-nav-item:hover,
+.report-nav-item.active {
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.report-main {
+  flex: 1;
+  padding: 1.5rem 2rem;
+  max-width: 1200px;
+}
+
+.report-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.report-page-header h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.45rem;
+}
+
+.report-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.report-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+
+.report-kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+}
+
+.report-kpi-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.report-kpi-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.report-kpi-change {
+  font-size: 0.75rem;
+  margin-top: 6px;
+  color: var(--success);
+}
+
+.report-kpi-change-neutral {
+  color: var(--text-muted);
+}
+
+.report-unsupported {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.report-filter-bar {
+  margin-bottom: 1.25rem;
+}
+
+.report-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.report-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.report-filter-field input,
+.report-filter-field select {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  min-width: 140px;
+}
+
+.report-filter-error {
+  color: var(--danger);
+  font-size: 0.85rem;
+  margin: 8px 0 0;
+}
+
+.report-section {
+  margin-bottom: 1.25rem;
+}
+
+.report-section-title {
+  margin: 0 0 12px;
+  font-size: 1rem;
+}
+
+.report-state {
+  padding: 2rem 1rem;
+  text-align: center;
+  border-radius: var(--radius);
+  border: 1px dashed var(--border);
+}
+
+.report-skeleton-row {
+  height: 48px;
+  background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
+  background-size: 200% 100%;
+  animation: report-shimmer 1.2s infinite;
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+}
+
+@keyframes report-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.report-table-scroll {
+  overflow-x: auto;
+}
+
+.report-chart {
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 900px) {
+  .report-layout {
+    flex-direction: column;
+  }
+
+  .report-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .report-main {
+    padding: 1rem;
+  }
+}
+
+.report-anomaly-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.report-anomaly-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.report-badge {
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+
+.report-badge--neutral {
+  color: var(--text-muted);
+  background: var(--surface-muted, #f4f4f5);
+}

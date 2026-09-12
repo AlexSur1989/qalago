@@ -1,12 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/use-auth';
-import { fetchReport } from '@/lib/reports-api';
-import { canViewReport, type ReportNavId } from '@/lib/report-rbac';
+import { useEffect } from 'react';
+import { reportHref, type ReportNavId } from '@/lib/report-rbac';
 
-const SLUGS: ReportNavId[] = [
+const SLUGS = new Set<ReportNavId>([
   'users',
   'businesses',
   'cities',
@@ -23,45 +21,20 @@ const SLUGS: ReportNavId[] = [
   'audit',
   'security',
   'system',
-];
+]);
 
-export default function ReportDetailPage() {
+export default function LegacyReportSlugRedirect() {
   const params = useParams();
-  const slug = String(params.slug ?? '') as ReportNavId;
   const router = useRouter();
-  const { token, user } = useAuth();
-  const [data, setData] = useState<unknown>(null);
-  const [error, setError] = useState<string | null>(null);
+  const slug = String(params.slug ?? '');
 
   useEffect(() => {
-    if (!user) return;
-    if (!SLUGS.includes(slug) || !canViewReport(user.role, slug)) {
+    if (SLUGS.has(slug as ReportNavId)) {
+      router.replace(reportHref(slug as ReportNavId));
+    } else {
       router.replace('/reports');
     }
-  }, [user, slug, router]);
+  }, [slug, router]);
 
-  useEffect(() => {
-    if (!token || !user || !canViewReport(user.role, slug)) return;
-    fetchReport(token, slug)
-      .then(setData)
-      .catch((e) => setError(String(e)));
-  }, [token, user, slug]);
-
-  if (!user || !canViewReport(user.role, slug)) {
-    return null;
-  }
-
-  return (
-    <div className="page-stack">
-      <h1>Отчёт: {slug}</h1>
-      {error ? <p className="tag tag-danger">{error}</p> : null}
-      {data ? (
-        <pre className="code-block" style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>
-          {JSON.stringify(data, null, 2)}
-        </pre>
-      ) : (
-        <p className="muted">Загрузка…</p>
-      )}
-    </div>
-  );
+  return null;
 }

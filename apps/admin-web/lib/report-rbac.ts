@@ -67,3 +67,12 @@ export function canViewReport(role: string, reportId: ReportNavId): boolean {
 export function visibleReportNav(role: string) {
   return REPORT_NAV.filter((item) => canViewReport(role, item.id));
 }
+
+export function reportHref(id: ReportNavId): string {
+  if (id === 'overview') return '/reports';
+  return `/reports/${id}`;
+}
+
+export function canExportReports(role: string): boolean {
+  return staffRoleHasPermission(role as UserRole, StaffPermission.REPORT_EXPORT);
+}

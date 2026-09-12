@@ -10,7 +10,7 @@ SUPER_ADMIN-only reporting for governance (read-only):
 
 - Tokens, MFA secrets, passwords, provider tokens.
 - **MFA compliance metrics** — not implemented; responses may include `mfaStatus: NOT_IMPLEMENTED`.
-
+- Admin UI staff detail shows: **«MFA: не настроено — функция ещё не внедрена»** (no “protected” MFA state).
 ## Related
 
 - Staff mutation APIs remain `/admin/staff/*` with step-up where required.

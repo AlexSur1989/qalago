@@ -1,37 +1,45 @@
 'use client';
 
+import { OverviewDashboard } from '@/components/reports/OverviewDashboard';
+import type { OverviewReport } from '@/lib/reporting/types';
+import { useReportPage } from '@/lib/reporting/use-report-page';
+import { ReportPageShell } from '@/components/reports/ReportPageShell';
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/lib/use-auth';
-import { fetchReport } from '@/lib/reports-api';
-import { canViewReport } from '@/lib/report-rbac';
+import { adminApi, CityRow } from '@/lib/api';
+
+function OverviewView({ data, loading }: { data: OverviewReport | null; loading: boolean }) {
+  return <OverviewDashboard data={data} loading={loading} />;
+}
 
 export default function ReportsOverviewPage() {
-  const { token, user } = useAuth();
-  const [data, setData] = useState<Record<string, unknown> | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const state = useReportPage<OverviewReport>('overview');
+  const [cities, setCities] = useState<CityRow[]>([]);
 
   useEffect(() => {
-    if (!token || !user || !canViewReport(user.role, 'overview')) return;
-    fetchReport(token, 'overview')
-      .then((res) => setData(res as Record<string, unknown>))
-      .catch((e) => setError(String(e)));
-  }, [token, user]);
-
-  if (!user || !canViewReport(user.role, 'overview')) {
-    return <p className="tag tag-danger">Нет доступа к обзору</p>;
-  }
+    if (!state.token) return;
+    adminApi.listCitiesAdmin(state.token).then(setCities).catch(() => setCities([]));
+  }, [state.token]);
 
   return (
-    <div className="page-stack">
-      <h1>Обзор платформы</h1>
-      {error ? <p className="tag tag-danger">{error}</p> : null}
-      {data ? (
-        <pre className="code-block" style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>
-          {JSON.stringify(data, null, 2)}
-        </pre>
-      ) : (
-        <p className="muted">Загрузка…</p>
-      )}
-    </div>
+    <ReportPageShell
+      title="Обзор платформы"
+      description="Сводные KPI по доступным для вашей роли разделам."
+      user={state.user}
+      allowed={state.allowed}
+      ready={state.ready}
+      loading={state.loading}
+      error={state.error}
+      forbidden={state.forbidden}
+      validationError={state.validationError}
+      params={state.params}
+      setParams={state.setParams}
+      refresh={state.refresh}
+      updatedAt={state.updatedAt}
+      cities={cities}
+      exportReportKey="overview"
+      token={state.token}
+    >
+      <OverviewView data={state.data} loading={state.loading} />
+    </ReportPageShell>
   );
 }

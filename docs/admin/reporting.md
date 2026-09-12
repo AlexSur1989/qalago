@@ -51,4 +51,4 @@ Prefer `AnalyticsDailyMetric` / `AnalyticsDailyDimensionMetric` and Prisma aggre
 - Export audit uses `PLAN_CHECKOUT` action with `metadata.reportExport` until dedicated audit enum exists.
 - Redis/queue health placeholders.
 
-See also: [report-access-matrix.md](./report-access-matrix.md), [staff-oversight.md](../security/staff-oversight.md).
+See also: [report-access-matrix.md](./report-access-matrix.md), [reporting-ui.md](./reporting-ui.md), [staff-oversight.md](../security/staff-oversight.md).

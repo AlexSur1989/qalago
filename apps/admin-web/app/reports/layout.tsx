@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode, useEffect } from 'react';
 import { canAccessAdminWeb } from '@/lib/rbac';
-import { visibleReportNav } from '@/lib/report-rbac';
+import { reportHref, visibleReportNav } from '@/lib/report-rbac';
 import { useAuth } from '@/lib/use-auth';
 
 export default function ReportsLayout({ children }: { children: ReactNode }) {
@@ -23,29 +23,36 @@ export default function ReportsLayout({ children }: { children: ReactNode }) {
   if (!ready || !user) return null;
 
   return (
-    <div className="shell" style={{ minHeight: '100vh' }}>
-      <aside className="sidebar" style={{ width: 240 }}>
-        <div className="sidebar-brand">
+    <div className="report-layout">
+      <aside className="report-sidebar">
+        <div className="report-sidebar-head">
           <Link href="/dashboard" className="text-link">
             ← Панель
           </Link>
+          <h2>Отчёты</h2>
         </div>
-        <h2 style={{ fontSize: '1rem', padding: '0 1rem' }}>Отчёты</h2>
-        <nav className="sidebar-nav">
-          {nav.map((item) => (
+        <nav className="report-sidebar-nav">
+          {nav.map((item) => {
+            const href = reportHref(item.id);
+            const active =
+              pathname === href || (item.id !== 'overview' && pathname.startsWith(href));
+            return (
+              <Link key={item.id} href={href} className={`report-nav-item${active ? ' active' : ''}`}>
+                {item.label}
+              </Link>
+            );
+          })}
+          {nav.some((n) => n.id === 'staff') ? (
             <Link
-              key={item.id}
-              href={item.id === 'overview' ? '/reports' : `/reports/${item.id}`}
-              className={`nav-item${pathname === (item.id === 'overview' ? '/reports' : `/reports/${item.id}`) ? ' active' : ''}`}
+              href="/reports/staff/anomalies"
+              className={`report-nav-item${pathname.includes('/staff/anomalies') ? ' active' : ''}`}
             >
-              {item.label}
+              Аномалии staff
             </Link>
-          ))}
+          ) : null}
         </nav>
       </aside>
-      <main className="page-content" style={{ flex: 1, padding: '1.5rem' }}>
-        {children}
-      </main>
+      <main className="report-main">{children}</main>
     </div>
   );
 }
