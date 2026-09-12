@@ -9,6 +9,8 @@ import {
   Prisma,
 } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
+import { StaffPolicyService } from '../../common/services/staff-policy.service';
+import { StaffPermission } from '../../common/utils/staff-access.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { AvailabilityService } from './availability.service';
@@ -69,6 +71,7 @@ export class OrderService {
     private readonly purchaseIntegrity: PurchaseIntegrityService,
     private readonly packageSnapshot: PackageSnapshotService,
     private readonly inventoryReservation: InventoryReservationService,
+    private readonly staffPolicy: StaffPolicyService,
   ) {}
 
   async createOrder(user: AuthUser, dto: CreateOrderDto) {
@@ -795,6 +798,7 @@ export class OrderService {
   }
 
   async confirmManualPayment(user: AuthUser, paymentId: string) {
+    this.staffPolicy.assertPermission(user, StaffPermission.PAYMENT_CONFIRM);
     const payment = await this.access.assertAdminPaymentAccess(user, paymentId);
 
     if (payment.status === PaymentStatus.PAID) {

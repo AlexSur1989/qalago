@@ -27,6 +27,14 @@
 
 ---
 
+## 2026-09-13 — Stage 6.9.1: Staff RBAC & SUPER_ADMIN access foundation
+
+- Added `StaffAccess`, `StaffCityScope`, extended `UserRole` staff roles, staff audit actions, migration `20260913030000_stage_6_9_1_staff_rbac`.
+- Central permission registry in `@qalago/shared-types` (`staff-permissions.ts`); staff admin API `/admin/staff/*` (SUPER_ADMIN); admin-web `/staff`.
+- Hardened bootstrap CLI + `StaffAccess` sync; payment confirm requires `PAYMENT_CONFIRM`; moderation business restore preserves pre-hide status.
+- Docs: `docs/security/staff-rbac.md`, `super-admin-bootstrap.md`, `admin-access.md`.
+- Future: MFA/step-up enforcement, broader `@RequireStaffPermission` on all admin routes.
+
 ## 2026-09-12 — Stage 6.9: Legal, safety & moderation foundation
 
 - Backend: legal documents/acceptance, data-rights requests, content reports, moderation cases/actions/appeals, government requests & security incidents (SUPER_ADMIN), account deletion hardening (sessions, avatar, ownership code).

@@ -18,7 +18,12 @@ import { MonetizationService } from './monetization.service';
 import { OrderService } from './order.service';
 
 @Controller('admin/monetization')
-@Roles(UserRole.ADMIN, UserRole.CITY_ADMIN)
+@Roles(
+  UserRole.ADMIN,
+  UserRole.CITY_ADMIN,
+  UserRole.FINANCE,
+  UserRole.SALES_MANAGER,
+)
 export class MonetizationAdminController {
   constructor(
     private readonly orderService: OrderService,

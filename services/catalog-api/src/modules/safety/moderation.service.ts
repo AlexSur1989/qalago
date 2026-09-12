@@ -16,6 +16,10 @@ import {
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { isGlobalAdmin } from '../../common/utils/system-access.util';
+import {
+  StaffPermission,
+  staffRoleHasPermission,
+} from '../../common/utils/staff-access.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { AuthSessionService } from '../auth/auth-session.service';
@@ -52,6 +56,8 @@ export class ModerationService {
     const moderationCase = await this.assertCanAccessCase(actor, caseId);
     const note = input.internalNote?.trim().slice(0, MAX_MODERATOR_NOTE_LENGTH) ?? null;
 
+    let effectiveSnapshot = moderationCase.targetSnapshot;
+
     await this.prisma.$transaction(async (tx) => {
       await tx.moderationAction.create({
         data: {
@@ -65,11 +71,33 @@ export class ModerationService {
         },
       });
 
+      if (
+        input.actionType === ModerationActionType.BUSINESS_HIDE &&
+        moderationCase.targetType === ContentReportTargetType.BUSINESS
+      ) {
+        const business = await tx.business.findUnique({
+          where: { id: moderationCase.targetId },
+          select: { status: true },
+        });
+        if (business && business.status !== BusinessStatus.BLOCKED) {
+          const prev = effectiveSnapshot as Record<string, unknown> | null;
+          effectiveSnapshot = {
+            ...(prev ?? {}),
+            businessStatusBeforeModerationHide: business.status,
+          };
+          await tx.moderationCase.update({
+            where: { id: caseId },
+            data: { targetSnapshot: effectiveSnapshot as object },
+          });
+        }
+      }
+
       await this.applyTargetMutation(
         tx,
         input.actionType,
         moderationCase.targetType,
         moderationCase.targetId,
+        effectiveSnapshot,
       );
 
       await tx.moderationCase.update({
@@ -100,6 +128,7 @@ export class ModerationService {
     actionType: ModerationActionType,
     targetType: ContentReportTargetType,
     targetId: string,
+    targetSnapshot?: unknown,
   ) {
     switch (actionType) {
       case ModerationActionType.BUSINESS_HIDE:
@@ -112,9 +141,15 @@ export class ModerationService {
         break;
       case ModerationActionType.BUSINESS_RESTORE:
         if (targetType === ContentReportTargetType.BUSINESS) {
+          const snap = targetSnapshot as Record<string, unknown> | null | undefined;
+          const prior = snap?.businessStatusBeforeModerationHide as
+            | BusinessStatus
+            | undefined;
+          const restoreStatus =
+            prior && prior !== BusinessStatus.BLOCKED ? prior : BusinessStatus.ACTIVE;
           await tx.business.update({
             where: { id: targetId },
-            data: { status: BusinessStatus.ACTIVE },
+            data: { status: restoreStatus },
           });
         }
         break;
@@ -284,7 +319,11 @@ export class ModerationService {
   }
 
   private async assertCityScope(user: AuthUser, cityId: string | null) {
-    if (!isGlobalAdmin(user) && user.role !== UserRole.CITY_ADMIN) {
+    const canAccess =
+      isGlobalAdmin(user) ||
+      user.role === UserRole.CITY_ADMIN ||
+      staffRoleHasPermission(user.role, StaffPermission.MODERATION_ACT);
+    if (!canAccess) {
       throw new ForbiddenException('Insufficient role');
     }
     if (user.role === UserRole.CITY_ADMIN) {

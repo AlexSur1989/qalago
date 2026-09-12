@@ -31,6 +31,7 @@ import { OwnershipClaimsModule } from './modules/ownership-claims/ownership-clai
 import { HealthController } from './modules/health/health.controller';
 import { AppConfigModule } from './modules/app-config/app-config.module';
 import { SafetyModule } from './modules/safety/safety.module';
+import { StaffModule } from './modules/staff/staff.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { SafetyModule } from './modules/safety/safety.module';
     OwnershipClaimsModule,
     AppConfigModule,
     SafetyModule,
+    StaffModule,
   ],
   controllers: [HealthController],
   providers: [

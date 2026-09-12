@@ -16,6 +16,13 @@ export enum UserRole {
   CITY_ADMIN = 'CITY_ADMIN',
   ADMIN = 'ADMIN',
   SUPER_ADMIN = 'SUPER_ADMIN',
+  MODERATOR = 'MODERATOR',
+  SALES_MANAGER = 'SALES_MANAGER',
+  CONTENT_MANAGER = 'CONTENT_MANAGER',
+  FINANCE = 'FINANCE',
+  SUPPORT = 'SUPPORT',
+  ANALYST = 'ANALYST',
+  TECH_ADMIN = 'TECH_ADMIN',
 }
 
 export enum BusinessStatus {
@@ -209,6 +216,16 @@ export type {
 
 export {
   ROLE_DEFINITIONS,
+  getRoleDefinition,
+  type RoleDefinition,
+} from './rbac';
+
+export {
+  StaffPermission,
+  STAFF_ROLES,
+  STEP_UP_REQUIRED_PERMISSIONS,
+  isStaffRole,
+  staffRoleHasPermission,
   canAccessAdminWeb,
   canAccessBusinessWeb,
   canManageBusinessCabinet,
@@ -217,8 +234,6 @@ export {
   canManageUsers,
   canModerate,
   canViewUsers,
-  getRoleDefinition,
   isGlobalAdminRole,
   isSuperAdminRole,
-  type RoleDefinition,
-} from './rbac';
+} from './staff-permissions';

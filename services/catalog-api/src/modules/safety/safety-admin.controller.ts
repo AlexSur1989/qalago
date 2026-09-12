@@ -26,20 +26,20 @@ export class SafetyAdminController {
   ) {}
 
   @Get('moderation/cases')
-  @Roles(UserRole.ADMIN, UserRole.CITY_ADMIN, UserRole.SUPER_ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.CITY_ADMIN, UserRole.SUPER_ADMIN, UserRole.MODERATOR)
   listCases(@CurrentUser() user: AuthUser, @Query() query: ListModerationCasesQueryDto) {
     return this.moderation.listCases(user, query);
   }
 
   @Get('moderation/cases/:id')
-  @Roles(UserRole.ADMIN, UserRole.CITY_ADMIN, UserRole.SUPER_ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.CITY_ADMIN, UserRole.SUPER_ADMIN, UserRole.MODERATOR)
   async getCase(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     const row = await this.moderation.assertCanAccessCase(user, id);
     return row;
   }
 
   @Post('moderation/cases/:id/actions')
-  @Roles(UserRole.ADMIN, UserRole.CITY_ADMIN, UserRole.SUPER_ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.CITY_ADMIN, UserRole.SUPER_ADMIN, UserRole.MODERATOR)
   applyAction(
     @CurrentUser() user: AuthUser,
     @Param('id') id: string,

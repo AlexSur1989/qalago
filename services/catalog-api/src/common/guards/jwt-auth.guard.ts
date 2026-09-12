@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { AuthUser, JwtPayload } from '../types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
+import { isStaffRole } from '../utils/staff-access.util';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -71,6 +72,15 @@ export class JwtAuthGuard implements CanActivate {
     });
     if (!dbUser?.isActive) {
       throw new UnauthorizedException('User inactive');
+    }
+    if (isStaffRole(dbUser.role)) {
+      const staff = await this.prisma.staffAccess.findUnique({
+        where: { userId: dbUser.id },
+        select: { isActive: true },
+      });
+      if (staff && !staff.isActive) {
+        throw new UnauthorizedException('Staff access disabled');
+      }
     }
     request.user = {
       sub: dbUser.id,

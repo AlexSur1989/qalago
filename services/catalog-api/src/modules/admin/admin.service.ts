@@ -287,6 +287,39 @@ export class AdminService {
     }
 
     return this.prisma.$transaction(async (tx) => {
+      if (
+        dto.role === UserRole.SUPER_ADMIN ||
+        dto.role === UserRole.ADMIN ||
+        dto.role === UserRole.CITY_ADMIN ||
+        dto.role === UserRole.MODERATOR ||
+        dto.role === UserRole.SALES_MANAGER ||
+        dto.role === UserRole.CONTENT_MANAGER ||
+        dto.role === UserRole.FINANCE ||
+        dto.role === UserRole.SUPPORT ||
+        dto.role === UserRole.ANALYST ||
+        dto.role === UserRole.TECH_ADMIN
+      ) {
+        await tx.staffAccess.upsert({
+          where: { userId: id },
+          create: {
+            userId: id,
+            staffRole: dto.role,
+            isActive: true,
+            createdByUserId: actor.id,
+          },
+          update: {
+            staffRole: dto.role,
+            isActive: true,
+            disabledAt: null,
+          },
+        });
+      } else {
+        await tx.staffAccess.updateMany({
+          where: { userId: id },
+          data: { isActive: false, disabledAt: new Date() },
+        });
+      }
+
       const updated = await tx.user.update({
         where: { id },
         data: {

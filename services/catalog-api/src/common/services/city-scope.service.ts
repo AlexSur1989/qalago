@@ -32,16 +32,38 @@ export class CityScopeService {
     return city.id;
   }
 
+  async getCityAdminScopeCityIds(userId: string): Promise<string[]> {
+    const scoped = await this.prisma.staffCityScope.findMany({
+      where: { userId },
+      select: { cityId: true },
+    });
+    if (scoped.length > 0) {
+      return scoped.map((s) => s.cityId);
+    }
+    const record = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { managedCityId: true },
+    });
+    if (record?.managedCityId) {
+      return [record.managedCityId];
+    }
+    return [];
+  }
+
   async resolveAdminCityId(user: AuthUser, citySlug?: string): Promise<string | undefined> {
     if (user.role === UserRole.CITY_ADMIN) {
-      const record = await this.prisma.user.findUnique({
-        where: { id: user.id },
-        select: { managedCityId: true },
-      });
-      if (!record?.managedCityId) {
+      const cityIds = await this.getCityAdminScopeCityIds(user.id);
+      if (!cityIds.length) {
         throw new ForbiddenException('City admin has no assigned city');
       }
-      return record.managedCityId;
+      if (citySlug) {
+        const requestedId = await this.resolveCityId({ citySlug });
+        if (!cityIds.includes(requestedId)) {
+          throw new ForbiddenException('Not allowed to access this city');
+        }
+        return requestedId;
+      }
+      return cityIds[0];
     }
 
     if (citySlug) {
@@ -54,9 +76,17 @@ export class CityScopeService {
   async assertBusinessInAdminScope(user: AuthUser, businessCityId: string) {
     if (user.role !== UserRole.CITY_ADMIN) return;
 
-    const managedCityId = await this.resolveAdminCityId(user);
-    if (managedCityId && managedCityId !== businessCityId) {
+    const cityIds = await this.getCityAdminScopeCityIds(user.id);
+    if (!cityIds.includes(businessCityId)) {
       throw new ForbiddenException('Not allowed to manage businesses in this city');
+    }
+  }
+
+  async assertCityInAdminScope(user: AuthUser, cityId: string | null | undefined) {
+    if (user.role !== UserRole.CITY_ADMIN || !cityId) return;
+    const cityIds = await this.getCityAdminScopeCityIds(user.id);
+    if (!cityIds.includes(cityId)) {
+      throw new ForbiddenException('Not allowed to access resources in this city');
     }
   }
 }

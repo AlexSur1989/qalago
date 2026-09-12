@@ -18,6 +18,7 @@ import { CampaignProvisioningService } from './campaign-provisioning.service';
 import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
 import {
   createMockInventoryReservationService,
+  createMockStaffPolicyService,
   createMockPackageSnapshotService,
 } from './test-utils/mock-order-deps-6-7c';
 import { MonetizationErrorCode } from './errors/monetization.errors';
@@ -168,6 +169,7 @@ describe('Stage 6.7QA — purchase adversarial', () => {
         purchaseIntegrity,
         createMockPackageSnapshotService(),
         createMockInventoryReservationService(),
+        createMockStaffPolicyService() as never,
       );
 
       const replayOrder = {

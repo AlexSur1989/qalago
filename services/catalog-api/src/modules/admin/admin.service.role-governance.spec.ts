@@ -44,6 +44,10 @@ describe('AdminService.updateUserRole (Stage 5M.4)', () => {
           user: {
             update: prisma.user.update,
           },
+          staffAccess: {
+            upsert: jest.fn().mockResolvedValue({}),
+            updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+          },
         }),
       ),
     };

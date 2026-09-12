@@ -4,6 +4,10 @@ import { BusinessAccessService } from '../../common/services/business-access.ser
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { isGlobalAdmin } from '../../common/utils/system-access.util';
+import {
+  StaffPermission,
+  staffRoleHasPermission,
+} from '../../common/utils/staff-access.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   MonetizationErrorCode,
@@ -195,7 +199,11 @@ export class MonetizationAccessService {
   }
 
   async assertAdminPaymentAccess(user: AuthUser, paymentId: string) {
-    if (!isGlobalAdmin(user) && user.role !== UserRole.CITY_ADMIN) {
+    const paymentStaffOk = staffRoleHasPermission(
+      user.role,
+      StaffPermission.PAYMENT_VIEW,
+    );
+    if (!isGlobalAdmin(user) && user.role !== UserRole.CITY_ADMIN && !paymentStaffOk) {
       monetizationForbidden(
         MonetizationErrorCode.BUSINESS_NOT_OWNED,
         'Admin only',

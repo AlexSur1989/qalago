@@ -85,3 +85,7 @@ export function createMockInventoryReservationService(): InventoryReservationSer
       .mockReturnValue(new Date(Date.now() + 24 * 60 * 60 * 1000)),
   } as unknown as InventoryReservationService;
 }
+
+export function createMockStaffPolicyService() {
+  return { assertPermission: jest.fn() };
+}

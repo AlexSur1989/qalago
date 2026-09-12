@@ -18,6 +18,7 @@ import { PlacementCapacityService } from './placement-capacity.service';
 import {
   createMockInventoryReservationService,
   createMockPackageSnapshotService,
+  createMockStaffPolicyService,
 } from './test-utils/mock-order-deps-6-7c';
 
 describe('Stage 4B.2 — VIP inventory reservation + order validation', () => {
@@ -209,6 +210,7 @@ describe('Stage 4B.2 — VIP inventory reservation + order validation', () => {
       purchaseIntegrity,
       createMockPackageSnapshotService(),
       createMockInventoryReservationService(),
+      createMockStaffPolicyService() as never,
     );
 
     const user = { id: 'user-1', role: UserRole.BUSINESS, phone: '+7700', sub: 'user-1' };

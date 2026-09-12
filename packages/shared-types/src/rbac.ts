@@ -9,6 +9,23 @@ export interface RoleDefinition {
   apps: string[];
 }
 
+const staffApp = ['Admin-web'];
+
+function staffDef(
+  role: UserRole,
+  labelRu: string,
+  summaryRu: string,
+): RoleDefinition {
+  return {
+    role,
+    labelRu,
+    summaryRu,
+    apps: staffApp,
+    can: ['Доступ к admin-web по матрице прав Stage 6.9.1'],
+    cannot: ['Действия вне назначенных permissions'],
+  };
+}
+
 export const ROLE_DEFINITIONS: Record<UserRole, RoleDefinition> = {
   [UserRole.USER]: {
     role: UserRole.USER,
@@ -49,109 +66,43 @@ export const ROLE_DEFINITIONS: Record<UserRole, RoleDefinition> = {
       'Вход в admin-web (только business-web)',
     ],
   },
-  [UserRole.CITY_ADMIN]: {
-    role: UserRole.CITY_ADMIN,
-    labelRu: 'Администратор города',
-    summaryRu: 'Администратор одного города (например, Актобе).',
-    apps: ['Mobile', 'Admin-web'],
-    can: [
-      'Модерация заведений только своего города',
-      'Одобрение / блокировка заявок в своём городе',
-      'VIP / Топ в рамках своего города',
-      'Черновики подборок для своего города (admin-web)',
-      'Кабинет бизнеса (если есть свои заведения)',
-    ],
-    cannot: [
-      'Модерировать другие города',
-      'Менять роли пользователей',
-      'Список всех пользователей платформы',
-      'Переключать город в admin-web (город закреплён)',
-    ],
-  },
-  [UserRole.ADMIN]: {
-    role: UserRole.ADMIN,
-    labelRu: 'Администратор',
-    summaryRu: 'Глобальный операционный администратор платформы.',
-    apps: ['Mobile', 'Admin-web', 'Business-web'],
-    can: [
-      'Модерация заведений во всех городах',
-      'VIP / Топ в любом городе',
-      'Просмотр пользователей (без смены ролей)',
-      'Модерация рекламы и подтверждение платежей',
-      'Глобальный аудит операций',
-      'Кабинет бизнеса и аналитика',
-    ],
-    cannot: [
-      'Назначать SUPER_ADMIN / ADMIN / CITY_ADMIN',
-      'Создавать города и менять launch status',
-      'Создавать/удалять глобальные категории',
-    ],
-  },
-  [UserRole.SUPER_ADMIN]: {
-    role: UserRole.SUPER_ADMIN,
-    labelRu: 'Суперадминистратор',
-    summaryRu: 'Высший уровень управления платформой.',
-    apps: ['Mobile', 'Admin-web', 'Business-web'],
-    can: [
-      'Все операционные возможности ADMIN',
-      'Смена системных ролей пользователей',
-      'Создание городов и управление launch status',
-      'Создание/удаление глобальных категорий',
-      'Глобальный аудит и governance',
-    ],
-    cannot: [
-      'Менять собственную системную роль через стандартный API',
-      'Понизить последнего SUPER_ADMIN',
-      'Прямой доступ к БД и секретам',
-    ],
-  },
+  [UserRole.CITY_ADMIN]: staffDef(
+    UserRole.CITY_ADMIN,
+    'Администратор города',
+    'Операции только в назначенных городах.',
+  ),
+  [UserRole.ADMIN]: staffDef(
+    UserRole.ADMIN,
+    'Администратор',
+    'Глобальный операционный администратор.',
+  ),
+  [UserRole.SUPER_ADMIN]: staffDef(
+    UserRole.SUPER_ADMIN,
+    'Суперадминистратор',
+    'Полное управление платформой и staff.',
+  ),
+  [UserRole.MODERATOR]: staffDef(UserRole.MODERATOR, 'Модератор', 'Контент и безопасность.'),
+  [UserRole.SALES_MANAGER]: staffDef(
+    UserRole.SALES_MANAGER,
+    'Менеджер продаж',
+    'Коммерческие операции без подтверждения оплат.',
+  ),
+  [UserRole.CONTENT_MANAGER]: staffDef(
+    UserRole.CONTENT_MANAGER,
+    'Контент-менеджер',
+    'Каталог и контент без смены владельца.',
+  ),
+  [UserRole.FINANCE]: staffDef(UserRole.FINANCE, 'Финансы', 'Заказы и подтверждение оплат.'),
+  [UserRole.SUPPORT]: staffDef(UserRole.SUPPORT, 'Поддержка', 'Триаж обращений без эскалации прав.'),
+  [UserRole.ANALYST]: staffDef(UserRole.ANALYST, 'Аналитик', 'Только чтение отчётов.'),
+  [UserRole.TECH_ADMIN]: staffDef(
+    UserRole.TECH_ADMIN,
+    'Тех. администратор',
+    'Release/feature flags без доступа к PII.',
+  ),
 };
 
 export function getRoleDefinition(role: string): RoleDefinition {
   const key = role as UserRole;
   return ROLE_DEFINITIONS[key] ?? ROLE_DEFINITIONS[UserRole.USER];
-}
-
-export function isGlobalAdminRole(role: string): boolean {
-  return role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN;
-}
-
-export function isSuperAdminRole(role: string): boolean {
-  return role === UserRole.SUPER_ADMIN;
-}
-
-export function canModerate(role: string): boolean {
-  return isGlobalAdminRole(role) || role === UserRole.CITY_ADMIN;
-}
-
-export function canViewUsers(role: string): boolean {
-  return isGlobalAdminRole(role);
-}
-
-export function canManageUsers(role: string): boolean {
-  return role === UserRole.SUPER_ADMIN;
-}
-
-export function canManageCities(role: string): boolean {
-  return role === UserRole.SUPER_ADMIN;
-}
-
-export function canManageGlobalCategories(role: string): boolean {
-  return role === UserRole.SUPER_ADMIN;
-}
-
-export function canManageBusinessCabinet(role: string): boolean {
-  return (
-    role === UserRole.BUSINESS ||
-    isGlobalAdminRole(role) ||
-    role === UserRole.CITY_ADMIN
-  );
-}
-
-export function canAccessAdminWeb(role: string): boolean {
-  return canModerate(role);
-}
-
-export function canAccessBusinessWeb(role: string): boolean {
-  return canManageBusinessCabinet(role);
 }

@@ -13,6 +13,13 @@ enum UserRole {
   CITY_ADMIN
   ADMIN
   SUPER_ADMIN
+  MODERATOR
+  SALES_MANAGER
+  CONTENT_MANAGER
+  FINANCE
+  SUPPORT
+  ANALYST
+  TECH_ADMIN
 }
 
 enum AuthProvider {
@@ -291,6 +298,7 @@ model City {
   analyticsEvents         AnalyticsEvent[]
   featureFlagOverrides    CityFeatureFlagOverride[]
   moderationCases         ModerationCase[]
+  staffCityScopes         StaffCityScope[]
 }
 
 model AppReleaseSettings {
@@ -373,6 +381,39 @@ model User {
   moderationAppeals            ModerationAppeal[]       @relation("ModerationAppellant")
   governmentRequestsAssigned   GovernmentRequest[]      @relation("GovernmentAssignee")
   securityIncidentsOwned       SecurityIncident[]       @relation("SecurityIncidentOwner")
+  staffAccess                  StaffAccess?
+  staffCityScopes              StaffCityScope[]
+  staffAccessCreated           StaffAccess[]            @relation("StaffCreatedBy")
+}
+
+/// Canonical staff access record (Stage 6.9.1). User.role mirrors staffRole for JWT; this row governs active staff.
+model StaffAccess {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  staffRole        UserRole
+  isActive         Boolean   @default(true)
+  disabledAt       DateTime?
+  createdByUserId  String?
+  mfaEnrolledAt    DateTime?
+  mfaRequired      Boolean   @default(false)
+  lastStaffLoginAt DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdBy        User?     @relation("StaffCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([staffRole, isActive])
+}
+
+model StaffCityScope {
+  id     String @id @default(cuid())
+  userId String
+  cityId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city   City   @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cityId])
+  @@index([cityId])
 }
 
 model AuthSession {
@@ -1576,6 +1617,16 @@ enum AuditAction {
   GOVERNMENT_REQUEST_UPDATE
   SECURITY_INCIDENT_UPDATE
   ACCOUNT_DELETION_EXECUTE
+
+  STAFF_CREATED
+  STAFF_DISABLED
+  STAFF_RESTORED
+  STAFF_ROLE_CHANGED
+  STAFF_CITY_SCOPE_CHANGED
+  STAFF_SESSION_REVOKED
+  SUPER_ADMIN_ASSIGNED
+  ADMIN_ASSIGNED
+  STAFF_BOOTSTRAP
 }
 
 enum AuditResourceType {
@@ -1605,6 +1656,8 @@ enum AuditResourceType {
   MODERATION_APPEAL
   GOVERNMENT_REQUEST
   SECURITY_INCIDENT
+  STAFF_ACCESS
+  AUTH_SESSION
 }
 
 model AuditLog {

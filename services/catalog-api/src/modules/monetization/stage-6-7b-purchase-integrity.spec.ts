@@ -19,6 +19,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
 import {
   createMockInventoryReservationService,
+  createMockStaffPolicyService,
   createMockPackageSnapshotService,
 } from './test-utils/mock-order-deps-6-7c';
 import {
@@ -233,6 +234,7 @@ describe('Stage 6.7B — purchase integrity core', () => {
       purchaseIntegrity,
       createMockPackageSnapshotService(),
       createMockInventoryReservationService(),
+      createMockStaffPolicyService() as never,
     );
 
     const user = { id: 'user-1', role: UserRole.BUSINESS, phone: '+7700', sub: 'user-1' };

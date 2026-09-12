@@ -89,6 +89,10 @@ describe('OrderService', () => {
   const packageSnapshot = createMockPackageSnapshotService();
   const inventoryReservation = createMockInventoryReservationService();
 
+  const staffPolicy = {
+    assertPermission: jest.fn(),
+  };
+
   const service = new OrderService(
     prisma,
     access,
@@ -99,6 +103,7 @@ describe('OrderService', () => {
     purchaseIntegrity,
     packageSnapshot,
     inventoryReservation,
+    staffPolicy as never,
   );
 
   const user = { id: 'user-1', role: UserRole.BUSINESS, phone: '+7700', sub: 'user-1' };
