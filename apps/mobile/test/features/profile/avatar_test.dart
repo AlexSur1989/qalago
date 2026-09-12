@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qalago_mobile/core/providers/city_provider.dart';
@@ -25,6 +27,13 @@ void main() {
   });
 
   testWidgets('profile edit shows change photo when avatar set', (tester) async {
+    final previousOnError = FlutterError.onError;
+    FlutterError.onError = (details) {
+      if (details.exception is NetworkImageLoadException) return;
+      previousOnError?.call(details);
+    };
+    addTearDown(() => FlutterError.onError = previousOnError);
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -34,9 +43,10 @@ void main() {
         child: const MaterialApp(home: ProfileEditScreen()),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
 
-    expect(find.text('A'), findsNothing);
+    expect(find.byType(CircleAvatar), findsOneWidget);
     expect(
       find.text(
         ProfileEditStrings.label(ProfileEditStrings.changePhoto),

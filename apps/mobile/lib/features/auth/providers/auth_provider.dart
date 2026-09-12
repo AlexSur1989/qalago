@@ -4,6 +4,8 @@ import '../../../core/rbac/role_permissions.dart';
 import '../../../core/network/dio_provider.dart';
 import '../../../core/providers/city_catalog_provider.dart';
 import '../../../core/providers/city_provider.dart';
+import '../../../core/release/app_config_provider.dart';
+import '../../map/map_discovery_scope.dart';
 import '../../../core/storage/auth_storage.dart';
 import '../../../shared/models/models.dart';
 import '../../ads/providers/ad_serve_provider.dart';
@@ -462,10 +464,20 @@ final businessesProvider = FutureProvider.family<PaginatedBusinesses, Businesses
 );
 
 /// City-wide businesses for map markers (no geo radius filter). Limit 100 per MVP.
+/// When [mapDiscoveryScopeProvider] carries a subcategory (flag ON), reuses catalog API filter.
 final mapBusinessesProvider = FutureProvider<PaginatedBusinesses>((ref) async {
   final city = ref.watch(cityProvider);
+  final enabled = ref.watch(subcategoriesEnabledProvider);
+  final scope = ref.watch(mapDiscoveryScopeProvider);
+  final params = resolveMapBusinessesFetchParams(
+    subcategoriesEnabled: enabled,
+    scope: scope,
+    citySlug: city.slug,
+  );
   return ref.watch(catalogRepositoryProvider).fetchBusinesses(
-        citySlug: city.slug,
+        citySlug: params.citySlug,
+        categoryId: params.categoryId,
+        subcategoryId: params.subcategoryId,
         limit: 100,
       );
 });

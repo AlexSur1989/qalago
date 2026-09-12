@@ -14,6 +14,7 @@ import '../../features/categories/presentation/categories_screen.dart';
 import '../../features/categories/presentation/category_businesses_screen.dart';
 import '../../features/favorites/presentation/favorites_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/map/map_discovery_scope.dart';
 import '../../features/map/presentation/map_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/profile/presentation/profile_edit_screen.dart';
@@ -415,7 +416,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   );
 });
 
-class AppShell extends StatelessWidget {
+class AppShell extends ConsumerWidget {
   const AppShell({super.key, required this.child});
 
   final Widget child;
@@ -430,9 +431,13 @@ class AppShell extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final path = GoRouterState.of(context).uri.path;
     final selectedTab = _tabIndexForPath(path);
+
+    void clearMapScope() {
+      ref.read(mapDiscoveryScopeProvider.notifier).state = null;
+    }
 
     return Scaffold(
       body: child,
@@ -459,7 +464,10 @@ class AppShell extends StatelessWidget {
                   icon: Icons.home_outlined,
                   selectedIcon: Icons.home,
                   label: 'Главная',
-                  onTap: () => context.go('/home'),
+                  onTap: () {
+                    clearMapScope();
+                    context.go('/home');
+                  },
                 ),
                 _ShellTab(
                   index: 1,
@@ -467,7 +475,10 @@ class AppShell extends StatelessWidget {
                   icon: Icons.grid_view_outlined,
                   selectedIcon: Icons.grid_view,
                   label: 'Категории',
-                  onTap: () => context.go('/categories'),
+                  onTap: () {
+                    clearMapScope();
+                    context.go('/categories');
+                  },
                 ),
                 _ShellTab(
                   index: 2,
@@ -475,7 +486,10 @@ class AppShell extends StatelessWidget {
                   icon: Icons.location_on_outlined,
                   selectedIcon: Icons.location_on,
                   label: 'Карта',
-                  onTap: () => context.go('/map'),
+                  onTap: () {
+                    clearMapScope();
+                    context.go('/map');
+                  },
                 ),
                 _ShellTab(
                   index: 3,
@@ -483,7 +497,10 @@ class AppShell extends StatelessWidget {
                   icon: Icons.favorite_border,
                   selectedIcon: Icons.favorite,
                   label: 'Избранное',
-                  onTap: () => context.go('/favorites'),
+                  onTap: () {
+                    clearMapScope();
+                    context.go('/favorites');
+                  },
                 ),
                 _ShellTab(
                   index: 4,
@@ -491,7 +508,10 @@ class AppShell extends StatelessWidget {
                   icon: Icons.person_outline,
                   selectedIcon: Icons.person,
                   label: 'Профиль',
-                  onTap: () => context.go('/profile'),
+                  onTap: () {
+                    clearMapScope();
+                    context.go('/profile');
+                  },
                 ),
               ],
             ),

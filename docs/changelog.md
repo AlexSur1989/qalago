@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-12 — Stage 6.8C.1.1: Subcategory map integration closure
+
+- Flutter Map reuses catalog `subcategoryId` when opened from category with a subcategory chip selected (flag ON); bottom nav clears ephemeral scope.
+- Closure QA: avatar URL blocked on PATCH; regression specs; map unit tests.
+
 ## 2026-09-12 — Stage 6.8C.1: Subcategories & user profile photo
 
 - Prisma: `Subcategory`, `BusinessSubcategory`, `User.avatarUrl`; idempotent seed taxonomy (RU/KK).
