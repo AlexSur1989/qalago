@@ -1119,6 +1119,19 @@ Staff routes require active `StaffAccess`, permission checks, and (for sensitive
 
 Legacy `PATCH /admin/users/:id/role` — **USER/BUSINESS only**; staff roles must use `/admin/staff`.
 
+## Admin reporting (Stage 6.9.2)
+
+Prefix: `/admin/reports` (read-only). Each route requires matching `REPORT_*` permission (see `docs/admin/reporting.md`).
+
+Examples:
+
+- `GET /admin/reports/overview` — `REPORT_OVERVIEW_VIEW`
+- `GET /admin/reports/finance` — `REPORT_FINANCE_VIEW`
+- `GET /admin/reports/staff` — `REPORT_STAFF_VIEW` (+ SUPER_ADMIN service guard)
+- `GET /admin/reports/export?report=plans&format=csv` — `REPORT_EXPORT`
+
+Query filters: `from`, `to`, `cityId`, `citySlug`, `businessId`, pagination on list endpoints where applicable.
+
 ### Step-up
 
 - `POST /auth/staff/step-up` — body `{ "code": "<otp>" }`; returns `{ "accessToken", "stepUpAt" }`

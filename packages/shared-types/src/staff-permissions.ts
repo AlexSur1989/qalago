@@ -38,6 +38,24 @@ export enum StaffPermission {
   AD_MODERATE = 'AD_MODERATE',
 
   ANALYTICS_VIEW = 'ANALYTICS_VIEW',
+
+  REPORT_OVERVIEW_VIEW = 'REPORT_OVERVIEW_VIEW',
+  REPORT_USERS_VIEW = 'REPORT_USERS_VIEW',
+  REPORT_BUSINESSES_VIEW = 'REPORT_BUSINESSES_VIEW',
+  REPORT_CITIES_VIEW = 'REPORT_CITIES_VIEW',
+  REPORT_CATEGORIES_VIEW = 'REPORT_CATEGORIES_VIEW',
+  REPORT_SEARCH_VIEW = 'REPORT_SEARCH_VIEW',
+  REPORT_ACTIVITY_VIEW = 'REPORT_ACTIVITY_VIEW',
+  REPORT_REVIEWS_VIEW = 'REPORT_REVIEWS_VIEW',
+  REPORT_PROMOTIONS_VIEW = 'REPORT_PROMOTIONS_VIEW',
+  REPORT_ADS_VIEW = 'REPORT_ADS_VIEW',
+  REPORT_PLANS_VIEW = 'REPORT_PLANS_VIEW',
+  REPORT_MODERATION_VIEW = 'REPORT_MODERATION_VIEW',
+  REPORT_FINANCE_VIEW = 'REPORT_FINANCE_VIEW',
+  REPORT_STAFF_VIEW = 'REPORT_STAFF_VIEW',
+  REPORT_AUDIT_VIEW = 'REPORT_AUDIT_VIEW',
+  REPORT_SECURITY_VIEW = 'REPORT_SECURITY_VIEW',
+  REPORT_TECH_VIEW = 'REPORT_TECH_VIEW',
   REPORT_EXPORT = 'REPORT_EXPORT',
 
   LEGAL_VIEW = 'LEGAL_VIEW',
@@ -75,6 +93,26 @@ export function isStaffRole(role: string): role is UserRole {
 
 const ALL = Object.values(StaffPermission);
 
+const OPERATIONAL_REPORTS: readonly StaffPermission[] = [
+  StaffPermission.REPORT_OVERVIEW_VIEW,
+  StaffPermission.REPORT_USERS_VIEW,
+  StaffPermission.REPORT_BUSINESSES_VIEW,
+  StaffPermission.REPORT_CITIES_VIEW,
+  StaffPermission.REPORT_CATEGORIES_VIEW,
+  StaffPermission.REPORT_SEARCH_VIEW,
+  StaffPermission.REPORT_ACTIVITY_VIEW,
+  StaffPermission.REPORT_REVIEWS_VIEW,
+  StaffPermission.REPORT_PROMOTIONS_VIEW,
+  StaffPermission.REPORT_ADS_VIEW,
+  StaffPermission.REPORT_PLANS_VIEW,
+  StaffPermission.REPORT_MODERATION_VIEW,
+];
+
+const ANALYST_REPORTS: readonly StaffPermission[] = [
+  ...OPERATIONAL_REPORTS,
+  StaffPermission.REPORT_EXPORT,
+];
+
 const ROLE_PERMISSIONS: Record<UserRole, ReadonlySet<StaffPermission>> = {
   [UserRole.USER]: new Set(),
   [UserRole.BUSINESS]: new Set(),
@@ -99,6 +137,7 @@ const ROLE_PERMISSIONS: Record<UserRole, ReadonlySet<StaffPermission>> = {
     StaffPermission.AD_MODERATE,
     StaffPermission.ANALYTICS_VIEW,
     StaffPermission.REPORT_EXPORT,
+    ...OPERATIONAL_REPORTS,
     StaffPermission.LEGAL_VIEW,
     StaffPermission.DATA_RIGHTS_MANAGE,
     StaffPermission.FEATURE_FLAG_VIEW,
@@ -116,12 +155,25 @@ const ROLE_PERMISSIONS: Record<UserRole, ReadonlySet<StaffPermission>> = {
     StaffPermission.PAYMENT_VIEW,
     StaffPermission.AD_VIEW,
     StaffPermission.ANALYTICS_VIEW,
+    StaffPermission.REPORT_OVERVIEW_VIEW,
+    StaffPermission.REPORT_USERS_VIEW,
+    StaffPermission.REPORT_BUSINESSES_VIEW,
+    StaffPermission.REPORT_CITIES_VIEW,
+    StaffPermission.REPORT_CATEGORIES_VIEW,
+    StaffPermission.REPORT_SEARCH_VIEW,
+    StaffPermission.REPORT_ACTIVITY_VIEW,
+    StaffPermission.REPORT_REVIEWS_VIEW,
+    StaffPermission.REPORT_PROMOTIONS_VIEW,
+    StaffPermission.REPORT_ADS_VIEW,
+    StaffPermission.REPORT_PLANS_VIEW,
+    StaffPermission.REPORT_MODERATION_VIEW,
   ]),
   [UserRole.MODERATOR]: new Set([
     StaffPermission.MODERATION_VIEW,
     StaffPermission.MODERATION_ACT,
     StaffPermission.MODERATION_APPEAL_REVIEW,
     StaffPermission.BUSINESS_VIEW,
+    StaffPermission.REPORT_MODERATION_VIEW,
   ]),
   [UserRole.SALES_MANAGER]: new Set([
     StaffPermission.BUSINESS_VIEW,
@@ -129,6 +181,9 @@ const ROLE_PERMISSIONS: Record<UserRole, ReadonlySet<StaffPermission>> = {
     StaffPermission.ORDER_CREATE,
     StaffPermission.PAYMENT_VIEW,
     StaffPermission.AD_VIEW,
+    StaffPermission.REPORT_BUSINESSES_VIEW,
+    StaffPermission.REPORT_ADS_VIEW,
+    StaffPermission.REPORT_PLANS_VIEW,
   ]),
   [UserRole.CONTENT_MANAGER]: new Set([
     StaffPermission.CATEGORY_VIEW,
@@ -136,6 +191,8 @@ const ROLE_PERMISSIONS: Record<UserRole, ReadonlySet<StaffPermission>> = {
     StaffPermission.CONTENT_EDIT,
     StaffPermission.BUSINESS_VIEW,
     StaffPermission.BUSINESS_EDIT,
+    StaffPermission.REPORT_CATEGORIES_VIEW,
+    StaffPermission.REPORT_PROMOTIONS_VIEW,
   ]),
   [UserRole.FINANCE]: new Set([
     StaffPermission.ORDER_VIEW,
@@ -143,6 +200,10 @@ const ROLE_PERMISSIONS: Record<UserRole, ReadonlySet<StaffPermission>> = {
     StaffPermission.PAYMENT_CONFIRM,
     StaffPermission.REFUND_MANAGE,
     StaffPermission.ANALYTICS_VIEW,
+    StaffPermission.REPORT_FINANCE_VIEW,
+    StaffPermission.REPORT_PLANS_VIEW,
+    StaffPermission.REPORT_ADS_VIEW,
+    StaffPermission.REPORT_EXPORT,
   ]),
   [UserRole.SUPPORT]: new Set([
     StaffPermission.USER_VIEW,
@@ -150,18 +211,25 @@ const ROLE_PERMISSIONS: Record<UserRole, ReadonlySet<StaffPermission>> = {
     StaffPermission.ORDER_VIEW,
     StaffPermission.PAYMENT_VIEW,
     StaffPermission.MODERATION_VIEW,
+    StaffPermission.REPORT_OVERVIEW_VIEW,
+    StaffPermission.REPORT_USERS_VIEW,
+    StaffPermission.REPORT_BUSINESSES_VIEW,
+    StaffPermission.REPORT_MODERATION_VIEW,
   ]),
   [UserRole.ANALYST]: new Set([
     StaffPermission.ANALYTICS_VIEW,
     StaffPermission.REPORT_EXPORT,
     StaffPermission.ORDER_VIEW,
     StaffPermission.PAYMENT_VIEW,
+    ...ANALYST_REPORTS,
   ]),
   [UserRole.TECH_ADMIN]: new Set([
     StaffPermission.FEATURE_FLAG_VIEW,
     StaffPermission.FEATURE_FLAG_EDIT,
     StaffPermission.RELEASE_CONFIG_VIEW,
     StaffPermission.MAINTENANCE_MODE_EDIT,
+    StaffPermission.REPORT_TECH_VIEW,
+    StaffPermission.REPORT_OVERVIEW_VIEW,
   ]),
 };
 

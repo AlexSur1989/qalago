@@ -25,6 +25,11 @@
 - `FINANCE`: `PAYMENT_CONFIRM`, no staff role assignment.
 - `MODERATOR` / `CONTENT_MANAGER` / `SUPPORT`: no ownership or staff grants.
 
+## Reporting permissions (Stage 6.9.2)
+
+- Admin reports use `REPORT_*` permissions (separate from `ANALYTICS_VIEW` on business dashboards).
+- Matrix: `docs/admin/report-access-matrix.md`. Endpoints: `/admin/reports/*` (read-only).
+
 ## MFA / step-up
 
 - Fields: `StaffAccess.mfaEnrolledAt`, `mfaRequired` (reserved).

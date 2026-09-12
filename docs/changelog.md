@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-13 — Stage 6.9.2: Admin reporting & staff oversight foundation
+
+- `REPORT_*` permissions in `@qalago/shared-types`; module `services/catalog-api/src/modules/admin-reporting/` (scope, query, read-only endpoints, CSV export).
+- Admin-web `/reports` with role-filtered nav; docs `docs/admin/reporting.md`, `report-access-matrix.md`, `docs/security/staff-oversight.md`.
+- **STAFF MFA still PENDING** — no MFA compliance metrics in staff reports.
+
 ## 2026-09-13 — Stage 6.9.1.1: Staff permission guard & step-up hardening
 
 - `@RequireStaffPermission` / `@AdminStaffRoute` / `@RequireStaffStepUp` on staff admin controllers; legacy `updateUserRole` limited to USER/BUSINESS.

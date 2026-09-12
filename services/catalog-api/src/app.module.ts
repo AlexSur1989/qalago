@@ -33,6 +33,7 @@ import { HealthController } from './modules/health/health.controller';
 import { AppConfigModule } from './modules/app-config/app-config.module';
 import { SafetyModule } from './modules/safety/safety.module';
 import { StaffModule } from './modules/staff/staff.module';
+import { AdminReportingModule } from './modules/admin-reporting/admin-reporting.module';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { StaffModule } from './modules/staff/staff.module';
     AppConfigModule,
     SafetyModule,
     StaffModule,
+    AdminReportingModule,
   ],
   controllers: [HealthController],
   providers: [
