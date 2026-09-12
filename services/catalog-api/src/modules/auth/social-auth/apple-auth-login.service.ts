@@ -24,11 +24,18 @@ export class AppleAuthLoginService {
     }
   }
 
-  async loginWithApple(identityToken: string, ip: string) {
+  async loginWithApple(
+    identityToken: string,
+    ip: string,
+    firstLoginDisplayName?: string | null,
+  ) {
     this.assertAppleAuthEnabled();
     this.socialAuthRateLimit.assertCanAttemptApple(ip);
 
     const claims = await this.appleVerifier.verifyIdentityToken(identityToken);
+    const trimmedName = firstLoginDisplayName?.trim();
+    const initialName =
+      trimmedName != null && trimmedName.length > 0 ? trimmedName.slice(0, 120) : null;
 
     return this.socialAuthLogin.completeSocialLogin({
       provider: AuthProvider.APPLE,
@@ -37,6 +44,7 @@ export class AppleAuthLoginService {
         email: claims.email,
         emailVerified: claims.emailVerified,
       },
+      ...(initialName != null ? { initialName } : {}),
     });
   }
 }

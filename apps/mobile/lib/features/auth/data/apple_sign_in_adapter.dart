@@ -19,6 +19,7 @@ class AppleSignInAdapter implements AppleSignInGateway {
       final credential = await SignInWithApple.getAppleIDCredential(
         scopes: const [
           AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
         ],
       );
 
@@ -27,7 +28,14 @@ class AppleSignInAdapter implements AppleSignInGateway {
         return const AppleSignInOutcome.noToken();
       }
 
-      return AppleSignInOutcome.success(token);
+      final given = credential.givenName?.trim();
+      final family = credential.familyName?.trim();
+      final displayName = _composeAppleDisplayName(given, family);
+
+      return AppleSignInOutcome.success(
+        token,
+        firstLoginDisplayName: displayName,
+      );
     } on SignInWithAppleAuthorizationException catch (e) {
       if (e.code == AuthorizationErrorCode.canceled) {
         return const AppleSignInOutcome.cancelled();
@@ -37,4 +45,13 @@ class AppleSignInAdapter implements AppleSignInGateway {
       return AppleSignInOutcome.failure(e);
     }
   }
+}
+
+String? _composeAppleDisplayName(String? given, String? family) {
+  final parts = <String>[
+    if (given != null && given.isNotEmpty) given,
+    if (family != null && family.isNotEmpty) family,
+  ];
+  if (parts.isEmpty) return null;
+  return parts.join(' ');
 }

@@ -80,7 +80,7 @@ void main() {
       expect(captured, {'idToken': 'google-id-token'});
     });
 
-    test('signInWithApple posts identityToken only', () async {
+    test('signInWithApple posts identityToken and optional first-login name', () async {
       Map<String, dynamic>? captured;
       final dio = Dio();
       dio.interceptors.add(
@@ -106,9 +106,15 @@ void main() {
       );
 
       final repo = AuthRepository(dio);
-      final result = await repo.signInWithApple('apple-identity-token');
+      final result = await repo.signInWithApple(
+        'apple-identity-token',
+        firstLoginDisplayName: 'Apple User',
+      );
       expect(result.user.name, isNull);
-      expect(captured, {'identityToken': 'apple-identity-token'});
+      expect(captured, {
+        'identityToken': 'apple-identity-token',
+        'firstLoginDisplayName': 'Apple User',
+      });
     });
   });
 

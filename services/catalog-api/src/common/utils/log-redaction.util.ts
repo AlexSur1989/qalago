@@ -8,6 +8,8 @@ const SENSITIVE_KEYS = new Set([
   'refresh_token',
   'idtoken',
   'id_token',
+  'identitytoken',
+  'identity_token',
   'otp',
   'code',
   'password',

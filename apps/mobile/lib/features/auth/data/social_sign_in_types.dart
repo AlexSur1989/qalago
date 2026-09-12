@@ -33,29 +33,36 @@ class GoogleSignInOutcome {
 class AppleSignInOutcome {
   const AppleSignInOutcome._({
     this.identityToken,
+    this.firstLoginDisplayName,
     this.cancelled = false,
     this.error,
   });
 
-  const AppleSignInOutcome.success(this.identityToken)
-      : cancelled = false,
+  const AppleSignInOutcome.success(
+    this.identityToken, {
+    this.firstLoginDisplayName,
+  })  : cancelled = false,
         error = null;
 
   const AppleSignInOutcome.cancelled()
       : identityToken = null,
+        firstLoginDisplayName = null,
         cancelled = true,
         error = null;
 
   const AppleSignInOutcome.noToken()
       : identityToken = null,
+        firstLoginDisplayName = null,
         cancelled = false,
         error = null;
 
   const AppleSignInOutcome.failure(this.error)
       : identityToken = null,
+        firstLoginDisplayName = null,
         cancelled = false;
 
   final String? identityToken;
+  final String? firstLoginDisplayName;
   final bool cancelled;
   final Object? error;
 }

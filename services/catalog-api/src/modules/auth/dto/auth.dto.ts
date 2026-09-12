@@ -43,6 +43,12 @@ export class AppleAuthDto {
   @IsString()
   @MinLength(10)
   identityToken!: string;
+
+  /** Apple may supply the user's name only on first authorization (client-side). Not used for identity. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  firstLoginDisplayName?: string;
 }
 
 export class RefreshTokenDto {

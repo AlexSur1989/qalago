@@ -31,7 +31,7 @@ type IdentityWithUser = Prisma.AuthIdentityGetPayload<{
 export type CompleteSocialLoginInput = {
   provider: AuthProvider;
   claims: SocialLoginClaims;
-  /** Google only — verified display name on first registration. */
+  /** Optional display name on first registration (Google verified name or Apple first-login client metadata). */
   initialName?: string | null;
 };
 

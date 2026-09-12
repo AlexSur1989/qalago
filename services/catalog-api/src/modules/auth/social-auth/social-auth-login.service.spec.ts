@@ -81,6 +81,72 @@ describe('SocialAuthLoginService', () => {
     expect(prisma.user.findUnique).not.toHaveBeenCalled();
   });
 
+  it('creates Apple user with optional first-login display name', async () => {
+    prisma.$transaction.mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => {
+      const tx = {
+        user: {
+          create: jest.fn().mockResolvedValue({
+            id: 'u-apple',
+            phone: null,
+            email: null,
+            name: 'Apple User',
+            role: UserRole.USER,
+          }),
+        },
+      };
+      return fn(tx);
+    });
+
+    const result = await service.completeSocialLogin({
+      provider: AuthProvider.APPLE,
+      claims: {
+        providerUserId: 'apple-sub-1',
+        email: 'abc@privaterelay.appleid.com',
+        emailVerified: true,
+      },
+      initialName: 'Apple User',
+    });
+
+    expect(result.user.name).toBe('Apple User');
+  });
+
+  it('does not set avatar on user create (custom QalaGo avatar policy)', async () => {
+    let createData: unknown;
+    prisma.$transaction.mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => {
+      const tx = {
+        user: {
+          create: jest.fn().mockImplementation((args: { data: unknown }) => {
+            createData = args.data;
+            return Promise.resolve({
+              id: 'u-new',
+              phone: null,
+              email: null,
+              name: 'Google User',
+              role: UserRole.USER,
+            });
+          }),
+        },
+      };
+      authIdentity.createIdentity.mockResolvedValue({ id: 'ai1' });
+      return fn(tx);
+    });
+
+    await service.completeSocialLogin({
+      provider: AuthProvider.GOOGLE,
+      claims: { providerUserId: 'g1', email: 'a@b.com' },
+      initialName: 'Google User',
+    });
+
+    expect(createData).toEqual(
+      expect.objectContaining({
+        role: UserRole.USER,
+        phone: null,
+        name: 'Google User',
+      }),
+    );
+    expect(createData).not.toHaveProperty('avatarUrl');
+  });
+
   it('creates Apple user without name', async () => {
     prisma.$transaction.mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => {
       const tx = {

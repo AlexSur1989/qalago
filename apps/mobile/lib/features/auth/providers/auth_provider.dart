@@ -361,7 +361,10 @@ class AuthNotifier extends Notifier<AuthState> {
         state = state.copyWith(isLoading: false);
         throw const SocialSignInNoToken();
       }
-      final result = await _repo.signInWithApple(identityToken);
+      final result = await _repo.signInWithApple(
+        identityToken,
+        firstLoginDisplayName: outcome.firstLoginDisplayName,
+      );
       await _finishLogin(result.token, result.user, refreshToken: result.refreshToken);
     } catch (e) {
       if (state.isAuthenticated) return;

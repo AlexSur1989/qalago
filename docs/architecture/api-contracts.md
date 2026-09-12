@@ -75,10 +75,13 @@ Requires at least one configured audience: `GOOGLE_CLIENT_ID_ANDROID`, `GOOGLE_C
 
 Request:
 ```json
-{ "identityToken": "<Apple identity token>" }
+{
+  "identityToken": "<Apple identity token>",
+  "firstLoginDisplayName": "<optional, first authorization only>"
+}
 ```
 
-Only `identityToken` is accepted. Do not send unverified `fullName` or other client profile fields.
+Only `identityToken` is required. Optional `firstLoginDisplayName` may be sent alongside a verified token when Apple supplies the user's name on first authorization; it is used only to initialize `User.name` on **new** accounts and is ignored for identity and for existing users. Do not send `role`, `userId`, `providerUserId`, or other trusted fields.
 
 Response `200`: same shape as `/auth/verify-code` (`accessToken`, `user`).
 

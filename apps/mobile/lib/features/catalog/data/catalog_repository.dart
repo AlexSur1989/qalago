@@ -79,11 +79,16 @@ class AuthRepository {
   }
 
   Future<({String token, String? refreshToken, UserModel user})> signInWithApple(
-    String identityToken,
-  ) async {
+    String identityToken, {
+    String? firstLoginDisplayName,
+  }) async {
     final response = await _dio.post(
       '/auth/apple',
-      data: {'identityToken': identityToken},
+      data: {
+        'identityToken': identityToken,
+        if (firstLoginDisplayName != null && firstLoginDisplayName.isNotEmpty)
+          'firstLoginDisplayName': firstLoginDisplayName,
+      },
     );
     final data = response.data as Map<String, dynamic>;
     return (

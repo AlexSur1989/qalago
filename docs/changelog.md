@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-12 — Stage 6.8D: Google & Apple auth integration foundation
+
+- Production architecture: server-side Google ID token and Apple identity token verification, `AuthIdentity` mapping, `issueQalaGoSession`, no email auto-linking, tombstone/inactive gates, rate limits, fail-closed prod config.
+- Flutter: Google/Apple adapters, login UX gated by app-config + env + platform; Apple optional first-login display name; secure storage session unchanged.
+- Docs: `docs/auth/stage-6-8d-google-apple-auth.md`, `provider-setup-checklist.md`, `provider-auth-threat-model.md`.
+- **Integration foundation complete** — real Google/Apple login with production credentials and physical devices not verified in this stage.
+
 ## 2026-09-12 — Stage 6.8C.1.2: Category map scope fix
 
 - Category → Map with «Все» now scopes by `categoryId` only; global bottom-nav Map stays city-wide.

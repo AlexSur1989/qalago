@@ -87,4 +87,14 @@ describe('AppleAuthLoginService', () => {
     });
     await expect(service.loginWithApple('token', '127.0.0.1')).rejects.toBeInstanceOf(HttpException);
   });
+
+  it('passes optional first-login display name for new-user initialization only', async () => {
+    await service.loginWithApple('identity-token', '127.0.0.1', '  Apple User  ');
+
+    expect(socialAuthLogin.completeSocialLogin).toHaveBeenCalledWith(
+      expect.objectContaining({
+        initialName: 'Apple User',
+      }),
+    );
+  });
 });

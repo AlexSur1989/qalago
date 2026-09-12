@@ -64,7 +64,11 @@ export class AuthController {
   @Public()
   @Post('apple')
   appleAuth(@Body() dto: AppleAuthDto, @Req() req: Request) {
-    return this.appleAuthLogin.loginWithApple(dto.identityToken, resolveRequestIp(req));
+    return this.appleAuthLogin.loginWithApple(
+      dto.identityToken,
+      resolveRequestIp(req),
+      dto.firstLoginDisplayName,
+    );
   }
 
   @Public()
