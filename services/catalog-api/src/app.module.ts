@@ -29,6 +29,7 @@ import { AuditLogModule } from './modules/audit-log/audit-log.module';
 import { BusinessApplicationsModule } from './modules/business-applications/business-applications.module';
 import { OwnershipClaimsModule } from './modules/ownership-claims/ownership-claims.module';
 import { HealthController } from './modules/health/health.controller';
+import { AppConfigModule } from './modules/app-config/app-config.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { HealthController } from './modules/health/health.controller';
     AuditLogModule,
     BusinessApplicationsModule,
     OwnershipClaimsModule,
+    AppConfigModule,
   ],
   controllers: [HealthController],
   providers: [

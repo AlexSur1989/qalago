@@ -289,6 +289,48 @@ model City {
   auditLogs            AuditLog[]
   businessApplications BusinessApplication[]
   analyticsEvents      AnalyticsEvent[]
+  featureFlagOverrides CityFeatureFlagOverride[]
+}
+
+model AppReleaseSettings {
+  id                    String   @id @default("global")
+  maintenanceEnabled    Boolean  @default(false)
+  maintenanceMessageRu  String?
+  maintenanceMessageKk  String?
+  maintenanceEndsAt     DateTime?
+  androidMinimumVersion String   @default("1.0.0")
+  androidLatestVersion  String   @default("1.0.0")
+  androidMinimumBuild   Int?
+  androidLatestBuild    Int?
+  androidStoreUrl       String?
+  iosMinimumVersion     String   @default("1.0.0")
+  iosLatestVersion      String   @default("1.0.0")
+  iosMinimumBuild       Int?
+  iosLatestBuild        Int?
+  iosStoreUrl           String?
+  configRevision        Int      @default(1)
+  updatedAt             DateTime @updatedAt
+  updatedByUserId       String?
+}
+
+model FeatureFlagDefinition {
+  key            String   @id
+  globalEnabled  Boolean  @default(true)
+  androidEnabled Boolean?
+  iosEnabled     Boolean?
+  description    String?
+  updatedAt      DateTime @updatedAt
+}
+
+model CityFeatureFlagOverride {
+  id      String @id @default(cuid())
+  cityId  String
+  flagKey String
+  enabled Boolean
+  city    City   @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@unique([cityId, flagKey])
+  @@index([flagKey])
 }
 
 model User {
@@ -1147,6 +1189,8 @@ enum AuditAction {
   BUSINESS_OWNERSHIP_CLAIM_APPROVE
   BUSINESS_OWNERSHIP_CLAIM_REJECT
   BUSINESS_OWNERSHIP_CLAIM_CANCEL
+
+  RELEASE_CONFIG_UPDATE
 }
 
 enum AuditResourceType {
@@ -1168,6 +1212,7 @@ enum AuditResourceType {
   CITY
   CATEGORY
   REVIEW
+  APP_RELEASE_CONFIG
 }
 
 model AuditLog {

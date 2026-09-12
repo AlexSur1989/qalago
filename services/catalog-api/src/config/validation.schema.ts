@@ -3,6 +3,9 @@ import { assertProductionConfig } from '../common/utils/production-config.util';
 
 export const validationSchema = Joi.object({
   NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
+  QALAGO_ENV: Joi.string().valid('LOCAL', 'STAGING', 'PRODUCTION').optional(),
+  APP_VERSION: Joi.string().default('0.1.0'),
+  GIT_COMMIT: Joi.string().allow('').default(''),
   PORT: Joi.number().default(3002),
   DATABASE_URL: Joi.string().required(),
   JWT_SECRET: Joi.string().min(16).required(),
@@ -67,6 +70,7 @@ export const validationSchema = Joi.object({
       appleClientIdIos: value.APPLE_CLIENT_ID_IOS ?? '',
       appleClientIdWeb: value.APPLE_CLIENT_ID_WEB ?? '',
       otpAuthEnabled: value.OTP_AUTH_ENABLED !== false,
+      qalagoEnv: value.QALAGO_ENV ?? (value.NODE_ENV === 'production' ? 'PRODUCTION' : 'LOCAL'),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Invalid production configuration';

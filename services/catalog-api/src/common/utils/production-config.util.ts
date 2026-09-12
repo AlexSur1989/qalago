@@ -18,6 +18,7 @@ export type ProductionConfigInput = {
   appleClientIdIos?: string;
   appleClientIdWeb?: string;
   otpAuthEnabled?: boolean;
+  qalagoEnv?: string;
 };
 
 export function assertProductionConfig(input: ProductionConfigInput): void {
@@ -38,6 +39,10 @@ export function assertProductionConfig(input: ProductionConfigInput): void {
   }
   if (input.testAuthBypassEnabled) {
     errors.push('TEST_AUTH_BYPASS_ENABLED must be false in production');
+  }
+  const qalagoEnv = (input.qalagoEnv ?? 'PRODUCTION').toUpperCase();
+  if (qalagoEnv !== 'PRODUCTION') {
+    errors.push('QALAGO_ENV must be PRODUCTION when NODE_ENV=production');
   }
 
   const origins = input.corsOrigins

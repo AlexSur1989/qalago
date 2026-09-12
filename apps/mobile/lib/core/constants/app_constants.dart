@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../release/release_environment.dart';
+
 class AppConstants {
   static const appName = 'QalaGo';
   static const defaultCitySlug = 'uralsk';
@@ -17,13 +19,20 @@ class AppConstants {
 
   /// Development-only passwordless login. NEVER enable in production builds.
   /// Launch: `flutter run --dart-define=QALAGO_DEV_LOGIN=true`
-  static const devLoginEnabled =
+  static const _devLoginFlag =
       bool.fromEnvironment('QALAGO_DEV_LOGIN', defaultValue: false);
+
+  /// DEV login: debug builds only, never in release/profile.
+  static bool get devLoginEnabled =>
+      ReleaseEnvironment.allowDevLogin && _devLoginFlag;
 
   /// Development-only mock plan checkout. NEVER enable in production/store builds.
   /// Launch: `flutter run --dart-define=QALAGO_MOCK_PLAN_CHECKOUT=true`
-  static const mockPlanCheckoutEnabled =
+  static const _mockPlanCheckoutFlag =
       bool.fromEnvironment('QALAGO_MOCK_PLAN_CHECKOUT', defaultValue: false);
+
+  static bool get mockPlanCheckoutEnabled =>
+      ReleaseEnvironment.allowMockPlanCheckout && _mockPlanCheckoutFlag;
 
   /// Client-side Google Sign-In (requires matching backend GOOGLE_AUTH_ENABLED).
   static const googleAuthEnabled =

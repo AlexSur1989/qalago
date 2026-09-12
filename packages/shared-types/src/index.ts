@@ -156,6 +156,18 @@ export const DEFAULT_CITY_SLUG = 'uralsk';
 export const API_PREFIX = '/api/v1';
 
 export {
+  AppPlatform,
+  UpdateMode,
+  QalagoEnvironment,
+  FEATURE_FLAG_KEYS,
+  type FeatureFlagKey,
+  type MobilePlatformConfigDto,
+  type AppMaintenanceDto,
+  type AppConfigResponseDto,
+  type ServiceVersionDto,
+} from './release-config';
+
+export {
   BusinessPlanTier,
   type BusinessPlanStatusDto,
   type MockPlanCheckoutResponse,

@@ -27,6 +27,15 @@
 
 ---
 
+## 2026-09-12 — Stage 6.8C: Release architecture foundation
+
+- Shared release types; semver/update-mode utilities; `GET /app-config` and `/version`.
+- Prisma runtime config: release settings, feature flags, city overrides; maintenance guard.
+- SUPER_ADMIN release APIs + audit; `QALAGO_ENV` with production fail-closed.
+- Flutter: config cache, maintenance/required/optional screens, client version headers.
+- Docs under `docs/release/*`.
+- Future: admin UI for release settings, VPS/store rollout (7.x), OAuth flags (6.8D).
+
 ## 2026-09-11 — Stage 6.8B: Local security hardening
 
 - Production fail-closed: weak secrets, DEV login, mock checkout, AI internal token, CORS wildcard.

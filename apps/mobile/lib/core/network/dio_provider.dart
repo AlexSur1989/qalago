@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../constants/app_constants.dart';
 import '../storage/auth_storage.dart';
 
@@ -35,6 +38,17 @@ final dioProvider = Provider<Dio>((ref) {
         final token = await ref.read(authStorageProvider).readToken();
         if (token != null && token.isNotEmpty) {
           options.headers['Authorization'] = 'Bearer $token';
+        }
+        if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+          try {
+            final info = await PackageInfo.fromPlatform();
+            options.headers['X-QalaGo-App-Version'] = info.version;
+            options.headers['X-QalaGo-Build-Number'] = info.buildNumber;
+            options.headers['X-QalaGo-Platform'] =
+                Platform.isIOS ? 'IOS' : 'ANDROID';
+          } catch (_) {
+            // Non-fatal metadata.
+          }
         }
         handler.next(options);
       },

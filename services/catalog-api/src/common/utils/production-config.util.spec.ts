@@ -118,6 +118,7 @@ describe('production-config.util', () => {
           appleAuthEnabled: true,
           appleClientIdIos: 'kz.qalago.qalagoMobile',
           internalServiceToken: prodAiToken,
+          qalagoEnv: 'PRODUCTION',
         }),
       ).not.toThrow();
     });
@@ -134,6 +135,7 @@ describe('production-config.util', () => {
           googleAuthEnabled: true,
           googleClientIdWeb: 'web-client.apps.googleusercontent.com',
           internalServiceToken: prodAiToken,
+          qalagoEnv: 'PRODUCTION',
         }),
       ).not.toThrow();
     });
@@ -167,8 +169,24 @@ describe('production-config.util', () => {
           googleAuthEnabled: false,
           appleAuthEnabled: false,
           internalServiceToken: prodAiToken,
+          qalagoEnv: 'PRODUCTION',
         }),
       ).not.toThrow();
+    });
+
+    it('rejects production when QALAGO_ENV is not PRODUCTION', () => {
+      expect(() =>
+        assertProductionConfig({
+          nodeEnv: 'production',
+          jwtSecret: 'a'.repeat(32),
+          corsOrigins: 'https://qalago.kz',
+          otpDebug: false,
+          devLoginEnabled: false,
+          mockPlanCheckoutEnabled: false,
+          internalServiceToken: prodAiToken,
+          qalagoEnv: 'LOCAL',
+        }),
+      ).toThrow(/QALAGO_ENV/);
     });
 
     it('rejects weak JWT in production', () => {
