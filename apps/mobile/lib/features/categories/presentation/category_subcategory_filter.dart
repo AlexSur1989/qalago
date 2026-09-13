@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/release/app_config_provider.dart';
 import '../../../shared/models/models.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -19,14 +20,13 @@ class CategorySubcategoryFilterBar extends ConsumerWidget {
   const CategorySubcategoryFilterBar({
     super.key,
     required this.categoryId,
-    this.localeCode = 'ru',
   });
 
   final String categoryId;
-  final String localeCode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final localeCode = resolveLocaleCode(ref.watch(appLocaleCodeProvider));
     final enabled = ref.watch(subcategoriesEnabledProvider);
     if (!enabled) return const SizedBox.shrink();
 

@@ -14,9 +14,20 @@ export class ListCategoriesQueryDto {
 }
 
 export class CreateCategoryDto {
+  @IsOptional()
   @IsString()
   @Length(2, 100)
-  title!: string;
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(2, 100)
+  nameRu?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(2, 100)
+  nameKk?: string;
 
   @IsString()
   @Length(2, 100)
@@ -41,6 +52,16 @@ export class UpdateCategoryDto {
   @IsString()
   @Length(2, 100)
   title?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(2, 100)
+  nameRu?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(2, 100)
+  nameKk?: string;
 
   @IsOptional()
   @IsString()

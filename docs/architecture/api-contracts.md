@@ -258,7 +258,7 @@ Geocoding via OpenStreetMap Nominatim. Returns city suggestions with coordinates
 
 ### GET /categories
 
-Query: `citySlug` (optional, default `uralsk`). Returns active categories visible in the city, sorted by city-specific order when set. Each item includes legacy `icon` and consumer alias **`iconUrl`** (same value, nullable). Stage 6.10A.
+Query: `citySlug` (optional, default `uralsk`). Returns active categories visible in the city, sorted by city-specific order when set. Each item includes **`nameRu`**, **`nameKk`**, legacy **`title`** (alias of `nameRu`), `icon`, consumer alias **`iconUrl`** (same value, nullable). Stage 6.10A / **6.10B**.
 
 ### GET /categories/:categoryId/subcategories
 
@@ -275,8 +275,8 @@ Public list of **active** subcategories for a category (`id`, `categoryId`, `slu
 ### Admin
 
 
-- `POST /categories`
-- `PATCH /categories/:id`
+- `POST /categories` — body may include `nameRu`, `nameKk`, and/or legacy `title` (normalized server-side; `title` ↔ `nameRu` sync).
+- `PATCH /categories/:id` — update names/icon/sort; `nameRu`/`nameKk`/`title` kept consistent.
 - `DELETE /categories/:id`
 - `GET /admin/categories?citySlug=` — all categories including hidden; each row includes `citySortOrder` and `effectiveSortOrder`
 - `PATCH /admin/categories/:id/city-order` — body `{ "citySlug", "sortOrder" }` (ADMIN, CITY_ADMIN scoped to managed city)

@@ -27,6 +27,14 @@
 
 ---
 
+## 2026-09-14 — Stage 6.10B: Category RU/KZ localization and consumer web parity
+
+- Prisma `Category.nameRu` / `Category.nameKk` with migration backfill; `title` kept as legacy alias of `nameRu`.
+- Public category API exposes `nameRu`, `nameKk`, `title`, `icon`, `iconUrl`.
+- Flutter category labels use `displayName` + `appLocaleCodeProvider` (not hardcoded RU on category screens).
+- Consumer Web: RU/KZ cookie locale, localized category/subcategory labels, category → subcategory → business list + minimal business detail route.
+- Admin dashboard: edit category RU/KZ names; icon upload unchanged.
+
 ## 2026-09-14 — Admin Web: canonical TOTP MFA enrollment on `/mfa/setup`
 
 - `/mfa/setup` and `/settings/security` use shared `StaffMfaEnrollment` (QR via `qrcode.react`, Authenticator TOTP, recovery codes once).

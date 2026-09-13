@@ -14,6 +14,8 @@ import '../../../shared/widgets/loading_view.dart';
 import '../../../shared/widgets/qalago_search_field.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../shared/widgets/category_icon_tile.dart';
+import '../../../core/locale/app_locale_provider.dart';
+import '../utils/category_display.dart';
 import 'category_businesses_screen.dart';
 
 class CategoriesScreen extends ConsumerStatefulWidget {
@@ -33,16 +35,19 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     super.dispose();
   }
 
-  List<CategoryModel> _filterCategories(List<CategoryModel> categories) {
+  List<CategoryModel> _filterCategories(
+    List<CategoryModel> categories,
+    String localeCode,
+  ) {
     final q = _query.trim().toLowerCase();
     if (q.isEmpty) return categories;
-    return categories
-        .where(
-          (c) =>
-              c.title.toLowerCase().contains(q) ||
-              c.slug.toLowerCase().contains(q),
-        )
-        .toList();
+    return categories.where((c) {
+      final label = categoryDisplayName(c, localeCode: localeCode).toLowerCase();
+      return label.contains(q) ||
+          c.nameRu.toLowerCase().contains(q) ||
+          c.nameKk.toLowerCase().contains(q) ||
+          c.slug.toLowerCase().contains(q);
+    }).toList();
   }
 
   @override
@@ -142,14 +147,15 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                   onRetry: () => ref.invalidate(categoriesProvider),
                 ),
                 data: (categories) {
-                  final filtered = _filterCategories(categories);
+                  final localeCode = resolveLocaleCode(ref.watch(appLocaleCodeProvider));
+                  final filtered = _filterCategories(categories, localeCode);
                   if (filtered.isEmpty) {
                     return const Padding(
                       padding: EdgeInsets.all(24),
                       child: Center(child: Text('Категории не найдены')),
                     );
                   }
-                  return _CategoriesGrid(categories: filtered);
+                  return _CategoriesGrid(categories: filtered, localeCode: localeCode);
                 },
               ),
             ],
@@ -221,9 +227,10 @@ class _NotificationButton extends StatelessWidget {
 }
 
 class _CategoriesGrid extends StatelessWidget {
-  const _CategoriesGrid({required this.categories});
+  const _CategoriesGrid({required this.categories, required this.localeCode});
 
   final List<CategoryModel> categories;
+  final String localeCode;
 
   @override
   Widget build(BuildContext context) {
@@ -244,9 +251,9 @@ class _CategoriesGrid extends StatelessWidget {
               SizedBox(
                 width: itemWidth,
                 child: CategoryIconTile(
-                  label: category.title,
+                  label: categoryDisplayName(category, localeCode: localeCode),
                   iconPath: category.icon,
-                  onTap: () => openCategory(context, category),
+                  onTap: () => openCategory(context, category, localeCode: localeCode),
                 ),
               ),
           ],

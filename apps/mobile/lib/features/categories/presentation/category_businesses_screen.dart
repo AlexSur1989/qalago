@@ -20,7 +20,9 @@ import '../../auth/providers/auth_provider.dart';
 import '../data/category_catalog_sort.dart';
 import '../data/category_discovery_strings.dart';
 import '../providers/category_sort_provider.dart';
+import '../utils/category_display.dart';
 import '../utils/category_list_utils.dart';
+import '../../../core/locale/app_locale_provider.dart';
 import '../../map/map_discovery_scope.dart';
 import 'category_subcategory_filter.dart';
 import 'subcategory_icon_grid.dart';
@@ -79,7 +81,7 @@ class CategoryBusinessesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const localeCode = 'ru';
+    final localeCode = resolveLocaleCode(ref.watch(appLocaleCodeProvider));
     final city = ref.watch(cityProvider);
     final sort = ref.watch(categoryCatalogSortProvider);
     final userPosition = ref.watch(userLocationProvider).valueOrNull;
@@ -207,10 +209,7 @@ class CategoryBusinessesScreen extends ConsumerWidget {
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(24),
                 children: [
-                  SubcategoryIconGrid(
-                    categoryId: categoryId,
-                    localeCode: localeCode,
-                  ),
+                  SubcategoryIconGrid(categoryId: categoryId),
                   const SizedBox(height: 16),
                   _CategorySortBar(
                     sort: sort,
@@ -242,10 +241,7 @@ class CategoryBusinessesScreen extends ConsumerWidget {
               ),
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
               children: [
-                SubcategoryIconGrid(
-                  categoryId: categoryId,
-                  localeCode: localeCode,
-                ),
+                SubcategoryIconGrid(categoryId: categoryId),
                 const SizedBox(height: 12),
                 _CategorySortBar(
                   sort: sort,
@@ -423,12 +419,8 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-String categoryDisplayTitle(CategoryModel category) {
-  return category.title;
-}
-
-void openCategory(BuildContext context, CategoryModel category) {
-  final title = categoryDisplayTitle(category);
+void openCategory(BuildContext context, CategoryModel category, {String localeCode = 'ru'}) {
+  final title = categoryDisplayName(category, localeCode: localeCode);
   context.push(
     '/categories/${category.id}?title=${Uri.encodeComponent(title)}',
   );

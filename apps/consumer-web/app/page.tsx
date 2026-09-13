@@ -2,26 +2,36 @@ export const dynamic = 'force-dynamic';
 
 import Link from 'next/link';
 import { CategoryIconTile, CategoryMoreTile } from '@/components/CategoryIconTile';
+import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { fetchCategories } from '@/lib/catalog-api';
 import { homeColumns, sliceHomeCategories } from '@/lib/home-categories';
+import { UI_LABELS, categoryDisplayName } from '@/lib/locale';
+import { getServerLocale } from '@/lib/locale-server';
 
 export default async function HomePage() {
+  const locale = await getServerLocale();
+  const labels = UI_LABELS[locale];
   const categories = await fetchCategories('uralsk');
   const columns = homeColumns(720);
   const { preview, showMore } = sliceHomeCategories(categories, columns);
 
   return (
     <main className="page">
-      <header style={{ marginBottom: 24 }}>
-        <h1 style={{ margin: 0, color: 'var(--blue)' }}>QalaGo</h1>
-        <p style={{ color: 'var(--muted)' }}>Заведения и услуги Уральска</p>
+      <header style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+        <div>
+          <h1 style={{ margin: 0, color: 'var(--blue)' }}>QalaGo</h1>
+          <p style={{ color: 'var(--muted)' }}>
+            {locale === 'kk' ? 'Уральск қаласындағы мекемелер мен қызметтер' : 'Заведения и услуги Уральска'}
+          </p>
+        </div>
+        <LocaleSwitcher locale={locale} />
       </header>
-      <section aria-label="Категории">
+      <section aria-label={labels.categories}>
         <div className="cat-grid">
           {preview.map((c) => (
             <CategoryIconTile
               key={c.id}
-              title={c.title}
+              title={categoryDisplayName(c, locale)}
               icon={c.iconUrl ?? c.icon}
               href={`/categories/${c.id}`}
             />
@@ -30,7 +40,7 @@ export default async function HomePage() {
         </div>
       </section>
       <p style={{ marginTop: 32 }}>
-        <Link href="/categories">Все категории →</Link>
+        <Link href="/categories">{labels.allCategories} →</Link>
       </p>
     </main>
   );

@@ -7,10 +7,13 @@ import { AuditLogService } from '../audit-log/audit-log.service';
 import { changedFieldsFromDto } from '../audit-log/audit-log.util';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
 import { presentCategory } from './category-presenter.util';
+import { normalizeCategoryNames } from './category-normalize.util';
 
 type CategoryRecord = {
   id: string;
   title: string;
+  nameRu: string;
+  nameKk: string;
   slug: string;
   icon: string | null;
   sortOrder: number;
@@ -155,7 +158,13 @@ export class CategoriesService {
   }
 
   async create(actor: AuthUser, dto: CreateCategoryDto) {
-    const category = await this.prisma.category.create({ data: dto });
+    const names = normalizeCategoryNames(dto);
+    const category = await this.prisma.category.create({
+      data: {
+        ...dto,
+        ...names,
+      },
+    });
     await this.auditLog.record({
       actor,
       action: AuditAction.CATEGORY_CREATE,
@@ -168,7 +177,16 @@ export class CategoriesService {
 
   async update(actor: AuthUser, id: string, dto: UpdateCategoryDto) {
     await this.ensureExists(id);
-    const updated = await this.prisma.category.update({ where: { id }, data: dto });
+    const existing = await this.prisma.category.findUniqueOrThrow({ where: { id } });
+    const names = normalizeCategoryNames({
+      title: dto.title ?? dto.nameRu ?? existing.title,
+      nameRu: dto.nameRu ?? dto.title ?? existing.nameRu,
+      nameKk: dto.nameKk ?? existing.nameKk,
+    });
+    const updated = await this.prisma.category.update({
+      where: { id },
+      data: { ...dto, ...names },
+    });
     await this.auditLog.record({
       actor,
       action: AuditAction.CATEGORY_UPDATE,

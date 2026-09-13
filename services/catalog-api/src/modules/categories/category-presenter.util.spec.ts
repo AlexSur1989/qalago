@@ -26,4 +26,18 @@ describe('category-presenter', () => {
     });
     expect(row.iconUrl).toBeNull();
   });
+
+  it('falls back nameRu from legacy title-only rows', () => {
+    const row = presentCategory({
+      id: '1',
+      title: 'Legacy',
+      slug: 'legacy',
+      icon: null,
+      sortOrder: 0,
+      isActive: true,
+    });
+    expect(row.nameRu).toBe('Legacy');
+    expect(row.nameKk).toBe('Legacy');
+    expect(row.title).toBe('Legacy');
+  });
 });

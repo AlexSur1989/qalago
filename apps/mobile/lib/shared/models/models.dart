@@ -4,21 +4,40 @@ class CategoryModel {
   CategoryModel({
     required this.id,
     required this.title,
+    required this.nameRu,
+    required this.nameKk,
     required this.slug,
     this.icon,
   });
 
   final String id;
   final String title;
+  final String nameRu;
+  final String nameKk;
   final String slug;
   final String? icon;
 
-  factory CategoryModel.fromJson(Map<String, dynamic> json) => CategoryModel(
-    id: json['id'] as String,
-    title: json['title'] as String,
-    slug: json['slug'] as String,
-    icon: json['icon'] as String? ?? json['iconUrl'] as String?,
-  );
+  String displayName({String localeCode = 'ru'}) {
+    if (localeCode.startsWith('kk')) {
+      return nameKk.isNotEmpty ? nameKk : nameRu;
+    }
+    if (nameRu.isNotEmpty) return nameRu;
+    return title;
+  }
+
+  factory CategoryModel.fromJson(Map<String, dynamic> json) {
+    final title = json['title'] as String? ?? json['nameRu'] as String? ?? '';
+    final nameRu = json['nameRu'] as String? ?? title;
+    final nameKk = json['nameKk'] as String? ?? nameRu;
+    return CategoryModel(
+      id: json['id'] as String,
+      title: title,
+      nameRu: nameRu,
+      nameKk: nameKk,
+      slug: json['slug'] as String,
+      icon: json['icon'] as String? ?? json['iconUrl'] as String?,
+    );
+  }
 }
 
 class SubcategoryModel {

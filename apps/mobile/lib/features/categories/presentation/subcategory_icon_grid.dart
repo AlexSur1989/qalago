@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/locale/app_locale_provider.dart';
 import '../../../shared/widgets/category_icon_tile.dart';
 import '../data/category_discovery_strings.dart';
 import 'category_subcategory_filter.dart';
@@ -9,14 +10,13 @@ class SubcategoryIconGrid extends ConsumerWidget {
   const SubcategoryIconGrid({
     super.key,
     required this.categoryId,
-    this.localeCode = 'ru',
   });
 
   final String categoryId;
-  final String localeCode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final localeCode = resolveLocaleCode(ref.watch(appLocaleCodeProvider));
     final subsAsync = ref.watch(categorySubcategoriesProvider(categoryId));
     return subsAsync.when(
       loading: () => const SizedBox.shrink(),

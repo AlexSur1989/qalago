@@ -26,6 +26,8 @@ import '../../analytics/widgets/business_impression_host.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../categories/data/home_category_display.dart';
 import '../../categories/presentation/category_businesses_screen.dart';
+import '../../categories/utils/category_display.dart';
+import '../../../core/locale/app_locale_provider.dart';
 import '../../../shared/widgets/category_icon_tile.dart';
 import '../../ads/providers/ad_serve_provider.dart';
 import '../../ads/widgets/home_ad_slots.dart';
@@ -98,7 +100,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _openCategory(CategoryModel category) {
-    openCategory(context, category);
+    final localeCode = resolveLocaleCode(ref.read(appLocaleCodeProvider));
+    openCategory(context, category, localeCode: localeCode);
   }
 
   Future<void> _showCityPicker() async {
@@ -198,6 +201,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         },
                         data: (categories) => _CategoryIconGrid(
                           categories: categories,
+                          localeCode: resolveLocaleCode(ref.watch(appLocaleCodeProvider)),
                           onSelected: _openCategory,
                           onMore: () => context.push('/categories'),
                         ),
@@ -375,11 +379,13 @@ class _SearchBox extends StatelessWidget {
 class _CategoryIconGrid extends StatelessWidget {
   const _CategoryIconGrid({
     required this.categories,
+    required this.localeCode,
     required this.onSelected,
     required this.onMore,
   });
 
   final List<CategoryModel> categories;
+  final String localeCode;
   final ValueChanged<CategoryModel> onSelected;
   final VoidCallback onMore;
 
@@ -407,7 +413,7 @@ class _CategoryIconGrid extends StatelessWidget {
               SizedBox(
                 width: itemWidth,
                 child: CategoryIconTile(
-                  label: category.title,
+                  label: categoryDisplayName(category, localeCode: localeCode),
                   iconPath: category.icon,
                   onTap: () => onSelected(category),
                 ),

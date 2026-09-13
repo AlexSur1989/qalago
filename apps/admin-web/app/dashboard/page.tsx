@@ -41,7 +41,8 @@ export default function DashboardPage() {
   const [users, setUsers] = useState<AuthUser[]>([]);
   const [reviews, setReviews] = useState<AdminReviewRow[]>([]);
   const [categories, setCategories] = useState<CategoryRow[]>([]);
-  const [catTitle, setCatTitle] = useState('');
+  const [catNameRu, setCatNameRu] = useState('');
+  const [catNameKk, setCatNameKk] = useState('');
   const [catSlug, setCatSlug] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [subcategories, setSubcategories] = useState<SubcategoryAdminRow[]>([]);
@@ -279,13 +280,16 @@ export default function DashboardPage() {
 
   async function createCategory(e: FormEvent) {
     e.preventDefault();
-    if (!token || !catTitle.trim() || !catSlug.trim()) return;
+    if (!token || !catNameRu.trim() || !catNameKk.trim() || !catSlug.trim()) return;
     await adminApi.createCategory(token, {
-      title: catTitle.trim(),
+      nameRu: catNameRu.trim(),
+      nameKk: catNameKk.trim(),
+      title: catNameRu.trim(),
       slug: catSlug.trim().toLowerCase(),
       isActive: true,
     });
-    setCatTitle('');
+    setCatNameRu('');
+    setCatNameKk('');
     setCatSlug('');
     setCategories(await adminApi.listCategoriesAdmin(token, citySlug));
   }
@@ -359,7 +363,7 @@ export default function DashboardPage() {
 
   async function updateCategoryField(
     category: CategoryRow,
-    data: { title?: string; sortOrder?: number; icon?: string | null },
+    data: { title?: string; nameRu?: string; nameKk?: string; sortOrder?: number; icon?: string | null },
   ) {
     if (!token) return;
     if (data.sortOrder !== undefined) {
@@ -849,9 +853,14 @@ export default function DashboardPage() {
               <h2>Новая категория</h2>
               <form onSubmit={createCategory} className="form-grid" style={{ maxWidth: 480 }}>
                 <input
-                  value={catTitle}
-                  onChange={(e) => setCatTitle(e.target.value)}
-                  placeholder="Название, например Рестораны"
+                  value={catNameRu}
+                  onChange={(e) => setCatNameRu(e.target.value)}
+                  placeholder="Название (RU), например Рестораны"
+                />
+                <input
+                  value={catNameKk}
+                  onChange={(e) => setCatNameKk(e.target.value)}
+                  placeholder="Название (KZ), мысалы Мейрамханалар"
                 />
                 <input
                   value={catSlug}
@@ -942,11 +951,26 @@ export default function DashboardPage() {
                     <td>
                       <input
                         className="slot-input table-input"
-                        defaultValue={c.title}
+                        defaultValue={c.nameRu ?? c.title}
+                        placeholder="RU"
                         onBlur={(e) => {
                           const next = e.target.value.trim();
-                          if (next && next !== c.title) {
-                            updateCategoryField(c, { title: next });
+                          const current = c.nameRu ?? c.title;
+                          if (next && next !== current) {
+                            void updateCategoryField(c, { nameRu: next, title: next });
+                          }
+                        }}
+                      />
+                      <input
+                        className="slot-input table-input"
+                        style={{ marginTop: 6 }}
+                        defaultValue={c.nameKk ?? c.nameRu ?? c.title}
+                        placeholder="KZ"
+                        onBlur={(e) => {
+                          const next = e.target.value.trim();
+                          const current = c.nameKk ?? c.nameRu ?? c.title;
+                          if (next && next !== current) {
+                            void updateCategoryField(c, { nameKk: next });
                           }
                         }}
                       />

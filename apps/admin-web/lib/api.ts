@@ -180,7 +180,15 @@ export const adminApi = {  sendCode: (phone: string) =>
 
   createCategory: (
     token: string,
-    data: { title: string; slug: string; icon?: string; sortOrder?: number; isActive?: boolean },
+    data: {
+      title?: string;
+      nameRu?: string;
+      nameKk?: string;
+      slug: string;
+      icon?: string;
+      sortOrder?: number;
+      isActive?: boolean;
+    },
   ) =>
     api<CategoryRow>('/categories', {
       method: 'POST',
@@ -382,6 +390,8 @@ export type PlanCatalogRow = {
 export type CategoryRow = {
   id: string;
   title: string;
+  nameRu: string;
+  nameKk: string;
   slug: string;
   icon?: string | null;
   sortOrder: number;

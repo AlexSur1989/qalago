@@ -35,6 +35,8 @@ describe('CategoriesService', () => {
       {
         id: 'cat-a',
         title: 'A',
+        nameRu: 'A',
+        nameKk: 'A',
         slug: 'a',
         icon: null,
         sortOrder: 10,
@@ -45,6 +47,8 @@ describe('CategoriesService', () => {
       {
         id: 'cat-b',
         title: 'B',
+        nameRu: 'B',
+        nameKk: 'B',
         slug: 'b',
         icon: null,
         sortOrder: 20,
@@ -72,6 +76,8 @@ describe('CategoriesService', () => {
       {
         id: 'cat-a',
         title: 'A',
+        nameRu: 'A',
+        nameKk: 'A',
         slug: 'a',
         icon: null,
         sortOrder: 1,
@@ -82,6 +88,8 @@ describe('CategoriesService', () => {
       {
         id: 'cat-b',
         title: 'B',
+        nameRu: 'B',
+        nameKk: 'B',
         slug: 'b',
         icon: null,
         sortOrder: 2,

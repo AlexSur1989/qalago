@@ -550,6 +550,8 @@ model OtpCode {
 model Category {
   id                      String                   @id @default(cuid())
   title                   String
+  nameRu                  String
+  nameKk                  String
   slug                    String                   @unique
   icon                    String?
   sortOrder               Int                      @default(0)
