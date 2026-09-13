@@ -13,6 +13,7 @@ import '../../../shared/widgets/qalago_logo.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../core/locale/l10n_extension.dart';
 
 class FavoritesScreen extends ConsumerStatefulWidget {
   const FavoritesScreen({super.key});
@@ -32,6 +33,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final favoritesAsync = ref.watch(favoritesProvider);
     final city = ref.watch(cityProvider);
     final isAuthed = ref.watch(authProvider).isAuthenticated;
@@ -73,9 +75,9 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
                 onCityTap: () => showCityPickerSheet(context, ref),
               ),
               const SizedBox(height: 28),
-              const Text(
-                'Избранное',
-                style: TextStyle(
+              Text(
+                l10n.favoritesTitle,
+                style: const TextStyle(
                   color: AppTheme.textDark,
                   fontSize: 34,
                   fontWeight: FontWeight.w900,
@@ -85,9 +87,9 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
               const SizedBox(height: 18),
               Row(
                 children: [
-                  const Text(
-                    'Сортировка:',
-                    style: TextStyle(
+                  Text(
+                    l10n.favoritesSortLabel,
+                    style: const TextStyle(
                       color: AppTheme.textMuted,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -97,14 +99,14 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
                   DropdownButtonHideUnderline(
                     child: DropdownButton<FavoriteSortMode>(
                       value: _sort,
-                      items: const [
+                      items: [
                         DropdownMenuItem(
                           value: FavoriteSortMode.recent,
-                          child: Text('Недавние'),
+                          child: Text(l10n.favoritesRecent),
                         ),
                         DropdownMenuItem(
                           value: FavoriteSortMode.name,
-                          child: Text('По названию'),
+                          child: Text(l10n.favoritesByName),
                         ),
                       ],
                       onChanged: (value) {
@@ -233,27 +235,27 @@ class _GuestFavoritesPrompt extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        const Text(
-          'Войдите, чтобы сохранять избранное',
+        Text(
+          context.l10n.favoritesGuestTitle,
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: const TextStyle(
             color: AppTheme.textDark,
             fontSize: 20,
             fontWeight: FontWeight.w900,
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
-          'Добавляйте места в избранное и возвращайтесь к ним в один тап.',
+        Text(
+          context.l10n.favoritesGuestBody,
           textAlign: TextAlign.center,
-          style: TextStyle(color: AppTheme.textMuted, height: 1.35),
+          style: const TextStyle(color: AppTheme.textMuted, height: 1.35),
         ),
         const SizedBox(height: 24),
         FilledButton(
           onPressed: () => context.push(
             '/login?redirect=${Uri.encodeComponent('/favorites')}',
           ),
-          child: const Text('Войти'),
+          child: Text(context.l10n.commonLogin),
         ),
       ],
     );

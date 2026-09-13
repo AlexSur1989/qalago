@@ -1,0 +1,332 @@
+{
+  "@@locale": "ru",
+  "appTitle": "QalaGo",
+
+  "navHome": "Главная",
+  "navCategories": "Категории",
+  "navMap": "Карта",
+  "navFavorites": "Избранное",
+  "navProfile": "Профиль",
+
+  "commonRetry": "Повторить",
+  "commonCancel": "Отмена",
+  "commonSave": "Сохранить",
+  "commonBack": "Назад",
+  "commonDone": "Готово",
+  "commonMore": "Ещё",
+  "commonTryAgain": "Попробовать снова",
+  "commonSomethingWrong": "Что-то пошло не так",
+  "commonNoData": "Нет данных",
+  "commonContinue": "Продолжить",
+  "commonDelete": "Удалить",
+  "commonLogin": "Войти",
+  "commonReset": "Сбросить",
+  "commonAll": "Все",
+  "commonAllCategories": "Все категории",
+  "commonAd": "Реклама",
+  "commonViewAll": "Смотреть все",
+
+  "homeSearchPlaceholder": "Поиск заведений и услуг...",
+  "homeCategoriesEmpty": "Категории пока не добавлены",
+  "homePromotionsEmpty": "Нет активных акций",
+  "homePopularEmpty": "Нет популярных заведений",
+  "homePromotionsSection": "Акции и предложения",
+  "homeNearbySection": "Рядом с вами",
+  "homeRecommendedSection": "Рекомендуем",
+  "homeNearbySubtitle": "Места рядом с вами · до 3 км",
+  "homeNearbyEmpty": "В радиусе 3 км от вас пока нет заведений",
+  "homeNotificationsTooltip": "Уведомления",
+  "homeFeaturedPrevTooltip": "Предыдущее заведение",
+  "homeFeaturedNextTooltip": "Следующее заведение",
+  "homeCategoryMoreSemantics": "Ещё категории",
+  "homeCategoriesSection": "Категории",
+
+  "categoriesTitle": "Категории",
+  "categoriesFilterHint": "Фильтр по названию категории...",
+  "categoriesSearchBusinesses": "Поиск заведений",
+  "categoriesNotFound": "Категории не найдены",
+  "categoriesSort": "Сортировка",
+  "categoryRecommended": "Рекомендуемые",
+  "categoryNearest": "Ближе к вам",
+  "categoryByRating": "По рейтингу",
+  "categoryPopular": "Популярные",
+  "categoryEmpty": "В этой категории пока нет мест",
+  "categorySubEmpty": "В этой подкатегории пока нет мест",
+  "categoryNearestNeedsLocation": "Разрешите доступ к геопозиции, чтобы показать ближайшие места",
+  "categorySponsored": "Продвигаемые места",
+  "categoryAllPlaces": "Все места",
+
+  "searchPlaceholder": "Поиск заведений и услуг...",
+  "searchResetFilters": "Сбросить фильтры",
+  "searchNoResults": "Ничего не найдено",
+  "searchClearTooltip": "Очистить",
+  "searchFailed": "Не удалось выполнить поиск.",
+  "searchEnterQuery": "Введите название или выберите категорию",
+  "searchFoundCount": "Найдено: {count}",
+  "@searchFoundCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "searchNoResultsQueryCategory": "Ничего не найдено по запросу «{query}» в выбранной категории",
+  "@searchNoResultsQueryCategory": {
+    "placeholders": {
+      "query": {"type": "String"}
+    }
+  },
+  "searchNoResultsQueryCity": "Ничего не найдено по запросу «{query}» в {cityName}",
+  "@searchNoResultsQueryCity": {
+    "placeholders": {
+      "query": {"type": "String"},
+      "cityName": {"type": "String"}
+    }
+  },
+  "searchNoInCategoryRadius": "Нет заведений в выбранной категории {radiusLabel}",
+  "@searchNoInCategoryRadius": {
+    "placeholders": {
+      "radiusLabel": {"type": "String"}
+    }
+  },
+  "searchNoInCategory": "Нет заведений в выбранной категории",
+  "searchRadiusWholeCity": "Весь город",
+  "searchRadiusKm": "до {km} км",
+  "@searchRadiusKm": {
+    "placeholders": {
+      "km": {"type": "int"}
+    }
+  },
+
+  "favoritesTitle": "Избранное",
+  "favoritesEmpty": "Здесь будут ваши избранные места",
+  "favoritesGuestTitle": "Войдите, чтобы сохранять избранное",
+  "favoritesGuestBody": "Добавляйте места в избранное и возвращайтесь к ним в один тап.",
+  "favoritesRecent": "Недавние",
+  "favoritesByName": "По названию",
+  "favoritesSortLabel": "Сортировка:",
+  "searchRadiusKmExact": "{km} км",
+  "@searchRadiusKmExact": {
+    "placeholders": {
+      "km": {"type": "int"}
+    }
+  },
+
+  "mapTitle": "Карта",
+  "mapNoBusinessesNearby": "Рядом нет заведений",
+  "mapEnableLocation": "Включить геолокацию",
+  "mapLoadFailed": "Не удалось загрузить заведения на карте",
+  "mapCloseTooltip": "Закрыть",
+  "mapDetails": "Подробнее",
+  "mapBusinessesOnMap": "Заведения на карте",
+  "mapNoCoordinates": "Нет заведений с координатами",
+
+  "profileTitle": "Профиль",
+  "profileLanguageApplyHint": "Смена языка применяется сразу.",
+  "profileLanguage": "Язык",
+  "profileLanguageRu": "Русский",
+  "profileLanguageKk": "Қазақша",
+  "profilePersonalData": "Личные данные",
+  "profileMyCity": "Мой город",
+  "profileMyReviews": "Мои отзывы",
+  "profileNotifications": "Уведомления",
+  "profilePermissions": "Мои права",
+  "profileHelp": "Помощь",
+  "profileAbout": "О приложении",
+  "profileForBusiness": "Для бизнеса",
+  "profileFindBusiness": "Найти свой бизнес",
+  "profileFindBusinessSubtitle": "Если карточка уже есть в QalaGo",
+  "profileAddBusiness": "Добавить бизнес",
+  "profileAddBusinessSubtitle": "Создать новую заявку на добавление",
+  "profileMyBusinesses": "Мои бизнесы",
+  "profileMyBusinessesSubtitle": "Кабинет и управление",
+  "profileAddMoreBusiness": "Добавить ещё бизнес",
+  "profileFindExistingBusiness": "Найти существующий бизнес",
+  "profileFindExistingSubtitle": "Подтвердить права владельца",
+  "profileMyApplications": "Мои заявки",
+  "profileMyApplicationsSubtitle": "Статус заявок и подтверждений",
+  "profileModeration": "Модерация",
+  "profileModerationSubtitle": "Проверка заявок и статусов заведений",
+  "profileBusinessDefault": "Бизнес",
+  "profileLogout": "Выйти",
+  "profileSignOut": "Выйти из аккаунта",
+  "profileGuestTitle": "Войдите в аккаунт",
+  "profileGuestSubtitle": "Сохраняйте избранное и оставляйте отзывы",
+  "profileGuestBody": "Сохраняйте избранное, оставляйте отзывы и используйте персональные функции.",
+  "profileCityLabel": "Город: {name}",
+  "@profileCityLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "profileDefaultUser": "Пользователь",
+  "profilePhoneMissing": "Телефон не указан",
+
+  "authLoginTitle": "Вход",
+  "authPhoneHint": "Номер телефона",
+  "authCodeHint": "Код из SMS",
+  "authSendCode": "Получить код",
+  "authVerify": "Войти",
+  "authResendCode": "Отправить код снова",
+  "authResendIn": "Повтор через {seconds} с",
+  "@authResendIn": {
+    "placeholders": {
+      "seconds": {"type": "int"}
+    }
+  },
+  "authContinueWithGoogle": "Войти через Google",
+  "authContinueWithApple": "Войти через Apple",
+  "authGuestContinue": "Продолжить без входа",
+  "authLoginHeading": "Вход в QalaGo",
+  "authLoginSubtitle": "Войдите, чтобы сохранять избранное, оставлять отзывы и управлять профилем.",
+  "authOrDivider": "или",
+  "authLoginByPhone": "Войти по телефону",
+  "authChangePhone": "Изменить номер",
+  "authPhoneInvalid": "Проверьте номер телефона",
+  "authEnterSmsCode": "Введите код из SMS",
+  "authCodeSentAgain": "Код отправлен повторно",
+  "authCodeSentTo": "Код отправлен на {phone}",
+  "@authCodeSentTo": {
+    "placeholders": {
+      "phone": {"type": "String"}
+    }
+  },
+  "authDevLogin": "Войти без SMS (dev)",
+  "authOtpUnavailableBody": "Вход через аккаунт временно недоступен в этой сборке. Можно продолжить как гость.",
+  "authDevOtpHint": "Локальная разработка: OTP может приходить через backend debug.",
+  "authContinueWithoutAccount": "Продолжить без аккаунта",
+
+  "businessCall": "Позвонить",
+  "businessGenericName": "Заведение",
+  "businessLoginTitle": "Войдите в QalaGo",
+  "businessLoginFavoriteMessage": "Чтобы сохранять избранное, войдите по номеру телефона.",
+  "businessLoginReviewMessage": "Чтобы оставить отзыв, войдите по номеру телефона.",
+  "businessReviewSent": "Отзыв отправлен",
+  "businessAbout": "О заведении",
+  "businessAllPromotions": "Все акции ({count})",
+  "@businessAllPromotions": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "businessProductsServices": "Товары и услуги",
+  "businessViewAllCount": "Смотреть все ({count})",
+  "@businessViewAllCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "businessPhotos": "Фотографии",
+  "businessAllPhotos": "Все фото ({count})",
+  "@businessAllPhotos": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "businessNoReviewsYet": "Пока нет отзывов",
+  "businessNotFound": "Заведение не найдено или недоступно",
+  "businessLoadFailed": "Не удалось загрузить информацию о заведении",
+  "businessNoReviewsShort": "Нет отзывов",
+  "businessSchedule": "График работы",
+  "businessContacts": "Контакты",
+  "businessOnMap": "На карте",
+  "businessBuildRoute": "Построить маршрут",
+  "businessEdit": "Редактировать",
+  "businessPromotionDefault": "Акция",
+  "businessPromotionValidUntil": "до {date}",
+  "@businessPromotionValidUntil": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "catalogSearchHint": "Найти товар или услугу",
+  "catalogPriceOnRequest": "Цена по запросу",
+  "catalogShowMore": "Показать ещё",
+  "photosTotal": "Всего: {count}",
+  "@photosTotal": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "photosEmpty": "Нет фотографий",
+  "reviewWriteRequired": "Напишите текст отзыва",
+  "reviewCheckTitle": "Проверьте отзыв",
+  "reviewCheckBody": "Текст может нарушать правила площадки. Отредактируйте отзыв или отправьте как есть — модератор проверит вручную.",
+  "reviewEdit": "Редактировать",
+  "reviewSubmit": "Отправить",
+  "reviewRatingLabel": "Оценка",
+  "reviewYourReviewLabel": "Ваш отзыв",
+  "reviewLeaveButton": "Оставить отзыв",
+  "reviewLooksOk": "Отзыв выглядит нормально",
+  "reviewPossibleViolations": "Возможные нарушения",
+  "reviewRecommendCheck": "Рекомендуем проверить текст",
+  "reviewQualityScore": "Оценка качества: {score}/100",
+  "@reviewQualityScore": {
+    "placeholders": {
+      "score": {"type": "int"}
+    }
+  },
+  "reviewLoginToLeave": "Войдите, чтобы оставить отзыв",
+  "reviewLoginRequiredBody": "Отзывы доступны авторизованным пользователям.",
+  "notificationsTitle": "Уведомления",
+  "notificationsMarkAllRead": "Прочитать все",
+  "notificationsEmpty": "Нет уведомлений",
+  "cityNotFound": "Города не найдены",
+  "citySelectedSnack": "Город: {name}",
+  "@citySelectedSnack": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "onboardingFindBusinessTitle": "Найти свой бизнес",
+  "onboardingNotFound": "Не нашли свой бизнес?",
+  "onboardingAddNew": "Добавить новый бизнес",
+  "onboardingConfirmRights": "Подтвердить права",
+  "onboardingAddBusinessTitle": "Добавить новый бизнес",
+  "onboardingRejectionReason": "Причина отклонения: {reason}",
+  "@onboardingRejectionReason": {
+    "placeholders": {
+      "reason": {"type": "String"}
+    }
+  },
+  "onboardingOpenCabinet": "Открыть кабинет",
+  "onboardingDraftSaved": "Черновик сохранён",
+  "businessRoute": "Маршрут",
+  "businessWebsite": "Сайт",
+  "businessShare": "Поделиться",
+  "businessReviews": "Отзывы",
+  "businessWriteReview": "Написать отзыв",
+  "businessOpen": "Открыто",
+  "businessClosed": "Закрыто",
+  "businessToday": "Сегодня",
+  "businessPromotions": "Акции",
+
+  "errorInvalidOtp": "Неверный код",
+  "errorUnauthorized": "Требуется вход",
+  "errorForbidden": "Недостаточно прав",
+  "errorNotFound": "Не найдено",
+  "errorNetwork": "Проверьте подключение к интернету",
+  "errorTimeout": "Превышено время ожидания",
+  "errorRateLimited": "Слишком много попыток. Попробуйте позже",
+  "errorLoadFailed": "Не удалось загрузить данные. Проверьте подключение и попробуйте снова.",
+  "errorServiceUnavailable": "Сервис временно недоступен. Попробуйте позже.",
+
+  "deleteAccountTitle": "Удалить аккаунт?",
+  "deleteAccountBody": "Это действие необратимо. Будут удалены избранное, отзывы и доступ к заведениям. Если вы единственный владелец бизнеса, сначала передайте управление.",
+  "deleteAccountConfirmTitle": "Подтвердите удаление",
+  "deleteAccountConfirmBody": "Аккаунт будет удалён без возможности восстановления.",
+  "deleteAccountSuccess": "Аккаунт удалён",
+  "deleteAccountConflict": "Перед удалением передайте управление заведением другому владельцу.",
+  "deleteAccountFailed": "Не удалось удалить аккаунт. Попробуйте позже.",
+
+  "reviewsCount": "{count, plural, =0{0 отзывов} one{{count} отзыв} few{{count} отзыва} many{{count} отзывов} other{{count} отзыва}}",
+  "@reviewsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "placesCount": "{count, plural, =0{0 мест} one{{count} место} few{{count} места} many{{count} мест} other{{count} места}}",
+  "@placesCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
+}

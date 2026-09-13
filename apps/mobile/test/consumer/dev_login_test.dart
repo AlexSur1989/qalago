@@ -5,6 +5,8 @@ import 'package:qalago_mobile/core/constants/app_constants.dart';
 import 'package:qalago_mobile/core/constants/dev_seed_accounts.dart';
 import 'package:qalago_mobile/features/auth/presentation/dev_quick_login_panel.dart';
 import 'package:qalago_mobile/features/auth/presentation/login_screen.dart';
+
+import '../support/l10n_test_harness.dart';
 import 'package:qalago_mobile/features/auth/providers/auth_provider.dart';
 
 void main() {
@@ -17,7 +19,7 @@ void main() {
           overrides: [
             authProvider.overrideWith(() => _GuestAuthNotifier()),
           ],
-          child: const MaterialApp(home: LoginScreen()),
+          child: wrapWithL10n(const LoginScreen()),
         ),
       );
       await tester.pumpAndSettle();

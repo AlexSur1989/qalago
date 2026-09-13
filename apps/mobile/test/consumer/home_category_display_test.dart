@@ -5,6 +5,8 @@ import 'package:qalago_mobile/shared/models/models.dart';
 CategoryModel _cat(int i) => CategoryModel(
       id: 'c$i',
       title: 'Cat $i',
+      nameRu: 'Cat $i',
+      nameKk: 'Cat $i',
       slug: 'c$i',
     );
 

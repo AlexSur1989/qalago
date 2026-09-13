@@ -15,6 +15,8 @@ import '../../../shared/widgets/qalago_search_field.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../shared/widgets/category_icon_tile.dart';
 import '../../../core/locale/app_locale_provider.dart';
+import '../../../core/locale/consumer_api_errors.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../utils/category_display.dart';
 import 'category_businesses_screen.dart';
 
@@ -52,6 +54,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final city = ref.watch(cityProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
     final unreadAsync = ref.watch(unreadNotificationsProvider);
@@ -84,7 +87,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
               QalagoSearchField(
                 controller: _searchController,
                 textInputAction: TextInputAction.search,
-                hintText: 'Фильтр по названию категории...',
+                hintText: l10n.categoriesFilterHint,
                 onChanged: (value) => setState(() => _query = value),
                 onSubmitted: (value) {
                   final q = value.trim();
@@ -93,7 +96,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                 },
                 suffixIcon: _query.isNotEmpty
                     ? IconButton(
-                        tooltip: 'Очистить',
+                        tooltip: l10n.searchClearTooltip,
                         onPressed: () {
                           _searchController.clear();
                           setState(() => _query = '');
@@ -111,12 +114,12 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                 child: TextButton.icon(
                   onPressed: () => context.push('/search'),
                   icon: const Icon(Icons.storefront_outlined),
-                  label: const Text('Поиск заведений'),
+                  label: Text(l10n.categoriesSearchBusinesses),
                 ),
               ),
               const SizedBox(height: 12),
               Text(
-                'Категории',
+                l10n.categoriesTitle,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.w900,
                       color: AppTheme.textDark,
@@ -143,16 +146,16 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                 categoriesAsync.when(
                 loading: () => const LoadingView(),
                 error: (e, _) => ErrorView(
-                  message: '$e',
+                  message: localizedLoadError(l10n, e),
                   onRetry: () => ref.invalidate(categoriesProvider),
                 ),
                 data: (categories) {
                   final localeCode = resolveLocaleCode(ref.watch(appLocaleCodeProvider));
                   final filtered = _filterCategories(categories, localeCode);
                   if (filtered.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Center(child: Text('Категории не найдены')),
+                    return Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Center(child: Text(l10n.categoriesNotFound)),
                     );
                   }
                   return _CategoriesGrid(categories: filtered, localeCode: localeCode);
@@ -209,7 +212,7 @@ class _NotificationButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      tooltip: 'Уведомления',
+      tooltip: context.l10n.homeNotificationsTooltip,
       onPressed: onTap,
       icon: Badge(
         isLabelVisible: count > 0,

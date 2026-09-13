@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-14 — Stage 6.10B.1: Consumer mobile RU/KK localization foundation
+
+- **Added**: Flutter `gen_l10n` (`app_ru.arb`, `app_kk.arb`), `context.l10n`, persisted locale (`qalago_ui_locale`), profile language screen, API/load error mapping, glossary, scoped hardcoded-string guard.
+- **Localized (consumer)**: shell nav, home, categories discovery, profile/settings entry, login OTP/social shell, favorites shell, business detail primary actions (partial sections remain).
+- **Future**: complete search/map/business-detail/reviews/promotions/onboarding strings; owner/monetization cabinet; city `nameKk` when API provides it; expand scanner roots.
+
 ## 2026-09-14 — Stage 6.10B: Category RU/KZ localization and consumer web parity
 
 - Prisma `Category.nameRu` / `Category.nameKk` with migration backfill; `title` kept as legacy alias of `nameRu`.

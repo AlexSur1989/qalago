@@ -17,6 +17,10 @@ import '../../../shared/utils/business_detail_utils.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../../core/auth/auth_prompt.dart';
+import '../../../core/locale/consumer_api_errors.dart';
+import '../../../core/locale/l10n_extension.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../ads/utils/ad_url_utils.dart';
 import '../../analytics/providers/analytics_identity_provider.dart';
 import '../../analytics/widgets/reviews_view_tracker.dart';
@@ -120,10 +124,11 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
   Future<void> _toggleFavorite() async {
     if (!ref.read(authProvider).isAuthenticated) {
       if (!mounted) return;
+      final l10n = context.l10n;
       await showAuthRequiredDialog(
         context,
-        title: 'Войдите в QalaGo',
-        message: 'Чтобы сохранять избранное, войдите по номеру телефона.',
+        title: l10n.businessLoginTitle,
+        message: l10n.businessLoginFavoriteMessage,
         returnPath: '/business/${widget.id}',
       );
       return;
@@ -165,12 +170,13 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
     if (mounted) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Отзыв отправлен')));
+      ).showSnackBar(SnackBar(content: Text(context.l10n.businessReviewSent)));
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final detailsAsync = ref.watch(businessDetailsProvider(widget.id));
     final favoriteAsync = ref.watch(businessFavoriteProvider(widget.id));
     final isAuthenticated = ref.watch(authProvider).isAuthenticated;
@@ -185,7 +191,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
       body: detailsAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
-          message: _consumerErrorMessage('$e'),
+          message: _consumerErrorMessage(l10n, '$e'),
           onRetry: () {
             ref.invalidate(businessDetailsProvider(widget.id));
           },
@@ -644,12 +650,12 @@ class _ReviewsPreviewBlock extends StatelessWidget {
   }
 }
 
-String _consumerErrorMessage(String raw) {
+String _consumerErrorMessage(AppLocalizations l10n, String raw) {
   final lower = raw.toLowerCase();
   if (lower.contains('404') || lower.contains('not found')) {
-    return 'Заведение не найдено или недоступно';
+    return l10n.businessNotFound;
   }
-  return 'Не удалось загрузить информацию о заведении';
+  return l10n.businessLoadFailed;
 }
 
 void _openGallery(BuildContext context, List<String> urls, int initialIndex) {
@@ -947,13 +953,14 @@ class _PrimaryActionsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final children = <Widget>[];
     if (phone != null && normalizeTelUri(phone) != null) {
       children.add(
         Expanded(
           child: _PrimaryAction(
             icon: Icons.phone_rounded,
-            label: 'Позвонить',
+            label: l10n.businessCall,
             onTap: onCall,
           ),
         ),
@@ -977,7 +984,7 @@ class _PrimaryActionsRow extends StatelessWidget {
         Expanded(
           child: _PrimaryAction(
             icon: Icons.assistant_direction_rounded,
-            label: 'Маршрут',
+            label: l10n.businessRoute,
             onTap: onRoute,
           ),
         ),

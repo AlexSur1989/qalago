@@ -11,6 +11,8 @@ import 'package:qalago_mobile/features/auth/providers/auth_provider.dart';
 import 'package:qalago_mobile/features/catalog/data/catalog_repository.dart';
 import 'package:qalago_mobile/features/favorites/presentation/favorites_screen.dart';
 import 'package:qalago_mobile/features/map/presentation/map_screen.dart';
+
+import '../support/l10n_test_harness.dart';
 import 'package:qalago_mobile/features/promotions/presentation/promotions_screen.dart';
 import 'package:qalago_mobile/shared/models/models.dart';
 
@@ -58,7 +60,7 @@ void main() {
               );
             }),
           ],
-          child: const MaterialApp(home: PromotionsScreen()),
+          child: wrapWithL10n(const PromotionsScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -79,7 +81,7 @@ void main() {
               return PaginatedPromotions(items: []);
             }),
           ],
-          child: const MaterialApp(home: PromotionsScreen()),
+          child: wrapWithL10n(const PromotionsScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -100,7 +102,7 @@ void main() {
               throw Exception('network');
             }),
           ],
-          child: const MaterialApp(home: PromotionsScreen()),
+          child: wrapWithL10n(const PromotionsScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -136,7 +138,7 @@ void main() {
               );
             }),
           ],
-          child: const MaterialApp(home: PromotionsScreen()),
+          child: wrapWithL10n(const PromotionsScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -203,7 +205,7 @@ void main() {
               ];
             }),
           ],
-          child: const MaterialApp(home: FavoritesScreen()),
+          child: wrapWithL10n(const FavoritesScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -237,7 +239,7 @@ void main() {
               ];
             }),
           ],
-          child: const MaterialApp(home: FavoritesScreen()),
+          child: wrapWithL10n(const FavoritesScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -253,7 +255,7 @@ void main() {
             cityProvider.overrideWith(() => _UralskCityNotifier()),
             favoritesProvider.overrideWith((ref) async => []),
           ],
-          child: const MaterialApp(home: FavoritesScreen()),
+          child: wrapWithL10n(const FavoritesScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -294,7 +296,7 @@ void main() {
               ];
             }),
           ],
-          child: const MaterialApp(home: FavoritesScreen()),
+          child: wrapWithL10n(const FavoritesScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -337,7 +339,7 @@ void main() {
               );
             }),
           ],
-          child: const MaterialApp(home: MapScreen()),
+          child: wrapWithL10n(const MapScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -359,7 +361,7 @@ void main() {
               throw Exception('network');
             }),
           ],
-          child: const MaterialApp(home: MapScreen()),
+          child: wrapWithL10n(const MapScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -443,7 +445,7 @@ void main() {
               );
             }),
           ],
-          child: const MaterialApp(home: MapScreen()),
+          child: wrapWithL10n(const MapScreen()),
         ),
       );
       await tester.pumpAndSettle();

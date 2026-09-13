@@ -18,7 +18,8 @@ import '../../ads/widgets/sponsored_business_section.dart';
 import '../../analytics/widgets/tracked_business_card.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../data/category_catalog_sort.dart';
-import '../data/category_discovery_strings.dart';
+import '../data/category_l10n.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../providers/category_sort_provider.dart';
 import '../utils/category_display.dart';
 import '../utils/category_list_utils.dart';
@@ -81,6 +82,7 @@ class CategoryBusinessesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final localeCode = resolveLocaleCode(ref.watch(appLocaleCodeProvider));
     final city = ref.watch(cityProvider);
     final sort = ref.watch(categoryCatalogSortProvider);
@@ -152,7 +154,7 @@ class CategoryBusinessesScreen extends ConsumerWidget {
         leading: qalagoBackLeading(context, fallbackLocation: '/categories'),
         actions: [
           IconButton(
-            tooltip: 'На карте',
+            tooltip: l10n.businessOnMap,
             icon: const Icon(Icons.map_outlined),
             onPressed: () {
               final sub = ref.read(categorySubcategoryFilterProvider(categoryId));
@@ -203,8 +205,8 @@ class CategoryBusinessesScreen extends ConsumerWidget {
 
             if (listEmpty) {
               final emptyMessage = subFilterActive
-                  ? CategoryDiscoveryStrings.emptySubcategoryFilter
-                  : CategoryDiscoveryStrings.emptyCategory;
+                  ? l10n.categorySubEmpty
+                  : l10n.categoryEmpty;
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(24),
@@ -221,10 +223,7 @@ class CategoryBusinessesScreen extends ConsumerWidget {
                   const SizedBox(height: 80),
                   Center(
                     child: Text(
-                      CategoryDiscoveryStrings.sectionTitle(
-                        emptyMessage,
-                        localeCode: localeCode,
-                      ),
+                      emptyMessage,
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -253,10 +252,7 @@ class CategoryBusinessesScreen extends ConsumerWidget {
                 if (nearestBlocked) ...[
                   const SizedBox(height: 12),
                   Text(
-                    CategoryDiscoveryStrings.sectionTitle(
-                      CategoryDiscoveryStrings.nearestNeedsLocation,
-                      localeCode: localeCode,
-                    ),
+                    l10n.categoryNearestNeedsLocation,
                     style: TextStyle(
                       color: AppTheme.textDark.withValues(alpha: 0.65),
                       fontSize: 13,
@@ -267,10 +263,7 @@ class CategoryBusinessesScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 if (recommendedOrganic.isNotEmpty) ...[
                   _SectionTitle(
-                    title: CategoryDiscoveryStrings.sectionTitle(
-                      CategoryDiscoveryStrings.recommendedSection,
-                      localeCode: localeCode,
-                    ),
+                    title: l10n.homeRecommendedSection,
                   ),
                   const SizedBox(height: 12),
                   ..._organicBusinessCards(context, recommendedOrganic),
@@ -278,22 +271,15 @@ class CategoryBusinessesScreen extends ConsumerWidget {
                 ],
                 if (sponsoredAds.isNotEmpty) ...[
                   SponsoredBusinessSection(
-                    title: CategoryDiscoveryStrings.sectionTitle(
-                      CategoryDiscoveryStrings.sponsoredSection,
-                      localeCode: localeCode,
-                    ),
+                    title: l10n.categorySponsored,
                     items: sponsoredAds,
                   ),
                   const SizedBox(height: 20),
                 ],
                 if (allPlaces.isNotEmpty) ...[
                   _SectionTitle(
-                    title: CategoryDiscoveryStrings.sectionTitle(
-                      CategoryDiscoveryStrings.allPlacesSection,
-                      localeCode: localeCode,
-                    ),
-                    subtitle:
-                        '${city.nameRu} · ${allPlaces.length} ${_pluralPlaces(allPlaces.length)}',
+                    title: l10n.categoryAllPlaces,
+                    subtitle: '${city.nameRu} · ${l10n.placesCount(allPlaces.length)}',
                   ),
                   const SizedBox(height: 12),
                   ..._organicBusinessCards(context, allPlaces),
@@ -327,15 +313,6 @@ class CategoryBusinessesScreen extends ConsumerWidget {
     ];
   }
 
-  static String _pluralPlaces(int count) {
-    final mod10 = count % 10;
-    final mod100 = count % 100;
-    if (mod10 == 1 && mod100 != 11) return 'место';
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) {
-      return 'места';
-    }
-    return 'мест';
-  }
 }
 
 class _CategorySortBar extends StatelessWidget {
@@ -351,14 +328,12 @@ class _CategorySortBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          CategoryDiscoveryStrings.sectionTitle(
-            CategoryDiscoveryStrings.sortLabel,
-            localeCode: localeCode,
-          ),
+          l10n.categoriesSort,
           style: const TextStyle(
             fontWeight: FontWeight.w800,
             fontSize: 14,
@@ -372,12 +347,7 @@ class _CategorySortBar extends StatelessWidget {
           children: [
             for (final option in CategoryCatalogSort.values)
               ChoiceChip(
-                label: Text(
-                  CategoryDiscoveryStrings.sortOptionLabel(
-                    option,
-                    localeCode: localeCode,
-                  ),
-                ),
+                label: Text(categorySortOptionLabel(l10n, option)),
                 selected: sort == option,
                 onSelected: (_) => onSelected(option),
               ),

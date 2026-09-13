@@ -5,6 +5,8 @@ import 'package:qalago_mobile/core/release/app_config_provider.dart';
 import 'package:qalago_mobile/features/categories/presentation/category_subcategory_filter.dart';
 import 'package:qalago_mobile/shared/models/models.dart';
 
+import '../../support/l10n_test_harness.dart';
+
 void main() {
   const categoryId = 'cat-food';
 
@@ -25,8 +27,8 @@ void main() {
             ],
           ),
         ],
-        child: const MaterialApp(
-          home: Scaffold(
+        child: wrapWithL10n(
+          const Scaffold(
             body: CategorySubcategoryFilterBar(categoryId: categoryId),
           ),
         ),
@@ -62,8 +64,8 @@ void main() {
             ],
           ),
         ],
-        child: const MaterialApp(
-          home: Scaffold(
+        child: wrapWithL10n(
+          const Scaffold(
             body: CategorySubcategoryFilterBar(categoryId: categoryId),
           ),
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/locale/l10n_extension.dart';
 import '../../core/theme/app_theme.dart';
 
 /// Compact category/subcategory tile: icon above label (no text in image).
@@ -66,9 +67,10 @@ class CategoryMoreTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Semantics(
       button: true,
-      label: 'Ещё категории',
+      label: l10n.homeCategoryMoreSemantics,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -96,7 +98,7 @@ class CategoryMoreTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Ещё',
+                  l10n.commonMore,
                   maxLines: 2,
                   textAlign: TextAlign.center,
                   style: TextStyle(

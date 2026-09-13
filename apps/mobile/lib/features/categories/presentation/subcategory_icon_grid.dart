@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/locale/app_locale_provider.dart';
 import '../../../shared/widgets/category_icon_tile.dart';
-import '../data/category_discovery_strings.dart';
+import '../../../core/locale/l10n_extension.dart';
 import 'category_subcategory_filter.dart';
 
 class SubcategoryIconGrid extends ConsumerWidget {
@@ -29,10 +29,7 @@ class SubcategoryIconGrid extends ConsumerWidget {
             const spacing = 8.0;
             final itemWidth =
                 (constraints.maxWidth - spacing * (columns - 1)) / columns;
-            final allLabel = CategoryDiscoveryStrings.sectionTitle(
-              CategoryDiscoveryStrings.subcategoryAll,
-              localeCode: localeCode,
-            );
+            final allLabel = context.l10n.commonAll;
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Wrap(

@@ -13,6 +13,8 @@ import 'package:qalago_mobile/features/profile/presentation/profile_screen.dart'
 import 'package:qalago_mobile/shared/models/models.dart';
 import 'package:qalago_mobile/shared/utils/auth_utils.dart';
 
+import '../support/l10n_test_harness.dart';
+
 void main() {
   group('guest/public routes', () {
     test('core consumer routes remain public', () {
@@ -34,12 +36,12 @@ void main() {
             authProvider.overrideWith(() => _GuestAuthNotifier()),
             cityProvider.overrideWith(() => _UralskCityNotifier()),
           ],
-          child: const MaterialApp(home: ProfileScreen()),
+          child: wrapWithL10n(const ProfileScreen()),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Войдите в QalaGo'), findsOneWidget);
+      expect(find.text('Войдите в аккаунт'), findsOneWidget);
       expect(find.text('Войти'), findsOneWidget);
       expect(find.text('Кабинет бизнеса'), findsNothing);
     });
@@ -51,7 +53,7 @@ void main() {
             authProvider.overrideWith(() => _GuestAuthNotifier()),
             cityProvider.overrideWith(() => _UralskCityNotifier()),
           ],
-          child: const MaterialApp(home: FavoritesScreen()),
+          child: wrapWithL10n(const FavoritesScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -67,7 +69,7 @@ void main() {
           overrides: [
             authProvider.overrideWith(() => _GuestAuthNotifier()),
           ],
-          child: const MaterialApp(home: LoginScreen()),
+          child: wrapWithL10n(const LoginScreen()),
         ),
       );
       await tester.pumpAndSettle();

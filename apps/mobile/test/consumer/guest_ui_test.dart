@@ -8,6 +8,8 @@ import 'package:qalago_mobile/features/profile/presentation/profile_screen.dart'
 import 'package:qalago_mobile/shared/widgets/business_card.dart';
 import 'package:qalago_mobile/shared/models/models.dart';
 
+import '../support/l10n_test_harness.dart';
+
 void main() {
   testWidgets('guest profile shows login CTA', (tester) async {
     await tester.pumpWidget(
@@ -16,12 +18,12 @@ void main() {
           authProvider.overrideWith(() => _GuestAuthNotifier()),
           cityProvider.overrideWith(() => _FixedCityNotifier()),
         ],
-        child: const MaterialApp(home: ProfileScreen()),
+        child: wrapWithL10n(const ProfileScreen()),
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Войдите в QalaGo'), findsOneWidget);
+    expect(find.text('Войдите в аккаунт'), findsOneWidget);
     expect(find.text('Войти'), findsOneWidget);
     expect(find.text('Кабинет бизнеса'), findsNothing);
   });
@@ -33,7 +35,7 @@ void main() {
           authProvider.overrideWith(() => _GuestAuthNotifier()),
           cityProvider.overrideWith(() => _FixedCityNotifier()),
         ],
-        child: const MaterialApp(home: FavoritesScreen()),
+        child: wrapWithL10n(const FavoritesScreen()),
       ),
     );
     await tester.pumpAndSettle();

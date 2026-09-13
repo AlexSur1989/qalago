@@ -13,6 +13,8 @@ import '../data/social_auth_platform.dart';
 import 'dev_quick_login_panel.dart';
 import '../providers/auth_provider.dart';
 import '../../../shared/widgets/legal_links.dart';
+import '../../../core/locale/consumer_api_errors.dart';
+import '../../../core/locale/l10n_extension.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -88,7 +90,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _sendCode({bool isResend = false}) async {
     final normalized = normalizeKazakhstanPhone(_phoneController.text);
     if (normalized == null) {
-      _showError('Проверьте номер телефона');
+      _showError(context.l10n.authPhoneInvalid);
       return;
     }
 
@@ -105,8 +107,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           SnackBar(
             content: Text(
               isResend
-                  ? 'Код отправлен повторно'
-                  : 'Код отправлен на ${formatKazakhstanPhone(normalized)}',
+                  ? context.l10n.authCodeSentAgain
+                  : context.l10n.authCodeSentTo(formatKazakhstanPhone(normalized)),
             ),
           ),
         );
@@ -121,13 +123,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final phone = _normalizedPhone ??
         normalizeKazakhstanPhone(_phoneController.text);
     if (phone == null) {
-      _showError('Проверьте номер телефона');
+      _showError(context.l10n.authPhoneInvalid);
       return;
     }
 
     final code = _codeController.text.trim();
     if (!isValidOtpCode(code)) {
-      _showError('Введите код из SMS');
+      _showError(context.l10n.authEnterSmsCode);
       return;
     }
 
@@ -145,7 +147,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _devLogin() async {
     final normalized = normalizeKazakhstanPhone(_phoneController.text);
     if (normalized == null) {
-      _showError('Проверьте номер телефона');
+      _showError(context.l10n.authPhoneInvalid);
       return;
     }
 
@@ -187,6 +189,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final auth = ref.watch(authProvider);
     final isBusy = auth.isLoading;
 
@@ -209,10 +212,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 22),
                     const _CityArtwork(),
                     const SizedBox(height: 34),
-                    const Text(
-                      'Вход в QalaGo',
+                    Text(
+                      l10n.authLoginHeading,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: AppTheme.textDark,
                         fontSize: 32,
                         fontWeight: FontWeight.w900,
@@ -220,10 +223,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      'Войдите, чтобы сохранять избранное, оставлять отзывы и управлять профилем.',
+                    Text(
+                      l10n.authLoginSubtitle,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: AppTheme.textMuted,
                         fontSize: 16,
                         height: 1.35,
@@ -243,7 +246,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         onPressed: isBusy ? null : _signInWithApple,
                         height: 52,
                         borderRadius: BorderRadius.circular(18),
-                        text: 'Продолжить с Apple',
+                        text: l10n.authContinueWithApple,
                       ),
                       const SizedBox(height: 12),
                     ],
@@ -257,11 +260,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 color: AppTheme.textDark.withValues(alpha: 0.08),
                               ),
                             ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 12),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
                               child: Text(
-                                'или',
-                                style: TextStyle(
+                                l10n.authOrDivider,
+                                style: const TextStyle(
                                   color: AppTheme.textMuted,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -282,7 +285,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           onPressed: isBusy
                               ? null
                               : () => setState(() => _otpExpanded = true),
-                          child: const Text('Войти по телефону'),
+                          child: Text(l10n.authLoginByPhone),
                         ),
                       if (_otpExpanded || !_showSocial) ...[
                         TextField(
@@ -344,8 +347,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               FilteringTextInputFormatter.digitsOnly,
                               LengthLimitingTextInputFormatter(6),
                             ],
-                            decoration: const InputDecoration(
-                              labelText: 'Код из SMS',
+                            decoration: InputDecoration(
+                              labelText: l10n.authCodeHint,
                               hintText: '••••',
                             ),
                             onSubmitted: (_) {
@@ -357,7 +360,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             children: [
                               TextButton(
                                 onPressed: isBusy ? null : _changePhone,
-                                child: const Text('Изменить номер'),
+                                child: Text(l10n.authChangePhone),
                               ),
                               const Spacer(),
                               TextButton(
@@ -366,8 +369,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     : () => _sendCode(isResend: true),
                                 child: Text(
                                   _resendCooldownSec > 0
-                                      ? 'Повтор через $_resendCooldownSec с'
-                                      : 'Отправить снова',
+                                      ? l10n.authResendIn(_resendCooldownSec)
+                                      : l10n.authResendCode,
                                 ),
                               ),
                             ],
@@ -393,7 +396,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     color: Colors.white,
                                   ),
                                 )
-                              : Text(_codeSent ? 'Войти' : 'Получить код'),
+                              : Text(_codeSent ? l10n.authVerify : l10n.authSendCode),
                         ),
                         if (AppConstants.devLoginEnabled && !_codeSent) ...[
                           const SizedBox(height: 12),
@@ -409,7 +412,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 borderRadius: BorderRadius.circular(18),
                               ),
                             ),
-                            child: const Text('Войти без SMS (dev)'),
+                            child: Text(l10n.authDevLogin),
                           ),
                           const DevQuickLoginPanel(compact: true),
                         ],
@@ -424,11 +427,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(color: const Color(0xFFFFD9A8)),
                         ),
-                        child: const Text(
-                          'Вход через аккаунт временно недоступен в этой сборке. '
-                          'Можно продолжить как гость.',
+                        child: Text(
+                          l10n.authOtpUnavailableBody,
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Color(0xFF7B5B2E),
                             fontSize: 14,
                             height: 1.35,
@@ -451,12 +453,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                       icon: const Icon(Icons.explore_outlined),
-                      label: const Text('Продолжить без аккаунта'),
+                      label: Text(l10n.authContinueWithoutAccount),
                     ),
                     if (kDebugMode) ...[
                       const SizedBox(height: 16),
                       Text(
-                        'Локальная разработка: OTP может приходить через backend debug.',
+                        l10n.authDevOtpHint,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: AppTheme.textDark.withValues(alpha: 0.45),
@@ -523,9 +525,9 @@ class _GoogleSignInButton extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Text(
-                  'Продолжить с Google',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                Text(
+                  context.l10n.authContinueWithGoogle,
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
                 ),
               ],
             ),

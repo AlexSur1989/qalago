@@ -111,13 +111,16 @@ void main() {
   });
 
   group('category navigation helpers', () {
-    test('categoryDisplayTitle uses category title', () {
+    test('categoryDisplayName uses localized name', () {
       final category = CategoryModel(
         id: 'cat1',
         title: 'Кофейни',
+        nameRu: 'Кофейни',
+        nameKk: 'Кофейнялар',
         slug: 'coffee',
       );
-      expect(categoryDisplayTitle(category), 'Кофейни');
+      expect(category.displayName(localeCode: 'ru'), 'Кофейни');
+      expect(category.displayName(localeCode: 'kk'), 'Кофейнялар');
     });
   });
 }

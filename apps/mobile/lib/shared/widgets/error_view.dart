@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/locale/l10n_extension.dart';
 import '../../core/theme/app_spacing.dart';
 
 class ErrorView extends StatelessWidget {
@@ -31,7 +32,10 @@ class ErrorView extends StatelessWidget {
                 ),
                 if (onRetry != null) ...[
                   const SizedBox(height: 16),
-                  FilledButton.tonal(onPressed: onRetry, child: const Text('Повторить')),
+                  FilledButton.tonal(
+                    onPressed: onRetry,
+                    child: Text(context.l10n.commonRetry),
+                  ),
                 ],
               ],
             ),

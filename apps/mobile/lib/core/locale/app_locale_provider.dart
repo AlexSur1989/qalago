@@ -1,8 +1,13 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// UI locale code for consumer-facing labels (`ru` | `kk`).
-/// Profile language switch can override this provider later.
-final appLocaleCodeProvider = StateProvider<String>((ref) => 'ru');
+import 'app_locale_notifier.dart';
+
+export 'app_locale_notifier.dart';
+
+final appLocaleCodeProvider = Provider<String>((ref) {
+  return localeToCode(ref.watch(appLocaleProvider));
+});
 
 String resolveLocaleCode(String code) {
   return code.startsWith('kk') ? 'kk' : 'ru';

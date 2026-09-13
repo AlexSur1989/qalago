@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 /// User-facing load errors for catalog/home surfaces (not auth-specific).
+/// Prefer [localizedLoadError] when [BuildContext] / [AppLocalizations] is available.
 String mapUserFacingLoadError(Object error) {
   if (error is DioException) {
     switch (error.type) {

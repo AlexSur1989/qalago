@@ -5,7 +5,7 @@ import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/release/app_config_provider.dart';
 import '../../../shared/models/models.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../data/category_discovery_strings.dart';
+import '../../../core/locale/l10n_extension.dart';
 
 final categorySubcategoriesProvider =
     FutureProvider.family<List<SubcategoryModel>, String>((ref, categoryId) async {
@@ -26,6 +26,7 @@ class CategorySubcategoryFilterBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final localeCode = resolveLocaleCode(ref.watch(appLocaleCodeProvider));
     final enabled = ref.watch(subcategoriesEnabledProvider);
     if (!enabled) return const SizedBox.shrink();
@@ -44,12 +45,7 @@ class CategorySubcategoryFilterBar extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: ChoiceChip(
-                  label: Text(
-                    CategoryDiscoveryStrings.sectionTitle(
-                      CategoryDiscoveryStrings.subcategoryAll,
-                      localeCode: localeCode,
-                    ),
-                  ),
+                  label: Text(l10n.commonAll),
                   selected: selected == null,
                   onSelected: (_) {
                     ref.read(categorySubcategoryFilterProvider(categoryId).notifier).state = null;

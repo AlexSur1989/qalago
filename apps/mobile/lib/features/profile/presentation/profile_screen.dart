@@ -9,22 +9,21 @@ import '../../../shared/widgets/qalago_logo.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../business_onboarding/utils/onboarding_labels.dart';
 import '../../../shared/widgets/legal_links.dart';
+import '../../../core/locale/l10n_extension.dart';
 
 Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
+  final l10n = context.l10n;
   final first = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text('Удалить аккаунт?'),
-      content: const Text(
-        'Это действие необратимо. Будут удалены избранное, отзывы и доступ к заведениям. '
-        'Если вы единственный владелец бизнеса, сначала передайте управление.',
-      ),
+      title: Text(l10n.deleteAccountTitle),
+      content: Text(l10n.deleteAccountBody),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Отмена')),
+        TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.commonCancel)),
         TextButton(
           onPressed: () => Navigator.pop(ctx, true),
           style: TextButton.styleFrom(foregroundColor: AppTheme.error),
-          child: const Text('Продолжить'),
+          child: Text(l10n.commonContinue),
         ),
       ],
     ),
@@ -34,17 +33,17 @@ Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
   final second = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text('Подтвердите удаление'),
-      content: const Text('Аккаунт будет удалён без возможности восстановления.'),
+      title: Text(l10n.deleteAccountConfirmTitle),
+      content: Text(l10n.deleteAccountConfirmBody),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Отмена')),
+        TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.commonCancel)),
         FilledButton(
           onPressed: () => Navigator.pop(ctx, true),
           style: FilledButton.styleFrom(
             backgroundColor: Theme.of(ctx).colorScheme.error,
             foregroundColor: Theme.of(ctx).colorScheme.onError,
           ),
-          child: const Text('Удалить'),
+          child: Text(l10n.commonDelete),
         ),
       ],
     ),
@@ -55,15 +54,15 @@ Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
     await ref.read(authProvider.notifier).deleteAccount();
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Аккаунт удалён')),
+        SnackBar(content: Text(l10n.deleteAccountSuccess)),
       );
       context.go('/home');
     }
   } catch (e) {
     if (!context.mounted) return;
     final message = e.toString().contains('409') || e.toString().contains('Conflict')
-        ? 'Перед удалением передайте управление заведением другому владельцу.'
-        : 'Не удалось удалить аккаунт. Попробуйте позже.';
+        ? l10n.deleteAccountConflict
+        : l10n.deleteAccountFailed;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 }
@@ -73,6 +72,7 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final auth = ref.watch(authProvider);
     if (!auth.isAuthenticated) {
       return _GuestProfileScreen(
@@ -98,9 +98,9 @@ class ProfileScreen extends ConsumerWidget {
               onCityTap: () => showCityPickerSheet(context, ref),
             ),
             const SizedBox(height: 28),
-            const Text(
-              'Профиль',
-              style: TextStyle(
+            Text(
+              l10n.profileTitle,
+              style: const TextStyle(
                 color: AppTheme.textDark,
                 fontSize: 34,
                 fontWeight: FontWeight.w900,
@@ -109,8 +109,8 @@ class ProfileScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 20),
             _UserCard(
-              name: user?.name ?? 'Пользователь',
-              phone: user?.phone ?? 'Телефон не указан',
+              name: user?.name ?? l10n.profileDefaultUser,
+              phone: user?.phone ?? l10n.profilePhoneMissing,
               cityName: city.nameRu,
               roleLabel: profileRoleLabel(role),
               onTap: () => context.push('/profile/permissions'),
@@ -119,51 +119,56 @@ class ProfileScreen extends ConsumerWidget {
             _ProfileMenu(
               items: [
                 _ProfileItem(
+                  icon: Icons.language_outlined,
+                  title: l10n.profileLanguage,
+                  onTap: () => context.push('/profile/language'),
+                ),
+                _ProfileItem(
                   icon: Icons.person_outline,
-                  title: 'Личные данные',
+                  title: l10n.profilePersonalData,
                   onTap: () => context.push('/profile/edit'),
                 ),
                 _ProfileItem(
                   icon: Icons.location_on_outlined,
-                  title: 'Мой город',
+                  title: l10n.profileMyCity,
                   onTap: () => context.push('/profile/city'),
                 ),
                 _ProfileItem(
                   icon: Icons.favorite_border,
-                  title: 'Избранное',
+                  title: l10n.favoritesTitle,
                   onTap: () => context.go('/favorites'),
                 ),
                 _ProfileItem(
                   icon: Icons.rate_review_outlined,
-                  title: 'Мои отзывы',
+                  title: l10n.profileMyReviews,
                   onTap: () => context.push('/profile/reviews'),
                 ),
                 _ProfileItem(
                   icon: Icons.notifications_none_rounded,
-                  title: 'Уведомления',
+                  title: l10n.profileNotifications,
                   onTap: () => context.push('/notifications'),
                 ),
                 _ProfileItem(
                   icon: Icons.admin_panel_settings_outlined,
-                  title: 'Мои права',
+                  title: l10n.profilePermissions,
                   onTap: () => context.push('/profile/permissions'),
                 ),
                 _ProfileItem(
                   icon: Icons.help_outline,
-                  title: 'Помощь',
+                  title: l10n.profileHelp,
                   onTap: () => context.push('/profile/help'),
                 ),
                 _ProfileItem(
                   icon: Icons.info_outline,
-                  title: 'О приложении',
+                  title: l10n.profileAbout,
                   onTap: () => context.push('/profile/about'),
                 ),
               ],
             ),
             const SizedBox(height: 28),
-            const Text(
-              'Для бизнеса',
-              style: TextStyle(
+            Text(
+              l10n.profileForBusiness,
+              style: const TextStyle(
                 color: AppTheme.textDark,
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
@@ -178,15 +183,15 @@ class ProfileScreen extends ConsumerWidget {
                   return Column(
                     children: [
                       _BusinessActionCard(
-                        title: 'Найти свой бизнес',
-                        subtitle: 'Если карточка уже есть в QalaGo',
+                        title: l10n.profileFindBusiness,
+                        subtitle: l10n.profileFindBusinessSubtitle,
                         icon: Icons.search,
                         onTap: () => context.push('/business/search'),
                       ),
                       const SizedBox(height: 12),
                       _BusinessActionCard(
-                        title: 'Добавить бизнес',
-                        subtitle: 'Создать новую заявку на добавление',
+                        title: l10n.profileAddBusiness,
+                        subtitle: l10n.profileAddBusinessSubtitle,
                         icon: Icons.storefront,
                         onTap: () => context.push('/business/apply'),
                       ),
@@ -196,8 +201,8 @@ class ProfileScreen extends ConsumerWidget {
                 return Column(
                   children: [
                     _BusinessActionCard(
-                      title: 'Мои бизнесы',
-                      subtitle: 'Кабинет и управление',
+                      title: l10n.profileMyBusinesses,
+                      subtitle: l10n.profileMyBusinessesSubtitle,
                       icon: Icons.dashboard_outlined,
                       onTap: () => context.push('/owner'),
                     ),
@@ -206,7 +211,7 @@ class ProfileScreen extends ConsumerWidget {
                       (entry) => Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: _BusinessActionCard(
-                          title: entry.business['title'] as String? ?? 'Бизнес',
+                          title: entry.business['title'] as String? ?? l10n.profileBusinessDefault,
                           subtitle: membershipRoleLabel(entry.access.role.apiValue),
                           icon: Icons.store,
                           onTap: () => context.push('/owner'),
@@ -214,22 +219,22 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                     ),
                     _BusinessActionCard(
-                      title: 'Добавить ещё бизнес',
-                      subtitle: 'Новая заявка на добавление',
+                      title: l10n.profileAddMoreBusiness,
+                      subtitle: l10n.profileAddBusinessSubtitle,
                       icon: Icons.add_business_outlined,
                       onTap: () => context.push('/business/apply'),
                     ),
                     const SizedBox(height: 12),
                     _BusinessActionCard(
-                      title: 'Найти существующий бизнес',
-                      subtitle: 'Подтвердить права владельца',
+                      title: l10n.profileFindExistingBusiness,
+                      subtitle: l10n.profileFindExistingSubtitle,
                       icon: Icons.search,
                       onTap: () => context.push('/business/search'),
                     ),
                     const SizedBox(height: 12),
                     _BusinessActionCard(
-                      title: 'Мои заявки',
-                      subtitle: 'Статус заявок и подтверждений',
+                      title: l10n.profileMyApplications,
+                      subtitle: l10n.profileMyApplicationsSubtitle,
                       icon: Icons.assignment_outlined,
                       onTap: () => context.push('/business/start'),
                     ),
@@ -240,8 +245,8 @@ class ProfileScreen extends ConsumerWidget {
             if (canModerateRole) ...[
               const SizedBox(height: 12),
               _BusinessActionCard(
-                title: 'Модерация',
-                subtitle: 'Проверка заявок и статусов заведений',
+                title: l10n.profileModeration,
+                subtitle: l10n.profileModerationSubtitle,
                 icon: Icons.admin_panel_settings_outlined,
                 onTap: () => context.push('/admin'),
               ),
@@ -266,7 +271,7 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ),
               icon: const Icon(Icons.logout),
-              label: const Text('Выйти из аккаунта'),
+              label: Text(l10n.profileSignOut),
             ),
           ],
         ),
@@ -286,6 +291,7 @@ class _GuestProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       body: SafeArea(
         child: ListView(
@@ -294,9 +300,9 @@ class _GuestProfileScreen extends StatelessWidget {
           children: [
             _ProfileHeader(cityName: cityName, onCityTap: onCityTap),
             const SizedBox(height: 28),
-            const Text(
-              'Профиль',
-              style: TextStyle(
+            Text(
+              l10n.profileTitle,
+              style: const TextStyle(
                 color: AppTheme.textDark,
                 fontSize: 34,
                 fontWeight: FontWeight.w900,
@@ -309,20 +315,20 @@ class _GuestProfileScreen extends StatelessWidget {
               child: const Icon(Icons.person_outline, size: 48, color: AppTheme.kzBlue),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Войдите в QalaGo',
+            Text(
+              l10n.profileGuestTitle,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppTheme.textDark,
                 fontSize: 24,
                 fontWeight: FontWeight.w900,
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Сохраняйте избранное, оставляйте отзывы и используйте персональные функции.',
+            Text(
+              l10n.profileGuestBody,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppTheme.textMuted,
                 fontSize: 16,
                 height: 1.35,
@@ -337,13 +343,13 @@ class _GuestProfileScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(18),
                 ),
               ),
-              child: const Text('Войти'),
+              child: Text(l10n.commonLogin),
             ),
             const SizedBox(height: 20),
             OutlinedButton.icon(
               onPressed: onCityTap,
               icon: const Icon(Icons.location_on_outlined),
-              label: Text('Город: $cityName'),
+              label: Text(l10n.profileCityLabel(cityName)),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size.fromHeight(52),
                 shape: RoundedRectangleBorder(
@@ -360,7 +366,7 @@ class _GuestProfileScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(18),
                 ),
               ),
-              child: const Text('Помощь'),
+              child: Text(l10n.profileHelp),
             ),
             const SizedBox(height: 8),
             OutlinedButton(
@@ -371,7 +377,7 @@ class _GuestProfileScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(18),
                 ),
               ),
-              child: const Text('О приложении'),
+              child: Text(l10n.profileAbout),
             ),
             const SizedBox(height: 24),
             const LegalLinksSection(),

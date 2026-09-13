@@ -23,6 +23,8 @@ import '../../features/profile/presentation/profile_reviews_screen.dart';
 import '../../features/profile/presentation/profile_help_screen.dart';
 import '../../features/profile/presentation/profile_about_screen.dart';
 import '../../features/profile/presentation/profile_permissions_screen.dart';
+import '../../features/profile/presentation/profile_language_screen.dart';
+import '../locale/l10n_extension.dart';
 import '../../features/promotions/presentation/promotions_screen.dart';
 import '../../core/rbac/role_permissions.dart';
 import '../../features/owner/presentation/owner_dashboard_screen.dart';
@@ -183,6 +185,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/profile/permissions',
             builder: (context, state) => const ProfilePermissionsScreen(),
+          ),
+          GoRoute(
+            path: '/profile/language',
+            builder: (context, state) => const ProfileLanguageScreen(),
           ),
           GoRoute(
             path: '/promotions',
@@ -439,6 +445,8 @@ class AppShell extends ConsumerWidget {
       ref.read(mapDiscoveryScopeProvider.notifier).state = null;
     }
 
+    final l10n = context.l10n;
+
     return Scaffold(
       body: child,
       bottomNavigationBar: DecoratedBox(
@@ -463,7 +471,7 @@ class AppShell extends ConsumerWidget {
                   selectedIndex: selectedTab,
                   icon: Icons.home_outlined,
                   selectedIcon: Icons.home,
-                  label: 'Главная',
+                  label: l10n.navHome,
                   onTap: () {
                     clearMapScope();
                     context.go('/home');
@@ -474,7 +482,7 @@ class AppShell extends ConsumerWidget {
                   selectedIndex: selectedTab,
                   icon: Icons.grid_view_outlined,
                   selectedIcon: Icons.grid_view,
-                  label: 'Категории',
+                  label: l10n.navCategories,
                   onTap: () {
                     clearMapScope();
                     context.go('/categories');
@@ -485,7 +493,7 @@ class AppShell extends ConsumerWidget {
                   selectedIndex: selectedTab,
                   icon: Icons.location_on_outlined,
                   selectedIcon: Icons.location_on,
-                  label: 'Карта',
+                  label: l10n.navMap,
                   onTap: () {
                     clearMapScope();
                     context.go('/map');
@@ -496,7 +504,7 @@ class AppShell extends ConsumerWidget {
                   selectedIndex: selectedTab,
                   icon: Icons.favorite_border,
                   selectedIcon: Icons.favorite,
-                  label: 'Избранное',
+                  label: l10n.navFavorites,
                   onTap: () {
                     clearMapScope();
                     context.go('/favorites');
@@ -507,7 +515,7 @@ class AppShell extends ConsumerWidget {
                   selectedIndex: selectedTab,
                   icon: Icons.person_outline,
                   selectedIcon: Icons.person,
-                  label: 'Профиль',
+                  label: l10n.navProfile,
                   onTap: () {
                     clearMapScope();
                     context.go('/profile');

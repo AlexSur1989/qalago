@@ -33,4 +33,4 @@ void main() {
     expect(cat.displayName(localeCode: 'ru'), 'Фитнес');
     expect(cat.nameRu, 'Фитнес');
   });
-});
+}

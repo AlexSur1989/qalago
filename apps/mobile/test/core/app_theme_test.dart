@@ -5,6 +5,8 @@ import 'package:qalago_mobile/features/auth/presentation/dev_quick_login_panel.d
 import 'package:qalago_mobile/shared/models/models.dart';
 import 'package:qalago_mobile/shared/widgets/business_card.dart';
 import 'package:qalago_mobile/shared/widgets/error_view.dart';
+
+import '../support/l10n_test_harness.dart';
 import 'package:qalago_mobile/shared/widgets/qalago_search_field.dart';
 import 'package:qalago_mobile/core/theme/theme_extensions.dart';
 
@@ -83,7 +85,7 @@ void main() {
 
   testWidgets('ErrorView uses card and retry button', (tester) async {
     await tester.pumpWidget(
-      _themed(ErrorView(message: 'Oops', onRetry: () {})),
+      wrapWithL10n(ErrorView(message: 'Oops', onRetry: () {})),
     );
     expect(find.byType(Card), findsOneWidget);
     expect(find.text('Повторить'), findsOneWidget);

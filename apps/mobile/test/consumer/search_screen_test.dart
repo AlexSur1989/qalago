@@ -147,8 +147,20 @@ void main() {
 }
 
 List<CategoryModel> _sampleCategories() => [
-      CategoryModel(id: 'cat1', title: 'Кофейни', slug: 'coffee'),
-      CategoryModel(id: 'cat2', title: 'Рестораны', slug: 'restaurants'),
+      CategoryModel(
+        id: 'cat1',
+        title: 'Кофейни',
+        nameRu: 'Кофейни',
+        nameKk: 'Кофейнялар',
+        slug: 'coffee',
+      ),
+      CategoryModel(
+        id: 'cat2',
+        title: 'Рестораны',
+        nameRu: 'Рестораны',
+        nameKk: 'Мейрамханалар',
+        slug: 'restaurants',
+      ),
     ];
 
 class _FixedCityNotifier extends CityNotifier {

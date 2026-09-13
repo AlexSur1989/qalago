@@ -28,6 +28,8 @@ import '../../categories/data/home_category_display.dart';
 import '../../categories/presentation/category_businesses_screen.dart';
 import '../../categories/utils/category_display.dart';
 import '../../../core/locale/app_locale_provider.dart';
+import '../../../core/locale/consumer_api_errors.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../../shared/widgets/category_icon_tile.dart';
 import '../../ads/providers/ad_serve_provider.dart';
 import '../../ads/widgets/home_ad_slots.dart';
@@ -126,6 +128,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final city = ref.watch(cityProvider);
     final nearbyPosition = ref.watch(nearbySearchPositionProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
@@ -195,7 +198,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             return true;
                           }());
                           return ErrorView(
-                            message: mapUserFacingLoadError(e),
+                            message: localizedLoadError(l10n, e),
                             onRetry: () => ref.invalidate(categoriesProvider),
                           );
                         },
@@ -209,7 +212,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       const SizedBox(height: 24),
                       const HomeVipBannerSlot(),
                       _SectionHeader(
-                        title: 'Акции и предложения',
+                        title: l10n.homePromotionsSection,
+                        actionLabel: l10n.commonViewAll,
                         onAction: () => context.push('/promotions'),
                       ),
                       const SizedBox(height: 12),
@@ -222,7 +226,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             return true;
                           }());
                           return ErrorView(
-                            message: mapUserFacingLoadError(e),
+                            message: localizedLoadError(l10n, e),
                             onRetry: () => ref.invalidate(promotionsProvider),
                           );
                         },
@@ -234,7 +238,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       const SizedBox(height: 24),
                       HomePromotionsAdSlot(onPromotionTap: _openPaidPromotion),
                       _SectionHeader(
-                        title: 'Рекомендуем',
+                        title: l10n.homeRecommendedSection,
                         actionLabel: _featuredItemsCount > 1
                             ? '${_featuredIndex + 1} / $_featuredItemsCount'
                             : null,
@@ -249,7 +253,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             return true;
                           }());
                           return ErrorView(
-                            message: mapUserFacingLoadError(e),
+                            message: localizedLoadError(l10n, e),
                             onRetry: () {
                               ref.invalidate(homeOrganicRecommendationsProvider);
                               ref.invalidate(recommendedBusinessesProvider);
@@ -268,9 +272,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                       const SizedBox(height: 24),
                       const HomeFeaturedAdSlot(),
-                      const _SectionHeader(
-                        title: 'Рядом с вами',
-                        subtitle: 'Места рядом с вами · до 3 км',
+                      _SectionHeader(
+                        title: l10n.homeNearbySection,
+                        subtitle: l10n.homeNearbySubtitle,
                       ),
                       const SizedBox(height: 12),
                       businessesAsync.when(
@@ -281,7 +285,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             return true;
                           }());
                           return ErrorView(
-                            message: mapUserFacingLoadError(e),
+                            message: localizedLoadError(l10n, e),
                             onRetry: () => ref.invalidate(businessesProvider),
                           );
                         },
@@ -344,7 +348,7 @@ class _NotificationIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      tooltip: 'Уведомления',
+      tooltip: context.l10n.homeNotificationsTooltip,
       onPressed: onTap,
       icon: Badge(
         isLabelVisible: count > 0,
@@ -371,7 +375,7 @@ class _SearchBox extends StatelessWidget {
     return QalagoSearchField(
       readOnly: true,
       onTap: onTap,
-      hintText: 'Поиск заведений и услуг...',
+      hintText: context.l10n.homeSearchPlaceholder,
     );
   }
 }
@@ -392,9 +396,9 @@ class _CategoryIconGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (categories.isEmpty) {
-      return const SizedBox(
+      return SizedBox(
         height: 100,
-        child: Center(child: Text('Категории пока не добавлены')),
+        child: Center(child: Text(context.l10n.homeCategoriesEmpty)),
       );
     }
 
@@ -434,7 +438,7 @@ class _SectionHeader extends StatelessWidget {
   const _SectionHeader({
     required this.title,
     this.subtitle,
-    this.actionLabel = 'Смотреть все',
+    this.actionLabel,
     this.onAction,
   });
 
@@ -508,9 +512,9 @@ class _PromotionsStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return const SizedBox(
+      return SizedBox(
         height: 96,
-        child: Center(child: Text('Нет активных акций')),
+        child: Center(child: Text(context.l10n.homePromotionsEmpty)),
       );
     }
 
@@ -658,9 +662,9 @@ class _PopularPlacesCarousel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return const SizedBox(
+      return SizedBox(
         height: 120,
-        child: Center(child: Text('Нет популярных заведений')),
+        child: Center(child: Text(context.l10n.homePopularEmpty)),
       );
     }
 
@@ -721,7 +725,7 @@ class _PopularPlacesCarousel extends StatelessWidget {
               left: -12,
               top: 46,
               child: _RoundNavButton(
-                tooltip: 'Предыдущее заведение',
+                tooltip: context.l10n.homeFeaturedPrevTooltip,
                 icon: Icons.chevron_left,
                 onPressed: onPrevious,
               ),
@@ -730,7 +734,7 @@ class _PopularPlacesCarousel extends StatelessWidget {
               right: -12,
               top: 46,
               child: _RoundNavButton(
-                tooltip: 'Следующее заведение',
+                tooltip: context.l10n.homeFeaturedNextTooltip,
                 icon: Icons.chevron_right,
                 onPressed: onNext,
               ),
@@ -868,11 +872,11 @@ class _NearbyBusinessList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(24),
+      return Padding(
+        padding: const EdgeInsets.all(24),
         child: Center(
           child: Text(
-            'В радиусе 3 км от вас пока нет заведений',
+            context.l10n.homeNearbyEmpty,
             textAlign: TextAlign.center,
           ),
         ),
@@ -948,7 +952,7 @@ class _NearbyBusinessTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      business.categoryTitle ?? 'Заведение',
+                      business.categoryTitle ?? context.l10n.businessGenericName,
                       style: const TextStyle(
                         color: AppTheme.textMuted,
                         fontSize: 13,

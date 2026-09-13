@@ -1,3 +1,5 @@
+import '../../l10n/app_localizations.dart';
+
 /// Consumer search radius modes (Stage 5B).
 enum SearchRadiusMode {
   wholeCity,
@@ -8,6 +10,15 @@ enum SearchRadiusMode {
 }
 
 extension SearchRadiusModeX on SearchRadiusMode {
+  String localizedLabel(AppLocalizations l10n) => switch (this) {
+        SearchRadiusMode.wholeCity => l10n.searchRadiusWholeCity,
+        SearchRadiusMode.km3 => l10n.searchRadiusKmExact(3),
+        SearchRadiusMode.km5 => l10n.searchRadiusKmExact(5),
+        SearchRadiusMode.km10 => l10n.searchRadiusKmExact(10),
+        SearchRadiusMode.km15 => l10n.searchRadiusKmExact(15),
+      };
+
+  /// Legacy RU label for tests without [AppLocalizations].
   String get label => switch (this) {
         SearchRadiusMode.wholeCity => 'Весь город',
         SearchRadiusMode.km3 => '3 км',
@@ -49,6 +60,7 @@ String buildSearchFilterSummary({
   String? categoryTitle,
   required SearchRadiusMode radiusMode,
   String? query,
+  AppLocalizations? l10n,
 }) {
   final parts = <String>[];
   if (categoryTitle != null && categoryTitle.isNotEmpty) {
@@ -56,9 +68,14 @@ String buildSearchFilterSummary({
   } else if (query != null && query.isNotEmpty) {
     parts.add('«$query»');
   }
-  parts.add(radiusMode == SearchRadiusMode.wholeCity
-      ? cityName
-      : 'до ${radiusMode.label}');
+  final radiusLabel = l10n != null
+      ? (radiusMode == SearchRadiusMode.wholeCity
+          ? cityName
+          : l10n.searchRadiusKm(radiusMode.radiusKm!.toInt()))
+      : (radiusMode == SearchRadiusMode.wholeCity
+          ? cityName
+          : 'до ${radiusMode.label}');
+  parts.add(radiusLabel);
   return parts.join(' · ');
 }
 

@@ -8,7 +8,10 @@ import 'package:qalago_mobile/core/providers/city_provider.dart';
 import 'package:qalago_mobile/features/auth/providers/auth_provider.dart';
 import 'package:qalago_mobile/features/home/presentation/home_screen.dart';
 import 'package:qalago_mobile/features/home/providers/home_organic_recommendations_provider.dart';
-import 'package:qalago_mobile/shared/utils/network_error_utils.dart';
+import 'package:qalago_mobile/l10n/app_localizations.dart';
+import 'package:qalago_mobile/core/locale/consumer_api_errors.dart';
+
+import '../support/l10n_test_harness.dart';
 
 void main() {
   testWidgets('Home shows friendly network error without raw DioException', (
@@ -48,12 +51,14 @@ void main() {
           unreadNotificationsProvider.overrideWith((ref) async => 0),
           userLocationProvider.overrideWith((ref) => Stream.value(null)),
         ],
-        child: const MaterialApp(home: HomeScreen()),
+        child: wrapWithL10n(const HomeScreen()),
       ),
     );
     await tester.pumpAndSettle();
 
-    final friendly = mapUserFacingLoadError(
+    final l10n = lookupAppLocalizations(const Locale('ru'));
+    final friendly = localizedLoadError(
+      l10n,
       DioException(
         requestOptions: RequestOptions(path: '/x'),
         type: DioExceptionType.connectionError,
@@ -63,7 +68,7 @@ void main() {
     expect(find.textContaining(friendly), findsWidgets);
     expect(find.textContaining('DioException'), findsNothing);
     expect(find.textContaining('XMLHttpRequest'), findsNothing);
-    expect(find.text('Повторить'), findsWidgets);
+    expect(find.text(l10n.commonRetry), findsWidgets);
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(milliseconds: 700));
