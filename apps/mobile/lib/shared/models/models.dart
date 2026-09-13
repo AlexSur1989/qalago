@@ -17,7 +17,7 @@ class CategoryModel {
     id: json['id'] as String,
     title: json['title'] as String,
     slug: json['slug'] as String,
-    icon: json['icon'] as String?,
+    icon: json['icon'] as String? ?? json['iconUrl'] as String?,
   );
 }
 
@@ -51,7 +51,7 @@ class SubcategoryModel {
         slug: json['slug'] as String,
         nameRu: json['nameRu'] as String,
         nameKk: json['nameKk'] as String,
-        icon: json['icon'] as String?,
+        icon: json['icon'] as String? ?? json['iconUrl'] as String?,
         sortOrder: json['sortOrder'] as int? ?? 0,
       );
 }

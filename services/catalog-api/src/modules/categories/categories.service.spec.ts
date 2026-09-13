@@ -63,6 +63,7 @@ describe('CategoriesService', () => {
     expect(cityScope.resolveCityId).toHaveBeenCalledWith({ citySlug: 'aktobe' });
     expect(result.map((item) => item.id)).toEqual(['cat-b', 'cat-a']);
     expect(result[0].sortOrder).toBe(1);
+    expect(result[0].iconUrl).toBeNull();
     expect(result[1].sortOrder).toBe(2);
   });
 

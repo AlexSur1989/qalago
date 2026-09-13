@@ -331,9 +331,35 @@ export default function DashboardPage() {
     setCategories(await adminApi.listCategoriesAdmin(token, citySlug));
   }
 
+  async function updateCategoryIcon(category: CategoryRow, file: File) {
+    if (!token) return;
+    const { url } = await adminApi.uploadCategoryIcon(token, file);
+    await adminApi.updateCategory(token, category.id, { icon: url });
+    setCategories(await adminApi.listCategoriesAdmin(token, citySlug));
+  }
+
+  async function clearCategoryIcon(category: CategoryRow) {
+    if (!token) return;
+    await adminApi.updateCategory(token, category.id, { icon: null });
+    setCategories(await adminApi.listCategoriesAdmin(token, citySlug));
+  }
+
+  async function updateSubcategoryIcon(sub: SubcategoryAdminRow, file: File) {
+    if (!token || !selectedCategoryId) return;
+    const { url } = await adminApi.uploadCategoryIcon(token, file);
+    await adminApi.updateSubcategoryAdmin(token, sub.id, { icon: url });
+    setSubcategories(await adminApi.listSubcategoriesAdmin(token, selectedCategoryId));
+  }
+
+  async function clearSubcategoryIcon(sub: SubcategoryAdminRow) {
+    if (!token || !selectedCategoryId) return;
+    await adminApi.updateSubcategoryAdmin(token, sub.id, { icon: null });
+    setSubcategories(await adminApi.listSubcategoriesAdmin(token, selectedCategoryId));
+  }
+
   async function updateCategoryField(
     category: CategoryRow,
-    data: { title?: string; sortOrder?: number },
+    data: { title?: string; sortOrder?: number; icon?: string | null },
   ) {
     if (!token) return;
     if (data.sortOrder !== undefined) {
@@ -847,6 +873,7 @@ export default function DashboardPage() {
             <table className="table">
               <thead>
                 <tr>
+                  <th>Иконка</th>
                   <th>Название</th>
                   <th>Slug</th>
                   <th>Порядок ({cityLabel})</th>
@@ -859,6 +886,59 @@ export default function DashboardPage() {
               <tbody>
                 {categories.map((c) => (
                   <tr key={c.id} style={c.cityIsHidden ? { opacity: 0.65 } : undefined}>
+                    <td style={{ minWidth: 140 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        <div
+                          className="category-icon-preview"
+                          style={{
+                            width: 56,
+                            height: 56,
+                            borderRadius: 12,
+                            background: 'var(--surface-muted, #f4f6f8)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          {c.icon ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={c.icon.startsWith('http') ? c.icon : `${process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/v1\/?$/, '') ?? 'http://localhost:3002'}${c.icon}`}
+                              alt=""
+                              style={{ width: 48, height: 48, objectFit: 'contain' }}
+                            />
+                          ) : (
+                            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>—</span>
+                          )}
+                        </div>
+                        <label className="btn btn-sm" style={{ cursor: 'pointer' }}>
+                          Заменить
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            hidden
+                            onChange={(e) => {
+                              const f = e.target.files?.[0];
+                              if (f) void updateCategoryIcon(c, f);
+                              e.target.value = '';
+                            }}
+                          />
+                        </label>
+                        {c.icon ? (
+                          <button
+                            type="button"
+                            className="btn btn-sm"
+                            onClick={() => void clearCategoryIcon(c)}
+                          >
+                            Удалить
+                          </button>
+                        ) : null}
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)', maxWidth: 130 }}>
+                          PNG/WebP без текста
+                        </span>
+                      </div>
+                    </td>
                     <td>
                       <input
                         className="slot-input table-input"
@@ -975,6 +1055,7 @@ export default function DashboardPage() {
               <table className="table">
                 <thead>
                   <tr>
+                    <th>Иконка</th>
                     <th>RU</th>
                     <th>KK</th>
                     <th>Slug</th>
@@ -986,13 +1067,71 @@ export default function DashboardPage() {
                 <tbody>
                   {subcategories.length === 0 ? (
                     <tr>
-                      <td colSpan={6} style={{ color: 'var(--text-muted)' }}>
+                      <td colSpan={7} style={{ color: 'var(--text-muted)' }}>
                         Подкатегорий пока нет
                       </td>
                     </tr>
                   ) : (
                     subcategories.map((sub) => (
                       <tr key={sub.id} style={!sub.isActive ? { opacity: 0.65 } : undefined}>
+                        <td style={{ minWidth: 140 }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            <div
+                              className="category-icon-preview"
+                              style={{
+                                width: 56,
+                                height: 56,
+                                borderRadius: 12,
+                                background: 'var(--surface-muted, #f4f6f8)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                overflow: 'hidden',
+                              }}
+                            >
+                              {sub.icon ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={
+                                    sub.icon.startsWith('http')
+                                      ? sub.icon
+                                      : `${process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/v1\/?$/, '') ?? 'http://localhost:3002'}${sub.icon}`
+                                  }
+                                  alt=""
+                                  style={{ width: 48, height: 48, objectFit: 'contain' }}
+                                />
+                              ) : (
+                                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>—</span>
+                              )}
+                            </div>
+                            {canEditGlobalCategories ? (
+                              <>
+                                <label className="btn btn-sm" style={{ cursor: 'pointer' }}>
+                                  Заменить
+                                  <input
+                                    type="file"
+                                    accept="image/png,image/jpeg,image/webp"
+                                    hidden
+                                    onChange={(e) => {
+                                      const f = e.target.files?.[0];
+                                      if (f) void updateSubcategoryIcon(sub, f);
+                                      e.target.value = '';
+                                    }}
+                                  />
+                                </label>
+                                {sub.icon ? (
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm"
+                                    onClick={() => void clearSubcategoryIcon(sub)}
+                                  >
+                                    Удалить
+                                  </button>
+                                ) : null}
+                              </>
+                            ) : null}
+                          </div>
+                        </td>
                         <td>{sub.nameRu}</td>
                         <td>{sub.nameKk}</td>
                         <td>{sub.slug}</td>

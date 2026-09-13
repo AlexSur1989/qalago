@@ -195,6 +195,20 @@ export const adminApi = {  sendCode: (phone: string) =>
       body: JSON.stringify(data),
     }),
 
+  uploadCategoryIcon: async (token: string, file: File) => {
+    const base = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3002/api/v1';
+    const form = new FormData();
+    form.append('file', file);
+    const res = await fetch(`${base}/uploads`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: form,
+    });
+    const text = await res.text();
+    if (!res.ok) throw new Error(text || res.statusText);
+    return JSON.parse(text) as { url: string };
+  },
+
   deleteCategory: (token: string, id: string) =>
     api<void>(`/categories/${id}`, { method: 'DELETE', token }),
 
@@ -240,7 +254,7 @@ export const adminApi = {  sendCode: (phone: string) =>
   updateSubcategoryAdmin: (
     token: string,
     id: string,
-    data: Partial<{ nameRu: string; nameKk: string; icon: string; sortOrder: number; isActive: boolean }>,
+    data: Partial<{ nameRu: string; nameKk: string; icon: string | null; sortOrder: number; isActive: boolean }>,
   ) =>
     api<SubcategoryAdminRow>(`/admin/subcategories/${encodeURIComponent(id)}`, {
       method: 'PATCH',

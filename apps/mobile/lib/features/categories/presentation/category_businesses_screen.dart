@@ -23,6 +23,7 @@ import '../providers/category_sort_provider.dart';
 import '../utils/category_list_utils.dart';
 import '../../map/map_discovery_scope.dart';
 import 'category_subcategory_filter.dart';
+import 'subcategory_icon_grid.dart';
 
 typedef CategoryBusinessesQuery = ({
   String categoryId,
@@ -206,7 +207,7 @@ class CategoryBusinessesScreen extends ConsumerWidget {
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(24),
                 children: [
-                  CategorySubcategoryFilterBar(
+                  SubcategoryIconGrid(
                     categoryId: categoryId,
                     localeCode: localeCode,
                   ),
@@ -241,7 +242,7 @@ class CategoryBusinessesScreen extends ConsumerWidget {
               ),
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
               children: [
-                CategorySubcategoryFilterBar(
+                SubcategoryIconGrid(
                   categoryId: categoryId,
                   localeCode: localeCode,
                 ),

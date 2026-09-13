@@ -27,6 +27,14 @@
 
 ---
 
+## 2026-09-13 — Stage 6.10A: Category icon system & home category UI
+
+- Consumer API: `iconUrl` on categories/subcategories (alias of `icon`); ordering unchanged (`sortOrder`, city order).
+- Mobile: home icon grid + «Ещё», all-categories and subcategory icon grids, safe fallbacks.
+- Admin: category/subcategory icon upload & remove via hardened uploads pipeline.
+- New `apps/consumer-web` for public category browsing (icon grid parity with mobile).
+- Docs: `docs/catalog/stage-6-10a-category-icons.md`.
+
 ## 2026-09-13 — Stage 6.9.1.2: Staff MFA & SUPER_ADMIN recovery hardening
 
 - TOTP MFA, encrypted secrets, recovery codes, login challenge, MFA step-up, admin reset, emergency CLI.

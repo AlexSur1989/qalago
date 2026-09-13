@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/constants/app_constants.dart';
 import '../../../core/providers/city_catalog_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -14,6 +13,7 @@ import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../../shared/widgets/qalago_search_field.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../shared/widgets/category_icon_tile.dart';
 import 'category_businesses_screen.dart';
 
 class CategoriesScreen extends ConsumerStatefulWidget {
@@ -229,67 +229,27 @@ class _CategoriesGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 720 ? 4 : 3;
-        return GridView.builder(
-          itemCount: categories.length,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columns,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 0.94,
-          ),
-          itemBuilder: (context, index) {
-            final category = categories[index];
-            final imageUrl = AppConstants.resolveMediaUrl(category.icon);
-            return InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () => openCategory(context, category),
-              child: Ink(
-                decoration: BoxDecoration(
-                  color: AppTheme.background,
-                  borderRadius: BorderRadius.circular(16),
-                  image: imageUrl.isNotEmpty
-                      ? DecorationImage(
-                          image: NetworkImage(imageUrl),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.black.withValues(alpha: 0.7),
-                        Colors.black.withValues(alpha: 0.06),
-                      ],
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Align(
-                      alignment: Alignment.bottomLeft,
-                      child: Text(
-                        category.title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w900,
-                          height: 1.05,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
+        final columns = constraints.maxWidth >= 900
+            ? 5
+            : constraints.maxWidth >= 720
+                ? 4
+                : 3;
+        const spacing = 8.0;
+        final itemWidth = (constraints.maxWidth - spacing * (columns - 1)) / columns;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            for (final category in categories)
+              SizedBox(
+                width: itemWidth,
+                child: CategoryIconTile(
+                  label: category.title,
+                  iconPath: category.icon,
+                  onTap: () => openCategory(context, category),
                 ),
               ),
-            );
-          },
+          ],
         );
       },
     );

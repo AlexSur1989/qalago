@@ -24,7 +24,9 @@ import '../../../shared/widgets/loading_view.dart';
 import '../../auth/presentation/dev_quick_login_panel.dart';
 import '../../analytics/widgets/business_impression_host.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../categories/data/home_category_display.dart';
 import '../../categories/presentation/category_businesses_screen.dart';
+import '../../../shared/widgets/category_icon_tile.dart';
 import '../../ads/providers/ad_serve_provider.dart';
 import '../../ads/widgets/home_ad_slots.dart';
 import '../providers/home_organic_recommendations_provider.dart';
@@ -194,9 +196,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             onRetry: () => ref.invalidate(categoriesProvider),
                           );
                         },
-                        data: (categories) => _CategoryPhotoStrip(
+                        data: (categories) => _CategoryIconGrid(
                           categories: categories,
                           onSelected: _openCategory,
+                          onMore: () => context.push('/categories'),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -369,133 +372,54 @@ class _SearchBox extends StatelessWidget {
   }
 }
 
-class _CategoryPhotoStrip extends StatelessWidget {
-  const _CategoryPhotoStrip({
+class _CategoryIconGrid extends StatelessWidget {
+  const _CategoryIconGrid({
     required this.categories,
     required this.onSelected,
+    required this.onMore,
   });
 
   final List<CategoryModel> categories;
   final ValueChanged<CategoryModel> onSelected;
+  final VoidCallback onMore;
 
   @override
   Widget build(BuildContext context) {
     if (categories.isEmpty) {
       return const SizedBox(
-        height: 130,
+        height: 100,
         child: Center(child: Text('Категории пока не добавлены')),
       );
     }
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final columns = width >= 900
-            ? 5
-            : width >= 720
-                ? 4
-                : width >= 520
-                    ? 3
-                    : 2;
-        const spacing = 8.0;
-        final itemWidth = (width - spacing * (columns - 1)) / columns;
-        final itemHeight = (itemWidth * 0.88).clamp(92.0, 118.0);
+        final columns = homeCategoryGridColumns(constraints.maxWidth);
+        final slice = sliceHomeCategories(categories, columns);
+        const spacing = 6.0;
+        final itemWidth = (constraints.maxWidth - spacing * (columns - 1)) / columns;
 
         return Wrap(
           spacing: spacing,
-          runSpacing: spacing,
+          runSpacing: 4,
           children: [
-            for (final category in categories)
+            for (final category in slice.preview)
               SizedBox(
                 width: itemWidth,
-                height: itemHeight,
-                child: _CategoryPhotoCard(
-                  category: category,
+                child: CategoryIconTile(
+                  label: category.title,
+                  iconPath: category.icon,
                   onTap: () => onSelected(category),
                 ),
+              ),
+            if (slice.showMore)
+              SizedBox(
+                width: itemWidth,
+                child: CategoryMoreTile(onTap: onMore),
               ),
           ],
         );
       },
-    );
-  }
-}
-
-class _CategoryPhotoCard extends StatelessWidget {
-  const _CategoryPhotoCard({
-    required this.category,
-    required this.onTap,
-  });
-
-  final CategoryModel category;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final imageUrl = AppConstants.resolveMediaUrl(category.icon);
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            color: AppTheme.background,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.textDark.withValues(alpha: 0.08),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              if (imageUrl.isNotEmpty)
-                Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                )
-              else
-                const Center(child: Icon(Icons.category_outlined, size: 34)),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.black.withValues(alpha: 0.72),
-                      Colors.black.withValues(alpha: 0.05),
-                    ],
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 9,
-                right: 9,
-                bottom: 10,
-                child: Text(
-                  category.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    height: 1.1,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

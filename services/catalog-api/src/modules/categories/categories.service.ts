@@ -6,6 +6,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { changedFieldsFromDto } from '../audit-log/audit-log.util';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
+import { presentCategory } from './category-presenter.util';
 
 type CategoryRecord = {
   id: string;
@@ -36,7 +37,8 @@ export class CategoriesService {
     const categories = await this.prisma.category.findMany({
       where: { isActive: true },
     });
-    return this.applyCityOrder(categories, cityId);
+    const ordered = await this.applyCityOrder(categories, cityId);
+    return ordered.map((row) => presentCategory(row));
   }
 
   async findAllForAdmin(citySlug?: string) {

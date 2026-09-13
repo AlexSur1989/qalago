@@ -258,11 +258,11 @@ Geocoding via OpenStreetMap Nominatim. Returns city suggestions with coordinates
 
 ### GET /categories
 
-Query: `citySlug` (optional, default `uralsk`). Returns active categories visible in the city, sorted by city-specific order when set.
+Query: `citySlug` (optional, default `uralsk`). Returns active categories visible in the city, sorted by city-specific order when set. Each item includes legacy `icon` and consumer alias **`iconUrl`** (same value, nullable). Stage 6.10A.
 
 ### GET /categories/:categoryId/subcategories
 
-Public list of **active** subcategories for a category (`id`, `categoryId`, `slug`, `nameRu`, `nameKk`, `icon`, `sortOrder`). Stage 6.8C.1.
+Public list of **active** subcategories for a category (`id`, `categoryId`, `slug`, `nameRu`, `nameKk`, `icon`, **`iconUrl`**, `sortOrder`). Stage 6.8C.1 / 6.10A.
 
 ### Admin subcategories (Stage 6.8C.1)
 

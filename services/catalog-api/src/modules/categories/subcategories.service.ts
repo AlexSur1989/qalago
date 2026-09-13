@@ -10,6 +10,7 @@ import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { CreateSubcategoryDto, UpdateSubcategoryDto } from './dto/subcategory.dto';
+import { presentSubcategory } from './category-presenter.util';
 
 @Injectable()
 export class SubcategoriesService {
@@ -25,7 +26,7 @@ export class SubcategoriesService {
     if (!category) {
       throw new NotFoundException('Category not found');
     }
-    return this.prisma.subcategory.findMany({
+    const rows = await this.prisma.subcategory.findMany({
       where: { categoryId, isActive: true },
       orderBy: [{ sortOrder: 'asc' }, { nameRu: 'asc' }],
       select: {
@@ -38,6 +39,7 @@ export class SubcategoriesService {
         sortOrder: true,
       },
     });
+    return rows.map((row) => presentSubcategory(row));
   }
 
   async listAdminByCategory(categoryId: string) {
