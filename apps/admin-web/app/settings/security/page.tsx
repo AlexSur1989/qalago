@@ -1,73 +1,63 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useAuth } from '@/lib/use-auth';
-import { fetchStaffMfaStatus, startStaffMfaEnroll, verifyStaffMfaEnroll } from '@/lib/staff-mfa-api';
-import { setWebAccessToken } from '@/lib/web-auth-token';
-import { QRCodeSVG } from 'qrcode.react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { StaffMfaEnrollment } from '@/components/staff-mfa-enrollment';
+import { ensureStaffAccessToken } from '@/lib/ensure-staff-access-token';
+import { fetchStaffMfaStatus } from '@/lib/staff-mfa-api';
 
 export default function SecuritySettingsPage() {
-  const { token, ready } = useAuth();
-  const [status, setStatus] = useState<Awaited<ReturnType<typeof fetchStaffMfaStatus>> | null>(null);
-  const [enroll, setEnroll] = useState<{ otpauthUri: string; secret: string } | null>(null);
-  const [totp, setTotp] = useState('');
+  const router = useRouter();
+  const [token, setToken] = useState<string | null>(null);
+  const [enabled, setEnabled] = useState<boolean | null>(null);
+  const [recoveryRemaining, setRecoveryRemaining] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!token) return;
-    fetchStaffMfaStatus(token)
-      .then(setStatus)
-      .catch((e) => setError(String(e)));
-  }, [token]);
+    void (async () => {
+      const access = await ensureStaffAccessToken();
+      if (!access) {
+        router.replace('/login');
+        return;
+      }
+      setToken(access);
+      try {
+        const s = await fetchStaffMfaStatus(access);
+        setEnabled(s.enabled);
+        setRecoveryRemaining(s.recoveryCodesRemaining);
+      } catch (e) {
+        setError(String(e));
+      }
+    })();
+  }, [router]);
 
-  async function onStart() {
-    if (!token) return;
-    const res = await startStaffMfaEnroll(token);
-    setEnroll({ otpauthUri: res.otpauthUri, secret: res.secret });
-  }
-
-  async function onVerify(e: FormEvent) {
-    e.preventDefault();
-    if (!token) return;
-    const res = await verifyStaffMfaEnroll(token, totp);
-    if (res.accessToken) setWebAccessToken(res.accessToken);
-    alert(`Сохраните коды:\n${res.recoveryCodes.join('\n')}`);
-    setEnroll(null);
-    setStatus(await fetchStaffMfaStatus(token));
-  }
-
-  if (!ready) return null;
+  if (enabled === null && !error) return null;
 
   return (
     <div className="report-page">
-      <Link href="/settings">← Настройки</Link>
+      <Link href="/dashboard">← Админка</Link>
       <h1>Безопасность · MFA</h1>
-      {status?.enabled ? (
-        <p>Двухфакторная защита включена. Резервных кодов: {status.recoveryCodesRemaining}</p>
+      {enabled ? (
+        <p>
+          Двухфакторная защита включена. Неиспользованных резервных кодов: {recoveryRemaining}
+        </p>
       ) : (
-        <p className="muted">MFA не настроена.</p>
-      )}
-      {!status?.enabled && !enroll ? (
-        <button type="button" className="btn btn-primary" onClick={onStart}>
-          Настроить двухфакторную защиту
-        </button>
-      ) : null}
-      {enroll ? (
         <>
-          <QRCodeSVG value={enroll.otpauthUri} size={160} />
-          <p>
-            Ключ: <code>{enroll.secret}</code>
-          </p>
-          <form onSubmit={onVerify}>
-            <input value={totp} onChange={(e) => setTotp(e.target.value)} placeholder="6 цифр" />
-            <button type="submit" className="btn btn-primary">
-              Подтвердить
-            </button>
-          </form>
+          <p className="muted">MFA не настроена. Настройка через приложение Authenticator (TOTP).</p>
+          {token ? (
+            <StaffMfaEnrollment
+              token={token}
+              onEnrolled={() => {
+                setEnabled(true);
+                void fetchStaffMfaStatus(token).then((s) => setRecoveryRemaining(s.recoveryCodesRemaining));
+              }}
+              onComplete={() => router.push('/dashboard')}
+            />
+          ) : null}
         </>
-      ) : null}
-      {error ? <p>{error}</p> : null}
+      )}
+      {error ? <p style={{ color: 'var(--danger)' }}>{error}</p> : null}
     </div>
   );
 }

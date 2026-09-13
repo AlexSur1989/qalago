@@ -1,14 +1,16 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { FormEvent, Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { adminApi, AuthUser } from '@/lib/api';
 import { setWebAccessToken } from '@/lib/web-auth-token';
 import { adminWebDevLoginEnabled, devSeedAccounts } from '@/lib/auth-config';
 import { canAccessAdminWeb } from '@/lib/rbac';
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = searchParams.get('next');
   const [phone, setPhone] = useState('+77000000001');
   const [code, setCode] = useState('');
   const [debugCode, setDebugCode] = useState<string | null>(null);
@@ -33,7 +35,9 @@ export default function LoginPage() {
       router.push('/mfa/setup');
       return;
     }
-    router.push('/dashboard');
+    const safeNext =
+      nextPath && nextPath.startsWith('/') && !nextPath.startsWith('//') ? nextPath : null;
+    router.push(safeNext ?? '/dashboard');
   }
 
   async function loginViaSession(mode: 'verify' | 'dev', payload: { phone: string; code?: string }) {
@@ -237,5 +241,13 @@ export default function LoginPage() {
         {error && <div className="alert alert-error" style={{ marginTop: 16 }}>{error}</div>}
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<main className="login-page"><div className="login-card">Загрузка…</div></main>}>
+      <LoginPageContent />
+    </Suspense>
   );
 }

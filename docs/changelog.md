@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-14 — Admin Web: canonical TOTP MFA enrollment on `/mfa/setup`
+
+- `/mfa/setup` and `/settings/security` use shared `StaffMfaEnrollment` (QR via `qrcode.react`, Authenticator TOTP, recovery codes once).
+- Session restore via `POST /api/auth/refresh` when access token is memory-only; login honors `?next=/mfa/setup`.
+- LOCAL mode: voluntary enrollment stays TOTP (not SMS); no redirect away from `/mfa/setup` when MFA is optional.
+- Future: optional BFF proxy for enroll routes if CORS/cookie policy changes.
+
 ## 2026-09-13 — Stage 6.10A: Category icon system & home category UI
 
 - Consumer API: `iconUrl` on categories/subcategories (alias of `icon`); ordering unchanged (`sortOrder`, city order).
