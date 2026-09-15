@@ -88,6 +88,8 @@ export class ServiceMenuService {
       id: item.id,
       title: item.title,
       description: item.description,
+      titleKk: item.titleKk,
+      descriptionKk: item.descriptionKk,
       price: item.price != null ? item.price.toString() : null,
       imageUrl: item.imageUrl,
       sortOrder: item.sortOrder,

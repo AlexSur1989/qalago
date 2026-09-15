@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-16 — Stage 6.10C.1: Business Web catalog & promotion edit parity
+
+- **Business Web**: edit overlays for organic `ServiceItem` and `Promotion` via existing PATCH APIs; `CATALOG_EDIT` / `PROMOTIONS_EDIT` UX gating; semantic RU/KK keys; safe `parseApiError` on promotions mutations.
+- **API**: manage menu item list includes `titleKk` / `descriptionKk` for owner prefill (additive response fields).
+- **Future**: Flutter owner profile taxonomy parity (6.10C.2); remaining Business Cabinet P1 gaps from audit.
+
 ## 2026-09-15 — Stage 6.10B.QA: Cross-platform RU/KZ localization QA
 
 - **Cities**: migration + seed backfill `shymkent.nameKk = Шымкент`; Flutter offline city taxonomy documents API-aligned fallbacks.

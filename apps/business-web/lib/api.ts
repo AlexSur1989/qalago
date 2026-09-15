@@ -184,11 +184,15 @@ export type BusinessPlanStatus = {
 export type PromotionRow = {
   id: string;
   title: string;
+  titleKk?: string | null;
   description?: string | null;
+  descriptionKk?: string | null;
   discountText?: string | null;
   imageUrl?: string | null;
   status: string;
   businessId: string;
+  startDate?: string | null;
+  endDate?: string | null;
   createdAt?: string;
 };
 
@@ -387,7 +391,9 @@ export type ManageMenuSection = {
 export type ManageMenuItemRow = {
   id: string;
   title: string;
+  titleKk?: string | null;
   description?: string | null;
+  descriptionKk?: string | null;
   price?: string | null;
   imageUrl?: string | null;
   sortOrder: number;

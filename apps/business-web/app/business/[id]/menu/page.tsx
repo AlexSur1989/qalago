@@ -2,16 +2,23 @@
 
 import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
-import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { FormEvent, ReactNode, useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import {
   BusinessPlanStatus,
+  ManageMenuItemRow,
   ManageMenuItemsPage,
   ManageMenuSection,
   ownerApi,
 } from '@/lib/api';
-import { canViewPayments } from '@/lib/business-access';
+import { BusinessPermission, canViewPayments, hasPermission } from '@/lib/business-access';
 import { hasMoreMenuPages, menuSectionLabel } from '@/lib/menu-utils';
+import {
+  buildServiceItemUpdateBody,
+  canEditServiceItem,
+  serviceItemEditFormFromRow,
+  type ServiceItemEditForm,
+} from '@/lib/owner-content-edit';
 import { parseApiError } from '@/lib/monetization-utils';
 import { useOwnerBusiness } from '@/lib/use-owner-business';
 import { BusinessShell } from '@/components/business-shell';
@@ -39,6 +46,14 @@ export default function BusinessMenuPage() {
   const [itemDescriptionKk, setItemDescriptionKk] = useState('');
   const [itemPrice, setItemPrice] = useState('');
   const [itemGroupId, setItemGroupId] = useState('');
+  const [editingItem, setEditingItem] = useState<ManageMenuItemRow | null>(null);
+  const [editForm, setEditForm] = useState<ServiceItemEditForm | null>(null);
+  const [editSaving, setEditSaving] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const canCatalogEdit = canEditServiceItem(
+    hasPermission(access, BusinessPermission.CATALOG_EDIT),
+  );
 
   const loadItems = useCallback(
     async (
@@ -91,6 +106,41 @@ export default function BusinessMenuPage() {
   async function reloadAll() {
     if (!token) return;
     await Promise.all([loadPlan(token), loadItems(token, 1, sectionId, search)]);
+  }
+
+  function openEditItem(item: ManageMenuItemRow) {
+    setEditingItem(item);
+    setEditForm(serviceItemEditFormFromRow(item));
+    setError(null);
+    setSuccessMessage(null);
+  }
+
+  function closeEditItem() {
+    if (editSaving) return;
+    setEditingItem(null);
+    setEditForm(null);
+  }
+
+  async function saveEditItem(e: FormEvent) {
+    e.preventDefault();
+    if (!token || !editingItem || !editForm || !editForm.title.trim()) return;
+    setEditSaving(true);
+    setError(null);
+    try {
+      await ownerApi.updateMenuItem(
+        token,
+        editingItem.id,
+        buildServiceItemUpdateBody(editForm),
+      );
+      setEditingItem(null);
+      setEditForm(null);
+      setSuccessMessage(ui.serviceItemEditSaved);
+      await reloadAll();
+    } catch (err) {
+      setError(parseApiError(locale, err));
+    } finally {
+      setEditSaving(false);
+    }
   }
 
   async function createGroup(e: FormEvent) {
@@ -158,6 +208,7 @@ export default function BusinessMenuPage() {
         <Link href="/dashboard" className="btn">{ui.text_76e286}</Link>
       </header>
 
+      {successMessage && <div className="alert alert-success">{successMessage}</div>}
       {error && <div className="alert alert-error">{error}</div>}
 
       {planStatus && maxItems != null && (
@@ -301,6 +352,8 @@ export default function BusinessMenuPage() {
                   title={item.title}
                   price={item.price}
                   sectionLabel={menuSectionLabel(locale, item.sectionId, sections)}
+                  canEdit={canCatalogEdit}
+                  onEdit={() => openEditItem(item)}
                   onDelete={async () => {
                     if (!token) return;
                     await ownerApi.deleteMenuItem(token, item.id);
@@ -376,6 +429,75 @@ export default function BusinessMenuPage() {
           </section>
         )}
       </div>
+
+      {editingItem && editForm && (
+        <EditOverlay title={ui.serviceItemEditTitle} onClose={closeEditItem}>
+          <form onSubmit={saveEditItem} className="form-grid">
+            <input
+              value={editForm.title}
+              onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+              placeholder={ui.text_602680}
+              required
+              disabled={editSaving}
+            />
+            <textarea
+              value={editForm.description}
+              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+              placeholder={ui.text_38ca0a}
+              rows={2}
+              disabled={editSaving}
+            />
+            <input
+              value={editForm.titleKk}
+              onChange={(e) => setEditForm({ ...editForm, titleKk: e.target.value })}
+              placeholder={ui.contentAuthoredTitleKkOptional}
+              disabled={editSaving}
+            />
+            <textarea
+              value={editForm.descriptionKk}
+              onChange={(e) => setEditForm({ ...editForm, descriptionKk: e.target.value })}
+              placeholder={ui.contentAuthoredDescriptionKkOptional}
+              rows={2}
+              disabled={editSaving}
+            />
+            <input
+              value={editForm.price}
+              onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+              placeholder={ui.__2500_f917c1}
+              disabled={editSaving}
+            />
+            <select
+              value={editForm.groupId}
+              onChange={(e) => setEditForm({ ...editForm, groupId: e.target.value })}
+              disabled={editSaving}
+            >
+              <option value="">{ui.__8f4ecc}</option>
+              {sections.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.title}
+                </option>
+              ))}
+            </select>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                type="checkbox"
+                checked={editForm.isActive}
+                onChange={(e) => setEditForm({ ...editForm, isActive: e.target.checked })}
+                disabled={editSaving}
+              />
+              {ui.text_047e75}
+            </label>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button type="submit" className="btn btn-primary" disabled={editSaving}>
+                {editSaving ? ui.text_89d69a : ui.serviceItemEditSave}
+              </button>
+              <button type="button" className="btn" onClick={closeEditItem} disabled={editSaving}>
+                {ui.text_cancel}
+              </button>
+            </div>
+          </form>
+        </EditOverlay>
+      )}
     </BusinessShell>
   );
 }
@@ -408,11 +530,15 @@ function MenuItemRow({
   title,
   price,
   sectionLabel,
+  canEdit,
+  onEdit,
   onDelete,
 }: {
   title: string;
   price?: string | null;
   sectionLabel: string;
+  canEdit: boolean;
+  onEdit: () => void;
   onDelete: () => void;
 }) {
   const ui = useUi();
@@ -428,7 +554,55 @@ function MenuItemRow({
           {price ? ` · ${price} ₸` : ''}
         </p>
       </div>
-      <button type="button" className="btn btn-sm" onClick={onDelete}>{ui.text_ed2bbf}</button>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {canEdit && (
+          <button type="button" className="btn btn-sm" onClick={onEdit}>
+            {ui.serviceItemEditAction}
+          </button>
+        )}
+        <button type="button" className="btn btn-sm" onClick={onDelete}>{ui.text_ed2bbf}</button>
+      </div>
+    </div>
+  );
+}
+
+function EditOverlay({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      role="presentation"
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 50,
+        background: 'rgba(15, 23, 42, 0.45)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="owner-edit-dialog-title"
+        className="form-card"
+        style={{ maxWidth: 520, width: '100%', maxHeight: '90vh', overflow: 'auto' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 id="owner-edit-dialog-title" style={{ marginTop: 0 }}>
+          {title}
+        </h2>
+        {children}
+      </div>
     </div>
   );
 }

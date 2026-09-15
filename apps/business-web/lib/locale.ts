@@ -66,6 +66,14 @@ export type UiLabels = {
   ownerPlanQuotaPhotosLine: string;
   ownerPlanQuotaPhotosOverLimitPrefix: string;
   ownerPromotionsListHeading: string;
+  serviceItemEditTitle: string;
+  serviceItemEditAction: string;
+  serviceItemEditSave: string;
+  serviceItemEditSaved: string;
+  promotionEditTitle: string;
+  promotionEditAction: string;
+  promotionEditSave: string;
+  promotionEditSaved: string;
   siteTitle: string;
   siteDescription: string;
   languageSwitcherAria: string;
@@ -987,6 +995,14 @@ export type UiLabels = {
     ownerPlanQuotaPhotosOverLimitPrefix:
       'На тарифе «${planName}» публикуется до ${max} фото. Остальные',
     ownerPromotionsListHeading: 'Список (${count})',
+    serviceItemEditTitle: 'Редактирование позиции',
+    serviceItemEditAction: 'Изменить',
+    serviceItemEditSave: 'Сохранить',
+    serviceItemEditSaved: 'Позиция сохранена',
+    promotionEditTitle: 'Редактирование акции',
+    promotionEditAction: 'Изменить',
+    promotionEditSave: 'Сохранить',
+    promotionEditSaved: 'Акция сохранена',
     text_f0e9ac: ' · страница ${pagination.page} / ${pagination.totalPages}',
     text_f154d6: 'Пользователь',
     text_f1a7d3: 'Расширенная',
@@ -1388,6 +1404,14 @@ export type UiLabels = {
     ownerPlanQuotaPhotosOverLimitPrefix:
       '«${planName}» тарифінде ${max} фотоға дейін жарияланады. Қалғандары',
     ownerPromotionsListHeading: 'Тізім (${count})',
+    serviceItemEditTitle: 'Позицияны өңдеу',
+    serviceItemEditAction: 'Өзгерту',
+    serviceItemEditSave: 'Сақтау',
+    serviceItemEditSaved: 'Позиция сақталды',
+    promotionEditTitle: 'Акцияны өңдеу',
+    promotionEditAction: 'Өзгерту',
+    promotionEditSave: 'Сақтау',
+    promotionEditSaved: 'Акция сақталды',
     text_setAsCover: 'Мұқабаға',
     text_findShort: 'Іздеу',
     text_deleteGroup: 'Топты жою',

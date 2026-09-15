@@ -2,7 +2,7 @@
 
 import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, ReactNode, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import {
   BusinessPlanStatus,
@@ -12,8 +12,14 @@ import {
   myBusinessRows,
   ownerApi,
 } from '@/lib/api';
-import { canViewPayments } from '@/lib/business-access';
+import { BusinessPermission, canViewPayments, hasPermission } from '@/lib/business-access';
 import { parseApiError } from '@/lib/monetization-utils';
+import {
+  buildPromotionUpdateBody,
+  canEditPromotion,
+  promotionEditFormFromRow,
+  type PromotionEditForm,
+} from '@/lib/owner-content-edit';
 import { useAuth } from '@/lib/use-auth';
 import { BusinessShell } from '@/components/business-shell';
 
@@ -34,6 +40,14 @@ export default function BusinessPromotionsPage() {
   const [description, setDescription] = useState('');
   const [descriptionKk, setDescriptionKk] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [editingPromo, setEditingPromo] = useState<PromotionRow | null>(null);
+  const [editForm, setEditForm] = useState<PromotionEditForm | null>(null);
+  const [editSaving, setEditSaving] = useState(false);
+
+  const canPromotionsEdit = canEditPromotion(
+    hasPermission(access, BusinessPermission.PROMOTIONS_EDIT),
+  );
 
   const business = businesses.find((b) => b.id === businessId) ?? null;
   const activeCount = promotions.filter((p) => p.status === 'ACTIVE').length;
@@ -42,8 +56,11 @@ export default function BusinessPromotionsPage() {
 
   useEffect(() => {
     if (!token) return;
-    ownerApi.listMyBusinesses(token).then((res) => setBusinesses(myBusinessRows(res.items))).catch((err) => setError(String(err)));
-  }, [token]);
+    ownerApi
+      .listMyBusinesses(token)
+      .then((res) => setBusinesses(myBusinessRows(res.items)))
+      .catch((err) => setError(parseApiError(locale, err)));
+  }, [token, locale]);
 
   async function load(t: string) {
     const promos = await ownerApi.listPromotions(t, businessId);
@@ -58,7 +75,7 @@ export default function BusinessPromotionsPage() {
   useEffect(() => {
     if (!token) return;
     load(token).catch((err) => setError(parseApiError(locale, err)));
-  }, [token, businessId, access]);
+  }, [token, businessId, access, locale]);
 
   async function create(e: FormEvent) {
     e.preventDefault();
@@ -80,7 +97,7 @@ export default function BusinessPromotionsPage() {
       setDescriptionKk('');
       await load(token);
     } catch (err) {
-      setError(String(err));
+      setError(parseApiError(locale, err));
     }
   }
 
@@ -92,7 +109,7 @@ export default function BusinessPromotionsPage() {
       await ownerApi.updatePromotion(token, p.id, { status: next });
       await load(token);
     } catch (err) {
-      setError(String(err));
+      setError(parseApiError(locale, err));
     }
   }
 
@@ -100,6 +117,41 @@ export default function BusinessPromotionsPage() {
     if (!token) return;
     await ownerApi.deletePromotion(token, id);
     await load(token);
+  }
+
+  function openEdit(p: PromotionRow) {
+    setEditingPromo(p);
+    setEditForm(promotionEditFormFromRow(p));
+    setError(null);
+    setSuccessMessage(null);
+  }
+
+  function closeEdit() {
+    if (editSaving) return;
+    setEditingPromo(null);
+    setEditForm(null);
+  }
+
+  async function saveEdit(e: FormEvent) {
+    e.preventDefault();
+    if (!token || !editingPromo || !editForm || !editForm.title.trim()) return;
+    setEditSaving(true);
+    setError(null);
+    try {
+      await ownerApi.updatePromotion(
+        token,
+        editingPromo.id,
+        buildPromotionUpdateBody(editForm),
+      );
+      setEditingPromo(null);
+      setEditForm(null);
+      setSuccessMessage(ui.promotionEditSaved);
+      await load(token);
+    } catch (err) {
+      setError(parseApiError(locale, err));
+    } finally {
+      setEditSaving(false);
+    }
   }
 
   if (!ready || !token) return <p className="page-content">{ui.text_89d69a}</p>;
@@ -179,6 +231,7 @@ export default function BusinessPromotionsPage() {
         </button>
       </form>
 
+      {successMessage && <div className="alert alert-success">{successMessage}</div>}
       {error && <div className="alert alert-error">{error}</div>}
 
       <section className="form-card" style={{ maxWidth: 720 }}>
@@ -206,6 +259,11 @@ export default function BusinessPromotionsPage() {
                 </span>
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {canPromotionsEdit && (
+                  <button type="button" className="btn btn-sm" onClick={() => openEdit(p)}>
+                    {ui.promotionEditAction}
+                  </button>
+                )}
                 <button type="button" className="btn btn-sm" onClick={() => toggleStatus(p)}>
                   {p.status === 'ACTIVE' ? ui.text_b0e3a5 : ui.text_3e177a}
                 </button>
@@ -215,6 +273,95 @@ export default function BusinessPromotionsPage() {
           ))
         )}
       </section>
+
+      {editingPromo && editForm && (
+        <EditOverlay title={ui.promotionEditTitle} onClose={closeEdit}>
+          <form onSubmit={saveEdit} className="form-grid">
+            <input
+              value={editForm.title}
+              onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+              placeholder={ui.text_602680}
+              required
+              disabled={editSaving}
+            />
+            <input
+              value={editForm.titleKk}
+              onChange={(e) => setEditForm({ ...editForm, titleKk: e.target.value })}
+              placeholder={ui.contentAuthoredTitleKkOptional}
+              disabled={editSaving}
+            />
+            <input
+              value={editForm.discountText}
+              onChange={(e) => setEditForm({ ...editForm, discountText: e.target.value })}
+              placeholder={ui.text_d90396}
+              disabled={editSaving}
+            />
+            <textarea
+              value={editForm.description}
+              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+              placeholder={ui.text_38ca0a}
+              rows={3}
+              disabled={editSaving}
+            />
+            <textarea
+              value={editForm.descriptionKk}
+              onChange={(e) => setEditForm({ ...editForm, descriptionKk: e.target.value })}
+              placeholder={ui.contentAuthoredDescriptionKkOptional}
+              rows={3}
+              disabled={editSaving}
+            />
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button type="submit" className="btn btn-primary" disabled={editSaving}>
+                {editSaving ? ui.text_89d69a : ui.promotionEditSave}
+              </button>
+              <button type="button" className="btn" onClick={closeEdit} disabled={editSaving}>
+                {ui.text_cancel}
+              </button>
+            </div>
+          </form>
+        </EditOverlay>
+      )}
     </BusinessShell>
+  );
+}
+
+function EditOverlay({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      role="presentation"
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 50,
+        background: 'rgba(15, 23, 42, 0.45)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="promotion-edit-dialog-title"
+        className="form-card"
+        style={{ maxWidth: 520, width: '100%', maxHeight: '90vh', overflow: 'auto' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 id="promotion-edit-dialog-title" style={{ marginTop: 0 }}>
+          {title}
+        </h2>
+        {children}
+      </div>
+    </div>
   );
 }
