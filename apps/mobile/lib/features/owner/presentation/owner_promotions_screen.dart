@@ -59,10 +59,14 @@ class OwnerPromotionsScreen extends ConsumerWidget {
       return;
     }
     final titleController = TextEditingController(text: existing?.title ?? '');
+    final titleKkController =
+        TextEditingController(text: existing?.titleKk ?? '');
     final discountController =
         TextEditingController(text: existing?.discountText ?? '-20%');
     final descController =
         TextEditingController(text: existing?.description ?? '');
+    final descKkController =
+        TextEditingController(text: existing?.descriptionKk ?? '');
     var status = existing?.status ?? 'ACTIVE';
 
     final saved = await showDialog<bool>(
@@ -79,12 +83,26 @@ class OwnerPromotionsScreen extends ConsumerWidget {
                   decoration: InputDecoration(labelText: context.l10n.ownerFieldTitle),
                 ),
                 TextField(
+                  controller: titleKkController,
+                  decoration: InputDecoration(
+                    labelText: context.l10n.ownerFieldTitleKkOptional,
+                  ),
+                ),
+                TextField(
                   controller: discountController,
                   decoration: InputDecoration(labelText: context.l10n.ownerFieldDiscount),
                 ),
                 TextField(
                   controller: descController,
                   decoration: InputDecoration(labelText: context.l10n.ownerFieldDescription),
+                  minLines: 2,
+                  maxLines: 4,
+                ),
+                TextField(
+                  controller: descKkController,
+                  decoration: InputDecoration(
+                    labelText: context.l10n.ownerFieldDescriptionKkOptional,
+                  ),
                   minLines: 2,
                   maxLines: 4,
                 ),
@@ -129,12 +147,21 @@ class OwnerPromotionsScreen extends ConsumerWidget {
     if (saved != true || titleController.text.trim().isEmpty) return;
 
     final repo = ref.read(catalogRepositoryProvider);
-    final payload = {
+    final payload = <String, dynamic>{
       'title': titleController.text.trim(),
       'discountText': discountController.text.trim(),
       'description': descController.text.trim(),
       'status': status,
     };
+    if (existing == null) {
+      final titleKk = titleKkController.text.trim();
+      final descKk = descKkController.text.trim();
+      if (titleKk.isNotEmpty) payload['titleKk'] = titleKk;
+      if (descKk.isNotEmpty) payload['descriptionKk'] = descKk;
+    } else {
+      payload['titleKk'] = titleKkController.text.trim();
+      payload['descriptionKk'] = descKkController.text.trim();
+    }
 
     try {
       if (existing == null) {

@@ -632,6 +632,8 @@
   "ownerFieldTitle": "Атауы",
   "ownerFieldDiscount": "Жеңілдік",
   "ownerFieldDescription": "Сипаттама",
+  "ownerFieldTitleKkOptional": "Қазақшадағы атау (міндетті емес)",
+  "ownerFieldDescriptionKkOptional": "Қазақшадағы сипаттама (міндетті емес)",
   "ownerFieldStatus": "Күйі",
   "ownerPromotionStatusCompleted": "Аяқталған",
   "ownerCreate": "Жасау",

@@ -412,6 +412,9 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                         const SizedBox(height: 10),
                         ...promotions.map(
                           (promo) => _PromotionTile(
+                            localeCode: resolveLocaleCode(
+                              ref.watch(appLocaleCodeProvider),
+                            ),
                             promo: promo,
                             onTap: () {
                               unawaited(
@@ -1097,8 +1100,13 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _PromotionTile extends StatelessWidget {
-  const _PromotionTile({required this.promo, this.onTap});
+  const _PromotionTile({
+    required this.localeCode,
+    required this.promo,
+    this.onTap,
+  });
 
+  final String localeCode;
   final Map<String, dynamic> promo;
   final VoidCallback? onTap;
 
@@ -1106,8 +1114,17 @@ class _PromotionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final imageUrl = AppConstants.resolveMediaUrl(promo['imageUrl'] as String?);
-    final title = promo['title'] as String? ?? '';
-    final desc = promo['description'] as String? ?? '';
+    final title = promotionTitle(
+      localeCode: localeCode,
+      title: promo['title'] as String? ?? '',
+      titleKk: promo['titleKk'] as String?,
+    );
+    final desc = promotionDescription(
+          localeCode: localeCode,
+          description: promo['description'] as String?,
+          descriptionKk: promo['descriptionKk'] as String?,
+        ) ??
+        '';
     final discount = promo['discountText'] as String? ?? l10n.businessPromotionDefault;
     final endDateRaw = promo['endDate'];
     String? expiryLabel;

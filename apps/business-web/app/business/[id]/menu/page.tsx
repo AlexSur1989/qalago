@@ -35,6 +35,8 @@ export default function BusinessMenuPage() {
   const [loadingItems, setLoadingItems] = useState(false);
   const [groupTitle, setGroupTitle] = useState('');
   const [itemTitle, setItemTitle] = useState('');
+  const [itemTitleKk, setItemTitleKk] = useState('');
+  const [itemDescriptionKk, setItemDescriptionKk] = useState('');
   const [itemPrice, setItemPrice] = useState('');
   const [itemGroupId, setItemGroupId] = useState('');
 
@@ -116,9 +118,13 @@ export default function BusinessMenuPage() {
       businessId,
       groupId: itemGroupId || undefined,
       title: itemTitle.trim(),
+      titleKk: itemTitleKk.trim() || undefined,
+      descriptionKk: itemDescriptionKk.trim() || undefined,
       price: itemPrice.trim() || undefined,
     });
     setItemTitle('');
+    setItemTitleKk('');
+    setItemDescriptionKk('');
     setItemPrice('');
     await reloadAll();
   }
@@ -188,6 +194,17 @@ export default function BusinessMenuPage() {
             value={itemTitle}
             onChange={(e) => setItemTitle(e.target.value)}
             placeholder={ui.text_602680}
+          />
+          <input
+            value={itemTitleKk}
+            onChange={(e) => setItemTitleKk(e.target.value)}
+            placeholder={ui.contentAuthoredTitleKkOptional}
+          />
+          <textarea
+            value={itemDescriptionKk}
+            onChange={(e) => setItemDescriptionKk(e.target.value)}
+            placeholder={ui.contentAuthoredDescriptionKkOptional}
+            rows={2}
           />
           <input
             value={itemPrice}

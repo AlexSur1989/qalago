@@ -28,6 +28,7 @@ import '../../categories/data/home_category_display.dart';
 import '../../categories/presentation/category_businesses_screen.dart';
 import '../../categories/utils/category_display.dart';
 import '../../../core/locale/app_locale_provider.dart';
+import '../../../core/locale/localized_content.dart';
 import '../../../core/locale/consumer_api_errors.dart';
 import '../../../core/locale/l10n_extension.dart';
 import '../../../shared/widgets/category_icon_tile.dart';
@@ -231,6 +232,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           );
                         },
                         data: (paginated) => _PromotionsStrip(
+                          localeCode: resolveLocaleCode(
+                            ref.watch(appLocaleCodeProvider),
+                          ),
                           items: paginated.items.take(6).toList(),
                           onTap: _openPromotion,
                         ),
@@ -504,8 +508,13 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _PromotionsStrip extends StatelessWidget {
-  const _PromotionsStrip({required this.items, required this.onTap});
+  const _PromotionsStrip({
+    required this.localeCode,
+    required this.items,
+    required this.onTap,
+  });
 
+  final String localeCode;
   final List<PromotionModel> items;
   final ValueChanged<PromotionModel> onTap;
 
@@ -536,6 +545,7 @@ class _PromotionsStrip extends StatelessWidget {
           itemCount: items.length,
           separatorBuilder: (_, _) => const SizedBox(width: 12),
           itemBuilder: (context, index) => _PromotionCard(
+            localeCode: localeCode,
             promotion: items[index],
             onTap: () => onTap(items[index]),
           ),
@@ -546,13 +556,28 @@ class _PromotionsStrip extends StatelessWidget {
 }
 
 class _PromotionCard extends StatelessWidget {
-  const _PromotionCard({required this.promotion, required this.onTap});
+  const _PromotionCard({
+    required this.localeCode,
+    required this.promotion,
+    required this.onTap,
+  });
 
+  final String localeCode;
   final PromotionModel promotion;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final displayTitle = promotionTitle(
+      localeCode: localeCode,
+      title: promotion.title,
+      titleKk: promotion.titleKk,
+    );
+    final displayDescription = promotionDescription(
+      localeCode: localeCode,
+      description: promotion.description,
+      descriptionKk: promotion.descriptionKk,
+    );
     final imageUrl = AppConstants.resolveMediaUrl(
       promotion.imageUrl ?? promotion.business?.coverImageUrl,
     );
@@ -601,7 +626,7 @@ class _PromotionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      promotion.title,
+                      displayTitle,
                       style: const TextStyle(
                         color: AppTheme.textDark,
                         fontSize: 15,
@@ -622,10 +647,10 @@ class _PromotionCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (promotion.description != null) ...[
+                    if (displayDescription != null) ...[
                       const SizedBox(height: 7),
                       Text(
-                        promotion.description!,
+                        displayDescription,
                         style: const TextStyle(
                           color: AppTheme.textMuted,
                           fontSize: 12,

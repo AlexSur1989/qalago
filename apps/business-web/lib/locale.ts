@@ -57,6 +57,8 @@ export type UiLabels = {
   text_setAsCover: string;
   text_mediaArchivedAfterUpgrade: string;
   text_menuShownCount: string;
+  contentAuthoredTitleKkOptional: string;
+  contentAuthoredDescriptionKkOptional: string;
   siteTitle: string;
   siteDescription: string;
   languageSwitcherAria: string;
@@ -965,6 +967,8 @@ export type UiLabels = {
     text_ed2bbf: 'Удалить',
     text_edcf39: 'Итого',
     text_menuShownCount: 'Показано ${shown} из ${total}',
+    contentAuthoredTitleKkOptional: 'Название на казахском (необязательно)',
+    contentAuthoredDescriptionKkOptional: 'Описание на казахском (необязательно)',
     text_f0e9ac: ' · страница ${pagination.page} / ${pagination.totalPages}',
     text_f154d6: 'Пользователь',
     text_f1a7d3: 'Расширенная',
@@ -1353,6 +1357,8 @@ export type UiLabels = {
     shellSoonBadge: 'жақында',
     text_mediaArchivedAfterUpgrade: 'тарифті көтергеннен кейін сақталады және қайта пайда болады.',
     text_menuShownCount: 'Көрсетілген ${shown} / ${total}',
+    contentAuthoredTitleKkOptional: 'Қазақшадағы атау (міндетті емес)',
+    contentAuthoredDescriptionKkOptional: 'Қазақшадағы сипаттама (міндетті емес)',
     text_setAsCover: 'Мұқабаға',
     text_findShort: 'Іздеу',
     text_deleteGroup: 'Топты жою',

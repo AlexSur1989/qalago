@@ -769,7 +769,9 @@ export const ownerApi = {
     data: {
       businessId: string;
       title: string;
+      titleKk?: string;
       description?: string;
+      descriptionKk?: string;
       discountText?: string;
       status?: string;
     },

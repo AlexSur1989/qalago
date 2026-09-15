@@ -2073,6 +2073,14 @@ class AppLocalizationsRu extends AppLocalizations {
   String get ownerFieldDescription => 'Описание';
 
   @override
+  String get ownerFieldTitleKkOptional =>
+      'Название на казахском (необязательно)';
+
+  @override
+  String get ownerFieldDescriptionKkOptional =>
+      'Описание на казахском (необязательно)';
+
+  @override
   String get ownerFieldStatus => 'Статус';
 
   @override

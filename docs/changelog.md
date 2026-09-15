@@ -33,7 +33,8 @@
 - **API**: localized-content resolver; PATCH-isolated optional KK fields; city `nameKk` on business payloads.
 - **Clients**: Flutter `localized_content.dart` + city display from API; Consumer Web home tagline from `/cities/:slug`; Business Web city chip.
 - **Docs**: `docs/localization/multilingual-content-model.md`.
-- **Future**: approved KK legal texts; search on KK business fields; optional owner KK fields in Flutter menu UI.
+- **Future**: approved KK legal texts; search on KK business fields.
+- **Closure (6.10B.6)**: owner KK fields (Flutter + Business Web create forms), consumer display resolver wired on Flutter; PATCH isolation tests; full backend regression.
 
 ## 2026-09-15 — Stage 6.10B.5: Business Web RU-KK localization
 

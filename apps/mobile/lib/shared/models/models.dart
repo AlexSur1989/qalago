@@ -274,7 +274,9 @@ class PromotionModel {
   PromotionModel({
     required this.id,
     required this.title,
+    this.titleKk,
     this.description,
+    this.descriptionKk,
     this.imageUrl,
     this.discountText,
     this.status,
@@ -286,7 +288,9 @@ class PromotionModel {
 
   final String id;
   final String title;
+  final String? titleKk;
   final String? description;
+  final String? descriptionKk;
   final String? imageUrl;
   final String? discountText;
   final String? status;
@@ -300,7 +304,9 @@ class PromotionModel {
     return PromotionModel(
       id: json['id'] as String,
       title: json['title'] as String,
+      titleKk: json['titleKk'] as String?,
       description: json['description'] as String?,
+      descriptionKk: json['descriptionKk'] as String?,
       imageUrl: json['imageUrl'] as String?,
       discountText: json['discountText'] as String?,
       status: json['status'] as String?,

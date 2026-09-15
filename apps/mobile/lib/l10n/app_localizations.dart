@@ -3806,6 +3806,18 @@ abstract class AppLocalizations {
   /// **'Описание'**
   String get ownerFieldDescription;
 
+  /// No description provided for @ownerFieldTitleKkOptional.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название на казахском (необязательно)'**
+  String get ownerFieldTitleKkOptional;
+
+  /// No description provided for @ownerFieldDescriptionKkOptional.
+  ///
+  /// In ru, this message translates to:
+  /// **'Описание на казахском (необязательно)'**
+  String get ownerFieldDescriptionKkOptional;
+
   /// No description provided for @ownerFieldStatus.
   ///
   /// In ru, this message translates to:

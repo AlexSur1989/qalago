@@ -8,6 +8,7 @@ import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/navigation/open_business.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/locale/app_locale_provider.dart';
+import '../../../core/locale/localized_content.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
@@ -215,6 +216,9 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
                         (promotion) => Padding(
                           padding: const EdgeInsets.only(bottom: 14),
                           child: _PromotionListCard(
+                            localeCode: resolveLocaleCode(
+                              ref.watch(appLocaleCodeProvider),
+                            ),
                             promotion: promotion,
                             onTap: () => _openPromotion(promotion),
                           ),
@@ -333,8 +337,13 @@ class _PromotionsHeader extends StatelessWidget {
 }
 
 class _PromotionListCard extends StatelessWidget {
-  const _PromotionListCard({required this.promotion, required this.onTap});
+  const _PromotionListCard({
+    required this.localeCode,
+    required this.promotion,
+    required this.onTap,
+  });
 
+  final String localeCode;
   final PromotionModel promotion;
   final VoidCallback onTap;
 
@@ -344,7 +353,17 @@ class _PromotionListCard extends StatelessWidget {
       promotion.imageUrl ?? promotion.business?.coverImageUrl,
     );
     final validity = formatPromotionValidity(promotion);
-    final benefit = promotion.description ?? promotion.discountText;
+    final localizedDescription = promotionDescription(
+      localeCode: localeCode,
+      description: promotion.description,
+      descriptionKk: promotion.descriptionKk,
+    );
+    final benefit = localizedDescription ?? promotion.discountText;
+    final displayTitle = promotionTitle(
+      localeCode: localeCode,
+      title: promotion.title,
+      titleKk: promotion.titleKk,
+    );
 
     final cs = Theme.of(context).colorScheme;
     return Material(
@@ -428,7 +447,7 @@ class _PromotionListCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      promotion.title,
+                      displayTitle,
                       style: const TextStyle(
                         color: AppTheme.textDark,
                         fontSize: 16,

@@ -37,4 +37,38 @@ void main() {
       'KK',
     );
   });
+
+  test('service item description KK fallback', () {
+    expect(
+      serviceItemDescription(
+        localeCode: 'kk',
+        description: 'RU desc',
+        descriptionKk: 'KK desc',
+      ),
+      'KK desc',
+    );
+    expect(
+      serviceItemDescription(
+        localeCode: 'kk',
+        description: 'RU desc',
+        descriptionKk: null,
+      ),
+      'RU desc',
+    );
+  });
+
+  test('promotion display resolver', () {
+    expect(
+      promotionTitle(localeCode: 'ru', title: 'RU', titleKk: 'KK'),
+      'RU',
+    );
+    expect(
+      promotionDescription(
+        localeCode: 'kk',
+        description: 'RU',
+        descriptionKk: 'KK',
+      ),
+      'KK',
+    );
+  });
 }

@@ -1,9 +1,4 @@
-/// Centralized API content locale resolution (Stage 6.10B.6).
-
-String resolveLocaleCode(String code) {
-  if (code.startsWith('kk')) return 'kk';
-  return 'ru';
-}
+// Centralized API content locale resolution (Stage 6.10B.6).
 
 String? _normalizeOptional(String? value) {
   if (value == null) return null;
@@ -74,4 +69,16 @@ String promotionTitle({
   String? titleKk,
 }) {
   return businessAuthoredText(localeCode: localeCode, primary: title, kk: titleKk);
+}
+
+String? promotionDescription({
+  required String localeCode,
+  String? description,
+  String? descriptionKk,
+}) {
+  final primary = _normalizeOptional(description);
+  if (localeCode.startsWith('kk')) {
+    return _normalizeOptional(descriptionKk) ?? primary;
+  }
+  return primary;
 }

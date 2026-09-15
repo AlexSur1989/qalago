@@ -2065,6 +2065,13 @@ class AppLocalizationsKk extends AppLocalizations {
   String get ownerFieldDescription => 'Сипаттама';
 
   @override
+  String get ownerFieldTitleKkOptional => 'Қазақшадағы атау (міндетті емес)';
+
+  @override
+  String get ownerFieldDescriptionKkOptional =>
+      'Қазақшадағы сипаттама (міндетті емес)';
+
+  @override
   String get ownerFieldStatus => 'Күйі';
 
   @override

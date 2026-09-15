@@ -2,7 +2,9 @@ import {
   businessAuthoredText,
   cityDisplayName,
   normalizeOptionalLocaleText,
+  promotionDescription,
   promotionTitle,
+  serviceItemDescription,
   serviceItemTitle,
   taxonomyDisplayName,
 } from './localized-content';
@@ -34,6 +36,32 @@ describe('localized-content (Stage 6.10B.6)', () => {
 
   it('promotion title fallback', () => {
     expect(promotionTitle('kk', { title: 'Акция', titleKk: null })).toBe('Акция');
+  });
+
+  it('service item description resolver', () => {
+    expect(
+      serviceItemDescription('ru', { description: 'RU', descriptionKk: 'KK' }),
+    ).toBe('RU');
+    expect(
+      serviceItemDescription('kk', { description: 'RU', descriptionKk: 'KK' }),
+    ).toBe('KK');
+    expect(serviceItemDescription('kk', { description: 'RU', descriptionKk: null })).toBe(
+      'RU',
+    );
+  });
+
+  it('promotion description resolver', () => {
+    expect(
+      promotionDescription('kk', { description: 'RU', descriptionKk: 'KK' }),
+    ).toBe('KK');
+    expect(promotionDescription('ru', { description: 'RU', descriptionKk: 'KK' })).toBe(
+      'RU',
+    );
+  });
+
+  it('legacy records without KK fields resolve to primary', () => {
+    expect(serviceItemTitle('kk', { title: 'Legacy item' })).toBe('Legacy item');
+    expect(promotionTitle('kk', { title: 'Legacy promo' })).toBe('Legacy promo');
   });
 
   it('normalizes whitespace-only optional fields to null', () => {

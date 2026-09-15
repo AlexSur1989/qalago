@@ -1,18 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/locale/app_locale_provider.dart';
+import '../../../core/locale/localized_content.dart';
 import '../../../core/locale/l10n_extension.dart';
 import '../../../core/theme/app_theme.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../owner/presentation/widgets/service_menu_widgets.dart';
 
-class CatalogItemCard extends StatelessWidget {
+class CatalogItemCard extends ConsumerWidget {
   const CatalogItemCard({super.key, required this.item, this.onTap});
 
   final Map<String, dynamic> item;
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final localeCode = resolveLocaleCode(ref.watch(appLocaleCodeProvider));
+    final displayTitle = serviceItemTitle(
+      localeCode: localeCode,
+      title: item['title'] as String? ?? '',
+      titleKk: item['titleKk'] as String?,
+    );
+    final displayDescription = serviceItemDescription(
+      localeCode: localeCode,
+      description: item['description'] as String?,
+      descriptionKk: item['descriptionKk'] as String?,
+    );
     final imageUrl = AppConstants.resolveMediaUrl(item['imageUrl'] as String?);
     final price = item['price'];
     final sectionTitle =
@@ -35,7 +49,7 @@ class CatalogItemCard extends StatelessWidget {
               )
             : _placeholder(context),
         title: Text(
-          item['title'] as String? ?? '',
+          displayTitle,
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         subtitle: Column(
@@ -46,8 +60,8 @@ class CatalogItemCard extends StatelessWidget {
                 sectionTitle,
                 style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
               ),
-            if (item['description'] != null)
-              Text(item['description'] as String),
+            if (displayDescription != null)
+              Text(displayDescription),
           ],
         ),
         trailing: price != null

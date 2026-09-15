@@ -29,8 +29,10 @@ export default function BusinessPromotionsPage() {
   const [promotions, setPromotions] = useState<PromotionRow[]>([]);
   const [planStatus, setPlanStatus] = useState<BusinessPlanStatus | null>(null);
   const [title, setTitle] = useState('');
+  const [titleKk, setTitleKk] = useState('');
   const [discountText, setDiscountText] = useState('-20%');
   const [description, setDescription] = useState('');
+  const [descriptionKk, setDescriptionKk] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const business = businesses.find((b) => b.id === businessId) ?? null;
@@ -66,12 +68,16 @@ export default function BusinessPromotionsPage() {
       await ownerApi.createPromotion(token, {
         businessId,
         title: title.trim(),
+        titleKk: titleKk.trim() || undefined,
         discountText,
         description,
+        descriptionKk: descriptionKk.trim() || undefined,
         status: 'ACTIVE',
       });
       setTitle('');
+      setTitleKk('');
       setDescription('');
+      setDescriptionKk('');
       await load(token);
     } catch (err) {
       setError(String(err));
@@ -141,6 +147,12 @@ export default function BusinessPromotionsPage() {
           disabled={atActiveLimit}
         />
         <input
+          value={titleKk}
+          onChange={(e) => setTitleKk(e.target.value)}
+          placeholder={ui.contentAuthoredTitleKkOptional}
+          disabled={atActiveLimit}
+        />
+        <input
           value={discountText}
           onChange={(e) => setDiscountText(e.target.value)}
           placeholder={ui.text_d90396}
@@ -150,6 +162,13 @@ export default function BusinessPromotionsPage() {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder={ui.text_38ca0a}
+          rows={3}
+          disabled={atActiveLimit}
+        />
+        <textarea
+          value={descriptionKk}
+          onChange={(e) => setDescriptionKk(e.target.value)}
+          placeholder={ui.contentAuthoredDescriptionKkOptional}
           rows={3}
           disabled={atActiveLimit}
         />

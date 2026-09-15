@@ -285,8 +285,8 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
                 ),
                 TextField(
                   controller: titleKkController,
-                  decoration: const InputDecoration(
-                    labelText: 'KK (optional)',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.ownerFieldTitleKkOptional,
                   ),
                 ),
                 TextField(
@@ -301,8 +301,8 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
                 ),
                 TextField(
                   controller: descKkController,
-                  decoration: const InputDecoration(
-                    labelText: 'Description KK (optional)',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.ownerFieldDescriptionKkOptional,
                   ),
                   maxLines: 2,
                 ),
@@ -323,12 +323,19 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
     final price = double.tryParse(priceController.text.trim().replaceAll(',', '.'));
     final payload = <String, dynamic>{
       'title': titleController.text.trim(),
-      if (titleKkController.text.trim().isNotEmpty) 'titleKk': titleKkController.text.trim(),
       if (descController.text.trim().isNotEmpty) 'description': descController.text.trim(),
-      if (descKkController.text.trim().isNotEmpty) 'descriptionKk': descKkController.text.trim(),
       if (price != null) 'price': price,
       'groupId': selectedGroupId,
     };
+    if (existing == null) {
+      final titleKk = titleKkController.text.trim();
+      final descKk = descKkController.text.trim();
+      if (titleKk.isNotEmpty) payload['titleKk'] = titleKk;
+      if (descKk.isNotEmpty) payload['descriptionKk'] = descKk;
+    } else {
+      payload['titleKk'] = titleKkController.text.trim();
+      payload['descriptionKk'] = descKkController.text.trim();
+    }
 
     if (existing == null) {
       await repo.createServiceItem({'businessId': widget.businessId, ...payload});

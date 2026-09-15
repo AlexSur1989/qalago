@@ -7,6 +7,8 @@ import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/navigation/open_business.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/locale/app_locale_provider.dart';
+import '../../../core/locale/localized_content.dart';
 import '../../../core/locale/l10n_extension.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/widgets/business_card.dart';
@@ -135,6 +137,7 @@ class SponsoredPromotionStrip extends ConsumerWidget {
     if (entries.isEmpty) return const SizedBox.shrink();
 
     final l10n = context.l10n;
+    final localeCode = resolveLocaleCode(ref.watch(appLocaleCodeProvider));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -172,6 +175,7 @@ class SponsoredPromotionStrip extends ConsumerWidget {
                   );
                 },
                 child: _SponsoredPromotionCard(
+                  localeCode: localeCode,
                   promotion: promotion,
                   displayLabel: item.displayLabel,
                   onTap: () {
@@ -193,17 +197,24 @@ class SponsoredPromotionStrip extends ConsumerWidget {
 
 class _SponsoredPromotionCard extends StatelessWidget {
   const _SponsoredPromotionCard({
+    required this.localeCode,
     required this.promotion,
     required this.displayLabel,
     required this.onTap,
   });
 
+  final String localeCode;
   final PromotionModel promotion;
   final String displayLabel;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final displayTitle = promotionTitle(
+      localeCode: localeCode,
+      title: promotion.title,
+      titleKk: promotion.titleKk,
+    );
     final imageUrl = AppConstants.resolveMediaUrl(
       promotion.imageUrl ?? promotion.business?.coverImageUrl,
     );
@@ -251,7 +262,7 @@ class _SponsoredPromotionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      promotion.title,
+                      displayTitle,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
