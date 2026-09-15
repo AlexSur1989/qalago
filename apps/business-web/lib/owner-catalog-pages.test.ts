@@ -19,6 +19,12 @@ describe('business catalog & promotion edit parity (6.10C.1)', () => {
     expect(src).toContain('createMenuItem');
   });
 
+  it('profile page uses localized subcategory display helper', () => {
+    const src = readPage('business/[id]/page.tsx');
+    expect(src).toContain('subcategoryDisplayName');
+    expect(src).not.toMatch(/\{sub\.nameRu\}/);
+  });
+
   it('promotions page wires edit PATCH and PROMOTIONS_EDIT gating', () => {
     const src = readPage('business/[id]/promotions/page.tsx');
     expect(src).toContain('updatePromotion');

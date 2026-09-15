@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-16 — Stage 6.10C.QA: Business cabinet closure QA
+
+- **Business Web**: profile subcategory chips use `subcategoryDisplayName` (KK with RU fallback); regression tests.
+- **6.10C**: cabinet completion block closed after 6.10C.1–6.10C.2 + targeted QA.
+
 ## 2026-09-16 — Stage 6.10C.2: Flutter owner subcategory profile parity
 
 - **Flutter Owner**: subcategory multi-select on business profile edit via existing `GET /categories/:id/subcategories` and `PATCH subcategoryIds`; `BUSINESS_PROFILE_EDIT` gating; zero-subcategory empty state; profile PATCH omits `subcategoryIds` (separate save, Business Web parity).

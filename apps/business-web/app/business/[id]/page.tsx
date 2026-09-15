@@ -1,6 +1,7 @@
 'use client';
 
-import { useUi } from '@/components/locale-provider';
+import { useLocale, useUi } from '@/components/locale-provider';
+import { subcategoryDisplayName } from '@/lib/localized-content';
 import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
@@ -18,6 +19,7 @@ function parseHours(raw: BusinessRow['workHours']) {
 }
 
 export default function BusinessEditPage() {
+  const locale = useLocale();
   const ui = useUi();
 
   const params = useParams<{ id: string }>();
@@ -178,7 +180,7 @@ export default function BusinessEditPage() {
                   className={`btn btn-sm ${active ? 'btn-primary' : ''}`}
                   onClick={() => toggleSubcategory(sub.id)}
                 >
-                  {sub.nameRu}
+                  {subcategoryDisplayName(sub, locale)}
                 </button>
               );
             })}
