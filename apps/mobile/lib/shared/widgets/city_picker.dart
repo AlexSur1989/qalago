@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/locale/l10n_extension.dart';
 import '../../core/providers/city_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../features/auth/providers/auth_provider.dart';
@@ -24,11 +25,11 @@ Future<void> showCityPickerSheet(BuildContext context, WidgetRef ref) async {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                   child: Text(
-                    'Выберите город',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    context.l10n.cityPickerTitle,
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),
                 ...cities.map((c) {
@@ -58,9 +59,9 @@ Future<void> showCityPickerSheet(BuildContext context, WidgetRef ref) async {
                               color: AppTheme.textDark.withValues(alpha: 0.06),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Text(
-                              'Скоро',
-                              style: TextStyle(
+                            child: Text(
+                              context.l10n.cityComingSoon,
+                              style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 color: AppTheme.textMuted,

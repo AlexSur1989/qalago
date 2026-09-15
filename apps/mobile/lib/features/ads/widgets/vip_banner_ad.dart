@@ -7,6 +7,7 @@ import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/navigation/open_business.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/ad_models.dart';
 import '../data/ad_placement_codes.dart';
@@ -36,8 +37,9 @@ class VipBannerAd extends ConsumerWidget {
     final tracking = ref.read(adTrackingServiceProvider);
     final imageUrl = AppConstants.resolveMediaUrl(creative.imageUrl);
 
+    final l10n = context.l10n;
     final banner = Semantics(
-        label: 'Реклама: ${creative.title}',
+        label: l10n.adSemanticLabel(creative.title),
         button: true,
         child: Material(
           color: Colors.white,
@@ -110,7 +112,7 @@ class VipBannerAd extends ConsumerWidget {
                               : () =>
                                   _handleTap(context, ref, context_, creative),
                           child: Text(
-                            creative.buttonText ?? 'Подробнее',
+                            creative.buttonText ?? l10n.adDetailsDefault,
                             style: const TextStyle(fontWeight: FontWeight.w800),
                           ),
                         ),

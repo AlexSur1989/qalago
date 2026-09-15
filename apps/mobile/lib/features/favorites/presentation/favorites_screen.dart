@@ -121,7 +121,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
               favoritesAsync.when(
                 loading: () => const LoadingView(),
                 error: (_, __) => ErrorView(
-                  message: 'Не удалось загрузить избранное.',
+                  message: context.l10n.favoritesLoadFailed,
                   onRetry: () => ref.invalidate(favoritesProvider),
                 ),
                 data: (allItems) {
@@ -166,7 +166,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
                                 color: Colors.white.withValues(alpha: 0.92),
                                 shape: const CircleBorder(),
                                 child: IconButton(
-                                  tooltip: 'Убрать из избранного',
+                                  tooltip: context.l10n.favoritesRemoveTooltip,
                                   onPressed: () =>
                                       _removeFavorite(business.id),
                                   icon: Icon(
@@ -267,6 +267,7 @@ class _EmptyFavoritesAll extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 56),
       child: Column(
@@ -281,20 +282,20 @@ class _EmptyFavoritesAll extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'У вас пока нет избранных мест',
+          Text(
+            l10n.favoritesEmptyUser,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               color: AppTheme.textDark,
               fontSize: 22,
               fontWeight: FontWeight.w900,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Добавляйте места в избранное, чтобы быстро вернуться к ним.',
+          Text(
+            l10n.favoritesEmptyUserHint,
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppTheme.textMuted, height: 1.35),
+            style: const TextStyle(color: AppTheme.textMuted, height: 1.35),
           ),
         ],
       ),
@@ -309,6 +310,7 @@ class _EmptyFavoritesInCity extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 56),
       child: Column(
@@ -324,7 +326,7 @@ class _EmptyFavoritesInCity extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'В $cityName пока нет избранных мест',
+            l10n.favoritesEmptyInCity(cityName),
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: AppTheme.textDark,
@@ -333,10 +335,10 @@ class _EmptyFavoritesInCity extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Избранные из других городов сохранены — смените город, чтобы увидеть их.',
+          Text(
+            l10n.favoritesOtherCitiesHint,
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppTheme.textMuted, height: 1.35),
+            style: const TextStyle(color: AppTheme.textMuted, height: 1.35),
           ),
         ],
       ),

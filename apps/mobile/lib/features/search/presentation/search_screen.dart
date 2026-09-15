@@ -19,6 +19,11 @@ import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../search_filters.dart';
+import '../../../core/locale/app_locale_provider.dart';
+import '../../../core/locale/consumer_api_errors.dart';
+import '../../../core/locale/l10n_extension.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../categories/utils/category_display.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({
@@ -186,6 +191,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final localeCode = resolveLocaleCode(ref.watch(appLocaleCodeProvider));
     final city = ref.watch(cityProvider);
     final query = _buildQuery();
     final businessesAsync = ref.watch(businessesProvider(query));
@@ -206,7 +213,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           controller: _controller,
           autofocus: _query.isEmpty && _categoryId == null,
           textInputAction: TextInputAction.search,
-          hintText: 'Поиск заведений и услуг...',
+          hintText: l10n.searchPlaceholder,
           onChanged: _onQueryChanged,
           onSubmitted: (value) {
             _debounce?.cancel();
@@ -215,7 +222,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           },
           suffixIcon: _controller.text.isNotEmpty
               ? IconButton(
-                  tooltip: 'Очистить',
+                  tooltip: l10n.searchClearTooltip,
                   onPressed: _clearQuery,
                   icon: Icon(Icons.cancel, color: context.cs.onSurfaceVariant),
                 )
@@ -236,10 +243,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   _CategoryChips(
                     categories: categories,
                     selectedId: _categoryId,
+                    localeCode: localeCode,
                     onSelected: _setCategory,
                   ),
                   _RadiusChips(
                     selected: _radiusMode,
+                    l10n: l10n,
                     onSelected: _setRadius,
                   ),
                   if (_hasNarrowFilters)
@@ -254,6 +263,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                 categoryTitle: categoryTitle,
                                 radiusMode: _radiusMode,
                                 query: _query,
+                                l10n: l10n,
                               ),
                               style: const TextStyle(
                                 color: AppTheme.textMuted,
@@ -263,7 +273,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           ),
                           TextButton(
                             onPressed: _resetFilters,
-                            child: const Text('Сбросить'),
+                            child: Text(l10n.commonReset),
                           ),
                         ],
                       ),
@@ -276,18 +286,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             child: businessesAsync.when(
               loading: () => const LoadingView(),
               error: (e, _) => ErrorView(
-                message: 'Не удалось выполнить поиск.\n$e',
+                message: localizedLoadError(l10n, e),
                 onRetry: () => ref.invalidate(businessesProvider(query)),
               ),
               data: (data) {
                 if (!_hasActiveSearch) {
-                  return const Center(
+                  return Center(
                     child: Padding(
-                      padding: EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(24),
                       child: Text(
-                        'Введите название или выберите категорию',
+                        l10n.searchEnterQuery,
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: AppTheme.textMuted),
+                        style: const TextStyle(color: AppTheme.textMuted),
                       ),
                     ),
                   );
@@ -300,7 +310,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            _emptyMessage(city.nameRu),
+                            _emptyMessage(l10n, city.nameRu),
                             textAlign: TextAlign.center,
                             style: const TextStyle(color: AppTheme.textMuted),
                           ),
@@ -308,7 +318,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             const SizedBox(height: 16),
                             OutlinedButton(
                               onPressed: _resetFilters,
-                              child: const Text('Сбросить фильтры'),
+                              child: Text(l10n.searchResetFilters),
                             ),
                           ],
                         ],
@@ -323,7 +333,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   itemBuilder: (context, index) {
                     if (index == 0) {
                       return Text(
-                        'Найдено: ${data.total}',
+                        l10n.searchFoundCount(data.total),
                         style: const TextStyle(
                           color: AppTheme.textMuted,
                           fontWeight: FontWeight.w600,
@@ -355,17 +365,19 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
-  String _emptyMessage(String cityName) {
+  String _emptyMessage(AppLocalizations l10n, String cityName) {
     if (_query.isNotEmpty && _categoryId != null) {
-      return 'Ничего не найдено по запросу «$_query» в выбранной категории';
+      return l10n.searchNoResultsQueryCategory(_query);
     }
     if (_query.isNotEmpty) {
-      return 'Ничего не найдено по запросу «$_query» в $cityName';
+      return l10n.searchNoResultsQueryCity(_query, cityName);
     }
     if (_categoryId != null && _radiusMode != SearchRadiusMode.wholeCity) {
-      return 'Нет заведений в выбранной категории ${_radiusMode.label.toLowerCase()}';
+      return l10n.searchNoInCategoryRadius(
+        _radiusMode.localizedLabel(l10n).toLowerCase(),
+      );
     }
-    return 'Нет заведений в выбранной категории';
+    return l10n.searchNoInCategory;
   }
 }
 
@@ -373,11 +385,13 @@ class _CategoryChips extends StatelessWidget {
   const _CategoryChips({
     required this.categories,
     required this.selectedId,
+    required this.localeCode,
     required this.onSelected,
   });
 
   final List<CategoryModel> categories;
   final String? selectedId;
+  final String localeCode;
   final ValueChanged<String?> onSelected;
 
   @override
@@ -393,7 +407,7 @@ class _CategoryChips extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: FilterChip(
-              label: const Text('Все категории'),
+              label: Text(context.l10n.commonAllCategories),
               selected: selectedId == null,
               onSelected: (_) => onSelected(null),
               selectedColor: AppTheme.kzBlue.withValues(alpha: 0.15),
@@ -404,7 +418,7 @@ class _CategoryChips extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(right: 8),
               child: FilterChip(
-                label: Text(category.title),
+                label: Text(categoryDisplayName(category, localeCode: localeCode)),
                 selected: selectedId == category.id,
                 onSelected: (_) => onSelected(category.id),
                 selectedColor: AppTheme.kzBlue.withValues(alpha: 0.15),
@@ -420,10 +434,12 @@ class _CategoryChips extends StatelessWidget {
 class _RadiusChips extends StatelessWidget {
   const _RadiusChips({
     required this.selected,
+    required this.l10n,
     required this.onSelected,
   });
 
   final SearchRadiusMode selected;
+  final AppLocalizations l10n;
   final ValueChanged<SearchRadiusMode> onSelected;
 
   @override
@@ -438,7 +454,7 @@ class _RadiusChips extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(right: 8),
               child: FilterChip(
-                label: Text(mode.label),
+                label: Text(mode.localizedLabel(l10n)),
                 selected: selected == mode,
                 onSelected: (_) => onSelected(mode),
                 selectedColor: AppTheme.kzBlue.withValues(alpha: 0.15),

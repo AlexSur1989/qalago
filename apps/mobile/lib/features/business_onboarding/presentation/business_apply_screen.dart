@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -64,29 +65,34 @@ class _BusinessApplyScreenState extends ConsumerState<BusinessApplyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final categoriesAsync = ref.watch(categoriesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Добавить новый бизнес')),
+      appBar: AppBar(title: Text(l10n.onboardingAddBusinessTitle)),
       body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.screen),
           children: [
-            const Text(
-              'Заявка будет проверена администрацией QalaGo. Доступ к кабинету появится после одобрения.',
-              style: TextStyle(color: AppTheme.textMuted),
+            Text(
+              l10n.onboardingApplyIntro,
+              style: const TextStyle(color: AppTheme.textMuted),
             ),
             if (_rejectionReason != null) ...[
               const SizedBox(height: 12),
-              Text('Причина отклонения: $_rejectionReason', style: TextStyle(color: AppTheme.error)),
+              Text(
+                l10n.onboardingRejectionReason(_rejectionReason!),
+                style: TextStyle(color: AppTheme.error),
+              ),
             ],
             const SizedBox(height: 24),
             TextFormField(
               controller: _titleController,
               enabled: !_readOnly,
-              decoration: const InputDecoration(labelText: 'Название *'),
-              validator: (v) => v == null || v.trim().length < 2 ? 'Введите название' : null,
+              decoration: InputDecoration(labelText: l10n.onboardingNameLabel),
+              validator: (v) =>
+                  v == null || v.trim().length < 2 ? l10n.onboardingNameRequired : null,
             ),
             const SizedBox(height: 16),
             categoriesAsync.when(
@@ -94,7 +100,7 @@ class _BusinessApplyScreenState extends ConsumerState<BusinessApplyScreen> {
                 _selectedCategoryId ??= categories.isNotEmpty ? categories.first.id : null;
                 return DropdownButtonFormField<String>(
                   value: _selectedCategoryId,
-                  decoration: const InputDecoration(labelText: 'Категория *'),
+                  decoration: InputDecoration(labelText: l10n.onboardingCategoryLabel),
                   items: categories
                       .map((c) => DropdownMenuItem(value: c.id, child: Text(c.title)))
                       .toList(),
@@ -102,44 +108,45 @@ class _BusinessApplyScreenState extends ConsumerState<BusinessApplyScreen> {
                 );
               },
               loading: () => const LinearProgressIndicator(),
-              error: (e, _) => Text(mapOnboardingError(e)),
+              error: (e, _) => Text(mapOnboardingError(l10n, e)),
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _addressController,
               enabled: !_readOnly,
-              decoration: const InputDecoration(labelText: 'Адрес *'),
-              validator: (v) => v == null || v.trim().length < 2 ? 'Введите адрес' : null,
+              decoration: InputDecoration(labelText: l10n.onboardingAddressLabel),
+              validator: (v) =>
+                  v == null || v.trim().length < 2 ? l10n.onboardingAddressRequired : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _phoneController,
               enabled: !_readOnly,
-              decoration: const InputDecoration(labelText: 'Телефон'),
+              decoration: InputDecoration(labelText: l10n.onboardingPhoneLabel),
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _descController,
               enabled: !_readOnly,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Краткое описание'),
+              decoration: InputDecoration(labelText: l10n.onboardingDescriptionLabel),
             ),
             const SizedBox(height: 24),
             if (!_readOnly) ...[
               OutlinedButton(
                 onPressed: _loading ? null : _saveDraft,
-                child: Text(_loading ? 'Сохранение…' : 'Сохранить черновик'),
+                child: Text(_loading ? l10n.onboardingSaving : l10n.onboardingSaveDraft),
               ),
               const SizedBox(height: 12),
               FilledButton(
                 onPressed: _loading ? null : _submit,
-                child: Text(_loading ? 'Отправка…' : 'Отправить на проверку'),
+                child: Text(_loading ? l10n.onboardingSubmitting : l10n.onboardingSubmitReview),
               ),
             ],
             if (_status == 'APPROVED')
               FilledButton(
                 onPressed: () => context.go('/owner'),
-                child: const Text('Открыть кабинет'),
+                child: Text(l10n.onboardingOpenCabinet),
               ),
           ],
         ),
@@ -160,6 +167,7 @@ class _BusinessApplyScreenState extends ConsumerState<BusinessApplyScreen> {
   }
 
   Future<void> _saveDraft() async {
+    final l10n = context.l10n;
     if (!_formKey.currentState!.validate() || _selectedCategoryId == null) return;
     setState(() => _loading = true);
     try {
@@ -172,13 +180,13 @@ class _BusinessApplyScreenState extends ConsumerState<BusinessApplyScreen> {
       ref.invalidate(myApplicationsProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Черновик сохранён')),
+          SnackBar(content: Text(l10n.onboardingDraftSaved)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(mapOnboardingError(e))),
+          SnackBar(content: Text(mapOnboardingError(l10n, e))),
         );
       }
     } finally {
@@ -187,6 +195,7 @@ class _BusinessApplyScreenState extends ConsumerState<BusinessApplyScreen> {
   }
 
   Future<void> _submit() async {
+    final l10n = context.l10n;
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
@@ -201,14 +210,14 @@ class _BusinessApplyScreenState extends ConsumerState<BusinessApplyScreen> {
       ref.invalidate(myApplicationsProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Заявка отправлена на проверку')),
+          SnackBar(content: Text(l10n.onboardingSubmitted)),
         );
         context.push('/business/applications');
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(mapOnboardingError(e))),
+          SnackBar(content: Text(mapOnboardingError(l10n, e))),
         );
       }
     } finally {

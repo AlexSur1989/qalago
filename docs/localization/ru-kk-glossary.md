@@ -27,6 +27,11 @@ Canonical product terminology for Flutter `AppLocalizations` (`app_ru.arb` / `ap
 | Ещё | Тағы | `commonMore` |
 | Попробовать снова | Қайталап көру | `commonTryAgain` |
 | Нет данных | Дерек жоқ | `commonNoData` |
+| Уведомления | Хабарландырулар | `notificationsTitle` |
+| Товары и услуги | Тауарлар мен қызметтер | `businessProductsServices` |
+| Для бизнеса | Бизнес үшін | `onboardingForBusinessTitle` |
+| Удалить аккаунт | Аккаунтты жою | `deleteAccountButton` |
+| Реклама (метка) | Жарнама | `commonAd`, `adSemanticLabel` |
 
 ## Content rules
 

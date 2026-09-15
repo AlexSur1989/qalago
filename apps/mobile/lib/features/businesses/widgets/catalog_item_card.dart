@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../../core/theme/app_theme.dart';
 
 import '../../../core/constants/app_constants.dart';
@@ -54,9 +55,9 @@ class CatalogItemCard extends StatelessWidget {
                 '${formatMenuPrice(price)} ₸',
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
               )
-            : const Text(
-                'Цена по запросу',
-                style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+            : Text(
+                context.l10n.catalogPriceOnRequest,
+                style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
               ),
       ),
     );

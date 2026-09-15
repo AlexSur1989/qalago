@@ -1,39 +1,32 @@
 import 'package:flutter/material.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ProfileHelpScreen extends StatelessWidget {
   const ProfileHelpScreen({super.key});
 
+  List<(String, String)> _faq(AppLocalizations l10n) => [
+        (l10n.profileHelpFaq1Q, l10n.profileHelpFaq1A),
+        (l10n.profileHelpFaq2Q, l10n.profileHelpFaq2A),
+        (l10n.profileHelpFaq3Q, l10n.profileHelpFaq3A),
+        (l10n.profileHelpFaq4Q, l10n.profileHelpFaq4A),
+      ];
+
   @override
   Widget build(BuildContext context) {
-    const faq = [
-      (
-        'Как добавить заведение?',
-        'В профиле выберите «Добавить заведение», заполните форму и дождитесь модерации.',
-      ),
-      (
-        'Как сменить город?',
-        'Нажмите название города на главной или в профиле → «Мой город». Для аккаунта город сохраняется в облаке.',
-      ),
-      (
-        'Как оставить отзыв?',
-        'Откройте карточку заведения, прокрутите до блока отзывов и нажмите «Оставить отзыв».',
-      ),
-      (
-        'Не приходит код входа',
-        'Проверьте номер телефона и подождите минуту. Если код не пришёл, нажмите «Отправить снова» на экране входа.',
-      ),
-    ];
+    final l10n = context.l10n;
+    final faq = _faq(l10n);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Помощь')),
+      appBar: AppBar(title: Text(l10n.profileHelp)),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.screen),
         children: [
-          const Text(
-            'Частые вопросы',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+          Text(
+            l10n.profileHelpFaqTitle,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 12),
           ...faq.map(
@@ -43,25 +36,25 @@ class ProfileHelpScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Нужна помощь?',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+          Text(
+            l10n.profileHelpNeedSupport,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 12),
           Material(
             color: AppTheme.kzBlue.withValues(alpha: 0.06),
             borderRadius: BorderRadius.circular(16),
-            child: const Padding(
-              padding: EdgeInsets.all(16),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
               child: Text(
-                'Если у вас возникли вопросы по работе приложения, обратитесь в поддержку QalaGo через официальные каналы вашего города.',
-                style: TextStyle(height: 1.4),
+                l10n.profileHelpSupportBody,
+                style: const TextStyle(height: 1.4),
               ),
             ),
           ),
           const SizedBox(height: 24),
           Text(
-            'QalaGo — городской гид и маркетплейс. MVP запущен в Уральске.',
+            l10n.profileHelpTagline,
             style: TextStyle(
               color: AppTheme.textDark.withValues(alpha: 0.55),
               height: 1.4,

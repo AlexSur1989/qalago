@@ -7,6 +7,7 @@ import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/navigation/open_business.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/widgets/business_card.dart';
 import '../data/ad_models.dart';
@@ -133,15 +134,16 @@ class SponsoredPromotionStrip extends ConsumerWidget {
 
     if (entries.isEmpty) return const SizedBox.shrink();
 
+    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
-                'Продвигается',
-                style: TextStyle(
+                l10n.sponsoredPromoted,
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
                   color: Colors.black,

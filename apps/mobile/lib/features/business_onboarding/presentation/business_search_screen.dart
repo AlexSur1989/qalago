@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../shared/models/models.dart';
@@ -45,7 +46,7 @@ class _BusinessSearchScreenState extends ConsumerState<BusinessSearchScreen> {
         _searched = true;
       });
     } catch (e) {
-      setState(() => _error = mapOnboardingError(e));
+      setState(() => _error = mapOnboardingError(context.l10n, e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -53,15 +54,16 @@ class _BusinessSearchScreenState extends ConsumerState<BusinessSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: const Text('Найти свой бизнес')),
+      appBar: AppBar(title: Text(l10n.onboardingFindBusinessTitle)),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.screen),
         children: [
           TextField(
             controller: _queryController,
-            decoration: const InputDecoration(
-              labelText: 'Название или адрес',
+            decoration: InputDecoration(
+              labelText: l10n.onboardingSearchLabel,
               hintText: 'Coffee Boom',
             ),
             onSubmitted: (_) => _search(),
@@ -69,7 +71,7 @@ class _BusinessSearchScreenState extends ConsumerState<BusinessSearchScreen> {
           const SizedBox(height: 12),
           FilledButton(
             onPressed: _loading ? null : _search,
-            child: Text(_loading ? 'Поиск…' : 'Искать'),
+            child: Text(_loading ? l10n.onboardingSearching : l10n.onboardingSearchAction),
           ),
           if (_error != null) ...[
             const SizedBox(height: 12),
@@ -77,11 +79,11 @@ class _BusinessSearchScreenState extends ConsumerState<BusinessSearchScreen> {
           ],
           if (_searched && _items.isEmpty) ...[
             const SizedBox(height: 24),
-            const Text('Не нашли свой бизнес?'),
+            Text(l10n.onboardingNotFound),
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed: () => context.push('/business/apply'),
-              child: const Text('Добавить новый бизнес'),
+              child: Text(l10n.onboardingAddNew),
             ),
           ],
           ..._items.map(
@@ -92,7 +94,7 @@ class _BusinessSearchScreenState extends ConsumerState<BusinessSearchScreen> {
                 subtitle: Text(item.address),
                 trailing: FilledButton(
                   onPressed: () => context.push('/business/${item.id}/claim'),
-                  child: const Text('Подтвердить права'),
+                  child: Text(l10n.onboardingConfirmRights),
                 ),
               ),
             ),

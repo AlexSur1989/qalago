@@ -6,6 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../shared/utils/auth_utils.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../auth/providers/auth_provider.dart';
 
 class ProfileCityScreen extends ConsumerWidget {
@@ -16,18 +17,19 @@ class ProfileCityScreen extends ConsumerWidget {
     final citiesAsync = ref.watch(citiesProvider);
     final currentCity = ref.watch(cityProvider);
     final isAuthed = ref.watch(authProvider).isAuthenticated;
+    final l10n = context.l10n;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Мой город')),
+      appBar: AppBar(title: Text(l10n.profileMyCity)),
       body: citiesAsync.when(
         loading: () => const LoadingView(),
         error: (_, __) => ErrorView(
-          message: 'Не удалось загрузить список городов',
+          message: l10n.cityLoadFailed,
           onRetry: () => ref.invalidate(citiesProvider),
         ),
         data: (cities) {
           if (cities.isEmpty) {
-            return const Center(child: Text('Города не найдены'));
+            return Center(child: Text(l10n.cityNotFound));
           }
 
           return ListView.separated(
@@ -72,9 +74,9 @@ class ProfileCityScreen extends ConsumerWidget {
                             color: AppTheme.textDark.withValues(alpha: 0.06),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Text(
-                            'Скоро',
-                            style: TextStyle(
+                          child: Text(
+                            l10n.cityComingSoon,
+                            style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: AppTheme.textMuted,
@@ -84,7 +86,7 @@ class ProfileCityScreen extends ConsumerWidget {
                     ],
                   ),
                   subtitle: Text(
-                    isSelected ? 'Текущий город' : 'Нажмите, чтобы выбрать',
+                    isSelected ? l10n.cityCurrent : l10n.cityTapToSelect,
                   ),
                   trailing: isSelected
                       ? const Icon(Icons.check_circle, color: AppTheme.kzBlue)
@@ -107,7 +109,7 @@ class ProfileCityScreen extends ConsumerWidget {
                       }
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Город: $name')),
+                          SnackBar(content: Text(l10n.profileCityLabel(name))),
                         );
                         Navigator.pop(context);
                       }

@@ -20,7 +20,6 @@ import '../../../core/auth/auth_prompt.dart';
 import '../../../core/locale/consumer_api_errors.dart';
 import '../../../core/locale/l10n_extension.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../l10n/app_localizations.dart';
 import '../../ads/utils/ad_url_utils.dart';
 import '../../analytics/providers/analytics_identity_provider.dart';
 import '../../analytics/widgets/reviews_view_tracker.dart';
@@ -201,7 +200,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
           final city = _asMap(data['city']);
           final title = data['title'] as String? ?? '';
           final categoryTitle = category?['title'] as String? ?? '';
-          final cityName = city?['nameRu'] as String? ?? 'Уральск';
+          final cityName = city?['nameRu'] as String? ?? l10n.profileAboutMvpCityValue;
           final cityTimezone =
               city?['timezone'] as String? ?? kDefaultBusinessTimezone;
           final address = data['address'] as String? ?? '';
@@ -352,7 +351,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                             if (websiteUrl != null)
                               _MiniLinkButton(
                                 icon: Icons.language_rounded,
-                                label: 'Сайт',
+                                label: l10n.businessWebsite,
                                 onTap: () {
                                   unawaited(
                                     ref
@@ -365,7 +364,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                             if (instagramUrl != null)
                               _MiniLinkButton(
                                 icon: Icons.camera_alt_outlined,
-                                label: 'Instagram',
+                                label: l10n.businessInstagram,
                                 onTap: () {
                                   unawaited(
                                     ref
@@ -380,7 +379,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                       ],
                       if (desc.isNotEmpty) ...[
                         const SizedBox(height: 26),
-                        const _SectionTitle(title: 'О заведении'),
+                        _SectionTitle(title: l10n.businessAbout),
                         const SizedBox(height: 8),
                         Text(
                           desc,
@@ -394,9 +393,9 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                       if (promotions.isNotEmpty) ...[
                         const SizedBox(height: 24),
                         _SectionHeaderRow(
-                          title: 'Акции',
+                          title: l10n.businessPromotions,
                           actionLabel: promotionTotal > promotions.length
-                              ? 'Все акции ($promotionTotal)'
+                              ? l10n.businessAllPromotions(promotionTotal)
                               : null,
                           onAction: promotionTotal > promotions.length
                               ? () => context.push('/promotions')
@@ -422,9 +421,9 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                       if (catalogItems.isNotEmpty) ...[
                         const SizedBox(height: 24),
                         _SectionHeaderRow(
-                          title: 'Товары и услуги',
+                          title: l10n.businessProductsServices,
                           actionLabel: catalogTotal > catalogItems.length
-                              ? 'Смотреть все ($catalogTotal)'
+                              ? l10n.businessViewAllCount(catalogTotal)
                               : null,
                           onAction: catalogTotal > catalogItems.length
                               ? () => context.push('/business/${widget.id}/catalog')
@@ -434,7 +433,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                                   onPressed: () => context.push(
                                     '/owner/menu/${widget.id}?title=${Uri.encodeComponent(title)}',
                                   ),
-                                  child: const Text('Редактировать'),
+                                  child: Text(l10n.businessEdit),
                                 )
                               : null,
                         ),
@@ -501,9 +500,9 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                       if (photoUrls.length > 1 || galleryTotal > 1) ...[
                         const SizedBox(height: 24),
                         _SectionHeaderRow(
-                          title: 'Фотографии',
+                          title: l10n.businessPhotos,
                           actionLabel: galleryTotal > photoUrls.length
-                              ? 'Все фото ($galleryTotal)'
+                              ? l10n.businessAllPhotos(galleryTotal)
                               : null,
                           onAction: galleryTotal > photoUrls.length
                               ? () => context.push('/business/${widget.id}/photos')
@@ -522,7 +521,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const _SectionHeaderRow(title: 'Отзывы'),
+                            _SectionHeaderRow(title: l10n.businessReviews),
                             const SizedBox(height: 8),
                             _ReviewsPreviewBlock(reviews: reviewItems),
                           ],
@@ -541,9 +540,8 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                           _LoginToReviewPrompt(
                             onLogin: () => showAuthRequiredDialog(
                               context,
-                              title: 'Войдите в QalaGo',
-                              message:
-                                  'Чтобы оставить отзыв, войдите по номеру телефона.',
+                              title: l10n.businessLoginTitle,
+                              message: l10n.businessLoginReviewMessage,
                               returnPath: '/business/${widget.id}',
                             ),
                           ),
@@ -601,17 +599,18 @@ class _ReviewsPreviewBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     if (reviews.isEmpty) {
-      return const Text(
-        'Пока нет отзывов',
-        style: TextStyle(color: AppTheme.textMuted),
+      return Text(
+        l10n.businessNoReviewsYet,
+        style: const TextStyle(color: AppTheme.textMuted),
       );
     }
 
     return Column(
       children: reviews.map((review) {
         final user = _asMap(review['user']);
-        final name = user?['name'] as String? ?? 'Пользователь';
+        final name = user?['name'] as String? ?? l10n.profileDefaultUser;
         final rating = (review['rating'] as num?)?.toInt() ?? 0;
         return Container(
           width: double.infinity,
@@ -886,8 +885,9 @@ class _RatingPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final label = reviewCount == 0
-        ? 'Нет отзывов'
+        ? l10n.businessNoReviewsShort
         : averageRating!.toStringAsFixed(1);
 
     return Container(
@@ -1096,17 +1096,19 @@ class _PromotionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final imageUrl = AppConstants.resolveMediaUrl(promo['imageUrl'] as String?);
     final title = promo['title'] as String? ?? '';
     final desc = promo['description'] as String? ?? '';
-    final discount = promo['discountText'] as String? ?? 'Акция';
+    final discount = promo['discountText'] as String? ?? l10n.businessPromotionDefault;
     final endDateRaw = promo['endDate'];
     String? expiryLabel;
     if (endDateRaw != null) {
       final end = DateTime.tryParse(endDateRaw.toString());
       if (end != null) {
-        expiryLabel =
-            'до ${end.toLocal().day}.${end.toLocal().month}.${end.toLocal().year}';
+        final date =
+            '${end.toLocal().day}.${end.toLocal().month}.${end.toLocal().year}';
+        expiryLabel = l10n.businessPromotionValidUntil(date);
       }
     }
 
@@ -1246,10 +1248,11 @@ class _WorkHoursBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle(title: 'График работы'),
+        _SectionTitle(title: l10n.businessSchedule),
         const SizedBox(height: 10),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -1430,9 +1433,10 @@ class _ReviewFormState extends ConsumerState<_ReviewForm> {
 
   Future<void> _handleSubmit() async {
     final text = _controller.text.trim();
+    final l10n = context.l10n;
     if (text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Напишите текст отзыва')),
+        SnackBar(content: Text(l10n.reviewWriteRequired)),
       );
       return;
     }
@@ -1441,20 +1445,16 @@ class _ReviewFormState extends ConsumerState<_ReviewForm> {
       final proceed = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Проверьте отзыв'),
-          content: const Text(
-            'Текст может нарушать правила площадки. '
-            'Отредактируйте отзыв или отправьте как есть — '
-            'модератор проверит вручную.',
-          ),
+          title: Text(l10n.reviewCheckTitle),
+          content: Text(l10n.reviewCheckBody),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Редактировать'),
+              child: Text(l10n.reviewEdit),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Отправить'),
+              child: Text(l10n.reviewSubmit),
             ),
           ],
         ),
@@ -1470,6 +1470,7 @@ class _ReviewFormState extends ConsumerState<_ReviewForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -1482,7 +1483,7 @@ class _ReviewFormState extends ConsumerState<_ReviewForm> {
         children: [
           DropdownButtonFormField<int>(
             initialValue: widget.rating,
-            decoration: const InputDecoration(labelText: 'Оценка'),
+            decoration: InputDecoration(labelText: l10n.reviewRatingLabel),
             items: List.generate(
               5,
               (i) => DropdownMenuItem(value: i + 1, child: Text('${i + 1}')),
@@ -1495,7 +1496,7 @@ class _ReviewFormState extends ConsumerState<_ReviewForm> {
           const SizedBox(height: 10),
           TextField(
             controller: _controller,
-            decoration: const InputDecoration(labelText: 'Ваш отзыв'),
+            decoration: InputDecoration(labelText: l10n.reviewYourReviewLabel),
             maxLines: 3,
             onChanged: (_) => _queueModerationCheck(),
           ),
@@ -1511,7 +1512,7 @@ class _ReviewFormState extends ConsumerState<_ReviewForm> {
             width: double.infinity,
             child: FilledButton(
               onPressed: _handleSubmit,
-              child: const Text('Оставить отзыв'),
+              child: Text(l10n.reviewLeaveButton),
             ),
           ),
         ],
@@ -1527,27 +1528,28 @@ class _ModerationHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final (color, icon, title) = switch (analysis.suggestedAction) {
       'approve' => (
           AppTheme.openStatus,
           Icons.check_circle_outline,
-          'Отзыв выглядит нормально',
+          l10n.reviewLooksOk,
         ),
       'reject' => (
           AppTheme.closedStatus,
           Icons.warning_amber_rounded,
-          'Возможные нарушения',
+          l10n.reviewPossibleViolations,
         ),
       _ => (
           AppSemanticColors.warning,
           Icons.info_outline,
-          'Рекомендуем проверить текст',
+          l10n.reviewRecommendCheck,
         ),
     };
 
     final detail = analysis.flags.isNotEmpty
         ? analysis.flags.first.message
-        : 'Оценка качества: ${analysis.score}/100';
+        : l10n.reviewQualityScore(analysis.score);
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -1598,6 +1600,7 @@ class _LoginToReviewPrompt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1608,17 +1611,17 @@ class _LoginToReviewPrompt extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Войдите, чтобы оставить отзыв',
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+          Text(
+            l10n.reviewLoginToLeave,
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Отзывы доступны авторизованным пользователям.',
-            style: TextStyle(color: AppTheme.textMuted, height: 1.35),
+          Text(
+            l10n.reviewLoginRequiredBody,
+            style: const TextStyle(color: AppTheme.textMuted, height: 1.35),
           ),
           const SizedBox(height: 12),
-          FilledButton(onPressed: onLogin, child: const Text('Войти')),
+          FilledButton(onPressed: onLogin, child: Text(l10n.commonLogin)),
         ],
       ),
     );
@@ -1705,10 +1708,11 @@ class _ContactsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle(title: 'Контакты'),
+        _SectionTitle(title: l10n.businessContacts),
         const SizedBox(height: 10),
         if (phone != null && phone!.trim().isNotEmpty)
           _ContactRow(icon: Icons.phone_outlined, label: phone!),
@@ -1765,11 +1769,12 @@ class _MiniMapSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final point = LatLng(latitude, longitude);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle(title: 'На карте'),
+        _SectionTitle(title: l10n.businessOnMap),
         const SizedBox(height: 10),
         ClipRRect(
           borderRadius: BorderRadius.circular(18),
@@ -1811,7 +1816,7 @@ class _MiniMapSection extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: onRoute,
             icon: const Icon(Icons.directions_rounded),
-            label: const Text('Построить маршрут'),
+            label: Text(l10n.businessBuildRoute),
           ),
         ],
       ],

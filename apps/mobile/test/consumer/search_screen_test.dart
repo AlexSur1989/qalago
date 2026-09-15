@@ -9,6 +9,8 @@ import 'package:qalago_mobile/features/auth/providers/auth_provider.dart';
 import 'package:qalago_mobile/features/search/presentation/search_screen.dart';
 import 'package:qalago_mobile/shared/models/models.dart';
 
+import '../support/l10n_test_harness.dart';
+
 void main() {
   testWidgets('search works as guest with initial query', (tester) async {
     final router = GoRouter(
@@ -55,7 +57,7 @@ void main() {
           ),
           analyticsVisitorIdProvider.overrideWith((ref) async => 'a' * 32),
         ],
-        child: MaterialApp.router(routerConfig: router),
+        child: wrapRouterWithL10n(router),
       ),
     );
 
@@ -82,8 +84,8 @@ void main() {
             (ref) => const UserPosition(latitude: 51.23, longitude: 51.38),
           ),
         ],
-        child: const MaterialApp(
-          home: SearchScreen(
+        child: wrapWithL10n(
+          const SearchScreen(
             initialQuery: 'xyz-none',
             initialRadiusKm: '5',
           ),
@@ -109,8 +111,8 @@ void main() {
             (ref) => const UserPosition(latitude: 51.23, longitude: 51.38),
           ),
         ],
-        child: const MaterialApp(
-          home: SearchScreen(categoryId: 'cat1'),
+        child: wrapWithL10n(
+          const SearchScreen(categoryId: 'cat1'),
         ),
       ),
     );
@@ -134,8 +136,8 @@ void main() {
             (ref) => const UserPosition(latitude: 51.23, longitude: 51.38),
           ),
         ],
-        child: const MaterialApp(
-          home: SearchScreen(initialQuery: 'кофе'),
+        child: wrapWithL10n(
+          const SearchScreen(initialQuery: 'кофе'),
         ),
       ),
     );

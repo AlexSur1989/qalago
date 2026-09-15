@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/locale/l10n_extension.dart';
 import '../../../core/theme/app_theme.dart';
 
 class SponsoredLabel extends StatelessWidget {
   const SponsoredLabel({
     super.key,
-    this.label = 'Реклама',
+    this.label,
   });
 
-  final String label;
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
+    final text = label ?? context.l10n.commonAd;
     return Semantics(
-      label: label,
+      label: text,
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.06),
@@ -22,7 +24,7 @@ class SponsoredLabel extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: Text(
-            label,
+            text,
             style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,

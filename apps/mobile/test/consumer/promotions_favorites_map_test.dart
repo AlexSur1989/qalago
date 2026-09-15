@@ -407,7 +407,7 @@ void main() {
               );
             }),
           ],
-          child: MaterialApp.router(routerConfig: router),
+          child: wrapRouterWithL10n(router),
         ),
       );
       await tester.pumpAndSettle();

@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/utils/auth_utils.dart';
 import '../../auth/providers/auth_provider.dart';
-import 'profile_edit_strings.dart';
 import 'profile_helpers.dart';
 
 class ProfileEditScreen extends ConsumerStatefulWidget {
@@ -22,7 +22,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   bool _saving = false;
   bool _avatarBusy = false;
   bool _initialized = false;
-  static const _localeCode = 'ru';
 
   @override
   void dispose() {
@@ -39,10 +38,11 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   }
 
   Future<void> _save() async {
+    final l10n = context.l10n;
     final name = _nameController.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Введите имя')),
+        SnackBar(content: Text(l10n.profileEditNameRequired)),
       );
       return;
     }
@@ -52,7 +52,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       await ref.read(authProvider.notifier).updateName(name);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Сохранено')),
+          SnackBar(content: Text(l10n.profileEditSaved)),
         );
         Navigator.pop(context);
       }
@@ -68,6 +68,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   }
 
   Future<void> _pickAvatar(ImageSource source) async {
+    final l10n = context.l10n;
     final picker = ImagePicker();
     final file = await picker.pickImage(source: source, maxWidth: 1024, maxHeight: 1024);
     if (file == null || !mounted) return;
@@ -78,24 +79,13 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       await ref.read(authProvider.notifier).uploadAvatar(bytes, file.name);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              ProfileEditStrings.label(
-                ProfileEditStrings.avatarUpdated,
-                localeCode: _localeCode,
-              ),
-            ),
-          ),
+          SnackBar(content: Text(l10n.profileEditAvatarUpdated)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '${ProfileEditStrings.label(ProfileEditStrings.avatarUploadError, localeCode: _localeCode)}: $e',
-            ),
-          ),
+          SnackBar(content: Text('${l10n.profileEditAvatarFailed}: $e')),
         );
       }
     } finally {
@@ -104,19 +94,13 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   }
 
   Future<void> _removeAvatar() async {
+    final l10n = context.l10n;
     setState(() => _avatarBusy = true);
     try {
       await ref.read(authProvider.notifier).deleteAvatar();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              ProfileEditStrings.label(
-                ProfileEditStrings.avatarRemoved,
-                localeCode: _localeCode,
-              ),
-            ),
-          ),
+          SnackBar(content: Text(l10n.profileEditAvatarRemoved)),
         );
       }
     } catch (e) {
@@ -131,6 +115,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   }
 
   Future<void> _showAvatarActions(String? avatarUrl) async {
+    final l10n = context.l10n;
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -141,12 +126,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             children: [
               ListTile(
                 leading: const Icon(Icons.photo_library_outlined),
-                title: Text(
-                  ProfileEditStrings.label(
-                    ProfileEditStrings.fromGallery,
-                    localeCode: _localeCode,
-                  ),
-                ),
+                title: Text(l10n.profileEditFromGallery),
                 onTap: () {
                   Navigator.pop(context);
                   _pickAvatar(ImageSource.gallery);
@@ -154,12 +134,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.photo_camera_outlined),
-                title: Text(
-                  ProfileEditStrings.label(
-                    ProfileEditStrings.takePhoto,
-                    localeCode: _localeCode,
-                  ),
-                ),
+                title: Text(l10n.profileEditTakePhoto),
                 onTap: () {
                   Navigator.pop(context);
                   _pickAvatar(ImageSource.camera);
@@ -168,12 +143,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               if (avatarUrl != null && avatarUrl.isNotEmpty)
                 ListTile(
                   leading: const Icon(Icons.delete_outline),
-                  title: Text(
-                    ProfileEditStrings.label(
-                      ProfileEditStrings.removePhoto,
-                      localeCode: _localeCode,
-                    ),
-                  ),
+                  title: Text(l10n.profileEditRemovePhoto),
                   onTap: () {
                     Navigator.pop(context);
                     _removeAvatar();
@@ -188,6 +158,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final user = ref.watch(authProvider).user;
     final avatarUrl = user?.avatarUrl;
     final resolvedAvatar =
@@ -196,7 +167,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             : null;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Личные данные')),
+      appBar: AppBar(title: Text(l10n.profilePersonalData)),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.screen),
         children: [
@@ -248,12 +219,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
           Center(
             child: TextButton(
               onPressed: _avatarBusy ? null : () => _showAvatarActions(avatarUrl),
-              child: Text(
-                ProfileEditStrings.label(
-                  ProfileEditStrings.changePhoto,
-                  localeCode: _localeCode,
-                ),
-              ),
+              child: Text(l10n.profileEditChangePhoto),
             ),
           ),
           const SizedBox(height: 4),
@@ -266,9 +232,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
           const SizedBox(height: 24),
           TextField(
             controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'Имя',
-              hintText: 'Как к вам обращаться',
+            decoration: InputDecoration(
+              labelText: l10n.profileEditNameLabel,
+              hintText: l10n.profileEditNameHint,
             ),
             textCapitalization: TextCapitalization.words,
             onChanged: (_) => setState(() {}),
@@ -278,13 +244,13 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             readOnly: true,
             enabled: false,
             decoration: InputDecoration(
-              labelText: 'Телефон',
-              hintText: user?.phone ?? 'Телефон не указан',
+              labelText: l10n.profileEditPhoneLabel,
+              hintText: user?.phone ?? l10n.profilePhoneMissing,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Номер телефона меняется через поддержку или повторную регистрацию',
+            l10n.profileEditPhoneHelp,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: AppTheme.textMuted,
                 ),
@@ -298,7 +264,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                     width: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Сохранить'),
+                : Text(l10n.commonSave),
           ),
         ],
       ),

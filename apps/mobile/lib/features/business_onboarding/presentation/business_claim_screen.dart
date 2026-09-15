@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/onboarding_providers.dart';
@@ -39,7 +40,7 @@ class _BusinessClaimScreenState extends ConsumerState<BusinessClaimScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(mapOnboardingError(e))),
+          SnackBar(content: Text(mapOnboardingError(context.l10n, e))),
         );
       }
     } finally {
@@ -49,21 +50,22 @@ class _BusinessClaimScreenState extends ConsumerState<BusinessClaimScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final detailsAsync = ref.watch(businessDetailsProvider(widget.businessId));
 
     if (_success) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Заявка отправлена')),
+        appBar: AppBar(title: Text(l10n.onboardingClaimSentTitle)),
         body: Padding(
           padding: const EdgeInsets.all(AppSpacing.screen),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('Мы сообщим о результате после проверки.'),
+              Text(l10n.onboardingClaimSentBody),
               const SizedBox(height: 16),
               FilledButton(
                 onPressed: () => context.push('/business/claims'),
-                child: const Text('Мои заявки'),
+                child: Text(l10n.onboardingApplicationsTitle),
               ),
             ],
           ),
@@ -72,10 +74,10 @@ class _BusinessClaimScreenState extends ConsumerState<BusinessClaimScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Подтвердить права владельца')),
+      appBar: AppBar(title: Text(l10n.onboardingClaimTitle)),
       body: detailsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text(mapOnboardingError(e))),
+        error: (e, _) => Center(child: Text(mapOnboardingError(l10n, e))),
         data: (data) => ListView(
           padding: const EdgeInsets.all(AppSpacing.screen),
           children: [
@@ -86,23 +88,25 @@ class _BusinessClaimScreenState extends ConsumerState<BusinessClaimScreen> {
             const SizedBox(height: 8),
             Text(data['address'] as String? ?? '', style: const TextStyle(color: AppTheme.textMuted)),
             const SizedBox(height: 16),
-            const Text(
-              'Заявка будет проверена администрацией QalaGo.',
-              style: TextStyle(color: AppTheme.textMuted),
+            Text(
+              l10n.onboardingClaimIntro,
+              style: const TextStyle(color: AppTheme.textMuted),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _messageController,
               maxLines: 4,
               maxLength: 500,
-              decoration: const InputDecoration(
-                labelText: 'Сообщение для модератора (необязательно)',
+              decoration: InputDecoration(
+                labelText: l10n.onboardingClaimMessageLabel,
               ),
             ),
             const SizedBox(height: 16),
             FilledButton(
               onPressed: _loading ? null : _submit,
-              child: Text(_loading ? 'Отправка…' : 'Отправить заявку'),
+              child: Text(
+                _loading ? l10n.onboardingSubmitting : l10n.onboardingClaimSubmit,
+              ),
             ),
           ],
         ),

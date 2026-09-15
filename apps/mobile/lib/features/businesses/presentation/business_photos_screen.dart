@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/navigation/navigation_utils.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../providers/business_catalog_provider.dart';
@@ -85,10 +86,11 @@ class _BusinessPhotosScreenState extends ConsumerState<BusinessPhotosScreen> {
   @override
   Widget build(BuildContext context) {
     final photosAsync = ref.watch(businessPhotosPageProvider(_query));
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Фотографии'),
+        title: Text(l10n.businessPhotos),
         leading: qalagoBackLeading(
           context,
           fallbackLocation: '/business/${widget.businessId}',
@@ -165,13 +167,14 @@ class _PhotosGridBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final totalCount = pagination?['total'] as int? ?? items.length;
     final page = pagination?['page'] as int? ?? 1;
     final totalPages = pagination?['totalPages'] as int? ?? 0;
     final canLoadMore = page < totalPages;
 
     if (items.isEmpty) {
-      return const Center(child: Text('Нет фотографий'));
+      return Center(child: Text(l10n.photosEmpty));
     }
 
     return RefreshIndicator(
@@ -186,7 +189,7 @@ class _PhotosGridBody extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Text(
-                'Всего: $totalCount',
+                l10n.photosTotal(totalCount),
                 style: const TextStyle(color: AppTheme.textMuted),
               ),
             ),
@@ -235,7 +238,7 @@ class _PhotosGridBody extends StatelessWidget {
                           height: 18,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('Показать ещё'),
+                      : Text(l10n.catalogShowMore),
                 ),
               ),
             ),

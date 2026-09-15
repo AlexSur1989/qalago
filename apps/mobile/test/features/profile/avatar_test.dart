@@ -6,8 +6,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qalago_mobile/core/providers/city_provider.dart';
 import 'package:qalago_mobile/features/auth/providers/auth_provider.dart';
 import 'package:qalago_mobile/features/profile/presentation/profile_edit_screen.dart';
-import 'package:qalago_mobile/features/profile/presentation/profile_edit_strings.dart';
 import 'package:qalago_mobile/shared/models/models.dart';
+
+import '../../support/l10n_test_harness.dart';
 
 void main() {
   testWidgets('profile edit shows initials when no avatar', (tester) async {
@@ -17,7 +18,7 @@ void main() {
           authProvider.overrideWith(() => _UserAuthNotifier(hasAvatar: false)),
           cityProvider.overrideWith(() => _FixedCityNotifier()),
         ],
-        child: const MaterialApp(home: ProfileEditScreen()),
+        child: wrapWithL10n(const ProfileEditScreen()),
       ),
     );
     await tester.pumpAndSettle();
@@ -40,19 +41,14 @@ void main() {
           authProvider.overrideWith(() => _UserAuthNotifier(hasAvatar: true)),
           cityProvider.overrideWith(() => _FixedCityNotifier()),
         ],
-        child: const MaterialApp(home: ProfileEditScreen()),
+        child: wrapWithL10n(const ProfileEditScreen()),
       ),
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
     expect(find.byType(CircleAvatar), findsOneWidget);
-    expect(
-      find.text(
-        ProfileEditStrings.label(ProfileEditStrings.changePhoto),
-      ),
-      findsOneWidget,
-    );
+    expect(find.text('Изменить фото'), findsOneWidget);
   });
 }
 

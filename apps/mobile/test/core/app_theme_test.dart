@@ -139,7 +139,7 @@ void main() {
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
-      _themed(
+      wrapWithL10n(
         BusinessCard(
           business: BusinessModel(
             id: '1',

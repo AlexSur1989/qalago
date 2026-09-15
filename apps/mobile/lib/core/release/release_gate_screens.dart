@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../locale/l10n_extension.dart';
 import 'app_config_models.dart';
 
 class MaintenanceScreen extends StatelessWidget {
@@ -23,7 +24,7 @@ class MaintenanceScreen extends StatelessWidget {
               Text(messageRu, textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium),
               if (onRetry != null) ...[
                 const SizedBox(height: 24),
-                FilledButton(onPressed: onRetry, child: const Text('Повторить')),
+                FilledButton(onPressed: onRetry, child: Text(context.l10n.commonRetry)),
               ],
             ],
           ),
@@ -67,12 +68,12 @@ class RequiredUpdateScreen extends StatelessWidget {
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: hasStore ? _openStore : null,
-                child: const Text('Обновить'),
+                child: Text(context.l10n.commonUpdate),
               ),
               if (!hasStore)
-                const Padding(
-                  padding: EdgeInsets.only(top: 12),
-                  child: Text('Ссылка на магазин пока не настроена.'),
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Text(context.l10n.releaseStoreMissing),
                 ),
             ],
           ),
@@ -90,10 +91,10 @@ Future<void> showOptionalUpdateDialog(
   await showDialog<void>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text('Доступно обновление'),
+      title: Text(context.l10n.releaseUpdateAvailable),
       content: Text(messageRu),
       actions: [
-        TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Позже')),
+        TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(context.l10n.commonLater)),
         FilledButton(
           onPressed: () async {
             final url = storeUrl?.trim();
@@ -105,7 +106,7 @@ Future<void> showOptionalUpdateDialog(
             }
             if (ctx.mounted) Navigator.of(ctx).pop();
           },
-          child: const Text('Обновить'),
+          child: Text(context.l10n.commonUpdate),
         ),
       ],
     ),

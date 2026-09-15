@@ -212,7 +212,10 @@ class ProfileScreen extends ConsumerWidget {
                         padding: const EdgeInsets.only(bottom: 12),
                         child: _BusinessActionCard(
                           title: entry.business['title'] as String? ?? l10n.profileBusinessDefault,
-                          subtitle: membershipRoleLabel(entry.access.role.apiValue),
+                          subtitle: membershipRoleLabel(
+                            l10n,
+                            entry.access.role.apiValue,
+                          ),
                           icon: Icons.store,
                           onTap: () => context.push('/owner'),
                         ),

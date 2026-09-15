@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-15 — Stage 6.10B.2: Consumer UI l10n migration (map, business, profile, onboarding)
+
+- **Migrated**: map, promotions, notifications, business catalog/photos/details, profile sub-screens, business onboarding flow, shared widgets (city picker, empty city, legal links, search field, business card), consumer ad widgets; `onboarding_errors` / `onboarding_labels` delegate to `onboarding_l10n`.
+- **Guard**: `stage610b2ScanRoots` covers consumer `lib/features` (excl. owner/admin/monetization), `lib/core/auth`, `lib/core/release`, `lib/shared/widgets`, `lib/features/ads/widgets`; allowlist `dev_quick_login_panel`, `category_discovery_strings` only.
+- **Tests**: `test/consumer/localization_stage_6_10b2_test.dart` (RU/KK keys, scanner, release/auth prompt samples).
+- **Future**: owner/monetization cabinets; RBAC permission copy in `role_permissions`; city `nameKk` in pickers when API ready.
+
 ## 2026-09-14 — Stage 6.10B.1: Consumer mobile RU/KK localization foundation
 
 - **Added**: Flutter `gen_l10n` (`app_ru.arb`, `app_kk.arb`), `context.l10n`, persisted locale (`qalago_ui_locale`), profile language screen, API/load error mapping, glossary, scoped hardcoded-string guard.

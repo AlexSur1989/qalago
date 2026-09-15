@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../auth/providers/auth_provider.dart';
 
 class NotificationsScreen extends ConsumerWidget {
@@ -11,10 +12,11 @@ class NotificationsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notificationsAsync = ref.watch(notificationsProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Уведомления'),
+        title: Text(l10n.notificationsTitle),
         actions: [
           TextButton(
             onPressed: () async {
@@ -22,7 +24,7 @@ class NotificationsScreen extends ConsumerWidget {
               ref.invalidate(notificationsProvider);
               ref.invalidate(unreadNotificationsProvider);
             },
-            child: const Text('Прочитать все'),
+            child: Text(l10n.notificationsMarkAllRead),
           ),
         ],
       ),
@@ -34,7 +36,7 @@ class NotificationsScreen extends ConsumerWidget {
         ),
         data: (items) {
           if (items.isEmpty) {
-            return const Center(child: Text('Нет уведомлений'));
+            return Center(child: Text(l10n.notificationsEmpty));
           }
           return ListView.separated(
             padding: const EdgeInsets.all(AppSpacing.screen),

@@ -9,6 +9,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../auth/providers/auth_provider.dart';
 
 class ProfileReviewsScreen extends ConsumerWidget {
@@ -23,9 +24,10 @@ class ProfileReviewsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final reviewsAsync = ref.watch(myReviewsProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Мои отзывы')),
+      appBar: AppBar(title: Text(l10n.profileMyReviews)),
       body: reviewsAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
@@ -46,17 +48,17 @@ class ProfileReviewsScreen extends ConsumerWidget {
                       color: AppTheme.kzBlue.withValues(alpha: 0.35),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      'Вы ещё не оставляли отзывов',
+                    Text(
+                      l10n.profileReviewsEmpty,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Откройте карточку заведения и поделитесь впечатлениями',
+                      l10n.profileReviewsEmptyHint,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppTheme.textDark.withValues(alpha: 0.55),
@@ -66,7 +68,7 @@ class ProfileReviewsScreen extends ConsumerWidget {
                     const SizedBox(height: 24),
                     FilledButton(
                       onPressed: () => context.go('/home'),
-                      child: const Text('На главную'),
+                      child: Text(l10n.profileReviewsGoHome),
                     ),
                   ],
                 ),
@@ -111,6 +113,7 @@ class _ReviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Material(
       color: Colors.white,
       elevation: 1,
@@ -128,7 +131,7 @@ class _ReviewCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      review.businessTitle ?? 'Заведение',
+                      review.businessTitle ?? l10n.businessGenericName,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
@@ -177,7 +180,7 @@ class _ReviewCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Ответ заведения',
+                        l10n.profileBusinessReply,
                         style: TextStyle(
                           color: AppTheme.kzBlue.withValues(alpha: 0.9),
                           fontWeight: FontWeight.w800,
@@ -202,7 +205,7 @@ class _ReviewCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                      'Открыть заведение',
+                      l10n.profileOpenBusiness,
                       style: TextStyle(
                         color: AppTheme.kzBlue.withValues(alpha: 0.9),
                         fontWeight: FontWeight.w700,

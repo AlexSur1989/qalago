@@ -1,15 +1,29 @@
 import 'dart:io';
 
-/// Paths migrated in Stage 6.10B.1 — expand as more consumer UI moves to ARB.
-const stage610b1ScanRoots = [
+/// Consumer UI paths scanned for hardcoded Cyrillic (Stage 6.10B.2).
+const stage610b2ScanRoots = [
   'lib/core/router/app_router.dart',
   'lib/features/home',
   'lib/features/categories/presentation',
-  'lib/features/profile/presentation/profile_screen.dart',
-  'lib/features/profile/presentation/profile_language_screen.dart',
-  'lib/shared/widgets/category_icon_tile.dart',
-  'lib/shared/widgets/error_view.dart',
+  'lib/features/map',
+  'lib/features/promotions',
+  'lib/features/notifications',
+  'lib/features/businesses',
+  'lib/features/profile',
+  'lib/features/business_onboarding',
+  'lib/features/search',
+  'lib/features/favorites',
+  'lib/features/auth',
+  'lib/features/analytics',
+  'lib/features/recommendations',
+  'lib/features/ads/widgets',
+  'lib/core/auth',
+  'lib/core/release',
+  'lib/shared/widgets',
 ];
+
+@Deprecated('Use stage610b2ScanRoots')
+const stage610b1ScanRoots = stage610b2ScanRoots;
 
 const _allowPathFragments = [
   '/l10n/',
@@ -17,7 +31,6 @@ const _allowPathFragments = [
   '/tool/',
   'category_discovery_strings.dart',
   'dev_quick_login_panel.dart',
-  'onboarding_labels.dart',
   '/owner/',
   '/admin/',
   'monetization',
@@ -37,7 +50,7 @@ const _allowLineSubstrings = [
 ];
 
 List<String> scanHardcodedConsumerUiStrings({
-  List<String> roots = stage610b1ScanRoots,
+  List<String> roots = stage610b2ScanRoots,
 }) {
   final violations = <String>[];
   for (final root in roots) {

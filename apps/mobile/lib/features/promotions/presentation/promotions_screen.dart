@@ -16,6 +16,7 @@ import '../../../shared/widgets/qalago_logo.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../../shared/widgets/qalago_search_field.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../auth/providers/auth_provider.dart';
 
 class PromotionsScreen extends ConsumerStatefulWidget {
@@ -68,6 +69,7 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
     final promotionsAsync = ref.watch(promotionsProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
     final city = ref.watch(cityProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
       body: SafeArea(
@@ -85,9 +87,9 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
                 onCityTap: () => showCityPickerSheet(context, ref),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Акции',
-                style: TextStyle(
+              Text(
+                l10n.promotionsTitle,
+                style: const TextStyle(
                   color: AppTheme.textDark,
                   fontSize: 34,
                   fontWeight: FontWeight.w900,
@@ -97,11 +99,11 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
               const SizedBox(height: 16),
               QalagoSearchField(
                 controller: _searchController,
-                hintText: 'Поиск акций...',
+                hintText: l10n.promotionsSearchHint,
                 onChanged: (value) => setState(() => _search = value),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
-                        tooltip: 'Очистить',
+                        tooltip: l10n.searchClearTooltip,
                         onPressed: () {
                           _searchController.clear();
                           setState(() => _search = '');
@@ -140,7 +142,7 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
                             final selected = _categoryFilterId == null;
                             return ChoiceChip(
                               selected: selected,
-                              label: const Text('Все'),
+                              label: Text(l10n.commonAll),
                               showCheckmark: false,
                               onSelected: (_) =>
                                   setState(() => _categoryFilterId = null),
@@ -181,7 +183,7 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
               promotionsAsync.when(
                 loading: () => const LoadingView(),
                 error: (_, __) => ErrorView(
-                  message: 'Не удалось загрузить акции. Проверьте подключение.',
+                  message: l10n.promotionsLoadFailed,
                   onRetry: () => ref.invalidate(promotionsProvider),
                 ),
                 data: (paginated) {
@@ -200,7 +202,7 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Найдено ${items.length} акций',
+                        l10n.promotionsFoundCount(items.length),
                         style: const TextStyle(
                           color: AppTheme.textMuted,
                           fontSize: 17,
@@ -236,6 +238,7 @@ class _PromotionsEmptyCity extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 48),
       child: Column(
@@ -251,7 +254,7 @@ class _PromotionsEmptyCity extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'В $cityName пока нет активных акций',
+            l10n.promotionsEmptyInCity(cityName),
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: AppTheme.textDark,
@@ -260,10 +263,10 @@ class _PromotionsEmptyCity extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Загляните позже — заведения регулярно добавляют новые предложения.',
+          Text(
+            l10n.promotionsEmptyHint,
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppTheme.textMuted, height: 1.35),
+            style: const TextStyle(color: AppTheme.textMuted, height: 1.35),
           ),
         ],
       ),
@@ -276,25 +279,26 @@ class _PromotionsEmptyFilter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 48),
+    final l10n = context.l10n;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 48),
       child: Column(
         children: [
-          Icon(Icons.search_off, size: 48, color: AppTheme.textMuted),
-          SizedBox(height: 16),
+          const Icon(Icons.search_off, size: 48, color: AppTheme.textMuted),
+          const SizedBox(height: 16),
           Text(
-            'Ничего не найдено',
-            style: TextStyle(
+            l10n.searchNoResults,
+            style: const TextStyle(
               color: AppTheme.textDark,
               fontSize: 20,
               fontWeight: FontWeight.w900,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
-            'Попробуйте изменить поиск или категорию.',
+            l10n.promotionsNoResultsHint,
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppTheme.textMuted, height: 1.35),
+            style: const TextStyle(color: AppTheme.textMuted, height: 1.35),
           ),
         ],
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/locale/l10n_extension.dart';
 import '../../core/theme/theme_extensions.dart';
 
 /// QalaGo search field — shared look for home (read-only), categories, search, promotions.
@@ -7,7 +8,7 @@ class QalagoSearchField extends StatelessWidget {
   const QalagoSearchField({
     super.key,
     this.controller,
-    this.hintText = 'Поиск...',
+    this.hintText,
     this.readOnly = false,
     this.onTap,
     this.onChanged,
@@ -18,7 +19,7 @@ class QalagoSearchField extends StatelessWidget {
   });
 
   final TextEditingController? controller;
-  final String hintText;
+  final String? hintText;
   final bool readOnly;
   final VoidCallback? onTap;
   final ValueChanged<String>? onChanged;
@@ -37,7 +38,7 @@ class QalagoSearchField extends StatelessWidget {
       onChanged: onChanged,
       onSubmitted: onSubmitted,
       decoration: context.qalagoSearchDecoration(
-        hintText: hintText,
+        hintText: hintText ?? context.l10n.defaultSearchHint,
         suffixIcon: suffixIcon,
       ),
     );

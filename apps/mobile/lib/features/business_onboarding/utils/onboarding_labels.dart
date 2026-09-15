@@ -1,42 +1,14 @@
-String applicationStatusLabel(String status) {
-  switch (status) {
-    case 'DRAFT':
-      return 'Черновик';
-    case 'PENDING':
-      return 'На проверке';
-    case 'APPROVED':
-      return 'Одобрено';
-    case 'REJECTED':
-      return 'Отклонено';
-    case 'CANCELLED':
-      return 'Отменено';
-    default:
-      return status;
-  }
+import '../../../l10n/app_localizations.dart';
+import 'onboarding_l10n.dart';
+
+String applicationStatusLabel(AppLocalizations l10n, String status) {
+  return onboardingApplicationStatusLabel(l10n, status);
 }
 
-String claimStatusLabel(String status) {
-  switch (status) {
-    case 'PENDING':
-      return 'На проверке';
-    case 'APPROVED':
-      return 'Одобрено';
-    case 'REJECTED':
-      return 'Отклонено';
-    case 'CANCELLED':
-      return 'Отменено';
-    default:
-      return status;
-  }
+String claimStatusLabel(AppLocalizations l10n, String status) {
+  return onboardingClaimStatusLabel(l10n, status);
 }
 
-String membershipRoleLabel(String role) {
-  switch (role) {
-    case 'OWNER':
-      return 'Владелец';
-    case 'MANAGER':
-      return 'Менеджер';
-    default:
-      return role;
-  }
+String membershipRoleLabel(AppLocalizations l10n, String role) {
+  return membershipRoleLabelL10n(l10n, role);
 }

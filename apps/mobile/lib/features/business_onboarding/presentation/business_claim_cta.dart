@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/auth/auth_prompt.dart';
-import '../../../core/auth/route_access.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/onboarding_providers.dart';
 import '../utils/onboarding_labels.dart';
@@ -14,16 +14,17 @@ class BusinessClaimCta extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final isAuthenticated = ref.watch(authProvider).isAuthenticated;
     if (!isAuthenticated) {
       return OutlinedButton(
         onPressed: () => showAuthRequiredDialog(
           context,
-          title: 'Войдите',
-          message: 'Чтобы подтвердить права владельца, войдите в аккаунт.',
+          title: l10n.claimCtaLoginTitle,
+          message: l10n.claimCtaLoginMessage,
           returnPath: '/business/$businessId/claim',
         ),
-        child: const Text('Это ваш бизнес?'),
+        child: Text(l10n.claimCtaYourBusiness),
       );
     }
 
@@ -41,20 +42,20 @@ class BusinessClaimCta extends ConsumerWidget {
         if (claim == null) {
           return OutlinedButton(
             onPressed: () => context.push('/business/$businessId/claim'),
-            child: const Text('Это ваш бизнес?'),
+            child: Text(l10n.claimCtaYourBusiness),
           );
         }
         final status = claim['status'] as String? ?? '';
         if (status == 'PENDING') {
-          return const Text('Заявка на подтверждении');
+          return Text(l10n.claimCtaPending);
         }
         if (status == 'REJECTED' || status == 'CANCELLED') {
           return OutlinedButton(
             onPressed: () => context.push('/business/$businessId/claim'),
-            child: const Text('Подтвердить права владельца'),
+            child: Text(l10n.claimCtaConfirmOwner),
           );
         }
-        return Text(claimStatusLabel(status));
+        return Text(claimStatusLabel(l10n, status));
       },
     );
   }

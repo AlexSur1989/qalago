@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/rbac/role_permissions.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/locale/l10n_extension.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../auth/providers/auth_provider.dart';
 
 class ProfilePermissionsScreen extends ConsumerWidget {
@@ -13,9 +15,10 @@ class ProfilePermissionsScreen extends ConsumerWidget {
     final role = ref.watch(authProvider).user?.role ?? 'USER';
     final managedCity = ref.watch(authProvider).user?.managedCityName;
     final definition = roleDefinitionFor(role);
+    final l10n = context.l10n;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Мои права')),
+      appBar: AppBar(title: Text(l10n.profilePermissions)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
         children: [
@@ -24,17 +27,20 @@ class ProfilePermissionsScreen extends ConsumerWidget {
             summary: definition.summaryRu,
             apps: definition.apps.join(', '),
             managedCity: managedCity,
+            l10n: l10n,
           ),
           const SizedBox(height: 24),
           _PermissionSection(
-            title: 'Можно',
+            title: l10n.profilePermissionsAllowed,
+            allowed: true,
             icon: Icons.check_circle_outline,
             color: AppTheme.openStatus,
             items: definition.can,
           ),
           const SizedBox(height: 20),
           _PermissionSection(
-            title: 'Нельзя',
+            title: l10n.profilePermissionsDenied,
+            allowed: false,
             icon: Icons.block,
             color: AppTheme.closedStatus,
             items: definition.cannot,
@@ -52,12 +58,14 @@ class _RoleHeader extends StatelessWidget {
     required this.label,
     required this.summary,
     required this.apps,
+    required this.l10n,
     this.managedCity,
   });
 
   final String label;
   final String summary;
   final String apps;
+  final AppLocalizations l10n;
   final String? managedCity;
 
   @override
@@ -91,7 +99,7 @@ class _RoleHeader extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'Приложения: $apps',
+            l10n.profilePermissionsApps(apps),
             style: const TextStyle(
               color: AppTheme.textMuted,
               fontWeight: FontWeight.w600,
@@ -100,7 +108,7 @@ class _RoleHeader extends StatelessWidget {
           if (managedCity != null && managedCity!.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
-              'Город модерации: $managedCity',
+              l10n.profilePermissionsModerationCity(managedCity!),
               style: const TextStyle(
                 color: AppTheme.kzBlue,
                 fontWeight: FontWeight.w800,
@@ -116,12 +124,14 @@ class _RoleHeader extends StatelessWidget {
 class _PermissionSection extends StatelessWidget {
   const _PermissionSection({
     required this.title,
+    required this.allowed,
     required this.icon,
     required this.color,
     required this.items,
   });
 
   final String title;
+  final bool allowed;
   final IconData icon;
   final Color color;
   final List<RolePermissionItem> items;
@@ -152,7 +162,7 @@ class _PermissionSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
-                  title == 'Можно' ? Icons.done : Icons.close,
+                  allowed ? Icons.done : Icons.close,
                   size: 18,
                   color: color,
                 ),
@@ -181,6 +191,7 @@ class _TestAccountsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -188,22 +199,22 @@ class _TestAccountsCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.borderSubtle),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Тестовые аккаунты (dev)',
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+            l10n.profileDevTestAccounts,
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
           ),
-          SizedBox(height: 10),
-          Text('USER · +77000000003', style: TextStyle(color: AppTheme.textMuted)),
-          Text('BUSINESS · +77000000002', style: TextStyle(color: AppTheme.textMuted)),
-          Text('CITY_ADMIN · +77000000004', style: TextStyle(color: AppTheme.textMuted)),
-          Text('ADMIN · +77000000001', style: TextStyle(color: AppTheme.textMuted)),
-          SizedBox(height: 8),
+          const SizedBox(height: 10),
+          const Text('USER · +77000000003', style: TextStyle(color: AppTheme.textMuted)),
+          const Text('BUSINESS · +77000000002', style: TextStyle(color: AppTheme.textMuted)),
+          const Text('CITY_ADMIN · +77000000004', style: TextStyle(color: AppTheme.textMuted)),
+          const Text('ADMIN · +77000000001', style: TextStyle(color: AppTheme.textMuted)),
+          const SizedBox(height: 8),
           Text(
-            'OTP-код: 1234',
-            style: TextStyle(
+            l10n.profileDevOtpHint,
+            style: const TextStyle(
               color: AppTheme.kzBlue,
               fontWeight: FontWeight.w700,
             ),

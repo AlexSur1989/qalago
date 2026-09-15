@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/legal_constants.dart';
+import '../../core/locale/l10n_extension.dart';
 import '../../core/theme/app_theme.dart';
 
 Future<void> openLegalUrl(String url) async {
@@ -22,23 +23,24 @@ class LegalLinksSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
-          'Правовая информация',
-          style: TextStyle(
+        Text(
+          l10n.legalSectionTitle,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w800,
           ),
         ),
         const SizedBox(height: 8),
         _LegalLinkTile(
-          title: 'Политика конфиденциальности',
+          title: l10n.legalPrivacy,
           onTap: () => openLegalUrl(LegalConstants.privacyUrl),
         ),
         _LegalLinkTile(
-          title: 'Условия использования',
+          title: l10n.legalTerms,
           onTap: () => openLegalUrl(LegalConstants.termsUrl),
         ),
         if (showAccountDeletion && onDeleteAccount != null) ...[
@@ -54,7 +56,7 @@ class LegalLinksSection extends StatelessWidget {
               ),
             ),
             icon: const Icon(Icons.delete_forever_outlined),
-            label: const Text('Удалить аккаунт'),
+            label: Text(l10n.deleteAccountButton),
           ),
         ],
       ],
@@ -68,6 +70,7 @@ class LoginLegalConsentFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Padding(
       padding: const EdgeInsets.only(top: 16),
       child: Text.rich(
@@ -78,15 +81,15 @@ class LoginLegalConsentFooter extends StatelessWidget {
             height: 1.4,
           ),
           children: [
-            const TextSpan(text: 'Продолжая, вы принимаете '),
+            TextSpan(text: l10n.legalConsentPrefix),
             WidgetSpan(
               alignment: PlaceholderAlignment.baseline,
               baseline: TextBaseline.alphabetic,
               child: GestureDetector(
                 onTap: () => openLegalUrl(LegalConstants.termsUrl),
-                child: const Text(
-                  'Условия использования',
-                  style: TextStyle(
+                child: Text(
+                  l10n.legalConsentTerms,
+                  style: const TextStyle(
                     color: AppTheme.kzBlue,
                     decoration: TextDecoration.underline,
                     fontSize: 13,
@@ -94,15 +97,15 @@ class LoginLegalConsentFooter extends StatelessWidget {
                 ),
               ),
             ),
-            const TextSpan(text: ' и ознакомлены с '),
+            TextSpan(text: l10n.legalConsentAnd),
             WidgetSpan(
               alignment: PlaceholderAlignment.baseline,
               baseline: TextBaseline.alphabetic,
               child: GestureDetector(
                 onTap: () => openLegalUrl(LegalConstants.privacyUrl),
-                child: const Text(
-                  'Политикой конфиденциальности',
-                  style: TextStyle(
+                child: Text(
+                  l10n.legalConsentPrivacy,
+                  style: const TextStyle(
                     color: AppTheme.kzBlue,
                     decoration: TextDecoration.underline,
                     fontSize: 13,

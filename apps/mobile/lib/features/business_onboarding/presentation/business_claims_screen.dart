@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../providers/onboarding_providers.dart';
 import '../utils/onboarding_labels.dart';
@@ -11,24 +12,25 @@ class BusinessClaimsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final claimsAsync = ref.watch(myClaimsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Подтверждение прав')),
+      appBar: AppBar(title: Text(l10n.onboardingClaimsTitle)),
       body: claimsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text(mapOnboardingError(e))),
+        error: (e, _) => Center(child: Text(mapOnboardingError(l10n, e))),
         data: (items) {
           if (items.isEmpty) {
             return Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Заявок на подтверждение пока нет'),
+                  Text(l10n.onboardingClaimsEmpty),
                   const SizedBox(height: 12),
                   FilledButton(
                     onPressed: () => context.push('/business/search'),
-                    child: const Text('Найти свой бизнес'),
+                    child: Text(l10n.onboardingFindBusinessTitle),
                   ),
                 ],
               ),
@@ -47,12 +49,13 @@ class BusinessClaimsScreen extends ConsumerWidget {
                 final reason = item['rejectionReason'] as String?;
                 return Card(
                   child: ListTile(
-                    title: Text(business?['title'] as String? ?? 'Бизнес'),
+                    title: Text(business?['title'] as String? ?? l10n.profileBusinessDefault),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(claimStatusLabel(status)),
-                        if (reason != null && reason.isNotEmpty) Text('Причина: $reason'),
+                        Text(claimStatusLabel(l10n, status)),
+                        if (reason != null && reason.isNotEmpty)
+                          Text(l10n.onboardingReasonPrefix(reason)),
                       ],
                     ),
                   ),

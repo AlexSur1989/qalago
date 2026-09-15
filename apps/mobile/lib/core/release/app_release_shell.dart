@@ -3,7 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app_config_provider.dart';
 import 'semver.dart';
+import '../locale/l10n_extension.dart';
+import '../locale/release_message.dart';
 import 'release_gate_screens.dart';
+import '../../l10n/app_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+List<LocalizationsDelegate<dynamic>> get _releaseDelegates => const [
+      AppLocalizations.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ];
 
 class AppReleaseShell extends ConsumerStatefulWidget {
   const AppReleaseShell({super.key, required this.child});
@@ -30,17 +41,22 @@ class _AppReleaseShellState extends ConsumerState<AppReleaseShell> {
         final config = state.config;
         if (config?.maintenanceEnabled == true) {
           return MaterialApp(
+            localizationsDelegates: _releaseDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: MaintenanceScreen(
-              messageRu: config?.maintenanceMessageRu ?? 'Сервис временно недоступен',
+              messageRu: maintenanceDisplayMessage(config),
               onRetry: () => ref.read(appReleaseGateProvider.notifier).refresh(),
             ),
           );
         }
 
         if (config?.updateMode == ClientUpdateMode.required) {
+          final l10n = releaseFallbackL10n();
           return MaterialApp(
+            localizationsDelegates: _releaseDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: RequiredUpdateScreen(
-              messageRu: 'Для продолжения установите новую версию приложения.',
+              messageRu: l10n.releaseRequiredBody,
               storeUrl: config?.storeUrl,
             ),
           );
@@ -84,7 +100,7 @@ class _OptionalUpdateHostState extends State<_OptionalUpdateHost> {
         if (!mounted) return;
         showOptionalUpdateDialog(
           context,
-          messageRu: 'Доступна новая версия QalaGo.',
+          messageRu: context.l10n.releaseOptionalBody,
           storeUrl: widget.storeUrl,
         );
       });

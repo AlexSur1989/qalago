@@ -8,6 +8,7 @@ import '../../../shared/navigation/open_business.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../../core/location/user_location_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -201,6 +202,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       });
     }
 
+    final l10n = context.l10n;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -231,12 +234,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                     children: [
                       const Icon(Icons.error_outline, color: Colors.red),
                       const SizedBox(width: 8),
-                      const Expanded(
-                        child: Text('Не удалось загрузить заведения на карте'),
+                      Expanded(
+                        child: Text(l10n.mapLoadFailed),
                       ),
                       TextButton(
                         onPressed: () => ref.invalidate(mapBusinessesProvider),
-                        child: const Text('Повторить'),
+                        child: Text(l10n.commonRetry),
                       ),
                     ],
                   ),
@@ -260,7 +263,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       child: TextField(
                         readOnly: true,
                         decoration: InputDecoration(
-                          hintText: 'Поиск заведений и услуг...',
+                          hintText: l10n.searchPlaceholder,
                           prefixIcon: const Icon(
                             Icons.search,
                             color: AppTheme.textMuted,
@@ -444,6 +447,7 @@ class _MapBusinessPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final coverUrl = AppConstants.resolveMediaUrl(business.coverImageUrl);
     final distanceLabel = formatDistanceMeters(business.distanceMeters);
     final routeUrl = buildRouteUrl(
@@ -478,7 +482,7 @@ class _MapBusinessPreview extends StatelessWidget {
               children: [
                 const Spacer(),
                 IconButton(
-                  tooltip: 'Закрыть',
+                  tooltip: l10n.mapCloseTooltip,
                   onPressed: onClose,
                   icon: const Icon(Icons.close),
                 ),
@@ -516,7 +520,7 @@ class _MapBusinessPreview extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        business.categoryTitle ?? 'Заведение',
+                        business.categoryTitle ?? l10n.businessGenericName,
                         style: const TextStyle(
                           color: AppTheme.textMuted,
                           fontSize: 13,
@@ -555,7 +559,7 @@ class _MapBusinessPreview extends StatelessWidget {
                 Expanded(
                   child: FilledButton(
                     onPressed: onDetails,
-                    child: const Text('Подробнее'),
+                    child: Text(l10n.mapDetails),
                   ),
                 ),
                 if (whatsappUrl != null) ...[
@@ -569,7 +573,7 @@ class _MapBusinessPreview extends StatelessWidget {
                 if (routeUrl != null) ...[
                   const SizedBox(width: 4),
                   IconButton.outlined(
-                    tooltip: 'Маршрут',
+                    tooltip: l10n.businessRoute,
                     onPressed: () => _launch(routeUrl),
                     icon: const Icon(Icons.near_me),
                   ),
@@ -598,6 +602,7 @@ class _MapCitySheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final withDistance = businessesWithCoordinates(businesses)
         .map(
           (b) => businessWithDistance(
@@ -632,9 +637,9 @@ class _MapCitySheet extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Заведения на карте',
-                style: TextStyle(
+              Text(
+                l10n.mapBusinessesOnMap,
+                style: const TextStyle(
                   color: AppTheme.textDark,
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
@@ -644,7 +649,7 @@ class _MapCitySheet extends StatelessWidget {
               const SizedBox(height: 12),
               Expanded(
                 child: visible.isEmpty
-                    ? const Center(child: Text('Нет заведений с координатами'))
+                    ? Center(child: Text(l10n.mapNoCoordinates))
                     : ListView.separated(
                         physics: const BouncingScrollPhysics(),
                         itemCount: visible.length,
@@ -682,6 +687,7 @@ class _MapCityTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final coverUrl = AppConstants.resolveMediaUrl(business.coverImageUrl);
     final distanceLabel = formatDistanceMeters(business.distanceMeters);
 
@@ -719,7 +725,7 @@ class _MapCityTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  business.categoryTitle ?? 'Заведение',
+                  business.categoryTitle ?? l10n.businessGenericName,
                   style: const TextStyle(
                     color: AppTheme.textMuted,
                     fontSize: 13,

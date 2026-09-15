@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/legal_links.dart';
@@ -9,8 +10,10 @@ class ProfileAboutScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('О приложении')),
+      appBar: AppBar(title: Text(l10n.profileAbout)),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.screen),
         children: [
@@ -49,7 +52,7 @@ class ProfileAboutScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Версия 1.0.0 (MVP)',
+                  l10n.profileAboutVersion,
                   style: TextStyle(
                     color: AppTheme.textDark.withValues(alpha: 0.5),
                     fontWeight: FontWeight.w600,
@@ -59,31 +62,31 @@ class ProfileAboutScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 28),
-          const Text(
-            'QalaGo — городской super-app: каталог заведений, акции, карта, отзывы и кабинет для бизнеса.',
-            style: TextStyle(height: 1.45, fontSize: 15),
+          Text(
+            l10n.profileAboutDescription,
+            style: const TextStyle(height: 1.45, fontSize: 15),
           ),
           const SizedBox(height: 20),
           _AboutRow(
             icon: Icons.location_city_outlined,
-            title: 'Город MVP',
-            value: 'Уральск',
+            title: l10n.profileAboutMvpCityLabel,
+            value: l10n.profileAboutMvpCityValue,
           ),
           _AboutRow(
             icon: Icons.public_outlined,
-            title: 'Регион',
-            value: 'Казахстан',
+            title: l10n.profileAboutRegionLabel,
+            value: l10n.profileAboutRegionValue,
           ),
           _AboutRow(
             icon: Icons.language_outlined,
-            title: 'Языки',
-            value: 'Русский (kk — скоро)',
+            title: l10n.profileAboutLanguagesLabel,
+            value: l10n.profileAboutLanguagesValue,
           ),
           const SizedBox(height: 24),
           const LegalLinksSection(),
           const SizedBox(height: 24),
           Text(
-            '© ${DateTime.now().year} QalaGo. Все права защищены.',
+            l10n.profileAboutCopyright(DateTime.now().year),
             textAlign: TextAlign.center,
             style: TextStyle(
               color: AppTheme.textDark.withValues(alpha: 0.45),

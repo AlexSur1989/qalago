@@ -234,6 +234,28 @@ class AppLocalizationsKk extends AppLocalizations {
   String get favoritesSortLabel => 'Сұрыптау:';
 
   @override
+  String get favoritesLoadFailed => 'Таңдаулыларды жүктеу сәтсіз.';
+
+  @override
+  String get favoritesRemoveTooltip => 'Таңдаулылардан алу';
+
+  @override
+  String get favoritesEmptyUser => 'Таңдаулы орындар әлі жоқ';
+
+  @override
+  String get favoritesEmptyUserHint =>
+      'Орындарды таңдаулыларға қосып, оларға тез оралыңыз.';
+
+  @override
+  String favoritesEmptyInCity(String cityName) {
+    return '$cityName қалasında таңдаулы орындар әлі жоқ';
+  }
+
+  @override
+  String get favoritesOtherCitiesHint =>
+      'Басқа қалалардағы таңдаулылар сақталды — көру үшін қаланы ауыстырыңыз.';
+
+  @override
   String searchRadiusKmExact(int km) {
     return '$km км';
   }
@@ -634,6 +656,289 @@ class AppLocalizationsKk extends AppLocalizations {
   String get onboardingDraftSaved => 'Жоба сақталды';
 
   @override
+  String get commonLater => 'Кейінірек';
+
+  @override
+  String get commonUpdate => 'Жаңарту';
+
+  @override
+  String get commonSubmit => 'Жіберу';
+
+  @override
+  String get searchTitle => 'Іздеу';
+
+  @override
+  String get promotionsTitle => 'Акциялар';
+
+  @override
+  String get promotionsSearchHint => 'Акцияларды іздеу...';
+
+  @override
+  String get promotionsLoadFailed =>
+      'Акцияларды жүктеу сәтсіз. Байланысты тексеріңіз.';
+
+  @override
+  String promotionsFoundCount(int count) {
+    return '$count акция табылды';
+  }
+
+  @override
+  String promotionsEmptyInCity(String cityName) {
+    return '$cityName қаласында белсенді акциялар әлі жоқ';
+  }
+
+  @override
+  String get promotionsEmptyHint =>
+      'Кейінірек қайта қараңыз — мекемелер жаңа ұсыныстар қосады.';
+
+  @override
+  String get promotionsNoResultsHint =>
+      'Іздеуді немесе санатты өзгертіп көріңіз.';
+
+  @override
+  String get promotionsOpenBusiness => 'Мекемені ашу';
+
+  @override
+  String get promotionExpired => 'Мерзімі өтті';
+
+  @override
+  String get sponsoredPromoted => 'Жарнамалау';
+
+  @override
+  String get adDetailsDefault => 'Толығырақ';
+
+  @override
+  String get adLabelPrefix => 'Жарнама';
+
+  @override
+  String adSemanticLabel(String title) {
+    return 'Жарнама: $title';
+  }
+
+  @override
+  String get cityPickerTitle => 'Қаланы таңдаңыз';
+
+  @override
+  String get cityComingSoon => 'Жақында';
+
+  @override
+  String get cityCurrent => 'Ағымдағы қала';
+
+  @override
+  String get cityTapToSelect => 'Таңдау үшін басыңыз';
+
+  @override
+  String get cityLoadFailed => 'Қалалар тізімін жүктеу сәтсіз';
+
+  @override
+  String emptyCityComingTitle(String cityName) {
+    return '$cityName жақында ашылады';
+  }
+
+  @override
+  String emptyCitySoonTitle(String cityName) {
+    return '$cityName жақында QalaGo-да';
+  }
+
+  @override
+  String get emptyCityComingBody =>
+      'Қаланы QalaGo-да іске қосуға дайындаламыз. Мекемені алдын ала қосыңыз немесе басқа қаланы таңдаңыз.';
+
+  @override
+  String get emptyCityEmptyBody =>
+      'Мекемелер мен қызметтерді қосамыз. Кatalog әлі бос — басқа қаланы таңдаңыз немесе өз орныңызды ұсыныңыз.';
+
+  @override
+  String get emptyCityPickOther => 'Басқа қаланы таңдау';
+
+  @override
+  String get emptyCityAddBusiness => 'Мекеме қосу';
+
+  @override
+  String get legalSectionTitle => 'Құқықтық ақпарат';
+
+  @override
+  String get legalPrivacy => 'Құпиялылық саясаты';
+
+  @override
+  String get legalTerms => 'Пайдалану шарттары';
+
+  @override
+  String get legalConsentPrefix => 'Жалғастыру арқылы сіз ';
+
+  @override
+  String get legalConsentTerms => 'Пайдалану шарттарын';
+
+  @override
+  String get legalConsentAnd => ' қабылдайсыз және ';
+
+  @override
+  String get legalConsentPrivacy => 'Құпиялылық саясатымен';
+
+  @override
+  String get releaseUpdateAvailable => 'Жаңарту қолжетімді';
+
+  @override
+  String get releaseRequiredBody =>
+      'Жалғастыру үшін қолданбаның жаңа нұсқасын орнатыңыз.';
+
+  @override
+  String get releaseOptionalBody => 'QalaGo-дың жаңа нұсқасы қолжетімді.';
+
+  @override
+  String get releaseStoreMissing => 'Дүкен сілтемесі әлі бапталмаған.';
+
+  @override
+  String get profilePermissionsAllowed => 'Болады';
+
+  @override
+  String get profilePermissionsDenied => 'Болмайды';
+
+  @override
+  String profilePermissionsApps(String apps) {
+    return 'Қолданбалар: $apps';
+  }
+
+  @override
+  String profilePermissionsModerationCity(String city) {
+    return 'Модерация қаласы: $city';
+  }
+
+  @override
+  String get profileDevTestAccounts => 'Тест аккаунттары (dev)';
+
+  @override
+  String get profileDevOtpHint => 'OTP коды: 1234';
+
+  @override
+  String get profileReviewsEmpty => 'Сіз әлі пікір қалдырмадыңыз';
+
+  @override
+  String get profileReviewsEmptyHint =>
+      'Мекеме карточкасын ашып, впечатлениеңізбен бөлісіңіз';
+
+  @override
+  String get profileReviewsGoHome => 'Басты бетке';
+
+  @override
+  String get profileBusinessReply => 'Мекеме жауабы';
+
+  @override
+  String get profileOpenBusiness => 'Мекемені ашу';
+
+  @override
+  String get profileHelpFaqTitle => 'Жиі қойылатын сұрақтар';
+
+  @override
+  String get profileHelpNeedSupport => 'Көмек керек пе?';
+
+  @override
+  String get profileHelpSupportBody =>
+      'Қолданба жұмысы бойынша сұрақтар болса, QalaGo ресми арналары арқылы қолдауға хабарласыңыз.';
+
+  @override
+  String get profileHelpTagline =>
+      'QalaGo — қалалық гид және маркетплейс. MVP Уральскте іске қосылды.';
+
+  @override
+  String get profileHelpFaq1Q => 'Мекемені қалай қосуға болады?';
+
+  @override
+  String get profileHelpFaq1A =>
+      'Профильде «Мекеме қосу» таңдап, форманы толтырып, модерацияны күтіңіз.';
+
+  @override
+  String get profileHelpFaq2Q => 'Қаланы қалай ауыстыруға болады?';
+
+  @override
+  String get profileHelpFaq2A =>
+      'Басты бетте немесе профильде қала атауын басыңыз → «Менің қалам». Аккаунт үшін қала бұлтта сақталады.';
+
+  @override
+  String get profileHelpFaq3Q => 'Пікір қалай қалдыруға болады?';
+
+  @override
+  String get profileHelpFaq3A =>
+      'Мекеме карточкасын ашып, пікірлер бөліміне дейін айналдырып, «Пікір қалдыру» басыңыз.';
+
+  @override
+  String get profileHelpFaq4Q => 'Кіріс коды келмейді';
+
+  @override
+  String get profileHelpFaq4A =>
+      'Телефон нөмірін тексеріп, бір минут күтіңіз. Код келмесе, кіру экранында «Кодты қайта жіберу» басыңыз.';
+
+  @override
+  String get profileAboutVersion => 'Нұсқа 1.0.0 (MVP)';
+
+  @override
+  String get profileAboutDescription =>
+      'QalaGo — қалалық super-app: мекемелер каталогы, акциялар, карта, пікірлер және бизнес кабинеті.';
+
+  @override
+  String get profileAboutMvpCityLabel => 'MVP қаласы';
+
+  @override
+  String get profileAboutMvpCityValue => 'Орал';
+
+  @override
+  String get profileAboutRegionLabel => 'Аймақ';
+
+  @override
+  String get profileAboutRegionValue => 'Қазақстан';
+
+  @override
+  String get profileAboutLanguagesLabel => 'Тілдер';
+
+  @override
+  String get profileAboutLanguagesValue => 'Русский · Қазақша';
+
+  @override
+  String profileAboutCopyright(int year) {
+    return '© $year QalaGo. Барлық құқықтар қорғалған.';
+  }
+
+  @override
+  String get profileEditNameRequired => 'Атыңызды енгізіңіз';
+
+  @override
+  String get profileEditSaved => 'Сақталды';
+
+  @override
+  String get profileEditNameLabel => 'Аты';
+
+  @override
+  String get profileEditNameHint => 'Сізге қалай жүгіну керек';
+
+  @override
+  String get profileEditPhoneLabel => 'Телефон';
+
+  @override
+  String get profileEditPhoneHelp =>
+      'Телефон нөмірін қолдау арқылы немесе қайта тіркелу арқылы өзгертуге болады';
+
+  @override
+  String get profileEditChangePhoto => 'Фото өзгерту';
+
+  @override
+  String get profileEditTakePhoto => 'Камерадан';
+
+  @override
+  String get profileEditFromGallery => 'Галереядан';
+
+  @override
+  String get profileEditRemovePhoto => 'Фото жою';
+
+  @override
+  String get profileEditAvatarUpdated => 'Фото жаңартылды';
+
+  @override
+  String get profileEditAvatarRemoved => 'Фото жойылды';
+
+  @override
+  String get profileEditAvatarFailed => 'Фото жүктеу сәтсіз';
+
+  @override
   String get businessRoute => 'Бағыт';
 
   @override
@@ -659,6 +964,168 @@ class AppLocalizationsKk extends AppLocalizations {
 
   @override
   String get businessPromotions => 'Акциялар';
+
+  @override
+  String get businessInstagram => 'Instagram';
+
+  @override
+  String get businessAddress => 'Мекенжай';
+
+  @override
+  String get catalogNotFound => 'Ештеңе табылмады';
+
+  @override
+  String get onboardingForBusinessTitle => 'Бизнес үшін';
+
+  @override
+  String get onboardingIntro =>
+      'Өз бизнесіңізді қосыңыз немесе табыңыз. QalaGo-да бар болса, жаңа карточка жасамай, кіру сұраңыз.';
+
+  @override
+  String get onboardingSearchLabel => 'Атауы немесе мекенжайы';
+
+  @override
+  String get onboardingSearchAction => 'Іздеу';
+
+  @override
+  String get onboardingSearching => 'Іздеу…';
+
+  @override
+  String get onboardingApplyIntro =>
+      'Өтінім QalaGo әкімшілігі тексереді. Кабинетке кіру мақұлданғаннан кейін ашылады.';
+
+  @override
+  String get onboardingNameLabel => 'Атауы *';
+
+  @override
+  String get onboardingNameRequired => 'Атауын енгізіңіз';
+
+  @override
+  String get onboardingCategoryLabel => 'Санат *';
+
+  @override
+  String get onboardingAddressLabel => 'Мекенжай *';
+
+  @override
+  String get onboardingAddressRequired => 'Мекенжайды енгізіңіз';
+
+  @override
+  String get onboardingPhoneLabel => 'Телефон';
+
+  @override
+  String get onboardingDescriptionLabel => 'Қысқаша сипаттама';
+
+  @override
+  String get onboardingSaveDraft => 'Жобаны сақтау';
+
+  @override
+  String get onboardingSubmitReview => 'Тексеруге жіберу';
+
+  @override
+  String get onboardingSaving => 'Сақталуда…';
+
+  @override
+  String get onboardingSubmitting => 'Жіберілуде…';
+
+  @override
+  String get onboardingSubmitted => 'Өтінім тексеруге жіберілді';
+
+  @override
+  String get onboardingClaimSentTitle => 'Өтінім жіберілді';
+
+  @override
+  String get onboardingClaimSentBody => 'Тексеру нәтижесін хабарлаймыз.';
+
+  @override
+  String get onboardingClaimTitle => 'Ие құқығын растау';
+
+  @override
+  String get onboardingClaimIntro => 'Өтінім QalaGo әкімшілігі тексереді.';
+
+  @override
+  String get onboardingClaimMessageLabel =>
+      'Модераторға хабарлама (міндетті емес)';
+
+  @override
+  String get onboardingClaimSubmit => 'Өтінім жіберу';
+
+  @override
+  String get onboardingClaimsTitle => 'Құқықты растау';
+
+  @override
+  String get onboardingClaimsEmpty => 'Растау өтінімдері әлі жоқ';
+
+  @override
+  String get onboardingApplicationsTitle => 'Менің өтінімдерім';
+
+  @override
+  String get onboardingApplicationsEmpty => 'Өтінімдер әлі жоқ';
+
+  @override
+  String get onboardingAddBusinessBtn => 'Бизнес қосу';
+
+  @override
+  String onboardingReasonPrefix(String reason) {
+    return 'Себебі: $reason';
+  }
+
+  @override
+  String get onboardingStatusDraft => 'Жоба';
+
+  @override
+  String get onboardingStatusPending => 'Тексеруде';
+
+  @override
+  String get onboardingStatusApproved => 'Мақұлданды';
+
+  @override
+  String get onboardingStatusRejected => 'Бас тартылды';
+
+  @override
+  String get onboardingStatusCancelled => 'Болдырылмады';
+
+  @override
+  String get onboardingRoleOwner => 'Иесі';
+
+  @override
+  String get onboardingRoleManager => 'Менеджер';
+
+  @override
+  String get onboardingErrorConflict =>
+      'Өтінім жіберілген немесе статус өзгерді. Бетті жаңартыңыз.';
+
+  @override
+  String get onboardingErrorDuplicate =>
+      'Ұқсас бизнес QalaGo-да бар. Барын табуға тырысыңыз.';
+
+  @override
+  String get onboardingErrorAlreadyOwner => 'Бұл бизнес иесінің құқығыңыз бар.';
+
+  @override
+  String get onboardingErrorForbidden =>
+      'Кіру шектеулі. Әкімшіге хабарласыңыз.';
+
+  @override
+  String get onboardingErrorGeneric => 'Әрекет орындалмады. Қайталап көріңіз.';
+
+  @override
+  String get claimCtaLoginTitle => 'Кіріңіз';
+
+  @override
+  String get claimCtaLoginMessage =>
+      'Ие құқығын растау үшін аккаунтқа кіріңіз.';
+
+  @override
+  String get claimCtaYourBusiness => 'Бұл сіздің бизнесіңіз бе?';
+
+  @override
+  String get claimCtaPending => 'Растау өтінімі жіберілді';
+
+  @override
+  String get claimCtaConfirmOwner => 'Ие құқығын растау';
+
+  @override
+  String get defaultSearchHint => 'Іздеу...';
 
   @override
   String get errorInvalidOtp => 'Қате код';
@@ -688,6 +1155,9 @@ class AppLocalizationsKk extends AppLocalizations {
   @override
   String get errorServiceUnavailable =>
       'Қызмет уақытша қолжетімсіз. Кейінірек қайталап көріңіз.';
+
+  @override
+  String get deleteAccountButton => 'Аккаунтты жою';
 
   @override
   String get deleteAccountTitle => 'Аккаунтты жою керек пе?';

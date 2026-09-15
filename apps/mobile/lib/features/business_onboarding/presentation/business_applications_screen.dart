@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../providers/onboarding_providers.dart';
 import '../utils/onboarding_labels.dart';
@@ -10,10 +11,11 @@ class BusinessApplicationsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final appsAsync = ref.watch(myApplicationsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Мои заявки')),
+      appBar: AppBar(title: Text(l10n.onboardingApplicationsTitle)),
       body: appsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('$e')),
@@ -23,11 +25,11 @@ class BusinessApplicationsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Заявок пока нет'),
+                  Text(l10n.onboardingApplicationsEmpty),
                   const SizedBox(height: 12),
                   FilledButton(
                     onPressed: () => context.push('/business/apply'),
-                    child: const Text('Добавить бизнес'),
+                    child: Text(l10n.onboardingAddBusinessBtn),
                   ),
                 ],
               ),
@@ -50,8 +52,9 @@ class BusinessApplicationsScreen extends ConsumerWidget {
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(applicationStatusLabel(status)),
-                        if (reason != null && reason.isNotEmpty) Text('Причина: $reason'),
+                        Text(applicationStatusLabel(l10n, status)),
+                        if (reason != null && reason.isNotEmpty)
+                          Text(l10n.onboardingReasonPrefix(reason)),
                       ],
                     ),
                     trailing: (status == 'DRAFT' || status == 'REJECTED')

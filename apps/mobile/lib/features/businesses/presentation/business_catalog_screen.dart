@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/navigation/navigation_utils.dart';
 import '../../../shared/widgets/error_view.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../analytics/widgets/tracked_catalog_item_card.dart';
 import '../providers/business_catalog_provider.dart';
@@ -87,10 +88,11 @@ class _BusinessCatalogScreenState extends ConsumerState<BusinessCatalogScreen> {
   @override
   Widget build(BuildContext context) {
     final catalogAsync = ref.watch(businessCatalogPageProvider(_query));
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Товары и услуги'),
+        title: Text(l10n.businessProductsServices),
         leading: qalagoBackLeading(
           context,
           fallbackLocation: '/business/${widget.businessId}',
@@ -191,6 +193,7 @@ class _CatalogBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final total = pagination?['total'] as int? ?? items.length;
     final page = pagination?['page'] as int? ?? 1;
     final totalPages = pagination?['totalPages'] as int? ?? 0;
@@ -208,7 +211,7 @@ class _CatalogBody extends StatelessWidget {
           TextField(
             controller: searchController,
             decoration: InputDecoration(
-              hintText: 'Найти товар или услугу',
+              hintText: l10n.catalogSearchHint,
               prefixIcon: const Icon(Icons.search),
               suffixIcon: IconButton(
                 icon: const Icon(Icons.arrow_forward),
@@ -227,7 +230,7 @@ class _CatalogBody extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               children: [
                 _SectionChip(
-                  label: 'Все',
+                  label: l10n.commonAll,
                   selected: sectionId == null,
                   onTap: () => onSectionSelected(null),
                 ),
@@ -244,18 +247,18 @@ class _CatalogBody extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           if (items.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 48),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 48),
               child: Center(
                 child: Text(
-                  'Ничего не найдено',
-                  style: TextStyle(color: AppTheme.textMuted),
+                  l10n.catalogNotFound,
+                  style: const TextStyle(color: AppTheme.textMuted),
                 ),
               ),
             )
           else ...[
             Text(
-              'Найдено: $total',
+              l10n.searchFoundCount(total),
               style: const TextStyle(color: AppTheme.textMuted, fontSize: 13),
             ),
             const SizedBox(height: 8),
@@ -276,7 +279,7 @@ class _CatalogBody extends StatelessWidget {
                           height: 18,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('Показать ещё'),
+                      : Text(l10n.catalogShowMore),
                 ),
               ),
           ],

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/theme_extensions.dart';
+import '../../core/locale/l10n_extension.dart';
 import '../../features/auth/providers/auth_provider.dart';
 
 class EmptyCityView extends ConsumerWidget {
@@ -31,6 +32,7 @@ class EmptyCityView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final padding = compact ? 20.0 : 28.0;
 
     return Container(
@@ -66,7 +68,9 @@ class EmptyCityView extends ConsumerWidget {
           ),
           SizedBox(height: compact ? 14 : 18),
           Text(
-            isComingSoon ? '$cityName скоро откроется' : '$cityName скоро в QalaGo',
+            isComingSoon
+                ? l10n.emptyCityComingTitle(cityName)
+                : l10n.emptyCitySoonTitle(cityName),
             textAlign: TextAlign.center,
             style: context.tt.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
@@ -75,9 +79,7 @@ class EmptyCityView extends ConsumerWidget {
           ),
           SizedBox(height: compact ? 8 : 10),
           Text(
-            isComingSoon
-                ? 'Мы готовим запуск города в QalaGo. Подключайте заведение заранее или выберите другой город.'
-                : 'Мы добавляем заведения и услуги. Пока каталог пуст — выберите другой город или предложите своё место.',
+            isComingSoon ? l10n.emptyCityComingBody : l10n.emptyCityEmptyBody,
             textAlign: TextAlign.center,
             style: context.bodySecondaryStyle?.copyWith(height: 1.45),
           ),
@@ -86,7 +88,7 @@ class EmptyCityView extends ConsumerWidget {
             width: double.infinity,
             child: FilledButton(
               onPressed: onPickCity,
-              child: const Text('Выбрать другой город'),
+              child: Text(l10n.emptyCityPickOther),
             ),
           ),
           const SizedBox(height: 10),
@@ -102,7 +104,7 @@ class EmptyCityView extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: const Text('Добавить заведение'),
+              child: Text(l10n.emptyCityAddBusiness),
             ),
           ),
         ],

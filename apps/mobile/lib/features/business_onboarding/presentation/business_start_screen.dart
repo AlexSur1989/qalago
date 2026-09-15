@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../../core/rbac/business_access.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -12,16 +13,17 @@ class BusinessStartScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final entriesAsync = ref.watch(myBusinessEntriesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Для бизнеса')),
+      appBar: AppBar(title: Text(l10n.onboardingForBusinessTitle)),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.screen),
         children: [
-          const Text(
-            'Добавьте или найдите свой бизнес. Если он уже есть в QalaGo, запросите доступ вместо создания новой карточки.',
-            style: TextStyle(color: AppTheme.textMuted, height: 1.4),
+          Text(
+            l10n.onboardingIntro,
+            style: const TextStyle(color: AppTheme.textMuted, height: 1.4),
           ),
           const SizedBox(height: 24),
           entriesAsync.when(
@@ -32,16 +34,18 @@ class BusinessStartScreen extends ConsumerWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Мои бизнесы',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                  Text(
+                    l10n.profileMyBusinesses,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 12),
                   ...entries.map(
                     (entry) => Card(
                       child: ListTile(
                         title: Text(entry.business['title'] as String? ?? ''),
-                        subtitle: Text(membershipRoleLabel(entry.access.role.apiValue)),
+                        subtitle: Text(
+                          membershipRoleLabel(l10n, entry.access.role.apiValue),
+                        ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => context.push('/owner'),
                       ),
@@ -54,17 +58,17 @@ class BusinessStartScreen extends ConsumerWidget {
           ),
           FilledButton(
             onPressed: () => context.push('/business/search'),
-            child: const Text('Найти существующий бизнес'),
+            child: Text(l10n.profileFindExistingBusiness),
           ),
           const SizedBox(height: 12),
           OutlinedButton(
             onPressed: () => context.push('/business/apply'),
-            child: const Text('Добавить новый бизнес'),
+            child: Text(l10n.onboardingAddNew),
           ),
           const SizedBox(height: 12),
           TextButton(
             onPressed: () => context.push('/business/applications'),
-            child: const Text('Мои заявки'),
+            child: Text(l10n.onboardingApplicationsTitle),
           ),
         ],
       ),

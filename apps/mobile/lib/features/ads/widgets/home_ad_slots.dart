@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/navigation/open_business.dart';
 
+import '../../../core/locale/l10n_extension.dart';
 import '../../../shared/models/models.dart';
 import '../providers/ad_serve_provider.dart';
 import 'sponsored_business_section.dart';
@@ -62,9 +63,6 @@ class HomePromotionsAdSlot extends ConsumerWidget {
   }
 }
 
-/// Consumer-facing title for paid [HOME_FEATURED] placement (Stage 5A).
-const homeFeaturedSectionTitle = 'Продвигаемые места';
-
 class HomeFeaturedAdSlot extends ConsumerWidget {
   const HomeFeaturedAdSlot({super.key});
 
@@ -77,7 +75,7 @@ class HomeFeaturedAdSlot extends ConsumerWidget {
         return Column(
           children: [
             SponsoredBusinessSection(
-              title: homeFeaturedSectionTitle,
+              title: context.l10n.categorySponsored,
               items: items,
             ),
             const SizedBox(height: 24),
