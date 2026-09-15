@@ -17,7 +17,6 @@ import '../../../shared/utils/business_detail_utils.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../../core/auth/auth_prompt.dart';
-import '../../../core/locale/consumer_api_errors.dart';
 import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/locale/localized_content.dart';
 import '../../../core/locale/l10n_extension.dart';

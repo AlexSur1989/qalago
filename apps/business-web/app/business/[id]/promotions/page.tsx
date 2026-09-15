@@ -126,9 +126,11 @@ export default function BusinessPromotionsPage() {
       {planStatus && (
         <section className="form-card" style={{ maxWidth: 720, marginBottom: 16 }}>
           <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            Тариф «{planStatus.catalog.nameRu}»: активных {activeCount} /{' '}
-            {planStatus.limits.maxActivePromotions}
-            {' · '}срок акции до {planStatus.limits.maxPromotionDurationDays} дн.
+            {ui.ownerPlanQuotaPromotionsLine
+              .replace('${planName}', planStatus.catalog.nameRu)
+              .replace('${active}', String(activeCount))
+              .replace('${max}', String(planStatus.limits.maxActivePromotions))
+              .replace('${days}', String(planStatus.limits.maxPromotionDurationDays))}
           </p>
           {planStatus.entitlements?.activePromotions.overLimit && (
             <p className="alert" style={{ marginTop: 10, marginBottom: 0, fontSize: '0.88rem' }}>
@@ -180,7 +182,9 @@ export default function BusinessPromotionsPage() {
       {error && <div className="alert alert-error">{error}</div>}
 
       <section className="form-card" style={{ maxWidth: 720 }}>
-        <h2 style={{ marginTop: 0 }}>Список ({promotions.length})</h2>
+        <h2 style={{ marginTop: 0 }}>
+          {ui.ownerPromotionsListHeading.replace('${count}', String(promotions.length))}
+        </h2>
         {promotions.length === 0 ? (
           <p style={{ color: 'var(--text-muted)' }}>{ui.___208573}</p>
         ) : (

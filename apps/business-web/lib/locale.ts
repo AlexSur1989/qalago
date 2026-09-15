@@ -59,6 +59,13 @@ export type UiLabels = {
   text_menuShownCount: string;
   contentAuthoredTitleKkOptional: string;
   contentAuthoredDescriptionKkOptional: string;
+  ownerPlanQuotaMenuLine: string;
+  ownerPlanQuotaPublishedSuffix: string;
+  ownerPlanQuotaMenuOverLimitLine: string;
+  ownerPlanQuotaPromotionsLine: string;
+  ownerPlanQuotaPhotosLine: string;
+  ownerPlanQuotaPhotosOverLimitPrefix: string;
+  ownerPromotionsListHeading: string;
   siteTitle: string;
   siteDescription: string;
   languageSwitcherAria: string;
@@ -969,6 +976,17 @@ export type UiLabels = {
     text_menuShownCount: 'Показано ${shown} из ${total}',
     contentAuthoredTitleKkOptional: 'Название на казахском (необязательно)',
     contentAuthoredDescriptionKkOptional: 'Описание на казахском (необязательно)',
+    ownerPlanQuotaMenuLine:
+      'Тариф «${planName}»: ${used} / ${max} товаров и услуг',
+    ownerPlanQuotaPublishedSuffix: ' · опубликовано ${count}',
+    ownerPlanQuotaMenuOverLimitLine:
+      'На текущем тарифе публикуется до ${max} позиций. Остальные сохранены в кабинете.',
+    ownerPlanQuotaPromotionsLine:
+      'Тариф «${planName}»: активных ${active} / ${max} · срок акции до ${days} дн.',
+    ownerPlanQuotaPhotosLine: 'Тариф «${planName}»: ${used} / ${max} фото',
+    ownerPlanQuotaPhotosOverLimitPrefix:
+      'На тарифе «${planName}» публикуется до ${max} фото. Остальные',
+    ownerPromotionsListHeading: 'Список (${count})',
     text_f0e9ac: ' · страница ${pagination.page} / ${pagination.totalPages}',
     text_f154d6: 'Пользователь',
     text_f1a7d3: 'Расширенная',
@@ -1359,6 +1377,17 @@ export type UiLabels = {
     text_menuShownCount: 'Көрсетілген ${shown} / ${total}',
     contentAuthoredTitleKkOptional: 'Қазақшадағы атау (міндетті емес)',
     contentAuthoredDescriptionKkOptional: 'Қазақшадағы сипаттама (міндетті емес)',
+    ownerPlanQuotaMenuLine:
+      'Тариф «${planName}»: ${used} / ${max} тауар мен қызмет',
+    ownerPlanQuotaPublishedSuffix: ' · жарияланған ${count}',
+    ownerPlanQuotaMenuOverLimitLine:
+      'Ағымдағы тарифте ${max} позицияға дейін жарияланады. Қалғандары кабинетте сақталған.',
+    ownerPlanQuotaPromotionsLine:
+      'Тариф «${planName}»: белсенді ${active} / ${max} · акция мерзімі ${days} күн.',
+    ownerPlanQuotaPhotosLine: 'Тариф «${planName}»: ${used} / ${max} фото',
+    ownerPlanQuotaPhotosOverLimitPrefix:
+      '«${planName}» тарифінде ${max} фотоға дейін жарияланады. Қалғандары',
+    ownerPromotionsListHeading: 'Тізім (${count})',
     text_setAsCover: 'Мұқабаға',
     text_findShort: 'Іздеу',
     text_deleteGroup: 'Топты жою',

@@ -27,6 +27,14 @@ class CityState {
   bool get isComingSoon => launchStatus == 'COMING_SOON';
 }
 
+/// Emergency offline names when `/cities` is unreachable (must match catalog seed/DB).
+const _offlineCityTaxonomy = <String, ({String nameRu, String? nameKk})>{
+  'uralsk': (nameRu: 'Уральск', nameKk: 'Орал'),
+  'aktobe': (nameRu: 'Актобе', nameKk: 'Ақтөбе'),
+  'shymkent': (nameRu: 'Шымкент', nameKk: 'Шымкент'),
+  'astana': (nameRu: 'Астана', nameKk: 'Астана'),
+};
+
 class CityNotifier extends Notifier<CityState> {
   @override
   CityState build() {
@@ -46,9 +54,11 @@ class CityNotifier extends Notifier<CityState> {
       );
       state = _cityFromJson(match, fallbackSlug: slug);
     } catch (_) {
+      final offline = _offlineCityTaxonomy[slug] ?? _offlineCityTaxonomy['uralsk']!;
       state = CityState(
         slug: slug,
-        nameRu: _fallbackName(slug),
+        nameRu: offline.nameRu,
+        nameKk: offline.nameKk,
         centerLat: slug == 'aktobe' ? 50.2839 : 51.2278,
         centerLng: slug == 'aktobe' ? 57.167 : 51.3865,
       );
@@ -100,29 +110,15 @@ class CityNotifier extends Notifier<CityState> {
 
   CityState _cityFromJson(Map<String, dynamic> json, {String? fallbackSlug}) {
     final slug = json['slug'] as String? ?? fallbackSlug ?? AppConstants.defaultCitySlug;
+    final offline = _offlineCityTaxonomy[slug];
     return CityState(
       slug: slug,
-      nameRu: json['nameRu'] as String? ?? _fallbackName(slug),
-      nameKk: json['nameKk'] as String?,
+      nameRu: json['nameRu'] as String? ?? offline?.nameRu ?? 'Уральск',
+      nameKk: json['nameKk'] as String? ?? offline?.nameKk,
       centerLat: parseJsonDouble(json['centerLat']),
       centerLng: parseJsonDouble(json['centerLng']),
       launchStatus: json['launchStatus'] as String? ?? 'LIVE',
     );
-  }
-
-  double? _parseCoord(Object? value) => parseJsonDouble(value);
-
-  String _fallbackName(String slug) {
-    switch (slug) {
-      case 'aktobe':
-        return 'Актобе';
-      case 'shymkent':
-        return 'Шымкент';
-      case 'astana':
-        return 'Астана';
-      default:
-        return 'Уральск';
-    }
   }
 }
 

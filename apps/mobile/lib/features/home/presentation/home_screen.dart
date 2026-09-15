@@ -18,7 +18,6 @@ import '../../../shared/utils/business_rank.dart';
 import '../../../shared/widgets/qalago_logo.dart';
 import '../../../shared/widgets/empty_city_view.dart';
 import '../../../shared/widgets/city_picker.dart';
-import '../../../shared/utils/network_error_utils.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/presentation/dev_quick_login_panel.dart';

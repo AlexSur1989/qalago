@@ -57,3 +57,10 @@ Optional `*Kk` fields: trim; empty → `null`. Updating `titleKk` does not chang
 ## No runtime translation
 
 No AI/API translation; no mass backfill of business copy into KK fields.
+
+## Stage 6.10B.QA closure notes
+
+- **Locales**: `ru`, `kk`; fallback `ru`. UI locale (cookie / app setting) is independent of business-authored `*Kk` content fields.
+- **Cities**: display from API `nameRu`/`nameKk`; Shymkent KK = `Шымкент` (same official spelling as RU). Emergency offline city names: `apps/mobile/lib/core/providers/city_provider.dart` (`_offlineCityTaxonomy`).
+- **Gaps (non-blockers)**: approved KK legal body; system notification templates RU-only; ServiceItem/Promotion KK not in business search ranking (Stage 6.11B).
+- **New screens**: must use existing l10n / `locale.ts` / `presentation.ts` — no hardcoded product Cyrillic in components.

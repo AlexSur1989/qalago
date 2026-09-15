@@ -88,15 +88,25 @@ export default function BusinessMediaPage() {
       {planStatus && (
         <section className="form-card" style={{ maxWidth: 820, marginBottom: 18 }}>
           <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            Тариф «{planStatus.catalog.nameRu}»: {images.length} / {maxPhotos ?? '∞'} фото
+            {ui.ownerPlanQuotaPhotosLine
+              .replace('${planName}', planStatus.catalog.nameRu)
+              .replace('${used}', String(images.length))
+              .replace('${max}', String(maxPhotos ?? '∞'))}
             {planStatus.entitlements?.photos.overLimit &&
               planStatus.entitlements.photos.published != null && (
-                <> · опубликовано {planStatus.entitlements.photos.published}</>
+                <>
+                  {ui.ownerPlanQuotaPublishedSuffix.replace(
+                    '${count}',
+                    String(planStatus.entitlements.photos.published),
+                  )}
+                </>
               )}
           </p>
           {planStatus.entitlements?.photos.overLimit && (
             <p className="alert" style={{ marginTop: 10, marginBottom: 0, fontSize: '0.88rem' }}>
-              На тарифе «{planStatus.catalog.nameRu}» публикуется до {maxPhotos} фото. Остальные
+              {ui.ownerPlanQuotaPhotosOverLimitPrefix
+                .replace('${planName}', planStatus.catalog.nameRu)
+                .replace('${max}', String(maxPhotos))}
               {ui.text_mediaArchivedAfterUpgrade}
             </p>
           )}

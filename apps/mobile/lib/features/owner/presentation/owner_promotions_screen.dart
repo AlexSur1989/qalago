@@ -46,9 +46,7 @@ class OwnerPromotionsScreen extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              'Лимит активных акций: $maxActive. Улучшите тариф.',
-            ),
+            content: Text(context.l10n.ownerPromotionLimit(maxActive)),
             action: SnackBarAction(
               label: context.l10n.ownerPlanTitle,
               onPressed: () => context.push('/owner/plan'),

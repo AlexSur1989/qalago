@@ -44,7 +44,7 @@ Canonical product terminology for Flutter `AppLocalizations` (`app_ru.arb` / `ap
 
 - **Category / Subcategory**: use API `nameRu` / `nameKk` via `displayName(localeCode)` — not ARB.
 - **Business names, reviews, menus, promotions**: show backend text as-is unless separate RU/KZ fields exist.
-- **City names**: `CityState.nameRu` only today; official names are not translated in UI labels.
+- **City names**: API `nameRu` / `nameKk` via `cityDisplayName` / `cityLocalizedNameProvider` (Flutter), `cityDisplayName` (web). Offline emergency fallback map in `city_provider.dart` mirrors seed/DB only when `/cities` fails.
 
 ## Consumer Web (Stage 6.10B.4)
 

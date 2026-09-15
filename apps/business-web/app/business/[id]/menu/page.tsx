@@ -163,15 +163,23 @@ export default function BusinessMenuPage() {
       {planStatus && maxItems != null && (
         <section className="form-card" style={{ maxWidth: 920, marginBottom: 18 }}>
           <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-            Тариф «{planStatus.catalog.nameRu}»: {itemCount} / {maxItems} товаров и услуг
+            {ui.ownerPlanQuotaMenuLine
+              .replace('${planName}', planStatus.catalog.nameRu)
+              .replace('${used}', String(itemCount))
+              .replace('${max}', String(maxItems))}
             {planStatus.entitlements?.serviceItems.overLimit &&
               planStatus.entitlements.serviceItems.published != null && (
-                <> · опубликовано {planStatus.entitlements.serviceItems.published}</>
+                <>
+                  {ui.ownerPlanQuotaPublishedSuffix.replace(
+                    '${count}',
+                    String(planStatus.entitlements.serviceItems.published),
+                  )}
+                </>
               )}
           </p>
           {planStatus.entitlements?.serviceItems.overLimit && (
             <p className="alert" style={{ marginTop: 10, marginBottom: 0, fontSize: '0.88rem' }}>
-              На текущем тарифе публикуется до {maxItems} позиций. Остальные сохранены в кабинете.
+              {ui.ownerPlanQuotaMenuOverLimitLine.replace('${max}', String(maxItems))}
             </p>
           )}
         </section>

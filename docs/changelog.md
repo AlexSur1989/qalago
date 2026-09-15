@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-15 — Stage 6.10B.QA: Cross-platform RU/KZ localization QA
+
+- **Cities**: migration + seed backfill `shymkent.nameKk = Шымкент`; Flutter offline city taxonomy documents API-aligned fallbacks.
+- **Defect fixes**: Flutter owner promotion limit snackbar → l10n; Business Web plan quota lines → semantic `locale.ts` keys (menu/promotions/media).
+- **Docs**: glossary city rule; multilingual-content QA closure notes.
+- **Future**: hash-like Business Web keys (bulk rename deferred); physical-device QA before release.
+
 ## 2026-09-15 — Stage 6.10B.6: Multilingual content model (RU/KZ data)
 
 - **Schema**: optional `ServiceItem.titleKk/descriptionKk`, `Promotion.titleKk/descriptionKk`; City `nameKk` backfill migration for seeded cities; Business brand `title` unchanged.

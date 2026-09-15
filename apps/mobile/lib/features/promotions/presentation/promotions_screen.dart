@@ -70,7 +70,6 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
   Widget build(BuildContext context) {
     final promotionsAsync = ref.watch(promotionsProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
-    final city = ref.watch(cityProvider);
     final l10n = context.l10n;
 
     return Scaffold(

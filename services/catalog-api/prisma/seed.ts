@@ -40,7 +40,7 @@ const allWeek = (weekdays: string, saturday = weekdays, sunday = weekdays) => ({
 async function main() {
   const city = await prisma.city.upsert({
     where: { slug: 'uralsk' },
-    update: {},
+    update: { nameKk: 'Орал' },
     create: {
       slug: 'uralsk',
       nameRu: 'Уральск',
@@ -56,7 +56,7 @@ async function main() {
 
   const aktobe = await prisma.city.upsert({
     where: { slug: 'aktobe' },
-    update: {},
+    update: { nameKk: 'Ақтөбе' },
     create: {
       slug: 'aktobe',
       nameRu: 'Актобе',
@@ -65,6 +65,22 @@ async function main() {
       centerLat: 50.2839,
       centerLng: 57.167,
       timezone: 'Asia/Aqtobe',
+      isActive: true,
+      launchDate: new Date(),
+    },
+  });
+
+  await prisma.city.upsert({
+    where: { slug: 'shymkent' },
+    update: { nameRu: 'Шымкент', nameKk: 'Шымкент' },
+    create: {
+      slug: 'shymkent',
+      nameRu: 'Шымкент',
+      nameKk: 'Шымкент',
+      countryCode: 'KZ',
+      centerLat: 42.3417,
+      centerLng: 69.5901,
+      timezone: 'Asia/Almaty',
       isActive: true,
       launchDate: new Date(),
     },
