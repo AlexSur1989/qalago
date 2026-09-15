@@ -5,6 +5,19 @@ import 'app_locale_notifier.dart';
 
 export 'app_locale_notifier.dart';
 
+import '../providers/city_provider.dart';
+import 'localized_content.dart';
+
+final cityLocalizedNameProvider = Provider<String>((ref) {
+  final city = ref.watch(cityProvider);
+  final locale = ref.watch(appLocaleCodeProvider);
+  return cityDisplayName(
+    localeCode: locale,
+    nameRu: city.nameRu,
+    nameKk: city.nameKk,
+  );
+});
+
 final appLocaleCodeProvider = Provider<String>((ref) {
   return localeToCode(ref.watch(appLocaleProvider));
 });

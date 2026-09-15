@@ -26,8 +26,6 @@ describe('consumer-web i18n stage 6.10B.4', () => {
   });
 
   it('home RU and KK labels', () => {
-    expect(UI_LABELS.ru.homeTagline).toContain('Уральск');
-    expect(UI_LABELS.kk.homeTagline).toContain('Уральск');
     expect(UI_LABELS.ru.navHome).toBe('Главная');
     expect(UI_LABELS.kk.navHome).toBe('Басты бет');
   });

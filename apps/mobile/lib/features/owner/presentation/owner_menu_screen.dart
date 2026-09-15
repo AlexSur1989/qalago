@@ -244,8 +244,12 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
   }) async {
     final titleController =
         TextEditingController(text: existing?['title'] as String? ?? '');
+    final titleKkController =
+        TextEditingController(text: existing?['titleKk'] as String? ?? '');
     final descController =
         TextEditingController(text: existing?['description'] as String? ?? '');
+    final descKkController =
+        TextEditingController(text: existing?['descriptionKk'] as String? ?? '');
     final priceController =
         TextEditingController(text: existing?['price']?.toString() ?? '');
     String? selectedGroupId =
@@ -280,6 +284,12 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
                   decoration: InputDecoration(labelText: context.l10n.onboardingNameLabel),
                 ),
                 TextField(
+                  controller: titleKkController,
+                  decoration: const InputDecoration(
+                    labelText: 'KK (optional)',
+                  ),
+                ),
+                TextField(
                   controller: priceController,
                   decoration: InputDecoration(labelText: context.l10n.ownerMenuPriceLabel),
                   keyboardType: TextInputType.number,
@@ -287,6 +297,13 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
                 TextField(
                   controller: descController,
                   decoration: InputDecoration(labelText: context.l10n.ownerFieldDescription),
+                  maxLines: 2,
+                ),
+                TextField(
+                  controller: descKkController,
+                  decoration: const InputDecoration(
+                    labelText: 'Description KK (optional)',
+                  ),
                   maxLines: 2,
                 ),
               ],
@@ -306,7 +323,9 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
     final price = double.tryParse(priceController.text.trim().replaceAll(',', '.'));
     final payload = <String, dynamic>{
       'title': titleController.text.trim(),
+      if (titleKkController.text.trim().isNotEmpty) 'titleKk': titleKkController.text.trim(),
       if (descController.text.trim().isNotEmpty) 'description': descController.text.trim(),
+      if (descKkController.text.trim().isNotEmpty) 'descriptionKk': descKkController.text.trim(),
       if (price != null) 'price': price,
       'groupId': selectedGroupId,
     };

@@ -58,6 +58,15 @@ export class CreatePromotionDto {
 
   @IsOptional()
   @IsString()
+  @Length(2, 200)
+  titleKk?: string;
+
+  @IsOptional()
+  @IsString()
+  descriptionKk?: string;
+
+  @IsOptional()
+  @IsString()
   discountText?: string;
 
   @IsOptional()
@@ -82,6 +91,15 @@ export class UpdatePromotionDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(2, 200)
+  titleKk?: string;
+
+  @IsOptional()
+  @IsString()
+  descriptionKk?: string;
 
   @IsOptional()
   @IsString()

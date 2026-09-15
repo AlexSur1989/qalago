@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/navigation/open_business.dart';
+import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
@@ -47,7 +48,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _FavoritesHeader(
-                  cityName: city.nameRu,
+                  cityName: ref.watch(cityLocalizedNameProvider),
                   onCityTap: () => showCityPickerSheet(context, ref),
                 ),
                 const SizedBox(height: 48),
@@ -71,7 +72,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
             ),
             children: [
               _FavoritesHeader(
-                cityName: city.nameRu,
+                cityName: ref.watch(cityLocalizedNameProvider),
                 onCityTap: () => showCityPickerSheet(context, ref),
               ),
               const SizedBox(height: 28),
@@ -131,7 +132,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
 
                   final cityItems = filterFavoritesByCity(allItems, city.slug);
                   if (cityItems.isEmpty) {
-                    return _EmptyFavoritesInCity(cityName: city.nameRu);
+                    return _EmptyFavoritesInCity(cityName: ref.watch(cityLocalizedNameProvider));
                   }
 
                   final sorted = sortFavorites(cityItems, _sort);

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/providers/city_catalog_provider.dart';
+import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
@@ -78,7 +79,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
             children: [
               _CategoriesHeader(
-                cityName: city.nameRu,
+                cityName: ref.watch(cityLocalizedNameProvider),
                 unreadAsync: unreadAsync,
                 onCityTap: () => showCityPickerSheet(context, ref),
                 onNotificationsTap: () => context.push('/notifications'),
@@ -127,7 +128,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                city.nameRu,
+                ref.watch(cityLocalizedNameProvider),
                 style: TextStyle(
                   color: AppTheme.textDark.withValues(alpha: 0.55),
                   fontWeight: FontWeight.w600,
@@ -138,7 +139,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                 const LoadingView()
               else if (isEmptyCity)
                 EmptyCityView(
-                  cityName: city.nameRu,
+                  cityName: ref.watch(cityLocalizedNameProvider),
                   isComingSoon: city.isComingSoon,
                   onPickCity: () => showCityPickerSheet(context, ref),
                 )

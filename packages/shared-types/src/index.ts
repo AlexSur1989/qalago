@@ -166,6 +166,15 @@ export interface AnalyticsTrends {
   items: AnalyticsTrendItem[];
 }
 
+export {
+  type AppLocaleCode,
+  businessAuthoredText,
+  cityDisplayName,
+  normalizeOptionalLocaleText,
+  resolveLocaleCode,
+  taxonomyDisplayName,
+} from './localized-content';
+
 export const DEFAULT_CITY_SLUG = 'uralsk';
 
 export const API_PREFIX = '/api/v1';

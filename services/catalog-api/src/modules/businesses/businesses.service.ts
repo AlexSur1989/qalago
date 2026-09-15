@@ -55,7 +55,7 @@ const businessListSelect = {
 
 const businessDetailInclude = {
   category: true,
-  city: { select: { id: true, slug: true, nameRu: true, timezone: true } },
+  city: { select: { id: true, slug: true, nameRu: true, nameKk: true, timezone: true } },
 };
 
 @Injectable()
@@ -372,7 +372,7 @@ export class BusinessesService {
       },
       include: {
         category: true,
-        city: { select: { slug: true, nameRu: true } },
+        city: { select: { slug: true, nameRu: true, nameKk: true } },
         memberships: {
           where: { userId: user.id },
           select: { role: true, permissions: true, status: true },

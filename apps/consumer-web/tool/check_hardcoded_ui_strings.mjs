@@ -7,7 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const CYRILLIC = /[\u0400-\u04FF]/;
-const DICTIONARY_FILES = new Set(['locale.ts']);
+const DICTIONARY_FILES = new Set(['locale.ts', 'localized-content.ts']);
 const SCAN_ROOTS = ['app', 'components', 'lib'];
 const SKIP_DIR_NAMES = new Set(['node_modules', '.next', 'dist']);
 const ALLOWLIST_LINE_PATTERNS = [

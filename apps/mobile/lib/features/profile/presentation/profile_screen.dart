@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/rbac/role_permissions.dart';
+import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/city_picker.dart';
@@ -76,7 +77,7 @@ class ProfileScreen extends ConsumerWidget {
     final auth = ref.watch(authProvider);
     if (!auth.isAuthenticated) {
       return _GuestProfileScreen(
-        cityName: ref.watch(cityProvider).nameRu,
+        cityName: ref.watch(cityLocalizedNameProvider),
         onCityTap: () => showCityPickerSheet(context, ref),
       );
     }
@@ -94,7 +95,7 @@ class ProfileScreen extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
           children: [
             _ProfileHeader(
-              cityName: city.nameRu,
+              cityName: ref.watch(cityLocalizedNameProvider),
               onCityTap: () => showCityPickerSheet(context, ref),
             ),
             const SizedBox(height: 28),
@@ -111,7 +112,7 @@ class ProfileScreen extends ConsumerWidget {
             _UserCard(
               name: user?.name ?? l10n.profileDefaultUser,
               phone: user?.phone ?? l10n.profilePhoneMissing,
-              cityName: city.nameRu,
+              cityName: ref.watch(cityLocalizedNameProvider),
               roleLabel: profileRoleLabel(role),
               onTap: () => context.push('/profile/permissions'),
             ),

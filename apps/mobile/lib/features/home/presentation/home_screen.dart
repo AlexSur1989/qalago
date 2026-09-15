@@ -168,7 +168,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _HomeHeader(
-                        cityName: city.nameRu,
+                        cityName: ref.watch(cityLocalizedNameProvider),
                         unreadAsync: unreadAsync,
                         onCityTap: _showCityPicker,
                         onNotificationsTap: () =>
@@ -184,7 +184,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         const SizedBox(height: 280, child: LoadingView())
                       else if (isEmptyCity)
                         EmptyCityView(
-                          cityName: city.nameRu,
+                          cityName: ref.watch(cityLocalizedNameProvider),
                           isComingSoon: city.isComingSoon,
                           onPickCity: _showCityPicker,
                         )

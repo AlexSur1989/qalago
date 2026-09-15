@@ -18,6 +18,8 @@ import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../../core/auth/auth_prompt.dart';
 import '../../../core/locale/consumer_api_errors.dart';
+import '../../../core/locale/app_locale_provider.dart';
+import '../../../core/locale/localized_content.dart';
 import '../../../core/locale/l10n_extension.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../ads/utils/ad_url_utils.dart';
@@ -200,7 +202,13 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
           final city = _asMap(data['city']);
           final title = data['title'] as String? ?? '';
           final categoryTitle = category?['title'] as String? ?? '';
-          final cityName = city?['nameRu'] as String? ?? l10n.profileAboutMvpCityValue;
+          final cityName = city != null
+              ? cityDisplayName(
+                  localeCode: ref.watch(appLocaleCodeProvider),
+                  nameRu: city['nameRu'] as String? ?? l10n.profileAboutMvpCityValue,
+                  nameKk: city['nameKk'] as String?,
+                )
+              : l10n.profileAboutMvpCityValue;
           final cityTimezone =
               city?['timezone'] as String? ?? kDefaultBusinessTimezone;
           final address = data['address'] as String? ?? '';

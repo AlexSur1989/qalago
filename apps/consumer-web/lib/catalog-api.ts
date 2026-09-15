@@ -1,5 +1,20 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3002/api/v1';
 
+export type CityDto = {
+  id: string;
+  slug: string;
+  nameRu: string;
+  nameKk?: string | null;
+};
+
+export async function fetchCity(slug: string): Promise<CityDto> {
+  const res = await fetch(`${API_BASE}/cities/${encodeURIComponent(slug)}`, {
+    next: { revalidate: 300 },
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json() as Promise<CityDto>;
+}
+
 export type CategoryDto = {
   id: string;
   title: string;

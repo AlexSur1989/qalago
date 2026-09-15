@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/navigation/open_business.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
@@ -83,7 +84,7 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
             ),
             children: [
               _PromotionsHeader(
-                cityName: city.nameRu,
+                cityName: ref.watch(cityLocalizedNameProvider),
                 onCityTap: () => showCityPickerSheet(context, ref),
               ),
               const SizedBox(height: 24),
@@ -191,7 +192,7 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
                   final items = _filtered(active);
 
                   if (active.isEmpty) {
-                    return _PromotionsEmptyCity(cityName: city.nameRu);
+                    return _PromotionsEmptyCity(cityName: ref.watch(cityLocalizedNameProvider));
                   }
 
                   if (items.isEmpty) {

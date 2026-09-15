@@ -12,6 +12,7 @@ import {
   ListServiceItemsQueryDto,
   UpdateServiceItemDto,
 } from './dto/service-item.dto';
+import { normalizeOptionalLocaleText } from '../../common/localized-content';
 import { MenuAccessService } from './menu-access.service';
 
 @Injectable()
@@ -56,8 +57,10 @@ export class ServiceItemsService {
       data: {
         businessId: dto.businessId,
         groupId: dto.groupId,
-        title: dto.title,
-        description: dto.description,
+        title: dto.title.trim(),
+        titleKk: normalizeOptionalLocaleText(dto.titleKk),
+        description: normalizeOptionalLocaleText(dto.description),
+        descriptionKk: normalizeOptionalLocaleText(dto.descriptionKk),
         price: dto.price,
         imageUrl: dto.imageUrl,
         sortOrder: dto.sortOrder ?? 0,
@@ -81,11 +84,19 @@ export class ServiceItemsService {
       await this.menuAccess.assertGroupForBusiness(dto.groupId, item.businessId);
     }
 
-    const { groupId, ...rest } = dto;
+    const { groupId, title, titleKk, description, descriptionKk, ...rest } = dto;
     const updated = await this.prisma.serviceItem.update({
       where: { id },
       data: {
         ...rest,
+        ...(title !== undefined ? { title: title.trim() } : {}),
+        ...(titleKk !== undefined ? { titleKk: normalizeOptionalLocaleText(titleKk) } : {}),
+        ...(description !== undefined
+          ? { description: normalizeOptionalLocaleText(description) }
+          : {}),
+        ...(descriptionKk !== undefined
+          ? { descriptionKk: normalizeOptionalLocaleText(descriptionKk) }
+          : {}),
         ...(groupId !== undefined ? { groupId } : {}),
       },
     });

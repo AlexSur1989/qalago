@@ -797,7 +797,10 @@ model ServiceItem {
   businessId      String
   groupId         String?
   title           String
+  /// Optional Kazakh presentation of [title] (Stage 6.10B.6).
+  titleKk         String?
   description     String?
+  descriptionKk   String?
   price           Decimal?          @db.Decimal(10, 2)
   imageUrl        String?
   isActive        Boolean           @default(true)
@@ -815,7 +818,9 @@ model Promotion {
   id                      String                   @id @default(cuid())
   businessId              String
   title                   String
+  titleKk                 String?
   description             String?
+  descriptionKk           String?
   imageUrl                String?
   discountText            String?
   startDate               DateTime?

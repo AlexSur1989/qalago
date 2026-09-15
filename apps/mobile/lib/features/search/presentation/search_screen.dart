@@ -8,6 +8,7 @@ import '../../../shared/navigation/navigation_utils.dart';
 import '../../../shared/navigation/open_business.dart';
 
 import '../../../core/location/user_location_provider.dart';
+import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_extensions.dart';
@@ -259,7 +260,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           Expanded(
                             child: Text(
                               buildSearchFilterSummary(
-                                cityName: city.nameRu,
+                                cityName: ref.watch(cityLocalizedNameProvider),
                                 categoryTitle: categoryTitle,
                                 radiusMode: _radiusMode,
                                 query: _query,
@@ -310,7 +311,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            _emptyMessage(l10n, city.nameRu),
+                            _emptyMessage(l10n, ref.watch(cityLocalizedNameProvider)),
                             textAlign: TextAlign.center,
                             style: const TextStyle(color: AppTheme.textMuted),
                           ),

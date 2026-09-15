@@ -65,7 +65,7 @@ export class CitiesService {
         data: {
           slug,
           nameRu: dto.nameRu.trim(),
-          nameKk: dto.nameKk?.trim(),
+          nameKk: dto.nameKk?.trim() || null,
           countryCode: dto.countryCode?.trim().toUpperCase() ?? 'KZ',
           centerLat: dto.centerLat,
           centerLng: dto.centerLng,

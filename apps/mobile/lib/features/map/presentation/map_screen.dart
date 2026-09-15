@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/locale/l10n_extension.dart';
 import '../../../core/location/user_location_provider.dart';
+import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
@@ -253,7 +254,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _MapHeader(
-                    cityName: city.nameRu,
+                    cityName: ref.watch(cityLocalizedNameProvider),
                     onCityTap: () => showCityPickerSheet(context, ref),
                   ),
                   const SizedBox(height: 12),
@@ -321,7 +322,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   return Padding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                     child: EmptyCityView(
-                      cityName: city.nameRu,
+                      cityName: ref.watch(cityLocalizedNameProvider),
                       compact: true,
                       isComingSoon: city.isComingSoon,
                       onPickCity: () => showCityPickerSheet(context, ref),

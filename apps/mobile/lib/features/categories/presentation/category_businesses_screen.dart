@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/location/user_location_provider.dart';
+import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/models.dart';
@@ -142,7 +143,7 @@ class CategoryBusinessesScreen extends ConsumerWidget {
           children: [
             Text(categoryTitle),
             Text(
-              city.nameRu,
+              ref.watch(cityLocalizedNameProvider),
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -279,7 +280,7 @@ class CategoryBusinessesScreen extends ConsumerWidget {
                 if (allPlaces.isNotEmpty) ...[
                   _SectionTitle(
                     title: l10n.categoryAllPlaces,
-                    subtitle: '${city.nameRu} · ${l10n.placesCount(allPlaces.length)}',
+                    subtitle: '${ref.watch(cityLocalizedNameProvider)} · ${l10n.placesCount(allPlaces.length)}',
                   ),
                   const SizedBox(height: 12),
                   ..._organicBusinessCards(context, allPlaces),

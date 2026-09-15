@@ -18,6 +18,7 @@ import { BusinessAccessService } from '../../common/services/business-access.ser
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
+import { normalizeOptionalLocaleText } from '../../common/localized-content';
 import { changedFieldsFromDto } from '../audit-log/audit-log.util';
 import {
   CreatePromotionDto,
@@ -207,8 +208,10 @@ export class PromotionsService {
     const promo = await this.prisma.promotion.create({
       data: {
         businessId: dto.businessId,
-        title: dto.title,
-        description: dto.description,
+        title: dto.title.trim(),
+        titleKk: normalizeOptionalLocaleText(dto.titleKk),
+        description: normalizeOptionalLocaleText(dto.description),
+        descriptionKk: normalizeOptionalLocaleText(dto.descriptionKk),
         discountText: dto.discountText,
         startDate: dates.startDate,
         endDate: dates.endDate,
@@ -245,15 +248,21 @@ export class PromotionsService {
         ? this.planLimits.resolvePromotionDates(ctx.limits, startInput, endInput)
         : null;
 
+    const { title, titleKk, description, descriptionKk, discountText, status } = dto;
     const updated = await this.prisma.promotion.update({
       where: { id },
       data: {
-        title: dto.title,
-        description: dto.description,
-        discountText: dto.discountText,
-        status: dto.status,
-        startDate: dates?.startDate,
-        endDate: dates?.endDate,
+        ...(title !== undefined ? { title: title.trim() } : {}),
+        ...(titleKk !== undefined ? { titleKk: normalizeOptionalLocaleText(titleKk) } : {}),
+        ...(description !== undefined
+          ? { description: normalizeOptionalLocaleText(description) }
+          : {}),
+        ...(descriptionKk !== undefined
+          ? { descriptionKk: normalizeOptionalLocaleText(descriptionKk) }
+          : {}),
+        ...(discountText !== undefined ? { discountText } : {}),
+        ...(status !== undefined ? { status } : {}),
+        ...(dates ? { startDate: dates.startDate, endDate: dates.endDate } : {}),
       },
     });
 

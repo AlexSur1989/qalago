@@ -3,15 +3,24 @@ export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { CategoryIconTile, CategoryMoreTile } from '@/components/CategoryIconTile';
 import { LocaleSwitcher } from '@/components/LocaleSwitcher';
-import { fetchCategories } from '@/lib/catalog-api';
+import { fetchCategories, fetchCity } from '@/lib/catalog-api';
 import { homeColumns, sliceHomeCategories } from '@/lib/home-categories';
+import { cityDisplayName, homeTaglineForCity } from '@/lib/localized-content';
 import { UI_LABELS, categoryDisplayName } from '@/lib/locale';
 import { getServerLocale } from '@/lib/locale-server';
+
+const DEFAULT_CITY_SLUG = 'uralsk';
 
 export default async function HomePage() {
   const locale = await getServerLocale();
   const labels = UI_LABELS[locale];
-  const categories = await fetchCategories('uralsk');
+  const [categories, city] = await Promise.all([
+    fetchCategories(DEFAULT_CITY_SLUG),
+    fetchCity(DEFAULT_CITY_SLUG).catch(() => null),
+  ]);
+  const tagline = city
+    ? homeTaglineForCity(locale, cityDisplayName(city, locale))
+    : labels.homeTagline;
   const columns = homeColumns(720);
   const { preview, showMore } = sliceHomeCategories(categories, columns);
 
@@ -20,7 +29,7 @@ export default async function HomePage() {
       <header style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', gap: 12 }}>
         <div>
           <h1 style={{ margin: 0, color: 'var(--blue)' }}>QalaGo</h1>
-          <p style={{ color: 'var(--muted)' }}>{labels.homeTagline}</p>
+          <p style={{ color: 'var(--muted)' }}>{tagline}</p>
         </div>
         <LocaleSwitcher locale={locale} labels={labels} />
       </header>

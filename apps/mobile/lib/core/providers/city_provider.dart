@@ -4,12 +4,14 @@ import '../constants/app_constants.dart';
 import '../network/dio_provider.dart';
 import '../../features/catalog/data/catalog_repository.dart';
 
+import '../locale/localized_content.dart';
 import '../../shared/utils/json_parse.dart';
 
 class CityState {
   const CityState({
     required this.slug,
     required this.nameRu,
+    this.nameKk,
     this.centerLat,
     this.centerLng,
     this.launchStatus = 'LIVE',
@@ -17,6 +19,7 @@ class CityState {
 
   final String slug;
   final String nameRu;
+  final String? nameKk;
   final double? centerLat;
   final double? centerLng;
   final String launchStatus;
@@ -55,6 +58,7 @@ class CityNotifier extends Notifier<CityState> {
   Future<void> selectCity(
     String slug,
     String nameRu, {
+    String? nameKk,
     double? centerLat,
     double? centerLng,
     String? launchStatus,
@@ -64,9 +68,18 @@ class CityNotifier extends Notifier<CityState> {
     state = CityState(
       slug: slug,
       nameRu: nameRu,
+      nameKk: nameKk,
       centerLat: centerLat,
       centerLng: centerLng,
       launchStatus: launchStatus ?? state.launchStatus,
+    );
+  }
+
+  String displayName(String localeCode) {
+    return cityDisplayName(
+      localeCode: localeCode,
+      nameRu: state.nameRu,
+      nameKk: state.nameKk,
     );
   }
 
@@ -78,6 +91,7 @@ class CityNotifier extends Notifier<CityState> {
     await selectCity(
       slug,
       nameRu,
+      nameKk: city['nameKk'] as String?,
       centerLat: parseJsonDouble(city['centerLat']),
       centerLng: parseJsonDouble(city['centerLng']),
       launchStatus: city['launchStatus'] as String?,
@@ -89,6 +103,7 @@ class CityNotifier extends Notifier<CityState> {
     return CityState(
       slug: slug,
       nameRu: json['nameRu'] as String? ?? _fallbackName(slug),
+      nameKk: json['nameKk'] as String?,
       centerLat: parseJsonDouble(json['centerLat']),
       centerLng: parseJsonDouble(json['centerLng']),
       launchStatus: json['launchStatus'] as String? ?? 'LIVE',

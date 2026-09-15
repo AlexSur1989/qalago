@@ -11,6 +11,7 @@ export type CityRow = {
   id: string;
   slug: string;
   nameRu: string;
+  nameKk?: string | null;
 };
 
 export type AuthUser = {
@@ -94,7 +95,7 @@ export type BusinessRow = {
   featuredSlot?: number | null;
   createdAt?: string;
   updatedAt?: string;
-  city?: { slug: string; nameRu: string } | null;
+  city?: { slug: string; nameRu: string; nameKk?: string | null } | null;
   categoryId?: string;
   category?: { id: string; slug: string; title: string } | null;
   subcategories?: SubcategoryRow[];
@@ -902,7 +903,9 @@ export const ownerApi = {
       businessId: string;
       groupId?: string;
       title: string;
+      titleKk?: string;
       description?: string;
+      descriptionKk?: string;
       price?: string;
     },
   ) =>

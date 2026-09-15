@@ -27,6 +27,15 @@ export class CreateServiceItemDto {
   description?: string;
 
   @IsOptional()
+  @IsString()
+  @Length(1, 200)
+  titleKk?: string;
+
+  @IsOptional()
+  @IsString()
+  descriptionKk?: string;
+
+  @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Min(0)
@@ -55,6 +64,15 @@ export class UpdateServiceItemDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(1, 200)
+  titleKk?: string;
+
+  @IsOptional()
+  @IsString()
+  descriptionKk?: string;
 
   @IsOptional()
   @Type(() => Number)

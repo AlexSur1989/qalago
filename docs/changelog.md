@@ -27,6 +27,14 @@
 
 ---
 
+## 2026-09-15 — Stage 6.10B.6: Multilingual content model (RU/KZ data)
+
+- **Schema**: optional `ServiceItem.titleKk/descriptionKk`, `Promotion.titleKk/descriptionKk`; City `nameKk` backfill migration for seeded cities; Business brand `title` unchanged.
+- **API**: localized-content resolver; PATCH-isolated optional KK fields; city `nameKk` on business payloads.
+- **Clients**: Flutter `localized_content.dart` + city display from API; Consumer Web home tagline from `/cities/:slug`; Business Web city chip.
+- **Docs**: `docs/localization/multilingual-content-model.md`.
+- **Future**: approved KK legal texts; search on KK business fields; optional owner KK fields in Flutter menu UI.
+
 ## 2026-09-15 — Stage 6.10B.5: Business Web RU-KK localization
 
 - **Business Web**: full owner-facing UI RU/KK via `apps/business-web/lib/locale.ts` (~500+ keys), `lib/presentation.ts` mappers, SSR `LocaleProvider` + `qalago_locale` cookie, language switcher in shell topbar and legal chrome.

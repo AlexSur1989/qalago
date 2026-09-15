@@ -1,5 +1,6 @@
 import { ConflictException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { cityDisplayName } from '../../common/localized-content';
 import { CitiesService } from './cities.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -15,6 +16,11 @@ describe('CitiesService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('exposes RU and KK city display names', () => {
+    expect(cityDisplayName({ nameRu: 'Уральск', nameKk: 'Орал' }, 'kk')).toBe('Орал');
+    expect(cityDisplayName({ nameRu: 'Уральск', nameKk: null }, 'kk')).toBe('Уральск');
   });
 
   it('throws ConflictException when slug already exists', async () => {

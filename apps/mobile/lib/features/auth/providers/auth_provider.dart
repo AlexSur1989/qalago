@@ -3,6 +3,7 @@ import '../../../core/rbac/business_access.dart';
 import '../../../core/rbac/role_permissions.dart';
 import '../../../core/network/dio_provider.dart';
 import '../../../core/providers/city_catalog_provider.dart';
+import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/release/app_config_provider.dart';
 import '../../map/map_discovery_scope.dart';
@@ -603,7 +604,7 @@ final adminModerationCityNameProvider = Provider<String>((ref) {
   if (user?.role == 'CITY_ADMIN' && user!.managedCityName != null) {
     return user.managedCityName!;
   }
-  return ref.watch(cityProvider).nameRu;
+  return ref.watch(cityLocalizedNameProvider);
 });
 
 final adminPendingBusinessesProvider = FutureProvider((ref) async {

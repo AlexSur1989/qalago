@@ -1,6 +1,7 @@
 'use client';
 
 import { LocaleSwitcher } from '@/components/locale-switcher';
+import { cityDisplayName } from '@/lib/localized-content';
 import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
@@ -151,7 +152,14 @@ export function BusinessShell({
           <div className="topbar-left">
             <div className="city-picker">
               <span>📍</span>
-              <span>{business?.city?.nameRu ?? defaultCity}</span>
+              <span>
+                {business?.city
+                  ? cityDisplayName(
+                      { nameRu: business.city.nameRu, nameKk: business.city.nameKk },
+                      locale,
+                    )
+                  : defaultCity}
+              </span>
             </div>
           </div>
           <div className="topbar-right">
