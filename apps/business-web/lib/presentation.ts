@@ -791,9 +791,77 @@ export function navLabelForId(locale: AppLocale, id: string): string {
     team: { ru: 'Команда', kk: 'Команда' },
     plan: { ru: 'Тариф', kk: 'Тариф' },
     help: { ru: 'Помощь', kk: 'Көмек' },
-    media: { ru: 'Галерея', kk: 'Галерея' },
+    media: { ru: 'Фото', kk: 'Фото' },
     reviews: { ru: 'Отзывы', kk: 'Пікірлер' },
-    messages: { ru: 'Сообщения', kk: 'Хабарламалар' },
+    messages: { ru: 'Уведомления', kk: 'Хабарландырулар' },
   };
   return pick(locale, map[id] ?? { ru: id, kk: id });
+}
+
+const PROMOTION_STATUS_LABELS: Record<string, L> = {
+  ACTIVE: { ru: 'Активна', kk: 'Белсенді' },
+  DRAFT: { ru: 'Черновик', kk: 'Жоба' },
+  EXPIRED: { ru: 'Завершена', kk: 'Аяқталған' },
+  ARCHIVED: { ru: 'В архиве', kk: 'Мұрағатта' },
+};
+
+export function organicPromotionStatusLabel(locale: AppLocale, status: string): string {
+  const known = PROMOTION_STATUS_LABELS[status];
+  if (known) return pick(locale, known);
+  return pick(locale, {
+    ru: 'Статус акции',
+    kk: 'Акция статусы',
+  });
+}
+
+export function planAnalytics360Label(locale: AppLocale): string {
+  return pick(locale, {
+    ru: 'Аналитика 360',
+    kk: '360° аналитика',
+  });
+}
+
+export function ownerDateTimeLocaleTag(locale: AppLocale): string {
+  return locale === 'kk' ? 'kk-KZ' : 'ru-RU';
+}
+
+export function formatOwnerDateTime(locale: AppLocale, iso: string): string {
+  return new Date(iso).toLocaleString(ownerDateTimeLocaleTag(locale), {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function ruPlural(n: number, one: string, few: string, many: string): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return few;
+  return many;
+}
+
+export function formatNotificationsCountLabel(locale: AppLocale, count: number): string {
+  if (locale === 'kk') {
+    return `${count} хабарландыру`;
+  }
+  const word = ruPlural(count, 'уведомление', 'уведомления', 'уведомлений');
+  return `${count} ${word}`;
+}
+
+export function formatReviewsCountLabel(locale: AppLocale, count: number): string {
+  if (locale === 'kk') {
+    return `${count} пікір`;
+  }
+  const word = ruPlural(count, 'отзыв', 'отзыва', 'отзывов');
+  return `${count} ${word}`;
+}
+
+export function onboardingRejectionReasonLabel(locale: AppLocale): string {
+  return pick(locale, { ru: 'Причина:', kk: 'Себебі:' });
+}
+
+export function onboardingRejectionBannerLabel(locale: AppLocale): string {
+  return pick(locale, { ru: 'Причина отклонения:', kk: 'Қабылданбаған себебі:' });
 }

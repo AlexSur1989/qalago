@@ -7,6 +7,8 @@ import { BusinessApplicationRow, ownerApi } from '@/lib/api';
 import { OnboardingShell } from '@/components/onboarding-shell';
 import { useAuth } from '@/lib/use-auth';
 import { applicationStatusLabel, mapOnboardingError } from '@/lib/onboarding-utils';
+import { cityDisplayName } from '@/lib/localized-content';
+import { onboardingRejectionReasonLabel } from '@/lib/presentation';
 
 export default function OnboardingApplicationsPage() {
   const locale = useLocale();
@@ -49,10 +51,18 @@ export default function OnboardingApplicationsPage() {
                 <div>
                   <strong>{item.title}</strong>
                   <p className="muted" style={{ margin: '4px 0' }}>
-                    {item.city?.nameRu} · {applicationStatusLabel(locale, item.status)}
+                    {item.city
+                      ? cityDisplayName(
+                          { nameRu: item.city.nameRu, nameKk: item.city.nameKk },
+                          locale,
+                        )
+                      : '—'}{' '}
+                    · {applicationStatusLabel(locale, item.status)}
                   </p>
                   {item.rejectionReason && (
-                    <p style={{ margin: '4px 0' }}>Причина: {item.rejectionReason}</p>
+                    <p style={{ margin: '4px 0' }}>
+                      {onboardingRejectionReasonLabel(locale)} {item.rejectionReason}
+                    </p>
                   )}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

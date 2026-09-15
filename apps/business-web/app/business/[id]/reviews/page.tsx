@@ -2,21 +2,34 @@
 
 import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { ReviewRow, ownerApi } from '@/lib/api';
 import { useOwnerBusiness } from '@/lib/use-owner-business';
 import { BusinessShell } from '@/components/business-shell';
 import { parseApiError } from '@/lib/monetization-utils';
-
+import { formatReviewsCountLabel } from '@/lib/presentation';
+import {
+  buildFooterNavItems,
+  buildMainNavItems,
+  filterNavByAccess,
+} from '@/lib/business-access';
 export default function BusinessReviewsPage() {
   const locale = useLocale();
   const ui = useUi();
 
   const params = useParams<{ id: string }>();
   const businessId = params.id;
-  const { token, user, ready, logout, businesses, business, error, setError } =
+  const { token, user, ready, logout, businesses, business, access, error, setError } =
     useOwnerBusiness(businessId);
+  const mainNav = useMemo(
+    () => filterNavByAccess(buildMainNavItems(locale), access),
+    [access, locale],
+  );
+  const footerNav = useMemo(
+    () => filterNavByAccess(buildFooterNavItems(locale), access),
+    [access, locale],
+  );
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
 
@@ -57,12 +70,14 @@ export default function BusinessReviewsPage() {
       businesses={businesses}
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
+      mainNav={mainNav}
+      footerNav={footerNav}
     >
       <header className="page-header">
         <div>
           <h1>{ui.text_1c3fea}</h1>
           <p className="page-header-meta">
-            {reviews.length} отзывов
+            {formatReviewsCountLabel(locale, reviews.length)}
             {unanswered > 0 ? ui.__750e6a : ''}
           </p>
         </div>

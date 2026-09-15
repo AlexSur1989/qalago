@@ -20,7 +20,8 @@ import { businessWebMockPlanCheckoutEnabled } from '@/lib/auth-config';
 import { parseApiError } from '@/lib/monetization-utils';
 import { useBusinessAccess } from '@/lib/use-business-access';
 import { BusinessShell } from '@/components/business-shell';
-import type { UiLabels } from '@/lib/locale';
+import type { AppLocale, UiLabels } from '@/lib/locale';
+import { planAnalytics360Label } from '@/lib/presentation';
 
 function formatPrice(priceKzt: number) {
   if (priceKzt === 0) return '0 ₸';
@@ -33,7 +34,7 @@ function formatPeriod(ui: UiLabels, periodDays: number | null, priceKzt: number)
   return ui.text_bf3be1;
 }
 
-function analyticsLevelLabel(ui: UiLabels, tier: string): string {
+function analyticsLevelLabel(locale: AppLocale, ui: UiLabels, tier: string): string {
   switch (tier) {
     case 'BASIC':
       return ui.text_09825a;
@@ -42,7 +43,7 @@ function analyticsLevelLabel(ui: UiLabels, tier: string): string {
     case 'FULL':
       return ui.text_2252aa;
     case 'ANALYTICS_360':
-      return 'Analytics 360';
+      return planAnalytics360Label(locale);
     default:
       return tier;
   }
@@ -211,7 +212,7 @@ export default function PlanPage() {
                 <li>Акции: {plan.limits.maxActivePromotions}</li>
                 <li>Менеджеры: {plan.limits.maxManagers}</li>
                 <li>Ответы на отзывы: {plan.limits.canReplyToReviews ? ui.text_81c9da : ui.text_df28b6}</li>
-                <li>Аналитика: {analyticsLevelLabel(ui, plan.limits.analyticsTier)}</li>
+                <li>Аналитика: {analyticsLevelLabel(locale, ui, plan.limits.analyticsTier)}</li>
                 <li>
                   Бонус на рекламу QalaGo:{' '}
                   {plan.limits.monthlyAdBonusKzt > 0

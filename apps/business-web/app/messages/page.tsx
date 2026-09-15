@@ -7,15 +7,10 @@ import { useEffect, useState } from 'react';
 import { BusinessRow, NotificationRow, myBusinessRows, ownerApi } from '@/lib/api';
 import { useAuth } from '@/lib/use-auth';
 import { BusinessShell, useSelectedBusiness } from '@/components/business-shell';
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleString('ru-RU', {
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
+import {
+  formatNotificationsCountLabel,
+  formatOwnerDateTime,
+} from '@/lib/presentation';
 
 function typeLabel(ui: UiLabels, type: string) {
   const map: Record<string, string> = {
@@ -89,7 +84,7 @@ export default function MessagesPage() {
         <div>
           <h1>{ui.ownerNavMessages}</h1>
           <p className="page-header-meta">
-            {items.length} уведомлений
+            {formatNotificationsCountLabel(locale, items.length)}
             {unread > 0 ? ui.text_09543f : ''}
           </p>
         </div>
@@ -131,7 +126,7 @@ export default function MessagesPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
                   <strong>{item.title}</strong>
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                    {formatDate(item.createdAt)}
+                    {formatOwnerDateTime(locale, item.createdAt)}
                   </span>
                 </div>
                 {item.body && (

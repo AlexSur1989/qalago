@@ -117,7 +117,7 @@ function CheckoutContent() {
   if (!productCode && !packageCode) {
     return (
       <div className="alert alert-error">
-        Не указан продукт или пакет.{' '}
+        {ui.checkoutMissingProductOrPackage}{' '}
         <Link href="/monetization/products">{ui.___bad998}</Link>
       </div>
     );
@@ -138,7 +138,7 @@ function CheckoutContent() {
 
         <section className="form-card" style={{ maxWidth: 640 }}>
           <p style={{ marginTop: 0 }}>
-            Заказ на сумму{' '}
+            {ui.checkoutOrderAmountPrefix}{' '}
             <strong>{formatKzt(order.totalAmount, order.currency)}</strong>{ui.____58afde}</p>
           {pendingPayment && (
             <div className="alert" style={{ marginBottom: 16 }}>

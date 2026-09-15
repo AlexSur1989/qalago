@@ -7,6 +7,7 @@ import { OwnershipClaimRow, ownerApi } from '@/lib/api';
 import { OnboardingShell } from '@/components/onboarding-shell';
 import { useAuth } from '@/lib/use-auth';
 import { claimStatusLabel, mapOnboardingError } from '@/lib/onboarding-utils';
+import { onboardingRejectionReasonLabel } from '@/lib/presentation';
 
 export default function OnboardingClaimsPage() {
   const locale = useLocale();
@@ -64,7 +65,11 @@ export default function OnboardingClaimsPage() {
               <p className="muted" style={{ margin: '4px 0' }}>
                 {claimStatusLabel(locale, item.status)}
               </p>
-              {item.rejectionReason && <p>Причина: {item.rejectionReason}</p>}
+              {item.rejectionReason && (
+                <p>
+                  {onboardingRejectionReasonLabel(locale)} {item.rejectionReason}
+                </p>
+              )}
               {item.status === 'PENDING' && (
                 <button
                   type="button"

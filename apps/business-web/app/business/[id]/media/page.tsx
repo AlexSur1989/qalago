@@ -2,11 +2,16 @@
 
 import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { BusinessImageRow, BusinessPlanStatus, ownerApi } from '@/lib/api';
 import { mediaUrl } from '@/lib/media';
-import { canViewPayments } from '@/lib/business-access';
+import {
+  buildFooterNavItems,
+  buildMainNavItems,
+  canViewPayments,
+  filterNavByAccess,
+} from '@/lib/business-access';
 import { parseApiError } from '@/lib/monetization-utils';
 import { photoPublishLabel, photoPublishState } from '@/lib/owner-utils';
 import { useOwnerBusiness } from '@/lib/use-owner-business';
@@ -23,6 +28,15 @@ export default function BusinessMediaPage() {
   const [images, setImages] = useState<BusinessImageRow[]>([]);
   const [planStatus, setPlanStatus] = useState<BusinessPlanStatus | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  const mainNav = useMemo(
+    () => filterNavByAccess(buildMainNavItems(locale), access),
+    [access, locale],
+  );
+  const footerNav = useMemo(
+    () => filterNavByAccess(buildFooterNavItems(locale), access),
+    [access, locale],
+  );
 
   async function load(t: string) {
     const gallery = await ownerApi.listBusinessImages(t, businessId);
@@ -69,11 +83,13 @@ export default function BusinessMediaPage() {
 
   return (
     <BusinessShell
-      activeNav="profile"
+      activeNav="media"
       business={business}
       businesses={businesses}
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
+      mainNav={mainNav}
+      footerNav={footerNav}
     >
       <header className="page-header">
         <div>

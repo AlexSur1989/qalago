@@ -227,7 +227,7 @@ export function BusinessShell({
           </div>
           <div className="topbar-right">
             <LocaleSwitcher locale={locale} labels={ui} />
-            <Link href="/messages" className="icon-btn" aria-label={ui.text_d2ed72} title={ui.ownerNavMessages}>
+            <Link href="/messages" className="icon-btn" aria-label={ui.ownerNavMessages} title={ui.ownerNavMessages}>
               🔔
               {unreadCount > 0 && (
                 <span className="badge">{unreadCount > 9 ? '9+' : unreadCount}</span>

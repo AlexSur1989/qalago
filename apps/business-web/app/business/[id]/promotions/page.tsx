@@ -14,6 +14,7 @@ import {
 } from '@/lib/api';
 import { BusinessPermission, canViewPayments, hasPermission } from '@/lib/business-access';
 import { parseApiError } from '@/lib/monetization-utils';
+import { organicPromotionStatusLabel } from '@/lib/presentation';
 import {
   buildPromotionUpdateBody,
   canEditPromotion,
@@ -255,7 +256,7 @@ export default function BusinessPromotionsPage() {
                 )}
                 {p.description && <p>{p.description}</p>}
                 <span className={`tag ${p.status === 'ACTIVE' ? 'tag-success' : ''}`}>
-                  {p.status === 'ACTIVE' ? ui.text_047e75 : p.status}
+                  {organicPromotionStatusLabel(locale, p.status)}
                 </span>
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

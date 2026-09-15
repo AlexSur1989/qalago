@@ -72,6 +72,12 @@ const MAIN_NAV_TEMPLATE: Omit<BusinessNavItem, 'label'>[] = [
     anyOf: [BusinessPermission.BUSINESS_PROFILE_EDIT, BusinessPermission.BUSINESS_HOURS_EDIT],
   },
   {
+    id: 'media',
+    icon: '🖼️',
+    href: (id) => `/business/${id}/media`,
+    anyOf: [BusinessPermission.PHOTOS_EDIT],
+  },
+  {
     id: 'menu',
     icon: '📋',
     href: (id) => `/business/${id}/menu`,
@@ -82,6 +88,12 @@ const MAIN_NAV_TEMPLATE: Omit<BusinessNavItem, 'label'>[] = [
     icon: '🏷️',
     href: (id) => `/business/${id}/promotions`,
     anyOf: [BusinessPermission.PROMOTIONS_EDIT],
+  },
+  {
+    id: 'reviews',
+    icon: '💬',
+    href: (id) => `/business/${id}/reviews`,
+    anyOf: [BusinessPermission.REVIEWS_REPLY],
   },
   {
     id: 'monetization',

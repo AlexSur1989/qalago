@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-16 — Stage 6.10D.2: Business Web UX / localization / discoverability
+
+- **Changed**: User-visible «Сообщения» → «Уведомления» / «Хабарландырулар» (`/messages` route kept); notification dates use RU/KK locale formatting.
+- **Fixed**: Organic promotion status tags, reviews count copy, onboarding city/rejection labels, plan Analytics 360 label, checkout RU-only fragments.
+- **Added**: Permission-filtered sidebar entries for Media (`PHOTOS_EDIT`) and Reviews (`REVIEWS_REPLY`).
+- **Future**: 6.10D.QA closure QA; remaining P2/P3 cabinet polish.
+
 ## 2026-09-16 — Stage 6.10D.1: Business Web mobile nav & error hygiene
 
 - **Added**: Mobile drawer for existing `BusinessShell` sidebar below 900px (menu control, backdrop, Escape, route-close); RU/KK `shellOpenNavigation` / `shellCloseNavigation`.

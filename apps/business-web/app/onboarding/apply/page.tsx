@@ -8,6 +8,8 @@ import { CategoryRow, CityRow, ownerApi } from '@/lib/api';
 import { OnboardingShell } from '@/components/onboarding-shell';
 import { useAuth } from '@/lib/use-auth';
 import { mapOnboardingError } from '@/lib/onboarding-utils';
+import { cityDisplayName } from '@/lib/localized-content';
+import { onboardingRejectionBannerLabel } from '@/lib/presentation';
 
 export default function OnboardingApplyPage() {
   const locale = useLocale();
@@ -165,7 +167,7 @@ function OnboardingApplyContent() {
       )}
       {rejectionReason && (
         <div className="alert alert-error" style={{ marginBottom: 16 }}>
-          Причина отклонения: {rejectionReason}
+          {onboardingRejectionBannerLabel(locale)} {rejectionReason}
         </div>
       )}
       {error && <div className="alert alert-error">{error}</div>}
@@ -175,7 +177,7 @@ function OnboardingApplyContent() {
         <label>{ui.text_d0bf2a}<select value={citySlug} onChange={(e) => setCitySlug(e.target.value)} required disabled={readOnly}>
             {cities.map((city) => (
               <option key={city.id} value={city.slug}>
-                {city.nameRu}
+                {cityDisplayName({ nameRu: city.nameRu, nameKk: city.nameKk }, locale)}
               </option>
             ))}
           </select>
