@@ -32,7 +32,7 @@ export function BusinessList({
               <div className="biz-card__media">
                 {cover ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={cover} alt="" width={72} height={72} loading="lazy" />
+                  <img src={cover} alt={labels.businessCardCoverAlt} width={72} height={72} loading="lazy" />
                 ) : (
                   <span className="biz-card__fallback" aria-hidden />
                 )}

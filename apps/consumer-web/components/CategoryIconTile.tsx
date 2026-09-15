@@ -31,11 +31,19 @@ export function CategoryIconTile({
   );
 }
 
-export function CategoryMoreTile({ href }: { href: string }) {
+export function CategoryMoreTile({
+  href,
+  title,
+  ariaLabel,
+}: {
+  href: string;
+  title: string;
+  ariaLabel: string;
+}) {
   return (
-    <Link href={href} className="cat-tile" aria-label="Ещё категории">
+    <Link href={href} className="cat-tile" aria-label={ariaLabel}>
       <div className="cat-tile__icon cat-tile__icon--more">⋯</div>
-      <span className="cat-tile__title">Ещё</span>
+      <span className="cat-tile__title">{title}</span>
     </Link>
   );
 }

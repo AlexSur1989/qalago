@@ -24,11 +24,17 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
     <main className="page">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Link href="/categories">{labels.allCategories}</Link>
-        <LocaleSwitcher locale={locale} />
+        <LocaleSwitcher locale={locale} labels={labels} />
       </div>
       {cover ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={cover} alt="" width={320} height={180} style={{ borderRadius: 16, objectFit: 'cover' }} />
+        <img
+          src={cover}
+          alt={labels.businessCoverAlt}
+          width={320}
+          height={180}
+          style={{ borderRadius: 16, objectFit: 'cover' }}
+        />
       ) : null}
       <h1 style={{ marginTop: 16 }}>{business.title}</h1>
       <p style={{ color: 'var(--muted)' }}>{business.address}</p>

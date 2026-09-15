@@ -14,8 +14,10 @@ export default async function AllCategoriesPage() {
   return (
     <main className="page">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Link href="/">{labels.back}</Link>
-        <LocaleSwitcher locale={locale} />
+        <Link href="/" aria-label={labels.navHome}>
+          {labels.back}
+        </Link>
+        <LocaleSwitcher locale={locale} labels={labels} />
       </div>
       <h1>{labels.categories}</h1>
       <div className="cat-grid">

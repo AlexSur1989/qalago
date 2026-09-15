@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-15 — Stage 6.10B.4: Consumer Web RU-KK localization
+
+- **Consumer Web**: centralized `UI_LABELS` in `apps/consumer-web/lib/locale.ts`; SSR `html lang`, localized metadata via `generateMetadata`, `qalago_locale` cookie unchanged.
+- **Routes**: Home, categories, category/subcategory businesses, business detail, `not-found`, `error` chrome localized; category/subcategory `nameRu`/`nameKk` unchanged.
+- **Guard**: `lib/hardcoded-ui-guard.ts`, `npm run check:ui-strings`, vitest coverage in `lib/i18n.test.ts`.
+- **Future**: locale-prefixed URLs + hreflang (Stage 6.11F); Business Web (6.10B.5); `City.nameKk` content model.
+
 ## 2026-09-15 — Stage 6.10B.3: Owner / business cabinet RU-KK localization
 
 - **Migrated**: `lib/features/owner` (dashboard, edit, gallery, menu, promotions, reviews, analytics, plan, settings, team, messages, help), monetization purchase UI, centralized `owner_l10n.dart` for plan tiers, statuses, permissions, ads products.

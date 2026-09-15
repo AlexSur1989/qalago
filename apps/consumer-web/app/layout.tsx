@@ -1,14 +1,18 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { siteMetadataForLocale } from '@/lib/locale';
+import { getServerLocale } from '@/lib/locale-server';
 
-export const metadata: Metadata = {
-  title: 'QalaGo',
-  description: 'Гид по городу',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getServerLocale();
+  const { title, description } = siteMetadataForLocale(locale);
+  return { title, description };
+}
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getServerLocale();
   return (
-    <html lang="ru">
+    <html lang={locale}>
       <body>{children}</body>
     </html>
   );

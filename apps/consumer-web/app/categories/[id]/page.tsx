@@ -36,7 +36,7 @@ export default async function CategoryDetailPage({
     <main className="page">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
         <Link href="/categories">{labels.back}</Link>
-        <LocaleSwitcher locale={locale} />
+        <LocaleSwitcher locale={locale} labels={labels} />
       </div>
       <h1>{catTitle}</h1>
       {subs.length ? (
@@ -44,7 +44,7 @@ export default async function CategoryDetailPage({
           <p style={{ color: 'var(--muted)' }}>{labels.subcategories}</p>
           <div className="cat-grid">
             <CategoryIconTile
-              title={locale === 'kk' ? 'Барлығы' : 'Все'}
+              title={labels.allSubcategories}
               icon={null}
               href={`/categories/${id}`}
             />

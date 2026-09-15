@@ -20,11 +20,9 @@ export default async function HomePage() {
       <header style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', gap: 12 }}>
         <div>
           <h1 style={{ margin: 0, color: 'var(--blue)' }}>QalaGo</h1>
-          <p style={{ color: 'var(--muted)' }}>
-            {locale === 'kk' ? 'Уральск қаласындағы мекемелер мен қызметтер' : 'Заведения и услуги Уральска'}
-          </p>
+          <p style={{ color: 'var(--muted)' }}>{labels.homeTagline}</p>
         </div>
-        <LocaleSwitcher locale={locale} />
+        <LocaleSwitcher locale={locale} labels={labels} />
       </header>
       <section aria-label={labels.categories}>
         <div className="cat-grid">
@@ -36,7 +34,13 @@ export default async function HomePage() {
               href={`/categories/${c.id}`}
             />
           ))}
-          {showMore ? <CategoryMoreTile href="/categories" /> : null}
+          {showMore ? (
+            <CategoryMoreTile
+              href="/categories"
+              title={labels.moreCategories}
+              ariaLabel={labels.moreCategoriesAria}
+            />
+          ) : null}
         </div>
       </section>
       <p style={{ marginTop: 32 }}>

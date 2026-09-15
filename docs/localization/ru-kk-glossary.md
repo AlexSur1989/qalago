@@ -1,6 +1,6 @@
-# RU / KK glossary — QalaGo consumer mobile
+# RU / KK glossary — QalaGo consumer (mobile + web)
 
-Canonical product terminology for Flutter `AppLocalizations` (`app_ru.arb` / `app_kk.arb`).
+Canonical product terminology for Flutter `AppLocalizations` (`app_ru.arb` / `app_kk.arb`) and Consumer Web `apps/consumer-web/lib/locale.ts` (`UI_LABELS`).
 
 | RU | KK | Key (examples) |
 |----|-----|----------------|
@@ -45,6 +45,20 @@ Canonical product terminology for Flutter `AppLocalizations` (`app_ru.arb` / `ap
 - **Category / Subcategory**: use API `nameRu` / `nameKk` via `displayName(localeCode)` — not ARB.
 - **Business names, reviews, menus, promotions**: show backend text as-is unless separate RU/KZ fields exist.
 - **City names**: `CityState.nameRu` only today; official names are not translated in UI labels.
+
+## Consumer Web (Stage 6.10B.4)
+
+| RU | KK | `UI_LABELS` field |
+|----|-----|-------------------|
+| Гид по городу | Қала бойынша нұсқау | `siteDescription` (metadata) |
+| Заведения и услуги Уральска | Уральск қаласындағы мекемелер мен қызметтер | `homeTagline` |
+| Все (подкатегории) | Барлығы | `allSubcategories` |
+| Ещё (категории) | Тағы | `moreCategories` |
+| Страница не найдена | Бет табылмады | `notFoundTitle` |
+| Повторить | Қайталау | `retry` |
+
+- Locale cookie: `qalago_locale` (`ru` / `kk`, fallback `ru`).
+- Hardcoded UI guard: `npm run check:ui-strings` (from `apps/consumer-web`).
 
 ## Tooling
 

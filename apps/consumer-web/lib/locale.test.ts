@@ -5,6 +5,7 @@ describe('consumer-web locale', () => {
   it('normalizes kk locale', () => {
     expect(normalizeLocale('kk-KZ')).toBe('kk');
     expect(normalizeLocale('ru')).toBe('ru');
+    expect(normalizeLocale('en')).toBe('ru');
   });
 
   it('renders RU and KZ category names', () => {
