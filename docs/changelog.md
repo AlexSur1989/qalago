@@ -27,11 +27,11 @@
 
 ---
 
-## 2026-09-16 — Stage 6.11A.UI.1: Mobile design system foundations
+## 2026-09-16 — Stage 6.11A.UI.2: Shared QalaGo UI components
 
-- **Added**: QalaGo Mobile foundation tokens under `apps/mobile/lib/core/theme/` — colors (`#00A8D6` primary), typography roles, spacing, radius, elevation, icon sizes, touch targets, breakpoints, minimal motion; barrel `qalago_foundation.dart`.
-- **Changed**: `AppTheme` / `AppSpacing` / `QalagoTheme` extensions wired to foundations without screen migration; legacy `AppTheme.kzBlue`, `AppSpacing.screen` preserved.
-- **Future**: 6.11A.UI.2 shared core components; bottom nav / a11y in UI.3 and UI.7.
+- **Added**: Canonical shared widgets — buttons, icon button, page title, section header, empty state, loading indicator; barrel `qalago_components.dart`.
+- **Changed**: Normalized `QalagoSearchField`, `LoadingView`, `ErrorView` on design foundations; removed UI.1-only changelog entry per stage policy.
+- **Future**: 6.11A.UI.3 navigation + platform adaptation.
 
 ## 2026-09-16 — Stage 6.10D.2: Business Web UX / localization / discoverability
 

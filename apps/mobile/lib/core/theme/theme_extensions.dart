@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
-import 'qalago_colors.dart';
 import 'qalago_elevation.dart';
+import 'qalago_spacing.dart';
+import 'qalago_touch_targets.dart';
 import 'qalago_typography.dart';
 
 /// BuildContext helpers — canonical access path for typography and colors.
@@ -77,7 +78,11 @@ extension QalagoTheme on BuildContext {
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: cs.surface,
-      contentPadding: const EdgeInsets.symmetric(vertical: 16),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: QalaGoSpacing.space16,
+        vertical: 14,
+      ),
+      constraints: const BoxConstraints(minHeight: QalaGoTouchTargets.minInteractive),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppTheme.inputRadius),
         borderSide: BorderSide(color: softBorderColor),
