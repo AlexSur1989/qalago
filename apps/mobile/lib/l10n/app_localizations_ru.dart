@@ -177,6 +177,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String get categoryAllPlaces => 'Все места';
 
   @override
+  String get categoryAllBusinesses => 'Все заведения';
+
+  @override
+  String get categoryFallbackTitle => 'Категория';
+
+  @override
+  String get categorySubcategoriesError => 'Не удалось загрузить подкатегории';
+
+  @override
   String get searchPlaceholder => 'Поиск заведений и услуг...';
 
   @override

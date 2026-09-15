@@ -1,31 +1,35 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/location/user_location_provider.dart';
 import '../../../core/locale/app_locale_provider.dart';
+import '../../../core/locale/consumer_api_errors.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../../core/providers/city_provider.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/qalago_spacing.dart';
+import '../../../core/theme/theme_extensions.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/navigation/navigation_utils.dart';
 import '../../../shared/navigation/open_business.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
+import '../../../shared/widgets/qalago_components.dart';
 import '../../ads/data/ad_models.dart';
 import '../../ads/data/ad_placement_codes.dart';
 import '../../ads/providers/ad_serve_provider.dart';
 import '../../ads/widgets/sponsored_business_section.dart';
 import '../../analytics/widgets/tracked_business_card.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../map/map_discovery_scope.dart';
 import '../data/category_catalog_sort.dart';
 import '../data/category_l10n.dart';
-import '../../../core/locale/l10n_extension.dart';
 import '../providers/category_sort_provider.dart';
 import '../utils/category_display.dart';
 import '../utils/category_list_utils.dart';
-import '../../../core/locale/app_locale_provider.dart';
-import '../../map/map_discovery_scope.dart';
 import 'category_subcategory_filter.dart';
 import 'subcategory_icon_grid.dart';
 
@@ -81,11 +85,32 @@ class CategoryBusinessesScreen extends ConsumerWidget {
   final String categoryId;
   final String categoryTitle;
 
+  String _resolveTitle(
+    WidgetRef ref,
+    String localeCode,
+    AppLocalizations l10n,
+  ) {
+    final fromRoute = categoryTitle.trim();
+    final categories = ref.watch(categoriesProvider).valueOrNull;
+    if (categories != null) {
+      for (final category in categories) {
+        if (category.id == categoryId) {
+          return categoryDisplayName(category, localeCode: localeCode);
+        }
+      }
+    }
+    if (fromRoute.isNotEmpty && fromRoute != l10n.categoryFallbackTitle) {
+      return fromRoute;
+    }
+    return fromRoute.isEmpty ? l10n.categoryFallbackTitle : fromRoute;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final localeCode = resolveLocaleCode(ref.watch(appLocaleCodeProvider));
-    final city = ref.watch(cityProvider);
+    final displayTitle = _resolveTitle(ref, localeCode, l10n);
+    final cityName = ref.watch(cityLocalizedNameProvider);
     final sort = ref.watch(categoryCatalogSortProvider);
     final userPosition = ref.watch(userLocationProvider).valueOrNull;
     final lat = sort == CategoryCatalogSort.nearest
@@ -141,13 +166,18 @@ class CategoryBusinessesScreen extends ConsumerWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(categoryTitle),
             Text(
-              ref.watch(cityLocalizedNameProvider),
-              style: TextStyle(
+              displayTitle,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              cityName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: context.bodySecondaryStyle.copyWith(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: AppTheme.textDark.withValues(alpha: 0.55),
               ),
             ),
           ],
@@ -159,10 +189,10 @@ class CategoryBusinessesScreen extends ConsumerWidget {
             icon: const Icon(Icons.map_outlined),
             onPressed: () {
               final sub = ref.read(categorySubcategoryFilterProvider(categoryId));
-              ref.read(mapDiscoveryScopeProvider.notifier).state = MapDiscoveryScope(
+              ref.read(mapDiscoveryScopeProvider.notifier).state =
+                  MapDiscoveryScope(
                 categoryId: categoryId,
-                subcategoryId:
-                    sub != null && sub.isNotEmpty ? sub : null,
+                subcategoryId: sub != null && sub.isNotEmpty ? sub : null,
               );
               context.push('/map');
             },
@@ -174,12 +204,21 @@ class CategoryBusinessesScreen extends ConsumerWidget {
         onRefresh: () async => refresh(),
         child: businessesAsync.when(
           loading: () => const LoadingView(),
-          error: (e, _) => ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            children: [
-              ErrorView(message: '$e', onRetry: refresh),
-            ],
-          ),
+          error: (e, _) {
+            assert(() {
+              debugPrint('[QalaGo Category] businesses error: $e');
+              return true;
+            }());
+            return ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                ErrorView(
+                  message: localizedLoadError(l10n, e),
+                  onRetry: refresh,
+                ),
+              ],
+            );
+          },
           data: (data) {
             final topAds = topAdsAsync.valueOrNull ?? const [];
             final boostAds = boostAdsAsync.valueOrNull ?? const [];
@@ -200,9 +239,18 @@ class CategoryBusinessesScreen extends ConsumerWidget {
                   .whereType<String>(),
             );
 
-            final subFilterActive = subcategoryId != null && subcategoryId.isNotEmpty;
-            final listEmpty =
-                data.items.isEmpty && recommendedOrganic.isEmpty && sponsoredAds.isEmpty;
+            final subFilterActive =
+                subcategoryId != null && subcategoryId.isNotEmpty;
+            final listEmpty = data.items.isEmpty &&
+                recommendedOrganic.isEmpty &&
+                sponsoredAds.isEmpty;
+
+            final allPlacesSubtitle = _allPlacesSubtitle(
+              l10n: l10n,
+              cityName: cityName,
+              catalogTotal: data.total,
+              loadedCount: allPlaces.length,
+            );
 
             if (listEmpty) {
               final emptyMessage = subFilterActive
@@ -210,15 +258,15 @@ class CategoryBusinessesScreen extends ConsumerWidget {
                   : l10n.categoryEmpty;
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(QalaGoSpacing.space24),
                 children: [
                   SubcategoryIconGrid(categoryId: categoryId),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: QalaGoSpacing.space16),
                   _CategorySortBar(
                     sort: sort,
-                    localeCode: localeCode,
                     onSelected: (value) {
-                      ref.read(categoryCatalogSortProvider.notifier).state = value;
+                      ref.read(categoryCatalogSortProvider.notifier).state =
+                          value;
                     },
                   ),
                   const SizedBox(height: 80),
@@ -240,47 +288,40 @@ class CategoryBusinessesScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
               children: [
                 SubcategoryIconGrid(categoryId: categoryId),
-                const SizedBox(height: 12),
+                const SizedBox(height: QalaGoSpacing.space12),
                 _CategorySortBar(
                   sort: sort,
-                  localeCode: localeCode,
                   onSelected: (value) {
                     ref.read(categoryCatalogSortProvider.notifier).state = value;
                   },
                 ),
                 if (nearestBlocked) ...[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: QalaGoSpacing.space12),
                   Text(
                     l10n.categoryNearestNeedsLocation,
-                    style: TextStyle(
-                      color: AppTheme.textDark.withValues(alpha: 0.65),
-                      fontSize: 13,
-                      height: 1.35,
-                    ),
+                    style: context.bodySecondaryStyle.copyWith(height: 1.35),
                   ),
                 ],
-                const SizedBox(height: 16),
+                const SizedBox(height: QalaGoSpacing.space16),
                 if (recommendedOrganic.isNotEmpty) ...[
-                  _SectionTitle(
-                    title: l10n.homeRecommendedSection,
-                  ),
-                  const SizedBox(height: 12),
+                  QalaGoSectionHeader(title: l10n.categoryRecommended),
+                  const SizedBox(height: QalaGoSpacing.space12),
                   ..._organicBusinessCards(context, recommendedOrganic),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: QalaGoSpacing.space20),
                 ],
                 if (sponsoredAds.isNotEmpty) ...[
                   SponsoredBusinessSection(
                     title: l10n.categorySponsored,
                     items: sponsoredAds,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: QalaGoSpacing.space20),
                 ],
                 if (allPlaces.isNotEmpty) ...[
-                  _SectionTitle(
+                  QalaGoSectionHeader(
                     title: l10n.categoryAllPlaces,
-                    subtitle: '${ref.watch(cityLocalizedNameProvider)} · ${l10n.placesCount(allPlaces.length)}',
+                    subtitle: allPlacesSubtitle,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: QalaGoSpacing.space12),
                   ..._organicBusinessCards(context, allPlaces),
                 ],
               ],
@@ -291,6 +332,22 @@ class CategoryBusinessesScreen extends ConsumerWidget {
     );
   }
 
+  static String? _allPlacesSubtitle({
+    required AppLocalizations l10n,
+    required String cityName,
+    required int catalogTotal,
+    required int loadedCount,
+  }) {
+    if (catalogTotal <= 0) return cityName;
+    if (catalogTotal > loadedCount) {
+      return '$cityName · ${l10n.placesCount(catalogTotal)}';
+    }
+    if (catalogTotal == loadedCount) {
+      return '$cityName · ${l10n.placesCount(catalogTotal)}';
+    }
+    return cityName;
+  }
+
   static List<Widget> _organicBusinessCards(
     BuildContext context,
     List<BusinessModel> items,
@@ -298,7 +355,7 @@ class CategoryBusinessesScreen extends ConsumerWidget {
     return [
       for (final business in items)
         Padding(
-          padding: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.only(bottom: QalaGoSpacing.space12),
           child: TrackedBusinessCard(
             business: business,
             trafficSource: BusinessTrafficSource.category,
@@ -311,18 +368,15 @@ class CategoryBusinessesScreen extends ConsumerWidget {
         ),
     ];
   }
-
 }
 
 class _CategorySortBar extends StatelessWidget {
   const _CategorySortBar({
     required this.sort,
-    required this.localeCode,
     required this.onSelected,
   });
 
   final CategoryCatalogSort sort;
-  final String localeCode;
   final ValueChanged<CategoryCatalogSort> onSelected;
 
   @override
@@ -331,24 +385,28 @@ class _CategorySortBar extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.categoriesSort,
-          style: const TextStyle(
-            fontWeight: FontWeight.w800,
-            fontSize: 14,
-            color: AppTheme.textDark,
-          ),
-        ),
-        const SizedBox(height: 8),
+        QalaGoSectionHeader(title: l10n.categoriesSort),
+        const SizedBox(height: QalaGoSpacing.space8),
         Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: QalaGoSpacing.space8,
+          runSpacing: QalaGoSpacing.space8,
           children: [
             for (final option in CategoryCatalogSort.values)
-              ChoiceChip(
-                label: Text(categorySortOptionLabel(l10n, option)),
+              Semantics(
+                button: true,
                 selected: sort == option,
-                onSelected: (_) => onSelected(option),
+                label: categorySortOptionLabel(l10n, option),
+                child: ChoiceChip(
+                  label: Text(categorySortOptionLabel(l10n, option)),
+                  selected: sort == option,
+                  onSelected: (_) => onSelected(option),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.standard,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: QalaGoSpacing.space8,
+                    vertical: QalaGoSpacing.space4,
+                  ),
+                ),
               ),
           ],
         ),
@@ -357,38 +415,11 @@ class _CategorySortBar extends StatelessWidget {
   }
 }
 
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({required this.title, this.subtitle});
-
-  final String title;
-  final String? subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w900,
-            color: AppTheme.textDark,
-          ),
-        ),
-        if (subtitle != null) ...[
-          const SizedBox(height: 4),
-          Text(
-            subtitle!,
-            style: TextStyle(color: AppTheme.textDark.withValues(alpha: 0.55)),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-void openCategory(BuildContext context, CategoryModel category, {String localeCode = 'ru'}) {
+void openCategory(
+  BuildContext context,
+  CategoryModel category, {
+  String localeCode = 'ru',
+}) {
   final title = categoryDisplayName(category, localeCode: localeCode);
   context.push(
     '/categories/${category.id}?title=${Uri.encodeComponent(title)}',

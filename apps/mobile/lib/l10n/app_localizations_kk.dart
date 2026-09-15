@@ -177,6 +177,16 @@ class AppLocalizationsKk extends AppLocalizations {
   String get categoryAllPlaces => 'Барлық орындар';
 
   @override
+  String get categoryAllBusinesses => 'Барлық мекемелер';
+
+  @override
+  String get categoryFallbackTitle => 'Санат';
+
+  @override
+  String get categorySubcategoriesError =>
+      'Ішкі санаттарды жүктеу сәтсіз аяқталды';
+
+  @override
   String get searchPlaceholder => 'Мекемелер мен қызметтерді іздеу...';
 
   @override

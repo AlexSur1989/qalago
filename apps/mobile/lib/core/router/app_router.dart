@@ -12,6 +12,7 @@ import '../../features/businesses/presentation/business_catalog_screen.dart';
 import '../../features/businesses/presentation/business_photos_screen.dart';
 import '../../features/categories/presentation/categories_screen.dart';
 import '../../features/categories/presentation/category_businesses_screen.dart';
+import '../locale/l10n_extension.dart';
 import '../../features/favorites/presentation/favorites_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/map/map_discovery_scope.dart';
@@ -151,7 +152,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: '/categories/:categoryId',
             builder: (context, state) => CategoryBusinessesScreen(
               categoryId: state.pathParameters['categoryId']!,
-              categoryTitle: state.uri.queryParameters['title'] ?? 'Категория',
+              categoryTitle:
+                  state.uri.queryParameters['title'] ??
+                  context.l10n.categoryFallbackTitle,
             ),
           ),
           GoRoute(path: '/map', builder: (context, state) => const MapScreen()),

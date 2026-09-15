@@ -5,19 +5,22 @@ import 'package:go_router/go_router.dart';
 import '../../../core/providers/city_catalog_provider.dart';
 import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/providers/city_provider.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../core/locale/consumer_api_errors.dart';
+import '../../../core/locale/l10n_extension.dart';
+import '../../../core/theme/qalago_spacing.dart';
+import '../../../core/theme/qalago_touch_targets.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/widgets/empty_city_view.dart';
 import '../../../shared/widgets/city_picker.dart';
-import '../../../shared/widgets/qalago_logo.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
+import '../../../shared/widgets/qalago_components.dart';
 import '../../../shared/widgets/qalago_search_field.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../home/presentation/home_layout.dart';
+import '../../home/presentation/sections/home_header_section.dart';
 import '../../../shared/widgets/category_icon_tile.dart';
-import '../../../core/locale/app_locale_provider.dart';
-import '../../../core/locale/consumer_api_errors.dart';
-import '../../../core/locale/l10n_extension.dart';
+import '../data/category_directory_layout.dart';
 import '../utils/category_display.dart';
 import 'category_businesses_screen.dart';
 
@@ -45,7 +48,8 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     final q = _query.trim().toLowerCase();
     if (q.isEmpty) return categories;
     return categories.where((c) {
-      final label = categoryDisplayName(c, localeCode: localeCode).toLowerCase();
+      final label =
+          categoryDisplayName(c, localeCode: localeCode).toLowerCase();
       return label.contains(q) ||
           c.nameRu.toLowerCase().contains(q) ||
           c.nameKk.toLowerCase().contains(q) ||
@@ -62,6 +66,8 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     final catalogTotalAsync = ref.watch(cityCatalogTotalProvider);
     final isEmptyCity =
         catalogTotalAsync.hasValue && catalogTotalAsync.value == 0;
+    final localeCode = resolveLocaleCode(ref.watch(appLocaleCodeProvider));
+    final cityName = ref.watch(cityLocalizedNameProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -74,15 +80,20 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
           },
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+            padding: const EdgeInsets.fromLTRB(
+              HomeLayout.horizontalPadding,
+              HomeLayout.topPadding,
+              HomeLayout.horizontalPadding,
+              HomeLayout.bottomPadding,
+            ),
             children: [
-              _CategoriesHeader(
-                cityName: ref.watch(cityLocalizedNameProvider),
+              HomeHeaderSection(
+                cityName: cityName,
                 unreadAsync: unreadAsync,
                 onCityTap: () => showCityPickerSheet(context, ref),
                 onNotificationsTap: () => context.push('/notifications'),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: HomeLayout.blockGap),
               QalagoSearchField(
                 controller: _searchController,
                 textInputAction: TextInputAction.search,
@@ -107,59 +118,63 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                       )
                     : null,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: QalaGoSpacing.space12),
               Align(
                 alignment: Alignment.centerLeft,
                 child: TextButton.icon(
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size(
+                      QalaGoTouchTargets.minInteractive,
+                      QalaGoTouchTargets.minInteractive,
+                    ),
+                  ),
                   onPressed: () => context.push('/search'),
                   icon: const Icon(Icons.storefront_outlined),
                   label: Text(l10n.categoriesSearchBusinesses),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: QalaGoSpacing.space12),
+              QalaGoPageTitle(text: l10n.categoriesTitle),
+              const SizedBox(height: QalaGoSpacing.space4),
               Text(
-                l10n.categoriesTitle,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      color: AppTheme.textDark,
+                cityName,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
                     ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                ref.watch(cityLocalizedNameProvider),
-                style: TextStyle(
-                  color: AppTheme.textDark.withValues(alpha: 0.55),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 20),
+              const SizedBox(height: HomeLayout.sectionGap),
               if (catalogTotalAsync.isLoading && !catalogTotalAsync.hasValue)
                 const LoadingView()
               else if (isEmptyCity)
                 EmptyCityView(
-                  cityName: ref.watch(cityLocalizedNameProvider),
+                  cityName: cityName,
                   isComingSoon: city.isComingSoon,
                   onPickCity: () => showCityPickerSheet(context, ref),
                 )
               else
                 categoriesAsync.when(
-                loading: () => const LoadingView(),
-                error: (e, _) => ErrorView(
-                  message: localizedLoadError(l10n, e),
-                  onRetry: () => ref.invalidate(categoriesProvider),
-                ),
-                data: (categories) {
-                  final localeCode = resolveLocaleCode(ref.watch(appLocaleCodeProvider));
-                  final filtered = _filterCategories(categories, localeCode);
-                  if (filtered.isEmpty) {
-                    return Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Center(child: Text(l10n.categoriesNotFound)),
+                  loading: () => const LoadingView(),
+                  error: (e, _) => ErrorView(
+                    message: localizedLoadError(l10n, e),
+                    onRetry: () => ref.invalidate(categoriesProvider),
+                  ),
+                  data: (categories) {
+                    final filtered =
+                        _filterCategories(categories, localeCode);
+                    if (filtered.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.all(QalaGoSpacing.space24),
+                        child: Center(child: Text(l10n.categoriesNotFound)),
+                      );
+                    }
+                    return _CategoriesDirectoryGrid(
+                      key: const Key('categories_directory_grid'),
+                      categories: filtered,
+                      localeCode: localeCode,
                     );
-                  }
-                  return _CategoriesGrid(categories: filtered, localeCode: localeCode);
-                },
-              ),
+                  },
+                ),
             ],
           ),
         ),
@@ -168,68 +183,12 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   }
 }
 
-class _CategoriesHeader extends StatelessWidget {
-  const _CategoriesHeader({
-    required this.cityName,
-    required this.unreadAsync,
-    required this.onCityTap,
-    required this.onNotificationsTap,
+class _CategoriesDirectoryGrid extends StatelessWidget {
+  const _CategoriesDirectoryGrid({
+    super.key,
+    required this.categories,
+    required this.localeCode,
   });
-
-  final String cityName;
-  final AsyncValue<int> unreadAsync;
-  final VoidCallback onCityTap;
-  final VoidCallback onNotificationsTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Expanded(child: QalaGoLogo(fontSize: 38, fit: true)),
-        const SizedBox(width: 12),
-        CityPill(cityName: cityName, onTap: onCityTap),
-        const SizedBox(width: 10),
-        unreadAsync.when(
-          data: (count) =>
-              _NotificationButton(count: count, onTap: onNotificationsTap),
-          loading: () =>
-              _NotificationButton(count: 0, onTap: onNotificationsTap),
-          error: (_, _) =>
-              _NotificationButton(count: 0, onTap: onNotificationsTap),
-        ),
-      ],
-    );
-  }
-}
-
-class _NotificationButton extends StatelessWidget {
-  const _NotificationButton({required this.count, required this.onTap});
-
-  final int count;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      tooltip: context.l10n.homeNotificationsTooltip,
-      onPressed: onTap,
-      icon: Badge(
-        isLabelVisible: count > 0,
-        label: Text('$count'),
-        backgroundColor: AppTheme.kzGold,
-        textColor: Colors.black,
-        child: const Icon(
-          Icons.notifications_none_rounded,
-          size: 31,
-          color: AppTheme.textDark,
-        ),
-      ),
-    );
-  }
-}
-
-class _CategoriesGrid extends StatelessWidget {
-  const _CategoriesGrid({required this.categories, required this.localeCode});
 
   final List<CategoryModel> categories;
   final String localeCode;
@@ -238,13 +197,10 @@ class _CategoriesGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 900
-            ? 5
-            : constraints.maxWidth >= 720
-                ? 4
-                : 3;
-        const spacing = 8.0;
-        final itemWidth = (constraints.maxWidth - spacing * (columns - 1)) / columns;
+        final columns = categoryDirectoryGridColumns(constraints.maxWidth);
+        const spacing = QalaGoSpacing.space8;
+        final itemWidth =
+            (constraints.maxWidth - spacing * (columns - 1)) / columns;
         return Wrap(
           spacing: spacing,
           runSpacing: spacing,
@@ -253,9 +209,16 @@ class _CategoriesGrid extends StatelessWidget {
               SizedBox(
                 width: itemWidth,
                 child: CategoryIconTile(
-                  label: categoryDisplayName(category, localeCode: localeCode),
+                  label: categoryDisplayName(
+                    category,
+                    localeCode: localeCode,
+                  ),
                   iconPath: category.icon,
-                  onTap: () => openCategory(context, category, localeCode: localeCode),
+                  onTap: () => openCategory(
+                    context,
+                    category,
+                    localeCode: localeCode,
+                  ),
                 ),
               ),
           ],

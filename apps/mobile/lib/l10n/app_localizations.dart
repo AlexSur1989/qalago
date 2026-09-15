@@ -428,6 +428,24 @@ abstract class AppLocalizations {
   /// **'Все места'**
   String get categoryAllPlaces;
 
+  /// No description provided for @categoryAllBusinesses.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все заведения'**
+  String get categoryAllBusinesses;
+
+  /// No description provided for @categoryFallbackTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Категория'**
+  String get categoryFallbackTitle;
+
+  /// No description provided for @categorySubcategoriesError.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить подкатегории'**
+  String get categorySubcategoriesError;
+
   /// No description provided for @searchPlaceholder.
   ///
   /// In ru, this message translates to:
