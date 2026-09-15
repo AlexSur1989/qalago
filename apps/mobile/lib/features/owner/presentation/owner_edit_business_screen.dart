@@ -6,6 +6,9 @@ import '../../../shared/navigation/navigation_utils.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../owner_profile_errors.dart';
+import '../owner_subcategory_edit.dart';
+import 'widgets/owner_subcategories_section.dart';
 
 Map<String, String> _parseWorkHours(dynamic raw) {
   if (raw is! Map) return {};
@@ -109,7 +112,7 @@ class _OwnerEditBusinessScreenState
     try {
       await ref.read(catalogRepositoryProvider).updateBusiness(
         widget.businessId,
-        {
+        buildOwnerProfileFieldsPatch({
           'title': title,
           'shortDesc': _shortDescController.text.trim(),
           'description': _descriptionController.text.trim(),
@@ -123,7 +126,7 @@ class _OwnerEditBusinessScreenState
             saturday: _saturdayHoursController.text.trim(),
             sunday: _sundayHoursController.text.trim(),
           ),
-        },
+        }),
       );
       ref.invalidate(businessDetailsProvider(widget.businessId));
       ref.invalidate(myBusinessEntriesProvider);
@@ -138,7 +141,7 @@ class _OwnerEditBusinessScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.ownerErrorWithDetails('$e'))),
+          SnackBar(content: Text(mapOwnerProfileSaveError(context.l10n, e))),
         );
       }
     } finally {
@@ -190,6 +193,11 @@ class _OwnerEditBusinessScreenState
               TextField(
                 controller: _addressController,
                 decoration: InputDecoration(labelText: context.l10n.businessAddress),
+              ),
+              const SizedBox(height: 20),
+              OwnerSubcategoriesSection(
+                businessId: widget.businessId,
+                businessData: data,
               ),
               const SizedBox(height: 20),
               Text(                context.l10n.ownerContactsSection,

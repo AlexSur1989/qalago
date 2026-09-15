@@ -42,6 +42,16 @@ final ownerSelectedBusinessProvider = Provider<Map<String, dynamic>?>((ref) {
   );
 });
 
+final ownerBusinessAccessProvider = Provider.family<BusinessAccess?, String>(
+  (ref, businessId) {
+    final entries = ref.watch(myBusinessEntriesProvider).valueOrNull ?? const [];
+    for (final entry in entries) {
+      if (entry.businessId == businessId) return entry.access;
+    }
+    return null;
+  },
+);
+
 final selectedBusinessAccessProvider = Provider<BusinessAccess?>((ref) {
   final entriesAsync = ref.watch(myBusinessEntriesProvider);
   final selectedId = ref.watch(selectedOwnerBusinessIdProvider);

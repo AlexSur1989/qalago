@@ -4124,6 +4124,42 @@ abstract class AppLocalizations {
   /// **'Профиль заведения сохранён'**
   String get ownerProfileSaved;
 
+  /// No description provided for @ownerSubcategoriesSection.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подкатегории'**
+  String get ownerSubcategoriesSection;
+
+  /// No description provided for @ownerSubcategoriesHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите типы заведения внутри категории — так пользователи быстрее найдут вас в приложении.'**
+  String get ownerSubcategoriesHint;
+
+  /// No description provided for @ownerSubcategoriesEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подкатегории пока не настроены для вашей категории.'**
+  String get ownerSubcategoriesEmpty;
+
+  /// No description provided for @ownerSubcategoriesLoadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить подкатегории. Проверьте сеть и попробуйте снова.'**
+  String get ownerSubcategoriesLoadFailed;
+
+  /// No description provided for @ownerSaveSubcategories.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранить подкатегории'**
+  String get ownerSaveSubcategories;
+
+  /// No description provided for @ownerSubcategoriesSaved.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подкатегории сохранены'**
+  String get ownerSubcategoriesSaved;
+
   /// No description provided for @ownerAnalyticsTitle.
   ///
   /// In ru, this message translates to:

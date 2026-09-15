@@ -2255,6 +2255,27 @@ class AppLocalizationsRu extends AppLocalizations {
   String get ownerProfileSaved => 'Профиль заведения сохранён';
 
   @override
+  String get ownerSubcategoriesSection => 'Подкатегории';
+
+  @override
+  String get ownerSubcategoriesHint =>
+      'Выберите типы заведения внутри категории — так пользователи быстрее найдут вас в приложении.';
+
+  @override
+  String get ownerSubcategoriesEmpty =>
+      'Подкатегории пока не настроены для вашей категории.';
+
+  @override
+  String get ownerSubcategoriesLoadFailed =>
+      'Не удалось загрузить подкатегории. Проверьте сеть и попробуйте снова.';
+
+  @override
+  String get ownerSaveSubcategories => 'Сохранить подкатегории';
+
+  @override
+  String get ownerSubcategoriesSaved => 'Подкатегории сохранены';
+
+  @override
   String get ownerAnalyticsTitle => 'Статистика';
 
   @override

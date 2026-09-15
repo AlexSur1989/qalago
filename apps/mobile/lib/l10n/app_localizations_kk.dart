@@ -2247,6 +2247,27 @@ class AppLocalizationsKk extends AppLocalizations {
   String get ownerProfileSaved => 'Мекеме профилі сақталды';
 
   @override
+  String get ownerSubcategoriesSection => 'Ішкі санаттар';
+
+  @override
+  String get ownerSubcategoriesHint =>
+      'Санат ішіндегі мекеме түрлерін таңдаңыз — пайдаланушылар сізді қосымшада тезірек табады.';
+
+  @override
+  String get ownerSubcategoriesEmpty =>
+      'Санатыңыз үшін ішкі санаттар әлі бапталмаған.';
+
+  @override
+  String get ownerSubcategoriesLoadFailed =>
+      'Ішкі санаттарды жүктеу сәтсіз аяқталды. Желі байланысын тексеріп, қайта көріңіз.';
+
+  @override
+  String get ownerSaveSubcategories => 'Ішкі санаттарды сақтау';
+
+  @override
+  String get ownerSubcategoriesSaved => 'Ішкі санаттар сақталды';
+
+  @override
   String get ownerAnalyticsTitle => 'Статистика';
 
   @override

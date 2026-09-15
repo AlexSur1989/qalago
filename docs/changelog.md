@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-16 — Stage 6.10C.2: Flutter owner subcategory profile parity
+
+- **Flutter Owner**: subcategory multi-select on business profile edit via existing `GET /categories/:id/subcategories` and `PATCH subcategoryIds`; `BUSINESS_PROFILE_EDIT` gating; zero-subcategory empty state; profile PATCH omits `subcategoryIds` (separate save, Business Web parity).
+- **Future**: 6.10C closure QA; maps/geolocation audit (6.11C.0).
+
 ## 2026-09-16 — Stage 6.10C.1: Business Web catalog & promotion edit parity
 
 - **Business Web**: edit overlays for organic `ServiceItem` and `Promotion` via existing PATCH APIs; `CATALOG_EDIT` / `PROMOTIONS_EDIT` UX gating; semantic RU/KK keys; safe `parseApiError` on promotions mutations.
