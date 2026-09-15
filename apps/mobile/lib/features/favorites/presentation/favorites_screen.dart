@@ -67,9 +67,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
           onRefresh: () async => ref.invalidate(favoritesProvider),
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
+            physics: const AlwaysScrollableScrollPhysics(),
             children: [
               _FavoritesHeader(
                 cityName: ref.watch(cityLocalizedNameProvider),

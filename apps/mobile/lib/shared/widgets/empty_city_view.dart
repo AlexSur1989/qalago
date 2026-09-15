@@ -81,7 +81,7 @@ class EmptyCityView extends ConsumerWidget {
           Text(
             isComingSoon ? l10n.emptyCityComingBody : l10n.emptyCityEmptyBody,
             textAlign: TextAlign.center,
-            style: context.bodySecondaryStyle?.copyWith(height: 1.45),
+            style: context.bodySecondaryStyle.copyWith(height: 1.45),
           ),
           SizedBox(height: compact ? 18 : 22),
           SizedBox(

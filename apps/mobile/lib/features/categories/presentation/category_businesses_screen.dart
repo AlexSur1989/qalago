@@ -236,9 +236,7 @@ class CategoryBusinessesScreen extends ConsumerWidget {
                 (lat == null || lng == null);
 
             return ListView(
-              physics: const AlwaysScrollableScrollPhysics(
-                parent: BouncingScrollPhysics(),
-              ),
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
               children: [
                 SubcategoryIconGrid(categoryId: categoryId),

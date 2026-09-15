@@ -56,7 +56,8 @@ import '../../features/owner/monetization/presentation/monetization_order_confir
 import '../../features/owner/monetization/presentation/monetization_orders_screen.dart';
 import '../../features/owner/monetization/presentation/monetization_campaigns_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
-import '../theme/app_theme.dart';
+import '../../shared/widgets/qalago_bottom_navigation.dart';
+import 'consumer_shell_navigation.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -427,19 +428,11 @@ class AppShell extends ConsumerWidget {
 
   final Widget child;
 
-  int? _tabIndexForPath(String path) {
-    if (path == '/home') return 0;
-    if (path.startsWith('/categories')) return 1;
-    if (path == '/map') return 2;
-    if (path == '/favorites') return 3;
-    if (path.startsWith('/profile')) return 4;
-    return null;
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final path = GoRouterState.of(context).uri.path;
-    final selectedTab = _tabIndexForPath(path);
+    final showBar = ConsumerShellNavigation.showBottomBar(path);
+    final selectedTab = ConsumerShellNavigation.selectedTabIndex(path);
 
     void clearMapScope() {
       ref.read(mapDiscoveryScopeProvider.notifier).state = null;
@@ -447,132 +440,64 @@ class AppShell extends ConsumerWidget {
 
     final l10n = context.l10n;
 
+    Widget? bottomBar;
+    if (showBar && selectedTab != null) {
+      bottomBar = QalaGoBottomNavigation(
+        currentIndex: selectedTab,
+        items: [
+          QalaGoBottomNavItem(
+            label: l10n.navHome,
+            icon: Icons.home_outlined,
+            selectedIcon: Icons.home,
+            onTap: () {
+              clearMapScope();
+              context.go('/home');
+            },
+          ),
+          QalaGoBottomNavItem(
+            label: l10n.navCategories,
+            icon: Icons.grid_view_outlined,
+            selectedIcon: Icons.grid_view,
+            onTap: () {
+              clearMapScope();
+              context.go('/categories');
+            },
+          ),
+          QalaGoBottomNavItem(
+            label: l10n.navMap,
+            icon: Icons.location_on_outlined,
+            selectedIcon: Icons.location_on,
+            onTap: () {
+              clearMapScope();
+              context.go('/map');
+            },
+          ),
+          QalaGoBottomNavItem(
+            label: l10n.navFavorites,
+            icon: Icons.favorite_border,
+            selectedIcon: Icons.favorite,
+            onTap: () {
+              clearMapScope();
+              context.go('/favorites');
+            },
+          ),
+          QalaGoBottomNavItem(
+            label: l10n.navProfile,
+            icon: Icons.person_outline,
+            selectedIcon: Icons.person,
+            onTap: () {
+              clearMapScope();
+              context.go('/profile');
+            },
+          ),
+        ],
+      );
+    }
+
     return Scaffold(
       body: child,
-      bottomNavigationBar: DecoratedBox(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          boxShadow: [
-            BoxShadow(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
-              blurRadius: 18,
-              offset: const Offset(0, -6),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          top: false,
-          child: SizedBox(
-            height: 76,
-            child: Row(
-              children: [
-                _ShellTab(
-                  index: 0,
-                  selectedIndex: selectedTab,
-                  icon: Icons.home_outlined,
-                  selectedIcon: Icons.home,
-                  label: l10n.navHome,
-                  onTap: () {
-                    clearMapScope();
-                    context.go('/home');
-                  },
-                ),
-                _ShellTab(
-                  index: 1,
-                  selectedIndex: selectedTab,
-                  icon: Icons.grid_view_outlined,
-                  selectedIcon: Icons.grid_view,
-                  label: l10n.navCategories,
-                  onTap: () {
-                    clearMapScope();
-                    context.go('/categories');
-                  },
-                ),
-                _ShellTab(
-                  index: 2,
-                  selectedIndex: selectedTab,
-                  icon: Icons.location_on_outlined,
-                  selectedIcon: Icons.location_on,
-                  label: l10n.navMap,
-                  onTap: () {
-                    clearMapScope();
-                    context.go('/map');
-                  },
-                ),
-                _ShellTab(
-                  index: 3,
-                  selectedIndex: selectedTab,
-                  icon: Icons.favorite_border,
-                  selectedIcon: Icons.favorite,
-                  label: l10n.navFavorites,
-                  onTap: () {
-                    clearMapScope();
-                    context.go('/favorites');
-                  },
-                ),
-                _ShellTab(
-                  index: 4,
-                  selectedIndex: selectedTab,
-                  icon: Icons.person_outline,
-                  selectedIcon: Icons.person,
-                  label: l10n.navProfile,
-                  onTap: () {
-                    clearMapScope();
-                    context.go('/profile');
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+      resizeToAvoidBottomInset: true,
+      bottomNavigationBar: bottomBar,
     );
   }
 }
-
-class _ShellTab extends StatelessWidget {
-  const _ShellTab({
-    required this.index,
-    required this.selectedIndex,
-    required this.icon,
-    required this.selectedIcon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final int index;
-  final int? selectedIndex;
-  final IconData icon;
-  final IconData selectedIcon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final isSelected = selectedIndex == index;
-    final color = isSelected ? scheme.primary : scheme.onSurfaceVariant;
-
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(isSelected ? selectedIcon : icon, color: color, size: 26),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: color,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-

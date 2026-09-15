@@ -63,7 +63,7 @@ class BusinessCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           business.title,
-                          style: context.cardTitleStyle?.copyWith(fontSize: 18),
+                          style: context.cardTitleStyle.copyWith(fontSize: 18),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),

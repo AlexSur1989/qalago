@@ -73,9 +73,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
             ref.invalidate(unreadNotificationsProvider);
           },
           child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
             children: [
               _CategoriesHeader(

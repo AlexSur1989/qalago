@@ -27,12 +27,6 @@
 
 ---
 
-## 2026-09-16 — Stage 6.11A.UI.2: Shared QalaGo UI components
-
-- **Added**: Canonical shared widgets — buttons, icon button, page title, section header, empty state, loading indicator; barrel `qalago_components.dart`.
-- **Changed**: Normalized `QalagoSearchField`, `LoadingView`, `ErrorView` on design foundations; removed UI.1-only changelog entry per stage policy.
-- **Future**: 6.11A.UI.3 navigation + platform adaptation.
-
 ## 2026-09-16 — Stage 6.10D.2: Business Web UX / localization / discoverability
 
 - **Changed**: User-visible «Сообщения» → «Уведомления» / «Хабарландырулар» (`/messages` route kept); notification dates use RU/KK locale formatting.
