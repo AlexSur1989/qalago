@@ -99,10 +99,24 @@ class AppLocalizationsRu extends AppLocalizations {
   String get homeRecommendedSection => 'Рекомендуем';
 
   @override
+  String get homePopularSection => 'Популярное';
+
+  @override
   String get homeNearbySubtitle => 'Места рядом с вами · до 3 км';
 
   @override
   String get homeNearbyEmpty => 'В радиусе 3 км от вас пока нет заведений';
+
+  @override
+  String get homeNearbyCitySection => 'Места в городе';
+
+  @override
+  String get homeNearbyCitySubtitle =>
+      'Заведения в радиусе 3 км от центра города';
+
+  @override
+  String get homeNearbyCityEmpty =>
+      'В радиусе 3 км от центра города пока нет заведений';
 
   @override
   String get homeNotificationsTooltip => 'Уведомления';

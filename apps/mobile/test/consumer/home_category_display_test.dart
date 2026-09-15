@@ -11,17 +11,23 @@ CategoryModel _cat(int i) => CategoryModel(
     );
 
 void main() {
-  test('sliceHomeCategories shows more when exceeding two rows', () {
+  test('sliceHomeCategories exposes eight primaries and All action', () {
     final all = List.generate(10, _cat);
-    final slice = sliceHomeCategories(all, 4);
-    expect(slice.preview.length, 7);
-    expect(slice.showMore, isTrue);
+    final slice = sliceHomeCategories(all);
+    expect(slice.preview.length, homePrimaryCategoryCount);
+    expect(slice.showAllCategories, isTrue);
   });
 
-  test('sliceHomeCategories fits small lists without more', () {
+  test('sliceHomeCategories keeps short lists with All action', () {
     final all = List.generate(6, _cat);
-    final slice = sliceHomeCategories(all, 4);
+    final slice = sliceHomeCategories(all);
     expect(slice.preview.length, 6);
-    expect(slice.showMore, isFalse);
+    expect(slice.showAllCategories, isTrue);
+  });
+
+  test('sliceHomeCategories empty list hides All', () {
+    final slice = sliceHomeCategories([]);
+    expect(slice.preview, isEmpty);
+    expect(slice.showAllCategories, isFalse);
   });
 }

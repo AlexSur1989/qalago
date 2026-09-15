@@ -1,146 +1,44 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/navigation/open_business.dart';
-import '../../../core/constants/app_constants.dart';
-import '../../../core/location/user_location_provider.dart';
 import '../../../core/providers/city_catalog_provider.dart';
 import '../../../core/providers/city_provider.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../shared/widgets/qalago_search_field.dart';
-import '../../../shared/models/models.dart';
-import '../../../shared/utils/business_rank.dart';
-import '../../../shared/widgets/qalago_logo.dart';
-import '../../../shared/widgets/empty_city_view.dart';
-import '../../../shared/widgets/city_picker.dart';
-import '../../../shared/widgets/error_view.dart';
-import '../../../shared/widgets/loading_view.dart';
-import '../../auth/presentation/dev_quick_login_panel.dart';
-import '../../analytics/widgets/business_impression_host.dart';
-import '../../auth/providers/auth_provider.dart';
-import '../../categories/data/home_category_display.dart';
-import '../../categories/presentation/category_businesses_screen.dart';
-import '../../categories/utils/category_display.dart';
 import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/locale/localized_content.dart';
-import '../../../core/locale/consumer_api_errors.dart';
-import '../../../core/locale/l10n_extension.dart';
-import '../../../shared/widgets/category_icon_tile.dart';
+import '../../auth/presentation/dev_quick_login_panel.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../ads/providers/ad_serve_provider.dart';
 import '../../ads/widgets/home_ad_slots.dart';
+import '../../catalog/data/catalog_repository.dart';
+import '../../categories/presentation/category_businesses_screen.dart';
 import '../providers/home_organic_recommendations_provider.dart';
+import 'home_layout.dart';
+import 'sections/home_categories_section.dart';
+import 'sections/home_header_section.dart';
+import 'sections/home_nearby_section.dart';
+import 'sections/home_popular_section.dart';
+import 'sections/home_promoted_section.dart';
+import 'sections/home_promotions_section.dart';
+import 'sections/home_search_section.dart';
+import '../../../shared/widgets/city_picker.dart';
+import '../../../shared/widgets/empty_city_view.dart';
+import '../../../shared/widgets/loading_view.dart';
 
-class HomeScreen extends ConsumerStatefulWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  ConsumerState<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends ConsumerState<HomeScreen> {
-  Timer? _featuredTimer;
-  int _featuredIndex = 0;
-  int _featuredItemsCount = 0;
-
-  @override
-  void dispose() {
-    _featuredTimer?.cancel();
-    super.dispose();
-  }
-
-  BusinessesQuery _businessesQuery(UserPosition userPosition) => BusinessesQuery(
-        latitude: userPosition.latitude,
-        longitude: userPosition.longitude,
-        radiusKm: nearbyRadiusKm,
-      );
-
-  void _syncFeaturedItemsCount(int count) {
-    final changed = count != _featuredItemsCount;
-    _featuredItemsCount = count;
-    if (count == 0 || _featuredIndex >= count) {
-      _featuredIndex = 0;
-    }
-    if (!changed) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _restartFeaturedTimer();
-    });
-  }
-
-  void _restartFeaturedTimer() {
-    _featuredTimer?.cancel();
-    if (_featuredItemsCount <= 1) return;
-    _featuredTimer = Timer(const Duration(seconds: 3), () {
-      if (!mounted || _featuredItemsCount <= 1) return;
-      setState(() {
-        _featuredIndex = (_featuredIndex + 1) % _featuredItemsCount;
-      });
-      _restartFeaturedTimer();
-    });
-  }
-
-  void _showPreviousFeatured() {
-    if (_featuredItemsCount <= 1) return;
-    setState(() {
-      _featuredIndex =
-          (_featuredIndex - 1 + _featuredItemsCount) % _featuredItemsCount;
-    });
-    _restartFeaturedTimer();
-  }
-
-  void _showNextFeatured() {
-    if (_featuredItemsCount <= 1) return;
-    setState(() {
-      _featuredIndex = (_featuredIndex + 1) % _featuredItemsCount;
-    });
-    _restartFeaturedTimer();
-  }
-
-  void _openCategory(CategoryModel category) {
-    final localeCode = resolveLocaleCode(ref.read(appLocaleCodeProvider));
-    openCategory(context, category, localeCode: localeCode);
-  }
-
-  Future<void> _showCityPicker() async {
-    await showCityPickerSheet(context, ref);
-  }
-
-  void _openPromotion(PromotionModel promotion) {
-    final business = promotion.business;
-    if (business == null) return;
-    unawaited(
-      ref.read(catalogRepositoryProvider).trackPromotionView(
-            business.id,
-            promotionId: promotion.id,
-          ),
-    );
-    openBusiness(context, business.id, BusinessTrafficSource.promotions);
-  }
-
-  void _openPaidPromotion(PromotionModel promotion) {
-    openAdPromotion(context, promotion);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
+  Widget build(BuildContext context, WidgetRef ref) {
     final city = ref.watch(cityProvider);
-    final nearbyPosition = ref.watch(nearbySearchPositionProvider);
-    final categoriesAsync = ref.watch(categoriesProvider);
-    final businessesAsync = ref.watch(
-      businessesProvider(_businessesQuery(nearbyPosition)),
-    );
-    final featuredAsync = ref.watch(homeOrganicRecommendationsProvider);
-    final promotionsAsync = ref.watch(promotionsProvider);
-    final unreadAsync = ref.watch(unreadNotificationsProvider);
     final catalogTotalAsync = ref.watch(cityCatalogTotalProvider);
     final isEmptyCity =
         catalogTotalAsync.hasValue && catalogTotalAsync.value == 0;
+    final localeCode = resolveLocaleCode(ref.watch(appLocaleCodeProvider));
 
     return Scaffold(
       body: SafeArea(
@@ -157,143 +55,87 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             invalidateAdProviders(ref);
           },
           child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
+            physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+                  padding: const EdgeInsets.fromLTRB(
+                    HomeLayout.horizontalPadding,
+                    HomeLayout.topPadding,
+                    HomeLayout.horizontalPadding,
+                    HomeLayout.bottomPadding,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _HomeHeader(
+                      HomeHeaderSection(
+                        key: const Key('home_section_header'),
                         cityName: ref.watch(cityLocalizedNameProvider),
-                        unreadAsync: unreadAsync,
-                        onCityTap: _showCityPicker,
+                        unreadAsync: ref.watch(unreadNotificationsProvider),
+                        onCityTap: () => showCityPickerSheet(context, ref),
                         onNotificationsTap: () =>
                             context.push('/notifications'),
                       ),
                       const DevQuickLoginPanel(),
-                      const SizedBox(height: 20),
-                      _SearchBox(
+                      const SizedBox(height: HomeLayout.blockGap),
+                      HomeSearchSection(
+                        key: const Key('home_section_search'),
                         onTap: () => context.push('/search'),
                       ),
-                      const SizedBox(height: 20),
-                      if (catalogTotalAsync.isLoading && !catalogTotalAsync.hasValue)
+                      const SizedBox(height: HomeLayout.blockGap),
+                      if (catalogTotalAsync.isLoading &&
+                          !catalogTotalAsync.hasValue)
                         const SizedBox(height: 280, child: LoadingView())
                       else if (isEmptyCity)
                         EmptyCityView(
                           cityName: ref.watch(cityLocalizedNameProvider),
                           isComingSoon: city.isComingSoon,
-                          onPickCity: _showCityPicker,
+                          onPickCity: () => showCityPickerSheet(context, ref),
                         )
                       else ...[
-                      categoriesAsync.when(
-                        loading: () =>
-                            const SizedBox(height: 130, child: LoadingView()),
-                        error: (e, _) {
-                          assert(() {
-                            debugPrint('[QalaGo Home] categories error: $e');
-                            return true;
-                          }());
-                          return ErrorView(
-                            message: localizedLoadError(l10n, e),
-                            onRetry: () => ref.invalidate(categoriesProvider),
-                          );
-                        },
-                        data: (categories) => _CategoryIconGrid(
-                          categories: categories,
-                          localeCode: resolveLocaleCode(ref.watch(appLocaleCodeProvider)),
-                          onSelected: _openCategory,
-                          onMore: () => context.push('/categories'),
+                        HomeCategoriesSection(
+                          localeCode: localeCode,
+                          onCategorySelected: (category) {
+                            openCategory(
+                              context,
+                              category,
+                              localeCode: localeCode,
+                            );
+                          },
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                      const HomeVipBannerSlot(),
-                      _SectionHeader(
-                        title: l10n.homePromotionsSection,
-                        actionLabel: l10n.commonViewAll,
-                        onAction: () => context.push('/promotions'),
-                      ),
-                      const SizedBox(height: 12),
-                      promotionsAsync.when(
-                        loading: () =>
-                            const SizedBox(height: 210, child: LoadingView()),
-                        error: (e, _) {
-                          assert(() {
-                            debugPrint('[QalaGo Home] promotions error: $e');
-                            return true;
-                          }());
-                          return ErrorView(
-                            message: localizedLoadError(l10n, e),
-                            onRetry: () => ref.invalidate(promotionsProvider),
-                          );
-                        },
-                        data: (paginated) => _PromotionsStrip(
-                          localeCode: resolveLocaleCode(
-                            ref.watch(appLocaleCodeProvider),
-                          ),
-                          items: paginated.items.take(6).toList(),
-                          onTap: _openPromotion,
+                        const SizedBox(height: HomeLayout.sectionGap),
+                        const HomeVipBannerSlot(),
+                        // Canonical #5 QalaGo AI — reserved, not rendered in UI.4B.
+                        const SizedBox(height: HomeLayout.sectionGap),
+                        const HomeNearbySection(),
+                        const SizedBox(height: HomeLayout.sectionGap),
+                        const HomePromotedSection(),
+                        const SizedBox(height: HomeLayout.sectionGap),
+                        HomePromotionsSection(
+                          onOrganicPromotionTap: (promotion) {
+                            final business = promotion.business;
+                            if (business == null) return;
+                            unawaited(
+                              ref
+                                  .read(catalogRepositoryProvider)
+                                  .trackPromotionView(
+                                    business.id,
+                                    promotionId: promotion.id,
+                                  ),
+                            );
+                            openBusiness(
+                              context,
+                              business.id,
+                              BusinessTrafficSource.promotions,
+                            );
+                          },
+                          onPaidPromotionTap: (promotion) {
+                            openAdPromotion(context, promotion);
+                          },
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                      HomePromotionsAdSlot(onPromotionTap: _openPaidPromotion),
-                      _SectionHeader(
-                        title: l10n.homeRecommendedSection,
-                        actionLabel: _featuredItemsCount > 1
-                            ? '${_featuredIndex + 1} / $_featuredItemsCount'
-                            : null,
-                      ),
-                      const SizedBox(height: 12),
-                      featuredAsync.when(
-                        loading: () =>
-                            const SizedBox(height: 194, child: LoadingView()),
-                        error: (e, _) {
-                          assert(() {
-                            debugPrint('[QalaGo Home] featured error: $e');
-                            return true;
-                          }());
-                          return ErrorView(
-                            message: localizedLoadError(l10n, e),
-                            onRetry: () {
-                              ref.invalidate(homeOrganicRecommendationsProvider);
-                              ref.invalidate(recommendedBusinessesProvider);
-                            },
-                          );
-                        },
-                        data: (items) {
-                          _syncFeaturedItemsCount(items.length);
-                          return _PopularPlacesCarousel(
-                            items: items,
-                            index: _featuredIndex,
-                            onPrevious: _showPreviousFeatured,
-                            onNext: _showNextFeatured,
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 24),
-                      const HomeFeaturedAdSlot(),
-                      _SectionHeader(
-                        title: l10n.homeNearbySection,
-                        subtitle: l10n.homeNearbySubtitle,
-                      ),
-                      const SizedBox(height: 12),
-                      businessesAsync.when(
-                        loading: () => const LoadingView(),
-                        error: (e, _) {
-                          assert(() {
-                            debugPrint('[QalaGo Home] nearby error: $e');
-                            return true;
-                          }());
-                          return ErrorView(
-                            message: localizedLoadError(l10n, e),
-                            onRetry: () => ref.invalidate(businessesProvider),
-                          );
-                        },
-                        data: (data) => _NearbyBusinessList(items: data.items),
-                      ),
+                        const SizedBox(height: HomeLayout.sectionGap),
+                        const HomePopularSection(),
+                        // Canonical #8 Events / #11 News — reserved, not rendered.
                       ],
                     ],
                   ),
@@ -305,795 +147,4 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
-}
-
-class _HomeHeader extends StatelessWidget {
-  const _HomeHeader({
-    required this.cityName,
-    required this.unreadAsync,
-    required this.onCityTap,
-    required this.onNotificationsTap,
-  });
-
-  final String cityName;
-  final AsyncValue<int> unreadAsync;
-  final VoidCallback onCityTap;
-  final VoidCallback onNotificationsTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: const QalaGoLogo(fontSize: 38, fit: true),
-        ),
-        const SizedBox(width: 12),
-        CityPill(cityName: cityName, onTap: onCityTap),
-        const SizedBox(width: 10),
-        unreadAsync.when(
-          data: (count) =>
-              _NotificationIcon(count: count, onTap: onNotificationsTap),
-          loading: () => _NotificationIcon(count: 0, onTap: onNotificationsTap),
-          error: (_, _) =>
-              _NotificationIcon(count: 0, onTap: onNotificationsTap),
-        ),
-      ],
-    );
-  }
-}
-
-class _NotificationIcon extends StatelessWidget {
-  const _NotificationIcon({required this.count, required this.onTap});
-
-  final int count;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      tooltip: context.l10n.homeNotificationsTooltip,
-      onPressed: onTap,
-      icon: Badge(
-        isLabelVisible: count > 0,
-        label: Text('$count'),
-        backgroundColor: AppTheme.kzGold,
-        textColor: AppTheme.textDark,
-        child: Icon(
-          Icons.notifications_none_rounded,
-          size: 31,
-          color: Theme.of(context).colorScheme.onSurface,
-        ),
-      ),
-    );
-  }
-}
-
-class _SearchBox extends StatelessWidget {
-  const _SearchBox({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return QalagoSearchField(
-      readOnly: true,
-      onTap: onTap,
-      hintText: context.l10n.homeSearchPlaceholder,
-    );
-  }
-}
-
-class _CategoryIconGrid extends StatelessWidget {
-  const _CategoryIconGrid({
-    required this.categories,
-    required this.localeCode,
-    required this.onSelected,
-    required this.onMore,
-  });
-
-  final List<CategoryModel> categories;
-  final String localeCode;
-  final ValueChanged<CategoryModel> onSelected;
-  final VoidCallback onMore;
-
-  @override
-  Widget build(BuildContext context) {
-    if (categories.isEmpty) {
-      return SizedBox(
-        height: 100,
-        child: Center(child: Text(context.l10n.homeCategoriesEmpty)),
-      );
-    }
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final columns = homeCategoryGridColumns(constraints.maxWidth);
-        final slice = sliceHomeCategories(categories, columns);
-        const spacing = 6.0;
-        final itemWidth = (constraints.maxWidth - spacing * (columns - 1)) / columns;
-
-        return Wrap(
-          spacing: spacing,
-          runSpacing: 4,
-          children: [
-            for (final category in slice.preview)
-              SizedBox(
-                width: itemWidth,
-                child: CategoryIconTile(
-                  label: categoryDisplayName(category, localeCode: localeCode),
-                  iconPath: category.icon,
-                  onTap: () => onSelected(category),
-                ),
-              ),
-            if (slice.showMore)
-              SizedBox(
-                width: itemWidth,
-                child: CategoryMoreTile(onTap: onMore),
-              ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({
-    required this.title,
-    this.subtitle,
-    this.actionLabel,
-    this.onAction,
-  });
-
-  final String title;
-  final String? subtitle;
-  final String? actionLabel;
-  final VoidCallback? onAction;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Text(
-                title,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: AppTheme.textDark,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0,
-                ),
-              ),
-            ),
-            if (actionLabel != null)
-              if (onAction != null)
-                TextButton.icon(
-                  onPressed: onAction,
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppTheme.kzBlue,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                  ),
-                  iconAlignment: IconAlignment.end,
-                  label: Text(
-                    actionLabel!,
-                    style: const TextStyle(fontWeight: FontWeight.w800),
-                  ),
-                  icon: const Icon(Icons.chevron_right, size: 22),
-                )
-              else
-                Text(
-                  actionLabel!,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-          ],
-        ),
-        if (subtitle != null) ...[
-          const SizedBox(height: 4),
-          Text(
-            subtitle!,
-            style: TextStyle(color: AppTheme.textDark.withValues(alpha: 0.55)),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _PromotionsStrip extends StatelessWidget {
-  const _PromotionsStrip({
-    required this.localeCode,
-    required this.items,
-    required this.onTap,
-  });
-
-  final String localeCode;
-  final List<PromotionModel> items;
-  final ValueChanged<PromotionModel> onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    if (items.isEmpty) {
-      return SizedBox(
-        height: 96,
-        child: Center(child: Text(context.l10n.homePromotionsEmpty)),
-      );
-    }
-
-    return SizedBox(
-      height: 210,
-      child: ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(
-          dragDevices: {
-            PointerDeviceKind.touch,
-            PointerDeviceKind.mouse,
-            PointerDeviceKind.trackpad,
-            PointerDeviceKind.stylus,
-            PointerDeviceKind.unknown,
-          },
-        ),
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          itemCount: items.length,
-          separatorBuilder: (_, _) => const SizedBox(width: 12),
-          itemBuilder: (context, index) => _PromotionCard(
-            localeCode: localeCode,
-            promotion: items[index],
-            onTap: () => onTap(items[index]),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PromotionCard extends StatelessWidget {
-  const _PromotionCard({
-    required this.localeCode,
-    required this.promotion,
-    required this.onTap,
-  });
-
-  final String localeCode;
-  final PromotionModel promotion;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final displayTitle = promotionTitle(
-      localeCode: localeCode,
-      title: promotion.title,
-      titleKk: promotion.titleKk,
-    );
-    final displayDescription = promotionDescription(
-      localeCode: localeCode,
-      description: promotion.description,
-      descriptionKk: promotion.descriptionKk,
-    );
-    final imageUrl = AppConstants.resolveMediaUrl(
-      promotion.imageUrl ?? promotion.business?.coverImageUrl,
-    );
-
-    return SizedBox(
-      width: 210,
-      child: Material(
-        color: Colors.white,
-        elevation: 2,
-        shadowColor: Colors.black.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: promotion.business != null ? onTap : null,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16),
-                ),
-                child: Stack(
-                  children: [
-                    if (imageUrl.isNotEmpty)
-                      Image.network(
-                        imageUrl,
-                        width: double.infinity,
-                        height: 100,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => _imagePlaceholder(116),
-                      )
-                    else
-                      _imagePlaceholder(116),
-                    if (promotion.discountText != null)
-                      Positioned(
-                        left: 10,
-                        top: 10,
-                        child: _DiscountBadge(text: promotion.discountText!),
-                      ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      displayTitle,
-                      style: const TextStyle(
-                        color: AppTheme.textDark,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        height: 1.15,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 7),
-                    Text(
-                      promotion.business?.title ?? 'QalaGo',
-                      style: const TextStyle(
-                        color: AppTheme.textMuted,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (displayDescription != null) ...[
-                      const SizedBox(height: 7),
-                      Text(
-                        displayDescription,
-                        style: const TextStyle(
-                          color: AppTheme.textMuted,
-                          fontSize: 12,
-                          height: 1.2,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PopularPlacesCarousel extends StatelessWidget {
-  const _PopularPlacesCarousel({
-    required this.items,
-    required this.index,
-    required this.onPrevious,
-    required this.onNext,
-  });
-
-  final List<RecommendedBusiness> items;
-  final int index;
-  final VoidCallback onPrevious;
-  final VoidCallback onNext;
-
-  @override
-  Widget build(BuildContext context) {
-    if (items.isEmpty) {
-      return SizedBox(
-        height: 120,
-        child: Center(child: Text(context.l10n.homePopularEmpty)),
-      );
-    }
-
-    final canMove = items.length > 1;
-    final effectiveIndex = index < items.length ? index : 0;
-
-    return SizedBox(
-      height: 194,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 320),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.easeInCubic,
-            transitionBuilder: (child, animation) => FadeTransition(
-              opacity: animation,
-              child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0.05, 0),
-                  end: Offset.zero,
-                ).animate(animation),
-                child: child,
-              ),
-            ),
-            child: LayoutBuilder(
-              key: ValueKey(effectiveIndex),
-              builder: (context, constraints) {
-                final cardCount = items.length >= 3 ? 3 : items.length;
-                final visible = List.generate(cardCount, (offset) {
-                  return items[(effectiveIndex + offset) % items.length];
-                });
-
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    for (var i = 0; i < visible.length; i++) ...[
-                      Expanded(
-                        child: BusinessImpressionHost(
-                          businessId: visible[i].business.id,
-                          trafficSource: BusinessTrafficSource.home,
-                          discoverySurface: 'HOME_RECOMMENDED',
-                          child: _PopularPlaceCard(
-                            business: visible[i].business,
-                            subtitle: visible[i].reason,
-                          ),
-                        ),
-                      ),
-                      if (i != visible.length - 1) const SizedBox(width: 12),
-                    ],
-                  ],
-                );
-              },
-            ),
-          ),
-          if (canMove) ...[
-            Positioned(
-              left: -12,
-              top: 46,
-              child: _RoundNavButton(
-                tooltip: context.l10n.homeFeaturedPrevTooltip,
-                icon: Icons.chevron_left,
-                onPressed: onPrevious,
-              ),
-            ),
-            Positioned(
-              right: -12,
-              top: 46,
-              child: _RoundNavButton(
-                tooltip: context.l10n.homeFeaturedNextTooltip,
-                icon: Icons.chevron_right,
-                onPressed: onNext,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _PopularPlaceCard extends StatelessWidget {
-  const _PopularPlaceCard({
-    required this.business,
-    required this.subtitle,
-  });
-
-  final BusinessModel business;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final coverUrl = AppConstants.resolveMediaUrl(business.coverImageUrl);
-
-    return Material(
-      color: Colors.white,
-      elevation: 2,
-      shadowColor: Colors.black.withValues(alpha: 0.12),
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => openBusiness(context, business.id, BusinessTrafficSource.home),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: 100,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16),
-                ),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    if (coverUrl.isNotEmpty)
-                      Image.network(
-                        coverUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => _imagePlaceholder(null),
-                      )
-                    else
-                      _imagePlaceholder(null),
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Padding(
-                          padding: EdgeInsets.all(5),
-                          child: Icon(
-                            Icons.favorite_border,
-                            color: AppTheme.textDark,
-                            size: 19,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    business.title,
-                    style: const TextStyle(
-                      color: AppTheme.textDark,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      height: 1.1,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 7),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.star,
-                        color: Theme.of(context).colorScheme.primary,
-                        size: 17,
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          subtitle.isNotEmpty
-                              ? subtitle
-                              : (business.planBadgeLabel ??
-                                  business.categoryTitle ??
-                                  'QalaGo'),
-                          style: const TextStyle(
-                            color: AppTheme.textMuted,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _NearbyBusinessList extends StatelessWidget {
-  const _NearbyBusinessList({required this.items});
-
-  final List<BusinessModel> items;
-
-  static const _maxPreviewItems = 12;
-
-  @override
-  Widget build(BuildContext context) {
-    if (items.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.all(24),
-        child: Center(
-          child: Text(
-            context.l10n.homeNearbyEmpty,
-            textAlign: TextAlign.center,
-          ),
-        ),
-      );
-    }
-
-    final preview = sortNearbyBusinesses(items).take(_maxPreviewItems).toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (final business in preview) ...[
-          BusinessImpressionHost(
-            businessId: business.id,
-            trafficSource: BusinessTrafficSource.home,
-            discoverySurface: 'NEARBY_LIST',
-            child: _NearbyBusinessTile(business: business),
-          ),
-          const SizedBox(height: 12),
-        ],
-      ],
-    );
-  }
-}
-
-class _NearbyBusinessTile extends StatelessWidget {
-  const _NearbyBusinessTile({required this.business});
-
-  final BusinessModel business;
-
-  @override
-  Widget build(BuildContext context) {
-    final coverUrl = AppConstants.resolveMediaUrl(business.coverImageUrl);
-
-    return Material(
-      color: Colors.white,
-      elevation: 2,
-      shadowColor: Colors.black.withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => openBusiness(context, business.id, BusinessTrafficSource.home),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: coverUrl.isNotEmpty
-                    ? Image.network(
-                        coverUrl,
-                        width: 112,
-                        height: 92,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => _imagePlaceholder(92),
-                      )
-                    : _imagePlaceholder(92, width: 112),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      business.title,
-                      style: const TextStyle(
-                        color: AppTheme.textDark,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      business.categoryTitle ?? context.l10n.businessGenericName,
-                      style: const TextStyle(
-                        color: AppTheme.textMuted,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (business.shortDesc != null) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        business.shortDesc!,
-                        style: const TextStyle(
-                          color: AppTheme.textMuted,
-                          fontSize: 13,
-                          height: 1.25,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on_outlined,
-                          color: AppTheme.textMuted,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            business.distanceMeters != null
-                                ? '${formatDistanceMeters(business.distanceMeters)} · ${business.address}'
-                                : business.address,
-                            style: const TextStyle(
-                              color: AppTheme.textMuted,
-                              fontSize: 12,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _RoundNavButton extends StatelessWidget {
-  const _RoundNavButton({
-    required this.tooltip,
-    required this.icon,
-    required this.onPressed,
-  });
-
-  final String tooltip;
-  final IconData icon;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      elevation: 3,
-      shadowColor: Colors.black.withValues(alpha: 0.16),
-      shape: const CircleBorder(),
-      child: IconButton(
-        tooltip: tooltip,
-        onPressed: onPressed,
-        icon: Icon(icon, color: AppTheme.kzBlue, size: 26),
-      ),
-    );
-  }
-}
-
-class _DiscountBadge extends StatelessWidget {
-  const _DiscountBadge({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppTheme.kzBlue,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-        child: Text(
-          text,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-Widget _imagePlaceholder(double? height, {double? width}) {
-  return Container(
-    width: width ?? double.infinity,
-    height: height,
-    color: AppTheme.background,
-    child: const Center(
-      child: Icon(Icons.storefront, color: AppTheme.textMuted),
-    ),
-  );
 }

@@ -1,24 +1,29 @@
 import '../../../shared/models/models.dart';
 
 class HomeCategorySlice {
-  const HomeCategorySlice({required this.preview, required this.showMore});
+  const HomeCategorySlice({
+    required this.preview,
+    required this.showAllCategories,
+  });
 
+  /// Up to [homePrimaryCategoryCount] primary shortcuts on Home.
   final List<CategoryModel> preview;
-  final bool showMore;
+
+  /// Separate «All categories» action (not a grid cell).
+  final bool showAllCategories;
 }
 
-/// Two rows on home + optional «Ещё» (UI-only, not a DB category).
-HomeCategorySlice sliceHomeCategories(List<CategoryModel> all, int columns) {
-  if (columns < 2) columns = 2;
-  final capacity = columns * 2;
-  if (all.length <= capacity) {
-    return HomeCategorySlice(preview: all, showMore: false);
+/// Eight primary category shortcuts; «All» is handled outside the grid.
+const homePrimaryCategoryCount = 8;
+
+HomeCategorySlice sliceHomeCategories(List<CategoryModel> all) {
+  if (all.isEmpty) {
+    return const HomeCategorySlice(preview: [], showAllCategories: false);
   }
-  final previewCount = capacity - 1;
-  return HomeCategorySlice(
-    preview: all.take(previewCount).toList(growable: false),
-    showMore: true,
-  );
+  final preview = all.length <= homePrimaryCategoryCount
+      ? all
+      : all.take(homePrimaryCategoryCount).toList(growable: false);
+  return HomeCategorySlice(preview: preview, showAllCategories: true);
 }
 
 int homeCategoryGridColumns(double width) {

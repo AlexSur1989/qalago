@@ -23,10 +23,12 @@ class SponsoredBusinessSection extends ConsumerWidget {
     super.key,
     required this.title,
     required this.items,
+    this.maxVisible,
   });
 
   final String title;
   final List<AdItemModel> items;
+  final int? maxVisible;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,11 +36,15 @@ class SponsoredBusinessSection extends ConsumerWidget {
 
     final sessionId = ref.watch(adSessionIdProvider);
     final tracking = ref.read(adTrackingServiceProvider);
+    final visibleItems = maxVisible != null && maxVisible! > 0
+        ? items.take(maxVisible!).toList(growable: false)
+        : items;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: Text(
@@ -54,7 +60,7 @@ class SponsoredBusinessSection extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 12),
-        for (final item in items) ...[
+        for (final item in visibleItems) ...[
           _SponsoredBusinessTile(
             item: item,
             adContext: item.toContext(sessionId),

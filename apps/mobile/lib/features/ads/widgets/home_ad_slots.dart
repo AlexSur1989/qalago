@@ -20,11 +20,9 @@ class HomeVipBannerSlot extends ConsumerWidget {
     return adsAsync.when(
       data: (items) {
         if (items.isEmpty) return const SizedBox.shrink();
-        return Column(
-          children: [
-            VipBannerAd(item: items.first),
-            const SizedBox(height: 24),
-          ],
+        return VipBannerAd(
+          key: const Key('home_section_vip'),
+          item: items.first,
         );
       },
       loading: () => const SizedBox.shrink(),
@@ -47,14 +45,9 @@ class HomePromotionsAdSlot extends ConsumerWidget {
     return adsAsync.when(
       data: (items) {
         if (items.isEmpty) return const SizedBox.shrink();
-        return Column(
-          children: [
-            SponsoredPromotionStrip(
-              items: items,
-              onTap: onPromotionTap,
-            ),
-            const SizedBox(height: 24),
-          ],
+        return SponsoredPromotionStrip(
+          items: items,
+          onTap: onPromotionTap,
         );
       },
       loading: () => const SizedBox.shrink(),
@@ -72,14 +65,10 @@ class HomeFeaturedAdSlot extends ConsumerWidget {
     return adsAsync.when(
       data: (items) {
         if (items.isEmpty) return const SizedBox.shrink();
-        return Column(
-          children: [
-            SponsoredBusinessSection(
-              title: context.l10n.categorySponsored,
-              items: items,
-            ),
-            const SizedBox(height: 24),
-          ],
+        return SponsoredBusinessSection(
+          title: context.l10n.categorySponsored,
+          items: items,
+          maxVisible: 4,
         );
       },
       loading: () => const SizedBox.shrink(),

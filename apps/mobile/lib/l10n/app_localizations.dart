@@ -278,6 +278,12 @@ abstract class AppLocalizations {
   /// **'Рекомендуем'**
   String get homeRecommendedSection;
 
+  /// No description provided for @homePopularSection.
+  ///
+  /// In ru, this message translates to:
+  /// **'Популярное'**
+  String get homePopularSection;
+
   /// No description provided for @homeNearbySubtitle.
   ///
   /// In ru, this message translates to:
@@ -289,6 +295,24 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'В радиусе 3 км от вас пока нет заведений'**
   String get homeNearbyEmpty;
+
+  /// No description provided for @homeNearbyCitySection.
+  ///
+  /// In ru, this message translates to:
+  /// **'Места в городе'**
+  String get homeNearbyCitySection;
+
+  /// No description provided for @homeNearbyCitySubtitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заведения в радиусе 3 км от центра города'**
+  String get homeNearbyCitySubtitle;
+
+  /// No description provided for @homeNearbyCityEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'В радиусе 3 км от центра города пока нет заведений'**
+  String get homeNearbyCityEmpty;
 
   /// No description provided for @homeNotificationsTooltip.
   ///

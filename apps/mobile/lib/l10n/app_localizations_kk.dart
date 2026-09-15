@@ -99,10 +99,24 @@ class AppLocalizationsKk extends AppLocalizations {
   String get homeRecommendedSection => 'Ұсынамыз';
 
   @override
+  String get homePopularSection => 'Танымал';
+
+  @override
   String get homeNearbySubtitle => 'Жаныңыздағы орындар · 3 км дейін';
 
   @override
   String get homeNearbyEmpty => '3 км радиусында әлі мекемелер жоқ';
+
+  @override
+  String get homeNearbyCitySection => 'Қаладағы орындар';
+
+  @override
+  String get homeNearbyCitySubtitle =>
+      'Қала орталығынан 3 км радиусындағы мекемелер';
+
+  @override
+  String get homeNearbyCityEmpty =>
+      'Қала орталығынан 3 км радиусында әлі мекемелер жоқ';
 
   @override
   String get homeNotificationsTooltip => 'Хабарландырулар';
