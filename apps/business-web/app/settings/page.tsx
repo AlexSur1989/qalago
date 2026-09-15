@@ -1,6 +1,7 @@
 'use client';
 
-import { useUi } from '@/components/locale-provider';
+import { useLocale, useUi } from '@/components/locale-provider';
+import { parseApiError } from '@/lib/monetization-utils';
 import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
 import { BusinessRow, myBusinessRows, ownerApi } from '@/lib/api';
@@ -8,6 +9,7 @@ import { useAuth } from '@/lib/use-auth';
 import { BusinessShell, useSelectedBusiness } from '@/components/business-shell';
 
 export default function SettingsPage() {
+  const locale = useLocale();
   const ui = useUi();
 
   const { token, user, ready, logout } = useAuth();
@@ -40,7 +42,7 @@ export default function SettingsPage() {
       setName(updated.name ?? '');
       setMessage(ui.___6b48a6);
     } catch (err) {
-      setError(String(err));
+      setError(parseApiError(locale, err));
     } finally {
       setSaving(false);
     }

@@ -26,6 +26,7 @@ import {
 } from '@/lib/business-access';
 import { useBusinessAccess } from '@/lib/use-business-access';
 import { BusinessShell } from '@/components/business-shell';
+import { parseApiError } from '@/lib/monetization-utils';
 
 export default function BusinessTeamPage() {
   const locale = useLocale();
@@ -64,9 +65,9 @@ export default function BusinessTeamPage() {
 
   useEffect(() => {
     if (!token || !ownerAccess) return;
-    loadTeam(token).catch((err) => setError(String(err)));
+    loadTeam(token).catch((err) => setError(parseApiError(locale, err)));
     ownerApi.listTeamAudit(token, businessId).then((res) => setTeamAudit(res.items)).catch(() => undefined);
-  }, [token, businessId, ownerAccess]);
+  }, [token, businessId, ownerAccess, locale]);
 
   function togglePermission(permission: BusinessPermission) {
     setSelectedPermissions((prev) => {
@@ -127,7 +128,7 @@ export default function BusinessTeamPage() {
           : ui.____d8cfec,
       );
     } catch (err) {
-      setError(String(err));
+      setError(parseApiError(locale, err));
     } finally {
       setLoading(false);
     }
@@ -171,7 +172,7 @@ export default function BusinessTeamPage() {
       await loadTeam(token);
       setSuccess(ui.__fdb02d);
     } catch (err) {
-      setError(String(err));
+      setError(parseApiError(locale, err));
     } finally {
       setLoading(false);
     }
@@ -187,7 +188,7 @@ export default function BusinessTeamPage() {
       await loadTeam(token);
       setSuccess(ui.__666e84);
     } catch (err) {
-      setError(String(err));
+      setError(parseApiError(locale, err));
     } finally {
       setLoading(false);
     }

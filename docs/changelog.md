@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-16 — Stage 6.10D.1: Business Web mobile nav & error hygiene
+
+- **Added**: Mobile drawer for existing `BusinessShell` sidebar below 900px (menu control, backdrop, Escape, route-close); RU/KK `shellOpenNavigation` / `shellCloseNavigation`.
+- **Fixed**: P1 owner routes use centralized `parseApiError` / `mapLoginRouteError` with technical error sanitization in `parseApiErrorMessage`.
+- **Future**: 6.10D.2 UX/localization/discoverability (messages rename, sidebar links, hardcoded RU cleanup).
+
 ## 2026-09-16 — Stage 6.10C.QA: Business cabinet closure QA
 
 - **Business Web**: profile subcategory chips use `subcategoryDisplayName` (KK with RU fallback); regression tests.

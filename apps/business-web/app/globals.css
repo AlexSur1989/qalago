@@ -63,6 +63,8 @@ select {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: nowrap;
+  width: 100%;
   padding: 20px 18px 12px;
   font-weight: 700;
   font-size: 1.15rem;
@@ -1154,13 +1156,42 @@ select {
   }
 }
 
+.shell-nav-backdrop {
+  display: none;
+}
+
 @media (max-width: 900px) {
+  .shell-nav-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 19;
+    border: none;
+    padding: 0;
+    margin: 0;
+    background: rgba(15, 23, 42, 0.45);
+    cursor: pointer;
+  }
+
   .sidebar {
     transform: translateX(-100%);
+    transition: transform 0.2s ease, width 0.2s ease;
+    z-index: 20;
   }
 
   .sidebar.open {
     transform: translateX(0);
+  }
+
+  .sidebar-close-btn {
+    margin-left: auto;
+    border: none;
+    background: transparent;
+    font-size: 1.25rem;
+    line-height: 1;
+    padding: 4px 8px;
+    cursor: pointer;
+    color: var(--text-muted);
   }
 
   .shell-main {

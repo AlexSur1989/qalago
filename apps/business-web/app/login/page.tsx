@@ -26,7 +26,7 @@ import { mapSocialAuthError } from '@/lib/social-auth/social-auth-errors';
 import { AppleLoginButton } from '@/components/social-login/apple-login-button';
 import { GoogleLoginButton } from '@/components/social-login/google-login-button';
 import { sanitizeInternalRedirect } from '@/lib/redirect-utils';
-import { postLoginErrorMessage } from '@/lib/presentation';
+import { mapLoginRouteError, postLoginErrorMessage } from '@/lib/presentation';
 import { LegalConsentFooter } from '@/components/legal-consent-footer';
 
 export default function LoginPage() {
@@ -122,7 +122,7 @@ function LoginContent() {
         setCode(res.debugCode);
       }
     } catch (err) {
-      setError(String(err));
+      setError(mapLoginRouteError(locale, err));
     } finally {
       setLoading(false);
     }
@@ -137,7 +137,7 @@ function LoginContent() {
       const res = await loginViaSession('verify', { phone, code });
       await finishLogin(res.accessToken, undefined, res.user);
     } catch (err) {
-      setError(String(err));
+      setError(mapLoginRouteError(locale, err));
     } finally {
       setLoading(false);
     }
@@ -151,7 +151,7 @@ function LoginContent() {
       const res = await loginViaSession('dev', { phone: nextPhone });
       await finishLogin(res.accessToken, undefined, res.user);
     } catch (err) {
-      setError(String(err));
+      setError(mapLoginRouteError(locale, err));
     } finally {
       setLoading(false);
     }

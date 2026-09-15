@@ -8,6 +8,7 @@ import { useParams } from 'next/navigation';
 import { BusinessRow, myBusinessRows, ownerApi, SubcategoryRow } from '@/lib/api';
 import { useAuth } from '@/lib/use-auth';
 import { BusinessShell } from '@/components/business-shell';
+import { parseApiError } from '@/lib/monetization-utils';
 
 function parseHours(raw: BusinessRow['workHours']) {
   const weekdays = raw?.mon ?? raw?.tue ?? '09:00-22:00';
@@ -49,7 +50,10 @@ export default function BusinessEditPage() {
 
   useEffect(() => {
     if (!token) return;
-    ownerApi.listMyBusinesses(token).then((res) => setBusinesses(myBusinessRows(res.items))).catch((err) => setError(String(err)));
+    ownerApi
+      .listMyBusinesses(token)
+      .then((res) => setBusinesses(myBusinessRows(res.items)))
+      .catch((err) => setError(parseApiError(locale, err)));
   }, [token]);
 
   useEffect(() => {
@@ -79,10 +83,10 @@ export default function BusinessEditPage() {
         const assigned = (b.subcategories ?? []).map((s) => s.id);
         setSelectedSubcategoryIds(assigned);
       } catch (err) {
-        setError(String(err));
+        setError(parseApiError(locale, err));
       }
     })();
-  }, [token, id]);
+  }, [token, id, locale]);
 
   function toggleSubcategory(subId: string) {
     setSelectedSubcategoryIds((prev) =>
@@ -101,7 +105,7 @@ export default function BusinessEditPage() {
       const b = await ownerApi.getBusiness(token, id);
       setSelectedSubcategoryIds((b.subcategories ?? []).map((s) => s.id));
     } catch (err) {
-      setError(String(err));
+      setError(parseApiError(locale, err));
     }
   }
 
@@ -134,7 +138,7 @@ export default function BusinessEditPage() {
       const res = await ownerApi.listMyBusinesses(token);
       setBusinesses(myBusinessRows(res.items));
     } catch (err) {
-      setError(String(err));
+      setError(parseApiError(locale, err));
     }
   }
 

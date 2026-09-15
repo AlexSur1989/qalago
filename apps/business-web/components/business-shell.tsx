@@ -4,6 +4,7 @@ import { LocaleSwitcher } from '@/components/locale-switcher';
 import { cityDisplayName } from '@/lib/localized-content';
 import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { BusinessRow, SELECTED_BUSINESS_KEY, ownerApi } from '@/lib/api';
 import {
@@ -42,13 +43,30 @@ export function BusinessShell({
 }: BusinessShellProps) {
   const locale = useLocale();
   const ui = useUi();
+  const pathname = usePathname();
   const defaultCity = cityName ?? ui.text_e640a8;
 
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
   const navItems = mainNav ?? buildMainNavItems(locale);
   const footerNavItems = footerNav ?? buildFooterNavItems(locale);
+
+  const effectiveCollapsed = collapsed && !mobileNavOpen;
+
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setMobileNavOpen(false);
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [mobileNavOpen]);
 
   useEffect(() => {
     const token = getWebAccessToken();
@@ -64,15 +82,45 @@ export function BusinessShell({
     window.location.href = '/dashboard';
   }
 
+  function closeMobileNav() {
+    setMobileNavOpen(false);
+  }
+
+  const sidebarClassName = useMemo(() => {
+    let cls = 'sidebar';
+    if (mobileNavOpen) cls += ' open';
+    if (effectiveCollapsed) cls += ' collapsed';
+    return cls;
+  }, [mobileNavOpen, effectiveCollapsed]);
+
   return (
     <div className="shell">
-      <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
+      {mobileNavOpen && (
+        <button
+          type="button"
+          className="shell-nav-backdrop mobile-only"
+          aria-label={ui.shellCloseNavigation}
+          onClick={closeMobileNav}
+        />
+      )}
+
+      <aside className={sidebarClassName}>
         <div className="sidebar-brand">
           <span className="sidebar-brand-mark">Q</span>
-          {!collapsed && <span>QalaGo</span>}
+          {!effectiveCollapsed && <span>QalaGo</span>}
+          {mobileNavOpen && (
+            <button
+              type="button"
+              className="sidebar-close-btn mobile-only"
+              aria-label={ui.shellCloseNavigation}
+              onClick={closeMobileNav}
+            >
+              ×
+            </button>
+          )}
         </div>
 
-        {business && !collapsed && (
+        {business && !effectiveCollapsed && (
           <div className="business-card">
             {business.coverImageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -96,7 +144,7 @@ export function BusinessShell({
           </div>
         )}
 
-        {businesses.length > 1 && !collapsed && (
+        {businesses.length > 1 && !effectiveCollapsed && (
           <div style={{ padding: '0 12px 12px' }}>
             <select
               value={business?.id ?? ''}
@@ -125,7 +173,8 @@ export function BusinessShell({
               item={item}
               active={activeNav === item.id}
               businessId={business?.id}
-              collapsed={collapsed}
+              collapsed={effectiveCollapsed}
+              onNavigate={closeMobileNav}
             />
           ))}
         </nav>
@@ -137,12 +186,17 @@ export function BusinessShell({
               item={item}
               active={activeNav === item.id}
               businessId={business?.id}
-              collapsed={collapsed}
+              collapsed={effectiveCollapsed}
+              onNavigate={closeMobileNav}
             />
           ))}
-          <button type="button" className="collapse-btn" onClick={() => setCollapsed((v) => !v)}>
+          <button
+            type="button"
+            className="collapse-btn desktop-only"
+            onClick={() => setCollapsed((v) => !v)}
+          >
             <span className="nav-icon">{collapsed ? '»' : '«'}</span>
-            {!collapsed && <span>{ui.shellCollapseMenu}</span>}
+            {!effectiveCollapsed && <span>{ui.shellCollapseMenu}</span>}
           </button>
         </div>
       </aside>
@@ -150,6 +204,15 @@ export function BusinessShell({
       <div className="shell-main">
         <header className="topbar">
           <div className="topbar-left">
+            <button
+              type="button"
+              className="icon-btn mobile-only"
+              aria-expanded={mobileNavOpen}
+              aria-label={ui.shellOpenNavigation}
+              onClick={() => setMobileNavOpen(true)}
+            >
+              ☰
+            </button>
             <div className="city-picker">
               <span>📍</span>
               <span>
@@ -195,11 +258,13 @@ function NavLink({
   active,
   businessId,
   collapsed,
+  onNavigate,
 }: {
   item: BusinessNavItem;
   active: boolean;
   businessId?: string;
   collapsed: boolean;
+  onNavigate?: () => void;
 }) {
   const ui = useUi();
   const className = `nav-item${active ? ' active' : ''}${item.soon ? ' disabled' : ''}`;
@@ -226,7 +291,7 @@ function NavLink({
   }
 
   return (
-    <Link href={item.href(businessId ?? '')} className={className}>
+    <Link href={item.href(businessId ?? '')} className={className} onClick={() => onNavigate?.()}>
       <span className="nav-icon">{item.icon}</span>
       {!collapsed && <span>{item.label}</span>}
     </Link>

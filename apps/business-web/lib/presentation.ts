@@ -545,28 +545,113 @@ export function promotionActionTitle(locale: AppLocale, title: string): string {
   return `Акция «${title}»`;
 }
 
+const UNSAFE_ERROR_PATTERNS = [
+  /prisma/i,
+  /\bstack\b/i,
+  / at Object\./i,
+  / at async /i,
+  /ECONNREFUSED/i,
+  /\bsql\b/i,
+  /\bjwt\b/i,
+  /internal server error/i,
+  /nestjs/i,
+  /exception:/i,
+  /invocation/i,
+  /unique constraint/i,
+  /query failed/i,
+];
+
+function genericActionFailedMessage(locale: AppLocale): string {
+  return pick(locale, {
+    ru: 'Не удалось выполнить действие. Попробуйте ещё раз.',
+    kk: 'Әрекет орындалмады. Қайта көріңіз.',
+  });
+}
+
+function networkUnavailableMessage(locale: AppLocale): string {
+  return pick(locale, {
+    ru: 'Не удалось подключиться. Проверьте интернет и попробуйте снова.',
+    kk: 'Қосылу сәтсіз. Интернетті тексеріп, қайта көріңіз.',
+  });
+}
+
+export function isSafeUserFacingErrorMessage(message: string): boolean {
+  const trimmed = message.trim();
+  if (!trimmed || trimmed.length > 400) return false;
+  if (trimmed.includes('\n') || trimmed.includes('\r')) return false;
+  for (const re of UNSAFE_ERROR_PATTERNS) {
+    if (re.test(trimmed)) return false;
+  }
+  return true;
+}
+
+function sanitizeUserFacingMessage(locale: AppLocale, candidate: string): string {
+  if (isSafeUserFacingErrorMessage(candidate)) return candidate.trim();
+  return genericActionFailedMessage(locale);
+}
+
 export function parseApiErrorMessage(locale: AppLocale, err: unknown): string {
   if (!(err instanceof Error)) {
-    return pick(locale, { ru: 'Неизвестная ошибка', kk: 'Белгісіз қате' });
+    return genericActionFailedMessage(locale);
   }
   const raw = err.message;
   const rateLimit = pick(locale, {
     ru: 'Слишком много попыток. Попробуйте позже.',
     kk: 'Тым көп әрекет. Кейінірек көріңіз.',
   });
+  if (
+    raw.includes('Failed to fetch') ||
+    raw.includes('NetworkError') ||
+    raw.toLowerCase().includes('network error')
+  ) {
+    return networkUnavailableMessage(locale);
+  }
   if (raw.includes('429') || raw.toLowerCase().includes('too many')) return rateLimit;
   if (raw.includes('PAYMENTS_VIEW') || raw.includes('Missing permission')) {
     return paymentsAccessDeniedMessage(locale);
   }
+  if (raw.includes('401') || raw.toLowerCase().includes('unauthorized')) {
+    return pick(locale, {
+      ru: 'Сессия истекла. Войдите снова.',
+      kk: 'Сессия аяқталды. Қайта кіріңіз.',
+    });
+  }
+  if (raw.includes('403') || raw.toLowerCase().includes('forbidden')) {
+    return pick(locale, {
+      ru: 'Недостаточно прав для этого действия.',
+      kk: 'Бұл әрекетке құқық жеткіліксіз.',
+    });
+  }
   try {
     const parsed = JSON.parse(raw) as { message?: string | string[]; statusCode?: number };
     if (parsed.statusCode === 429) return rateLimit;
-    if (Array.isArray(parsed.message)) return parsed.message.join(', ');
-    if (parsed.message) return String(parsed.message);
+    const msg = Array.isArray(parsed.message)
+      ? parsed.message.join(', ')
+      : parsed.message
+        ? String(parsed.message)
+        : '';
+    if (msg) return sanitizeUserFacingMessage(locale, msg);
   } catch {
     /* not JSON */
   }
-  return raw || pick(locale, { ru: 'Неизвестная ошибка', kk: 'Белгісиз қате' });
+  if (!raw.trim()) return genericActionFailedMessage(locale);
+  return sanitizeUserFacingMessage(locale, raw);
+}
+
+export function mapLoginRouteError(locale: AppLocale, err: unknown): string {
+  if (err instanceof Error) {
+    const lower = err.message.toLowerCase();
+    if (
+      lower.includes('invalid') &&
+      (lower.includes('code') || lower.includes('otp') || lower.includes('verification'))
+    ) {
+      return pick(locale, {
+        ru: 'Неверный код. Проверьте SMS и попробуйте снова.',
+        kk: 'Код дұрыс емес. SMS тексеріп, қайта көріңіз.',
+      });
+    }
+  }
+  return parseApiErrorMessage(locale, err);
 }
 
 export function mapOnboardingErrorMessage(locale: AppLocale, raw: string): string {

@@ -1,14 +1,16 @@
 'use client';
 
-import { useUi } from '@/components/locale-provider';
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { ReviewRow, ownerApi } from '@/lib/api';
 import { useOwnerBusiness } from '@/lib/use-owner-business';
 import { BusinessShell } from '@/components/business-shell';
+import { parseApiError } from '@/lib/monetization-utils';
 
 export default function BusinessReviewsPage() {
+  const locale = useLocale();
   const ui = useUi();
 
   const params = useParams<{ id: string }>();
@@ -28,8 +30,8 @@ export default function BusinessReviewsPage() {
 
   useEffect(() => {
     if (!token) return;
-    load(token).catch((err) => setError(String(err)));
-  }, [token, businessId]);
+    load(token).catch((err) => setError(parseApiError(locale, err)));
+  }, [token, businessId, locale, setError]);
 
   async function submitReply(reviewId: string) {
     if (!token) return;
@@ -40,7 +42,7 @@ export default function BusinessReviewsPage() {
       await ownerApi.replyReview(token, reviewId, ownerReply);
       await load(token);
     } catch (err) {
-      setError(String(err));
+      setError(parseApiError(locale, err));
     }
   }
 

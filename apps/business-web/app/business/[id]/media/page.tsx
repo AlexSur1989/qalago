@@ -59,7 +59,7 @@ export default function BusinessMediaPage() {
       await load(token);
       e.target.value = '';
     } catch (err) {
-      setError(String(err));
+      setError(parseApiError(locale, err));
     } finally {
       setUploading(false);
     }

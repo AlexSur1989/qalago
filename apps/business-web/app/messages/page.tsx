@@ -1,6 +1,7 @@
 'use client';
 
-import { useUi, type UiLabels } from '@/components/locale-provider';
+import { useLocale, useUi, type UiLabels } from '@/components/locale-provider';
+import { parseApiError } from '@/lib/monetization-utils';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { BusinessRow, NotificationRow, myBusinessRows, ownerApi } from '@/lib/api';
@@ -28,6 +29,7 @@ function typeLabel(ui: UiLabels, type: string) {
 }
 
 export default function MessagesPage() {
+  const locale = useLocale();
   const ui = useUi();
 
   const { token, user, ready, logout } = useAuth();
@@ -44,7 +46,7 @@ export default function MessagesPage() {
       setItems(list);
       setError(null);
     } catch (err) {
-      setError(String(err));
+      setError(parseApiError(locale, err));
     } finally {
       setLoading(false);
     }
@@ -55,7 +57,7 @@ export default function MessagesPage() {
     ownerApi
       .listMyBusinesses(token)
       .then((res) => setBusinesses(myBusinessRows(res.items)))
-      .catch((err) => setError(String(err)));
+      .catch((err) => setError(parseApiError(locale, err)));
     load(token);
   }, [token]);
 
