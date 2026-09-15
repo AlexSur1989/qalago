@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useState } from 'react';
@@ -9,14 +10,19 @@ import { useMonetizationContext } from '@/components/monetization/monetization-s
 import { formatKzt, parseApiError, productLabel } from '@/lib/monetization-utils';
 
 export default function MonetizationCheckoutPage() {
+  const locale = useLocale();
+  const ui = useUi();
+
   return (
-    <Suspense fallback={<p style={{ color: 'var(--text-muted)' }}>Загрузка…</p>}>
+    <Suspense fallback={<p style={{ color: 'var(--text-muted)' }}>{ui.text_89d69a}</p>}>
       <CheckoutContent />
     </Suspense>
   );
 }
 
 function CheckoutContent() {
+  const locale = useLocale();
+  const ui = useUi();
   const searchParams = useSearchParams();
   const { token, business } = useMonetizationContext();
 
@@ -51,7 +57,7 @@ function CheckoutContent() {
       setQuote(result);
     } catch (err) {
       setQuote(null);
-      setQuoteError(parseApiError(err));
+      setQuoteError(parseApiError(locale, err));
     } finally {
       setQuoteLoading(false);
     }
@@ -97,12 +103,12 @@ function CheckoutContent() {
           items: [item],
         });
       } else {
-        setError('Не указан продукт или пакет');
+        setError(ui.____20b773);
         return;
       }
       setOrder(created);
     } catch (err) {
-      setError(parseApiError(err));
+      setError(parseApiError(locale, err));
     } finally {
       setSubmitting(false);
     }
@@ -112,7 +118,7 @@ function CheckoutContent() {
     return (
       <div className="alert alert-error">
         Не указан продукт или пакет.{' '}
-        <Link href="/monetization/products">Вернуться в каталог</Link>
+        <Link href="/monetization/products">{ui.___bad998}</Link>
       </div>
     );
   }
@@ -125,7 +131,7 @@ function CheckoutContent() {
       <>
         <header className="page-header">
           <div>
-            <h1>Заказ создан</h1>
+            <h1>{ui.__4dc0ec}</h1>
             <p className="page-header-meta">{order.orderNumber}</p>
           </div>
         </header>
@@ -133,23 +139,17 @@ function CheckoutContent() {
         <section className="form-card" style={{ maxWidth: 640 }}>
           <p style={{ marginTop: 0 }}>
             Заказ на сумму{' '}
-            <strong>{formatKzt(order.totalAmount, order.currency)}</strong> оформлен и ожидает
-            оплаты.
-          </p>
+            <strong>{formatKzt(order.totalAmount, order.currency)}</strong>{ui.____58afde}</p>
           {pendingPayment && (
             <div className="alert" style={{ marginBottom: 16 }}>
-              Для активации размещения переведите сумму по реквизитам, указанным в разделе
-              «Помощь», и дождитесь подтверждения оплаты администратором. Автоматического списания
-              нет — статус заказа обновится после ручного подтверждения.
+              {ui.text_checkoutManualPay1}
+              {ui.text_checkoutManualPay2}
+              {ui.text_checkoutManualPay3}
             </div>
           )}
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <Link href={`/monetization/orders/${order.id}`} className="btn">
-              Детали заказа
-            </Link>
-            <Link href="/monetization/orders" className="btn btn-ghost">
-              Мои заказы
-            </Link>
+            <Link href={`/monetization/orders/${order.id}`} className="btn">{ui.__e7b2f6}</Link>
+            <Link href="/monetization/orders" className="btn btn-ghost">{ui.__1c4a26}</Link>
           </div>
         </section>
       </>
@@ -157,14 +157,14 @@ function CheckoutContent() {
   }
 
   const title = productCode
-    ? productLabel(productCode)
-    : quote?.package?.name ?? packageCode ?? 'Оформление';
+    ? productLabel(locale, productCode)
+    : quote?.package?.name ?? packageCode ?? ui.text_065a4b;
 
   return (
     <>
       <header className="page-header">
         <div>
-          <h1>Оформление заказа</h1>
+          <h1>{ui.__f50d06}</h1>
           <p className="page-header-meta">{title}</p>
         </div>
       </header>
@@ -173,18 +173,15 @@ function CheckoutContent() {
 
       <div className="checkout-layout">
         <section className="form-card">
-          <h2 style={{ marginTop: 0 }}>Подтверждение</h2>
-          <p style={{ color: 'var(--text-muted)' }}>
-            Заведение: <strong>{business.title}</strong>
+          <h2 style={{ marginTop: 0 }}>{ui.text_849983}</h2>
+          <p style={{ color: 'var(--text-muted)' }}>{ui.text_5427be}<strong>{business.title}</strong>
           </p>
           {creativeId && (
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-              Креатив VIP-баннера привязан к заказу и будет отправлен на модерацию после оплаты.
-            </p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{ui._vip___89ff3c}</p>
           )}
           <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>
-            Нажимая «Создать заказ», вы подтверждаете заказ. Оплата производится вручную — заказ
-            перейдёт в статус «Оплачен» только после подтверждения администратором.
+            {ui.text_checkoutCreateOrder1}
+            {ui.text_checkoutCreateOrder2}
           </p>
           <button
             type="button"
@@ -192,7 +189,7 @@ function CheckoutContent() {
             disabled={!quote?.availability.available || quoteLoading || submitting}
             onClick={onSubmit}
           >
-            {submitting ? 'Создание заказа…' : 'Создать заказ'}
+            {submitting ? ui.__330e3e : ui.__49a9d5}
           </button>
         </section>
 

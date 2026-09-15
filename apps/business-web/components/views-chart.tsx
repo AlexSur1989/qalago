@@ -1,5 +1,6 @@
 'use client';
 
+import { useUi } from '@/components/locale-provider';
 type ViewsChartProps = {
   items: { date: string; count: number }[];
   days?: number;
@@ -9,6 +10,8 @@ const BRAND_BLUE = '#00A8D6';
 const BRAND_BLUE_FILL = 'rgba(0, 168, 214, 0.12)';
 
 export function ViewsChart({ items, days = 7 }: ViewsChartProps) {
+  const ui = useUi();
+
   const dates = buildDateRange(days);
   const byDate = new Map(items.map((i) => [i.date, i.count]));
   const values = dates.map((d) => byDate.get(d) ?? 0);
@@ -31,7 +34,7 @@ export function ViewsChart({ items, days = 7 }: ViewsChartProps) {
   const area = `${padX},${padY + chartH} ${line} ${padX + chartW},${padY + chartH}`;
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} width="100%" height={height} role="img" aria-label="График просмотров">
+    <svg viewBox={`0 0 ${width} ${height}`} width="100%" height={height} role="img" aria-label={ui.__e1ba6e}>
       {[0, 0.25, 0.5, 0.75, 1].map((t) => {
         const y = padY + chartH * (1 - t);
         return (
@@ -58,7 +61,7 @@ export function ViewsChart({ items, days = 7 }: ViewsChartProps) {
       {points.map((p) => (
         <g key={p.date}>
           <circle cx={p.x} cy={p.y} r={4} fill={BRAND_BLUE} />
-          <title>{`${formatChartDate(p.date)}: ${p.v} просмотров`}</title>
+          <title>{ui.text_e50f70}</title>
         </g>
       ))}
       {points.map((p, i) =>

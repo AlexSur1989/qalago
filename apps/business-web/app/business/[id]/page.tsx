@@ -1,5 +1,6 @@
 'use client';
 
+import { useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
@@ -17,6 +18,8 @@ function parseHours(raw: BusinessRow['workHours']) {
 }
 
 export default function BusinessEditPage() {
+  const ui = useUi();
+
   const params = useParams<{ id: string }>();
   const id = params.id;
   const { token, user, ready, logout } = useAuth();
@@ -133,7 +136,7 @@ export default function BusinessEditPage() {
     }
   }
 
-  if (!ready || !token) return <p className="page-content">Загрузка…</p>;
+  if (!ready || !token) return <p className="page-content">{ui.text_89d69a}</p>;
 
   return (
     <BusinessShell
@@ -145,39 +148,26 @@ export default function BusinessEditPage() {
     >
       <header className="page-header">
         <div>
-          <h1>Мой бизнес</h1>
-          <p className="page-header-meta">Профиль, контакты и часы работы</p>
+          <h1>{ui.ownerMgmtMyBusiness}</h1>
+          <p className="page-header-meta">{ui.____7beeae}</p>
         </div>
-        <Link href="/dashboard" className="btn btn-ghost">
-          ← Обзор
-        </Link>
+        <Link href="/dashboard" className="btn btn-ghost">{ui.text_76e286}</Link>
       </header>
 
       <section className="form-card" style={{ maxWidth: 720, marginBottom: 16 }}>
-        <h2 style={{ marginTop: 0, fontSize: '1rem' }}>Разделы</h2>
+        <h2 style={{ marginTop: 0, fontSize: '1rem' }}>{ui.text_ec65a7}</h2>
         <div className="quick-actions-grid">
-          <Link href={`/business/${id}/media`} className="btn btn-sm">
-            📷 Фото и видео
-          </Link>
-          <Link href={`/business/${id}/reviews`} className="btn btn-sm">
-            ⭐ Отзывы
-          </Link>
-          <Link href={`/business/${id}/menu`} className="btn btn-sm">
-            📋 Товары и услуги
-          </Link>
-          <Link href={`/business/${id}/promotions`} className="btn btn-sm">
-            🏷️ Акции
-          </Link>
+          <Link href={`/business/${id}/media`} className="btn btn-sm">{ui.___244d38}</Link>
+          <Link href={`/business/${id}/reviews`} className="btn btn-sm">{ui.text_e76db3}</Link>
+          <Link href={`/business/${id}/menu`} className="btn btn-sm">{ui.___dcc139}</Link>
+          <Link href={`/business/${id}/promotions`} className="btn btn-sm">{ui.text_8f1e4c}</Link>
         </div>
       </section>
 
       {subcategories.length > 0 && (
         <section className="form-card form-grid" style={{ maxWidth: 720, marginBottom: 16 }}>
-          <h3 className="form-section-title">Подкатегории</h3>
-          <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: 14 }}>
-            Выберите типы заведения внутри категории — так пользователи быстрее найдут вас в
-            приложении.
-          </p>
+          <h3 className="form-section-title">{ui.text_125cda}</h3>
+          <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: 14 }}>{ui.____2082c9}</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {subcategories.map((sub) => {
               const active = selectedSubcategoryIds.includes(sub.id);
@@ -194,29 +184,27 @@ export default function BusinessEditPage() {
             })}
           </div>
           <button type="button" className="btn btn-primary" onClick={() => void saveSubcategories()}>
-            Сохранить подкатегории
+            {ui.text_saveSubcategories}
           </button>
-          {taxonomySaved && <div className="alert alert-success">Подкатегории сохранены</div>}
+          {taxonomySaved && <div className="alert alert-success">{ui.__9b14e9}</div>}
         </section>
       )}
 
       <form onSubmit={onSubmit} className="form-card form-grid" style={{ maxWidth: 720 }}>
-        {field('Название', form.title, (v) => setForm({ ...form, title: v }))}
-        {field('Краткое описание', form.shortDesc, (v) => setForm({ ...form, shortDesc: v }))}
-        {area('Описание', form.description, (v) => setForm({ ...form, description: v }))}
-        {field('Адрес', form.address, (v) => setForm({ ...form, address: v }))}
-        {field('Телефон', form.phone, (v) => setForm({ ...form, phone: v }))}
+        {field(ui.text_602680, form.title, (v) => setForm({ ...form, title: v }))}
+        {field(ui.__62b685, form.shortDesc, (v) => setForm({ ...form, shortDesc: v }))}
+        {area(ui.text_38ca0a, form.description, (v) => setForm({ ...form, description: v }))}
+        {field(ui.text_80148f, form.address, (v) => setForm({ ...form, address: v }))}
+        {field(ui.text_2928e1, form.phone, (v) => setForm({ ...form, phone: v }))}
         {field('WhatsApp', form.whatsapp, (v) => setForm({ ...form, whatsapp: v }))}
         {field('Instagram', form.instagram, (v) => setForm({ ...form, instagram: v }))}
-        {field('Сайт', form.website, (v) => setForm({ ...form, website: v }))}
-        <h3 className="form-section-title">График работы</h3>
-        {field('Пн–Пт', form.weekdays, (v) => setForm({ ...form, weekdays: v }))}
-        {field('Суббота', form.saturday, (v) => setForm({ ...form, saturday: v }))}
-        {field('Воскресенье', form.sunday, (v) => setForm({ ...form, sunday: v }))}
-        <button type="submit" className="btn btn-primary">
-          Сохранить
-        </button>
-        {saved && <div className="alert alert-success">Сохранено</div>}
+        {field(ui.text_61dee7, form.website, (v) => setForm({ ...form, website: v }))}
+        <h3 className="form-section-title">{ui.__5e77e4}</h3>
+        {field(ui.__255eae, form.weekdays, (v) => setForm({ ...form, weekdays: v }))}
+        {field(ui.text_cee58b, form.saturday, (v) => setForm({ ...form, saturday: v }))}
+        {field(ui.text_aa48fa, form.sunday, (v) => setForm({ ...form, sunday: v }))}
+        <button type="submit" className="btn btn-primary">{ui.text_74ea58}</button>
+        {saved && <div className="alert alert-success">{ui.text_54a59b}</div>}
         {error && <div className="alert alert-error">{error}</div>}
       </form>
     </BusinessShell>

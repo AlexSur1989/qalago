@@ -1,14 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
-  MANUAL_PAYMENT_NOTICE,
-  VIP_MODERATION_NOTICE,
-  VIP_PLAN_DISCLAIMER,
   buildPlanUsageSummary,
+  manualPaymentNotice,
   photoPublishLabel,
   photoPublishState,
   planTierLabelRu,
+  vipModerationPlacementNotice,
+  vipPlanDisclaimer,
 } from './owner-utils';
 import type { BusinessPlanStatus } from './api';
+
+const ru = 'ru' as const;
 
 const planLimits = {
   maxPhotos: 20,
@@ -64,7 +66,7 @@ describe('owner-utils', () => {
   });
 
   it('buildPlanUsageSummary shows over-limit published counts', () => {
-    const lines = buildPlanUsageSummary(basePlan());
+    const lines = buildPlanUsageSummary(ru, basePlan());
     expect(lines[0]).toContain('40 / 20');
     expect(lines[0]).toContain('опубликовано 20');
     expect(lines[1]).toContain('21 / 50');
@@ -75,13 +77,13 @@ describe('owner-utils', () => {
     expect(photoPublishState(0, plan)).toBe('published');
     expect(photoPublishState(19, plan)).toBe('published');
     expect(photoPublishState(20, plan)).toBe('hidden');
-    expect(photoPublishLabel('hidden')).toBe('Не публикуется по лимиту тарифа');
+    expect(photoPublishLabel(ru, 'hidden')).toBe('Не публикуется по лимиту тарифа');
   });
 
   it('VIP and payment notices are owner-friendly', () => {
-    expect(MANUAL_PAYMENT_NOTICE).toContain('администратором');
-    expect(VIP_MODERATION_NOTICE).toContain('одобрен');
-    expect(VIP_PLAN_DISCLAIMER).toContain('отдельно');
+    expect(manualPaymentNotice(ru)).toContain('администратором');
+    expect(vipModerationPlacementNotice(ru)).toContain('одобрен');
+    expect(vipPlanDisclaimer(ru)).toContain('отдельно');
   });
 
   it('promotion advertising CTA uses monetization flow', () => {

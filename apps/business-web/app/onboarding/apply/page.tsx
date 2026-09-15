@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { FormEvent, Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -9,14 +10,19 @@ import { useAuth } from '@/lib/use-auth';
 import { mapOnboardingError } from '@/lib/onboarding-utils';
 
 export default function OnboardingApplyPage() {
+  const locale = useLocale();
+  const ui = useUi();
+
   return (
-    <Suspense fallback={<OnboardingShell title="Добавить новый бизнес"><p>Загрузка…</p></OnboardingShell>}>
+    <Suspense fallback={<OnboardingShell title={ui.___61b180}><p>{ui.text_89d69a}</p></OnboardingShell>}>
       <OnboardingApplyContent />
     </Suspense>
   );
 }
 
 function OnboardingApplyContent() {
+  const locale = useLocale();
+  const ui = useUi();
   const router = useRouter();
   const searchParams = useSearchParams();
   const applicationId = searchParams.get('id');
@@ -67,7 +73,7 @@ function OnboardingApplyContent() {
         setStatus(app.status);
         setRejectionReason(app.rejectionReason ?? null);
       })
-      .catch((err: unknown) => setError(mapOnboardingError(String(err))));
+      .catch((err: unknown) => setError(mapOnboardingError(locale, String(err))));
   }, [token, applicationId]);
 
   const readOnly = status === 'PENDING' || status === 'APPROVED' || status === 'CANCELLED';
@@ -95,7 +101,7 @@ function OnboardingApplyContent() {
   async function handleSave(e: FormEvent) {
     e.preventDefault();
     if (!title.trim() || !categoryId || !address.trim() || !citySlug) {
-      setError('Заполните название, категорию, город и адрес');
+      setError(ui.____d37b94);
       return;
     }
     setLoading(true);
@@ -106,11 +112,11 @@ function OnboardingApplyContent() {
       if (app) {
         setDraftId(app.id);
         setStatus(app.status);
-        setSuccess('Черновик сохранён');
+        setSuccess(ui.__815828);
         router.replace(`/onboarding/apply?id=${app.id}`);
       }
     } catch (err: unknown) {
-      setError(mapOnboardingError(String(err)));
+      setError(mapOnboardingError(locale, String(err)));
     } finally {
       setLoading(false);
     }
@@ -118,7 +124,7 @@ function OnboardingApplyContent() {
 
   async function handleSubmit() {
     if (!token || !draftId) {
-      setError('Сначала сохраните черновик');
+      setError(ui.___93a01e);
       return;
     }
     setLoading(true);
@@ -128,9 +134,9 @@ function OnboardingApplyContent() {
       await saveDraft();
       const app = await ownerApi.submitApplication(token, draftId);
       setStatus(app.status);
-      setSuccess('Заявка отправлена на проверку. Доступ к кабинету появится после одобрения.');
+      setSuccess(ui.____6df43a);
     } catch (err: unknown) {
-      setError(mapOnboardingError(String(err)));
+      setError(mapOnboardingError(locale, String(err)));
     } finally {
       setLoading(false);
     }
@@ -138,26 +144,24 @@ function OnboardingApplyContent() {
 
   async function handleCancel() {
     if (!token || !draftId) return;
-    if (!window.confirm('Отменить заявку?')) return;
+    if (!window.confirm(ui.__c50c8f)) return;
     setLoading(true);
     setError(null);
     try {
       const app = await ownerApi.cancelApplication(token, draftId);
       setStatus(app.status);
-      setSuccess('Заявка отменена');
+      setSuccess(ui.__3f888c);
     } catch (err: unknown) {
-      setError(mapOnboardingError(String(err)));
+      setError(mapOnboardingError(locale, String(err)));
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <OnboardingShell title="Добавить новый бизнес" subtitle="Заявка будет проверена администрацией QalaGo.">
+    <OnboardingShell title={ui.___61b180} subtitle={ui.____82ba6a}>
       {comingSoon && (
-        <div className="alert" style={{ marginBottom: 16 }}>
-          Бизнес будет доступен после запуска города.
-        </div>
+        <div className="alert" style={{ marginBottom: 16 }}>{ui.____aecd3d}</div>
       )}
       {rejectionReason && (
         <div className="alert alert-error" style={{ marginBottom: 16 }}>
@@ -168,9 +172,7 @@ function OnboardingApplyContent() {
       {success && <div className="alert alert-success">{success}</div>}
 
       <form onSubmit={handleSave} className="form-grid">
-        <label>
-          Город *
-          <select value={citySlug} onChange={(e) => setCitySlug(e.target.value)} required disabled={readOnly}>
+        <label>{ui.text_d0bf2a}<select value={citySlug} onChange={(e) => setCitySlug(e.target.value)} required disabled={readOnly}>
             {cities.map((city) => (
               <option key={city.id} value={city.slug}>
                 {city.nameRu}
@@ -178,13 +180,9 @@ function OnboardingApplyContent() {
             ))}
           </select>
         </label>
-        <label>
-          Название *
-          <input value={title} onChange={(e) => setTitle(e.target.value)} required disabled={readOnly} />
+        <label>{ui.text_69eca8}<input value={title} onChange={(e) => setTitle(e.target.value)} required disabled={readOnly} />
         </label>
-        <label>
-          Категория *
-          <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required disabled={readOnly}>
+        <label>{ui.text_d71ec3}<select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required disabled={readOnly}>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.title}
@@ -192,23 +190,17 @@ function OnboardingApplyContent() {
             ))}
           </select>
         </label>
-        <label>
-          Адрес *
-          <input value={address} onChange={(e) => setAddress(e.target.value)} required disabled={readOnly} />
+        <label>{ui.text_6a21b9}<input value={address} onChange={(e) => setAddress(e.target.value)} required disabled={readOnly} />
         </label>
-        <label>
-          Телефон
-          <input value={phone} onChange={(e) => setPhone(e.target.value)} disabled={readOnly} />
+        <label>{ui.text_2928e1}<input value={phone} onChange={(e) => setPhone(e.target.value)} disabled={readOnly} />
         </label>
-        <label>
-          Краткое описание
-          <textarea value={shortDesc} onChange={(e) => setShortDesc(e.target.value)} rows={3} disabled={readOnly} />
+        <label>{ui.__62b685}<textarea value={shortDesc} onChange={(e) => setShortDesc(e.target.value)} rows={3} disabled={readOnly} />
         </label>
 
         {!readOnly && (
           <>
             <button type="submit" className="btn" disabled={loading}>
-              {loading ? 'Сохранение…' : 'Сохранить черновик'}
+              {loading ? ui.text_73dba4 : ui.__e2b6e8}
             </button>
             <button
               type="button"
@@ -216,26 +208,22 @@ function OnboardingApplyContent() {
               disabled={loading}
               onClick={handleSubmit}
             >
-              {loading ? 'Отправка…' : 'Отправить на проверку'}
+              {loading ? ui.text_a2aa4c : ui.___9665e7}
             </button>
           </>
         )}
 
         {(status === 'DRAFT' || status === 'PENDING') && draftId && (
-          <button type="button" className="btn btn-ghost" disabled={loading} onClick={handleCancel}>
-            Отменить заявку
-          </button>
+          <button type="button" className="btn btn-ghost" disabled={loading} onClick={handleCancel}>{ui.__5453e6}</button>
         )}
 
         {status === 'APPROVED' && (
-          <Link href="/dashboard" className="btn btn-primary">
-            Открыть кабинет
-          </Link>
+          <Link href="/dashboard" className="btn btn-primary">{ui.__399e64}</Link>
         )}
       </form>
 
       <p style={{ marginTop: 16 }}>
-        <Link href="/onboarding/search">← Найти существующий бизнес</Link>
+        <Link href="/onboarding/search">{ui.___74b465}</Link>
       </p>
     </OnboardingShell>
   );

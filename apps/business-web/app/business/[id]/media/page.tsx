@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
@@ -12,6 +13,9 @@ import { useOwnerBusiness } from '@/lib/use-owner-business';
 import { BusinessShell } from '@/components/business-shell';
 
 export default function BusinessMediaPage() {
+  const locale = useLocale();
+  const ui = useUi();
+
   const params = useParams<{ id: string }>();
   const businessId = params.id;
   const { token, user, ready, logout, businesses, business, access, error, setError, reloadBusinesses } =
@@ -33,7 +37,7 @@ export default function BusinessMediaPage() {
 
   useEffect(() => {
     if (!token) return;
-    load(token).catch((err) => setError(parseApiError(err)));
+    load(token).catch((err) => setError(parseApiError(locale, err)));
   }, [token, businessId, access]);
 
   const maxPhotos = planStatus?.limits.maxPhotos;
@@ -43,7 +47,7 @@ export default function BusinessMediaPage() {
     const file = e.target.files?.[0];
     if (!token || !file) return;
     if (atPhotoLimit) {
-      setError(`Достигнут лимит загрузки (${maxPhotos} фото). Улучшите тариф в разделе «Тариф».`);
+      setError(ui.____3aa9f1);
       e.target.value = '';
       return;
     }
@@ -61,7 +65,7 @@ export default function BusinessMediaPage() {
     }
   }
 
-  if (!ready || !token) return <p className="page-content">Загрузка…</p>;
+  if (!ready || !token) return <p className="page-content">{ui.text_89d69a}</p>;
 
   return (
     <BusinessShell
@@ -73,12 +77,10 @@ export default function BusinessMediaPage() {
     >
       <header className="page-header">
         <div>
-          <h1>Фото и видео</h1>
-          <p className="page-header-meta">Галерея карточки заведения в QalaGo</p>
+          <h1>{ui.___c89390}</h1>
+          <p className="page-header-meta">{ui.____3236ca}</p>
         </div>
-        <Link href="/dashboard" className="btn">
-          ← На главную
-        </Link>
+        <Link href="/dashboard" className="btn">{ui.__65f9d8}</Link>
       </header>
 
       {error && <div className="alert alert-error">{error}</div>}
@@ -95,22 +97,20 @@ export default function BusinessMediaPage() {
           {planStatus.entitlements?.photos.overLimit && (
             <p className="alert" style={{ marginTop: 10, marginBottom: 0, fontSize: '0.88rem' }}>
               На тарифе «{planStatus.catalog.nameRu}» публикуется до {maxPhotos} фото. Остальные
-              сохранены и снова появятся после повышения тарифа.
+              {ui.text_mediaArchivedAfterUpgrade}
             </p>
           )}
         </section>
       )}
 
       <section className="form-card" style={{ maxWidth: 820, marginBottom: 18 }}>
-        <h2 style={{ marginTop: 0 }}>Загрузить фото</h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-          JPG/PNG до 5 МБ. Первое фото можно сделать обложкой автоматически.
-        </p>
+        <h2 style={{ marginTop: 0 }}>{ui.__26287a}</h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{ui.jpg_png__5_f0b0b6}</p>
         <label
           className={`btn btn-primary${atPhotoLimit ? ' btn-ghost' : ''}`}
           style={{ cursor: atPhotoLimit ? 'not-allowed' : 'pointer', width: 'fit-content' }}
         >
-          {uploading ? 'Загрузка…' : atPhotoLimit ? 'Лимит фото достигнут' : 'Выбрать файл'}
+          {uploading ? ui.text_89d69a : atPhotoLimit ? ui.___c228da : ui.__b43615}
           <input
             type="file"
             accept="image/*"
@@ -124,7 +124,7 @@ export default function BusinessMediaPage() {
       <section className="form-card" style={{ maxWidth: 820 }}>
         <h2 style={{ marginTop: 0 }}>Галерея ({images.length})</h2>
         {images.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)' }}>Пока нет фото</p>
+          <p style={{ color: 'var(--text-muted)' }}>{ui.___33efa4}</p>
         ) : (
           <div
             style={{
@@ -137,7 +137,7 @@ export default function BusinessMediaPage() {
               const src = mediaUrl(image.imageUrl);
               const isCover = business?.coverImageUrl === image.imageUrl;
               const publishState = photoPublishState(index, planStatus);
-              const publishLabel = photoPublishLabel(publishState);
+              const publishLabel = photoPublishLabel(locale, publishState);
               return (
                 <article
                   key={image.id}
@@ -155,7 +155,7 @@ export default function BusinessMediaPage() {
                     style={{ width: '100%', height: 140, objectFit: 'cover' }}
                   />
                   <div style={{ padding: 10, display: 'grid', gap: 8 }}>
-                    {isCover && <span className="tag tag-success">Обложка</span>}
+                    {isCover && <span className="tag tag-success">{ui.text_7407ba}</span>}
                     {publishLabel && (
                       <span
                         className={
@@ -176,7 +176,7 @@ export default function BusinessMediaPage() {
                             await load(token);
                           }}
                         >
-                          На обложку
+                          {ui.text_setAsCover}
                         </button>
                       )}
                       <button
@@ -187,9 +187,7 @@ export default function BusinessMediaPage() {
                           await ownerApi.deleteBusinessImage(token, businessId, image.id);
                           await load(token);
                         }}
-                      >
-                        Удалить
-                      </button>
+                      >{ui.text_ed2bbf}</button>
                     </div>
                   </div>
                 </article>

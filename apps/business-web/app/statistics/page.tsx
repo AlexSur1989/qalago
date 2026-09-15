@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -27,6 +28,9 @@ import { Analytics360Dashboard } from '@/components/analytics-360-dashboard';
 import { BusinessShell, useSelectedBusiness } from '@/components/business-shell';
 
 export default function StatisticsPage() {
+  const locale = useLocale();
+  const ui = useUi();
+
   const { token, user, items, ready, logout } = useAuth();
   const businesses = useMemo(() => myBusinessRows(items), [items]);
   const business = useSelectedBusiness(businesses);
@@ -52,7 +56,7 @@ export default function StatisticsPage() {
         if (effective !== days) setDays(effective);
         setError(null);
       })
-      .catch((err) => setError(mapAnalyticsLoadError(err)))
+      .catch((err) => setError(mapAnalyticsLoadError(locale, err)))
       .finally(() => setLoading(false));
   }, [token, business?.id, days]);
 
@@ -71,7 +75,7 @@ export default function StatisticsPage() {
       .catch(() => setPromotionTitles({}));
   }, [token, business?.id, dashboard?.promotions?.byPromotion?.length]);
 
-  if (!ready || !token) return <p className="page-content">Загрузка…</p>;
+  if (!ready || !token) return <p className="page-content">{ui.text_89d69a}</p>;
 
   const periodOptions = dashboard
     ? availablePeriodOptions(dashboard.capabilities.maxDays)
@@ -88,7 +92,7 @@ export default function StatisticsPage() {
     try {
       await ownerApi.downloadAnalyticsExport(token, business.id, days);
     } catch (err) {
-      setError(mapAnalyticsExportError(err));
+      setError(mapAnalyticsExportError(locale, err));
     } finally {
       setExporting(false);
     }
@@ -103,7 +107,7 @@ export default function StatisticsPage() {
         setDashboard(normalizeAnalyticsDashboard(data));
         setError(null);
       })
-      .catch((err) => setError(mapAnalyticsLoadError(err)))
+      .catch((err) => setError(mapAnalyticsLoadError(locale, err)))
       .finally(() => setLoading(false));
   }
 
@@ -118,39 +122,31 @@ export default function StatisticsPage() {
       {error && (
         <div className="alert alert-error" role="alert">
           {error}
-          <button type="button" className="btn btn-ghost btn-sm" style={{ marginLeft: 12 }} onClick={handleRetry}>
-            Повторить
-          </button>
+          <button type="button" className="btn btn-ghost btn-sm" style={{ marginLeft: 12 }} onClick={handleRetry}>{ui.text_b914bb}</button>
         </div>
       )}
 
       {!business ? (
         <div className="empty-state">
-          <h2>У вас пока нет бизнеса в QalaGo</h2>
-          <p>Добавьте или найдите бизнес, чтобы видеть статистику.</p>
-          <Link href="/onboarding" className="btn btn-primary" style={{ marginTop: 16 }}>
-            Перейти к онбордингу
-          </Link>
+          <h2>{ui.____447674}</h2>
+          <p>{ui.____20204b}</p>
+          <Link href="/onboarding" className="btn btn-primary" style={{ marginTop: 16 }}>{ui.___43fd9e}</Link>
         </div>
       ) : (
         <>
           <header className="page-header">
             <div>
-              <h1>Статистика</h1>
+              <h1>{ui.ownerNavAnalytics}</h1>
               <p className="page-header-meta">
-                {formatTodayHeader()} · {business.title}
+                {formatTodayHeader(locale)} · {business.title}
               </p>
               {dashboard?.headline ? (
                 <p style={{ color: 'var(--text-muted)', marginTop: 4 }}>{dashboard.headline}</p>
               ) : null}
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <Link href="/monetization/campaigns" className="btn btn-ghost">
-                Статистика рекламы →
-              </Link>
-              <Link href="/dashboard" className="btn btn-ghost">
-                ← Обзор
-              </Link>
+              <Link href="/monetization/campaigns" className="btn btn-ghost">{ui.__b8c6a7}</Link>
+              <Link href="/dashboard" className="btn btn-ghost">{ui.text_76e286}</Link>
             </div>
           </header>
 
@@ -168,7 +164,7 @@ export default function StatisticsPage() {
           </div>
 
           {loading && !dashboard ? (
-            <p role="status">Загрузка статистики…</p>
+            <p role="status">{ui.__bbd5d8}</p>
           ) : dashboard ? (
             <Analytics360Dashboard
               dashboard={dashboard}

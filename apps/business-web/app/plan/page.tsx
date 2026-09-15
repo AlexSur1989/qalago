@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -19,26 +20,27 @@ import { businessWebMockPlanCheckoutEnabled } from '@/lib/auth-config';
 import { parseApiError } from '@/lib/monetization-utils';
 import { useBusinessAccess } from '@/lib/use-business-access';
 import { BusinessShell } from '@/components/business-shell';
+import type { UiLabels } from '@/lib/locale';
 
 function formatPrice(priceKzt: number) {
   if (priceKzt === 0) return '0 ₸';
   return `${priceKzt.toLocaleString('ru-RU')} ₸`;
 }
 
-function formatPeriod(periodDays: number | null, priceKzt: number) {
-  if (periodDays == null) return 'навсегда';
-  if (priceKzt > 0) return 'мес';
-  return `${periodDays} дн.`;
+function formatPeriod(ui: UiLabels, periodDays: number | null, priceKzt: number) {
+  if (periodDays == null) return ui.text_3a8930;
+  if (priceKzt > 0) return ui.text_63d0ff;
+  return ui.text_bf3be1;
 }
 
-function analyticsLevelLabel(tier: string): string {
+function analyticsLevelLabel(ui: UiLabels, tier: string): string {
   switch (tier) {
     case 'BASIC':
-      return 'Базовая';
+      return ui.text_09825a;
     case 'EXTENDED':
-      return 'Расширенная';
+      return ui.text_f1a7d3;
     case 'FULL':
-      return 'Полная';
+      return ui.text_2252aa;
     case 'ANALYTICS_360':
       return 'Analytics 360';
     default:
@@ -47,6 +49,9 @@ function analyticsLevelLabel(tier: string): string {
 }
 
 export default function PlanPage() {
+  const locale = useLocale();
+  const ui = useUi();
+
   const { token, user, ready, logout, business, access, businesses } = useBusinessAccess();
   const [catalog, setCatalog] = useState<PlanCatalogRow[]>([]);
   const [planStatus, setPlanStatus] = useState<BusinessPlanStatus | null>(null);
@@ -59,12 +64,12 @@ export default function PlanPage() {
   const canManage = isOwner(access);
 
   const mainNav = useMemo(
-    () => filterNavByAccess(buildMainNavItems(), access),
-    [access],
+    () => filterNavByAccess(buildMainNavItems(locale), access),
+    [access, locale],
   );
   const footerNav = useMemo(
-    () => filterNavByAccess(buildFooterNavItems(), access),
-    [access],
+    () => filterNavByAccess(buildFooterNavItems(locale), access),
+    [access, locale],
   );
 
   const load = useCallback(async () => {
@@ -81,7 +86,7 @@ export default function PlanPage() {
         setPlanStatus(null);
       }
     } catch (err) {
-      setError(parseApiError(err));
+      setError(parseApiError(locale, err));
     } finally {
       setLoading(false);
     }
@@ -103,13 +108,13 @@ export default function PlanPage() {
       setMessage(result.message);
       await load();
     } catch (err) {
-      setError(parseApiError(err));
+      setError(parseApiError(locale, err));
     } finally {
       setCheckoutTier(null);
     }
   }
 
-  if (!ready || !token) return <p className="page-content">Загрузка…</p>;
+  if (!ready || !token) return <p className="page-content">{ui.text_89d69a}</p>;
 
   const effectiveTier = planStatus?.effectiveTier;
 
@@ -125,22 +130,18 @@ export default function PlanPage() {
     >
       <header className="page-header">
         <div>
-          <h1>Тариф</h1>
+          <h1>{ui.ownerNavPlan}</h1>
           <p className="page-header-meta">
-            Подписка для лимитов и скидки на рекламу — {business?.title ?? 'заведения'}
+            Подписка для лимитов и скидки на рекламу — {business?.title ?? ui.text_e0fc47}
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Link href="/monetization" className="btn">
-            Реклама и продвижение
-          </Link>
-          <Link href="/dashboard" className="btn btn-ghost">
-            ← На главную
-          </Link>
+          <Link href="/monetization" className="btn">{ui.ownerNavPromote}</Link>
+          <Link href="/dashboard" className="btn btn-ghost">{ui.__65f9d8}</Link>
         </div>
       </header>
 
-      {loading && <p style={{ color: 'var(--text-muted)' }}>Загрузка тарифов…</p>}
+      {loading && <p style={{ color: 'var(--text-muted)' }}>{ui.__c63d55}</p>}
       {!loading && !canView && (
         <div className="alert alert-error">{PAYMENTS_ACCESS_DENIED_RU}</div>
       )}
@@ -153,17 +154,17 @@ export default function PlanPage() {
           <p style={{ color: 'var(--text-muted)', marginBottom: 8 }}>
             Фото: {planStatus.usage.photos} / {planStatus.limits.maxPhotos}
             {planStatus.entitlements?.photos.overLimit && planStatus.entitlements.photos.published != null
-              ? ` (публикуется ${planStatus.entitlements.photos.published})`
+              ? ui.text_8eabdb
               : ''}
             {' · '}
             Товары/услуги: {planStatus.usage.serviceItems} / {planStatus.limits.maxServiceItems}
             {planStatus.entitlements?.serviceItems.overLimit && planStatus.entitlements.serviceItems.published != null
-              ? ` (публикуется ${planStatus.entitlements.serviceItems.published})`
+              ? ui.text_d6537c
               : ''}
             {' · '}
             Акции: {planStatus.usage.activePromotions} / {planStatus.limits.maxActivePromotions}
             {planStatus.entitlements?.activePromotions.overLimit && planStatus.entitlements.activePromotions.published != null
-              ? ` (публикуется ${planStatus.entitlements.activePromotions.published})`
+              ? ui.text_1658f7
               : ''}
           </p>
           {planStatus.entitlements?.overLimitNotice && (
@@ -175,9 +176,9 @@ export default function PlanPage() {
             <p style={{ color: 'var(--text-muted)', marginBottom: 8 }}>
               Менеджеры: {planStatus.team.activeManagers} / {planStatus.team.limit}
               {planStatus.team.pendingInvitations > 0
-                ? ` (+${planStatus.team.pendingInvitations} приглаш.)`
+                ? ui.text_bc921d
                 : ''}
-              {planStatus.team.overLimit ? ' — превышен лимит, новых менеджеров добавить нельзя' : ''}
+              {planStatus.team.overLimit ? ui.____8af55c : ''}
             </p>
           )}
           {planStatus.expiresAt && (
@@ -198,23 +199,23 @@ export default function PlanPage() {
               key={plan.tier}
               className={`form-card plan-card${isCurrent ? ' plan-card-current' : ''}`}
             >
-              {isCurrent && <span className="plan-badge">Текущий тариф</span>}
+              {isCurrent && <span className="plan-badge">{ui.__4c29c5}</span>}
               <h2 style={{ margin: '0 0 4px' }}>{plan.nameRu}</h2>
               <p className="plan-price">
                 {formatPrice(plan.priceKzt)}
-                <span> / {formatPeriod(plan.periodDays, plan.priceKzt)}</span>
+                <span> / {formatPeriod(ui, plan.periodDays, plan.priceKzt)}</span>
               </p>
               <ul className="plan-features" style={{ fontSize: '0.85rem', marginTop: 8 }}>
                 <li>Фото: {plan.limits.maxPhotos}</li>
                 <li>Товары/услуги: {plan.limits.maxServiceItems}</li>
                 <li>Акции: {plan.limits.maxActivePromotions}</li>
                 <li>Менеджеры: {plan.limits.maxManagers}</li>
-                <li>Ответы на отзывы: {plan.limits.canReplyToReviews ? 'да' : 'нет'}</li>
-                <li>Аналитика: {analyticsLevelLabel(plan.limits.analyticsTier)}</li>
+                <li>Ответы на отзывы: {plan.limits.canReplyToReviews ? ui.text_81c9da : ui.text_df28b6}</li>
+                <li>Аналитика: {analyticsLevelLabel(ui, plan.limits.analyticsTier)}</li>
                 <li>
                   Бонус на рекламу QalaGo:{' '}
                   {plan.limits.monthlyAdBonusKzt > 0
-                    ? `${plan.limits.monthlyAdBonusKzt.toLocaleString('ru-RU')} ₸/мес`
+                    ? ui.text_d8d7ab
                     : '—'}
                 </li>
                 <li>Скидка на рекламу: {plan.limits.advertisingDiscountPercent}%</li>
@@ -225,39 +226,31 @@ export default function PlanPage() {
                 ))}
               </ul>
               {plan.tier === 'VIP' && (
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 12 }}>
-                  Рекламные размещения приобретаются отдельно.
-                </p>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 12 }}>{ui.____a5f597}</p>
               )}
               {!canView ? (
-                <button type="button" className="btn btn-ghost" disabled>
-                  Недоступно
-                </button>
+                <button type="button" className="btn btn-ghost" disabled>{ui.text_ab6cb7}</button>
               ) : isCurrent ? (
-                <button type="button" className="btn btn-ghost" disabled>
-                  Активен
-                </button>
+                <button type="button" className="btn btn-ghost" disabled>{ui.text_318150}</button>
               ) : !businessWebMockPlanCheckoutEnabled ? (
-                <button type="button" className="btn btn-ghost" disabled>
-                  Покупка недоступна
-                </button>
+                <button type="button" className="btn btn-ghost" disabled>{ui.__12b9df}</button>
               ) : (
                 <button
                   type="button"
                   className="btn"
                   disabled={!planStatus || !canManage || checkoutTier === plan.tier}
                   onClick={() => onCheckout(plan.tier)}
-                  title={!canManage ? 'Изменить тариф может только владелец' : undefined}
+                  title={!canManage ? ui.____ab83e1 : undefined}
                 >
                   {checkoutTier === plan.tier
-                    ? 'Подключение…'
+                    ? ui.text_2d3f73
                     : !canManage
-                      ? 'Только для владельца'
+                      ? ui.___7097f8
                       : isDowngrade
-                        ? 'Вернуться на Free'
+                        ? ui.__free_3507fe
                         : plan.priceKzt === 0
-                          ? 'Выбрать'
-                          : 'Подключить (тест)'}
+                          ? ui.text_2b02ca
+                          : ui.__3858f6}
                 </button>
               )}
             </section>
@@ -266,35 +259,27 @@ export default function PlanPage() {
       </div>
 
       <section className="form-card" style={{ marginTop: 16, maxWidth: 720 }}>
-        <h3 style={{ marginTop: 0 }}>Бонус на рекламу QalaGo</h3>
+        <h3 style={{ marginTop: 0 }}>{ui.___qalago_248e3f}</h3>
         <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
-          Ежемесячный бонус — внутренний кредит для оплаты eligible рекламных продуктов QalaGo.
-          Это не наличные деньги, не cashback и не выводимый баланс. Начисление бонуса будет
-          доступно после внедрения учётной модели (Stage 6.4 — только отображение в тарифах).
+          {ui.text_planBonus1}
+          {ui.text_planBonus2}
+          {ui.text_planBonus3}
         </p>
-        <h3>Рекламные размещения</h3>
+        <h3>{ui.__0d3630}</h3>
         <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
-          Подписка не повышает органический рейтинг в каталоге. Рекламные размещения
-          приобретаются отдельно. Скидка тарифа применяется к отдельным рекламным продуктам
-          при оформлении заказа и фиксируется в истории оплат.
+          {ui.text_planDisclaimer1}
+          {ui.text_planDisclaimer2}
+          {ui.text_planDisclaimer3}
         </p>
         {businessWebMockPlanCheckoutEnabled ? (
           <>
-            <h3>Тестовая оплата</h3>
-            <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
-              Сейчас оплата имитируется без списания денег. Платные тарифы активируются на 30
-              дней.
-            </p>
+            <h3>{ui.__16995d}</h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>{ui.____4f4875}</p>
           </>
         ) : (
-          <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
-            Оформление подписки через кабинет пока недоступно. Информация о тарифе отображается
-            для справки.
-          </p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>{ui.____eba489}</p>
         )}
-        <Link href="/help" className="btn btn-ghost">
-          Перейти в раздел «Помощь»
-        </Link>
+        <Link href="/help" className="btn btn-ghost">{ui.____289a51}</Link>
       </section>
     </BusinessShell>
   );

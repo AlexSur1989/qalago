@@ -18,6 +18,7 @@ describe('AuthUser nullable phone contract', () => {
     const user: AuthUser = {
       id: 'u2',
       role: 'USER',
+      name: 'Phone User',
       phone: '+77001234567',
     };
     expect(user.phone).toBe('+77001234567');

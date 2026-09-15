@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -20,6 +21,9 @@ import {
 } from '@/lib/monetization-utils';
 
 export default function MonetizationOrderDetailPage() {
+  const locale = useLocale();
+  const ui = useUi();
+
   const params = useParams<{ id: string }>();
   const orderId = params.id;
   const { token } = useMonetizationContext();
@@ -35,7 +39,7 @@ export default function MonetizationOrderDetailPage() {
         if (!cancelled) setOrder(res);
       })
       .catch((err) => {
-        if (!cancelled) setError(parseApiError(err));
+        if (!cancelled) setError(parseApiError(locale, err));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -45,9 +49,9 @@ export default function MonetizationOrderDetailPage() {
     };
   }, [token, orderId]);
 
-  if (loading) return <p style={{ color: 'var(--text-muted)' }}>Загрузка…</p>;
+  if (loading) return <p style={{ color: 'var(--text-muted)' }}>{ui.text_89d69a}</p>;
   if (error || !order) {
-    return <div className="alert alert-error">{error ?? 'Заказ не найден'}</div>;
+    return <div className="alert alert-error">{error ?? ui.___39747e}</div>;
   }
 
   const pendingPayment = order.payments?.find(
@@ -71,40 +75,38 @@ export default function MonetizationOrderDetailPage() {
           <h1>Заказ {order.orderNumber}</h1>
           <p className="page-header-meta">{formatDateTime(order.createdAt)}</p>
         </div>
-        <Link href="/monetization/orders" className="btn btn-ghost btn-sm">
-          ← К списку
-        </Link>
+        <Link href="/monetization/orders" className="btn btn-ghost btn-sm">{ui.__41649d}</Link>
       </header>
 
       {hasMixedPackage && hasVipWaiting && order.status === 'PAID' && (
         <div className="alert" style={{ marginBottom: 16 }}>
-          Пакет частично активен: размещения без VIP уже запущены или запланированы. VIP-баннер
-          начнёт показы после одобрения креатива модератором — до этого период VIP не стартует.
+          {ui.text_orderPartialVip1}
+          {ui.text_orderPartialVip2}
         </div>
       )}
 
       {pendingPayment && (
         <div className="alert" style={{ marginBottom: 16 }}>
-          Заказ ожидает ручной оплаты. После перевода средств администратор подтвердит оплату — до
-          этого кампании не активируются.
+          {ui.text_orderAwaitingPay1}
+          {ui.text_orderAwaitingPay2}
         </div>
       )}
 
       <section className="form-card" style={{ marginBottom: 16 }}>
         <dl className="detail-grid">
-          <dt>Статус</dt>
+          <dt>{ui.text_7203f7}</dt>
           <dd>
             <span className={monetizationStatusClass(order.status)}>
-              {orderStatusLabel(order.status)}
+              {orderStatusLabel(locale, order.status)}
             </span>
           </dd>
           {order.paidAt && (
             <>
-              <dt>Оплачен</dt>
+              <dt>{ui.text_1ec8bd}</dt>
               <dd>{formatDateTime(order.paidAt)}</dd>
             </>
           )}
-          <dt>Итого</dt>
+          <dt>{ui.text_edcf39}</dt>
           <dd>
             <strong>{formatKzt(order.totalAmount, order.currency)}</strong>
           </dd>
@@ -112,21 +114,21 @@ export default function MonetizationOrderDetailPage() {
       </section>
 
       <section className="form-card" style={{ marginBottom: 16 }}>
-        <h2 style={{ marginTop: 0 }}>Состав заказа</h2>
+        <h2 style={{ marginTop: 0 }}>{ui.__a18ab6}</h2>
         <div className="table-scroll desktop-only">
           <table className="table">
             <thead>
               <tr>
-                <th>Продукт</th>
-                <th>Период</th>
-                <th>Сумма</th>
+                <th>{ui.text_c5ffa7}</th>
+                <th>{ui.text_f90bfb}</th>
+                <th>{ui.text_cf59eb}</th>
               </tr>
             </thead>
             <tbody>
               {order.items.map((item) => (
                 <tr key={item.id}>
-                  <td>{productLabel(item.productCode)}</td>
-                  <td>{formatDuration(item.durationDays ?? null, item.durationHours ?? null)}</td>
+                  <td>{productLabel(locale, item.productCode)}</td>
+                  <td>{formatDuration(locale, item.durationDays ?? null, item.durationHours ?? null)}</td>
                   <td>{formatKzt(item.finalPrice, order.currency)}</td>
                 </tr>
               ))}
@@ -137,9 +139,9 @@ export default function MonetizationOrderDetailPage() {
           {order.items.map((item) => (
             <div key={item.id} className="promo-item">
               <div className="promo-body">
-                <strong>{productLabel(item.productCode)}</strong>
+                <strong>{productLabel(locale, item.productCode)}</strong>
                 <p>
-                  {formatDuration(item.durationDays ?? null, item.durationHours ?? null)} ·{' '}
+                  {formatDuration(locale, item.durationDays ?? null, item.durationHours ?? null)} ·{' '}
                   {formatKzt(item.finalPrice, order.currency)}
                 </p>
               </div>
@@ -150,7 +152,7 @@ export default function MonetizationOrderDetailPage() {
 
       {order.payments.length > 0 && (
         <section className="form-card" style={{ marginBottom: 16 }}>
-          <h2 style={{ marginTop: 0 }}>Оплаты</h2>
+          <h2 style={{ marginTop: 0 }}>{ui.text_8fc4bc}</h2>
           {order.payments.map((p) => (
             <div key={p.id} className="promo-item">
               <div className="promo-body">
@@ -158,7 +160,7 @@ export default function MonetizationOrderDetailPage() {
                 <p>
                   {formatKzt(p.amount, order.currency)} ·{' '}
                   <span className={monetizationStatusClass(p.status)}>
-                    {paymentStatusLabel(p.status)}
+                    {paymentStatusLabel(locale, p.status)}
                   </span>
                 </p>
               </div>
@@ -169,39 +171,37 @@ export default function MonetizationOrderDetailPage() {
 
       {campaigns.length > 0 && (
         <section className="form-card">
-          <h2 style={{ marginTop: 0 }}>Связанные кампании</h2>
+          <h2 style={{ marginTop: 0 }}>{ui.__c2265b}</h2>
           <div className="table-scroll desktop-only">
             <table className="table">
               <thead>
                 <tr>
-                  <th>Продукт</th>
-                  <th>Статус</th>
-                  <th>Креатив</th>
-                  <th>Период</th>
+                  <th>{ui.text_c5ffa7}</th>
+                  <th>{ui.text_7203f7}</th>
+                  <th>{ui.text_e35653}</th>
+                  <th>{ui.text_f90bfb}</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
                 {campaigns.map((c) => (
                   <tr key={c.id}>
-                    <td>{productLabel(c.product.code)}</td>
+                    <td>{productLabel(locale, c.product.code)}</td>
                     <td>
                       <span className={monetizationStatusClass(c.status)}>
-                        {campaignStatusLabel(c.status)}
+                        {campaignStatusLabel(locale, c.status)}
                       </span>
                     </td>
                     <td>
                       {c.product.code === 'VIP_BANNER'
                         ? c.creative
-                          ? `${c.creative.title} (${creativeStatusLabel(c.creative.moderationStatus)})`
+                          ? `${c.creative.title} (${creativeStatusLabel(locale, c.creative.moderationStatus)})`
                           : '—'
                         : '—'}
                     </td>
                     <td>
                       {c.requestedStartAt && c.status === 'PENDING_MODERATION' ? (
-                        <span title={`Запрошено: ${formatDateTime(c.requestedStartAt)}`}>
-                          после одобрения
-                        </span>
+                        <span title={ui.text_e93a9b}>{ui.__6b310c}</span>
                       ) : (
                         <>
                           {formatDate(c.startAt)} — {formatDate(c.endAt)}
@@ -209,9 +209,7 @@ export default function MonetizationOrderDetailPage() {
                       )}
                     </td>
                     <td>
-                      <Link href={`/monetization/campaigns/${c.id}`} className="btn btn-sm">
-                        Открыть
-                      </Link>
+                      <Link href={`/monetization/campaigns/${c.id}`} className="btn btn-sm">{ui.text_e946df}</Link>
                     </td>
                   </tr>
                 ))}
@@ -222,18 +220,16 @@ export default function MonetizationOrderDetailPage() {
             {campaigns.map((c) => (
               <div key={c.id} className="promo-item">
                 <div className="promo-body">
-                  <strong>{productLabel(c.product.code)}</strong>
+                  <strong>{productLabel(locale, c.product.code)}</strong>
                   <span className={monetizationStatusClass(c.status)}>
-                    {campaignStatusLabel(c.status)}
+                    {campaignStatusLabel(locale, c.status)}
                   </span>
                   {c.product.code === 'VIP_BANNER' && c.creative && (
                     <p style={{ fontSize: '0.85rem' }}>
-                      {c.creative.title} · {creativeStatusLabel(c.creative.moderationStatus)}
+                      {c.creative.title} · {creativeStatusLabel(locale, c.creative.moderationStatus)}
                     </p>
                   )}
-                  <Link href={`/monetization/campaigns/${c.id}`} className="btn btn-sm">
-                    Детали кампании
-                  </Link>
+                  <Link href={`/monetization/campaigns/${c.id}`} className="btn btn-sm">{ui.__c660cc}</Link>
                 </div>
               </div>
             ))}

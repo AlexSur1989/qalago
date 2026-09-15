@@ -60,6 +60,28 @@ Canonical product terminology for Flutter `AppLocalizations` (`app_ru.arb` / `ap
 - Locale cookie: `qalago_locale` (`ru` / `kk`, fallback `ru`).
 - Hardcoded UI guard: `npm run check:ui-strings` (from `apps/consumer-web`).
 
+## Business Web (Stage 6.10B.5)
+
+| RU | KK | Key (examples) |
+|----|-----|----------------|
+| Обзор | Шолу | `ownerNavOverview` |
+| Мой бизнес | Менің бизнесім | `ownerMgmtMyBusiness` |
+| Товары и услуги | Тауарлар мен қызметтер | `ownerPermissionCatalogEdit` |
+| Реклама и продвижение | Жарнама және насихат | `ownerNavPromote` |
+| Статистика | Статистика | `ownerNavAnalytics` |
+| Настройки | Баптаулар | `ownerNavSettings` |
+| Тариф | Тариф | `ownerNavPlan` |
+| Помощь | Көмек | `ownerNavHelp` |
+| Сообщения | Хабарламалар | `ownerNavMessages` |
+| Команда | Команда | `ownerNavTeam` |
+| Выйти | Шығу | `shellLogout` |
+| Русский / Қазақша | (labels) | `localeRu`, `localeKk` |
+
+- Locale stack: `lib/locale.ts` (`UI_LABELS`), `lib/locale-server.ts` / `lib/locale-client.ts`, `components/locale-provider.tsx`, `components/locale-switcher.tsx`; cookie `qalago_locale` (same as consumer web).
+- Enum/status copy: `lib/presentation.ts` (plan tiers, business status, monetization, permissions, onboarding errors, analytics KPIs) — aligned with Flutter owner ARB.
+- Legal pages (`/terms`, `/privacy`, `/account-deletion`): chrome localized via `legal-page-layout`; **legal body remains RU** until counsel review.
+- Hardcoded UI guard: `npm run check:ui-strings` (from `apps/business-web`); dictionaries `locale.ts` + `presentation.ts` only.
+
 ## Tooling
 
 - Generate l10n: `flutter gen-l10n` (from `apps/mobile`).

@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { MonetizationProduct, ownerApi } from '@/lib/api';
@@ -16,6 +17,9 @@ import {
 import type { MonetizationPurchaseState } from '@/lib/api';
 
 export default function MonetizationProductsPage() {
+  const locale = useLocale();
+  const ui = useUi();
+
   const { token, business } = useMonetizationContext();
   const [products, setProducts] = useState<MonetizationProduct[]>([]);
   const [purchaseStates, setPurchaseStates] = useState<
@@ -44,7 +48,7 @@ export default function MonetizationProductsPage() {
         }
       })
       .catch((err) => {
-        if (!cancelled) setError(parseApiError(err));
+        if (!cancelled) setError(parseApiError(locale, err));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -58,17 +62,17 @@ export default function MonetizationProductsPage() {
     <>
       <header className="page-header">
         <div>
-          <h1>Рекламные продукты</h1>
+          <h1>{ui.__ebd04c}</h1>
           <p className="page-header-meta">Каталог размещений для {business.title}</p>
         </div>
       </header>
 
       {error && <div className="alert alert-error">{error}</div>}
-      {loading && <p style={{ color: 'var(--text-muted)' }}>Загрузка каталога…</p>}
+      {loading && <p style={{ color: 'var(--text-muted)' }}>{ui.__c53959}</p>}
 
       {!loading && products.length === 0 && (
         <section className="form-card">
-          <p style={{ color: 'var(--text-muted)' }}>Продукты недоступны для вашего заведения.</p>
+          <p style={{ color: 'var(--text-muted)' }}>{ui.____187ccf}</p>
         </section>
       )}
 
@@ -82,11 +86,11 @@ export default function MonetizationProductsPage() {
           const state = purchaseStates[product.code];
           const detail =
             state?.state === 'ACTIVE' && state.activeUntil
-              ? `Активно до ${formatDate(state.activeUntil)}`
+              ? ui.__c6125a
               : state?.state === 'SCHEDULED' && state.scheduledStart && state.scheduledEnd
                 ? `${formatDate(state.scheduledStart)} — ${formatDate(state.scheduledEnd)}`
                 : state?.state === 'SOLD_OUT' && state.nextAvailableAt
-                  ? `Ближайшая доступная дата: ${formatDate(state.nextAvailableAt)}`
+                  ? ui.___c312bc
                   : null;
           const href =
             state?.primaryAction === 'CONTINUE_PAYMENT' && state.pendingOrderId
@@ -94,21 +98,21 @@ export default function MonetizationProductsPage() {
               : `/monetization/products/${product.code}`;
           const cta =
             state?.primaryAction === 'CONTINUE_PAYMENT'
-              ? purchaseActionLabel(state.primaryAction)
+              ? purchaseActionLabel(locale, state.primaryAction)
               : state?.primaryAction === 'RENEW'
-                ? purchaseActionLabel('RENEW')
+                ? purchaseActionLabel(locale, 'RENEW')
                 : state?.state === 'SOLD_OUT'
-                  ? purchaseStateLabel(state.state)
-                  : 'Настроить';
+                  ? purchaseStateLabel(locale, state.state)
+                  : ui.text_0b4604;
           return (
             <section key={product.code} className="form-card catalog-card">
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
                 <h2 style={{ margin: '0 0 8px', fontSize: '1.05rem' }}>
-                  {productLabel(product.code)}
+                  {productLabel(locale, product.code)}
                 </h2>
                 {state && (
                   <span className="badge" style={{ alignSelf: 'flex-start' }}>
-                    {purchaseStateLabel(state.state)}
+                    {purchaseStateLabel(locale, state.state)}
                   </span>
                 )}
               </div>
@@ -129,7 +133,7 @@ export default function MonetizationProductsPage() {
                   {minDuration && (
                     <span style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
                       {' '}
-                      / {formatDuration(minDuration.durationDays ?? null, minDuration.durationHours ?? null)}
+                      / {formatDuration(locale, minDuration.durationDays ?? null, minDuration.durationHours ?? null)}
                     </span>
                   )}
                 </p>

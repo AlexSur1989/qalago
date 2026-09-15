@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -24,6 +25,9 @@ function toDateInputValue(date: Date): string {
 }
 
 export default function MonetizationPackageDetailPage() {
+  const locale = useLocale();
+  const ui = useUi();
+
   const params = useParams<{ code: string }>();
   const packageCode = params.code;
   const router = useRouter();
@@ -56,10 +60,10 @@ export default function MonetizationPackageDetailPage() {
         const active = promos.items.filter((p) => p.status === 'ACTIVE');
         setPromotions(active);
         if (active.length > 0) setPromotionId(active[0].id);
-        if (!found) setError('Пакет не найден');
+        if (!found) setError(ui.___e1df5a);
       })
       .catch((err) => {
-        if (!cancelled) setError(parseApiError(err));
+        if (!cancelled) setError(parseApiError(locale, err));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -84,7 +88,7 @@ export default function MonetizationPackageDetailPage() {
       setQuote(result);
     } catch (err) {
       setQuote(null);
-      setQuoteError(parseApiError(err));
+      setQuoteError(parseApiError(locale, err));
     } finally {
       setQuoteLoading(false);
     }
@@ -112,9 +116,9 @@ export default function MonetizationPackageDetailPage() {
     router.push(`/monetization/checkout?${checkoutParams}`);
   }
 
-  if (loading) return <p style={{ color: 'var(--text-muted)' }}>Загрузка…</p>;
+  if (loading) return <p style={{ color: 'var(--text-muted)' }}>{ui.text_89d69a}</p>;
   if (error || !pkg) {
-    return <div className="alert alert-error">{error ?? 'Пакет не найден'}</div>;
+    return <div className="alert alert-error">{error ?? ui.___e1df5a}</div>;
   }
 
   return (
@@ -122,31 +126,27 @@ export default function MonetizationPackageDetailPage() {
       <header className="page-header">
         <div>
           <h1>{pkg.name}</h1>
-          <p className="page-header-meta">{pkg.description ?? 'Пакет продвижения'}</p>
+          <p className="page-header-meta">{pkg.description ?? ui.__629993}</p>
         </div>
-        <Link href="/monetization/packages" className="btn btn-ghost btn-sm">
-          ← К пакетам
-        </Link>
+        <Link href="/monetization/packages" className="btn btn-ghost btn-sm">{ui.__5f059f}</Link>
       </header>
 
       <div className="checkout-layout">
         <section className="form-card">
-          <h2 style={{ marginTop: 0 }}>Состав пакета</h2>
+          <h2 style={{ marginTop: 0 }}>{ui.__b81c87}</h2>
           <ul style={{ paddingLeft: 18 }}>
             {pkg.items.map((item, idx) => (
               <li key={`${item.productCode}-${idx}`} style={{ marginBottom: 6 }}>
-                {productLabel(item.productCode)}
+                {productLabel(locale, item.productCode)}
                 {item.durationDays != null || item.durationHours != null
-                  ? ` — ${formatDuration(item.durationDays ?? null, item.durationHours ?? null)}`
+                  ? ` — ${formatDuration(locale, item.durationDays ?? null, item.durationHours ?? null)}`
                   : ''}
                 {item.quantity > 1 ? ` × ${item.quantity}` : ''}
               </li>
             ))}
           </ul>
 
-          <label className="field-label">
-            Желаемая дата начала
-            <input
+          <label className="field-label">{ui.___b96c29}<input
               type="date"
               value={desiredStartAt}
               onChange={(e) => setDesiredStartAt(e.target.value)}
@@ -155,11 +155,11 @@ export default function MonetizationPackageDetailPage() {
 
           {needsPromotion && (
             <label className="field-label">
-              Акция для продвижения
+              {ui.text_promoForAds}
               {promotions.length === 0 ? (
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
                   Нет активных акций.{' '}
-                  <Link href={`/business/${business.id}/promotions`}>Создать акцию</Link>
+                  <Link href={`/business/${business.id}/promotions`}>{ui.__8062f8}</Link>
                 </p>
               ) : (
                 <select value={promotionId} onChange={(e) => setPromotionId(e.target.value)}>
@@ -175,9 +175,9 @@ export default function MonetizationPackageDetailPage() {
 
           {hasVip && (
             <div className="alert" style={{ marginTop: 12 }}>
-              Пакет включает VIP-баннер. Сначала подготовьте креатив — период VIP-размещения
-              начнётся после одобрения баннера. Остальные размещения пакета активируются после
-              оплаты.
+              {ui.text_packageVipCreative1}
+              {ui.text_packageVipCreative2}
+              {ui.text_afterPayment}
             </div>
           )}
         </section>
@@ -195,7 +195,7 @@ export default function MonetizationPackageDetailPage() {
               }
               onClick={onContinue}
             >
-              {hasVip ? 'Далее: креатив VIP-баннера' : 'Перейти к оформлению'}
+              {hasVip ? ui.__vip__e0fb5c : ui.___2f5efd}
             </button>
           </div>
         </div>

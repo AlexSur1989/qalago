@@ -1,10 +1,11 @@
 import { AuthUser, MyBusinessItem, ownerApi } from '@/lib/api';
 import { hasBusinessCabinetAccess } from '@/lib/use-auth';
 import { sanitizeInternalRedirect } from '@/lib/redirect-utils';
+import type { PostLoginErrorKey } from '@/lib/presentation';
 
 export type LoginDestination = {
   path: string;
-  error?: string;
+  errorKey?: PostLoginErrorKey;
 };
 
 export async function resolvePostLoginDestination(
@@ -17,11 +18,11 @@ export async function resolvePostLoginDestination(
     const res = await ownerApi.listMyBusinesses(accessToken);
     items = res.items;
   } catch {
-    return { path: '/login', error: 'Не удалось проверить доступ к заведениям' };
+    return { path: '/login', errorKey: 'BUSINESSES_FETCH_FAILED' };
   }
 
   if (!hasBusinessCabinetAccess(user, items) && user.role !== 'USER') {
-    return { path: '/login', error: 'Нет доступа к кабинету' };
+    return { path: '/login', errorKey: 'NO_CABINET_ACCESS' };
   }
 
   const safeRedirect = sanitizeInternalRedirect(redirectParam);

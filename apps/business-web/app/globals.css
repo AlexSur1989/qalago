@@ -1301,3 +1301,35 @@ select {
   color: var(--primary);
   text-decoration: underline;
 }
+
+.locale-switch {
+  display: inline-flex;
+  gap: 4px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.locale-switch__btn {
+  border: none;
+  background: transparent;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.locale-switch__btn--active {
+  background: rgba(0, 168, 214, 0.12);
+  color: var(--blue);
+}
+
+.legal-page-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}

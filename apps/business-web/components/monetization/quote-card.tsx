@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useUi } from '@/components/locale-provider';
 import type { MonetizationQuote } from '@/lib/api';
 import { formatDate, formatDateTime, formatDuration, formatKzt } from '@/lib/monetization-utils';
 
@@ -10,11 +11,14 @@ type QuoteCardProps = {
 };
 
 export function QuoteCard({ quote, loading, error }: QuoteCardProps) {
+  const locale = useLocale();
+  const ui = useUi();
+
   if (loading) {
     return (
       <section className="form-card quote-card">
-        <h3 style={{ marginTop: 0 }}>Расчёт стоимости</h3>
-        <p style={{ color: 'var(--text-muted)' }}>Загрузка расчёта…</p>
+        <h3 style={{ marginTop: 0 }}>{ui.__5a427f}</h3>
+        <p style={{ color: 'var(--text-muted)' }}>{ui.__85a5da}</p>
       </section>
     );
   }
@@ -22,7 +26,7 @@ export function QuoteCard({ quote, loading, error }: QuoteCardProps) {
   if (error) {
     return (
       <section className="form-card quote-card">
-        <h3 style={{ marginTop: 0 }}>Расчёт стоимости</h3>
+        <h3 style={{ marginTop: 0 }}>{ui.__5a427f}</h3>
         <div className="alert alert-error">{error}</div>
       </section>
     );
@@ -31,23 +35,23 @@ export function QuoteCard({ quote, loading, error }: QuoteCardProps) {
   if (!quote) {
     return (
       <section className="form-card quote-card">
-        <h3 style={{ marginTop: 0 }}>Расчёт стоимости</h3>
-        <p style={{ color: 'var(--text-muted)' }}>Выберите параметры для расчёта.</p>
+        <h3 style={{ marginTop: 0 }}>{ui.__5a427f}</h3>
+        <p style={{ color: 'var(--text-muted)' }}>{ui.____0b7361}</p>
       </section>
     );
   }
 
-  const title = quote.product?.name ?? quote.package?.name ?? 'Размещение';
+  const title = quote.product?.name ?? quote.package?.name ?? ui.text_30474d;
 
   return (
     <section className="form-card quote-card">
-      <h3 style={{ marginTop: 0 }}>Расчёт стоимости</h3>
+      <h3 style={{ marginTop: 0 }}>{ui.__5a427f}</h3>
       <p style={{ color: 'var(--text-muted)', marginTop: 0 }}>{title}</p>
 
       {quote.duration && (
         <p style={{ fontSize: '0.9rem' }}>
           Период:{' '}
-          {formatDuration(quote.duration.durationDays ?? null, quote.duration.durationHours ?? null)}
+          {formatDuration(locale, quote.duration.durationDays ?? null, quote.duration.durationHours ?? null)}
         </p>
       )}
 
@@ -59,17 +63,17 @@ export function QuoteCard({ quote, loading, error }: QuoteCardProps) {
       )}
 
       <dl className="detail-grid compact">
-        <dt>Базовая цена</dt>
+        <dt>{ui.__4c9370}</dt>
         <dd>{formatKzt(quote.basePrice, quote.currency)}</dd>
         {quote.discountPercent > 0 && (
           <>
-            <dt>Скидка тарифа</dt>
+            <dt>{ui.__6a0817}</dt>
             <dd>
               −{formatKzt(quote.discountAmount, quote.currency)} ({quote.discountPercent}%)
             </dd>
           </>
         )}
-        <dt>К оплате</dt>
+        <dt>{ui.__0fb4d5}</dt>
         <dd>
           <strong>{formatKzt(quote.finalPrice, quote.currency)}</strong>
         </dd>
@@ -77,7 +81,7 @@ export function QuoteCard({ quote, loading, error }: QuoteCardProps) {
 
       {!quote.availability.available && (
         <div className="alert alert-error" style={{ marginTop: 12 }}>
-          {quote.availability.reason ?? 'Размещение недоступно на выбранные даты.'}
+          {quote.availability.reason ?? ui.____3fb263}
           {quote.availability.nextAvailableAt && (
             <span>
               {' '}
@@ -88,9 +92,7 @@ export function QuoteCard({ quote, loading, error }: QuoteCardProps) {
       )}
 
       {quote.availability.available && (
-        <p style={{ color: 'var(--success)', fontSize: '0.88rem', marginBottom: 0 }}>
-          Размещение доступно на выбранный период.
-        </p>
+        <p style={{ color: 'var(--success)', fontSize: '0.88rem', marginBottom: 0 }}>{ui.____25686f}</p>
       )}
     </section>
   );

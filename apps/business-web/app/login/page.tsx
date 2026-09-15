@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { FormEvent, Suspense, useCallback, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -25,11 +26,15 @@ import { mapSocialAuthError } from '@/lib/social-auth/social-auth-errors';
 import { AppleLoginButton } from '@/components/social-login/apple-login-button';
 import { GoogleLoginButton } from '@/components/social-login/google-login-button';
 import { sanitizeInternalRedirect } from '@/lib/redirect-utils';
+import { postLoginErrorMessage } from '@/lib/presentation';
 import { LegalConsentFooter } from '@/components/legal-consent-footer';
 
 export default function LoginPage() {
+  const locale = useLocale();
+  const ui = useUi();
+
   const inner = (
-    <Suspense fallback={<main className="login-page"><p>Загрузка…</p></main>}>
+    <Suspense fallback={<main className="login-page"><p>{ui.text_89d69a}</p></main>}>
       <LoginContent />
     </Suspense>
   );
@@ -46,6 +51,8 @@ export default function LoginPage() {
 }
 
 function LoginContent() {
+  const locale = useLocale();
+  const ui = useUi();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectParam = sanitizeInternalRedirect(searchParams.get('redirect'), '/home');
@@ -70,8 +77,8 @@ function LoginContent() {
         user,
         redirectParam,
       );
-      if (destination.error) {
-        setError(destination.error);
+      if (destination.errorKey) {
+        setError(postLoginErrorMessage(locale, destination.errorKey));
         return;
       }
       setWebAccessToken(accessToken);
@@ -84,7 +91,7 @@ function LoginContent() {
       }
       router.push(destination.path);
     },
-    [redirectParam, router],
+    [locale, redirectParam, router],
   );
 
   async function loginViaSession(mode: 'verify' | 'dev', payload: { phone: string; code?: string }) {
@@ -158,7 +165,7 @@ function LoginContent() {
       const res = await exchangeGoogleIdToken(credential);
       await finishLogin(res.accessToken, res.refreshToken, res.user);
     } catch (err) {
-      const message = mapSocialAuthError(err, 'Google');
+      const message = mapSocialAuthError(locale, err, 'Google');
       if (message) setError(message);
     } finally {
       setLoading(false);
@@ -175,7 +182,7 @@ function LoginContent() {
       const res = await exchangeAppleAuthorization(response);
       await finishLogin(res.accessToken, res.refreshToken, res.user);
     } catch (err) {
-      const message = mapSocialAuthError(err, 'Apple');
+      const message = mapSocialAuthError(locale, err, 'Apple');
       if (message) setError(message);
     } finally {
       setLoading(false);
@@ -188,24 +195,21 @@ function LoginContent() {
         <h1>QalaGo Business</h1>
         <p className="login-lead">
           {businessWebSocialAuthConfigured
-            ? 'Войдите, чтобы управлять заведением, командой и аналитикой.'
+            ? ui.____2146ba
             : businessWebOtpAuthConfigured
-              ? 'Вход по номеру телефона · OTP (тест: +77000000002, код 1234)'
-              : 'Войдите через доступный способ авторизации.'}
+              ? ui.____c8191d
+              : ui.____6e26fd}
         </p>
 
         {!businessWebAnyLoginMethodConfigured && (
-          <div className="alert alert-error" style={{ marginBottom: 16 }}>
-            Вход временно недоступен: не настроен ни один способ авторизации. Обратитесь к
-            администратору QalaGo.
-          </div>
+          <div className="alert alert-error" style={{ marginBottom: 16 }}>{ui.____b0d344}</div>
         )}
 
         {businessWebGoogleAuthConfigured && (
           <GoogleLoginButton
             disabled={loading}
             onCredential={handleGoogleCredential}
-            onError={() => setError('Не удалось войти через Google. Попробуйте ещё раз.')}
+            onError={() => setError(ui.____28d61d)}
           />
         )}
 
@@ -219,7 +223,7 @@ function LoginContent() {
         {businessWebSocialAuthConfigured && businessWebOtpAuthConfigured && (
           <>
             <div className="login-divider">
-              <span>или</span>
+              <span>{ui.text_7ed121}</span>
             </div>
             {!otpExpanded ? (
               <button
@@ -229,7 +233,7 @@ function LoginContent() {
                 disabled={loading}
                 onClick={() => setOtpExpanded(true)}
               >
-                Войти по телефону
+                {ui.text_loginByPhone}
               </button>
             ) : (
               <>
@@ -237,12 +241,10 @@ function LoginContent() {
                   <input
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Телефон"
+                    placeholder={ui.text_2928e1}
                     disabled={loading}
                   />
-                  <button type="submit" disabled={loading} className="btn btn-primary">
-                    Отправить код
-                  </button>
+                  <button type="submit" disabled={loading} className="btn btn-primary">{ui.__74bc05}</button>
                 </form>
                 {debugCode && (
                   <p style={{ color: 'var(--success)' }}>Dev OTP: {debugCode}</p>
@@ -251,12 +253,10 @@ function LoginContent() {
                   <input
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
-                    placeholder="Код из SMS"
+                    placeholder={ui.__sms_82ec53}
                     disabled={loading}
                   />
-                  <button type="submit" disabled={loading} className="btn btn-primary">
-                    Войти
-                  </button>
+                  <button type="submit" disabled={loading} className="btn btn-primary">{ui.text_63a753}</button>
                 </form>
               </>
             )}
@@ -269,24 +269,20 @@ function LoginContent() {
               <input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="Телефон"
+                placeholder={ui.text_2928e1}
                 disabled={loading}
               />
-              <button type="submit" disabled={loading} className="btn btn-primary">
-                Отправить код
-              </button>
+              <button type="submit" disabled={loading} className="btn btn-primary">{ui.__74bc05}</button>
             </form>
             {debugCode && <p style={{ color: 'var(--success)' }}>Dev OTP: {debugCode}</p>}
             <form onSubmit={verify} className="form-grid">
               <input
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                placeholder="Код из SMS"
+                placeholder={ui.__sms_82ec53}
                 disabled={loading}
               />
-              <button type="submit" disabled={loading} className="btn btn-primary">
-                Войти
-              </button>
+              <button type="submit" disabled={loading} className="btn btn-primary">{ui.text_63a753}</button>
             </form>
           </>
         )}
@@ -300,7 +296,7 @@ function LoginContent() {
               disabled={loading}
               onClick={() => devLogin()}
             >
-              Войти без SMS
+              {ui.text_loginDevNoSms}
             </button>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
               {devSeedAccounts.map((account) => (
@@ -331,9 +327,7 @@ function LoginContent() {
 
         <p style={{ marginTop: 20, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
           Нет бизнеса в QalaGo?{' '}
-          <Link href="/onboarding" style={{ color: 'var(--primary)' }}>
-            Добавить или найти
-          </Link>
+          <Link href="/onboarding" style={{ color: 'var(--primary)' }}>{ui.___c1d1fc}</Link>
         </p>
       </div>
     </main>

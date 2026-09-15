@@ -1,23 +1,29 @@
 'use client';
 
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, Suspense, useState } from 'react';
 import { ownerApi } from '@/lib/api';
 import { VipBannerPreview } from '@/components/monetization/vip-banner-preview';
 import { useMonetizationContext } from '@/components/monetization/monetization-shell';
-import { VIP_MODERATION_NOTICE } from '@/lib/owner-utils';
+import { vipModerationPlacementNotice } from '@/lib/owner-utils';
 import { parseApiError } from '@/lib/monetization-utils';
 
 export default function VipCreativePage() {
+  const locale = useLocale();
+  const ui = useUi();
+
   return (
-    <Suspense fallback={<p style={{ color: 'var(--text-muted)' }}>Загрузка…</p>}>
+    <Suspense fallback={<p style={{ color: 'var(--text-muted)' }}>{ui.text_89d69a}</p>}>
       <VipCreativeContent />
     </Suspense>
   );
 }
 
 function VipCreativeContent() {
+  const locale = useLocale();
+  const ui = useUi();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { token, business } = useMonetizationContext();
@@ -31,7 +37,7 @@ function VipCreativeContent() {
 
   const [title, setTitle] = useState(business.title);
   const [description, setDescription] = useState(business.shortDesc ?? '');
-  const [buttonText, setButtonText] = useState('Подробнее');
+  const [buttonText, setButtonText] = useState(ui.text_db5f55);
   const [targetType, setTargetType] = useState<'BUSINESS' | 'PROMOTION' | 'EXTERNAL_URL'>(
     promotionId ? 'PROMOTION' : 'BUSINESS',
   );
@@ -44,8 +50,8 @@ function VipCreativeContent() {
   if (!productCode && !packageCode) {
     return (
       <div className="alert alert-error">
-        Не указан продукт или пакет.{' '}
-        <Link href="/monetization/products">Вернуться в каталог</Link>
+        {ui.____20b773}{' '}
+        <Link href="/monetization/products">{ui.___bad998}</Link>
       </div>
     );
   }
@@ -58,7 +64,7 @@ function VipCreativeContent() {
       const result = await ownerApi.uploadImage(token, file);
       setImageUrl(result.url);
     } catch (err) {
-      setError(parseApiError(err));
+      setError(parseApiError(locale, err));
     } finally {
       setUploading(false);
     }
@@ -67,7 +73,7 @@ function VipCreativeContent() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (!title.trim()) {
-      setError('Укажите заголовок баннера');
+      setError(ui.___f80533);
       return;
     }
     setSaving(true);
@@ -101,7 +107,7 @@ function VipCreativeContent() {
 
       router.push(`/monetization/checkout?${q.toString()}`);
     } catch (err) {
-      setError(parseApiError(err));
+      setError(parseApiError(locale, err));
     } finally {
       setSaving(false);
     }
@@ -111,62 +117,52 @@ function VipCreativeContent() {
     <>
       <header className="page-header">
         <div>
-          <h1>Креатив VIP-баннера</h1>
-          <p className="page-header-meta">Загрузите баннер и тексты для модерации</p>
+          <h1>{ui._vip__4c7126}</h1>
+          <p className="page-header-meta">{ui.____e4e179}</p>
         </div>
       </header>
 
       {error && <div className="alert alert-error">{error}</div>}
 
       <p className="alert" style={{ maxWidth: 720, fontSize: '0.9rem' }}>
-        {VIP_MODERATION_NOTICE}
+        {vipModerationPlacementNotice(locale)}
       </p>
 
       <div className="creatives-layout">
         <form onSubmit={onSubmit} className="form-card">
-          <label className="field-label">
-            Изображение баннера
-            <input
+          <label className="field-label">{ui.__542ad0}<input
               type="file"
               accept="image/*"
               disabled={uploading}
               onChange={(e) => onImageChange(e.target.files?.[0] ?? null)}
             />
             {uploading && (
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Загрузка…</span>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{ui.text_89d69a}</span>
             )}
           </label>
 
-          <label className="field-label">
-            Заголовок *
-            <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={200} />
+          <label className="field-label">{ui.text_558981}<input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={200} />
           </label>
 
-          <label className="field-label">
-            Описание
-            <textarea
+          <label className="field-label">{ui.text_38ca0a}<textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
             />
           </label>
 
-          <label className="field-label">
-            Текст кнопки
-            <input value={buttonText} onChange={(e) => setButtonText(e.target.value)} />
+          <label className="field-label">{ui.__77b793}<input value={buttonText} onChange={(e) => setButtonText(e.target.value)} />
           </label>
 
-          <label className="field-label">
-            Куда ведёт клик
-            <select
+          <label className="field-label">{ui.___6bedb6}<select
               value={targetType}
               onChange={(e) =>
                 setTargetType(e.target.value as 'BUSINESS' | 'PROMOTION' | 'EXTERNAL_URL')
               }
             >
-              <option value="BUSINESS">Карточка заведения</option>
-              {promotionId && <option value="PROMOTION">Продвигаемая акция</option>}
-              <option value="EXTERNAL_URL">Внешняя ссылка</option>
+              <option value="BUSINESS">{ui.__a849d7}</option>
+              {promotionId && <option value="PROMOTION">{ui.__d6e9b9}</option>}
+              <option value="EXTERNAL_URL">{ui.__db64ed}</option>
             </select>
           </label>
 
@@ -184,7 +180,7 @@ function VipCreativeContent() {
 
           <div style={{ marginTop: 16, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <button type="submit" className="btn btn-primary" disabled={saving || uploading}>
-              {saving ? 'Сохранение…' : 'Сохранить и перейти к оплате'}
+              {saving ? ui.text_73dba4 : ui.____67d60c}
             </button>
             <Link
               href={
@@ -193,9 +189,7 @@ function VipCreativeContent() {
                   : `/monetization/packages/${packageCode}`
               }
               className="btn btn-ghost"
-            >
-              Назад
-            </Link>
+            >{ui.text_2b0b02}</Link>
           </div>
         </form>
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { useUi } from '@/components/locale-provider';
 import { ReactNode, createContext, useContext } from 'react';
 import { BusinessAccessInfo, BusinessRow, findMyBusinessItem } from '@/lib/api';
 import { useBusinessAccess } from '@/lib/use-business-access';
@@ -28,13 +29,14 @@ type MonetizationShellProps = {
 };
 
 export function MonetizationShell({ children }: MonetizationShellProps) {
+  const ui = useUi();
   const { token, user, ready, logout, business, businesses, items } = useBusinessAccess();
   const access: BusinessAccessInfo | null = business
     ? findMyBusinessItem(items, business.id)?.access ?? null
     : null;
 
   if (!ready || !token) {
-    return <p className="page-content">Загрузка…</p>;
+    return <p className="page-content">{ui.text_89d69a}</p>;
   }
 
   if (!business) {
@@ -47,10 +49,8 @@ export function MonetizationShell({ children }: MonetizationShellProps) {
         onLogout={logout}
       >
         <div className="empty-state">
-          <p>У вас пока нет бизнеса в QalaGo.</p>
-          <a href="/onboarding" className="btn btn-primary">
-            Добавить или найти бизнес
-          </a>
+          <p>{ui.____8f45fb}</p>
+          <a href="/onboarding" className="btn btn-primary">{ui.____3f2e2a}</a>
         </div>
       </BusinessShell>
     );

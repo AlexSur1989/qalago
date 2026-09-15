@@ -46,7 +46,7 @@ describe('business-access', () => {
   });
 
   it('filterNavByAccess hides owner-only and permission-gated items for managers', () => {
-    const nav = buildMainNavItems();
+    const nav = buildMainNavItems('ru');
     const filtered = filterNavByAccess(nav, managerCatalog);
 
     expect(filtered.some((item) => item.id === 'team')).toBe(false);
@@ -56,14 +56,14 @@ describe('business-access', () => {
   });
 
   it('filterNavByAccess shows all main nav for owner', () => {
-    const nav = buildMainNavItems();
+    const nav = buildMainNavItems('ru');
     const filtered = filterNavByAccess(nav, ownerAccess);
     expect(filtered.some((item) => item.id === 'team')).toBe(true);
     expect(filtered.some((item) => item.id === 'monetization')).toBe(true);
   });
 
   it('footer plan nav requires owner or PAYMENTS_VIEW', () => {
-    const planItem = buildFooterNavItems().find((item) => item.id === 'plan');
+    const planItem = buildFooterNavItems('ru').find((item) => item.id === 'plan');
     expect(planItem).toBeDefined();
     expect(canAccessNavItem(planItem!, ownerAccess)).toBe(true);
     expect(canAccessNavItem(planItem!, managerCatalog)).toBe(false);
@@ -76,7 +76,7 @@ describe('business-access', () => {
   });
 
   it('stats nav visible with ANALYTICS_VIEW', () => {
-    const statsItem = buildMainNavItems().find((item) => item.id === 'stats');
+    const statsItem = buildMainNavItems('ru').find((item) => item.id === 'stats');
     expect(canAccessNavItem(statsItem!, managerAnalytics)).toBe(true);
     expect(canAccessNavItem(statsItem!, managerCatalog)).toBe(false);
   });
@@ -88,8 +88,8 @@ describe('business-access', () => {
   });
 
   it('permission presets include manager and content presets', () => {
-    expect(PERMISSION_PRESETS.find((p) => p.id === 'manager')?.labelRu).toBe('Управляющий');
-    expect(PERMISSION_PRESETS.find((p) => p.id === 'content')?.labelRu).toBe('Контент-менеджер');
+    expect(PERMISSION_PRESETS.find((p) => p.id === 'manager')?.label).toBe('Управляющий');
+    expect(PERMISSION_PRESETS.find((p) => p.id === 'content')?.label).toBe('Контент-менеджер');
     expect(PERMISSION_PRESETS.find((p) => p.id === 'manager')?.permissions).toContain(
       BusinessPermission.CATALOG_EDIT,
     );

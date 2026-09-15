@@ -1,5 +1,6 @@
 'use client';
 
+import { useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -7,6 +8,8 @@ import { ownerApi, ResolvedInvitation } from '@/lib/api';
 import { getWebAccessToken, setWebAccessToken } from '@/lib/web-auth-token';
 
 export default function InviteAcceptPage() {
+  const ui = useUi();
+
   const params = useParams<{ token: string }>();
   const router = useRouter();
   const inviteToken = params.token;
@@ -26,7 +29,7 @@ export default function InviteAcceptPage() {
       const data = await ownerApi.resolveInvitation(inviteToken);
       setResolved(data);
     } catch (err) {
-      setError('Приглашение не найдено или ссылка недействительна.');
+      setError(ui.____a2e9ce);
       setResolved(null);
     } finally {
       setLoading(false);
@@ -63,7 +66,7 @@ export default function InviteAcceptPage() {
       localStorage.setItem('qalago_business_id', result.businessId);
       router.push(`/business/${result.businessId}/dashboard`);
     } catch (err) {
-      setError('Не удалось принять приглашение. Попробуйте ещё раз.');
+      setError(ui.____4734e7);
     } finally {
       setAccepting(false);
     }
@@ -73,7 +76,7 @@ export default function InviteAcceptPage() {
     return (
       <main className="login-page">
         <div className="login-card">
-          <p>Загрузка приглашения…</p>
+          <p>{ui.__ee11a4}</p>
         </div>
       </main>
     );
@@ -83,11 +86,9 @@ export default function InviteAcceptPage() {
     return (
       <main className="login-page">
         <div className="login-card">
-          <h1>Приглашение</h1>
-          <div className="alert alert-error">{error ?? 'Приглашение недоступно.'}</div>
-          <Link href="/login" className="btn btn-primary" style={{ display: 'inline-block', marginTop: 16 }}>
-            На страницу входа
-          </Link>
+          <h1>{ui.text_0d1896}</h1>
+          <div className="alert alert-error">{error ?? ui.__99d79f}</div>
+          <Link href="/login" className="btn btn-primary" style={{ display: 'inline-block', marginTop: 16 }}>{ui.___088df3}</Link>
         </div>
       </main>
     );
@@ -95,19 +96,18 @@ export default function InviteAcceptPage() {
 
   const statusMessage =
     resolved.status === 'PENDING'
-      ? 'Ожидает принятия'
+      ? ui.__9376fb
       : resolved.status === 'ACCEPTED'
-        ? 'Уже принято'
+        ? ui.__f626fa
         : resolved.status === 'REVOKED'
-          ? 'Отозвано'
-          : 'Срок действия истёк';
+          ? ui.text_2b1305
+          : ui.___6de80c;
 
   return (
     <main className="login-page">
       <div className="login-card">
-        <h1>Приглашение в команду</h1>
-        <p className="login-lead">
-          Вас приглашают управлять заведением <strong>{resolved.businessName}</strong>.
+        <h1>{ui.___f97529}</h1>
+        <p className="login-lead">{ui.____055069}<strong>{resolved.businessName}</strong>.
         </p>
         {resolved.recipientEmailMasked && (
           <p style={{ color: 'var(--text-muted)' }}>
@@ -121,12 +121,8 @@ export default function InviteAcceptPage() {
 
         {resolved.status === 'PENDING' && !authToken && (
           <>
-            <p style={{ marginTop: 20 }}>
-              Войдите в QalaGo, чтобы принять приглашение.
-            </p>
-            <Link href={loginHref} className="btn btn-primary" style={{ display: 'block', textAlign: 'center' }}>
-              Войти и принять приглашение
-            </Link>
+            <p style={{ marginTop: 20 }}>{ui.__qalago__d094f0}</p>
+            <Link href={loginHref} className="btn btn-primary" style={{ display: 'block', textAlign: 'center' }}>{ui.____0b5072}</Link>
           </>
         )}
 
@@ -138,7 +134,7 @@ export default function InviteAcceptPage() {
             disabled={accepting}
             onClick={() => void acceptInvite()}
           >
-            {accepting ? 'Принимаем…' : 'Принять приглашение'}
+            {accepting ? ui.text_ddfaba : ui.__343d9a}
           </button>
         )}
 

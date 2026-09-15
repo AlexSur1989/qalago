@@ -1,3 +1,13 @@
+import type { AppLocale } from '@/lib/locale';
+import {
+  businessPermissionLabel,
+  membershipRoleLabel,
+  membershipStatusLabel,
+  navLabelForId,
+  paymentsAccessDeniedMessage,
+  permissionPresets,
+} from '@/lib/presentation';
+
 /** Business-scoped capabilities (mirrors backend BusinessPermission enum). */
 export enum BusinessPermission {
   BUSINESS_PROFILE_EDIT = 'BUSINESS_PROFILE_EDIT',
@@ -14,18 +24,12 @@ export enum BusinessPermission {
 
 export const ALL_BUSINESS_PERMISSIONS = Object.values(BusinessPermission);
 
-export const BUSINESS_PERMISSION_LABELS_RU: Record<BusinessPermission, string> = {
-  [BusinessPermission.BUSINESS_PROFILE_EDIT]: 'Редактирование профиля',
-  [BusinessPermission.BUSINESS_HOURS_EDIT]: 'График работы',
-  [BusinessPermission.CATALOG_EDIT]: 'Каталог / услуги',
-  [BusinessPermission.PHOTOS_EDIT]: 'Фотографии',
-  [BusinessPermission.PROMOTIONS_EDIT]: 'Акции',
-  [BusinessPermission.REVIEWS_REPLY]: 'Ответы на отзывы',
-  [BusinessPermission.ANALYTICS_VIEW]: 'Просмотр аналитики',
-  [BusinessPermission.ANALYTICS_EXPORT]: 'Экспорт аналитики',
-  [BusinessPermission.ADS_MANAGE]: 'Реклама и продвижение',
-  [BusinessPermission.PAYMENTS_VIEW]: 'Платежи',
-};
+export function businessPermissionLabelForLocale(
+  locale: AppLocale,
+  permission: BusinessPermission,
+): string {
+  return businessPermissionLabel(locale, permission);
+}
 
 export type BusinessAccessRole = 'OWNER' | 'MANAGER';
 
@@ -59,127 +63,87 @@ export type BusinessNavItem = {
   ownerOnly?: boolean;
 };
 
-const MAIN_NAV: BusinessNavItem[] = [
-  { id: 'home', label: 'Обзор', icon: '🏠', href: () => '/dashboard' },
+const MAIN_NAV_TEMPLATE: Omit<BusinessNavItem, 'label'>[] = [
+  { id: 'home', icon: '🏠', href: () => '/dashboard' },
   {
     id: 'profile',
-    label: 'Мой бизнес',
     icon: '🏪',
     href: (id) => `/business/${id}`,
     anyOf: [BusinessPermission.BUSINESS_PROFILE_EDIT, BusinessPermission.BUSINESS_HOURS_EDIT],
   },
   {
     id: 'menu',
-    label: 'Товары и услуги',
     icon: '📋',
     href: (id) => `/business/${id}/menu`,
     anyOf: [BusinessPermission.CATALOG_EDIT],
   },
   {
     id: 'promotions',
-    label: 'Акции',
     icon: '🏷️',
     href: (id) => `/business/${id}/promotions`,
     anyOf: [BusinessPermission.PROMOTIONS_EDIT],
   },
   {
     id: 'monetization',
-    label: 'Реклама и продвижение',
     icon: '📣',
     href: () => '/monetization',
     anyOf: [BusinessPermission.ADS_MANAGE],
   },
   {
     id: 'stats',
-    label: 'Статистика',
     icon: '📊',
     href: () => '/statistics',
     anyOf: [BusinessPermission.ANALYTICS_VIEW],
   },
   {
     id: 'settings',
-    label: 'Настройки',
     icon: '⚙️',
     href: () => '/settings',
     anyOf: [BusinessPermission.BUSINESS_PROFILE_EDIT],
   },
   {
     id: 'team',
-    label: 'Команда',
     icon: '👥',
     href: (id) => `/business/${id}/team`,
     ownerOnly: true,
   },
 ];
 
-const FOOTER_NAV: BusinessNavItem[] = [
+const FOOTER_NAV_TEMPLATE: Omit<BusinessNavItem, 'label'>[] = [
   {
     id: 'plan',
-    label: 'Тариф',
     icon: '💎',
     href: () => '/plan',
     anyOf: [BusinessPermission.PAYMENTS_VIEW],
   },
-  { id: 'help', label: 'Помощь', icon: '❓', href: () => '/help' },
+  { id: 'help', icon: '❓', href: () => '/help' },
 ];
 
 export type PermissionPreset = {
   id: string;
-  labelRu: string;
-  descriptionRu?: string;
+  label: string;
+  description?: string;
   permissions: BusinessPermission[];
 };
 
-export const PERMISSION_PRESETS: PermissionPreset[] = [
-  {
-    id: 'manager',
-    labelRu: 'Управляющий',
-    descriptionRu: 'Операционный доступ без управления командой',
-    permissions: [
-      BusinessPermission.BUSINESS_PROFILE_EDIT,
-      BusinessPermission.BUSINESS_HOURS_EDIT,
-      BusinessPermission.CATALOG_EDIT,
-      BusinessPermission.PHOTOS_EDIT,
-      BusinessPermission.PROMOTIONS_EDIT,
-      BusinessPermission.REVIEWS_REPLY,
-      BusinessPermission.ANALYTICS_VIEW,
-      BusinessPermission.ANALYTICS_EXPORT,
-      BusinessPermission.ADS_MANAGE,
-      BusinessPermission.PAYMENTS_VIEW,
-    ],
-  },
-  {
-    id: 'content',
-    labelRu: 'Контент-менеджер',
-    descriptionRu: 'Профиль, каталог, фото и акции',
-    permissions: [
-      BusinessPermission.BUSINESS_PROFILE_EDIT,
-      BusinessPermission.BUSINESS_HOURS_EDIT,
-      BusinessPermission.CATALOG_EDIT,
-      BusinessPermission.PHOTOS_EDIT,
-      BusinessPermission.PROMOTIONS_EDIT,
-    ],
-  },
-  {
-    id: 'marketing',
-    labelRu: 'Маркетолог',
-    descriptionRu: 'Акции, реклама и базовая аналитика',
-    permissions: [
-      BusinessPermission.PROMOTIONS_EDIT,
-      BusinessPermission.ADS_MANAGE,
-      BusinessPermission.ANALYTICS_VIEW,
-    ],
-  },
-  {
-    id: 'analytics',
-    labelRu: 'Аналитик',
-    descriptionRu: 'Просмотр и экспорт статистики',
-    permissions: [BusinessPermission.ANALYTICS_VIEW, BusinessPermission.ANALYTICS_EXPORT],
-  },
-];
+export function buildPermissionPresets(locale: AppLocale): PermissionPreset[] {
+  return permissionPresets(locale).map((p) => ({
+    id: p.id,
+    label: p.label,
+    description: p.description,
+    permissions: p.permissions as BusinessPermission[],
+  }));
+}
 
-export const PAYMENTS_ACCESS_DENIED_RU =
-  'Нет доступа к подписке и платежам. Обратитесь к владельцу бизнеса.';
+/** @deprecated use buildPermissionPresets(locale) */
+export const PERMISSION_PRESETS: PermissionPreset[] = buildPermissionPresets('ru');
+
+export function paymentsAccessDeniedMessageForLocale(locale: AppLocale): string {
+  return paymentsAccessDeniedMessage(locale);
+}
+
+/** @deprecated use paymentsAccessDeniedMessageForLocale */
+export const PAYMENTS_ACCESS_DENIED_RU = paymentsAccessDeniedMessage('ru');
 
 export function isOwner(access: BusinessAccessContext | null | undefined): boolean {
   return access?.role === 'OWNER';
@@ -218,15 +182,20 @@ export function filterNavByAccess<T extends Pick<BusinessNavItem, 'id' | 'anyOf'
   return items.filter((item) => canAccessNavItem(item, access));
 }
 
-export function buildMainNavItems(): BusinessNavItem[] {
-  return MAIN_NAV.map((item) => ({ ...item }));
+export function buildMainNavItems(locale: AppLocale): BusinessNavItem[] {
+  return MAIN_NAV_TEMPLATE.map((item) => ({
+    ...item,
+    label: navLabelForId(locale, item.id),
+  }));
 }
 
-export function buildFooterNavItems(): BusinessNavItem[] {
-  return FOOTER_NAV.map((item) => ({ ...item }));
+export function buildFooterNavItems(locale: AppLocale): BusinessNavItem[] {
+  return FOOTER_NAV_TEMPLATE.map((item) => ({
+    ...item,
+    label: navLabelForId(locale, item.id),
+  }));
 }
 
-/** ANALYTICS_EXPORT implies ANALYTICS_VIEW in UI selections. */
 export function normalizeSelectedPermissions(permissions: BusinessPermission[]): BusinessPermission[] {
   const set = new Set(permissions);
   if (set.has(BusinessPermission.ANALYTICS_EXPORT)) {
@@ -236,27 +205,17 @@ export function normalizeSelectedPermissions(permissions: BusinessPermission[]):
 }
 
 export function membershipStatusLabelRu(status: string): string {
-  switch (status) {
-    case 'ACTIVE':
-      return 'Активен';
-    case 'SUSPENDED':
-      return 'Приостановлен';
-    case 'REVOKED':
-      return 'Отозван';
-    case 'INVITED':
-      return 'Приглашён';
-    default:
-      return status;
-  }
+  return membershipStatusLabel('ru', status);
 }
 
 export function membershipRoleLabelRu(role: string): string {
-  switch (role) {
-    case 'OWNER':
-      return 'Владелец';
-    case 'MANAGER':
-      return 'Менеджер';
-    default:
-      return role;
-  }
+  return membershipRoleLabel('ru', role);
+}
+
+export function membershipStatusLabelForLocale(locale: AppLocale, status: string): string {
+  return membershipStatusLabel(locale, status);
+}
+
+export function membershipRoleLabelForLocale(locale: AppLocale, role: string): string {
+  return membershipRoleLabel(locale, role);
 }

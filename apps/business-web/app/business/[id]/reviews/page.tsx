@@ -1,5 +1,6 @@
 'use client';
 
+import { useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
@@ -8,6 +9,8 @@ import { useOwnerBusiness } from '@/lib/use-owner-business';
 import { BusinessShell } from '@/components/business-shell';
 
 export default function BusinessReviewsPage() {
+  const ui = useUi();
+
   const params = useParams<{ id: string }>();
   const businessId = params.id;
   const { token, user, ready, logout, businesses, business, error, setError } =
@@ -41,7 +44,7 @@ export default function BusinessReviewsPage() {
     }
   }
 
-  if (!ready || !token) return <p className="page-content">Загрузка…</p>;
+  if (!ready || !token) return <p className="page-content">{ui.text_89d69a}</p>;
 
   const unanswered = reviews.filter((r) => !r.ownerReply).length;
 
@@ -55,32 +58,30 @@ export default function BusinessReviewsPage() {
     >
       <header className="page-header">
         <div>
-          <h1>Отзывы</h1>
+          <h1>{ui.text_1c3fea}</h1>
           <p className="page-header-meta">
             {reviews.length} отзывов
-            {unanswered > 0 ? ` · ${unanswered} без ответа` : ''}
+            {unanswered > 0 ? ui.__750e6a : ''}
           </p>
         </div>
-        <Link href="/dashboard" className="btn">
-          ← На главную
-        </Link>
+        <Link href="/dashboard" className="btn">{ui.__65f9d8}</Link>
       </header>
 
       {error && <div className="alert alert-error">{error}</div>}
 
       <section className="form-card" style={{ maxWidth: 820 }}>
         {reviews.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)', margin: 0 }}>Пока нет отзывов</p>
+          <p style={{ color: 'var(--text-muted)', margin: 0 }}>{ui.___be9b89}</p>
         ) : (
           reviews.map((review) => (
             <article key={review.id} className="promo-item" style={{ alignItems: 'flex-start' }}>
               <div className="promo-thumb">⭐</div>
               <div className="promo-body" style={{ flex: 1 }}>
                 <strong>
-                  {review.user?.name ?? 'Пользователь'} · {review.rating}★
+                  {review.user?.name ?? ui.text_f154d6} · {review.rating}★
                 </strong>
                 <p style={{ margin: '6px 0' }}>
-                  {review.text ?? 'Без текста'}
+                  {review.text ?? ui.__bb0bac}
                 </p>
                 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                   {new Date(review.createdAt).toLocaleString('ru-RU')}
@@ -95,7 +96,7 @@ export default function BusinessReviewsPage() {
                       fontSize: '0.9rem',
                     }}
                   >
-                    <strong>Ваш ответ:</strong> {review.ownerReply}
+                    <strong>{ui.__9f78eb}</strong> {review.ownerReply}
                   </div>
                 )}
                 <form
@@ -108,14 +109,14 @@ export default function BusinessReviewsPage() {
                 >
                   <textarea
                     rows={2}
-                    placeholder="Ответ владельца"
+                    placeholder={ui.__997367}
                     value={replyDrafts[review.id] ?? ''}
                     onChange={(e) =>
                       setReplyDrafts({ ...replyDrafts, [review.id]: e.target.value })
                     }
                   />
                   <button type="submit" className="btn btn-primary btn-sm">
-                    {review.ownerReply ? 'Обновить ответ' : 'Ответить'}
+                    {review.ownerReply ? ui.__5b8b2a : ui.text_e5681e}
                   </button>
                 </form>
               </div>

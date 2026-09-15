@@ -1,6 +1,7 @@
 import type { AnalyticsDashboard } from '@/lib/api';
+import type { AppLocale } from '@/lib/locale';
+import * as pres from '@/lib/presentation';
 
-/** Canonical business intent actions (Stage 6.6A.1) — excludes promotionViews. */
 export const INTENT_ACTION_KEYS = [
   'calls',
   'whatsapp',
@@ -12,20 +13,7 @@ export const INTENT_ACTION_KEYS = [
 
 export type IntentActionKey = (typeof INTENT_ACTION_KEYS)[number];
 
-export function analyticsHeadlineForPlan(plan: string | undefined): string {
-  switch (plan) {
-    case 'FREE':
-      return 'Сколько меня смотрят?';
-    case 'BASIC':
-      return 'Что делают после просмотра?';
-    case 'PREMIUM':
-      return 'Откуда приходят клиенты и что работает?';
-    case 'VIP':
-      return 'Почему это происходит и что можно улучшить?';
-    default:
-      return 'Статистика бизнеса';
-  }
-}
+export const analyticsHeadlineForPlan = pres.analyticsHeadlineForPlan;
 
 export function isLockedSection(
   dashboard: AnalyticsDashboard,
@@ -53,30 +41,7 @@ export function syncPeriodToEffectiveRange(
   return dashboard.effectiveRange.days ?? selectedDays;
 }
 
-export function actionMetricLabel(
-  key: keyof NonNullable<AnalyticsDashboard['actions']> | IntentActionKey,
-): string {
-  switch (key) {
-    case 'total':
-      return 'Целевые действия';
-    case 'calls':
-      return 'Звонки';
-    case 'whatsapp':
-      return 'WhatsApp';
-    case 'routes':
-      return 'Маршрут';
-    case 'website':
-      return 'Сайт';
-    case 'instagram':
-      return 'Instagram';
-    case 'favorites':
-      return 'Добавили в избранное';
-    case 'promotionViews':
-      return 'Просмотры акций';
-    default:
-      return String(key);
-  }
-}
+export const actionMetricLabel = pres.actionMetricLabel;
 
 export function formatPercent(value: number | null | undefined): string {
   if (value == null || Number.isNaN(value)) return '—';
@@ -127,26 +92,9 @@ export function canShowExport(
   return dashboard.capabilities.reportExport === true && hasExportPermission;
 }
 
-export function mapAnalyticsExportError(err: unknown): string {
-  const raw = String(err);
-  if (raw.includes('403') || raw.toLowerCase().includes('forbidden')) {
-    return 'Нет прав на экспорт отчёта. Обратитесь к владельцу бизнеса.';
-  }
-  if (raw.includes('401')) {
-    return 'Сессия истекла. Войдите снова.';
-  }
-  return 'Не удалось сформировать отчёт. Попробуйте позже.';
-}
+export const mapAnalyticsExportError = pres.mapAnalyticsExportError;
+export const mapAnalyticsLoadError = pres.mapAnalyticsLoadError;
 
-export function mapAnalyticsLoadError(err: unknown): string {
-  const raw = String(err);
-  if (raw.includes('403') || raw.toLowerCase().includes('forbidden')) {
-    return 'Нет доступа к аналитике для этого бизнеса.';
-  }
-  return 'Не удалось загрузить статистику. Проверьте подключение и попробуйте снова.';
-}
-
-/** Parses legacy dashboard JSON missing newer capability flags. */
 export function normalizeAnalyticsDashboard(
   data: AnalyticsDashboard,
 ): AnalyticsDashboard {
@@ -176,16 +124,19 @@ export function intentActionEntries(
   }));
 }
 
-export function funnelSteps(dashboard: AnalyticsDashboard): Array<{
+export function funnelSteps(
+  locale: AppLocale,
+  dashboard: AnalyticsDashboard,
+): Array<{
   label: string;
   value: number | null;
 }> {
   const { overview, actions } = dashboard;
   const steps: Array<{ label: string; value: number | null }> = [
-    { label: 'Показы', value: overview.impressions ?? null },
-    { label: 'Просмотры', value: overview.views ?? null },
+    { label: pres.funnelStepLabel(locale, 'impressions'), value: overview.impressions ?? null },
+    { label: pres.funnelStepLabel(locale, 'views'), value: overview.views ?? null },
     {
-      label: 'Целевые действия',
+      label: pres.funnelStepLabel(locale, 'actions'),
       value: actions?.total ?? overview.actions ?? null,
     },
   ];

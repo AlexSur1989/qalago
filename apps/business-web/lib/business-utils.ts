@@ -1,4 +1,6 @@
 import type { AnalyticsSummary, BusinessRow, PromotionRow } from '@/lib/api';
+import type { AppLocale } from '@/lib/locale';
+import * as pres from '@/lib/presentation';
 
 const PROFILE_FIELDS: (keyof BusinessRow)[] = [
   'title',
@@ -25,18 +27,7 @@ export function profileCompletion(business: BusinessRow): number {
   return Math.round((filled / total) * 100);
 }
 
-export function statusLabel(status: string): string {
-  switch (status) {
-    case 'ACTIVE':
-      return 'Активен';
-    case 'PENDING':
-      return 'На модерации';
-    case 'BLOCKED':
-      return 'Заблокирован';
-    default:
-      return status;
-  }
-}
+export const statusLabel = pres.businessStatusLabel;
 
 export function formatNumber(value: number): string {
   return value.toLocaleString('ru-RU');
@@ -73,6 +64,7 @@ export function comparePeriods(
 }
 
 export function buildRecentActions(
+  locale: AppLocale,
   business: BusinessRow,
   promotions: PromotionRow[],
 ): { icon: string; title: string; time: string }[] {
@@ -81,7 +73,7 @@ export function buildRecentActions(
   if (business.updatedAt) {
     actions.push({
       icon: '✏️',
-      title: 'Профиль обновлён',
+      title: pres.recentProfileUpdated(locale),
       time: formatRelativeDate(business.updatedAt),
       ts: new Date(business.updatedAt).getTime(),
     });
@@ -91,7 +83,7 @@ export function buildRecentActions(
     if (!promo.createdAt) continue;
     actions.push({
       icon: '🏷️',
-      title: `Акция «${promo.title}»`,
+      title: pres.promotionActionTitle(locale, promo.title),
       time: formatRelativeDate(promo.createdAt),
       ts: new Date(promo.createdAt).getTime(),
     });
@@ -113,8 +105,8 @@ function formatRelativeDate(iso: string): string {
   });
 }
 
-export function formatTodayHeader(): string {
-  return new Date().toLocaleDateString('ru-RU', {
+export function formatTodayHeader(locale: AppLocale): string {
+  return new Date().toLocaleDateString(locale === 'kk' ? 'kk-KZ' : 'ru-RU', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',

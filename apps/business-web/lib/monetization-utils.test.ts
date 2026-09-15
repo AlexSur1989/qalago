@@ -17,6 +17,8 @@ import {
   vipModerationNotice,
 } from './monetization-utils';
 
+const ru = 'ru' as const;
+
 describe('monetization-utils', () => {
   it('formats KZT', () => {
     expect(formatKzt(4900)).toContain('4');
@@ -24,68 +26,67 @@ describe('monetization-utils', () => {
   });
 
   it('formats duration', () => {
-    expect(formatDuration(1, null)).toBe('1 день');
-    expect(formatDuration(3, null)).toBe('3 дня');
-    expect(formatDuration(7, null)).toBe('7 дней');
+    expect(formatDuration(ru, 1, null)).toBe('1 день');
+    expect(formatDuration(ru, 3, null)).toBe('3 дня');
+    expect(formatDuration(ru, 7, null)).toBe('7 дней');
   });
 
   it('maps product labels', () => {
-    expect(productLabel('TOP_CATEGORY')).toBe('TOP категории');
-    expect(productLabel('VIP_BANNER')).toBe('VIP-баннер');
+    expect(productLabel(ru, 'TOP_CATEGORY')).toBe('TOP категории');
+    expect(productLabel(ru, 'VIP_BANNER')).toBe('VIP-баннер');
   });
 
   it('maps placement labels', () => {
-    expect(placementLabel('HOME_VIP_BANNER')).toBe('VIP-баннер на главной');
-    expect(placementLabel('CUSTOM', 'Кастомное место')).toBe('Кастомное место');
+    expect(placementLabel(ru, 'HOME_VIP_BANNER')).toBe('VIP-баннер на главной');
+    expect(placementLabel(ru, 'CUSTOM', 'Кастомное место')).toBe('Кастомное место');
   });
 
   it('maps order statuses', () => {
-    expect(orderStatusLabel('AWAITING_PAYMENT')).toBe('Ожидает оплаты');
-    expect(orderStatusLabel('PAID')).toBe('Оплачен');
+    expect(orderStatusLabel(ru, 'AWAITING_PAYMENT')).toBe('Ожидает оплаты');
+    expect(orderStatusLabel(ru, 'PAID')).toBe('Оплачен');
   });
 
   it('maps payment statuses', () => {
-    expect(paymentStatusLabel('PENDING')).toBe('Ожидает');
-    expect(paymentStatusLabel('PAID')).toBe('Оплачен');
+    expect(paymentStatusLabel(ru, 'PENDING')).toBe('Ожидает');
+    expect(paymentStatusLabel(ru, 'PAID')).toBe('Оплачен');
   });
 
   it('maps owner campaign statuses (feminine)', () => {
-    expect(campaignStatusLabel('ACTIVE')).toBe('Активна');
-    expect(campaignStatusLabel('SCHEDULED')).toBe('Запланирована');
-    expect(campaignStatusLabel('COMPLETED')).toBe('Завершена');
-    expect(campaignStatusLabel('PAUSED')).toBe('Приостановлена');
-    expect(campaignStatusLabel('CANCELLED')).toBe('Отменена');
-    expect(campaignStatusLabel('PENDING_MODERATION')).toBe('На модерации');
+    expect(campaignStatusLabel(ru, 'ACTIVE')).toBe('Активна');
+    expect(campaignStatusLabel(ru, 'SCHEDULED')).toBe('Запланирована');
+    expect(campaignStatusLabel(ru, 'COMPLETED')).toBe('Завершена');
+    expect(campaignStatusLabel(ru, 'PAUSED')).toBe('Приостановлена');
+    expect(campaignStatusLabel(ru, 'CANCELLED')).toBe('Отменена');
+    expect(campaignStatusLabel(ru, 'PENDING_MODERATION')).toBe('На модерации');
   });
 
   it('maps creative statuses', () => {
-    expect(creativeStatusLabel('PENDING')).toBe('На модерации');
-    expect(creativeStatusLabel('APPROVED')).toBe('Одобрено');
-    expect(creativeStatusLabel('REJECTED')).toBe('Отклонено');
+    expect(creativeStatusLabel(ru, 'PENDING')).toBe('На модерации');
+    expect(creativeStatusLabel(ru, 'APPROVED')).toBe('Одобрено');
+    expect(creativeStatusLabel(ru, 'REJECTED')).toBe('Отклонено');
   });
 
   it('maps plan tiers', () => {
-    expect(planTierLabel('PREMIUM')).toBe('PRO');
-    expect(planTierLabel('BASIC')).toBe('Бизнес');
-    expect(planTierLabel('VIP')).toBe('VIP');
+    expect(planTierLabel(ru, 'PREMIUM')).toBe('PRO');
+    expect(planTierLabel(ru, 'BASIC')).toBe('Бизнес');
+    expect(planTierLabel(ru, 'VIP')).toBe('VIP');
   });
 
   it('maps analytics actions', () => {
-    expect(analyticsActionLabel('AD_CALL_CLICK')).toBe('Звонки');
+    expect(analyticsActionLabel(ru, 'AD_CALL_CLICK')).toBe('Звонки');
   });
 
   it('VIP DRAFT shows awaiting submit, not moderation', () => {
     expect(
-      vipCampaignDisplayStatus({
+      vipCampaignDisplayStatus(ru, {
         status: 'SCHEDULED',
         product: { code: 'VIP_BANNER' },
         creative: { moderationStatus: 'DRAFT' },
       }),
     ).toBe('Ожидает отправки креатива');
     expect(
-      vipModerationNotice({
+      vipModerationNotice(ru, {
         status: 'SCHEDULED',
-        product: { code: 'VIP_BANNER' },
         creative: { moderationStatus: 'DRAFT' },
       }),
     ).toContain('Отправьте креатив');
@@ -93,7 +94,7 @@ describe('monetization-utils', () => {
 
   it('VIP PENDING shows moderation state', () => {
     expect(
-      vipCampaignDisplayStatus({
+      vipCampaignDisplayStatus(ru, {
         status: 'PENDING_MODERATION',
         product: { code: 'VIP_BANNER' },
         creative: { moderationStatus: 'PENDING' },
@@ -109,7 +110,7 @@ describe('monetization-utils', () => {
 
   it('formatEffectivePeriod before approval', () => {
     expect(
-      formatEffectivePeriod({
+      formatEffectivePeriod(ru, {
         startAt: '2026-09-09T00:00:00Z',
         endAt: '2026-10-09T00:00:00Z',
         effectivePeriodStarted: false,

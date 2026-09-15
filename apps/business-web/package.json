@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start -p 3003",
     "lint": "next lint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "check:ui-strings": "node tool/check_hardcoded_ui_strings.mjs"
   },
   "dependencies": {
     "@react-oauth/google": "^0.12.2",

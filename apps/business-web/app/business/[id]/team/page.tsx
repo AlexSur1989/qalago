@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
@@ -12,21 +13,24 @@ import {
 } from '@/lib/api';
 import {
   ALL_BUSINESS_PERMISSIONS,
-  BUSINESS_PERMISSION_LABELS_RU,
   BusinessPermission,
-  PERMISSION_PRESETS,
   buildFooterNavItems,
   buildMainNavItems,
+  buildPermissionPresets,
+  businessPermissionLabelForLocale,
   filterNavByAccess,
   isOwner,
-  membershipRoleLabelRu,
-  membershipStatusLabelRu,
+  membershipRoleLabelForLocale,
+  membershipStatusLabelForLocale,
   normalizeSelectedPermissions,
 } from '@/lib/business-access';
 import { useBusinessAccess } from '@/lib/use-business-access';
 import { BusinessShell } from '@/components/business-shell';
 
 export default function BusinessTeamPage() {
+  const locale = useLocale();
+  const ui = useUi();
+
   const params = useParams<{ id: string }>();
   const businessId = params.id;
   const { token, user, ready, logout, business, access, businesses } = useBusinessAccess();
@@ -42,13 +46,14 @@ export default function BusinessTeamPage() {
   const [teamAudit, setTeamAudit] = useState<TeamAuditRow[]>([]);
 
   const mainNav = useMemo(
-    () => filterNavByAccess(buildMainNavItems(), access),
-    [access],
+    () => filterNavByAccess(buildMainNavItems(locale), access),
+    [access, locale],
   );
   const footerNav = useMemo(
-    () => filterNavByAccess(buildFooterNavItems(), access),
-    [access],
+    () => filterNavByAccess(buildFooterNavItems(locale), access),
+    [access, locale],
   );
+  const permissionPresets = useMemo(() => buildPermissionPresets(locale), [locale]);
 
   const ownerAccess = isOwner(access);
 
@@ -73,7 +78,7 @@ export default function BusinessTeamPage() {
   }
 
   function applyPreset(presetId: string) {
-    const preset = PERMISSION_PRESETS.find((p) => p.id === presetId);
+    const preset = permissionPresets.find((p) => p.id === presetId);
     if (!preset) return;
     setSelectedPermissions(normalizeSelectedPermissions([...preset.permissions]));
   }
@@ -81,17 +86,17 @@ export default function BusinessTeamPage() {
   function teamAuditLabel(action: string): string {
     switch (action) {
       case 'TEAM_INVITE':
-        return 'пригласил сотрудника';
+        return ui.__c2f48f;
       case 'TEAM_INVITATION_ACCEPT':
-        return 'принял приглашение';
+        return ui.__8f77f2;
       case 'TEAM_PERMISSION_UPDATE':
-        return 'изменил права сотрудника';
+        return ui.___391e3c;
       case 'TEAM_SUSPEND':
-        return 'приостановил доступ';
+        return ui.__0b2e3b;
       case 'TEAM_RESTORE':
-        return 'восстановил доступ';
+        return ui.__81f7be;
       case 'TEAM_REVOKE':
-        return 'отозвал доступ';
+        return ui.__2ca0e5;
       default:
         return action;
     }
@@ -101,7 +106,7 @@ export default function BusinessTeamPage() {
     e.preventDefault();
     if (!token) return;
     if (selectedPermissions.length === 0) {
-      setError('Выберите хотя бы одно право доступа');
+      setError(ui.____378981);
       return;
     }
     setLoading(true);
@@ -118,8 +123,8 @@ export default function BusinessTeamPage() {
       await loadTeam(token);
       setSuccess(
         result.type === 'invitation'
-          ? 'Приглашение создано. Скопируйте ссылку и отправьте сотруднику.'
-          : 'Менеджер добавлен в команду.',
+          ? ui.____7c9871
+          : ui.____d8cfec,
       );
     } catch (err) {
       setError(String(err));
@@ -146,7 +151,7 @@ export default function BusinessTeamPage() {
 
   async function saveMemberPermissions(member: TeamMemberRow) {
     if (editPermissions.length === 0) {
-      setError('Выберите хотя бы одно право доступа');
+      setError(ui.____378981);
       return;
     }
     await updateMember(member, { permissions: editPermissions });
@@ -164,7 +169,7 @@ export default function BusinessTeamPage() {
     try {
       await ownerApi.updateTeamMember(token, businessId, member.membershipId, data);
       await loadTeam(token);
-      setSuccess('Изменения сохранены');
+      setSuccess(ui.__fdb02d);
     } catch (err) {
       setError(String(err));
     } finally {
@@ -180,7 +185,7 @@ export default function BusinessTeamPage() {
     try {
       await ownerApi.revokeInvitation(token, businessId, invitation.invitationId);
       await loadTeam(token);
-      setSuccess('Приглашение отозвано');
+      setSuccess(ui.__666e84);
     } catch (err) {
       setError(String(err));
     } finally {
@@ -189,7 +194,7 @@ export default function BusinessTeamPage() {
   }
 
   if (!ready || !token) {
-    return <p className="page-content">Загрузка…</p>;
+    return <p className="page-content">{ui.text_89d69a}</p>;
   }
 
   if (!ownerAccess) {
@@ -204,11 +209,9 @@ export default function BusinessTeamPage() {
         onLogout={logout}
       >
         <div className="empty-state">
-          <h2>Нет доступа</h2>
-          <p>Управление командой доступно только владельцу заведения.</p>
-          <Link href="/dashboard" className="btn" style={{ marginTop: 16 }}>
-            ← На главную
-          </Link>
+          <h2>{ui.__6be76b}</h2>
+          <p>{ui.____c0be3f}</p>
+          <Link href="/dashboard" className="btn" style={{ marginTop: 16 }}>{ui.__65f9d8}</Link>
         </div>
       </BusinessShell>
     );
@@ -229,14 +232,12 @@ export default function BusinessTeamPage() {
     >
       <header className="page-header">
         <div>
-          <h1>Команда</h1>
+          <h1>{ui.ownerNavTeam}</h1>
           <p className="page-header-meta">
-            {business?.title ?? 'Заведение'} · приглашения и права менеджеров
+            {business?.title ?? ui.text_4e3e1b} · приглашения и права менеджеров
           </p>
         </div>
-        <Link href="/dashboard" className="btn">
-          ← На главную
-        </Link>
+        <Link href="/dashboard" className="btn">{ui.__65f9d8}</Link>
       </header>
 
       {error && <div className="alert alert-error">{error}</div>}
@@ -244,12 +245,12 @@ export default function BusinessTeamPage() {
 
       <section className="card" style={{ marginBottom: 16 }}>
         <div className="card-header">
-          <h2>Участники</h2>
+          <h2>{ui.text_85b226}</h2>
         </div>
         {!team ? (
-          <p style={{ color: 'var(--text-muted)', margin: 0 }}>Загрузка…</p>
+          <p style={{ color: 'var(--text-muted)', margin: 0 }}>{ui.text_89d69a}</p>
         ) : team.members.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)', margin: 0 }}>Пока нет участников</p>
+          <p style={{ color: 'var(--text-muted)', margin: 0 }}>{ui.___4dcc9e}</p>
         ) : (
           <ul className="action-list">
             {[...owners, ...managers].map((member) => (
@@ -258,15 +259,15 @@ export default function BusinessTeamPage() {
                 <div className="action-text" style={{ flex: 1 }}>
                   <strong>{member.name ?? member.phone}</strong>
                   <span>
-                    {membershipRoleLabelRu(member.role)} · {member.phone ?? '—'} ·{' '}
-                    {membershipStatusLabelRu(member.status)}
+                    {membershipRoleLabelForLocale(locale, member.role)} · {member.phone ?? '—'} ·{' '}
+                    {membershipStatusLabelForLocale(locale, member.status)}
                   </span>
                   {member.role === 'MANAGER' && member.permissions.length > 0 && (
                     <span style={{ display: 'block', marginTop: 6, fontSize: '0.85rem' }}>
                       {member.permissions
                         .map(
                           (p) =>
-                            BUSINESS_PERMISSION_LABELS_RU[p as BusinessPermission] ?? p,
+                            businessPermissionLabelForLocale(locale, p as BusinessPermission) ?? p,
                         )
                         .join(' · ')}
                     </span>
@@ -279,7 +280,7 @@ export default function BusinessTeamPage() {
                         disabled={loading}
                         onClick={() => startEditPermissions(member)}
                       >
-                        Изменить права
+                        {ui.ownerEditPermissions}
                       </button>
                       <button
                         type="button"
@@ -287,7 +288,7 @@ export default function BusinessTeamPage() {
                         disabled={loading}
                         onClick={() => updateMember(member, { status: 'SUSPENDED' })}
                       >
-                        Приостановить
+                        {ui.ownerSuspend}
                       </button>
                       <button
                         type="button"
@@ -295,7 +296,7 @@ export default function BusinessTeamPage() {
                         disabled={loading}
                         onClick={() => updateMember(member, { status: 'REVOKED' })}
                       >
-                        Отозвать доступ
+                        {ui.text_revokeAccess}
                       </button>
                     </div>
                   )}
@@ -319,7 +320,7 @@ export default function BusinessTeamPage() {
                               checked={editPermissions.includes(permission)}
                               onChange={() => toggleEditPermission(permission)}
                             />
-                            <span>{BUSINESS_PERMISSION_LABELS_RU[permission]}</span>
+                            <span>{businessPermissionLabelForLocale(locale, permission)}</span>
                           </label>
                         ))}
                       </div>
@@ -330,7 +331,7 @@ export default function BusinessTeamPage() {
                           disabled={loading}
                           onClick={() => saveMemberPermissions(member)}
                         >
-                          Сохранить права
+                          {ui.text_savePermissions}
                         </button>
                         <button
                           type="button"
@@ -338,7 +339,7 @@ export default function BusinessTeamPage() {
                           disabled={loading}
                           onClick={() => setEditingMemberId(null)}
                         >
-                          Отмена
+                          {ui.text_cancel}
                         </button>
                       </div>
                     </div>
@@ -351,7 +352,7 @@ export default function BusinessTeamPage() {
                         disabled={loading}
                         onClick={() => updateMember(member, { status: 'ACTIVE' })}
                       >
-                        Возобновить доступ
+                        {ui.text_resumeAccess}
                       </button>
                     </div>
                   )}
@@ -364,10 +365,10 @@ export default function BusinessTeamPage() {
 
       <section className="card" style={{ marginBottom: 16 }}>
         <div className="card-header">
-          <h2>Ожидающие приглашения</h2>
+          <h2>{ui.__d80281}</h2>
         </div>
         {!team || team.pendingInvitations.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)', margin: 0 }}>Нет активных приглашений</p>
+          <p style={{ color: 'var(--text-muted)', margin: 0 }}>{ui.___f855bd}</p>
         ) : (
           <ul className="action-list">
             {team.pendingInvitations.map((inv) => (
@@ -376,14 +377,14 @@ export default function BusinessTeamPage() {
                 <div className="action-text" style={{ flex: 1 }}>
                   <strong>{inv.email ?? inv.phone ?? '—'}</strong>
                   <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                    {inv.inviteType === 'email' ? 'По ссылке (email)' : 'По телефону (legacy)'}
+                    {inv.inviteType === 'email' ? ui.__email_46d244 : ui.__legacy_842eec}
                   </span>
                   <span>
                     до {new Date(inv.expiresAt).toLocaleDateString('ru-RU')} ·{' '}
                     {inv.permissions
                       .map(
                         (p) =>
-                          BUSINESS_PERMISSION_LABELS_RU[p as BusinessPermission] ?? p,
+                          businessPermissionLabelForLocale(locale, p as BusinessPermission) ?? p,
                       )
                       .join(' · ')}
                   </span>
@@ -394,7 +395,7 @@ export default function BusinessTeamPage() {
                       disabled={loading}
                       onClick={() => revokeInvite(inv)}
                     >
-                      Отозвать приглашение
+                      {ui.text_revokeInvite}
                     </button>
                   </div>
                 </div>
@@ -405,24 +406,24 @@ export default function BusinessTeamPage() {
       </section>
 
       <section className="form-card" style={{ maxWidth: 720 }}>
-        <h2 style={{ marginTop: 0 }}>Пригласить менеджера</h2>
+        <h2 style={{ marginTop: 0 }}>{ui.__cccdb7}</h2>
         <p style={{ color: 'var(--text-muted)', marginTop: 0 }}>
-          Укажите email сотрудника и выберите права. После создания скопируйте ссылку и отправьте её
-          сотруднику (email, мессенджер и т.д.). Если пользователь уже зарегистрирован с этим email,
-          доступ может быть выдан сразу.
+          {ui.text_teamInviteHint1}
+          {ui.text_teamInviteHint2}
+          {ui.text_teamInviteHint3}
         </p>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-          {PERMISSION_PRESETS.map((preset) => (
+          {permissionPresets.map((preset) => (
             <button
               key={preset.id}
               type="button"
               className="btn btn-sm"
               disabled={loading}
               onClick={() => applyPreset(preset.id)}
-              title={preset.descriptionRu}
+              title={preset.description}
             >
-              {preset.labelRu}
+              {preset.label}
             </button>
           ))}
         </div>
@@ -437,10 +438,8 @@ export default function BusinessTeamPage() {
               border: '1px solid var(--border, #e4e4e7)',
             }}
           >
-            <p style={{ margin: '0 0 8px', fontWeight: 600 }}>Ссылка приглашения</p>
-            <p style={{ margin: '0 0 8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-              Отправьте эту ссылку сотруднику. Она действует ограниченное время и одноразовая.
-            </p>
+            <p style={{ margin: '0 0 8px', fontWeight: 600 }}>{ui.__02dfd9}</p>
+            <p style={{ margin: '0 0 8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>{ui.____6e6847}</p>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
               <code
                 style={{
@@ -461,20 +460,20 @@ export default function BusinessTeamPage() {
                 onClick={async () => {
                   try {
                     await navigator.clipboard.writeText(createdInviteUrl);
-                    setSuccess('Ссылка скопирована в буфер обмена.');
+                    setSuccess(ui.____3dfe54);
                   } catch {
-                    setError('Не удалось скопировать ссылку.');
+                    setError(ui.____12c174);
                   }
                 }}
               >
-                Скопировать ссылку
+                {ui.text_copyInviteLink}
               </button>
               <button
                 type="button"
                 className="btn btn-sm"
                 onClick={() => setCreatedInviteUrl(null)}
               >
-                Скрыть
+                {ui.text_hide}
               </button>
             </div>
           </div>
@@ -485,13 +484,13 @@ export default function BusinessTeamPage() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email менеджера"
+            placeholder={ui.email__ab06da}
             required
             autoComplete="email"
           />
 
           <div style={{ gridColumn: '1 / -1' }}>
-            <strong style={{ display: 'block', marginBottom: 8 }}>Права доступа</strong>
+            <strong style={{ display: 'block', marginBottom: 8 }}>{ui.__6cc61b}</strong>
             <div
               style={{
                 display: 'grid',
@@ -509,21 +508,21 @@ export default function BusinessTeamPage() {
                     checked={selectedPermissions.includes(permission)}
                     onChange={() => togglePermission(permission)}
                   />
-                  <span>{BUSINESS_PERMISSION_LABELS_RU[permission]}</span>
+                  <span>{businessPermissionLabelForLocale(locale, permission)}</span>
                 </label>
               ))}
             </div>
           </div>
 
           <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Сохранение…' : 'Пригласить'}
+            {loading ? ui.text_73dba4 : ui.text_5e134c}
           </button>
         </form>
       </section>
 
       {teamAudit.length > 0 && (
         <section className="card" style={{ marginTop: '1.5rem' }}>
-          <h2>История изменений</h2>
+          <h2>{ui.__0de733}</h2>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {teamAudit.map((entry) => (
               <li key={entry.id} style={{ padding: '0.5rem 0', borderBottom: '1px solid var(--border)' }}>
@@ -531,7 +530,7 @@ export default function BusinessTeamPage() {
                   {new Date(entry.createdAt).toLocaleString('ru-RU')}
                 </span>
                 {' — '}
-                <strong>{entry.actor?.name ?? entry.actor?.phone ?? 'Система'}</strong>{' '}
+                <strong>{entry.actor?.name ?? entry.actor?.phone ?? ui.text_8d8c85}</strong>{' '}
                 {teamAuditLabel(entry.action)}
               </li>
             ))}

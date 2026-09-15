@@ -1,34 +1,27 @@
-import type { BusinessPlanStatus, PlanEntitlements } from '@/lib/api';
+import type { BusinessPlanStatus } from '@/lib/api';
+import type { AppLocale } from '@/lib/locale';
+import * as pres from '@/lib/presentation';
 
-export const MANUAL_PAYMENT_NOTICE =
-  'Оплата подтверждается администратором вручную. Автоматического списания нет — статус заказа обновится после подтверждения.';
-
-export const VIP_MODERATION_NOTICE =
-  'VIP-размещение не начнёт расходовать оплаченный срок, пока баннер не одобрен.';
-
-export const VIP_PLAN_DISCLAIMER =
-  'Рекламные размещения приобретаются отдельно.';
-
-export const PHOTO_OVER_LIMIT_HINT =
-  'На текущем тарифе публикуется ограниченное число фото. Остальные сохранены и снова появятся после повышения тарифа.';
-
-/** Maps internal enum (FREE/BASIC/PREMIUM/VIP) to public Russian labels (Stage 6.4). */
-export function planTierLabelRu(tier?: string | null): string {
-  switch (tier) {
-    case 'FREE':
-      return 'Бесплатный';
-    case 'BASIC':
-      return 'Бизнес';
-    case 'PREMIUM':
-      return 'PRO';
-    case 'VIP':
-      return 'VIP';
-    default:
-      return tier ?? 'Бесплатный';
-  }
+export function manualPaymentNotice(locale: AppLocale): string {
+  return pres.manualPaymentNotice(locale);
 }
 
+export function vipModerationPlacementNotice(locale: AppLocale): string {
+  return pres.vipModerationPlacementNotice(locale);
+}
+
+export function vipPlanDisclaimer(locale: AppLocale): string {
+  return pres.vipPlanDisclaimer(locale);
+}
+
+export function photoOverLimitHint(locale: AppLocale): string {
+  return pres.photoOverLimitHint(locale);
+}
+
+export const planTierLabelRu = (tier?: string | null) => pres.planTierLabel('ru', tier);
+
 export function formatPlanUsageLine(
+  locale: AppLocale,
   label: string,
   usage: number,
   limit: number,
@@ -36,23 +29,31 @@ export function formatPlanUsageLine(
 ): string {
   let line = `${label}: ${usage} / ${limit}`;
   if (entitlements?.overLimit && entitlements.published != null) {
-    line += ` (опубликовано ${entitlements.published})`;
+    line += pres.planUsagePublishedSuffix(locale, entitlements.published);
   }
   return line;
 }
 
-export function buildPlanUsageSummary(plan: BusinessPlanStatus): string[] {
+export function buildPlanUsageSummary(locale: AppLocale, plan: BusinessPlanStatus): string[] {
   const e = plan.entitlements;
   return [
-    formatPlanUsageLine('Фото', plan.usage.photos, plan.limits.maxPhotos, e?.photos),
     formatPlanUsageLine(
-      'Товары и услуги',
+      locale,
+      pres.planUsageResourceLabel(locale, 'photos'),
+      plan.usage.photos,
+      plan.limits.maxPhotos,
+      e?.photos,
+    ),
+    formatPlanUsageLine(
+      locale,
+      pres.planUsageResourceLabel(locale, 'serviceItems'),
       plan.usage.serviceItems,
       plan.limits.maxServiceItems,
       e?.serviceItems,
     ),
     formatPlanUsageLine(
-      'Активные акции',
+      locale,
+      pres.planUsageResourceLabel(locale, 'activePromotions'),
       plan.usage.activePromotions,
       plan.limits.maxActivePromotions,
       e?.activePromotions,
@@ -60,7 +61,6 @@ export function buildPlanUsageSummary(plan: BusinessPlanStatus): string[] {
   ];
 }
 
-/** Gallery index (0-based) → owner-facing publish state. */
 export function photoPublishState(
   index: number,
   plan: BusinessPlanStatus | null,
@@ -71,50 +71,6 @@ export function photoPublishState(
   return index < publishedCount ? 'published' : 'hidden';
 }
 
-export function photoPublishLabel(state: ReturnType<typeof photoPublishState>): string | null {
-  switch (state) {
-    case 'published':
-      return 'Опубликовано';
-    case 'hidden':
-      return 'Не публикуется по лимиту тарифа';
-    default:
-      return null;
-  }
-}
-
-export function businessAnalyticsLabel(type: string): string {
-  switch (type) {
-    case 'VIEW_BUSINESS':
-      return 'Просмотры карточки';
-    case 'CALL_CLICK':
-      return 'Звонки';
-    case 'WHATSAPP_CLICK':
-      return 'WhatsApp';
-    case 'ROUTE_CLICK':
-      return 'Маршруты';
-    case 'FAVORITE_ADD':
-      return 'Добавления в избранное';
-    case 'VIEW_PROMOTION':
-      return 'Просмотры акции';
-    default:
-      return type;
-  }
-}
-
-export function campaignAnalyticsLabel(key: string): string {
-  switch (key) {
-    case 'served':
-    case 'servedCount':
-      return 'Показы';
-    case 'impressions':
-    case 'qualifiedImpressions':
-      return 'Просмотры';
-    case 'clicks':
-    case 'clickCount':
-      return 'Клики';
-    case 'ctr':
-      return 'CTR';
-    default:
-      return key;
-  }
-}
+export const photoPublishLabel = pres.photoPublishLabel;
+export const businessAnalyticsLabel = pres.businessAnalyticsLabel;
+export const campaignAnalyticsLabel = pres.campaignAnalyticsLabel;

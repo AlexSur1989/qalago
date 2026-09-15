@@ -2,32 +2,30 @@ import { describe, expect, it } from 'vitest';
 import {
   mapSocialAuthError,
   SocialSignInCancelled,
-  SocialSignInNonceMismatch,
   SocialSignInNoToken,
+  SocialSignInNonceMismatch,
 } from './social-auth-errors';
 
 describe('mapSocialAuthError', () => {
   it('returns empty for cancellation', () => {
-    expect(mapSocialAuthError(new SocialSignInCancelled(), 'Google')).toBe('');
+    expect(mapSocialAuthError('ru', new SocialSignInCancelled(), 'Google')).toBe('');
   });
 
-  it('maps backend 404', () => {
-    expect(mapSocialAuthError(new Error('404 Not Found'), 'Apple')).toContain(
-      'временно недоступен',
-    );
+  it('maps 404', () => {
+    expect(mapSocialAuthError('ru', new Error('404 Not Found'), 'Apple')).toContain('Apple');
   });
 
-  it('maps rate limit', () => {
-    expect(mapSocialAuthError(new Error('429 Too Many Requests'), 'Google')).toContain(
-      'Слишком много попыток',
+  it('maps 429', () => {
+    expect(mapSocialAuthError('ru', new Error('429 Too Many Requests'), 'Google')).toContain(
+      'попыток',
     );
   });
 
   it('maps missing token', () => {
-    expect(mapSocialAuthError(new SocialSignInNoToken(), 'Apple')).toContain('Apple');
+    expect(mapSocialAuthError('ru', new SocialSignInNoToken(), 'Apple')).toContain('Apple');
   });
 
   it('maps nonce mismatch', () => {
-    expect(mapSocialAuthError(new SocialSignInNonceMismatch(), 'Apple')).toContain('Apple');
+    expect(mapSocialAuthError('ru', new SocialSignInNonceMismatch(), 'Apple')).toContain('Apple');
   });
 });

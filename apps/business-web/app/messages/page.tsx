@@ -1,5 +1,6 @@
 'use client';
 
+import { useUi, type UiLabels } from '@/components/locale-provider';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { BusinessRow, NotificationRow, myBusinessRows, ownerApi } from '@/lib/api';
@@ -15,18 +16,20 @@ function formatDate(iso: string) {
   });
 }
 
-function typeLabel(type: string) {
+function typeLabel(ui: UiLabels, type: string) {
   const map: Record<string, string> = {
-    REVIEW_NEW: 'Новый отзыв',
-    REVIEW_REPLY: 'Ответ на отзыв',
-    MODERATION: 'Модерация',
-    PROMOTION: 'Акция',
-    GENERAL: 'Общее',
+    REVIEW_NEW: ui.__fe2c89,
+    REVIEW_REPLY: ui.___6e031d,
+    MODERATION: ui.text_424b69,
+    PROMOTION: ui.text_df0d49,
+    GENERAL: ui.text_50df78,
   };
   return map[type] ?? type.replaceAll('_', ' ');
 }
 
 export default function MessagesPage() {
+  const ui = useUi();
+
   const { token, user, ready, logout } = useAuth();
   const [businesses, setBusinesses] = useState<BusinessRow[]>([]);
   const business = useSelectedBusiness(businesses);
@@ -68,7 +71,7 @@ export default function MessagesPage() {
     await load(token);
   }
 
-  if (!ready || !token) return <p className="page-content">Загрузка…</p>;
+  if (!ready || !token) return <p className="page-content">{ui.text_89d69a}</p>;
 
   const unread = items.filter((n) => !n.isRead).length;
 
@@ -82,21 +85,17 @@ export default function MessagesPage() {
     >
       <header className="page-header">
         <div>
-          <h1>Сообщения</h1>
+          <h1>{ui.ownerNavMessages}</h1>
           <p className="page-header-meta">
             {items.length} уведомлений
-            {unread > 0 ? ` · ${unread} непрочитанных` : ''}
+            {unread > 0 ? ui.text_09543f : ''}
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           {unread > 0 && (
-            <button type="button" className="btn btn-ghost btn-sm" onClick={markAllRead}>
-              Прочитать все
-            </button>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={markAllRead}>{ui.__ed0248}</button>
           )}
-          <Link href="/dashboard" className="btn">
-            ← На главную
-          </Link>
+          <Link href="/dashboard" className="btn">{ui.__65f9d8}</Link>
         </div>
       </header>
 
@@ -104,11 +103,9 @@ export default function MessagesPage() {
 
       <section className="form-card" style={{ maxWidth: 820 }}>
         {loading ? (
-          <p style={{ color: 'var(--text-muted)', margin: 0 }}>Загрузка…</p>
+          <p style={{ color: 'var(--text-muted)', margin: 0 }}>{ui.text_89d69a}</p>
         ) : items.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)', margin: 0 }}>
-            Пока нет уведомлений. Здесь появятся новые отзывы, статусы модерации и другие события.
-          </p>
+          <p style={{ color: 'var(--text-muted)', margin: 0 }}>{ui.____d078b3}</p>
         ) : (
           items.map((item) => (
             <article
@@ -138,7 +135,7 @@ export default function MessagesPage() {
                 {item.body && (
                   <p style={{ margin: '6px 0 0', color: 'var(--text-muted)' }}>{item.body}</p>
                 )}
-                <span className="notification-type">{typeLabel(item.type)}</span>
+                <span className="notification-type">{typeLabel(ui, item.type)}</span>
               </div>
             </article>
           ))

@@ -1,16 +1,25 @@
+import type { Metadata } from 'next';
 import { LegalPageLayout } from '@/components/legal-page-layout';
 import { LEGAL_PLACEHOLDERS } from '@/lib/legal-config';
+import { UI_LABELS } from '@/lib/locale';
+import { getServerLocale } from '@/lib/locale-server';
 
-export const metadata = {
-  title: 'Удаление аккаунта — QalaGo',
-  description: 'Как удалить аккаунт QalaGo',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getServerLocale();
+  const ui = UI_LABELS[locale];
+  return {
+    title: ui.__qalago_707df4,
+    description: ui.___qalago_a575a4,
+  };
+}
 
-export default function AccountDeletionPage() {
+export default async function AccountDeletionPage() {
+  const locale = await getServerLocale();
+  const ui = UI_LABELS[locale];
   const p = LEGAL_PLACEHOLDERS;
 
   return (
-    <LegalPageLayout title="Удаление аккаунта QalaGo" lastUpdated="2026-09-10">
+    <LegalPageLayout title={ui.__qalago_876cc9} lastUpdated="2026-09-10">
       <p>
         На этой странице описано, как пользователь QalaGo может удалить аккаунт и какие
         данные затрагиваются. Текст соответствует текущей реализации API{' '}

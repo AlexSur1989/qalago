@@ -1,4 +1,6 @@
 import type { MonetizationPackage } from '@/lib/api';
+import type { AppLocale } from '@/lib/locale';
+import * as pres from '@/lib/presentation';
 
 export type MonetizationSubNavId =
   | 'overview'
@@ -36,254 +38,43 @@ export function formatDateTime(value: string | Date | null | undefined): string 
   });
 }
 
-export function formatDuration(days: number | null | undefined, hours: number | null | undefined): string {
-  if (days != null) {
-    if (days === 1) return '1 день';
-    if (days >= 2 && days <= 4) return `${days} дня`;
-    return `${days} дней`;
-  }
-  if (hours != null) {
-    if (hours === 1) return '1 час';
-    if (hours >= 2 && hours <= 4) return `${hours} часа`;
-    return `${hours} часов`;
-  }
-  return '—';
+export function formatDuration(
+  locale: AppLocale,
+  days: number | null | undefined,
+  hours: number | null | undefined,
+): string {
+  return pres.formatDuration(locale, days, hours);
 }
 
-export function purchaseStateLabel(state?: string | null): string {
-  switch (state) {
-    case 'AVAILABLE':
-      return 'Доступно';
-    case 'ACTIVE':
-      return 'Активно';
-    case 'SCHEDULED':
-      return 'Запланировано';
-    case 'PENDING_PAYMENT':
-      return 'Ожидает оплаты';
-    case 'PENDING_APPROVAL':
-      return 'На модерации';
-    case 'SOLD_OUT':
-      return 'Мест нет';
-    default:
-      return state ?? '—';
-  }
-}
-
-export function purchaseActionLabel(action?: string | null): string {
-  switch (action) {
-    case 'BUY':
-      return 'Купить';
-    case 'CONTINUE_PAYMENT':
-      return 'Продолжить оплату';
-    case 'RENEW':
-      return 'Продлить';
-    default:
-      return '';
-  }
-}
-
-export function productLabel(code?: string | null): string {
-  switch (code) {
-    case 'BOOST':
-      return 'Поднять карточку';
-    case 'TOP_CATEGORY':
-      return 'TOP категории';
-    case 'PROMOTED_PROMOTION':
-      return 'Продвинуть акцию';
-    case 'FEATURED_BUSINESS':
-      return 'Популярное место';
-    case 'VIP_BANNER':
-      return 'VIP-баннер';
-    case 'PACKAGE':
-      return 'Пакет';
-    default:
-      return code ?? '—';
-  }
-}
-
-export function placementLabel(code?: string | null, name?: string | null): string {
-  if (name) return name;
-  switch (code) {
-    case 'HOME_VIP_BANNER':
-      return 'VIP-баннер на главной';
-    case 'HOME_FEATURED':
-      return 'Популярные места';
-    case 'HOME_PROMOTIONS':
-      return 'Продвигаемые акции';
-    case 'CATEGORY_TOP':
-      return 'TOP категории';
-    case 'CATEGORY_BOOST':
-      return 'Поднятые карточки';
-    case 'SEARCH_TOP':
-      return 'Поиск (топ)';
-    case 'MAP_FEATURED':
-      return 'Карта (избранное)';
-    default:
-      return code ?? '—';
-  }
-}
-
-export function orderStatusLabel(status: string): string {
-  switch (status) {
-    case 'AWAITING_PAYMENT':
-      return 'Ожидает оплаты';
-    case 'PAID':
-      return 'Оплачен';
-    case 'CANCELLED':
-      return 'Отменён';
-    case 'REFUNDED':
-      return 'Возврат';
-    case 'PARTIALLY_REFUNDED':
-      return 'Частичный возврат';
-    case 'DRAFT':
-      return 'Черновик';
-    default:
-      return status;
-  }
-}
-
-export function paymentStatusLabel(status: string): string {
-  switch (status) {
-    case 'PENDING':
-      return 'Ожидает';
-    case 'PAID':
-      return 'Оплачен';
-    case 'FAILED':
-      return 'Ошибка';
-    case 'CANCELLED':
-      return 'Отменён';
-    case 'REFUNDED':
-      return 'Возврат';
-    case 'PARTIALLY_REFUNDED':
-      return 'Частичный возврат';
-    default:
-      return status;
-  }
-}
-
-/** Owner-facing campaign status labels (feminine). */
-export function campaignStatusLabel(status: string): string {
-  switch (status) {
-    case 'PENDING_MODERATION':
-      return 'На модерации';
-    case 'AWAITING_PAYMENT':
-      return 'Ожидает оплаты';
-    case 'SCHEDULED':
-      return 'Запланирована';
-    case 'ACTIVE':
-      return 'Активна';
-    case 'PAUSED':
-      return 'Приостановлена';
-    case 'COMPLETED':
-      return 'Завершена';
-    case 'CANCELLED':
-      return 'Отменена';
-    case 'REJECTED':
-      return 'Отклонена';
-    default:
-      return status;
-  }
-}
-
-export function creativeStatusLabel(status: string): string {
-  switch (status) {
-    case 'DRAFT':
-      return 'Черновик';
-    case 'PENDING':
-      return 'На модерации';
-    case 'APPROVED':
-      return 'Одобрено';
-    case 'REJECTED':
-      return 'Отклонено';
-    default:
-      return status;
-  }
-}
-
-type VipCampaignLike = {
-  status: string;
-  effectiveStatus?: string | null;
-  product?: { code?: string | null } | null;
-  creative?: { moderationStatus?: string } | null;
-};
-
-/** Owner-facing VIP campaign label — keeps campaign/creative states distinct. */
-export function vipCampaignDisplayStatus(campaign: VipCampaignLike): string {
-  if (campaign.product?.code !== 'VIP_BANNER') {
-    return campaignStatusLabel(campaign.effectiveStatus ?? campaign.status);
-  }
-
-  const creativeStatus = campaign.creative?.moderationStatus;
-  if (creativeStatus === 'DRAFT' || creativeStatus === 'REJECTED') {
-    return 'Ожидает отправки креатива';
-  }
-  if (creativeStatus === 'PENDING' || campaign.status === 'PENDING_MODERATION') {
-    return 'На модерации';
-  }
-  return campaignStatusLabel(campaign.effectiveStatus ?? campaign.status);
-}
+export const purchaseStateLabel = pres.purchaseStateLabel;
+export const purchaseActionLabel = pres.purchaseActionLabel;
+export const productLabel = pres.productLabel;
+export const placementLabel = pres.placementLabel;
+export const orderStatusLabel = pres.orderStatusLabel;
+export const paymentStatusLabel = pres.paymentStatusLabel;
+export const campaignStatusLabel = pres.campaignStatusLabel;
+export const creativeStatusLabel = pres.creativeStatusLabel;
+export const vipCampaignDisplayStatus = pres.vipCampaignDisplayStatus;
+export const vipModerationNotice = pres.vipModerationNotice;
+export const planTierLabel = pres.planTierLabel;
+export const analyticsActionLabel = pres.analyticsActionLabel;
 
 export function canSubmitCreative(creative?: { moderationStatus?: string } | null): boolean {
   return creative?.moderationStatus === 'DRAFT' || creative?.moderationStatus === 'REJECTED';
 }
 
-export function formatEffectivePeriod(campaign: {
-  startAt?: string | null;
-  endAt?: string | null;
-  effectivePeriodStarted?: boolean;
-}): string {
-  if (campaign.effectivePeriodStarted === false) {
-    return 'Начнётся после одобрения';
-  }
+export function formatEffectivePeriod(
+  locale: AppLocale,
+  campaign: {
+    startAt?: string | null;
+    endAt?: string | null;
+    effectivePeriodStarted?: boolean;
+  },
+): string {
+  const pending = pres.formatEffectivePeriodLabel(locale, campaign);
+  if (pending) return pending;
   if (!campaign.startAt || !campaign.endAt) return '—';
   return `${formatDate(campaign.startAt)} — ${formatDate(campaign.endAt)}`;
-}
-
-export function vipModerationNotice(campaign: VipCampaignLike): string | null {
-  const creativeStatus = campaign.creative?.moderationStatus;
-  if (creativeStatus === 'DRAFT' || creativeStatus === 'REJECTED') {
-    return 'Отправьте креатив на модерацию, чтобы начать проверку VIP-баннера.';
-  }
-  if (creativeStatus === 'PENDING' || campaign.status === 'PENDING_MODERATION') {
-    return 'VIP-баннер ожидает одобрения креатива. Период размещения начнётся после модерации.';
-  }
-  return null;
-}
-
-export function planTierLabel(tier?: string | null): string {
-  switch (tier) {
-    case 'FREE':
-      return 'Бесплатный';
-    case 'BASIC':
-      return 'Бизнес';
-    case 'PREMIUM':
-      return 'PRO';
-    case 'VIP':
-      return 'VIP';
-    default:
-      return tier ?? 'Бесплатный';
-  }
-}
-
-export function analyticsActionLabel(type: string): string {
-  switch (type) {
-    case 'AD_CARD_OPEN':
-      return 'Открытия карточки';
-    case 'AD_CALL_CLICK':
-      return 'Звонки';
-    case 'AD_WHATSAPP_CLICK':
-      return 'WhatsApp';
-    case 'AD_ROUTE_CLICK':
-      return 'Маршруты';
-    case 'AD_WEBSITE_CLICK':
-      return 'Сайт';
-    case 'AD_INSTAGRAM_CLICK':
-      return 'Instagram';
-    case 'AD_PROMOTION_OPEN':
-      return 'Открытия акции';
-    default:
-      return type;
-  }
 }
 
 export function monetizationStatusClass(status: string): string {
@@ -324,24 +115,6 @@ export function packageHasPromotedPromotion(pkg: Pick<MonetizationPackage, 'item
   );
 }
 
-export function parseApiError(err: unknown): string {
-  if (!(err instanceof Error)) return 'Неизвестная ошибка';
-  const raw = err.message;
-  if (raw.includes('429') || raw.toLowerCase().includes('too many')) {
-    return 'Слишком много попыток. Попробуйте позже.';
-  }
-  if (raw.includes('PAYMENTS_VIEW') || raw.includes('Missing permission')) {
-    return 'Нет доступа к подписке и платежам. Обратитесь к владельцу бизнеса.';
-  }
-  try {
-    const parsed = JSON.parse(raw) as { message?: string | string[]; statusCode?: number };
-    if (parsed.statusCode === 429) {
-      return 'Слишком много попыток. Попробуйте позже.';
-    }
-    if (Array.isArray(parsed.message)) return parsed.message.join(', ');
-    if (parsed.message) return String(parsed.message);
-  } catch {
-    // not JSON
-  }
-  return raw || 'Неизвестная ошибка';
+export function parseApiError(locale: AppLocale, err: unknown): string {
+  return pres.parseApiErrorMessage(locale, err);
 }

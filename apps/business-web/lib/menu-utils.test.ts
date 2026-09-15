@@ -12,9 +12,9 @@ describe('menu-utils', () => {
     const sections = [
       { id: 's1', title: 'Смартфоны', sortOrder: 0, isActive: true, itemCount: 10 },
     ];
-    expect(menuSectionLabel('s1', sections)).toBe('Смартфоны');
-    expect(menuSectionLabel(null, sections)).toBe('Без группы');
-    expect(menuSectionLabel('missing', sections)).toBe('Без группы');
+    expect(menuSectionLabel('ru', 's1', sections)).toBe('Смартфоны');
+    expect(menuSectionLabel('ru', null, sections)).toBe('Без группы');
+    expect(menuSectionLabel('ru', 'missing', sections)).toBe('Без группы');
   });
 
   it('hasMoreMenuPages detects next page', () => {

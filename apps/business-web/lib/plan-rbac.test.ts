@@ -21,21 +21,21 @@ describe('plan RBAC (Stage 5N.5)', () => {
   };
 
   it('OWNER sees plan nav and can view payments', () => {
-    const planItem = buildFooterNavItems().find((item) => item.id === 'plan');
+    const planItem = buildFooterNavItems('ru').find((item) => item.id === 'plan');
     expect(canAccessNavItem(planItem!, ownerAccess)).toBe(true);
     expect(canViewPayments(ownerAccess)).toBe(true);
     expect(isOwner(ownerAccess)).toBe(true);
   });
 
   it('MANAGER with PAYMENTS_VIEW sees plan nav (read-only permission)', () => {
-    const planItem = buildFooterNavItems().find((item) => item.id === 'plan');
-    expect(filterNavByAccess(buildFooterNavItems(), managerWithPayments).some((i) => i.id === 'plan')).toBe(true);
+    const planItem = buildFooterNavItems('ru').find((item) => item.id === 'plan');
+    expect(filterNavByAccess(buildFooterNavItems('ru'), managerWithPayments).some((i) => i.id === 'plan')).toBe(true);
     expect(canViewPayments(managerWithPayments)).toBe(true);
     expect(isOwner(managerWithPayments)).toBe(false);
   });
 
   it('MANAGER without PAYMENTS_VIEW hides plan nav', () => {
-    const footer = filterNavByAccess(buildFooterNavItems(), managerCatalogOnly);
+    const footer = filterNavByAccess(buildFooterNavItems('ru'), managerCatalogOnly);
     expect(footer.some((item) => item.id === 'plan')).toBe(false);
     expect(canViewPayments(managerCatalogOnly)).toBe(false);
   });

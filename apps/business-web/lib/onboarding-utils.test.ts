@@ -6,27 +6,29 @@ import {
   membershipRoleLabel,
 } from './onboarding-utils';
 
+const ru = 'ru' as const;
+
 describe('onboarding-utils', () => {
   it('maps application statuses', () => {
-    expect(applicationStatusLabel('PENDING')).toBe('На проверке');
-    expect(applicationStatusLabel('DRAFT')).toBe('Черновик');
+    expect(applicationStatusLabel(ru, 'PENDING')).toBe('На проверке');
+    expect(applicationStatusLabel(ru, 'DRAFT')).toBe('Черновик');
   });
 
   it('maps claim statuses', () => {
-    expect(claimStatusLabel('APPROVED')).toBe('Одобрено');
+    expect(claimStatusLabel(ru, 'APPROVED')).toBe('Одобрено');
   });
 
   it('maps membership roles', () => {
-    expect(membershipRoleLabel('OWNER')).toBe('Владелец');
-    expect(membershipRoleLabel('MANAGER')).toBe('Менеджер');
+    expect(membershipRoleLabel(ru, 'OWNER')).toBe('Владелец');
+    expect(membershipRoleLabel(ru, 'MANAGER')).toBe('Менеджер');
   });
 
   it('maps duplicate errors', () => {
-    expect(mapOnboardingError('duplicate business already exists')).toContain('Похожий бизнес');
+    expect(mapOnboardingError(ru, 'duplicate business already exists')).toContain('Похожий бизнес');
   });
 
   it('maps rate limit errors', () => {
-    expect(mapOnboardingError('429 Too Many Requests')).toBe(
+    expect(mapOnboardingError(ru, '429 Too Many Requests')).toBe(
       'Слишком много попыток. Попробуйте позже.',
     );
   });

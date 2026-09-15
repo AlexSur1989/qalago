@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { BusinessRow, ownerApi } from '@/lib/api';
@@ -7,6 +8,9 @@ import { OnboardingShell } from '@/components/onboarding-shell';
 import { mapOnboardingError } from '@/lib/onboarding-utils';
 
 export default function OnboardingSearchPage() {
+  const locale = useLocale();
+  const ui = useUi();
+
   const [citySlug, setCitySlug] = useState('uralsk');
   const [query, setQuery] = useState('');
   const [items, setItems] = useState<BusinessRow[]>([]);
@@ -27,29 +31,25 @@ export default function OnboardingSearchPage() {
       setItems(res.items);
       setSearched(true);
     } catch (err: unknown) {
-      setError(mapOnboardingError(String(err)));
+      setError(mapOnboardingError(locale, String(err)));
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <OnboardingShell title="Найти свой бизнес" subtitle="Поиск по названию и адресу в выбранном городе.">
+    <OnboardingShell title={ui.___612420} subtitle={ui.____998d3a}>
       <form onSubmit={search} className="form-grid" style={{ marginBottom: 20 }}>
-        <label>
-          Город
-          <input value={citySlug} onChange={(e) => setCitySlug(e.target.value)} placeholder="uralsk" />
+        <label>{ui.text_069c9c}<input value={citySlug} onChange={(e) => setCitySlug(e.target.value)} placeholder="uralsk" />
         </label>
-        <label>
-          Название или адрес
-          <input
+        <label>{ui.___6f7ddf}<input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Coffee Boom"
           />
         </label>
         <button type="submit" className="btn btn-primary" disabled={loading}>
-          {loading ? 'Поиск…' : 'Искать'}
+          {loading ? ui.text_6efd63 : ui.text_6ba3c7}
         </button>
       </form>
 
@@ -57,10 +57,8 @@ export default function OnboardingSearchPage() {
 
       {searched && items.length === 0 && (
         <div className="empty-state">
-          <p>Не нашли свой бизнес?</p>
-          <Link href="/onboarding/apply" className="btn btn-primary">
-            Добавить новый бизнес
-          </Link>
+          <p>{ui.____a8362b}</p>
+          <Link href="/onboarding/apply" className="btn btn-primary">{ui.___61b180}</Link>
         </div>
       )}
 
@@ -72,9 +70,7 @@ export default function OnboardingSearchPage() {
               <p className="muted" style={{ margin: '4px 0' }}>
                 {item.address}
               </p>
-              <Link href={`/onboarding/claim/${item.id}`} className="btn btn-sm btn-primary">
-                Подтвердить права
-              </Link>
+              <Link href={`/onboarding/claim/${item.id}`} className="btn btn-sm btn-primary">{ui.__62b5a0}</Link>
             </li>
           ))}
         </ul>

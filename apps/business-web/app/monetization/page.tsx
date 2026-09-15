@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { BusinessPlanStatus, MonetizationCampaign, MonetizationOrder, ownerApi } from '@/lib/api';
@@ -16,6 +17,9 @@ import {
 } from '@/lib/monetization-utils';
 
 export default function MonetizationOverviewPage() {
+  const locale = useLocale();
+  const ui = useUi();
+
   const { token, business, access } = useMonetizationContext();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +46,7 @@ export default function MonetizationOverviewPage() {
         setCampaigns(campaignList);
       })
       .catch((err) => {
-        if (!cancelled) setError(parseApiError(err));
+        if (!cancelled) setError(parseApiError(locale, err));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -70,36 +74,30 @@ export default function MonetizationOverviewPage() {
     <>
       <header className="page-header">
         <div>
-          <h1>Реклама и продвижение</h1>
+          <h1>{ui.ownerNavPromote}</h1>
           <p className="page-header-meta">{business.title}</p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Link href="/monetization/products" className="btn">
-            Купить размещение
-          </Link>
-          <Link href="/plan" className="btn btn-ghost">
-            Тариф
-          </Link>
+          <Link href="/monetization/products" className="btn">{ui.__55b89b}</Link>
+          <Link href="/plan" className="btn btn-ghost">{ui.ownerNavPlan}</Link>
         </div>
       </header>
 
       {error && <div className="alert alert-error">{error}</div>}
 
       <section className="form-card" style={{ marginBottom: 16 }}>
-        <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.92rem' }}>
-          Рекламные размещения приобретаются отдельно.
-        </p>
+        <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.92rem' }}>{ui.____a5f597}</p>
       </section>
 
       {loading ? (
-        <p style={{ color: 'var(--text-muted)' }}>Загрузка…</p>
+        <p style={{ color: 'var(--text-muted)' }}>{ui.text_89d69a}</p>
       ) : (
         <>
           <div className="kpi-grid">
             <div className="kpi-card">
-              <div className="kpi-label">Тариф</div>
+              <div className="kpi-label">{ui.ownerNavPlan}</div>
               <div className="kpi-value" style={{ fontSize: '1.2rem' }}>
-                {planStatus ? planTierLabel(planStatus.effectiveTier) : '—'}
+                {planStatus ? planTierLabel(locale, planStatus.effectiveTier) : '—'}
               </div>
               {planStatus && (
                 <p style={{ margin: '8px 0 0', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
@@ -108,15 +106,15 @@ export default function MonetizationOverviewPage() {
               )}
             </div>
             <div className="kpi-card">
-              <div className="kpi-label">Активные кампании</div>
+              <div className="kpi-label">{ui.__bb49cc}</div>
               <div className="kpi-value">{activeCount}</div>
             </div>
             <div className="kpi-card">
-              <div className="kpi-label">Запланированные</div>
+              <div className="kpi-label">{ui.text_b911f5}</div>
               <div className="kpi-value">{scheduledCount}</div>
             </div>
             <div className="kpi-card">
-              <div className="kpi-label">На модерации</div>
+              <div className="kpi-label">{ui.__d9d74d}</div>
               <div className="kpi-value">{moderationCount}</div>
             </div>
           </div>
@@ -124,13 +122,11 @@ export default function MonetizationOverviewPage() {
           <div className="bottom-row">
             <section className="card">
               <div className="card-header">
-                <h2>Последние заказы</h2>
-                <Link href="/monetization/orders" className="card-link">
-                  Все заказы →
-                </Link>
+                <h2>{ui.__00fe16}</h2>
+                <Link href="/monetization/orders" className="card-link">{ui.__72307b}</Link>
               </div>
               {recentOrders.length === 0 ? (
-                <p style={{ color: 'var(--text-muted)' }}>Заказов пока нет</p>
+                <p style={{ color: 'var(--text-muted)' }}>{ui.___230412}</p>
               ) : (
                 <ul className="action-list">
                   {recentOrders.map((order) => (
@@ -147,7 +143,7 @@ export default function MonetizationOverviewPage() {
                           {formatKzt(order.totalAmount, order.currency)}
                         </span>
                         <span className={monetizationStatusClass(order.status)}>
-                          {orderStatusLabel(order.status)}
+                          {orderStatusLabel(locale, order.status)}
                         </span>
                       </div>
                     </li>
@@ -158,37 +154,37 @@ export default function MonetizationOverviewPage() {
 
             <section className="card">
               <div className="card-header">
-                <h2>Быстрые действия</h2>
+                <h2>{ui.__b05019}</h2>
               </div>
               <ul className="action-list">
                 <li className="action-item">
                   <div className="action-icon">📣</div>
                   <div className="action-text">
                     <Link href="/monetization/products">
-                      <strong>Рекламные продукты</strong>
+                      <strong>{ui.__ebd04c}</strong>
                     </Link>
-                    <span>TOP, буст, VIP-баннер и др.</span>
+                    <span>{ui.top__vip__239541}</span>
                   </div>
                 </li>
                 <li className="action-item">
                   <div className="action-icon">📦</div>
                   <div className="action-text">
                     <Link href="/monetization/packages">
-                      <strong>Пакеты продвижения</strong>
+                      <strong>{ui.__13dad9}</strong>
                     </Link>
-                    <span>Готовые наборы размещений</span>
+                    <span>{ui.___016439}</span>
                   </div>
                 </li>
                 <li className="action-item">
                   <div className="action-icon">📊</div>
                   <div className="action-text">
                     <Link href="/monetization/campaigns">
-                      <strong>Мои кампании</strong>
+                      <strong>{ui.__f71231}</strong>
                     </Link>
                     <span>
                       {campaigns.length > 0
-                        ? `${campaigns.length} кампаний`
-                        : 'Пока нет активных кампаний'}
+                        ? ui.text_7aa4a8
+                        : ui.____31cba1}
                     </span>
                   </div>
                 </li>
@@ -199,18 +195,16 @@ export default function MonetizationOverviewPage() {
           {campaigns.length > 0 && (
             <section className="card" style={{ marginTop: 18 }}>
               <div className="card-header">
-                <h2>Кампании</h2>
-                <Link href="/monetization/campaigns" className="card-link">
-                  Все кампании →
-                </Link>
+                <h2>{ui.text_014f35}</h2>
+                <Link href="/monetization/campaigns" className="card-link">{ui.__10dafd}</Link>
               </div>
               <div className="table-scroll desktop-only">
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Продукт</th>
-                      <th>Статус</th>
-                      <th>Период</th>
+                      <th>{ui.text_c5ffa7}</th>
+                      <th>{ui.text_7203f7}</th>
+                      <th>{ui.text_f90bfb}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -225,7 +219,7 @@ export default function MonetizationOverviewPage() {
                           </td>
                           <td>
                             <span className={monetizationStatusClass(status)}>
-                              {campaignStatusLabel(status)}
+                              {campaignStatusLabel(locale, status)}
                             </span>
                           </td>
                           <td>
@@ -247,7 +241,7 @@ export default function MonetizationOverviewPage() {
                           <strong>{c.product?.name ?? c.product?.code}</strong>
                         </Link>
                         <span className={monetizationStatusClass(status)}>
-                          {campaignStatusLabel(status)}
+                          {campaignStatusLabel(locale, status)}
                         </span>
                       </div>
                     </div>

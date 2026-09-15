@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
@@ -17,6 +18,9 @@ import { useAuth } from '@/lib/use-auth';
 import { BusinessShell } from '@/components/business-shell';
 
 export default function BusinessPromotionsPage() {
+  const locale = useLocale();
+  const ui = useUi();
+
   const params = useParams<{ id: string }>();
   const businessId = params.id;
   const { token, user, ready, logout, items: myBusinessItems } = useAuth();
@@ -51,7 +55,7 @@ export default function BusinessPromotionsPage() {
 
   useEffect(() => {
     if (!token) return;
-    load(token).catch((err) => setError(parseApiError(err)));
+    load(token).catch((err) => setError(parseApiError(locale, err)));
   }, [token, businessId, access]);
 
   async function create(e: FormEvent) {
@@ -92,7 +96,7 @@ export default function BusinessPromotionsPage() {
     await load(token);
   }
 
-  if (!ready || !token) return <p className="page-content">Загрузка…</p>;
+  if (!ready || !token) return <p className="page-content">{ui.text_89d69a}</p>;
 
   return (
     <BusinessShell
@@ -104,16 +108,12 @@ export default function BusinessPromotionsPage() {
     >
       <header className="page-header">
         <div>
-          <h1>Акции</h1>
-          <p className="page-header-meta">Управление спецпредложениями для клиентов</p>
+          <h1>{ui.ownerMgmtPromotions}</h1>
+          <p className="page-header-meta">{ui.____34c9f9}</p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Link href="/dashboard" className="btn btn-ghost">
-            ← Обзор
-          </Link>
-          <Link href="/monetization/products/PROMOTED_PROMOTION" className="btn btn-primary">
-            Продвинуть акцию
-          </Link>
+          <Link href="/dashboard" className="btn btn-ghost">{ui.text_76e286}</Link>
+          <Link href="/monetization/products/PROMOTED_PROMOTION" className="btn btn-primary">{ui.__dd3834}</Link>
         </div>
       </header>
 
@@ -126,36 +126,35 @@ export default function BusinessPromotionsPage() {
           </p>
           {planStatus.entitlements?.activePromotions.overLimit && (
             <p className="alert" style={{ marginTop: 10, marginBottom: 0, fontSize: '0.88rem' }}>
-              {planStatus.entitlements.overLimitNotice ??
-                'На текущем тарифе публикуется ограниченное число активных акций. Остальные сохранены в кабинете.'}
+              {planStatus.entitlements.overLimitNotice ?? ui.____b1060f}
             </p>
           )}
         </section>
       )}
 
       <form onSubmit={create} className="form-card form-grid" style={{ maxWidth: 720, marginBottom: 24 }}>
-        <h2 style={{ margin: 0 }}>Новая акция</h2>
+        <h2 style={{ margin: 0 }}>{ui.__404816}</h2>
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Название"
+          placeholder={ui.text_602680}
           disabled={atActiveLimit}
         />
         <input
           value={discountText}
           onChange={(e) => setDiscountText(e.target.value)}
-          placeholder="Скидка"
+          placeholder={ui.text_d90396}
           disabled={atActiveLimit}
         />
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Описание"
+          placeholder={ui.text_38ca0a}
           rows={3}
           disabled={atActiveLimit}
         />
         <button type="submit" className="btn btn-primary" disabled={atActiveLimit}>
-          {atActiveLimit ? 'Лимит активных акций' : 'Создать акцию'}
+          {atActiveLimit ? ui.___c45ec6 : ui.__8062f8}
         </button>
       </form>
 
@@ -164,7 +163,7 @@ export default function BusinessPromotionsPage() {
       <section className="form-card" style={{ maxWidth: 720 }}>
         <h2 style={{ marginTop: 0 }}>Список ({promotions.length})</h2>
         {promotions.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)' }}>Пока нет акций</p>
+          <p style={{ color: 'var(--text-muted)' }}>{ui.___208573}</p>
         ) : (
           promotions.map((p) => (
             <div
@@ -180,16 +179,14 @@ export default function BusinessPromotionsPage() {
                 )}
                 {p.description && <p>{p.description}</p>}
                 <span className={`tag ${p.status === 'ACTIVE' ? 'tag-success' : ''}`}>
-                  {p.status === 'ACTIVE' ? 'Активна' : p.status}
+                  {p.status === 'ACTIVE' ? ui.text_047e75 : p.status}
                 </span>
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <button type="button" className="btn btn-sm" onClick={() => toggleStatus(p)}>
-                  {p.status === 'ACTIVE' ? 'Завершить' : 'Активировать'}
+                  {p.status === 'ACTIVE' ? ui.text_b0e3a5 : ui.text_3e177a}
                 </button>
-                <button type="button" className="btn btn-sm" onClick={() => remove(p.id)}>
-                  Удалить
-                </button>
+                <button type="button" className="btn btn-sm" onClick={() => remove(p.id)}>{ui.text_ed2bbf}</button>
               </div>
             </div>
           ))

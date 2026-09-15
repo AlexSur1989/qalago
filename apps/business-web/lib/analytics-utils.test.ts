@@ -39,7 +39,7 @@ function mockDashboard(
       impressions: !isFree,
       ctr: isProOrVip,
       trafficSources: isProOrVip,
-      searchQueries: isProOrVip,
+      searchQueries: isProOrVip ? [] : null,
       conversion: isProOrVip,
       periodComparison: !isFree,
       promotionAnalytics: !isFree,
@@ -165,7 +165,7 @@ describe('Analytics 360 utils', () => {
     expect(d.capabilities.trafficSources).toBe(true);
     expect(d.sources).toHaveLength(1);
     expect(d.searchQueries).toHaveLength(1);
-    expect(funnelSteps(d).length).toBeGreaterThanOrEqual(2);
+    expect(funnelSteps('ru', d).length).toBeGreaterThanOrEqual(2);
   });
 
   it('14 PRO promotion breakdown', () => {
@@ -230,7 +230,7 @@ describe('Analytics 360 utils', () => {
 
   it('31 intent keys exclude promotionViews from labels list', () => {
     expect(INTENT_ACTION_KEYS).not.toContain('promotionViews' as never);
-    expect(actionMetricLabel('favorites')).toBe('Добавили в избранное');
+    expect(actionMetricLabel('ru', 'favorites')).toBe('Добавили в избранное');
   });
 
   it('empty dashboard detection', () => {

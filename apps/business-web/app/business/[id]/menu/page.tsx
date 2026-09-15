@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
@@ -18,6 +19,9 @@ import { BusinessShell } from '@/components/business-shell';
 const PAGE_SIZE = 20;
 
 export default function BusinessMenuPage() {
+  const locale = useLocale();
+  const ui = useUi();
+
   const params = useParams<{ id: string }>();
   const businessId = params.id;
   const { token, user, ready, logout, businesses, business, access, error, setError } =
@@ -78,7 +82,7 @@ export default function BusinessMenuPage() {
   useEffect(() => {
     if (!token) return;
     Promise.all([loadPlan(token), loadItems(token, 1, sectionId, search)]).catch((err) =>
-      setError(parseApiError(err)),
+      setError(parseApiError(locale, err)),
     );
   }, [token, businessId, loadPlan, loadItems, sectionId, search, setError]);
 
@@ -104,8 +108,7 @@ export default function BusinessMenuPage() {
     const maxItems = planStatus?.limits.maxServiceItems;
     const total = menuPage?.pagination.total ?? 0;
     if (maxItems != null && total >= maxItems) {
-      setError(
-        `На тарифе «${planStatus?.catalog.nameRu ?? ''}» можно опубликовать до ${maxItems} товаров и услуг. Улучшите тариф или удалите позиции.`,
+      setError(ui.____0385b6,
       );
       return;
     }
@@ -125,7 +128,7 @@ export default function BusinessMenuPage() {
     await loadItems(token, 1, nextSectionId, nextSearch);
   }
 
-  if (!ready || !token) return <p className="page-content">Загрузка…</p>;
+  if (!ready || !token) return <p className="page-content">{ui.text_89d69a}</p>;
 
   const sections: ManageMenuSection[] = menuPage?.sections ?? [];
   const items = menuPage?.items ?? [];
@@ -143,12 +146,10 @@ export default function BusinessMenuPage() {
     >
       <header className="page-header">
         <div>
-          <h1>Товары и услуги</h1>
-          <p className="page-header-meta">Группы и позиции для клиентов в приложении</p>
+          <h1>{ui.ownerPermissionCatalogEdit}</h1>
+          <p className="page-header-meta">{ui.____091ab2}</p>
         </div>
-        <Link href="/dashboard" className="btn">
-          ← Обзор
-        </Link>
+        <Link href="/dashboard" className="btn">{ui.text_76e286}</Link>
       </header>
 
       {error && <div className="alert alert-error">{error}</div>}
@@ -172,40 +173,36 @@ export default function BusinessMenuPage() {
 
       <div style={{ display: 'grid', gap: 18, maxWidth: 920 }}>
         <form onSubmit={createGroup} className="form-card form-grid">
-          <h2 style={{ margin: 0 }}>Новая группа</h2>
+          <h2 style={{ margin: 0 }}>{ui.__fb56a2}</h2>
           <input
             value={groupTitle}
             onChange={(e) => setGroupTitle(e.target.value)}
-            placeholder="Например: Горячие блюда, Стрижка"
+            placeholder={ui.____9c14d6}
           />
-          <button type="submit" className="btn btn-primary">
-            Добавить группу
-          </button>
+          <button type="submit" className="btn btn-primary">{ui.__44e6ac}</button>
         </form>
 
         <form onSubmit={createItem} className="form-card form-grid">
-          <h2 style={{ margin: 0 }}>Новая позиция</h2>
+          <h2 style={{ margin: 0 }}>{ui.__a1281f}</h2>
           <input
             value={itemTitle}
             onChange={(e) => setItemTitle(e.target.value)}
-            placeholder="Название"
+            placeholder={ui.text_602680}
           />
           <input
             value={itemPrice}
             onChange={(e) => setItemPrice(e.target.value)}
-            placeholder="Цена, например 2500"
+            placeholder={ui.__2500_f917c1}
           />
           <select value={itemGroupId} onChange={(e) => setItemGroupId(e.target.value)}>
-            <option value="">Без группы</option>
+            <option value="">{ui.__8f4ecc}</option>
             {sections.map((g) => (
               <option key={g.id} value={g.id}>
                 {g.title}
               </option>
             ))}
           </select>
-          <button type="submit" className="btn btn-primary">
-            Добавить позицию
-          </button>
+          <button type="submit" className="btn btn-primary">{ui.__430244}</button>
         </form>
 
         <section className="form-card">
@@ -218,11 +215,11 @@ export default function BusinessMenuPage() {
               marginBottom: 16,
             }}
           >
-            <h2 style={{ margin: 0, flex: '1 1 200px' }}>Позиции</h2>
+            <h2 style={{ margin: 0, flex: '1 1 200px' }}>{ui.text_3f4e8c}</h2>
             <input
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Найти товар или услугу"
+              placeholder={ui.____262747}
               style={{ minWidth: 220, flex: '1 1 220px' }}
             />
             <button
@@ -233,14 +230,14 @@ export default function BusinessMenuPage() {
                 void applyFilters(sectionId, searchInput.trim());
               }}
             >
-              Найти
+              {ui.text_findShort}
             </button>
           </div>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
             <FilterChip
               active={!sectionId}
-              label="Все"
+              label={ui.text_984bf1}
               onClick={() => {
                 setSectionId('');
                 void applyFilters('', search);
@@ -248,7 +245,7 @@ export default function BusinessMenuPage() {
             />
             <FilterChip
               active={sectionId === 'uncategorized'}
-              label="Без группы"
+              label={ui.__8f4ecc}
               onClick={() => {
                 setSectionId('uncategorized');
                 void applyFilters('uncategorized', search);
@@ -268,9 +265,9 @@ export default function BusinessMenuPage() {
           </div>
 
           {loadingItems && items.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)' }}>Загрузка позиций…</p>
+            <p style={{ color: 'var(--text-muted)' }}>{ui.__259ff5}</p>
           ) : items.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)' }}>Позиции не найдены</p>
+            <p style={{ color: 'var(--text-muted)' }}>{ui.___84d683}</p>
           ) : (
             <>
               {items.map((item) => (
@@ -278,7 +275,7 @@ export default function BusinessMenuPage() {
                   key={item.id}
                   title={item.title}
                   price={item.price}
-                  sectionLabel={menuSectionLabel(item.sectionId, sections)}
+                  sectionLabel={menuSectionLabel(locale, item.sectionId, sections)}
                   onDelete={async () => {
                     if (!token) return;
                     await ownerApi.deleteMenuItem(token, item.id);
@@ -288,8 +285,13 @@ export default function BusinessMenuPage() {
               ))}
               {pagination && (
                 <p style={{ marginTop: 12, color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                  Показано {items.length} из {pagination.total}
-                  {pagination.totalPages > 1 && ` · страница ${pagination.page} / ${pagination.totalPages}`}
+                  {ui.text_menuShownCount
+                    .replace('${shown}', String(items.length))
+                    .replace('${total}', String(pagination.total))}
+                  {pagination.totalPages > 1 &&
+                    ui.text_f0e9ac
+                      .replace('${pagination.page}', String(pagination.page))
+                      .replace('${pagination.totalPages}', String(pagination.totalPages))}
                 </p>
               )}
               {pagination && hasMoreMenuPages(pagination.page, pagination.totalPages) && (
@@ -303,7 +305,7 @@ export default function BusinessMenuPage() {
                     void loadItems(token, pagination.page + 1, sectionId, search, true);
                   }}
                 >
-                  {loadingItems ? 'Загрузка…' : 'Показать ещё'}
+                  {loadingItems ? ui.text_89d69a : ui.__e747ec}
                 </button>
               )}
             </>
@@ -312,7 +314,7 @@ export default function BusinessMenuPage() {
 
         {sections.length > 0 && (
           <section className="form-card">
-            <h2 style={{ marginTop: 0 }}>Управление группами</h2>
+            <h2 style={{ marginTop: 0 }}>{ui.__c50655}</h2>
             {sections.map((section) => (
               <div
                 key={section.id}
@@ -329,7 +331,7 @@ export default function BusinessMenuPage() {
                   <strong>{section.title}</strong>
                   <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
                     {section.itemCount} поз.
-                    {!section.isActive && ' · скрыта'}
+                    {!section.isActive && ui.text_d24286}
                   </p>
                 </div>
                 <button
@@ -342,7 +344,7 @@ export default function BusinessMenuPage() {
                     await reloadAll();
                   }}
                 >
-                  Удалить группу
+                  {ui.text_deleteGroup}
                 </button>
               </div>
             ))}
@@ -388,6 +390,7 @@ function MenuItemRow({
   sectionLabel: string;
   onDelete: () => void;
 }) {
+  const ui = useUi();
   return (
     <div
       className="promo-item"
@@ -400,9 +403,7 @@ function MenuItemRow({
           {price ? ` · ${price} ₸` : ''}
         </p>
       </div>
-      <button type="button" className="btn btn-sm" onClick={onDelete}>
-        Удалить
-      </button>
+      <button type="button" className="btn btn-sm" onClick={onDelete}>{ui.text_ed2bbf}</button>
     </div>
   );
 }

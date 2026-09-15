@@ -1,5 +1,6 @@
 'use client';
 
+import { useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
 import { BusinessRow, myBusinessRows, ownerApi } from '@/lib/api';
@@ -7,6 +8,8 @@ import { useAuth } from '@/lib/use-auth';
 import { BusinessShell, useSelectedBusiness } from '@/components/business-shell';
 
 export default function SettingsPage() {
+  const ui = useUi();
+
   const { token, user, ready, logout } = useAuth();
   const [businesses, setBusinesses] = useState<BusinessRow[]>([]);
   const business = useSelectedBusiness(businesses);
@@ -35,7 +38,7 @@ export default function SettingsPage() {
         name: name.trim() || undefined,
       });
       setName(updated.name ?? '');
-      setMessage('Имя аккаунта сохранено');
+      setMessage(ui.___6b48a6);
     } catch (err) {
       setError(String(err));
     } finally {
@@ -43,7 +46,7 @@ export default function SettingsPage() {
     }
   }
 
-  if (!ready || !token) return <p className="page-content">Загрузка…</p>;
+  if (!ready || !token) return <p className="page-content">{ui.text_89d69a}</p>;
 
   return (
     <BusinessShell
@@ -55,88 +58,66 @@ export default function SettingsPage() {
     >
       <header className="page-header">
         <div>
-          <h1>Настройки</h1>
-          <p className="page-header-meta">Аккаунт и управление заведением</p>
+          <h1>{ui.ownerNavSettings}</h1>
+          <p className="page-header-meta">{ui.____c8085a}</p>
         </div>
-        <Link href="/dashboard" className="btn">
-          ← На главную
-        </Link>
+        <Link href="/dashboard" className="btn">{ui.__65f9d8}</Link>
       </header>
 
       {error && <div className="alert alert-error">{error}</div>}
       {message && <div className="alert alert-success">{message}</div>}
 
       <section className="form-card" style={{ maxWidth: 560, marginBottom: 16 }}>
-        <h3 style={{ marginTop: 0 }}>Аккаунт</h3>
+        <h3 style={{ marginTop: 0 }}>{ui.text_a1ceab}</h3>
         <form onSubmit={saveAccount} className="form-grid">
-          <label>
-            Телефон
-            <input value={user?.phone ?? 'Телефон не указан'} readOnly disabled />
+          <label>{ui.text_2928e1}<input value={user?.phone ?? ui.___68cbb0} readOnly disabled />
           </label>
-          <label>
-            Имя владельца
-            <input
+          <label>{ui.__2ab419}<input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Как отображать в кабинете"
+              placeholder={ui.____bf2df1}
             />
           </label>
           <div>
             <button type="submit" className="btn btn-primary" disabled={saving}>
-              {saving ? 'Сохранение…' : 'Сохранить'}
+              {saving ? ui.text_73dba4 : ui.text_74ea58}
             </button>
           </div>
         </form>
       </section>
 
       <section className="form-card" style={{ maxWidth: 560, marginBottom: 16 }}>
-        <h3 style={{ marginTop: 0 }}>Заведение</h3>
+        <h3 style={{ marginTop: 0 }}>{ui.text_4e3e1b}</h3>
         {business ? (
           <>
-            <p style={{ margin: '0 0 12px', color: 'var(--text-muted)' }}>
-              Редактируйте карточку, часы работы и контакты в профиле заведения.
-            </p>
+            <p style={{ margin: '0 0 12px', color: 'var(--text-muted)' }}>{ui.____6982ec}</p>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <Link href={`/business/${business.id}`} className="btn btn-primary">
-                Профиль заведения
-              </Link>
-              <Link href={`/business/${business.id}/media`} className="btn">
-                Фото и видео
-              </Link>
+              <Link href={`/business/${business.id}`} className="btn btn-primary">{ui.__a459d5}</Link>
+              <Link href={`/business/${business.id}/media`} className="btn">{ui.___c89390}</Link>
             </div>
           </>
         ) : (
           <>
-            <p style={{ margin: '0 0 12px', color: 'var(--text-muted)' }}>
-              У вас пока нет бизнеса. Подайте заявку — после модерации откроется кабинет.
-            </p>
-            <Link href="/onboarding" className="btn btn-primary">
-              Добавить или найти бизнес
-            </Link>
+            <p style={{ margin: '0 0 12px', color: 'var(--text-muted)' }}>{ui.____4e15ad}</p>
+            <Link href="/onboarding" className="btn btn-primary">{ui.____3f2e2a}</Link>
           </>
         )}
       </section>
 
       <section className="form-card" style={{ maxWidth: 560 }}>
-        <h3 style={{ marginTop: 0 }}>Безопасность</h3>
+        <h3 style={{ marginTop: 0 }}>{ui.text_3677ee}</h3>
         <p style={{ margin: 0, color: 'var(--text-muted)' }}>
-          Вход через Google, Apple или OTP (если включено). Удаление аккаунта потребителя —
-          в мобильном приложении QalaGo.
+          {ui.text_settingsAuthHint1}
+          {ui.text_settingsAuthHint2}
         </p>
       </section>
 
       <section className="form-card" style={{ maxWidth: 560, marginTop: '1rem' }}>
-        <h3 style={{ marginTop: 0 }}>Правовая информация</h3>
+        <h3 style={{ marginTop: 0 }}>{ui.__288711}</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <Link href="/privacy" target="_blank" rel="noopener noreferrer">
-            Политика конфиденциальности
-          </Link>
-          <Link href="/terms" target="_blank" rel="noopener noreferrer">
-            Условия использования
-          </Link>
-          <Link href="/account-deletion" target="_blank" rel="noopener noreferrer">
-            Удаление аккаунта
-          </Link>
+          <Link href="/privacy" target="_blank" rel="noopener noreferrer">{ui.legalPrivacyLink}</Link>
+          <Link href="/terms" target="_blank" rel="noopener noreferrer">{ui.legalTermsLink}</Link>
+          <Link href="/account-deletion" target="_blank" rel="noopener noreferrer">{ui.legalAccountDeletionLink}</Link>
         </div>
       </section>
     </BusinessShell>

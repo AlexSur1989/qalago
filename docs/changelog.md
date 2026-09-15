@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-15 — Stage 6.10B.5: Business Web RU-KK localization
+
+- **Business Web**: full owner-facing UI RU/KK via `apps/business-web/lib/locale.ts` (~500+ keys), `lib/presentation.ts` mappers, SSR `LocaleProvider` + `qalago_locale` cookie, language switcher in shell topbar and legal chrome.
+- **Guard**: `lib/hardcoded-ui-guard.ts`, `npm run check:ui-strings`, `lib/i18n.test.ts`; legal page bodies (`terms`, `privacy`, `account-deletion`) allowlisted — RU legal text unchanged.
+- **Future**: locale-prefixed URLs + hreflang (Stage 6.11F); KK legal copy; improve KK coverage for generated hash keys; ESLint CLI migration for `npm run lint`.
+
 ## 2026-09-15 — Stage 6.10B.4: Consumer Web RU-KK localization
 
 - **Consumer Web**: centralized `UI_LABELS` in `apps/consumer-web/lib/locale.ts`; SSR `html lang`, localized metadata via `generateMetadata`, `qalago_locale` cookie unchanged.

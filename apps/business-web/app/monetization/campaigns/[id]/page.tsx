@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { Fragment } from 'react';
 import { useParams } from 'next/navigation';
@@ -26,6 +27,9 @@ import {
 } from '@/lib/monetization-utils';
 
 export default function MonetizationCampaignDetailPage() {
+  const locale = useLocale();
+  const ui = useUi();
+
   const params = useParams<{ id: string }>();
   const campaignId = params.id;
   const { token, access } = useMonetizationContext();
@@ -50,7 +54,7 @@ export default function MonetizationCampaignDetailPage() {
       setCampaign(c);
       setAnalytics(a);
     } catch (err) {
-      setError(parseApiError(err));
+      setError(parseApiError(locale, err));
     } finally {
       setLoading(false);
     }
@@ -67,26 +71,26 @@ export default function MonetizationCampaignDetailPage() {
     setInfo(null);
     try {
       await ownerApi.submitMonetizationCreative(token, campaign.creative.id);
-      setInfo('Креатив отправлен на модерацию.');
+      setInfo(ui.____2cb815);
       await load();
     } catch (err) {
-      setError(parseApiError(err));
+      setError(parseApiError(locale, err));
     } finally {
       setSubmitting(false);
     }
   }
 
-  if (loading) return <p style={{ color: 'var(--text-muted)' }}>Загрузка…</p>;
+  if (loading) return <p style={{ color: 'var(--text-muted)' }}>{ui.text_89d69a}</p>;
   if (error && !campaign) {
     return <div className="alert alert-error">{error}</div>;
   }
   if (!campaign) {
-    return <div className="alert alert-error">Кампания не найдена</div>;
+    return <div className="alert alert-error">{ui.___9c4728}</div>;
   }
 
   const isVip = campaign.product?.code === 'VIP_BANNER';
-  const displayStatus = vipCampaignDisplayStatus(campaign);
-  const moderationNotice = isVip ? vipModerationNotice(campaign) : null;
+  const displayStatus = vipCampaignDisplayStatus(locale, campaign);
+  const moderationNotice = isVip ? vipModerationNotice(locale, campaign) : null;
   const showSubmit =
     isVip && canManageAds && canSubmitCreative(campaign.creative) && !submitting;
   const actionEntries = analytics
@@ -97,12 +101,10 @@ export default function MonetizationCampaignDetailPage() {
     <>
       <header className="page-header">
         <div>
-          <h1>{productLabel(campaign.product?.code)}</h1>
+          <h1>{productLabel(locale, campaign.product?.code)}</h1>
           <p className="page-header-meta">Кампания #{campaign.id.slice(0, 8)}</p>
         </div>
-        <Link href="/monetization/campaigns" className="btn btn-ghost btn-sm">
-          ← К списку
-        </Link>
+        <Link href="/monetization/campaigns" className="btn btn-ghost btn-sm">{ui.__41649d}</Link>
       </header>
 
       {error && <div className="alert alert-error">{error}</div>}
@@ -110,7 +112,7 @@ export default function MonetizationCampaignDetailPage() {
 
       <section className="form-card" style={{ marginBottom: 16 }}>
         <dl className="detail-grid">
-          <dt>Статус кампании</dt>
+          <dt>{ui.__733f68}</dt>
           <dd>
             <span className={monetizationStatusClass(campaign.status)}>
               {displayStatus}
@@ -118,29 +120,29 @@ export default function MonetizationCampaignDetailPage() {
           </dd>
           {isVip && campaign.requestedStartAt && (
             <>
-              <dt>Запрошенный старт</dt>
+              <dt>{ui.__a0b38a}</dt>
               <dd>{formatDateTime(campaign.requestedStartAt)}</dd>
             </>
           )}
-          <dt>Фактический период</dt>
-          <dd>{formatEffectivePeriod(campaign)}</dd>
+          <dt>{ui.__ce5cf6}</dt>
+          <dd>{formatEffectivePeriod(locale, campaign)}</dd>
           {campaign.placements && campaign.placements.length > 0 && (
             <>
-              <dt>Размещения</dt>
+              <dt>{ui.text_382d73}</dt>
               <dd>
                 {campaign.placements
-                  .map((p) => placementLabel(p.code, p.name ?? p.nameRu))
+                  .map((p) => placementLabel(locale, p.code, p.name ?? p.nameRu))
                   .join(', ')}
               </dd>
             </>
           )}
           {isVip && campaign.creative && (
             <>
-              <dt>Креатив</dt>
+              <dt>{ui.text_e35653}</dt>
               <dd>
                 {campaign.creative.title ?? campaign.creative.id}{' '}
                 <span className={monetizationStatusClass(campaign.creative.moderationStatus)}>
-                  {creativeStatusLabel(campaign.creative.moderationStatus)}
+                  {creativeStatusLabel(locale, campaign.creative.moderationStatus)}
                 </span>
               </dd>
             </>
@@ -155,7 +157,7 @@ export default function MonetizationCampaignDetailPage() {
               disabled={submitting}
               onClick={() => onSubmitCreative()}
             >
-              {submitting ? 'Отправка…' : 'Отправить на модерацию'}
+              {submitting ? ui.text_a2aa4c : ui.___ff1357}
             </button>
           </div>
         )}
@@ -169,18 +171,18 @@ export default function MonetizationCampaignDetailPage() {
 
       {analytics && (
         <section className="form-card">
-          <h2 style={{ marginTop: 0 }}>Статистика</h2>
+          <h2 style={{ marginTop: 0 }}>{ui.ownerNavAnalytics}</h2>
           <div className="kpi-grid">
             <div className="kpi-card">
               <div className="kpi-label">Показы (served)</div>
               <div className="kpi-value">{analytics.served}</div>
             </div>
             <div className="kpi-card">
-              <div className="kpi-label">Квалиф. показы</div>
+              <div className="kpi-label">{ui.__cd6c16}</div>
               <div className="kpi-value">{analytics.qualifiedImpressions}</div>
             </div>
             <div className="kpi-card">
-              <div className="kpi-label">Клики</div>
+              <div className="kpi-label">{ui.text_98462d}</div>
               <div className="kpi-value">{analytics.clicks}</div>
             </div>
             <div className="kpi-card">
@@ -193,11 +195,11 @@ export default function MonetizationCampaignDetailPage() {
 
           {actionEntries.length > 0 && (
             <>
-              <h3>Действия</h3>
+              <h3>{ui.text_fb3df3}</h3>
               <dl className="detail-grid compact">
                 {actionEntries.map(([type, count]) => (
                   <Fragment key={type}>
-                    <dt>{analyticsActionLabel(type)}</dt>
+                    <dt>{analyticsActionLabel(locale, type)}</dt>
                     <dd>{count}</dd>
                   </Fragment>
                 ))}

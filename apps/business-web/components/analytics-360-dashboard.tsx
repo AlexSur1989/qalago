@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import type { AnalyticsDashboard } from '@/lib/api';
 import {
@@ -18,16 +19,15 @@ import { formatNumber } from '@/lib/business-utils';
 import { ViewsChart } from '@/components/views-chart';
 
 function LockedCard({ label, message }: { label: string; message: string }) {
+  const ui = useUi();
   return (
     <article className="card analytics-locked-card">
       <div className="card-header">
         <h2>{label}</h2>
-        <span className="badge badge-muted">Тариф</span>
+        <span className="badge badge-muted">{ui.ownerNavPlan}</span>
       </div>
       <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>{message}</p>
-      <Link href="/plan" className="btn btn-primary btn-sm">
-        Посмотреть тарифы
-      </Link>
+      <Link href="/plan" className="btn btn-primary btn-sm">{ui.__d94b6a}</Link>
     </article>
   );
 }
@@ -50,12 +50,13 @@ function KpiTile({ label, value }: { label: string; value: string }) {
 }
 
 function HourBars({ items }: { items: Array<{ hour: number; count: number }> }) {
+  const ui = useUi();
   const max = Math.max(...items.map((i) => i.count), 1);
   return (
     <div
       className="hour-bars"
       role="img"
-      aria-label="Популярные часы"
+      aria-label={ui.__badd65}
       style={{ display: 'flex', alignItems: 'flex-end', gap: 4, minHeight: 120, overflowX: 'auto' }}
     >
       {items.map((row) => (
@@ -96,6 +97,9 @@ export function Analytics360Dashboard({
   onExport,
   promotionTitles = {},
 }: Analytics360DashboardProps) {
+  const locale = useLocale();
+  const ui = useUi();
+
   const upgrade = primaryUpgradeMessage(dashboard);
   const empty = dashboardIsEmpty(dashboard);
   const caps = dashboard.capabilities;
@@ -104,11 +108,8 @@ export function Analytics360Dashboard({
   if (empty) {
     return (
       <div className="empty-state">
-        <h2>Статистика появится после первых просмотров карточки</h2>
-        <p style={{ color: 'var(--text-muted)' }}>
-          Когда пользователи начнут открывать вашу карточку в QalaGo, здесь появятся просмотры и
-          другие метрики.
-        </p>
+        <h2>{ui.____de365b}</h2>
+        <p style={{ color: 'var(--text-muted)' }}>{ui.____93b52c}</p>
       </div>
     );
   }
@@ -118,9 +119,7 @@ export function Analytics360Dashboard({
       {upgrade ? (
         <article className="card" style={{ marginBottom: 16, borderColor: 'var(--primary-muted)' }}>
           <p style={{ margin: 0, color: 'var(--text-muted)' }}>{upgrade}</p>
-          <Link href="/plan" className="btn btn-primary btn-sm" style={{ marginTop: 12 }}>
-            Посмотреть тарифы
-          </Link>
+          <Link href="/plan" className="btn btn-primary btn-sm" style={{ marginTop: 12 }}>{ui.__d94b6a}</Link>
         </article>
       ) : null}
 
@@ -132,7 +131,7 @@ export function Analytics360Dashboard({
             disabled={exporting}
             onClick={onExport}
           >
-            {exporting ? 'Формирование…' : 'Экспорт CSV'}
+            {exporting ? ui.text_b5461e : ui._csv_bfd8aa}
           </button>
         ) : isLockedSection(dashboard, 'reportExport') ? (
           <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>
@@ -144,17 +143,17 @@ export function Analytics360Dashboard({
         </span>
       </div>
 
-      <SectionTitle id="overview">Обзор</SectionTitle>
+      <SectionTitle id="overview">{ui.ownerNavOverview}</SectionTitle>
       <section className="kpi-grid">
         {formatMetricValue(overview.views) != null ? (
-          <KpiTile label="Просмотры" value={formatMetricValue(overview.views)!} />
+          <KpiTile label={ui.text_54b0a7} value={formatMetricValue(overview.views)!} />
         ) : null}
         {caps.impressions && formatMetricValue(overview.impressions) != null ? (
-          <KpiTile label="Показы" value={formatMetricValue(overview.impressions)!} />
+          <KpiTile label={ui.text_c25cef} value={formatMetricValue(overview.impressions)!} />
         ) : null}
         {dashboard.actions && formatMetricValue(dashboard.actions.total) != null ? (
           <KpiTile
-            label="Целевые действия"
+            label={ui.__5ddc33}
             value={formatMetricValue(dashboard.actions.total)!}
           />
         ) : null}
@@ -162,31 +161,31 @@ export function Analytics360Dashboard({
           <KpiTile label="CTR" value={formatRate(overview.ctr)} />
         ) : null}
         {caps.conversion && overview.conversionRate != null ? (
-          <KpiTile label="Конверсия в действие" value={formatRate(overview.conversionRate)} />
+          <KpiTile label={ui.___a6b7f9} value={formatRate(overview.conversionRate)} />
         ) : null}
       </section>
 
       {dashboard.actions ? (
         <article className="card" style={{ marginTop: 16 }}>
           <div className="card-header">
-            <h3>Целевые действия по типам</h3>
+            <h3>{ui.____75174f}</h3>
           </div>
           <div className="kpi-grid">
             {intentActionEntries(dashboard.actions).map(({ key, value }) => (
-              <KpiTile key={key} label={actionMetricLabel(key)} value={formatNumber(value)} />
+              <KpiTile key={key} label={actionMetricLabel(locale, key)} value={formatNumber(value)} />
             ))}
           </div>
         </article>
       ) : isLockedSection(dashboard, 'actions') ? (
         <div style={{ marginTop: 16 }}>
           <LockedCard
-            label="Целевые действия"
-            message={lockedSectionMessage(dashboard, 'actions') ?? 'Доступно с тарифа Бизнес'}
+            label={ui.__5ddc33}
+            message={lockedSectionMessage(dashboard, 'actions') ?? ui.____bd15ac}
           />
         </div>
       ) : null}
 
-      <SectionTitle id="trends">Динамика</SectionTitle>
+      <SectionTitle id="trends">{ui.text_e073be}</SectionTitle>
       <article className="card">
         <div className="card-header">
           <h3>Просмотры за {dashboard.effectiveRange.days} дн.</h3>
@@ -204,15 +203,15 @@ export function Analytics360Dashboard({
 
       {dashboard.comparison ? (
         <>
-          <SectionTitle id="comparison">Сравнение</SectionTitle>
+          <SectionTitle id="comparison">{ui.text_20857d}</SectionTitle>
           <article className="card">
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Метрика</th>
-                  <th>Текущий</th>
-                  <th>Предыдущий</th>
-                  <th>Изменение</th>
+                  <th>{ui.text_7ae745}</th>
+                  <th>{ui.text_772843}</th>
+                  <th>{ui.text_786af9}</th>
+                  <th>{ui.text_858580}</th>
                 </tr>
               </thead>
               <tbody>
@@ -231,25 +230,25 @@ export function Analytics360Dashboard({
       ) : isLockedSection(dashboard, 'comparison') ? (
         <div style={{ marginTop: 16 }}>
           <LockedCard
-            label="Сравнение периодов"
-            message={lockedSectionMessage(dashboard, 'comparison') ?? 'Доступно с тарифа Бизнес'}
+            label={ui.__fa3ac6}
+            message={lockedSectionMessage(dashboard, 'comparison') ?? ui.____bd15ac}
           />
         </div>
       ) : null}
 
-      <SectionTitle id="acquisition">Привлечение</SectionTitle>
+      <SectionTitle id="acquisition">{ui.text_66008b}</SectionTitle>
       {caps.trafficSources && dashboard.sources && dashboard.sources.length > 0 ? (
         <article className="card">
           <div className="card-header">
-            <h3>Источники просмотров</h3>
+            <h3>{ui.__2add9a}</h3>
           </div>
           <div className="table-scroll">
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Источник</th>
-                  <th>Просмотры</th>
-                  <th>Доля</th>
+                  <th>{ui.text_7a1120}</th>
+                  <th>{ui.text_54b0a7}</th>
+                  <th>{ui.text_64d5d6}</th>
                 </tr>
               </thead>
               <tbody>
@@ -266,27 +265,27 @@ export function Analytics360Dashboard({
         </article>
       ) : isLockedSection(dashboard, 'sources') ? (
         <LockedCard
-          label="Источники"
-          message={lockedSectionMessage(dashboard, 'sources') ?? 'Доступно с PRO'}
+          label={ui.text_c2a996}
+          message={lockedSectionMessage(dashboard, 'sources') ?? ui.__pro_7effee}
         />
       ) : caps.trafficSources ? (
         <article className="card">
-          <p style={{ color: 'var(--text-muted)' }}>Недостаточно данных по источникам</p>
+          <p style={{ color: 'var(--text-muted)' }}>{ui.____969588}</p>
         </article>
       ) : null}
 
       {caps.searchQueries && dashboard.searchQueries && dashboard.searchQueries.length > 0 ? (
         <article className="card" style={{ marginTop: 16 }}>
           <div className="card-header">
-            <h3>Что ищут пользователи</h3>
+            <h3>{ui.___59bd6e}</h3>
           </div>
           <div className="table-scroll">
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Запрос</th>
-                  <th>Переходов</th>
-                  <th>Доля</th>
+                  <th>{ui.text_67c7f6}</th>
+                  <th>{ui.text_8d35fc}</th>
+                  <th>{ui.text_64d5d6}</th>
                 </tr>
               </thead>
               <tbody>
@@ -303,33 +302,31 @@ export function Analytics360Dashboard({
         </article>
       ) : dashboard.searchQueriesStatus === 'INSUFFICIENT_DATA' ? (
         <article className="card" style={{ marginTop: 16 }}>
-          <p style={{ color: 'var(--text-muted)' }}>Недостаточно данных по поисковым запросам</p>
+          <p style={{ color: 'var(--text-muted)' }}>{ui.____a54708}</p>
         </article>
       ) : isLockedSection(dashboard, 'searchQueries') ? (
         <div style={{ marginTop: 16 }}>
           <LockedCard
-            label="Поисковые запросы"
-            message={lockedSectionMessage(dashboard, 'searchQueries') ?? 'Доступно с PRO'}
+            label={ui.__8c3081}
+            message={lockedSectionMessage(dashboard, 'searchQueries') ?? ui.__pro_7effee}
           />
         </div>
       ) : null}
 
-      {caps.ctr && funnelSteps(dashboard).length >= 2 ? (
+      {caps.ctr && funnelSteps(locale, dashboard).length >= 2 ? (
         <article className="card" style={{ marginTop: 16 }}>
           <div className="card-header">
-            <h3>Воронка (агрегат периода)</h3>
+            <h3>{ui.text_funnelAggregateTitle}</h3>
           </div>
           <ol style={{ margin: 0, paddingLeft: 20 }}>
-            {funnelSteps(dashboard).map((step, i, arr) => (
+            {funnelSteps(locale, dashboard).map((step, i, arr) => (
               <li key={step.label} style={{ marginBottom: 8 }}>
                 {step.label}: <strong>{formatNumber(step.value ?? 0)}</strong>
                 {i < arr.length - 1 ? <span aria-hidden> ↓</span> : null}
               </li>
             ))}
           </ol>
-          <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 12 }}>
-            Показатели рассчитаны по агрегированным данным периода.
-          </p>
+          <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 12 }}>{ui.____88eb85}</p>
           {overview.ctr != null ? (
             <p>CTR (просмотры / показы): {formatRate(overview.ctr)}</p>
           ) : null}
@@ -340,40 +337,38 @@ export function Analytics360Dashboard({
       ) : isLockedSection(dashboard, 'ctr') ? (
         <div style={{ marginTop: 16 }}>
           <LockedCard
-            label="CTR и воронка"
-            message={lockedSectionMessage(dashboard, 'ctr') ?? 'Доступно с PRO'}
+            label={ui.ctr___69b910}
+            message={lockedSectionMessage(dashboard, 'ctr') ?? ui.__pro_7effee}
           />
         </div>
       ) : null}
 
-      <SectionTitle id="audience">Аудитория</SectionTitle>
+      <SectionTitle id="audience">{ui.text_b14e2a}</SectionTitle>
       {dashboard.audience && caps.audience ? (
         <article className="card">
-          <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
-            Доли классифицированных просмотров, не уникальные люди.
-          </p>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>{ui.____7d54b1}</p>
           <div className="kpi-grid" style={{ marginTop: 12 }}>
             <KpiTile
-              label="Новые посетители — доля просмотров"
+              label={ui.____734d85}
               value={formatRate(dashboard.audience.newShare)}
             />
             <KpiTile
-              label="Вернувшиеся — доля просмотров"
+              label={ui.___31acc4}
               value={formatRate(dashboard.audience.returningShare)}
             />
           </div>
         </article>
       ) : isLockedSection(dashboard, 'audience') ? (
         <LockedCard
-          label="Новые и вернувшиеся"
-          message={lockedSectionMessage(dashboard, 'audience') ?? 'Доступно с VIP'}
+          label={ui.___a13f56}
+          message={lockedSectionMessage(dashboard, 'audience') ?? ui.__vip_111d64}
         />
       ) : null}
 
       {caps.visitorMetrics ? (
         <article className="card" style={{ marginTop: 16 }}>
           <div className="card-header">
-            <h3>Посетители и сессии</h3>
+            <h3>{ui.___181b32}</h3>
           </div>
           {overview.uniqueVisitorsPeriodDistinct != null ? (
             <p>
@@ -402,17 +397,15 @@ export function Analytics360Dashboard({
       {dashboard.audienceGeography && dashboard.audienceGeography.length > 0 ? (
         <article className="card" style={{ marginTop: 16 }}>
           <div className="card-header">
-            <h3>География (расстояние)</h3>
+            <h3>{ui.text_geoDistanceTitle}</h3>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
-            Агрегированные корзины расстояния, без точной карты.
-          </p>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>{ui.____60557b}</p>
           <table className="data-table">
             <thead>
               <tr>
-                <th>Корзина</th>
-                <th>Просмотры</th>
-                <th>Доля</th>
+                <th>{ui.text_b7697b}</th>
+                <th>{ui.text_54b0a7}</th>
+                <th>{ui.text_64d5d6}</th>
               </tr>
             </thead>
             <tbody>
@@ -428,13 +421,13 @@ export function Analytics360Dashboard({
         </article>
       ) : dashboard.audienceGeographyStatus === 'INSUFFICIENT_DATA' ? (
         <article className="card" style={{ marginTop: 16 }}>
-          <p style={{ color: 'var(--text-muted)' }}>Недостаточно данных по географии</p>
+          <p style={{ color: 'var(--text-muted)' }}>{ui.____8e7898}</p>
         </article>
       ) : isLockedSection(dashboard, 'audienceGeography') ? (
         <div style={{ marginTop: 16 }}>
           <LockedCard
-            label="География"
-            message={lockedSectionMessage(dashboard, 'audienceGeography') ?? 'Доступно с VIP'}
+            label={ui.text_79b6dc}
+            message={lockedSectionMessage(dashboard, 'audienceGeography') ?? ui.__vip_111d64}
           />
         </div>
       ) : null}
@@ -442,40 +435,39 @@ export function Analytics360Dashboard({
       {dashboard.popularTimes?.byHour && caps.popularTimes ? (
         <article className="card" style={{ marginTop: 16 }}>
           <div className="card-header">
-            <h3>Популярные часы</h3>
+            <h3>{ui.__badd65}</h3>
           </div>
           <HourBars items={dashboard.popularTimes.byHour} />
         </article>
       ) : isLockedSection(dashboard, 'popularTimes') ? (
         <div style={{ marginTop: 16 }}>
           <LockedCard
-            label="Популярные часы"
-            message={lockedSectionMessage(dashboard, 'popularTimes') ?? 'Доступно с VIP'}
+            label={ui.__badd65}
+            message={lockedSectionMessage(dashboard, 'popularTimes') ?? ui.__vip_111d64}
           />
         </div>
       ) : null}
 
-      <SectionTitle id="content">Контент</SectionTitle>
+      <SectionTitle id="content">{ui.text_480107}</SectionTitle>
       {dashboard.promotions && caps.promotionAnalytics ? (
         <article className="card">
           <div className="card-header">
-            <h3>Акции</h3>
+            <h3>{ui.ownerMgmtPromotions}</h3>
           </div>
-          <p>
-            Просмотры акций: <strong>{formatNumber(dashboard.promotions.promotionViews)}</strong>
+          <p>{ui.__3a1b5c}<strong>{formatNumber(dashboard.promotions.promotionViews)}</strong>
           </p>
           {dashboard.promotions.byPromotion && caps.promotionBreakdown ? (
             <table className="data-table" style={{ marginTop: 12 }}>
               <thead>
                 <tr>
-                  <th>Акция</th>
-                  <th>Просмотры</th>
+                  <th>{ui.text_df0d49}</th>
+                  <th>{ui.text_54b0a7}</th>
                 </tr>
               </thead>
               <tbody>
                 {dashboard.promotions.byPromotion.map((row) => (
                   <tr key={row.promotionId}>
-                    <td>{promotionTitles[row.promotionId] ?? `Акция ${row.promotionId.slice(0, 8)}…`}</td>
+                    <td>{promotionTitles[row.promotionId] ?? ui.text_5a65ee}</td>
                     <td>{formatNumber(row.views)}</td>
                   </tr>
                 ))}
@@ -483,29 +475,27 @@ export function Analytics360Dashboard({
             </table>
           ) : null}
           {dashboard.promotions.actionsAvailable === false ? (
-            <p style={{ color: 'var(--text-muted)', marginTop: 8 }}>
-              Действия по акциям пока не измеряются
-            </p>
+            <p style={{ color: 'var(--text-muted)', marginTop: 8 }}>{ui.____c09e09}</p>
           ) : null}
         </article>
       ) : isLockedSection(dashboard, 'promotions') ? (
         <LockedCard
-          label="Акции"
-          message={lockedSectionMessage(dashboard, 'promotions') ?? 'Доступно с тарифа Бизнес'}
+          label={ui.ownerMgmtPromotions}
+          message={lockedSectionMessage(dashboard, 'promotions') ?? ui.____bd15ac}
         />
       ) : null}
 
       {dashboard.catalog && caps.catalogAnalytics ? (
         <article className="card" style={{ marginTop: 16 }}>
           <div className="card-header">
-            <h3>Каталог</h3>
+            <h3>{ui.text_ad5122}</h3>
           </div>
           {dashboard.catalog.items.length > 0 ? (
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Товар / услуга</th>
-                  <th>Просмотры</th>
+                  <th>{ui.__a4efab}</th>
+                  <th>{ui.text_54b0a7}</th>
                 </tr>
               </thead>
               <tbody>
@@ -518,33 +508,31 @@ export function Analytics360Dashboard({
               </tbody>
             </table>
           ) : (
-            <p style={{ color: 'var(--text-muted)' }}>Нет просмотров позиций каталога</p>
+            <p style={{ color: 'var(--text-muted)' }}>{ui.____fdc143}</p>
           )}
           {dashboard.catalog.actionsAvailable === false ? (
-            <p style={{ color: 'var(--text-muted)', marginTop: 8 }}>
-              Действия по позициям каталога пока не измеряются
-            </p>
+            <p style={{ color: 'var(--text-muted)', marginTop: 8 }}>{ui.____7c04ae}</p>
           ) : null}
         </article>
       ) : isLockedSection(dashboard, 'catalog') ? (
         <div style={{ marginTop: 16 }}>
           <LockedCard
-            label="Каталог"
-            message={lockedSectionMessage(dashboard, 'catalog') ?? 'Доступно с VIP'}
+            label={ui.text_ad5122}
+            message={lockedSectionMessage(dashboard, 'catalog') ?? ui.__vip_111d64}
           />
         </div>
       ) : null}
 
       {dashboard.benchmark ? (
         <>
-          <SectionTitle id="benchmark">Сравнение с категорией</SectionTitle>
+          <SectionTitle id="benchmark">{ui.___f2125d}</SectionTitle>
           <article className="card">
             <div className="card-header">
               <h3>{dashboard.benchmark.categoryTitle}</h3>
             </div>
             {dashboard.benchmark.status === 'INSUFFICIENT_DATA' ? (
               <p style={{ color: 'var(--text-muted)' }}>
-                {dashboard.benchmark.message ?? 'Недостаточно данных для сравнения'}
+                {dashboard.benchmark.message ?? ui.____4c8273}
               </p>
             ) : (
               <>
@@ -563,15 +551,15 @@ export function Analytics360Dashboard({
       ) : isLockedSection(dashboard, 'benchmark') ? (
         <div style={{ marginTop: 16 }}>
           <LockedCard
-            label="Сравнение с категорией"
-            message={lockedSectionMessage(dashboard, 'benchmark') ?? 'Доступно с VIP'}
+            label={ui.___f2125d}
+            message={lockedSectionMessage(dashboard, 'benchmark') ?? ui.__vip_111d64}
           />
         </div>
       ) : null}
 
       {dashboard.recommendations && dashboard.recommendations.length > 0 ? (
         <>
-          <SectionTitle id="recommendations">Рекомендации</SectionTitle>
+          <SectionTitle id="recommendations">{ui.text_558e9d}</SectionTitle>
           {dashboard.recommendations.map((item) => (
             <article key={item.id} className="card" style={{ marginBottom: 8 }}>
               <h3>{item.title}</h3>
@@ -582,8 +570,8 @@ export function Analytics360Dashboard({
       ) : isLockedSection(dashboard, 'recommendations') ? (
         <div style={{ marginTop: 16 }}>
           <LockedCard
-            label="Рекомендации"
-            message={lockedSectionMessage(dashboard, 'recommendations') ?? 'Доступно с VIP'}
+            label={ui.text_558e9d}
+            message={lockedSectionMessage(dashboard, 'recommendations') ?? ui.__vip_111d64}
           />
         </div>
       ) : null}

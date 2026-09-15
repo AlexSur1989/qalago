@@ -1,47 +1,29 @@
 'use client';
 
+import { useUi, type UiLabels } from '@/components/locale-provider';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { BusinessRow, myBusinessRows, ownerApi } from '@/lib/api';
 import { useAuth } from '@/lib/use-auth';
 import { BusinessShell, useSelectedBusiness } from '@/components/business-shell';
 
-const FAQ = [
-  {
-    q: 'Как пройти модерацию карточки?',
-    a: 'Заполните профиль: название, адрес, описание, часы работы и минимум 3 фото. После отправки статус изменится на «На модерации» — обычно проверка занимает до 24 часов.',
-  },
-  {
-    q: 'Как ответить на отзыв?',
-    a: 'Откройте «Мой бизнес» → «Отзывы» или быстрые ссылки на обзоре, выберите отзыв и напишите ответ.',
-  },
-  {
-    q: 'Как добавить товары или услуги?',
-    a: 'В разделе «Товары и услуги» создайте группу (например, «Кофе») и добавьте позиции с ценой.',
-  },
-  {
-    q: 'Почему не видно акцию в приложении?',
-    a: 'Акция должна быть «Активна», заведение — опубликовано. На Free/Basic число одновременно активных акций ограничено тарифом — лишние сохраняются в кабинете, но не публикуются.',
-  },
-  {
-    q: 'Чем отличаются тарифы Бесплатный, Бизнес, PRO и VIP?',
-    a: 'Бесплатный — базовые лимиты и базовая статистика. Бизнес и PRO — больше фото, товаров, акций, менеджеров и расширенная аналитика. VIP — максимальные лимиты и Analytics 360 (по мере внедрения). Подписка не повышает органический рейтинг; рекламные размещения покупаются отдельно.',
-  },
-  {
-    q: 'Что будет когда тариф закончится?',
-    a: 'Заведение вернётся на Free: лишние фото, товары и акции останутся в кабинете, но перестанут публиковаться сверх лимита. Уведомление придёт во «Входящие».',
-  },
-  {
-    q: 'Как оплатить рекламу?',
-    a: 'После оформления заказа переведите сумму по реквизитам из этого раздела. Оплата подтверждается администратором вручную — автоматического списания нет.',
-  },
-  {
-    q: 'Как связаться с поддержкой?',
-    a: 'Напишите на support@qalago.kz или в WhatsApp +7 777 000 00 00 (MVP — демо-контакт). Укажите название заведения и номер телефона аккаунта.',
-  },
-];
+function buildFaq(ui: UiLabels) {
+  return [
+    { q: ui.____80ffc1, a: ui.____074f2d },
+    { q: ui.____00d9ba, a: ui.____6928ec },
+    { q: ui.____dd974f, a: ui.____e1b3c0 },
+    { q: ui.____606e8a, a: ui.____e70693 },
+    { q: ui.____ec41b7, a: ui.____9753e3 },
+    { q: ui.____b37257, a: ui.___free_d25e9d },
+    { q: ui.___d0fbec, a: ui.____d990b1 },
+    { q: ui.____dd5e33, a: ui.__support_qalago_264d57 },
+  ];
+}
 
 export default function HelpPage() {
+  const ui = useUi();
+  const faq = useMemo(() => buildFaq(ui), [ui]);
+
   const { token, user, ready, logout } = useAuth();
   const [businesses, setBusinesses] = useState<BusinessRow[]>([]);
   const business = useSelectedBusiness(businesses);
@@ -51,7 +33,7 @@ export default function HelpPage() {
     ownerApi.listMyBusinesses(token).then((res) => setBusinesses(myBusinessRows(res.items))).catch(() => undefined);
   }, [token]);
 
-  if (!ready || !token) return <p className="page-content">Загрузка…</p>;
+  if (!ready || !token) return <p className="page-content">{ui.text_89d69a}</p>;
 
   return (
     <BusinessShell
@@ -63,27 +45,25 @@ export default function HelpPage() {
     >
       <header className="page-header">
         <div>
-          <h1>Помощь</h1>
-          <p className="page-header-meta">Частые вопросы и контакты поддержки</p>
+          <h1>{ui.ownerNavHelp}</h1>
+          <p className="page-header-meta">{ui.____5c9c03}</p>
         </div>
-        <Link href="/dashboard" className="btn">
-          ← На главную
-        </Link>
+        <Link href="/dashboard" className="btn">{ui.__65f9d8}</Link>
       </header>
 
       <section className="form-card" style={{ maxWidth: 720, marginBottom: 16 }}>
-        <h3 style={{ marginTop: 0 }}>Быстрый старт</h3>
+        <h3 style={{ marginTop: 0 }}>{ui.__ef4a34}</h3>
         <ol style={{ margin: 0, paddingLeft: 20, color: 'var(--text-muted)' }}>
-          <li>Заполните профиль заведения и загрузите фото</li>
-          <li>Добавьте меню или услуги</li>
-          <li>Создайте первую акцию</li>
-          <li>Отслеживайте статистику на главной</li>
+          <li>{ui.____2560e2}</li>
+          <li>{ui.____c1ce94}</li>
+          <li>{ui.___a38c01}</li>
+          <li>{ui.____17fe3a}</li>
         </ol>
       </section>
 
       <section className="form-card" style={{ maxWidth: 720 }}>
         <h3 style={{ marginTop: 0 }}>FAQ</h3>
-        {FAQ.map((item) => (
+        {faq.map((item) => (
           <details key={item.q} className="faq-item">
             <summary>{item.q}</summary>
             <p>{item.a}</p>
@@ -92,7 +72,7 @@ export default function HelpPage() {
       </section>
 
       <section className="form-card" style={{ maxWidth: 720, marginTop: 16 }}>
-        <h3 style={{ marginTop: 0 }}>Контакты</h3>
+        <h3 style={{ marginTop: 0 }}>{ui.text_75768c}</h3>
         <p style={{ margin: '0 0 8px' }}>
           Email:{' '}
           <a href="mailto:support@qalago.kz" style={{ color: 'var(--accent)' }}>
@@ -100,7 +80,7 @@ export default function HelpPage() {
           </a>
         </p>
         <p style={{ margin: 0, color: 'var(--text-muted)' }}>
-          WhatsApp: +7 777 000 00 00 · пн–пт 10:00–19:00 (UTC+5)
+          {ui.text_supportWhatsappHours}
         </p>
       </section>
     </BusinessShell>

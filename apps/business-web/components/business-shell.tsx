@@ -1,53 +1,20 @@
 'use client';
 
+import { LocaleSwitcher } from '@/components/locale-switcher';
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { BusinessRow, SELECTED_BUSINESS_KEY, ownerApi } from '@/lib/api';
+import {
+  buildFooterNavItems,
+  buildMainNavItems,
+  type BusinessNavItem,
+  type NavId,
+} from '@/lib/business-access';
 import { getWebAccessToken } from '@/lib/web-auth-token';
 import { businessInitials, statusLabel } from '@/lib/business-utils';
 
-export type NavId =
-  | 'home'
-  | 'profile'
-  | 'menu'
-  | 'promotions'
-  | 'stats'
-  | 'messages'
-  | 'settings'
-  | 'plan'
-  | 'monetization'
-  | 'help'
-  | 'media'
-  | 'reviews'
-  | 'team';
-
-type NavItem = {
-  id: NavId;
-  label: string;
-  icon: string;
-  href?: (businessId: string) => string;
-  soon?: boolean;
-};
-
-const NAV: NavItem[] = [
-  { id: 'home', label: 'Обзор', icon: '🏠', href: () => '/dashboard' },
-  { id: 'profile', label: 'Мой бизнес', icon: '🏪', href: (id) => `/business/${id}` },
-  { id: 'menu', label: 'Товары и услуги', icon: '📋', href: (id) => `/business/${id}/menu` },
-  { id: 'promotions', label: 'Акции', icon: '🏷️', href: (id) => `/business/${id}/promotions` },
-  {
-    id: 'monetization',
-    label: 'Реклама и продвижение',
-    icon: '📣',
-    href: () => '/monetization',
-  },
-  { id: 'stats', label: 'Статистика', icon: '📊', href: () => '/statistics' },
-  { id: 'settings', label: 'Настройки', icon: '⚙️', href: () => '/settings' },
-];
-
-const FOOTER_NAV: NavItem[] = [
-  { id: 'plan', label: 'Тариф', icon: '💎', href: () => '/plan' },
-  { id: 'help', label: 'Помощь', icon: '❓', href: () => '/help' },
-];
+export type { NavId };
 
 type BusinessShellProps = {
   activeNav: NavId;
@@ -57,25 +24,30 @@ type BusinessShellProps = {
   userName?: string;
   onLogout: () => void;
   children: ReactNode;
-  mainNav?: NavItem[];
-  footerNav?: NavItem[];
+  mainNav?: BusinessNavItem[];
+  footerNav?: BusinessNavItem[];
 };
 
 export function BusinessShell({
   activeNav,
   business,
   businesses,
-  cityName = 'Уральск',
+  cityName,
   userName,
   onLogout,
   children,
   mainNav,
   footerNav,
 }: BusinessShellProps) {
+  const locale = useLocale();
+  const ui = useUi();
+  const defaultCity = cityName ?? ui.text_e640a8;
+
   const [collapsed, setCollapsed] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const navItems = mainNav ?? NAV;
-  const footerNavItems = footerNav ?? FOOTER_NAV;
+
+  const navItems = mainNav ?? buildMainNavItems(locale);
+  const footerNavItems = footerNav ?? buildFooterNavItems(locale);
 
   useEffect(() => {
     const token = getWebAccessToken();
@@ -117,7 +89,7 @@ export function BusinessShell({
               <div className="business-card-title">{business.title}</div>
               <div className="business-card-status">
                 <span className="status-dot" />
-                {statusLabel(business.status)}
+                {statusLabel(locale, business.status)}
               </div>
             </div>
           </div>
@@ -169,7 +141,7 @@ export function BusinessShell({
           ))}
           <button type="button" className="collapse-btn" onClick={() => setCollapsed((v) => !v)}>
             <span className="nav-icon">{collapsed ? '»' : '«'}</span>
-            {!collapsed && <span>Свернуть меню</span>}
+            {!collapsed && <span>{ui.shellCollapseMenu}</span>}
           </button>
         </div>
       </aside>
@@ -179,11 +151,12 @@ export function BusinessShell({
           <div className="topbar-left">
             <div className="city-picker">
               <span>📍</span>
-              <span>{business?.city?.nameRu ?? cityName}</span>
+              <span>{business?.city?.nameRu ?? defaultCity}</span>
             </div>
           </div>
           <div className="topbar-right">
-            <Link href="/messages" className="icon-btn" aria-label="Уведомления" title="Сообщения">
+            <LocaleSwitcher locale={locale} labels={ui} />
+            <Link href="/messages" className="icon-btn" aria-label={ui.text_d2ed72} title={ui.ownerNavMessages}>
               🔔
               {unreadCount > 0 && (
                 <span className="badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
@@ -194,12 +167,12 @@ export function BusinessShell({
                 {business ? businessInitials(business.title) : 'Q'}
               </div>
               <div className="user-meta">
-                <strong>{business?.title ?? userName ?? 'Кабинет'}</strong>
-                <span>{userName ?? 'Владелец'}</span>
+                <strong>{business?.title ?? userName ?? ui.text_da78ed}</strong>
+                <span>{userName ?? ui.text_e093c1}</span>
               </div>
             </div>
             <button type="button" className="btn btn-ghost btn-sm" onClick={onLogout}>
-              Выйти
+              {ui.shellLogout}
             </button>
           </div>
         </header>
@@ -215,11 +188,12 @@ function NavLink({
   businessId,
   collapsed,
 }: {
-  item: NavItem;
+  item: BusinessNavItem;
   active: boolean;
   businessId?: string;
   collapsed: boolean;
 }) {
+  const ui = useUi();
   const className = `nav-item${active ? ' active' : ''}${item.soon ? ' disabled' : ''}`;
   const needsBusiness =
     item.href &&
@@ -227,13 +201,15 @@ function NavLink({
 
   if (item.soon || !item.href || (needsBusiness && !businessId)) {
     return (
-      <span className={className} title={item.soon ? 'Скоро' : item.label}>
+      <span className={className} title={item.soon ? ui.text_7d2cdd : item.label}>
         <span className="nav-icon">{item.icon}</span>
         {!collapsed && (
           <>
             <span>{item.label}</span>
             {item.soon && (
-              <span style={{ marginLeft: 'auto', fontSize: '0.7rem', opacity: 0.7 }}>скоро</span>
+              <span style={{ marginLeft: 'auto', fontSize: '0.7rem', opacity: 0.7 }}>
+                {ui.shellSoonBadge}
+              </span>
             )}
           </>
         )}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -22,6 +23,9 @@ function toDateInputValue(date: Date): string {
 }
 
 export default function MonetizationProductDetailPage() {
+  const locale = useLocale();
+  const ui = useUi();
+
   const params = useParams<{ code: string }>();
   const productCode = params.code;
   const router = useRouter();
@@ -61,7 +65,7 @@ export default function MonetizationProductDetailPage() {
         if (promos.items.length > 0) setPromotionId(promos.items[0].id);
       })
       .catch((err) => {
-        if (!cancelled) setError(parseApiError(err));
+        if (!cancelled) setError(parseApiError(locale, err));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -96,7 +100,7 @@ export default function MonetizationProductDetailPage() {
       setQuote(result);
     } catch (err) {
       setQuote(null);
-      setQuoteError(parseApiError(err));
+      setQuoteError(parseApiError(locale, err));
     } finally {
       setQuoteLoading(false);
     }
@@ -138,30 +142,26 @@ export default function MonetizationProductDetailPage() {
     router.push(`/monetization/checkout?${checkoutParams}`);
   }
 
-  if (loading) return <p style={{ color: 'var(--text-muted)' }}>Загрузка…</p>;
+  if (loading) return <p style={{ color: 'var(--text-muted)' }}>{ui.text_89d69a}</p>;
   if (error || !product) {
-    return <div className="alert alert-error">{error ?? 'Продукт не найден'}</div>;
+    return <div className="alert alert-error">{error ?? ui.___f3511d}</div>;
   }
 
   return (
     <>
       <header className="page-header">
         <div>
-          <h1>{productLabel(product.code)}</h1>
+          <h1>{productLabel(locale, product.code)}</h1>
           <p className="page-header-meta">{product.description ?? business.title}</p>
         </div>
-        <Link href="/monetization/products" className="btn btn-ghost btn-sm">
-          ← К каталогу
-        </Link>
+        <Link href="/monetization/products" className="btn btn-ghost btn-sm">{ui.__2ea91d}</Link>
       </header>
 
       <div className="checkout-layout">
         <section className="form-card">
-          <h2 style={{ marginTop: 0 }}>Параметры</h2>
+          <h2 style={{ marginTop: 0 }}>{ui.text_2c34bf}</h2>
 
-          <label className="field-label">
-            Длительность
-            <div className="radio-row">
+          <label className="field-label">{ui.text_ffb605}<div className="radio-row">
               {product.durations.map((d, idx) => (
                 <label key={idx} className="radio-row-item">
                   <input
@@ -170,15 +170,13 @@ export default function MonetizationProductDetailPage() {
                     checked={durationIndex === idx}
                     onChange={() => setDurationIndex(idx)}
                   />
-                  {formatDuration(d.durationDays ?? null, d.durationHours ?? null)}
+                  {formatDuration(locale, d.durationDays ?? null, d.durationHours ?? null)}
                 </label>
               ))}
             </div>
           </label>
 
-          <label className="field-label">
-            Дата начала
-            <input
+          <label className="field-label">{ui.__de315a}<input
               type="date"
               value={desiredStartAt}
               onChange={(e) => setDesiredStartAt(e.target.value)}
@@ -187,11 +185,11 @@ export default function MonetizationProductDetailPage() {
 
           {isPromotedPromotion && (
             <label className="field-label">
-              Акция для продвижения
+              {ui.text_promoForAds}
               {promotions.length === 0 ? (
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
                   Нет активных акций.{' '}
-                  <Link href={`/business/${business.id}/promotions`}>Создать акцию</Link>
+                  <Link href={`/business/${business.id}/promotions`}>{ui.__8062f8}</Link>
                 </p>
               ) : (
                 <select value={promotionId} onChange={(e) => setPromotionId(e.target.value)}>
@@ -206,10 +204,7 @@ export default function MonetizationProductDetailPage() {
           )}
 
           {isVipBanner && (
-            <div className="alert" style={{ marginTop: 12 }}>
-              Для VIP-баннера нужно загрузить креатив. После оформления заказа баннер отправится
-              на модерацию.
-            </div>
+            <div className="alert" style={{ marginTop: 12 }}>{ui._vip___d83c5c}</div>
           )}
         </section>
 
@@ -226,7 +221,7 @@ export default function MonetizationProductDetailPage() {
               }
               onClick={onContinue}
             >
-              {isVipBanner ? 'Далее: креатив баннера' : 'Перейти к оформлению'}
+              {isVipBanner ? ui.___4e6492 : ui.___2f5efd}
             </button>
           </div>
         </div>

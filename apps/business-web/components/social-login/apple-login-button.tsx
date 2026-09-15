@@ -1,5 +1,6 @@
 'use client';
 
+import { useUi } from '@/components/locale-provider';
 import { useCallback, useEffect, useState } from 'react';
 import {
   businessWebAppleClientId,
@@ -74,6 +75,8 @@ type AppleLoginButtonProps = {
 };
 
 export function AppleLoginButton({ disabled, onAuthorization }: AppleLoginButtonProps) {
+  const ui = useUi();
+
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -133,7 +136,7 @@ export function AppleLoginButton({ disabled, onAuthorization }: AppleLoginButton
       disabled={disabled || !ready}
       onClick={() => void handleClick()}
     >
-      Продолжить с Apple
+      {ui.text_continueWithApple}
     </button>
   );
 }

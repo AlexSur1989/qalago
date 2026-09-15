@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { OwnershipClaimRow, ownerApi } from '@/lib/api';
@@ -8,6 +9,9 @@ import { useAuth } from '@/lib/use-auth';
 import { claimStatusLabel, mapOnboardingError } from '@/lib/onboarding-utils';
 
 export default function OnboardingClaimsPage() {
+  const locale = useLocale();
+  const ui = useUi();
+
   const { token } = useAuth();
   const [items, setItems] = useState<OwnershipClaimRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +24,7 @@ export default function OnboardingClaimsPage() {
     ownerApi
       .listMyClaims(token)
       .then((res) => setItems(res.items))
-      .catch((err: unknown) => setError(mapOnboardingError(String(err))))
+      .catch((err: unknown) => setError(mapOnboardingError(locale, String(err))))
       .finally(() => setLoading(false));
   }, [token]);
 
@@ -29,38 +33,36 @@ export default function OnboardingClaimsPage() {
   }, [load]);
 
   async function cancelClaim(id: string) {
-    if (!token || !window.confirm('Отменить заявку?')) return;
+    if (!token || !window.confirm(ui.__c50c8f)) return;
     setMutatingId(id);
     setError(null);
     try {
       await ownerApi.cancelOwnershipClaim(token, id);
       load();
     } catch (err: unknown) {
-      setError(mapOnboardingError(String(err)));
+      setError(mapOnboardingError(locale, String(err)));
     } finally {
       setMutatingId(null);
     }
   }
 
   return (
-    <OnboardingShell title="Подтверждение прав" subtitle="Заявки на владение существующим бизнесом.">
+    <OnboardingShell title={ui.__618c5e} subtitle={ui.____ad8d65}>
       {error && <div className="alert alert-error">{error}</div>}
-      {loading && <p>Загрузка…</p>}
+      {loading && <p>{ui.text_89d69a}</p>}
       {!loading && items.length === 0 && (
         <div className="empty-state">
-          <p>Заявок на подтверждение пока нет.</p>
-          <Link href="/onboarding/search" className="btn btn-primary">
-            Найти свой бизнес
-          </Link>
+          <p>{ui.____2eeb9c}</p>
+          <Link href="/onboarding/search" className="btn btn-primary">{ui.___612420}</Link>
         </div>
       )}
       {!loading && items.length > 0 && (
         <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 12 }}>
           {items.map((item) => (
             <li key={item.id} className="card card-muted">
-              <strong>{item.business?.title ?? 'Бизнес'}</strong>
+              <strong>{item.business?.title ?? ui.text_1c5009}</strong>
               <p className="muted" style={{ margin: '4px 0' }}>
-                {claimStatusLabel(item.status)}
+                {claimStatusLabel(locale, item.status)}
               </p>
               {item.rejectionReason && <p>Причина: {item.rejectionReason}</p>}
               {item.status === 'PENDING' && (
@@ -70,16 +72,14 @@ export default function OnboardingClaimsPage() {
                   disabled={mutatingId === item.id}
                   onClick={() => cancelClaim(item.id)}
                 >
-                  Отменить
+                  {ui.text_cancelAction}
                 </button>
               )}
             </li>
           ))}
         </ul>
       )}
-      <button type="button" className="btn btn-ghost" style={{ marginTop: 16 }} onClick={load}>
-        Обновить
-      </button>
+      <button type="button" className="btn btn-ghost" style={{ marginTop: 16 }} onClick={load}>{ui.text_dbe544}</button>
     </OnboardingShell>
   );
 }
