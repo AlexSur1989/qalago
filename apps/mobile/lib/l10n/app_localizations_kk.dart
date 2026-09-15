@@ -1206,4 +1206,1486 @@ class AppLocalizationsKk extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get ownerPlanTierFree => 'Тегін';
+
+  @override
+  String get ownerPlanTierBasic => 'Бизнес';
+
+  @override
+  String get ownerPlanTierPremium => 'PRO';
+
+  @override
+  String get ownerPlanTierVip => 'VIP';
+
+  @override
+  String get ownerStatusActive => 'Белсенді';
+
+  @override
+  String get ownerStatusPendingModeration => 'Модерацияда';
+
+  @override
+  String get ownerStatusBlocked => 'Блокталған';
+
+  @override
+  String get ownerPromotionStatusActive => 'Белсенді';
+
+  @override
+  String get ownerPromotionStatusExpired => 'Мерзімі өткен';
+
+  @override
+  String get ownerPromotionFeedHint =>
+      'Қала лентасындағы насихат — жарнамалық өнімдер арқылы';
+
+  @override
+  String get ownerNotificationReviewNew => 'Жаңа пікір';
+
+  @override
+  String get ownerNotificationReviewReply => 'Пікірге жауап';
+
+  @override
+  String get ownerNotificationModeration => 'Модерация';
+
+  @override
+  String get ownerNotificationPromotion => 'Акция';
+
+  @override
+  String get ownerNotificationPlan => 'Тариф';
+
+  @override
+  String get ownerNotificationGeneral => 'Жалпы';
+
+  @override
+  String get ownerKpiViews => 'Қараулар';
+
+  @override
+  String get ownerKpiCalls => 'Қоңыраулар';
+
+  @override
+  String get ownerKpiRoutes => 'Бағыттар';
+
+  @override
+  String get ownerKpiFavorites => 'Таңдаулылар';
+
+  @override
+  String get ownerAnalyticsFavorites => 'Таңдаулыларға';
+
+  @override
+  String ownerAnalyticsDeltaPositive(int percent) {
+    return 'Алдыңғы кезеңге қатысты +$percent%';
+  }
+
+  @override
+  String ownerAnalyticsDeltaNegative(int percent) {
+    return 'Алдыңғы кезеңге қатысты $percent%';
+  }
+
+  @override
+  String get ownerAnalyticsDeltaZero => 'Алдыңғы кезенге қатысты 0%';
+
+  @override
+  String get ownerAnalyticsUpgradeActions => '«Бизнес» тарифінде қолжетімді';
+
+  @override
+  String get ownerAnalyticsUpgradeSources =>
+      'Көздер, іздеу сұраулары және CTR PRO тарифінде';
+
+  @override
+  String get ownerAnalyticsUpgradeAudience => 'Analytics 360 VIP тарифінде';
+
+  @override
+  String get ownerPermissionProfileEdit => 'Профильді өңдеу';
+
+  @override
+  String get ownerPermissionHoursEdit => 'Жұмыс уақыты';
+
+  @override
+  String get ownerPermissionCatalogEdit => 'Тауарлар мен қызметтер';
+
+  @override
+  String get ownerPermissionPhotosEdit => 'Фото және галерея';
+
+  @override
+  String get ownerPermissionPromotionsEdit => 'Акциялар';
+
+  @override
+  String get ownerPermissionReviewsReply => 'Пікірлерге жауап';
+
+  @override
+  String get ownerPermissionAnalyticsView => 'Статистиканы көру';
+
+  @override
+  String get ownerPermissionAnalyticsExport => 'Статистиканы экспорттау';
+
+  @override
+  String get ownerPermissionAdsManage => 'Жарнама және насихат';
+
+  @override
+  String get ownerPermissionPaymentsView => 'Төлемдерді көру';
+
+  @override
+  String get ownerMembershipStatusActive => 'Белсенді';
+
+  @override
+  String get ownerMembershipStatusSuspended => 'Уақытша тоқтатылған';
+
+  @override
+  String get ownerMembershipStatusRevoked => 'Қолжетімділік алынды';
+
+  @override
+  String get ownerMembershipStatusInvited => 'Шақырылған';
+
+  @override
+  String get ownerPresetManager => 'Басқарушы';
+
+  @override
+  String get ownerPresetManagerDesc => 'Командасыз операциялық қолжетімділік';
+
+  @override
+  String get ownerPresetContent => 'Контент-менеджер';
+
+  @override
+  String get ownerPresetContentDesc => 'Профиль, каталог, фото және акциялар';
+
+  @override
+  String get ownerPresetMarketing => 'Маркетолог';
+
+  @override
+  String get ownerPresetMarketingDesc =>
+      'Акциялар, жарнама және базалық аналитика';
+
+  @override
+  String get ownerPresetAnalytics => 'Аналитик';
+
+  @override
+  String get ownerPresetAnalyticsDesc => 'Статистиканы көру және экспорт';
+
+  @override
+  String ownerPermissionsMore(String head, int count) {
+    return '$head · +$count';
+  }
+
+  @override
+  String get monetizationProductBoost => 'Картаны көтеру';
+
+  @override
+  String get monetizationProductTopCategory => 'TOP санаты';
+
+  @override
+  String get monetizationProductPromotedPromotion => 'Акцияны насихаттау';
+
+  @override
+  String get monetizationProductFeaturedBusiness => 'Танымал орын';
+
+  @override
+  String get monetizationProductVipBanner => 'VIP-бanner';
+
+  @override
+  String get monetizationProductBoostDesc =>
+      'Санатыңызда бизнесіңіздің қосымша көрінуі.';
+
+  @override
+  String get monetizationProductTopCategoryDesc =>
+      'Бизнесіңіз санатыңыздың басым жарнама блогында көрсетіледі.';
+
+  @override
+  String get monetizationProductPromotedPromotionDesc =>
+      'Акцияңыз QalaGo-да қосымша жарнамалық орын алады.';
+
+  @override
+  String get monetizationProductFeaturedBusinessDesc =>
+      'Бизнесіңіз басты бетте қосымша орын алады.';
+
+  @override
+  String get monetizationProductVipBannerDesc =>
+      'QalaGo басты бетіндегі үлкен жарнамалық banner.';
+
+  @override
+  String get monetizationProductDefaultDesc =>
+      'QalaGo-дағы жарнамалық орналасу.';
+
+  @override
+  String get monetizationProductTopCategoryNote =>
+      'Орындар белсенді жарнамадатулар арасында автоматты бөлінеді.';
+
+  @override
+  String get monetizationOrderAwaitingPayment => 'Төлем күтілуде';
+
+  @override
+  String get monetizationOrderPaid => 'Төленген';
+
+  @override
+  String get monetizationOrderRefunded => 'Қайтару';
+
+  @override
+  String get monetizationOrderPartialRefund => 'Ішінара қайтару';
+
+  @override
+  String get monetizationCampaignPendingModeration => 'Модерацияда';
+
+  @override
+  String get monetizationCampaignScheduled => 'Жоспарланған';
+
+  @override
+  String get monetizationCampaignPaused => 'Уақытша тоқтатылған';
+
+  @override
+  String get monetizationCampaignCompleted => 'Аяқталған';
+
+  @override
+  String get monetizationCreativePending => 'Тексеруде';
+
+  @override
+  String get monetizationCreativeApproved => 'Мақұлданған';
+
+  @override
+  String get monetizationAnalyticsCardOpen => 'Карта ашулары';
+
+  @override
+  String get monetizationAnalyticsPromotionOpen => 'Акция ашулары';
+
+  @override
+  String get monetizationPurchaseAvailable => 'Қолжетімді';
+
+  @override
+  String get monetizationPurchaseActive => 'Белсенді';
+
+  @override
+  String get monetizationPurchaseSoldOut => 'Орын жоқ';
+
+  @override
+  String get monetizationActionBuy => 'Сатып алу';
+
+  @override
+  String get monetizationActionContinuePayment => 'Төлемді жалғастыру';
+
+  @override
+  String get monetizationActionRenew => 'Ұзарту';
+
+  @override
+  String get monetizationReasonPendingOrder =>
+      'Бұл орналасуға төленбеген тапсырысыңыз бар.';
+
+  @override
+  String get monetizationReasonConflict =>
+      'Орналасу ағымдағы кестемен сәйкес келмейді.';
+
+  @override
+  String get monetizationReasonAlreadyActive =>
+      'Орналасу қазірдің өзінде белсенді.';
+
+  @override
+  String get monetizationReasonAlreadyScheduled =>
+      'Орналасу қазірдің өзінде жоспарланған.';
+
+  @override
+  String get monetizationReasonTargetPromoted =>
+      'Бұл акция қазірдің өзінде насихатталады.';
+
+  @override
+  String get monetizationReasonCategoryIneligible =>
+      'Санат бұл өнімге сай емес.';
+
+  @override
+  String get monetizationReasonPromotionIneligible =>
+      'Акция насихатқа жарамсыз.';
+
+  @override
+  String get monetizationReasonSoldOut => 'Таңдалған кезеңде бос орын жоқ.';
+
+  @override
+  String get monetizationReasonPackageConflict =>
+      'Пакет компоненттері бос слоттарға сыймайды.';
+
+  @override
+  String get monetizationReasonReservationExpired =>
+      'Орын резерві мерзімі өтті — статусты жаңартып, қайта көріңіз.';
+
+  @override
+  String get monetizationReasonGeneric => 'Әрекет орындалмады.';
+
+  @override
+  String monetizationReasonGenericWithCode(String code) {
+    return 'Әрекет орындалмады ($code).';
+  }
+
+  @override
+  String get monetizationVipModerationNotice =>
+      'VIP-banner модерациядан кейін жарияланады. Төленген кезең banner мақұлданғаннан кейін ғана басталады.';
+
+  @override
+  String get monetizationPackageVipNotice =>
+      'Пакетке VIP-banner кіреді. VIP орналасуын іске қосу үшін bannerді баптап, модерациядан өту керек.';
+
+  @override
+  String get monetizationPackageVipCta => 'VIP-bannerді баптау';
+
+  @override
+  String get monetizationPaymentInfoNotice =>
+      'Төлем расталғаннан кейін насихат автоматты түрде іске қосылады.';
+
+  @override
+  String get monetizationPaymentMethodUnavailable =>
+      'Төлем әдісі төлем сервисі қосылғаннан кейін қолжетімді болады.';
+
+  @override
+  String get monetizationCtrTooltip =>
+      'CTR — жарнама көріністерінен өтулердің үлесі.';
+
+  @override
+  String get ownerInvitationStatusPending => 'Шақыру белсенді';
+
+  @override
+  String get ownerInvitationStatusAccepted => 'Шақыру қабылданған';
+
+  @override
+  String get ownerInvitationStatusRevoked => 'Шақыру кері алынған';
+
+  @override
+  String get ownerInvitationStatusExpired => 'Шақыру мерзімі өткен';
+
+  @override
+  String ownerDurationDays(int count, String unit) {
+    return '$count $unit';
+  }
+
+  @override
+  String ownerDurationHours(int count) {
+    return '$count сағ';
+  }
+
+  @override
+  String get ownerDayUnitOne => 'күн';
+
+  @override
+  String get ownerDayUnitFew => 'күн';
+
+  @override
+  String get ownerDayUnitMany => 'күн';
+
+  @override
+  String get ownerNavOverview => 'Шолу';
+
+  @override
+  String get ownerNavAnalytics => 'Статистика';
+
+  @override
+  String get ownerNavPromote => 'Жарнама және насихат';
+
+  @override
+  String get ownerNavMessages => 'Хабарламалар';
+
+  @override
+  String get ownerNavPlan => 'Тариф';
+
+  @override
+  String get ownerNavTeam => 'Команда';
+
+  @override
+  String get ownerNavSettings => 'Баптаулар';
+
+  @override
+  String get ownerNavHelp => 'Көмек';
+
+  @override
+  String get ownerNavBackToApp => 'QalaGo қосымшасына';
+
+  @override
+  String get ownerBusinessDrawerTitle => 'QalaGo Business';
+
+  @override
+  String get ownerDashboardTitle => 'Бизнес кабинеті';
+
+  @override
+  String get ownerAddBusiness => 'Қосу';
+
+  @override
+  String get ownerBusinessLabel => 'Мекеме';
+
+  @override
+  String ownerWelcome(String title) {
+    return 'Қош келдіңіз, $title!';
+  }
+
+  @override
+  String get ownerNoBusinessesTitle => 'Мекемелер жоқ';
+
+  @override
+  String get ownerNoBusinessesBody =>
+      'Мекемені тіркеңіз — модерациядан кейін QalaGo-да пайда болады.';
+
+  @override
+  String get ownerRegisterBusiness => 'Мекемені тіркеу';
+
+  @override
+  String ownerSummaryWeek(int views, int actions) {
+    return '7 күнде $views қарау · $actions әрекет';
+  }
+
+  @override
+  String ownerDeltaWeek(String delta) {
+    return 'апта: $delta';
+  }
+
+  @override
+  String get ownerViewsChartTitle => '7 күндегі қараулар';
+
+  @override
+  String get ownerTrendsLockedHint =>
+      'Күн бойынша әрекет графигі «Бизнес» тарифі және жоғарысында.';
+
+  @override
+  String get ownerPlanUsageTitle => 'Тарифті пайдалану';
+
+  @override
+  String get ownerProfileCard => 'Профиль';
+
+  @override
+  String ownerProfileCompletion(int percent) {
+    return '$percent% толтырылған';
+  }
+
+  @override
+  String get ownerFillProfile => 'Толтыру';
+
+  @override
+  String get ownerUpgradePlan => 'Жақсарту';
+
+  @override
+  String get ownerActivePromotions => 'Белсенді акциялар';
+
+  @override
+  String get ownerNoActivePromotions => 'Белсенді акциялар жоқ';
+
+  @override
+  String get ownerPromoteCatalogSubtitle =>
+      'VIP-banner, TOP санаттары, акция насихаты және пакеттер';
+
+  @override
+  String get ownerOpenCatalog => 'Каталогты ашу';
+
+  @override
+  String get ownerMyCampaigns => 'Науқандарым';
+
+  @override
+  String get ownerManagementSection => 'Басқару';
+
+  @override
+  String get ownerPreviewCard => 'Картаны алдын ала көру';
+
+  @override
+  String get ownerMgmtMyBusiness => 'Менің бизнесім';
+
+  @override
+  String get ownerMgmtGallery => 'Галерея';
+
+  @override
+  String get ownerMgmtPromotions => 'Акциялар';
+
+  @override
+  String get ownerMgmtReviews => 'Пікірлер';
+
+  @override
+  String ownerErrorWithDetails(String details) {
+    return 'Қате: $details';
+  }
+
+  @override
+  String get ownerSaving => 'Сақталуда…';
+
+  @override
+  String get ownerSubmitting => 'Жіберілуде…';
+
+  @override
+  String get ownerConfirm => 'Растау';
+
+  @override
+  String get ownerRevoke => 'Кері алу';
+
+  @override
+  String get ownerDefaultBusiness => 'Мекеме';
+
+  @override
+  String get ownerDefaultMember => 'Қатысушы';
+
+  @override
+  String get ownerDefaultManager => 'Менеджер';
+
+  @override
+  String get ownerDefaultUser => 'Пайдаланушы';
+
+  @override
+  String get ownerTeamNoAccessTitle => 'Қолжетімділік жоқ';
+
+  @override
+  String get ownerTeamNoAccessBody =>
+      'Команданы тек мекеме иесі басқара алады.';
+
+  @override
+  String get ownerGoHome => 'Басты бетке';
+
+  @override
+  String get ownerInvite => 'Шақыру';
+
+  @override
+  String get ownerTeamMembers => 'Қатысушылар';
+
+  @override
+  String get ownerTeamNoMembers => 'Қатысушылар жоқ';
+
+  @override
+  String get ownerTeamPendingInvites => 'Күтілген шақырулар';
+
+  @override
+  String get ownerTeamNoPendingInvites => 'Күтілген шақырулар жоқ';
+
+  @override
+  String get ownerTeamPlanNoManagers =>
+      'Тариф менеджерлерді қамтамасыз етпейді.';
+
+  @override
+  String get ownerTeamManagerLimit => 'Тарифіңіздегі менеджер лимиті толды.';
+
+  @override
+  String get ownerViewPlans => 'Тарифтерді көру';
+
+  @override
+  String get ownerTeamManagersUnavailable => 'Ағымдағы тарифте менеджерлер жоқ';
+
+  @override
+  String ownerTeamManagersUsage(int used, int limit) {
+    return 'Менеджерлер: $used / $limit';
+  }
+
+  @override
+  String ownerTeamManagersExtra(int active, int pending) {
+    return ' ($active белсенді · $pending күтуде)';
+  }
+
+  @override
+  String get ownerSuspendManagerTitle =>
+      'Менеджер қолжетімділігін уақытша тоқтату керек пе?';
+
+  @override
+  String get ownerSuspendManagerBody =>
+      'Менеджер бизнесді басқаруға уақытша қол жеткізе алмайды.';
+
+  @override
+  String get ownerAccessSuspended => 'Қолжетімділік тоқтатылды';
+
+  @override
+  String get ownerAccessRestored => 'Қолжетімділік қалпына келтірілді';
+
+  @override
+  String get ownerRevokeManagerTitle =>
+      'Менеджер қолжетімділігін алу керек пе?';
+
+  @override
+  String get ownerRevokeManagerBody =>
+      'Менеджер бұл бизнесті енді басқара алмайды.';
+
+  @override
+  String get ownerAccessRevoked => 'Қолжетімділік алынды';
+
+  @override
+  String get ownerEditPermissions => 'Қолжетімділікті өзгерту';
+
+  @override
+  String get ownerSuspend => 'Тоқтату';
+
+  @override
+  String get ownerRemoveAccess => 'Қолжетімділікті алу';
+
+  @override
+  String get ownerRestore => 'Қалпына келтіру';
+
+  @override
+  String get ownerRevokeInviteTitle => 'Шақыруды кері алу керек пе?';
+
+  @override
+  String ownerRevokeInviteBody(String email) {
+    return '$email шақыруын кері алу керек пе?';
+  }
+
+  @override
+  String get ownerInviteRevoked => 'Шақыру кері алынды';
+
+  @override
+  String ownerInviteStatusLine(String status, String expires) {
+    return '$status · $expires дейін';
+  }
+
+  @override
+  String get ownerInvalidEmail => 'Дұрыс email енгізіңіз';
+
+  @override
+  String get ownerSelectPermission => 'Кем дегенде бір рұқсат таңдаңыз';
+
+  @override
+  String get ownerInviteCreated => 'Шақыру жасалды';
+
+  @override
+  String get ownerManagerAdded => 'Менеджер командаға қосылды';
+
+  @override
+  String get ownerInviteManagerTitle => 'Менеджерді шақыру';
+
+  @override
+  String get ownerInviteManagerBody =>
+      'Email және рұқсаттарды көрсетіңіз. Жасалғаннан кейін сілтемені менеджерге жіберіңіз.';
+
+  @override
+  String get ownerAccessPermissions => 'Қолжетімділік рұқсаттары';
+
+  @override
+  String get ownerInviteLinkHint =>
+      'Бұл сілтемені менеджерге жіберіңіз. Ол бір реттік және шектеулі уақытқа жарамды.';
+
+  @override
+  String get ownerLinkCopied => 'Сілтеме көшірілді';
+
+  @override
+  String get ownerCopyLink => 'Сілтемені көшіру';
+
+  @override
+  String get ownerSendInvite => 'Шақыру жіберу';
+
+  @override
+  String get ownerPermissionsUpdated => 'Рұқсаттар жаңартылды';
+
+  @override
+  String get ownerManagerPermissionsTitle => 'Менеджер рұқсаттары';
+
+  @override
+  String get ownerMonetizationTitle => 'Жарнама және насихат';
+
+  @override
+  String get ownerSelectBusinessFirst => 'Алдымен мекемені таңдаңыз';
+
+  @override
+  String get ownerChoosePromotionMethod => 'Насихат тәсілін таңдаңыз';
+
+  @override
+  String get ownerPriceLoadFailed => 'Бағалар алынбады. Қосылуды тексеріңіз.';
+
+  @override
+  String get ownerProductsUnavailable =>
+      'Жарнамалық өнімдер уақытша қолжетімсіз.';
+
+  @override
+  String get ownerReadyPackages => 'Дайын пакеттер';
+
+  @override
+  String get ownerPackagesLoadFailed => 'Пакеттер жүктелмedi.';
+
+  @override
+  String get ownerMyPromotions => 'Насихаттарым';
+
+  @override
+  String get ownerMyOrders => 'Тапсырыстарым';
+
+  @override
+  String get ownerProductTitle => 'Өнім';
+
+  @override
+  String get ownerBusinessNotSelected => 'Мекеме таңдалмаған';
+
+  @override
+  String get ownerPriceFailedShort => 'Бағалар алынбады.';
+
+  @override
+  String get ownerProductNotFound => 'Өнім табылмады';
+
+  @override
+  String get ownerPeriodLabel => 'Кезең';
+
+  @override
+  String get ownerStartLabel => 'Басталуы';
+
+  @override
+  String get ownerStartAfterPayment => 'Төлемнен кейін бірден';
+
+  @override
+  String get ownerPickDate => 'Күн таңдау';
+
+  @override
+  String get ownerSelectDate => 'Күнді таңдаңыз';
+
+  @override
+  String ownerDiscountPercent(String percent) {
+    return 'Жеңілдік $percent%';
+  }
+
+  @override
+  String get ownerGetQuote => 'Құнын алу';
+
+  @override
+  String get ownerQuoteFailed => 'Құны алынбады.';
+
+  @override
+  String get ownerPromotionsLoadFailed => 'Акциялар жүктелмedi.';
+
+  @override
+  String get ownerCreatePromotionFirst => 'Алдымен белсенді акция жасаңыз.';
+
+  @override
+  String get ownerCreatePromotion => 'Акция жасау';
+
+  @override
+  String get ownerSelectPromotion => 'Акция таңдаңыз';
+
+  @override
+  String ownerActiveUntil(String date) {
+    return '$date дейін белсенді';
+  }
+
+  @override
+  String ownerNextAvailableDate(String date) {
+    return 'Ең жақын қолжетімді күн: $date';
+  }
+
+  @override
+  String ownerReservedUntil(String date) {
+    return 'Орын $date дейін резервтелген';
+  }
+
+  @override
+  String ownerPriceFrom(String price) {
+    return '$price бастап';
+  }
+
+  @override
+  String get ownerCostLabel => 'Құны';
+
+  @override
+  String get ownerTotalLabel => 'Барлығы';
+
+  @override
+  String get ownerSlotsOccupied =>
+      'Таңдалған кезеңде жарнама орындары бос емес.';
+
+  @override
+  String get ownerSettingsTitle => 'Баптаулар';
+
+  @override
+  String get ownerAccountSection => 'Аккаунт';
+
+  @override
+  String get ownerPhoneLabel => 'Телефон';
+
+  @override
+  String get ownerPhoneMissing => 'Телефон көрсетілмеген';
+
+  @override
+  String get ownerDisplayNameLabel => 'Иесінің аты';
+
+  @override
+  String get ownerDisplayNameHint => 'Кабинетте қалай көрсетіледі';
+
+  @override
+  String get ownerNameSaved => 'Аты сақталды';
+
+  @override
+  String get ownerBusinessSection => 'Мекеме';
+
+  @override
+  String get ownerBusinessSettingsHint =>
+      'Картаны, уақытты және байланысты профильде өңдеңіз.';
+
+  @override
+  String get ownerGallery => 'Галерея';
+
+  @override
+  String get ownerNoBusinessApply => 'Мекеме жоқ — модерацияға өтінім беріңіз.';
+
+  @override
+  String get ownerRegister => 'Тіркеу';
+
+  @override
+  String get ownerSecuritySection => 'Қауіпсіздік';
+
+  @override
+  String get ownerSecurityHint =>
+      'SMS-код арқылы кіру. Номерді ауыстыру үшін қолдауға хабарласыңыз.';
+
+  @override
+  String get ownerReviewReplySaved => 'Жауап сақталды';
+
+  @override
+  String ownerReviewsTitle(String title) {
+    return 'Пікірлер · $title';
+  }
+
+  @override
+  String get ownerNoReviews => 'Пікірлер әлі жоқ';
+
+  @override
+  String ownerReviewsSummary(int total, String unanswered) {
+    return '$total пікір$unanswered';
+  }
+
+  @override
+  String ownerReviewsUnansweredSuffix(int count) {
+    return ' · $count жауапсыз';
+  }
+
+  @override
+  String ownerYourReply(String reply) {
+    return 'Сіздің жауабыңыз: $reply';
+  }
+
+  @override
+  String get ownerReplyLabel => 'Иесінің жауабы';
+
+  @override
+  String get ownerReplyAction => 'Жауап беру';
+
+  @override
+  String get ownerUpdateReply => 'Жаңарту';
+
+  @override
+  String ownerPromotionLimit(int max) {
+    return 'Белсенді акция лимиті: $max. Тарифті жақсартыңыз.';
+  }
+
+  @override
+  String get ownerNewPromotion => 'Жаңа акция';
+
+  @override
+  String get ownerEditPromotion => 'Акцияны өңдеу';
+
+  @override
+  String get ownerFieldTitle => 'Атауы';
+
+  @override
+  String get ownerFieldDiscount => 'Жеңілдік';
+
+  @override
+  String get ownerFieldDescription => 'Сипаттама';
+
+  @override
+  String get ownerFieldStatus => 'Күйі';
+
+  @override
+  String get ownerPromotionStatusCompleted => 'Аяқталған';
+
+  @override
+  String get ownerCreate => 'Жасау';
+
+  @override
+  String get ownerPromotionCreated => 'Акция жасалды';
+
+  @override
+  String get ownerPromotionUpdated => 'Акция жаңартылды';
+
+  @override
+  String get ownerDeletePromotionTitle => 'Акцияны жою керек пе?';
+
+  @override
+  String ownerDeletePromotionBody(String title) {
+    return '«$title» қалпына келмей жойылады.';
+  }
+
+  @override
+  String get ownerPromotionDeleted => 'Акция жойылды';
+
+  @override
+  String ownerPromotionsTitle(String title) {
+    return 'Акциялар · $title';
+  }
+
+  @override
+  String get ownerNoPromotions => 'Акциялар әлі жоқ';
+
+  @override
+  String get ownerNoPromotionsHint =>
+      'Қонақтар тарту үшін алғашқы акцияны жасаңыз';
+
+  @override
+  String ownerActivePromotionsCount(int active, int max) {
+    return 'Белсенді: $active / $max';
+  }
+
+  @override
+  String get ownerEdit => 'Өңдеу';
+
+  @override
+  String get ownerPlanTitle => 'Тариф';
+
+  @override
+  String get ownerRegisterBusinessFirst => 'Алдымен мекемені тіркеңіз';
+
+  @override
+  String get ownerPlanUpdated => 'Тариф жаңартылды';
+
+  @override
+  String ownerPlanCurrent(String name) {
+    return 'Ағымдағы: $name';
+  }
+
+  @override
+  String get ownerPlanPromoteSubtitle =>
+      'TOP, VIP-banner, пакеттер және статистика';
+
+  @override
+  String get ownerPlanPeriodMonth => 'ай';
+
+  @override
+  String ownerPlanPeriodDays(int days) {
+    return '$days күн';
+  }
+
+  @override
+  String get ownerMenuEmpty => 'Мәзірде позициялар әлі жоқ';
+
+  @override
+  String get ownerMenuOtherGroup => 'Басқа';
+
+  @override
+  String get ownerTeamForbidden => 'Бұл әрекетке рұқсатыңыз жоқ.';
+
+  @override
+  String get ownerTeamNotFound => 'Жазба табылмады.';
+
+  @override
+  String get ownerTeamActionFailed =>
+      'Әрекет орындалмады. Кейінірек қайталап көріңіз.';
+
+  @override
+  String get ownerInviteNotFound => 'Шақыру табылмады немесе сілтеме жарамсыз.';
+
+  @override
+  String get ownerAcceptingInvite => 'Қабылдануда…';
+
+  @override
+  String get ownerAcceptInvite => 'Шақыруды қабылдау';
+
+  @override
+  String ownerGalleryTitle(String title) {
+    return 'Галерея · $title';
+  }
+
+  @override
+  String ownerPhotoLimitSnackbar(int max) {
+    return 'Тариф лимиті: $max фотоға дейін. «Тариф» бөлімінде тарифті жақсартыңыз.';
+  }
+
+  @override
+  String get ownerCoverUpdated => 'Мұқаба жаңартылды';
+
+  @override
+  String get ownerPhotoAdded => 'Фото қосылды';
+
+  @override
+  String ownerUploadError(String details) {
+    return 'Жүктеу қатесі: $details';
+  }
+
+  @override
+  String ownerPhotosUsage(int used, int max, String suffix) {
+    return 'Фото: $used / $max$suffix';
+  }
+
+  @override
+  String get ownerPhotoLimitReached => ' · лимит толды';
+
+  @override
+  String get ownerGalleryEmpty => 'Галерея бос';
+
+  @override
+  String get ownerGalleryEmptyHint =>
+      'Интерьер, тағам немесе қызмет фотосын қосыңыз';
+
+  @override
+  String get ownerCoverLabel => 'Мұқаба';
+
+  @override
+  String get ownerSetCover => 'Мұқаба ретінде орнату';
+
+  @override
+  String get ownerPhotoLabel => 'Фото';
+
+  @override
+  String get ownerEditProfileTitle => 'Мекеме профилі';
+
+  @override
+  String get ownerFieldShortDesc => 'Қысқа сипаттама';
+
+  @override
+  String get ownerFieldFullDesc => 'Толық сипаттама';
+
+  @override
+  String get ownerContactsSection => 'Байланыс';
+
+  @override
+  String get ownerWorkHoursSection => 'Жұмыс уақыты';
+
+  @override
+  String get ownerWorkHoursFormat => 'Формат: 09:00-22:00';
+
+  @override
+  String get ownerWorkHoursWeekdays => 'Дс–Жм';
+
+  @override
+  String get ownerWorkHoursSaturday => 'Сенбі';
+
+  @override
+  String get ownerWorkHoursSunday => 'Жексенбі';
+
+  @override
+  String get ownerRequiredNameAddress => 'Атау мен мекенжайды толтырыңыз';
+
+  @override
+  String get ownerProfileSaved => 'Мекеме профилі сақталды';
+
+  @override
+  String get ownerAnalyticsTitle => 'Статистика';
+
+  @override
+  String get ownerAnalyticsAds => 'Жарнама';
+
+  @override
+  String get ownerAnalyticsLoadFailed =>
+      'Статистика жүктелмedi. Желі мен қайталап көріңіз.';
+
+  @override
+  String ownerAnalyticsPeriodDays(int days) {
+    return '$days күн';
+  }
+
+  @override
+  String get ownerAnalyticsOverview => 'Шолу';
+
+  @override
+  String get ownerAnalyticsTargetActions => 'Мақсатты әрекеттер';
+
+  @override
+  String get ownerAnalyticsAdsStats => 'Жарнама статистикасы';
+
+  @override
+  String get ownerAnalyticsAcquisition => 'Тартулар';
+
+  @override
+  String get ownerAnalyticsSourcesPro => 'Көздер PRO тарифінде';
+
+  @override
+  String get ownerAnalyticsSourcesEmpty => 'Көздер';
+
+  @override
+  String get ownerAnalyticsNotEnoughData => 'Деректер жеткіліксіз';
+
+  @override
+  String get ownerAnalyticsSearchQueries => 'Пайдаланушылар не іздейді';
+
+  @override
+  String get ownerAnalyticsSearchEmpty =>
+      'Іздеу сұрауларын талдауға деректер жеткіліксіз';
+
+  @override
+  String get ownerAnalyticsSearchPro => 'Іздеу сұраулары PRO тарифінде';
+
+  @override
+  String get ownerExportFailed => 'Есеп дайындалмады. Қайталап көріңіз.';
+
+  @override
+  String get ownerExportForbidden => 'Экспорт рөл немесе тарифке қолжетімсіз.';
+
+  @override
+  String get ownerExportCsv => 'CSV экспорт';
+
+  @override
+  String get ownerExportPreparing => 'Дайындалуда…';
+
+  @override
+  String ownerSearchOtherQueries(String count) {
+    return 'Басқа сұраулар — $count';
+  }
+
+  @override
+  String ownerSearchTransitions(String count) {
+    return '$count өту';
+  }
+
+  @override
+  String get ownerSourcesDetailLater =>
+      'Көздердің егжей-тегжейлі атрибуциясы кейінірек.';
+
+  @override
+  String get ownerBenchmarkSection => 'Санатпен салыстыру';
+
+  @override
+  String get ownerBenchmarkNotEnough => 'Салыстыруға деректер әлі жеткіліксіз';
+
+  @override
+  String get ownerRecommendationsSection => 'Ұсыныстар';
+
+  @override
+  String get ownerPackageTitle => 'Пакет';
+
+  @override
+  String get ownerPackageNotFound => 'Пакет табылмады';
+
+  @override
+  String get ownerPackageContents => 'Пакет құрамы';
+
+  @override
+  String get ownerPackageQuoteFailed => 'Пакет құны алынбады.';
+
+  @override
+  String get ownerNoPromotionsForAds => 'Насихатқа белсенді акциялар жоқ.';
+
+  @override
+  String get ownerOrderTitle => 'Тапсырыс';
+
+  @override
+  String get ownerOrderCreated => 'Тапсырыс жасалды';
+
+  @override
+  String get ownerToPay => 'Төлеуге:';
+
+  @override
+  String get ownerRefreshStatus => 'Статусты жаңарту';
+
+  @override
+  String get ownerNoOrders => 'Тапсырыстарыңыз әлі жоқ';
+
+  @override
+  String get ownerOrdersLoadFailed => 'Тапсырыстар жүктелмedi.';
+
+  @override
+  String get ownerOrderNotFound => 'Тапсырыс табылмады.';
+
+  @override
+  String get ownerYourOrder => 'Сіздің тапсырысыңыз';
+
+  @override
+  String get ownerAfterPayment => 'төлемнен кейін';
+
+  @override
+  String get ownerConfirmOrder => 'Тапсырысты растау';
+
+  @override
+  String get ownerOrderCreateFailed => 'Тапсырыс жасалмады.';
+
+  @override
+  String get ownerCampaignsLoadFailed => 'Насихаттар жүктелмedi.';
+
+  @override
+  String get ownerNoCampaigns => 'Белсенді насихаттар жоқ';
+
+  @override
+  String get ownerCampaignGroupActive => 'Белсенді';
+
+  @override
+  String get ownerCampaignGroupScheduled => 'Жоспарланған';
+
+  @override
+  String get ownerCampaignGroupModeration => 'Модерацияда';
+
+  @override
+  String get ownerCampaignGroupCompleted => 'Аяқталған';
+
+  @override
+  String get ownerCampaignGroupOther => 'Басқалар';
+
+  @override
+  String ownerCampaignDaysLeft(int days, String unit) {
+    return '$days $unit қалды';
+  }
+
+  @override
+  String ownerCampaignMetrics(String served, String views, String clicks) {
+    return 'Көрсетулер: $served · Қараулар: $views · Өтулер: $clicks';
+  }
+
+  @override
+  String get ownerCampaignNotFound => 'Науқан табылмады.';
+
+  @override
+  String ownerCampaignPeriod(String range) {
+    return 'Кезең: $range';
+  }
+
+  @override
+  String get ownerCampaignStatsFailed => 'Статистика жүктелмedi.';
+
+  @override
+  String get ownerCampaignStatsPending =>
+      'Көрсетулер басталғаннан кейін статистика пайда болады.';
+
+  @override
+  String get ownerCampaignViews => 'Қараулар';
+
+  @override
+  String get ownerCampaignClicks => 'Өтулер';
+
+  @override
+  String get ownerGotIt => 'Түсінікті';
+
+  @override
+  String get ownerCampaignActions => 'Әрекеттер';
+
+  @override
+  String get ownerVipBannerTitle => 'VIP-banner';
+
+  @override
+  String get ownerVipImageLoadFailed => 'Сурет жүктелмedi.';
+
+  @override
+  String get ownerVipTitleMinLength => 'Тақырып енгізіңіз (кемінде 2 таңба).';
+
+  @override
+  String get ownerVipSaveFailed => 'Banner сақталмады.';
+
+  @override
+  String get ownerVipHeadlineLabel => 'Тақырып';
+
+  @override
+  String get ownerVipHeadlineHint => 'Banner тақырыбы';
+
+  @override
+  String get ownerVipDescriptionOptional => 'Сипаттама (міндетті емес)';
+
+  @override
+  String get ownerVipButtonLabel => 'Батырма мәтіні';
+
+  @override
+  String get ownerVipDefaultButton => 'Толығырақ';
+
+  @override
+  String get ownerVipUploadImage => 'Сурет жүктеу';
+
+  @override
+  String get ownerVipReplaceImage => 'Суретті ауыстыру';
+
+  @override
+  String get ownerHidePreview => 'Алдын ала көруді жасыру';
+
+  @override
+  String get ownerShowPreview => 'Алдын ала көру';
+
+  @override
+  String get ownerContinueToOrder => 'Тапсырысқа өту';
+
+  @override
+  String get ownerAnalyticsCardViews => 'Карточка қараулары';
+
+  @override
+  String get ownerAnalyticsImpressionsLabel => 'Көрсетулер';
+
+  @override
+  String get ownerAnalyticsConversionTitle => 'Әрекетке конверсия';
+
+  @override
+  String get ownerAnalyticsConversionHint =>
+      'Карточканы қарағаннан кейін қоңырау, WhatsApp, бағыт, сайт, Instagram немесе таңдаулыға қосу сияқты мақсатты әрекет жасаған пайдаланушылар үлесі.';
+
+  @override
+  String ownerAnalyticsChartViewsDays(int days) {
+    return '$days күндегі қараулар';
+  }
+
+  @override
+  String ownerAnalyticsChartActionsDays(int days) {
+    return '$days күндегі әрекеттер';
+  }
+
+  @override
+  String ownerAnalyticsFunnelStepImpressions(String count) {
+    return '$count көрсету';
+  }
+
+  @override
+  String ownerAnalyticsFunnelStepViews(String count) {
+    return '$count қарау';
+  }
+
+  @override
+  String ownerAnalyticsFunnelStepActions(String count) {
+    return '$count мақсатты әрекет';
+  }
+
+  @override
+  String get ownerAnalyticsPeriodFunnel => 'Кезеңнің воронкасы';
+
+  @override
+  String ownerAnalyticsConversionLine(String value) {
+    return 'Әрекетке конверсия: $value';
+  }
+
+  @override
+  String get ownerAnalyticsAggregatedNote =>
+      'Көрсеткіштер кезеңнің агрегатталған деректері бойынша есептелген.';
+
+  @override
+  String get ownerAnalyticsVsPreviousPeriod => 'Алдыңғы кезеңге салыстырғанда';
+
+  @override
+  String get ownerAnalyticsPopularHours => 'Танымал уақыт';
+
+  @override
+  String get ownerAnalyticsAudience => 'Аудитория';
+
+  @override
+  String get ownerAnalyticsAudienceSubtitle =>
+      'Карточка қарауларының келуші түрі бойынша үлесі';
+
+  @override
+  String get ownerAnalyticsNewVisitors => 'Жаңа келушілер';
+
+  @override
+  String get ownerAnalyticsReturningVisitors => 'Қайта келгендер';
+
+  @override
+  String get ownerAnalyticsAudienceDistanceEmpty =>
+      'Қашықтық бойынша аудиторияны талдауға деректер жеткіліксіз';
+
+  @override
+  String ownerAnalyticsViewsShare(String share) {
+    return 'Қараулар үлесі: $share';
+  }
+
+  @override
+  String get ownerAnalyticsUniqueVisitors => 'Бірегей келушілер';
+
+  @override
+  String get ownerAnalyticsSessions => 'Сессиялар';
+
+  @override
+  String get ownerAnalyticsDailyUniqueSum =>
+      'Күн бойынша бірегей келушілер жиыны';
+
+  @override
+  String get ownerAnalyticsDailySessionsSum => 'Күн бойынша сессиялар жиыны';
+
+  @override
+  String get ownerAnalyticsDistanceTitle => 'Орынға дейінгі қашықтық';
+
+  @override
+  String get ownerAnalyticsDistanceHint =>
+      'Пайдаланушылардың нақты координаттарынсыз агрегатталған интервалдар.';
+
+  @override
+  String get ownerAnalyticsContentSection => 'Контент';
+
+  @override
+  String ownerAnalyticsPromotionViewsLine(String count) {
+    return 'Акция қараулары: $count';
+  }
+
+  @override
+  String ownerAnalyticsPromotionItemTitle(String id) {
+    return 'Акция · $id';
+  }
+
+  @override
+  String get ownerAnalyticsPromotionActionsNotMeasured =>
+      'Акциялар бойынша әрекеттер әлі өлшенбейді';
+
+  @override
+  String get ownerAnalyticsCatalogSection => 'Каталог';
+
+  @override
+  String ownerAnalyticsCatalogItemTitle(String id) {
+    return 'Позиция · $id';
+  }
+
+  @override
+  String get ownerAnalyticsCatalogItemEmpty => 'Позиция';
+
+  @override
+  String get ownerAnalyticsCatalogActionsNotMeasured =>
+      'Каталог позициялары бойынша әрекеттер әлі өлшенбейді';
+
+  @override
+  String get ownerAnalyticsStatsAfterFirstView =>
+      'Карточканың алғашқы қарауларынан кейін статистика пайда болады.';
+
+  @override
+  String get ownerAnalyticsSegmentViews => 'Қараулар';
+
+  @override
+  String get ownerAnalyticsSegmentActions => 'Әрекеттер';
+
+  @override
+  String get ownerHelpQuickStart => 'Жылдам бастау';
+
+  @override
+  String get ownerHelpStep1 => '1. Профильді толтырып, фото жүктеңіз';
+
+  @override
+  String get ownerHelpStep2 => '2. Мәзір немесе қызметтер қосыңыз';
+
+  @override
+  String get ownerHelpStep3 => '3. Алғашқы акция жасаңыз';
+
+  @override
+  String get ownerHelpStep4 => '4. Негізгі беттегі статистиканы қараңыз';
+
+  @override
+  String get ownerHelpPlansPromote => 'Тарифтер мен насихат';
+
+  @override
+  String get ownerTeamInvitationTitle => 'Командға шақыру';
+
+  @override
+  String ownerInvitationForEmail(String email) {
+    return 'Кімге: $email';
+  }
+
+  @override
+  String get ownerMenuNewGroup => 'Жаңа топ';
+
+  @override
+  String get ownerMenuEditGroup => 'Топты өңдеу';
+
+  @override
+  String get ownerMenuGroupNameLabel => 'Топ атауы *';
+
+  @override
+  String get ownerMenuGroupNameHint => 'Мысалы: Ыстық тағамдар, Шаш кесу';
+
+  @override
+  String get ownerMenuNewItem => 'Жаңа позиция';
+
+  @override
+  String get ownerMenuGroupField => 'Топ';
+
+  @override
+  String get ownerMenuNoGroup => 'Топсыз';
+
+  @override
+  String get ownerMenuPriceLabel => 'Баға (₸)';
+
+  @override
+  String ownerCatalogServicesTitle(String title) {
+    return 'Тауарлар мен қызметтер · $title';
+  }
+
+  @override
+  String get ownerMenuAddGroup => 'Топ';
+
+  @override
+  String get ownerMenuAddItem => 'Позиция';
+
+  @override
+  String get ownerMenuNoSection => 'Бөлімсіз';
+
+  @override
+  String get ownerMenuHideItem => 'Жасыру';
+
+  @override
+  String get ownerMenuShowItem => 'Көрсету';
+
+  @override
+  String get ownerPlanPurchaseUnavailable => 'Сатып алу қолжетімсіз';
+
+  @override
+  String get ownerPlanGoToAds => 'Жарнамаға өту';
+
+  @override
+  String ownerScheduledRange(String start, String end) {
+    return '$start — $end';
+  }
 }

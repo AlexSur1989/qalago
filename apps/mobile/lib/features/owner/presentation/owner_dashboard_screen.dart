@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/rbac/business_access.dart';
@@ -11,16 +12,17 @@ import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../owner_utils.dart';
+import '../utils/owner_l10n.dart';
 import '../providers/owner_providers.dart';
 import 'widgets/owner_scaffold.dart';
 import 'widgets/owner_views_chart.dart';
 
-const _kpiConfig = [
-  ('VIEW_BUSINESS', 'Просмотры'),
-  ('CALL_CLICK', 'Звонки'),
-  ('WHATSAPP_CLICK', 'WhatsApp'),
-  ('ROUTE_CLICK', 'Маршруты'),
-  ('FAVORITE_ADD', 'Избранное'),
+const _kpiKeys = [
+  'VIEW_BUSINESS',
+  'CALL_CLICK',
+  'WHATSAPP_CLICK',
+  'ROUTE_CLICK',
+  'FAVORITE_ADD',
 ];
 
 class OwnerDashboardScreen extends ConsumerWidget {
@@ -32,10 +34,10 @@ class OwnerDashboardScreen extends ConsumerWidget {
     final selected = ref.watch(ownerSelectedBusinessProvider);
 
     return OwnerScaffold(
-      title: 'Кабинет бизнеса',
+      title: context.l10n.ownerDashboardTitle,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/owner/create-business'),
-        label: const Text('Добавить'),
+        label: Text(context.l10n.ownerAddBusiness),
         icon: const Icon(Icons.add_business),
       ),
       body: businessesAsync.when(
@@ -68,7 +70,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
                 if (items.length > 1) ...[
                   DropdownButtonFormField<String>(
                     value: businessId,
-                    decoration: const InputDecoration(labelText: 'Заведение'),
+                    decoration: InputDecoration(labelText: context.l10n.ownerBusinessSection),
                     items: items
                         .map(
                           (b) => DropdownMenuItem(
@@ -93,7 +95,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '${ownerStatusLabel(business['status'] as String? ?? '')} · ${model.address}',
+                  '${ownerBusinessStatusLabel(context.l10n, business['status'] as String? ?? '')} · ${model.address}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppTheme.textMuted,
                       ),
@@ -139,20 +141,18 @@ class _EmptyOwnerState extends StatelessWidget {
           children: [
             Icon(Icons.storefront_outlined, size: 64, color: AppTheme.textMuted),
             const SizedBox(height: 16),
-            const Text(
-              'Нет заведений',
+            Text(                context.l10n.ownerNoBusinessesTitle,
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Зарегистрируйте заведение — после модерации оно появится в QalaGo.',
+            Text(                context.l10n.ownerNoBusinessesBody,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
             FilledButton.icon(
               onPressed: onRegister,
               icon: const Icon(Icons.add_business),
-              label: const Text('Зарегистрировать заведение'),
+              label: Text(context.l10n.ownerRegisterBusiness),
             ),
           ],
         ),
@@ -190,7 +190,7 @@ class _DashboardContent extends StatelessWidget {
     final entitlements = plan['entitlements'] as Map<String, dynamic>? ?? {};
     final maxPhotos = limits['maxPhotos'] as int?;
     final maxServiceItems = limits['maxServiceItems'] as int?;
-    final feedHint = ownerPromotionFeedHint(plan);
+    final feedHint = ownerPromotionFeedHint(context.l10n);
     final completion = ownerProfileCompletion(business);
     final totalActions = (summary7['total'] as num?)?.toInt() ?? 0;
     final views = byType7['VIEW_BUSINESS'] ?? 0;
@@ -207,10 +207,11 @@ class _DashboardContent extends StatelessWidget {
           height: 110,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            itemCount: _kpiConfig.length,
+            itemCount: _kpiKeys.length,
             separatorBuilder: (_, __) => const SizedBox(width: 10),
             itemBuilder: (context, i) {
-              final (key, label) = _kpiConfig[i];
+              final key = _kpiKeys[i];
+              final label = ownerKpiLabel(context.l10n, key);
               final current = byType7[key] ?? 0;
               final previous = prevByType[key] ?? 0;
               final delta = ownerFormatDelta(current, previous);
@@ -256,8 +257,7 @@ class _DashboardContent extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Просмотры за 7 дней',
+                Text(                context.l10n.ownerViewsChartTitle,
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 12),
@@ -265,7 +265,7 @@ class _DashboardContent extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Text(
-                      'График действий по дням доступен на тарифе «Бизнес» и выше.',
+                      context.l10n.ownerTrendsLockedHint,
                       style: TextStyle(color: AppTheme.textMuted, fontSize: 13),
                     ),
                   ),
@@ -281,8 +281,7 @@ class _DashboardContent extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Использование тарифа',
+                Text(                context.l10n.ownerPlanUsageTitle,
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 8),
@@ -309,11 +308,11 @@ class _DashboardContent extends StatelessWidget {
           children: [
             Expanded(
               child: _SideCard(
-                title: 'Профиль',
+                title: context.l10n.ownerProfileCard,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('$completion% заполнено'),
+                    Text(context.l10n.ownerProfileCompletion(completion)),
                     const SizedBox(height: 8),
                     LinearProgressIndicator(value: completion / 100),
                     const SizedBox(height: 10),
@@ -321,7 +320,7 @@ class _DashboardContent extends StatelessWidget {
                       onPressed: () => context.push(
                         '/owner/edit/$businessId?title=$encodedTitle',
                       ),
-                      child: const Text('Заполнить'),
+                      child: Text(context.l10n.ownerFillProfile),
                     ),
                   ],
                 ),
@@ -330,7 +329,7 @@ class _DashboardContent extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: _SideCard(
-                title: 'Тариф',
+                title: context.l10n.ownerPlanTitle,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -341,7 +340,7 @@ class _DashboardContent extends StatelessWidget {
                     const SizedBox(height: 8),
                     OutlinedButton(
                       onPressed: () => context.push('/owner/plan'),
-                      child: const Text('Улучшить'),
+                      child: Text(context.l10n.ownerUpgradePlan),
                     ),
                   ],
                 ),
@@ -359,20 +358,19 @@ class _DashboardContent extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Активные акции',
+                    Text(                context.l10n.ownerActivePromotions,
                       style: TextStyle(fontWeight: FontWeight.w700),
                     ),
                     TextButton(
                       onPressed: () => context.push(
                         '/owner/promotions/$businessId?title=$encodedTitle',
                       ),
-                      child: const Text('Все'),
+                      child: Text(context.l10n.commonAll),
                     ),
                   ],
                 ),
                 if (activePromotions.isEmpty)
-                  Text('Нет активных акций', style: TextStyle(color: AppTheme.textMuted))
+                  Text(context.l10n.ownerNoActivePromotions, style: TextStyle(color: AppTheme.textMuted))
                 else ...[
                   Text(
                     feedHint,
@@ -390,7 +388,7 @@ class _DashboardContent extends StatelessWidget {
                             [
                               if (p.discountText != null && p.discountText!.isNotEmpty)
                                 p.discountText!,
-                              ownerPromotionStatusLabel(p),
+                              ownerPromotionStatusLabelForModel(context.l10n, p),
                             ].join(' · '),
                           ),
                         ),
@@ -408,32 +406,30 @@ class _DashboardContent extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Реклама и продвижение',
+                Text(                context.l10n.ownerMonetizationTitle,
                   style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'VIP-баннер, TOP категории, продвижение акций и пакеты',
+                  context.l10n.ownerPromoteCatalogSubtitle,
                   style: TextStyle(color: AppTheme.textMuted),
                 ),
                 const SizedBox(height: 12),
                 FilledButton(
                   onPressed: () => context.push('/owner/promote'),
-                  child: const Text('Открыть каталог'),
+                  child: Text(context.l10n.ownerOpenCatalog),
                 ),
                 const SizedBox(height: 8),
                 TextButton(
                   onPressed: () => context.push('/owner/monetization/campaigns'),
-                  child: const Text('Мои кампании'),
+                  child: Text(context.l10n.ownerMyCampaigns),
                 ),
               ],
             ),
           ),
         ),
         const SizedBox(height: 16),
-        const Text(
-          'Управление',
+        Text(                context.l10n.ownerManagementSection,
           style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
         ),
         const SizedBox(height: 10),
@@ -446,7 +442,7 @@ class _DashboardContent extends StatelessWidget {
                 BusinessTrafficSource.direct,
               ),
           icon: const Icon(Icons.visibility_outlined),
-          label: const Text('Предпросмотр карточки'),
+          label: Text(context.l10n.ownerPreviewCard),
         ),
       ],
     );
@@ -490,14 +486,14 @@ class _ManagementGrid extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final access = ref.watch(selectedBusinessAccessProvider);
     final items = [
-      (Icons.storefront_outlined, 'Мой бизнес', '/owner/edit/$businessId?title=$encodedTitle'),
-      (Icons.restaurant_menu, 'Товары и услуги', '/owner/menu/$businessId?title=$encodedTitle'),
-      (Icons.photo_library_outlined, 'Галерея', '/owner/gallery/$businessId?title=$encodedTitle'),
-      (Icons.local_offer_outlined, 'Акции', '/owner/promotions/$businessId?title=$encodedTitle'),
-      (Icons.star_outline, 'Отзывы', '/owner/reviews/$businessId?title=$encodedTitle'),
-      (Icons.bar_chart_outlined, 'Статистика', '/owner/analytics/$businessId?title=$encodedTitle'),
+      (Icons.storefront_outlined, context.l10n.ownerMgmtMyBusiness, '/owner/edit/$businessId?title=$encodedTitle'),
+      (Icons.restaurant_menu, context.l10n.ownerPermissionCatalogEdit, '/owner/menu/$businessId?title=$encodedTitle'),
+      (Icons.photo_library_outlined, context.l10n.ownerGallery, '/owner/gallery/$businessId?title=$encodedTitle'),
+      (Icons.local_offer_outlined, context.l10n.ownerMgmtPromotions, '/owner/promotions/$businessId?title=$encodedTitle'),
+      (Icons.star_outline, context.l10n.ownerMgmtReviews, '/owner/reviews/$businessId?title=$encodedTitle'),
+      (Icons.bar_chart_outlined, context.l10n.ownerAnalyticsTitle, '/owner/analytics/$businessId?title=$encodedTitle'),
       if (access != null && isOwner(access))
-        (Icons.groups_outlined, 'Команда', '/owner/team'),
+        (Icons.groups_outlined, context.l10n.ownerNavTeam, '/owner/team'),
     ];
 
     return GridView.count(

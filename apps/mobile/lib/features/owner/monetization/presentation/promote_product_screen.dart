@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -40,9 +41,9 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
   Widget build(BuildContext context) {
     final business = ref.watch(ownerSelectedBusinessProvider);
     if (business == null) {
-      return const OwnerScaffold(
-        title: 'Продукт',
-        body: Center(child: Text('Заведение не выбрано')),
+      return OwnerScaffold(
+        title: context.l10n.ownerProductTitle,
+        body: Center(child: Text(context.l10n.ownerBusinessNotSelected)),
       );
     }
 
@@ -60,14 +61,14 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
       )),
     );
 
-  final title = productTitle(widget.productCode);
+  final title = productTitle(context.l10n, widget.productCode);
 
     return OwnerScaffold(
       title: title,
       body: productsAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
-          message: 'Не удалось получить цены.',
+          message: context.l10n.ownerPriceFailedShort,
           onRetry: () => ref.invalidate(monetizationProductsProvider),
         ),
         data: (products) {
@@ -76,7 +77,7 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
                 orElse: () => null,
               );
           if (product == null) {
-            return const Center(child: Text('Продукт не найден'));
+            return Center(child: Text(context.l10n.ownerProductNotFound));
           }
           if (_selectedDuration == null && product.durations.isNotEmpty) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -117,7 +118,7 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
       children: [
         if (purchaseState != null) ...[
           MonetizationStatusChip(
-            label: purchaseStateLabel(purchaseState.state),
+            label: purchaseStateLabel(context.l10n, purchaseState.state),
             color: campaignStatusColor(
               purchaseState.state == 'PENDING_APPROVAL'
                   ? 'PENDING_MODERATION'
@@ -141,7 +142,7 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
                 '/owner/monetization/orders/${purchaseState.pendingOrderId}',
               ),
               child: Text(
-                purchasePrimaryActionLabel(purchaseState.primaryAction),
+                purchasePrimaryActionLabel(context.l10n, purchaseState.primaryAction),
               ),
             ),
             const SizedBox(height: 16),
@@ -149,13 +150,13 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
           const SizedBox(height: 12),
         ],
         Text(
-          productDescription(widget.productCode),
+          productDescription(context.l10n, widget.productCode),
           style: TextStyle(color: AppTheme.textMuted, height: 1.35),
         ),
         if (isTop) ...[
           const SizedBox(height: 10),
           Text(
-            productTopCategoryNote,
+            productTopCategoryNote(context.l10n),
             style: TextStyle(
               fontSize: 13,
               color: AppTheme.textMuted,
@@ -164,7 +165,7 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
           ),
         ],
         const SizedBox(height: 20),
-        const Text('Период', style: TextStyle(fontWeight: FontWeight.w800)),
+        Text(context.l10n.ownerPeriodLabel, style: TextStyle(fontWeight: FontWeight.w800)),
         const SizedBox(height: 10),
         ...product.durations.map((d) {
           final selected = _selectedDuration == d;
@@ -177,7 +178,7 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
                 _quote = null;
               });
             },
-            title: Text(formatDurationLabel(
+            title: Text(formatDurationLabel(context.l10n, 
               durationDays: d.durationDays,
               durationHours: d.durationHours,
             )),
@@ -186,7 +187,7 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
           );
         }),
         const SizedBox(height: 16),
-        const Text('Начало', style: TextStyle(fontWeight: FontWeight.w800)),
+        Text(context.l10n.ownerStartLabel, style: TextStyle(fontWeight: FontWeight.w800)),
         RadioListTile<bool>(
           value: true,
           groupValue: _startAsap,
@@ -195,7 +196,7 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
             _selectedDate = null;
             _quote = null;
           }),
-          title: const Text('Сразу после оплаты'),
+          title: Text(context.l10n.ownerStartAfterPayment),
         ),
         RadioListTile<bool>(
           value: false,
@@ -204,13 +205,13 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
             _startAsap = false;
             _quote = null;
           }),
-          title: const Text('Выбрать дату'),
+          title: Text(context.l10n.ownerPickDate),
         ),
         if (!_startAsap)
           ListTile(
             title: Text(
               _selectedDate == null
-                  ? 'Выберите дату'
+                  ? context.l10n.ownerSelectDate
                   : formatMonetizationDate(_selectedDate!),
             ),
             trailing: const Icon(Icons.calendar_today),
@@ -268,7 +269,7 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
               color: AppTheme.primaryTint,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Text(vipModerationNotice),
+            child: Text(vipModerationNotice(context.l10n)),
           ),
         ],
         const SizedBox(height: 24),
@@ -307,27 +308,17 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
 
   String _primaryButtonLabel(MonetizationPurchaseState? state, bool hasQuote) {
     if (state?.primaryAction == 'RENEW' && hasQuote) {
-      return purchasePrimaryActionLabel('RENEW');
+      return purchasePrimaryActionLabel(context.l10n, 'RENEW');
     }
     if (state?.primaryAction == 'BUY' && hasQuote) {
-      return purchasePrimaryActionLabel('BUY');
+      return purchasePrimaryActionLabel(context.l10n, 'BUY');
     }
-    return hasQuote ? 'Продолжить' : 'Получить стоимость';
+    return hasQuote ? context.l10n.commonContinue : context.l10n.ownerGetQuote;
   }
 
   String? _purchaseStateDetailLine(MonetizationPurchaseState state) {
-    if (state.state == 'ACTIVE' && state.activeUntil != null) {
-      return 'Активно до ${formatMonetizationDate(state.activeUntil!)}';
-    }
-    if (state.state == 'SCHEDULED' &&
-        state.scheduledStart != null &&
-        state.scheduledEnd != null) {
-      return '${formatMonetizationDate(state.scheduledStart!)} — ${formatMonetizationDate(state.scheduledEnd!)}';
-    }
-    if (state.state == 'SOLD_OUT' && state.nextAvailableAt != null) {
-      return 'Ближайшая доступная дата: ${formatMonetizationDate(state.nextAvailableAt!)}';
-    }
-    return null;
+    final detail = monetizationPurchaseStateDetail(context.l10n, state);
+    return detail.isEmpty ? null : detail;
   }
 
   Future<void> _onContinue({
@@ -399,7 +390,7 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
       final raw = await catalog.fetchMonetizationQuote(body);
       setState(() => _quote = MonetizationQuote.fromJson(raw));
     } catch (e) {
-      setState(() => _quoteError = 'Не удалось получить стоимость.');
+      setState(() => _quoteError = context.l10n.ownerQuoteFailed);
     } finally {
       if (mounted) setState(() => _loadingQuote = false);
     }
@@ -426,7 +417,7 @@ class _PromotionPicker extends ConsumerWidget {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
-          return const Text('Не удалось загрузить акции.');
+          return Text(context.l10n.ownerPromotionsLoadFailed);
         }
         final promotions = (snapshot.data ?? [])
             .where((p) => ownerIsPromotionLiveNow(p))
@@ -435,13 +426,13 @@ class _PromotionPicker extends ConsumerWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Сначала создайте активную акцию.'),
+              Text(context.l10n.ownerCreatePromotionFirst),
               const SizedBox(height: 8),
               OutlinedButton(
                 onPressed: () => context.push(
                   '/owner/promotions/$businessId',
                 ),
-                child: const Text('Создать акцию'),
+                child: Text(context.l10n.ownerCreatePromotion),
               ),
             ],
           );
@@ -449,8 +440,7 @@ class _PromotionPicker extends ConsumerWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Выберите акцию',
+            Text(                context.l10n.ownerSelectPromotion,
               style: TextStyle(fontWeight: FontWeight.w800),
             ),
             ...promotions.map(

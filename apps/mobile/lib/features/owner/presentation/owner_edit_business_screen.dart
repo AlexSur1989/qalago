@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../shared/navigation/navigation_utils.dart';
@@ -99,7 +100,7 @@ class _OwnerEditBusinessScreenState
     final address = _addressController.text.trim();
     if (title.isEmpty || address.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Заполните название и адрес')),
+        SnackBar(content: Text(context.l10n.ownerRequiredNameAddress)),
       );
       return;
     }
@@ -130,14 +131,14 @@ class _OwnerEditBusinessScreenState
       ref.invalidate(featuredBusinessesProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Профиль заведения сохранён')),
+          SnackBar(content: Text(context.l10n.ownerProfileSaved)),
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: $e')),
+          SnackBar(content: Text(context.l10n.ownerErrorWithDetails('$e'))),
         );
       }
     } finally {
@@ -165,41 +166,39 @@ class _OwnerEditBusinessScreenState
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.screen),
             children: [
-              const Text(
-                'Профиль заведения',
+              Text(                context.l10n.ownerEditProfileTitle,
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Название'),
+                decoration: InputDecoration(labelText: context.l10n.ownerFieldTitle),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _shortDescController,
-                decoration: const InputDecoration(labelText: 'Краткое описание'),
+                decoration: InputDecoration(labelText: context.l10n.ownerFieldShortDesc),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Полное описание'),
+                decoration: InputDecoration(labelText: context.l10n.ownerFieldFullDesc),
                 minLines: 3,
                 maxLines: 6,
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _addressController,
-                decoration: const InputDecoration(labelText: 'Адрес'),
+                decoration: InputDecoration(labelText: context.l10n.businessAddress),
               ),
               const SizedBox(height: 20),
-              const Text(
-                'Контакты',
+              Text(                context.l10n.ownerContactsSection,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _phoneController,
-                decoration: const InputDecoration(labelText: 'Телефон'),
+                decoration: InputDecoration(labelText: context.l10n.ownerPhoneLabel),
                 keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: 12),
@@ -216,33 +215,32 @@ class _OwnerEditBusinessScreenState
               const SizedBox(height: 12),
               TextField(
                 controller: _websiteController,
-                decoration: const InputDecoration(labelText: 'Сайт'),
+                decoration: InputDecoration(labelText: context.l10n.businessWebsite),
                 keyboardType: TextInputType.url,
               ),
               const SizedBox(height: 20),
-              const Text(
-                'График работы',
+              Text(                context.l10n.ownerWorkHoursSection,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 8),
               Text(
-                'Формат: 09:00-22:00',
+                context.l10n.ownerWorkHoursFormat,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _weekdaysHoursController,
-                decoration: const InputDecoration(labelText: 'Пн–Пт'),
+                decoration: InputDecoration(labelText: context.l10n.ownerWorkHoursWeekdays),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _saturdayHoursController,
-                decoration: const InputDecoration(labelText: 'Суббота'),
+                decoration: InputDecoration(labelText: context.l10n.ownerWorkHoursSaturday),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _sundayHoursController,
-                decoration: const InputDecoration(labelText: 'Воскресенье'),
+                decoration: InputDecoration(labelText: context.l10n.ownerWorkHoursSunday),
               ),
               const SizedBox(height: 28),
               FilledButton(
@@ -253,7 +251,7 @@ class _OwnerEditBusinessScreenState
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Сохранить'),
+                    : Text(context.l10n.commonSave),
               ),
             ],
           );

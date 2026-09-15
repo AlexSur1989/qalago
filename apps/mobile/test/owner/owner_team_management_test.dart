@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qalago_mobile/l10n/app_localizations.dart';
 import 'package:qalago_mobile/core/rbac/business_access.dart';
 import 'package:qalago_mobile/features/owner/team/business_permission_ui.dart';
 import 'package:qalago_mobile/features/owner/team/team_error_utils.dart';
@@ -105,16 +107,21 @@ void main() {
   });
 
   group('Permission labels and presets', () {
+    late AppLocalizations ru;
+    setUp(() {
+      ru = lookupAppLocalizations(const Locale('ru'));
+    });
+
     test('maps all backend permission enums to RU labels', () {
       for (final permission in BusinessPermission.values) {
-        final label = permissionLabelRu(permission.apiValue);
+        final label = permissionLabel(ru, permission.apiValue);
         expect(label, isNot(permission.apiValue));
         expect(label.isNotEmpty, isTrue);
       }
     });
 
     test('presets align with Business Web ids', () {
-      expect(permissionPresets.map((p) => p.id), [
+      expect(permissionPresets(ru).map((p) => p.id), [
         'manager',
         'content',
         'marketing',
@@ -123,7 +130,7 @@ void main() {
     });
 
     test('summarize permissions truncates long lists', () {
-      final summary = summarizePermissionsRu([
+      final summary = summarizePermissionsRu(ru, [
         'CATALOG_EDIT',
         'PHOTOS_EDIT',
         'PROMOTIONS_EDIT',
@@ -141,6 +148,8 @@ void main() {
   });
 
   group('Team error mapping', () {
+    final ru = lookupAppLocalizations(const Locale('ru'));
+
     test('403 maps to permission message', () {
       final error = DioException(
         requestOptions: RequestOptions(path: '/team'),
@@ -150,7 +159,7 @@ void main() {
         ),
         type: DioExceptionType.badResponse,
       );
-      expect(mapTeamOperationError(error), contains('прав'));
+      expect(mapTeamOperationError(ru, error), contains('прав'));
     });
 
     test('plan limit uses backend message when safe', () {
@@ -166,7 +175,7 @@ void main() {
         ),
         type: DioExceptionType.badResponse,
       );
-      expect(mapTeamOperationError(error), contains('Лимит тарифа'));
+      expect(mapTeamOperationError(ru, error), contains('Лимит тарифа'));
     });
 
     test('does not expose raw DioException text', () {
@@ -174,7 +183,7 @@ void main() {
         requestOptions: RequestOptions(path: '/team'),
         type: DioExceptionType.connectionError,
       );
-      final message = mapTeamOperationError(error);
+      final message = mapTeamOperationError(ru, error);
       expect(isUserFacingTeamMessage(message), isTrue);
       expect(message.contains('DioException'), isFalse);
     });

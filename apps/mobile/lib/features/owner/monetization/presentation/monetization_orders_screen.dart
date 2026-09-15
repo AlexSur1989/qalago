@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -21,20 +22,20 @@ class MonetizationOrdersScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final business = ref.watch(ownerSelectedBusinessProvider);
     if (business == null) {
-      return const OwnerScaffold(
-        title: 'Мои заказы',
-        body: Center(child: Text('Заведение не выбрано')),
+      return OwnerScaffold(
+        title: context.l10n.ownerMyOrders,
+        body: Center(child: Text(context.l10n.ownerBusinessNotSelected)),
       );
     }
     final businessId = business['id'] as String;
     final ordersAsync = ref.watch(ownerMonetizationOrdersProvider(businessId));
 
     return OwnerScaffold(
-      title: 'Мои заказы',
+      title: context.l10n.ownerMyOrders,
       body: ordersAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
-          message: 'Не удалось загрузить заказы.',
+          message: context.l10n.ownerOrdersLoadFailed,
           onRetry: () => ref.invalidate(ownerMonetizationOrdersProvider(businessId)),
         ),
         data: (orders) {
@@ -43,9 +44,9 @@ class MonetizationOrdersScreen extends ConsumerWidget {
               onRefresh: () async =>
                   ref.invalidate(ownerMonetizationOrdersProvider(businessId)),
               child: ListView(
-                children: const [
-                  SizedBox(height: 120),
-                  Center(child: Text('У вас пока нет заказов')),
+                children: [
+                  const SizedBox(height: 120),
+                  Center(child: Text(context.l10n.ownerNoOrders)),
                 ],
               ),
             );
@@ -60,13 +61,13 @@ class MonetizationOrdersScreen extends ConsumerWidget {
                 final order = orders[index];
                 final productName = order.items.isNotEmpty
                     ? order.items.first.productName
-                    : 'Заказ';
+                    : context.l10n.ownerOrderTitle;
                 return Card(
                   margin: const EdgeInsets.only(bottom: 10),
                   child: ListTile(
                     title: Text(order.orderNumber),
                     subtitle: Text(
-                      '$productName\n${formatKztPrice(order.totalAmount)} · ${orderStatusLabel(order.status)}',
+                      '$productName\n${formatKztPrice(order.totalAmount)} · ${orderStatusLabel(context.l10n, order.status)}',
                     ),
                     isThreeLine: true,
                     trailing: Text(
@@ -97,22 +98,22 @@ class MonetizationOrderDetailScreen extends ConsumerWidget {
     final business = ref.watch(ownerSelectedBusinessProvider);
 
     return OwnerScaffold(
-      title: 'Заказ',
+      title: context.l10n.ownerOrderTitle,
       body: orderAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
-          message: 'Заказ не найден.',
+          message: context.l10n.ownerOrderNotFound,
           onRetry: () => ref.invalidate(ownerMonetizationOrderProvider(orderId)),
         ),
         data: (order) {
           final productName =
-              order.items.isNotEmpty ? order.items.first.productName : 'Заказ';
+              order.items.isNotEmpty ? order.items.first.productName : context.l10n.ownerOrderTitle;
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.screen),
             children: [
-              const Text(
-                'Заказ создан',
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 22),
+              Text(
+                context.l10n.ownerOrderCreated,
+                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 22),
               ),
               const SizedBox(height: 12),
               Text('№ ${order.orderNumber}',
@@ -122,12 +123,12 @@ class MonetizationOrderDetailScreen extends ConsumerWidget {
               if (order.items.isNotEmpty &&
                   order.items.first.durationDays != null)
                 Text(
-                  formatDurationLabel(
+                  formatDurationLabel(context.l10n, 
                     durationDays: order.items.first.durationDays,
                   ),
                 ),
               const SizedBox(height: 20),
-              Text('К оплате:', style: TextStyle(color: AppTheme.textMuted)),
+              Text(context.l10n.ownerToPay, style: TextStyle(color: AppTheme.textMuted)),
               Text(
                 formatKztPrice(order.totalAmount),
                 style: const TextStyle(
@@ -138,19 +139,19 @@ class MonetizationOrderDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
               MonetizationStatusChip(
-                label: orderStatusLabel(order.status),
+                label: orderStatusLabel(context.l10n, order.status),
                 color: order.status == 'AWAITING_PAYMENT'
                     ? AppSemanticColors.warning
                     : AppTheme.kzBlue,
               ),
               const SizedBox(height: 24),
-              const Text(
-                paymentInfoNotice,
-                style: TextStyle(height: 1.4),
+              Text(
+                paymentInfoNotice(context.l10n),
+                style: const TextStyle(height: 1.4),
               ),
               const SizedBox(height: 12),
               Text(
-                paymentMethodUnavailableNotice,
+                paymentMethodUnavailableNotice(context.l10n),
                 style: TextStyle(color: AppTheme.textMuted, fontSize: 13),
               ),
               const SizedBox(height: 24),
@@ -165,7 +166,7 @@ class MonetizationOrderDetailScreen extends ConsumerWidget {
                         );
                         ref.invalidate(ownerMonetizationOrderProvider(orderId));
                       },
-                child: const Text('Обновить статус'),
+                child: Text(context.l10n.ownerRefreshStatus),
               ),
             ],
           );

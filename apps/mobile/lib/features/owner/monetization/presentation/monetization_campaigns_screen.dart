@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
+import 'package:qalago_mobile/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -22,9 +24,9 @@ class MonetizationCampaignsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final business = ref.watch(ownerSelectedBusinessProvider);
     if (business == null) {
-      return const OwnerScaffold(
-        title: 'Мои продвижения',
-        body: Center(child: Text('Заведение не выбрано')),
+      return OwnerScaffold(
+        title: context.l10n.ownerMyPromotions,
+        body: Center(child: Text(context.l10n.ownerBusinessNotSelected)),
       );
     }
     final businessId = business['id'] as String;
@@ -32,11 +34,11 @@ class MonetizationCampaignsScreen extends ConsumerWidget {
         ref.watch(ownerMonetizationCampaignsProvider(businessId));
 
     return OwnerScaffold(
-      title: 'Мои продвижения',
+      title: context.l10n.ownerMyPromotions,
       body: campaignsAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
-          message: 'Не удалось загрузить продвижения.',
+          message: context.l10n.ownerCampaignsLoadFailed,
           onRetry: () =>
               ref.invalidate(ownerMonetizationCampaignsProvider(businessId)),
         ),
@@ -47,15 +49,15 @@ class MonetizationCampaignsScreen extends ConsumerWidget {
                 ownerMonetizationCampaignsProvider(businessId),
               ),
               child: ListView(
-                children: const [
-                  SizedBox(height: 120),
-                  Center(child: Text('Нет активных продвижений')),
+                children: [
+                  const SizedBox(height: 120),
+                  Center(child: Text(context.l10n.ownerNoCampaigns)),
                 ],
               ),
             );
           }
 
-          final groups = _groupCampaigns(campaigns);
+          final groups = _groupCampaigns(context.l10n, campaigns);
           return RefreshIndicator(
             onRefresh: () async => ref.invalidate(
               ownerMonetizationCampaignsProvider(businessId),
@@ -88,6 +90,7 @@ class MonetizationCampaignsScreen extends ConsumerWidget {
   }
 
   Map<String, List<MonetizationCampaign>> _groupCampaigns(
+    AppLocalizations l10n,
     List<MonetizationCampaign> campaigns,
   ) {
     final active = <MonetizationCampaign>[];
@@ -112,11 +115,11 @@ class MonetizationCampaignsScreen extends ConsumerWidget {
     }
 
     final result = <String, List<MonetizationCampaign>>{};
-    if (active.isNotEmpty) result['Активные'] = active;
-    if (scheduled.isNotEmpty) result['Запланированные'] = scheduled;
-    if (moderation.isNotEmpty) result['На модерации'] = moderation;
-    if (completed.isNotEmpty) result['Завершённые'] = completed;
-    if (other.isNotEmpty) result['Другие'] = other;
+    if (active.isNotEmpty) result[l10n.ownerCampaignGroupActive] = active;
+    if (scheduled.isNotEmpty) result[l10n.ownerCampaignGroupScheduled] = scheduled;
+    if (moderation.isNotEmpty) result[l10n.ownerCampaignGroupModeration] = moderation;
+    if (completed.isNotEmpty) result[l10n.ownerCampaignGroupCompleted] = completed;
+    if (other.isNotEmpty) result[l10n.ownerCampaignGroupOther] = other;
     return result;
   }
 }
@@ -145,12 +148,12 @@ class _CampaignCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               MonetizationStatusChip(
-                label: campaignStatusLabel(status),
+                label: campaignStatusLabel(context.l10n, status),
                 color: campaignStatusColor(status),
               ),
               const SizedBox(height: 10),
               Text(
-                productTitle(campaign.productCode),
+                productTitle(context.l10n, campaign.productCode),
                 style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
               ),
               if (campaign.businessTitle != null) ...[
@@ -161,12 +164,14 @@ class _CampaignCard extends StatelessWidget {
               const SizedBox(height: 8),
               Text(formatMonetizationDateRange(campaign.startAt, campaign.endAt)),
               if (daysLeft != null && daysLeft >= 0 && status == 'ACTIVE')
-                Text('Осталось $daysLeft ${_daysWord(daysLeft)}'),
+                Text(context.l10n.ownerCampaignDaysLeft(daysLeft, _daysWord(context.l10n, daysLeft))),
               const SizedBox(height: 10),
               Text(
-                'Показы: ${ownerFormatNumber(campaign.metrics.servedCount)} · '
-                'Просмотры: ${ownerFormatNumber(campaign.metrics.qualifiedImpressions)} · '
-                'Переходы: ${ownerFormatNumber(campaign.metrics.clickCount)}',
+                context.l10n.ownerCampaignMetrics(
+                  ownerFormatNumber(campaign.metrics.servedCount),
+                  ownerFormatNumber(campaign.metrics.qualifiedImpressions),
+                  ownerFormatNumber(campaign.metrics.clickCount),
+                ),
                 style: const TextStyle(fontSize: 12),
               ),
             ],
@@ -176,13 +181,13 @@ class _CampaignCard extends StatelessWidget {
     );
   }
 
-  String _daysWord(int n) {
+  String _daysWord(AppLocalizations l10n, int n) {
     final mod10 = n % 10;
-    if (mod10 == 1 && n % 100 != 11) return 'день';
+    if (mod10 == 1 && n % 100 != 11) return l10n.ownerDayUnitOne;
     if (mod10 >= 2 && mod10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) {
-      return 'дня';
+      return l10n.ownerDayUnitFew;
     }
-    return 'дней';
+    return l10n.ownerDayUnitMany;
   }
 }
 
@@ -197,11 +202,11 @@ class MonetizationCampaignDetailScreen extends ConsumerWidget {
     final analyticsAsync = ref.watch(campaignAnalyticsProvider(campaignId));
 
     return OwnerScaffold(
-      title: 'Статистика',
+      title: context.l10n.ownerAnalyticsTitle,
       body: campaignAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
-          message: 'Кампания не найдена.',
+          message: context.l10n.ownerCampaignNotFound,
           onRetry: () =>
               ref.invalidate(ownerMonetizationCampaignProvider(campaignId)),
         ),
@@ -215,12 +220,12 @@ class MonetizationCampaignDetailScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(AppSpacing.screen),
               children: [
                 Text(
-                  productTitle(campaign.productCode),
+                  productTitle(context.l10n, campaign.productCode),
                   style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
                 ),
                 const SizedBox(height: 8),
                 MonetizationStatusChip(
-                  label: campaignStatusLabel(campaign.displayStatus),
+                  label: campaignStatusLabel(context.l10n, campaign.displayStatus),
                   color: campaignStatusColor(campaign.displayStatus),
                 ),
                 const SizedBox(height: 16),
@@ -230,7 +235,7 @@ class MonetizationCampaignDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
                 analyticsAsync.when(
                   loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => const Text('Не удалось загрузить статистику.'),
+                  error: (e, _) => Text(context.l10n.ownerCampaignStatsFailed),
                   data: (analytics) => _AnalyticsBody(analytics: analytics),
                 ),
               ],
@@ -253,17 +258,17 @@ class _AnalyticsBody extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Статистика', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+        Text(context.l10n.ownerAnalyticsTitle, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
         if (empty) ...[
           const SizedBox(height: 8),
           Text(
-            'Статистика появится после начала показов.',
+            context.l10n.ownerCampaignStatsPending,
             style: TextStyle(color: AppTheme.textMuted),
           ),
         ],
         const SizedBox(height: 16),
-        _metricTile('Просмотры', ownerFormatNumber(analytics.qualifiedImpressions)),
-        _metricTile('Переходы', ownerFormatNumber(analytics.clicks)),
+        _metricTile(context.l10n.ownerCampaignViews, ownerFormatNumber(analytics.qualifiedImpressions)),
+        _metricTile(context.l10n.ownerCampaignClicks, ownerFormatNumber(analytics.clicks)),
         Row(
           children: [
             Expanded(child: _metricTile('CTR', '${analytics.ctr}%')),
@@ -274,11 +279,11 @@ class _AnalyticsBody extends StatelessWidget {
                   context: context,
                   builder: (ctx) => AlertDialog(
                     title: const Text('CTR'),
-                    content: const Text(ctrTooltip),
+                    content: Text(ctrTooltip(context.l10n)),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(ctx),
-                        child: const Text('Понятно'),
+                        child: Text(context.l10n.ownerGotIt),
                       ),
                     ],
                   ),
@@ -289,14 +294,14 @@ class _AnalyticsBody extends StatelessWidget {
         ),
         if (analytics.actions.isNotEmpty) ...[
           const SizedBox(height: 20),
-          const Text('Действия', style: TextStyle(fontWeight: FontWeight.w800)),
+          Text(context.l10n.ownerCampaignActions, style: TextStyle(fontWeight: FontWeight.w800)),
           const SizedBox(height: 8),
           ...analytics.actions.entries
               .where((e) => e.value > 0)
               .map(
                 (e) => ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(analyticsActionLabel(e.key)),
+                  title: Text(analyticsActionLabel(context.l10n, e.key)),
                   trailing: Text(ownerFormatNumber(e.value)),
                 ),
               ),

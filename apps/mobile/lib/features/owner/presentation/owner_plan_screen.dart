@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
@@ -28,7 +29,7 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
   }
 
   String _periodLabel(int? periodDays) {
-    if (periodDays == null) return 'месяц';
+    if (periodDays == null) return context.l10n.ownerPlanPeriodMonth;
     return '$periodDays дн.';
   }
 
@@ -47,13 +48,13 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
       ref.invalidate(ownerDashboardProvider(businessId));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message'] as String? ?? 'Тариф обновлён')),
+          SnackBar(content: Text(result['message'] as String? ?? context.l10n.ownerPlanUpdated)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: $e')),
+          SnackBar(content: Text(context.l10n.ownerErrorWithDetails('$e'))),
         );
       }
     } finally {
@@ -68,16 +69,16 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
 
     if (business == null) {
       return OwnerScaffold(
-        title: 'Тариф',
+        title: context.l10n.ownerPlanTitle,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('Сначала зарегистрируйте заведение'),
+              Text(context.l10n.ownerRegisterBusinessFirst),
               const SizedBox(height: 12),
               FilledButton(
                 onPressed: () => context.push('/owner/create-business'),
-                child: const Text('Зарегистрировать'),
+                child: Text(context.l10n.ownerRegister),
               ),
             ],
           ),
@@ -89,7 +90,7 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
     final planAsync = ref.watch(businessPlanProvider(businessId));
 
     return OwnerScaffold(
-      title: 'Тариф',
+      title: context.l10n.ownerPlanTitle,
       body: catalogAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
@@ -174,8 +175,8 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                 Card(
                   child: ListTile(
                     leading: const Icon(Icons.campaign_outlined, color: AppTheme.kzBlue),
-                    title: const Text('Реклама и продвижение'),
-                    subtitle: const Text('TOP, VIP-баннер, пакеты и статистика'),
+                    title: Text(context.l10n.ownerMonetizationTitle),
+                    subtitle: Text(context.l10n.ownerPlanPromoteSubtitle),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.push('/owner/promote'),
                   ),
@@ -260,11 +261,11 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                           ],
                           const SizedBox(height: 12),
                           if (isCurrent)
-                            const OutlinedButton(onPressed: null, child: Text('Активен'))
+                            OutlinedButton(onPressed: null, child: Text(context.l10n.ownerMembershipStatusActive))
                           else if (!AppConstants.mockPlanCheckoutEnabled)
-                            const OutlinedButton(
+                            OutlinedButton(
                               onPressed: null,
-                              child: Text('Покупка недоступна'),
+                              child: Text(context.l10n.ownerPlanPurchaseUnavailable),
                             )
                           else
                             FilledButton(
@@ -305,7 +306,7 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                         const SizedBox(height: 10),
                         OutlinedButton(
                           onPressed: () => context.push('/owner/promote'),
-                          child: const Text('Перейти к рекламе'),
+                          child: Text(context.l10n.ownerPlanGoToAds),
                         ),
                       ],
                     ),

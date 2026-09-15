@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -26,26 +27,24 @@ class OwnerTeamScreen extends ConsumerWidget {
 
     if (access != null && !isOwner(access)) {
       return OwnerScaffold(
-        title: 'Команда',
+        title: context.l10n.ownerNavTeam,
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.screen),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  'Нет доступа',
+                Text(                context.l10n.ownerTeamNoAccessTitle,
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Управление командой доступно только владельцу заведения.',
+                Text(                context.l10n.ownerTeamNoAccessBody,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
                 FilledButton(
                   onPressed: () => context.go('/owner'),
-                  child: const Text('На главную'),
+                  child: Text(context.l10n.ownerGoHome),
                 ),
               ],
             ),
@@ -55,18 +54,18 @@ class OwnerTeamScreen extends ConsumerWidget {
     }
 
     if (business == null) {
-      return const OwnerScaffold(
-        title: 'Команда',
-        body: LoadingView(),
+      return OwnerScaffold(
+        title: context.l10n.ownerNavTeam,
+        body: const LoadingView(),
       );
     }
 
     final businessId = business['id'] as String;
-    final businessTitle = business['title'] as String? ?? 'Заведение';
+    final businessTitle = business['title'] as String? ?? context.l10n.ownerBusinessSection;
     final snapshotAsync = ref.watch(ownerTeamSnapshotProvider(businessId));
 
     return OwnerScaffold(
-      title: 'Команда',
+      title: context.l10n.ownerNavTeam,
       floatingActionButton: snapshotAsync.maybeWhen(
         data: (snapshot) => snapshot.usage.canAddManager
             ? FloatingActionButton.extended(
@@ -77,7 +76,7 @@ class OwnerTeamScreen extends ConsumerWidget {
                   canInvite: true,
                 ),
                 icon: const Icon(Icons.person_add_outlined),
-                label: const Text('Пригласить'),
+                label: Text(context.l10n.ownerInvite),
               )
             : null,
         orElse: () => null,
@@ -85,7 +84,7 @@ class OwnerTeamScreen extends ConsumerWidget {
       body: snapshotAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
-          message: mapTeamOperationError(e),
+          message: mapTeamOperationError(context.l10n, e),
           onRetry: () => ref.invalidate(ownerTeamSnapshotProvider(businessId)),
         ),
         data: (snapshot) => RefreshIndicator(
@@ -105,9 +104,9 @@ class OwnerTeamScreen extends ConsumerWidget {
               const SizedBox(height: 8),
               _ManagerLimitCard(usage: snapshot.usage),
               const SizedBox(height: 20),
-              _SectionTitle('Участники'),
+              _SectionTitle(context.l10n.ownerTeamMembers),
               if (snapshot.team.members.isEmpty)
-                _EmptyHint('Нет участников')
+                _EmptyHint(context.l10n.ownerTeamNoMembers)
               else
                 ...snapshot.team.members.map(
                   (member) => _MemberCard(
@@ -118,9 +117,9 @@ class OwnerTeamScreen extends ConsumerWidget {
                   ),
                 ),
               const SizedBox(height: 20),
-              _SectionTitle('Ожидают приглашения'),
+              _SectionTitle(context.l10n.ownerTeamPendingInvites),
               if (snapshot.team.pendingInvitations.isEmpty)
-                _EmptyHint('Нет ожидающих приглашений')
+                _EmptyHint(context.l10n.ownerTeamNoPendingInvites)
               else
                 ...snapshot.team.pendingInvitations.map(
                   (inv) => _InvitationCard(
@@ -140,13 +139,13 @@ class OwnerTeamScreen extends ConsumerWidget {
                       children: [
                         Text(
                           snapshot.usage.limit <= 0
-                              ? 'Тариф не включает менеджеров.'
-                              : 'Достигнут лимит менеджеров вашего тарифа.',
+                              ? context.l10n.ownerTeamPlanNoManagers
+                              : context.l10n.ownerTeamManagerLimit,
                         ),
                         const SizedBox(height: 12),
                         OutlinedButton(
                           onPressed: () => context.push('/owner/plan'),
-                          child: const Text('Посмотреть тарифы'),
+                          child: Text(context.l10n.ownerViewPlans),
                         ),
                       ],
                     ),
@@ -190,7 +189,7 @@ class _ManagerLimitCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final limitLabel = usage.limit <= 0
-        ? 'Менеджеры недоступны на текущем тарифе'
+        ? context.l10n.ownerTeamManagersUnavailable
         : 'Менеджеры: ${usage.slotsUsed} из ${usage.limit}';
     final detail = usage.pendingInvitations > 0
         ? ' (${usage.activeManagers} активных · ${usage.pendingInvitations} ожидают)'
@@ -203,8 +202,7 @@ class _ManagerLimitCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Команда',
+            Text(                context.l10n.ownerNavTeam,
               style: TextStyle(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 6),
@@ -278,7 +276,7 @@ class _MemberCardState extends ConsumerState<_MemberCard> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(mapTeamOperationError(e))),
+          SnackBar(content: Text(mapTeamOperationError(context.l10n, e))),
         );
       }
     } finally {
@@ -293,8 +291,8 @@ class _MemberCardState extends ConsumerState<_MemberCard> {
         title: Text(title),
         content: Text(body),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Отмена')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Подтвердить')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.l10n.commonCancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(context.l10n.ownerConfirm)),
         ],
       ),
     );
@@ -317,11 +315,11 @@ class _MemberCardState extends ConsumerState<_MemberCard> {
   @override
   Widget build(BuildContext context) {
     final m = widget.member;
-    final displayName = m.name ?? m.phone ?? 'Участник';
+    final displayName = m.name ?? m.phone ?? context.l10n.ownerDefaultMember;
     final subtitle = [
-      membershipRoleLabelRu(m.role),
+      membershipRoleLabelRu(context.l10n, m.role),
       if (m.phone != null && m.phone!.isNotEmpty) m.phone!,
-      membershipStatusLabelRu(m.status),
+      membershipStatusLabelRu(context.l10n, m.status),
     ].join(' · ');
 
     return Card(
@@ -344,7 +342,7 @@ class _MemberCardState extends ConsumerState<_MemberCard> {
                       if (m.isManager && m.permissions.isNotEmpty) ...[
                         const SizedBox(height: 6),
                         Text(
-                          summarizePermissionsRu(m.permissions),
+                          summarizePermissionsRu(context.l10n, m.permissions),
                           style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
                         ),
                       ],
@@ -360,8 +358,8 @@ class _MemberCardState extends ConsumerState<_MemberCard> {
                       }
                       if (value == 'suspend') {
                         if (!await _confirm(
-                          'Приостановить доступ менеджера?',
-                          'Менеджер временно потеряет доступ к управлению бизнесом.',
+                          context.l10n.ownerSuspendManagerTitle,
+                          context.l10n.ownerSuspendManagerBody,
                         )) {
                           return;
                         }
@@ -371,7 +369,7 @@ class _MemberCardState extends ConsumerState<_MemberCard> {
                                 membershipId: m.membershipId,
                                 status: 'SUSPENDED',
                               ),
-                          'Доступ приостановлен',
+                          context.l10n.ownerAccessSuspended,
                         );
                         return;
                       }
@@ -382,14 +380,14 @@ class _MemberCardState extends ConsumerState<_MemberCard> {
                                 membershipId: m.membershipId,
                                 status: 'ACTIVE',
                               ),
-                          'Доступ восстановлен',
+                          context.l10n.ownerAccessRestored,
                         );
                         return;
                       }
                       if (value == 'revoke') {
                         if (!await _confirm(
-                          'Удалить доступ менеджера?',
-                          'Менеджер больше не сможет управлять этим бизнесом.',
+                          context.l10n.ownerRevokeManagerTitle,
+                          context.l10n.ownerRevokeManagerBody,
                         )) {
                           return;
                         }
@@ -399,23 +397,23 @@ class _MemberCardState extends ConsumerState<_MemberCard> {
                                 membershipId: m.membershipId,
                                 status: 'REVOKED',
                               ),
-                          'Доступ отозван',
+                          context.l10n.ownerAccessRevoked,
                         );
                       }
                     },
                     itemBuilder: (context) {
                       if (m.isActive) {
                         return [
-                          const PopupMenuItem(value: 'edit', child: Text('Изменить права')),
-                          const PopupMenuItem(value: 'suspend', child: Text('Приостановить')),
-                          const PopupMenuItem(value: 'revoke', child: Text('Удалить доступ')),
+                          PopupMenuItem(value: 'edit', child: Text(context.l10n.ownerEditPermissions)),
+                          PopupMenuItem(value: 'suspend', child: Text(context.l10n.ownerSuspend)),
+                          PopupMenuItem(value: 'revoke', child: Text(context.l10n.ownerRemoveAccess)),
                         ];
                       }
                       if (m.isSuspended) {
                         return [
-                          const PopupMenuItem(value: 'edit', child: Text('Изменить права')),
-                          const PopupMenuItem(value: 'restore', child: Text('Восстановить')),
-                          const PopupMenuItem(value: 'revoke', child: Text('Удалить доступ')),
+                          PopupMenuItem(value: 'edit', child: Text(context.l10n.ownerEditPermissions)),
+                          PopupMenuItem(value: 'restore', child: Text(context.l10n.ownerRestore)),
+                          PopupMenuItem(value: 'revoke', child: Text(context.l10n.ownerRemoveAccess)),
                         ];
                       }
                       return const [];
@@ -453,11 +451,11 @@ class _InvitationCardState extends ConsumerState<_InvitationCard> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Отозвать приглашение?'),
-        content: Text('Отозвать приглашение для $email?'),
+        title: Text(context.l10n.ownerRevokeInviteTitle),
+        content: Text(context.l10n.ownerRevokeInviteBody(email)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Отмена')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Отозвать')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.l10n.commonCancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(context.l10n.ownerRevoke)),
         ],
       ),
     );
@@ -472,13 +470,13 @@ class _InvitationCardState extends ConsumerState<_InvitationCard> {
       widget.onChanged();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Приглашение отозвано')),
+          SnackBar(content: Text(context.l10n.ownerInviteRevoked)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(mapTeamOperationError(e))),
+          SnackBar(content: Text(mapTeamOperationError(context.l10n, e))),
         );
       }
     } finally {
@@ -496,8 +494,8 @@ class _InvitationCardState extends ConsumerState<_InvitationCard> {
       child: ListTile(
         title: Text(inv.recipientLabel),
         subtitle: Text(
-          '${membershipStatusLabelRu(inv.status)} · до $expires\n'
-          '${summarizePermissionsRu(inv.permissions)}',
+          '${membershipStatusLabelRu(context.l10n, inv.status)} · до $expires\n'
+          '${summarizePermissionsRu(context.l10n, inv.permissions)}',
         ),
         isThreeLine: true,
         trailing: _busy
@@ -506,7 +504,7 @@ class _InvitationCardState extends ConsumerState<_InvitationCard> {
                 height: 24,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
-            : TextButton(onPressed: _revoke, child: const Text('Отозвать')),
+            : TextButton(onPressed: _revoke, child: Text(context.l10n.ownerRevoke)),
       ),
     );
   }
@@ -539,7 +537,7 @@ class _PermissionChecklist extends StatelessWidget {
             onChanged(normalizeBusinessPermissions(next));
           },
           title: Text(
-            businessPermissionLabelsRu[permission] ?? permission.apiValue,
+            permissionLabel(context.l10n, permission.apiValue),
             style: const TextStyle(fontSize: 14),
           ),
           controlAffinity: ListTileControlAffinity.leading,
@@ -560,10 +558,10 @@ class _PresetChips extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: permissionPresets
+      children: permissionPresets(context.l10n)
           .map(
             (preset) => ActionChip(
-              label: Text(preset.labelRu),
+              label: Text(preset.label(context.l10n)),
               onPressed: () => onApply(List<BusinessPermission>.from(preset.permissions)),
             ),
           )
@@ -603,15 +601,15 @@ class _InviteManagerSheetState extends ConsumerState<_InviteManagerSheet> {
   Future<void> _submit() async {
     final email = _emailController.text.trim();
     if (!isValidInviteEmail(email)) {
-      setState(() => _error = 'Укажите корректный email');
+      setState(() => _error = context.l10n.ownerInvalidEmail);
       return;
     }
     if (_permissions.isEmpty) {
-      setState(() => _error = 'Выберите хотя бы одно право доступа');
+      setState(() => _error = context.l10n.ownerSelectPermission);
       return;
     }
     if (!widget.canInvite) {
-      setState(() => _error = 'Достигнут лимит менеджеров вашего тарифа.');
+      setState(() => _error = context.l10n.ownerTeamManagerLimit);
       return;
     }
 
@@ -638,14 +636,14 @@ class _InviteManagerSheetState extends ConsumerState<_InviteManagerSheet> {
           SnackBar(
             content: Text(
               result.isInvitation
-                  ? 'Приглашение создано'
-                  : 'Менеджер добавлен в команду',
+                  ? context.l10n.ownerInviteCreated
+                  : context.l10n.ownerManagerAdded,
             ),
           ),
         );
       }
     } catch (e) {
-      setState(() => _error = mapTeamOperationError(e));
+      setState(() => _error = mapTeamOperationError(context.l10n, e));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -663,12 +661,11 @@ class _InviteManagerSheetState extends ConsumerState<_InviteManagerSheet> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Пригласить менеджера',
+              context.l10n.ownerInviteManagerTitle,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Укажите email и права. После создания отправьте ссылку менеджеру.',
+            Text(                context.l10n.ownerInviteManagerBody,
             ),
             const SizedBox(height: 16),
             TextField(
@@ -681,7 +678,7 @@ class _InviteManagerSheetState extends ConsumerState<_InviteManagerSheet> {
               ),
             ),
             const SizedBox(height: 12),
-            const Text('Права доступа', style: TextStyle(fontWeight: FontWeight.w700)),
+            Text(context.l10n.ownerAccessPermissions, style: TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             _PresetChips(
               onApply: (perms) => setState(() => _permissions = perms),
@@ -703,13 +700,11 @@ class _InviteManagerSheetState extends ConsumerState<_InviteManagerSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
-                        'Приглашение создано',
+                      Text(                context.l10n.ownerInviteCreated,
                         style: TextStyle(fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: 6),
-                      const Text(
-                        'Отправьте эту ссылку менеджеру. Она одноразовая и действует ограниченное время.',
+                      Text(                context.l10n.ownerInviteLinkHint,
                         style: TextStyle(fontSize: 13),
                       ),
                       const SizedBox(height: 8),
@@ -720,12 +715,12 @@ class _InviteManagerSheetState extends ConsumerState<_InviteManagerSheet> {
                           await Clipboard.setData(ClipboardData(text: _inviteUrl!));
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Ссылка скопирована')),
+                              SnackBar(content: Text(context.l10n.ownerLinkCopied)),
                             );
                           }
                         },
                         icon: const Icon(Icons.copy_outlined),
-                        label: const Text('Скопировать ссылку'),
+                        label: Text(context.l10n.ownerCopyLink),
                       ),
                     ],
                   ),
@@ -735,7 +730,7 @@ class _InviteManagerSheetState extends ConsumerState<_InviteManagerSheet> {
             const SizedBox(height: 16),
             FilledButton(
               onPressed: _submitting ? null : _submit,
-              child: Text(_submitting ? 'Отправка…' : 'Отправить приглашение'),
+              child: Text(_submitting ? context.l10n.ownerSubmitting : context.l10n.ownerSendInvite),
             ),
           ],
         ),
@@ -772,7 +767,7 @@ class _EditPermissionsSheetState extends ConsumerState<_EditPermissionsSheet> {
 
   Future<void> _save() async {
     if (_permissions.isEmpty) {
-      setState(() => _error = 'Выберите хотя бы одно право доступа');
+      setState(() => _error = context.l10n.ownerSelectPermission);
       return;
     }
     setState(() {
@@ -789,11 +784,11 @@ class _EditPermissionsSheetState extends ConsumerState<_EditPermissionsSheet> {
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Права обновлены')),
+          SnackBar(content: Text(context.l10n.ownerPermissionsUpdated)),
         );
       }
     } catch (e) {
-      setState(() => _error = mapTeamOperationError(e));
+      setState(() => _error = mapTeamOperationError(context.l10n, e));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -802,7 +797,7 @@ class _EditPermissionsSheetState extends ConsumerState<_EditPermissionsSheet> {
   @override
   Widget build(BuildContext context) {
     final bottom = MediaQuery.viewInsetsOf(context).bottom;
-    final title = widget.member.name ?? widget.member.phone ?? 'Менеджер';
+    final title = widget.member.name ?? widget.member.phone ?? context.l10n.ownerDefaultManager;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottom),
@@ -812,7 +807,7 @@ class _EditPermissionsSheetState extends ConsumerState<_EditPermissionsSheet> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Права менеджера',
+              context.l10n.ownerManagerPermissionsTitle,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 4),
@@ -831,7 +826,7 @@ class _EditPermissionsSheetState extends ConsumerState<_EditPermissionsSheet> {
             const SizedBox(height: 16),
             FilledButton(
               onPressed: _saving ? null : _save,
-              child: Text(_saving ? 'Сохранение…' : 'Сохранить'),
+              child: Text(_saving ? context.l10n.ownerSaving : context.l10n.commonSave),
             ),
           ],
         ),

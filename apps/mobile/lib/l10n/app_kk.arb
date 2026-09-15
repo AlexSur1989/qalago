@@ -1,13 +1,11 @@
 {
   "@@locale": "kk",
   "appTitle": "QalaGo",
-
   "navHome": "Басты бет",
   "navCategories": "Санаттар",
   "navMap": "Карта",
   "navFavorites": "Таңдаулылар",
   "navProfile": "Профиль",
-
   "commonRetry": "Қайталап көру",
   "commonCancel": "Болдырмау",
   "commonSave": "Сақтау",
@@ -25,7 +23,6 @@
   "commonAllCategories": "Барлық санаттар",
   "commonAd": "Жарнама",
   "commonViewAll": "Барлығын көру",
-
   "homeSearchPlaceholder": "Мекемелер мен қызметтерді іздеу...",
   "homeCategoriesEmpty": "Санаттар әлі қосылмаған",
   "homePromotionsEmpty": "Белсенді акциялар жоқ",
@@ -40,7 +37,6 @@
   "homeFeaturedNextTooltip": "Келесі мекеме",
   "homeCategoryMoreSemantics": "Тағы санаттар",
   "homeCategoriesSection": "Санаттар",
-
   "categoriesTitle": "Санаттар",
   "categoriesFilterHint": "Санат атауы бойынша сүзгі...",
   "categoriesSearchBusinesses": "Мекемелерді іздеу",
@@ -55,7 +51,6 @@
   "categoryNearestNeedsLocation": "Ең жақын орындарды көрсету үшін геопозицияға рұқсат беріңіз",
   "categorySponsored": "Жарнамалық орындар",
   "categoryAllPlaces": "Барлық орындар",
-
   "searchPlaceholder": "Мекемелер мен қызметтерді іздеу...",
   "searchResetFilters": "Сүзгілерді тазарту",
   "searchNoResults": "Ештеңе табылмады",
@@ -69,7 +64,6 @@
   "searchNoInCategory": "Таңдалған санатта мекемелер жоқ",
   "searchRadiusWholeCity": "Бүкіл қала",
   "searchRadiusKm": "{km} км дейін",
-
   "favoritesTitle": "Таңдаулылар",
   "favoritesEmpty": "Таңдаулы орындарыңыз осында болады",
   "favoritesGuestTitle": "Таңдаулыларды сақтау үшін кіріңіз",
@@ -82,10 +76,15 @@
   "favoritesEmptyUser": "Таңдаулы орындар әлі жоқ",
   "favoritesEmptyUserHint": "Орындарды таңдаулыларға қосып, оларға тез оралыңыз.",
   "favoritesEmptyInCity": "{cityName} қалasında таңдаулы орындар әлі жоқ",
-  "@favoritesEmptyInCity": {"placeholders": {"cityName": {"type": "String"}}},
+  "@favoritesEmptyInCity": {
+    "placeholders": {
+      "cityName": {
+        "type": "String"
+      }
+    }
+  },
   "favoritesOtherCitiesHint": "Басқа қалалардағы таңдаулылар сақталды — көру үшін қаланы ауыстырыңыз.",
   "searchRadiusKmExact": "{km} км",
-
   "mapTitle": "Карта",
   "mapNoBusinessesNearby": "Жақыннан мекемелер жоқ",
   "mapEnableLocation": "Геолокацияны қосу",
@@ -94,7 +93,6 @@
   "mapDetails": "Толығырақ",
   "mapBusinessesOnMap": "Картадағы мекемелер",
   "mapNoCoordinates": "Координаттары бар мекемелер жоқ",
-
   "profileTitle": "Профиль",
   "profileLanguageApplyHint": "Тіл өзгерісі бірден қолданылады.",
   "profileLanguage": "Тіл",
@@ -130,7 +128,6 @@
   "profileCityLabel": "Қала: {name}",
   "profileDefaultUser": "Пайдаланушы",
   "profilePhoneMissing": "Телефон көрсетілмеген",
-
   "authLoginTitle": "Кіру",
   "authPhoneHint": "Телефон нөмірі",
   "authCodeHint": "SMS коды",
@@ -154,7 +151,6 @@
   "authOtpUnavailableBody": "Бұл нұсқада аккаунт арқылы кіру уақытша қолжетімсіз. Қонақ ретінде жалғастыра аласыз.",
   "authDevOtpHint": "Жергілікті әзірлеу: OTP backend debug арқылы келуі мүмкін.",
   "authContinueWithoutAccount": "Аккаунтсыз жалғастыру",
-
   "businessCall": "Қоңырау шалу",
   "businessGenericName": "Мекеме",
   "businessLoginTitle": "QalaGo-ға кіріңіз",
@@ -210,7 +206,6 @@
   "onboardingRejectionReason": "Бас тарту себебі: {reason}",
   "onboardingOpenCabinet": "Кабинетті ашу",
   "onboardingDraftSaved": "Жоба сақталды",
-
   "commonLater": "Кейінірек",
   "commonUpdate": "Жаңарту",
   "commonSubmit": "Жіберу",
@@ -228,7 +223,13 @@
   "adDetailsDefault": "Толығырақ",
   "adLabelPrefix": "Жарнама",
   "adSemanticLabel": "Жарнама: {title}",
-  "@adSemanticLabel": {"placeholders": {"title": {"type": "String"}}},
+  "@adSemanticLabel": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "cityPickerTitle": "Қаланы таңдаңыз",
   "cityComingSoon": "Жақында",
   "cityCurrent": "Ағымдағы қала",
@@ -356,7 +357,6 @@
   "claimCtaPending": "Растау өтінімі жіберілді",
   "claimCtaConfirmOwner": "Ие құқығын растау",
   "defaultSearchHint": "Іздеу...",
-
   "errorInvalidOtp": "Қате код",
   "errorUnauthorized": "Кіру қажет",
   "errorForbidden": "Құқық жеткіліксіз",
@@ -366,7 +366,6 @@
   "errorRateLimited": "Тым көп әрекет. Кейінірек қайталап көріңіз",
   "errorLoadFailed": "Деректерді жүктеу сәтсіз. Байланысты тексеріп, қайталап көріңіз.",
   "errorServiceUnavailable": "Қызмет уақытша қолжетімсіз. Кейінірек қайталап көріңіз.",
-
   "deleteAccountButton": "Аккаунтты жою",
   "deleteAccountTitle": "Аккаунтты жою керек пе?",
   "deleteAccountBody": "Бұл әрекетті қайтару мүмкін емес. Таңдаулылар, пікірлер және кіру жойылады. Бизнесіңіздің жалғыз иесісіз болсаңыз, алдымен басқаруды беріңіз.",
@@ -375,7 +374,859 @@
   "deleteAccountSuccess": "Аккаунт жойылды",
   "deleteAccountConflict": "Жою алдында мекемені басқа иегерге беріңіз.",
   "deleteAccountFailed": "Аккаунтты жою сәтсіз. Кейінірек қайталап көріңіз.",
-
   "reviewsCount": "{count, plural, =0{0 пікір} one{{count} пікір} other{{count} пікір}}",
-  "placesCount": "{count, plural, =0{0 орын} one{{count} орын} other{{count} орын}}"
+  "placesCount": "{count, plural, =0{0 орын} one{{count} орын} other{{count} орын}}",
+  "ownerPlanTierFree": "Тегін",
+  "ownerPlanTierBasic": "Бизнес",
+  "ownerPlanTierPremium": "PRO",
+  "ownerPlanTierVip": "VIP",
+  "ownerStatusActive": "Белсенді",
+  "ownerStatusPendingModeration": "Модерацияда",
+  "ownerStatusBlocked": "Блокталған",
+  "ownerPromotionStatusActive": "Белсенді",
+  "ownerPromotionStatusExpired": "Мерзімі өткен",
+  "ownerPromotionFeedHint": "Қала лентасындағы насихат — жарнамалық өнімдер арқылы",
+  "ownerNotificationReviewNew": "Жаңа пікір",
+  "ownerNotificationReviewReply": "Пікірге жауап",
+  "ownerNotificationModeration": "Модерация",
+  "ownerNotificationPromotion": "Акция",
+  "ownerNotificationPlan": "Тариф",
+  "ownerNotificationGeneral": "Жалпы",
+  "ownerKpiViews": "Қараулар",
+  "ownerKpiCalls": "Қоңыраулар",
+  "ownerKpiRoutes": "Бағыттар",
+  "ownerKpiFavorites": "Таңдаулылар",
+  "ownerAnalyticsFavorites": "Таңдаулыларға",
+  "ownerAnalyticsDeltaPositive": "Алдыңғы кезеңге қатысты +{percent}%",
+  "ownerAnalyticsDeltaNegative": "Алдыңғы кезеңге қатысты {percent}%",
+  "ownerAnalyticsDeltaZero": "Алдыңғы кезенге қатысты 0%",
+  "ownerAnalyticsUpgradeActions": "«Бизнес» тарифінде қолжетімді",
+  "ownerAnalyticsUpgradeSources": "Көздер, іздеу сұраулары және CTR PRO тарифінде",
+  "ownerAnalyticsUpgradeAudience": "Analytics 360 VIP тарифінде",
+  "ownerPermissionProfileEdit": "Профильді өңдеу",
+  "ownerPermissionHoursEdit": "Жұмыс уақыты",
+  "ownerPermissionCatalogEdit": "Тауарлар мен қызметтер",
+  "ownerPermissionPhotosEdit": "Фото және галерея",
+  "ownerPermissionPromotionsEdit": "Акциялар",
+  "ownerPermissionReviewsReply": "Пікірлерге жауап",
+  "ownerPermissionAnalyticsView": "Статистиканы көру",
+  "ownerPermissionAnalyticsExport": "Статистиканы экспорттау",
+  "ownerPermissionAdsManage": "Жарнама және насихат",
+  "ownerPermissionPaymentsView": "Төлемдерді көру",
+  "ownerMembershipStatusActive": "Белсенді",
+  "ownerMembershipStatusSuspended": "Уақытша тоқтатылған",
+  "ownerMembershipStatusRevoked": "Қолжетімділік алынды",
+  "ownerMembershipStatusInvited": "Шақырылған",
+  "ownerPresetManager": "Басқарушы",
+  "ownerPresetManagerDesc": "Командасыз операциялық қолжетімділік",
+  "ownerPresetContent": "Контент-менеджер",
+  "ownerPresetContentDesc": "Профиль, каталог, фото және акциялар",
+  "ownerPresetMarketing": "Маркетолог",
+  "ownerPresetMarketingDesc": "Акциялар, жарнама және базалық аналитика",
+  "ownerPresetAnalytics": "Аналитик",
+  "ownerPresetAnalyticsDesc": "Статистиканы көру және экспорт",
+  "ownerPermissionsMore": "{head} · +{count}",
+  "monetizationProductBoost": "Картаны көтеру",
+  "monetizationProductTopCategory": "TOP санаты",
+  "monetizationProductPromotedPromotion": "Акцияны насихаттау",
+  "monetizationProductFeaturedBusiness": "Танымал орын",
+  "monetizationProductVipBanner": "VIP-бanner",
+  "monetizationProductBoostDesc": "Санатыңызда бизнесіңіздің қосымша көрінуі.",
+  "monetizationProductTopCategoryDesc": "Бизнесіңіз санатыңыздың басым жарнама блогында көрсетіледі.",
+  "monetizationProductPromotedPromotionDesc": "Акцияңыз QalaGo-да қосымша жарнамалық орын алады.",
+  "monetizationProductFeaturedBusinessDesc": "Бизнесіңіз басты бетте қосымша орын алады.",
+  "monetizationProductVipBannerDesc": "QalaGo басты бетіндегі үлкен жарнамалық banner.",
+  "monetizationProductDefaultDesc": "QalaGo-дағы жарнамалық орналасу.",
+  "monetizationProductTopCategoryNote": "Орындар белсенді жарнамадатулар арасында автоматты бөлінеді.",
+  "monetizationOrderAwaitingPayment": "Төлем күтілуде",
+  "monetizationOrderPaid": "Төленген",
+  "monetizationOrderRefunded": "Қайтару",
+  "monetizationOrderPartialRefund": "Ішінара қайтару",
+  "monetizationCampaignPendingModeration": "Модерацияда",
+  "monetizationCampaignScheduled": "Жоспарланған",
+  "monetizationCampaignPaused": "Уақытша тоқтатылған",
+  "monetizationCampaignCompleted": "Аяқталған",
+  "monetizationCreativePending": "Тексеруде",
+  "monetizationCreativeApproved": "Мақұлданған",
+  "monetizationAnalyticsCardOpen": "Карта ашулары",
+  "monetizationAnalyticsPromotionOpen": "Акция ашулары",
+  "monetizationPurchaseAvailable": "Қолжетімді",
+  "monetizationPurchaseActive": "Белсенді",
+  "monetizationPurchaseSoldOut": "Орын жоқ",
+  "monetizationActionBuy": "Сатып алу",
+  "monetizationActionContinuePayment": "Төлемді жалғастыру",
+  "monetizationActionRenew": "Ұзарту",
+  "monetizationReasonPendingOrder": "Бұл орналасуға төленбеген тапсырысыңыз бар.",
+  "monetizationReasonConflict": "Орналасу ағымдағы кестемен сәйкес келмейді.",
+  "monetizationReasonAlreadyActive": "Орналасу қазірдің өзінде белсенді.",
+  "monetizationReasonAlreadyScheduled": "Орналасу қазірдің өзінде жоспарланған.",
+  "monetizationReasonTargetPromoted": "Бұл акция қазірдің өзінде насихатталады.",
+  "monetizationReasonCategoryIneligible": "Санат бұл өнімге сай емес.",
+  "monetizationReasonPromotionIneligible": "Акция насихатқа жарамсыз.",
+  "monetizationReasonSoldOut": "Таңдалған кезеңде бос орын жоқ.",
+  "monetizationReasonPackageConflict": "Пакет компоненттері бос слоттарға сыймайды.",
+  "monetizationReasonReservationExpired": "Орын резерві мерзімі өтті — статусты жаңартып, қайта көріңіз.",
+  "monetizationReasonGeneric": "Әрекет орындалмады.",
+  "monetizationReasonGenericWithCode": "Әрекет орындалмады ({code}).",
+  "monetizationVipModerationNotice": "VIP-banner модерациядан кейін жарияланады. Төленген кезең banner мақұлданғаннан кейін ғана басталады.",
+  "monetizationPackageVipNotice": "Пакетке VIP-banner кіреді. VIP орналасуын іске қосу үшін bannerді баптап, модерациядан өту керек.",
+  "monetizationPackageVipCta": "VIP-bannerді баптау",
+  "monetizationPaymentInfoNotice": "Төлем расталғаннан кейін насихат автоматты түрде іске қосылады.",
+  "monetizationPaymentMethodUnavailable": "Төлем әдісі төлем сервисі қосылғаннан кейін қолжетімді болады.",
+  "monetizationCtrTooltip": "CTR — жарнама көріністерінен өтулердің үлесі.",
+  "ownerInvitationStatusPending": "Шақыру белсенді",
+  "ownerInvitationStatusAccepted": "Шақыру қабылданған",
+  "ownerInvitationStatusRevoked": "Шақыру кері алынған",
+  "ownerInvitationStatusExpired": "Шақыру мерзімі өткен",
+  "ownerDurationDays": "{count} {unit}",
+  "ownerDurationHours": "{count} сағ",
+  "ownerDayUnitOne": "күн",
+  "ownerDayUnitFew": "күн",
+  "ownerDayUnitMany": "күн",
+  "ownerNavOverview": "Шолу",
+  "ownerNavAnalytics": "Статистика",
+  "ownerNavPromote": "Жарнама және насихат",
+  "ownerNavMessages": "Хабарламалар",
+  "ownerNavPlan": "Тариф",
+  "ownerNavTeam": "Команда",
+  "ownerNavSettings": "Баптаулар",
+  "ownerNavHelp": "Көмек",
+  "ownerNavBackToApp": "QalaGo қосымшасына",
+  "ownerBusinessDrawerTitle": "QalaGo Business",
+  "ownerDashboardTitle": "Бизнес кабинеті",
+  "ownerAddBusiness": "Қосу",
+  "ownerBusinessLabel": "Мекеме",
+  "ownerWelcome": "Қош келдіңіз, {title}!",
+  "ownerNoBusinessesTitle": "Мекемелер жоқ",
+  "ownerNoBusinessesBody": "Мекемені тіркеңіз — модерациядан кейін QalaGo-да пайда болады.",
+  "ownerRegisterBusiness": "Мекемені тіркеу",
+  "ownerSummaryWeek": "7 күнде {views} қарау · {actions} әрекет",
+  "ownerDeltaWeek": "апта: {delta}",
+  "ownerViewsChartTitle": "7 күндегі қараулар",
+  "ownerTrendsLockedHint": "Күн бойынша әрекет графигі «Бизнес» тарифі және жоғарысында.",
+  "ownerPlanUsageTitle": "Тарифті пайдалану",
+  "ownerProfileCard": "Профиль",
+  "ownerProfileCompletion": "{percent}% толтырылған",
+  "ownerFillProfile": "Толтыру",
+  "ownerUpgradePlan": "Жақсарту",
+  "ownerActivePromotions": "Белсенді акциялар",
+  "ownerNoActivePromotions": "Белсенді акциялар жоқ",
+  "ownerPromoteCatalogSubtitle": "VIP-banner, TOP санаттары, акция насихаты және пакеттер",
+  "ownerOpenCatalog": "Каталогты ашу",
+  "ownerMyCampaigns": "Науқандарым",
+  "ownerManagementSection": "Басқару",
+  "ownerPreviewCard": "Картаны алдын ала көру",
+  "ownerMgmtMyBusiness": "Менің бизнесім",
+  "ownerMgmtGallery": "Галерея",
+  "ownerMgmtPromotions": "Акциялар",
+  "ownerMgmtReviews": "Пікірлер",
+  "ownerErrorWithDetails": "Қате: {details}",
+  "ownerSaving": "Сақталуда…",
+  "ownerSubmitting": "Жіберілуде…",
+  "ownerConfirm": "Растау",
+  "ownerRevoke": "Кері алу",
+  "ownerDefaultBusiness": "Мекеме",
+  "ownerDefaultMember": "Қатысушы",
+  "ownerDefaultManager": "Менеджер",
+  "ownerDefaultUser": "Пайдаланушы",
+  "ownerTeamNoAccessTitle": "Қолжетімділік жоқ",
+  "ownerTeamNoAccessBody": "Команданы тек мекеме иесі басқара алады.",
+  "ownerGoHome": "Басты бетке",
+  "ownerInvite": "Шақыру",
+  "ownerTeamMembers": "Қатысушылар",
+  "ownerTeamNoMembers": "Қатысушылар жоқ",
+  "ownerTeamPendingInvites": "Күтілген шақырулар",
+  "ownerTeamNoPendingInvites": "Күтілген шақырулар жоқ",
+  "ownerTeamPlanNoManagers": "Тариф менеджерлерді қамтамасыз етпейді.",
+  "ownerTeamManagerLimit": "Тарифіңіздегі менеджер лимиті толды.",
+  "ownerViewPlans": "Тарифтерді көру",
+  "ownerTeamManagersUnavailable": "Ағымдағы тарифте менеджерлер жоқ",
+  "ownerTeamManagersUsage": "Менеджерлер: {used} / {limit}",
+  "ownerTeamManagersExtra": " ({active} белсенді · {pending} күтуде)",
+  "ownerSuspendManagerTitle": "Менеджер қолжетімділігін уақытша тоқтату керек пе?",
+  "ownerSuspendManagerBody": "Менеджер бизнесді басқаруға уақытша қол жеткізе алмайды.",
+  "ownerAccessSuspended": "Қолжетімділік тоқтатылды",
+  "ownerAccessRestored": "Қолжетімділік қалпына келтірілді",
+  "ownerRevokeManagerTitle": "Менеджер қолжетімділігін алу керек пе?",
+  "ownerRevokeManagerBody": "Менеджер бұл бизнесті енді басқара алмайды.",
+  "ownerAccessRevoked": "Қолжетімділік алынды",
+  "ownerEditPermissions": "Қолжетімділікті өзгерту",
+  "ownerSuspend": "Тоқтату",
+  "ownerRemoveAccess": "Қолжетімділікті алу",
+  "ownerRestore": "Қалпына келтіру",
+  "ownerRevokeInviteTitle": "Шақыруды кері алу керек пе?",
+  "ownerRevokeInviteBody": "{email} шақыруын кері алу керек пе?",
+  "ownerInviteRevoked": "Шақыру кері алынды",
+  "ownerInviteStatusLine": "{status} · {expires} дейін",
+  "ownerInvalidEmail": "Дұрыс email енгізіңіз",
+  "ownerSelectPermission": "Кем дегенде бір рұқсат таңдаңыз",
+  "ownerInviteCreated": "Шақыру жасалды",
+  "ownerManagerAdded": "Менеджер командаға қосылды",
+  "ownerInviteManagerTitle": "Менеджерді шақыру",
+  "ownerInviteManagerBody": "Email және рұқсаттарды көрсетіңіз. Жасалғаннан кейін сілтемені менеджерге жіберіңіз.",
+  "ownerAccessPermissions": "Қолжетімділік рұқсаттары",
+  "ownerInviteLinkHint": "Бұл сілтемені менеджерге жіберіңіз. Ол бір реттік және шектеулі уақытқа жарамды.",
+  "ownerLinkCopied": "Сілтеме көшірілді",
+  "ownerCopyLink": "Сілтемені көшіру",
+  "ownerSendInvite": "Шақыру жіберу",
+  "ownerPermissionsUpdated": "Рұқсаттар жаңартылды",
+  "ownerManagerPermissionsTitle": "Менеджер рұқсаттары",
+  "ownerMonetizationTitle": "Жарнама және насихат",
+  "ownerSelectBusinessFirst": "Алдымен мекемені таңдаңыз",
+  "ownerChoosePromotionMethod": "Насихат тәсілін таңдаңыз",
+  "ownerPriceLoadFailed": "Бағалар алынбады. Қосылуды тексеріңіз.",
+  "ownerProductsUnavailable": "Жарнамалық өнімдер уақытша қолжетімсіз.",
+  "ownerReadyPackages": "Дайын пакеттер",
+  "ownerPackagesLoadFailed": "Пакеттер жүктелмedi.",
+  "ownerMyPromotions": "Насихаттарым",
+  "ownerMyOrders": "Тапсырыстарым",
+  "ownerProductTitle": "Өнім",
+  "ownerBusinessNotSelected": "Мекеме таңдалмаған",
+  "ownerPriceFailedShort": "Бағалар алынбады.",
+  "ownerProductNotFound": "Өнім табылмады",
+  "ownerPeriodLabel": "Кезең",
+  "ownerStartLabel": "Басталуы",
+  "ownerStartAfterPayment": "Төлемнен кейін бірден",
+  "ownerPickDate": "Күн таңдау",
+  "ownerSelectDate": "Күнді таңдаңыз",
+  "ownerDiscountPercent": "Жеңілдік {percent}%",
+  "ownerGetQuote": "Құнын алу",
+  "ownerQuoteFailed": "Құны алынбады.",
+  "ownerPromotionsLoadFailed": "Акциялар жүктелмedi.",
+  "ownerCreatePromotionFirst": "Алдымен белсенді акция жасаңыз.",
+  "ownerCreatePromotion": "Акция жасау",
+  "ownerSelectPromotion": "Акция таңдаңыз",
+  "ownerActiveUntil": "{date} дейін белсенді",
+  "ownerNextAvailableDate": "Ең жақын қолжетімді күн: {date}",
+  "ownerReservedUntil": "Орын {date} дейін резервтелген",
+  "ownerPriceFrom": "{price} бастап",
+  "ownerCostLabel": "Құны",
+  "ownerTotalLabel": "Барлығы",
+  "ownerSlotsOccupied": "Таңдалған кезеңде жарнама орындары бос емес.",
+  "ownerSettingsTitle": "Баптаулар",
+  "ownerAccountSection": "Аккаунт",
+  "ownerPhoneLabel": "Телефон",
+  "ownerPhoneMissing": "Телефон көрсетілмеген",
+  "ownerDisplayNameLabel": "Иесінің аты",
+  "ownerDisplayNameHint": "Кабинетте қалай көрсетіледі",
+  "ownerNameSaved": "Аты сақталды",
+  "ownerBusinessSection": "Мекеме",
+  "ownerBusinessSettingsHint": "Картаны, уақытты және байланысты профильде өңдеңіз.",
+  "ownerGallery": "Галерея",
+  "ownerNoBusinessApply": "Мекеме жоқ — модерацияға өтінім беріңіз.",
+  "ownerRegister": "Тіркеу",
+  "ownerSecuritySection": "Қауіпсіздік",
+  "ownerSecurityHint": "SMS-код арқылы кіру. Номерді ауыстыру үшін қолдауға хабарласыңыз.",
+  "ownerReviewReplySaved": "Жауап сақталды",
+  "ownerReviewsTitle": "Пікірлер · {title}",
+  "ownerNoReviews": "Пікірлер әлі жоқ",
+  "ownerReviewsSummary": "{total} пікір{unanswered}",
+  "ownerReviewsUnansweredSuffix": " · {count} жауапсыз",
+  "ownerYourReply": "Сіздің жауабыңыз: {reply}",
+  "ownerReplyLabel": "Иесінің жауабы",
+  "ownerReplyAction": "Жауап беру",
+  "ownerUpdateReply": "Жаңарту",
+  "ownerPromotionLimit": "Белсенді акция лимиті: {max}. Тарифті жақсартыңыз.",
+  "ownerNewPromotion": "Жаңа акция",
+  "ownerEditPromotion": "Акцияны өңдеу",
+  "ownerFieldTitle": "Атауы",
+  "ownerFieldDiscount": "Жеңілдік",
+  "ownerFieldDescription": "Сипаттама",
+  "ownerFieldStatus": "Күйі",
+  "ownerPromotionStatusCompleted": "Аяқталған",
+  "ownerCreate": "Жасау",
+  "ownerPromotionCreated": "Акция жасалды",
+  "ownerPromotionUpdated": "Акция жаңартылды",
+  "ownerDeletePromotionTitle": "Акцияны жою керек пе?",
+  "ownerDeletePromotionBody": "«{title}» қалпына келмей жойылады.",
+  "ownerPromotionDeleted": "Акция жойылды",
+  "ownerPromotionsTitle": "Акциялар · {title}",
+  "ownerNoPromotions": "Акциялар әлі жоқ",
+  "ownerNoPromotionsHint": "Қонақтар тарту үшін алғашқы акцияны жасаңыз",
+  "ownerActivePromotionsCount": "Белсенді: {active} / {max}",
+  "ownerEdit": "Өңдеу",
+  "ownerPlanTitle": "Тариф",
+  "ownerRegisterBusinessFirst": "Алдымен мекемені тіркеңіз",
+  "ownerPlanUpdated": "Тариф жаңартылды",
+  "ownerPlanCurrent": "Ағымдағы: {name}",
+  "ownerPlanPromoteSubtitle": "TOP, VIP-banner, пакеттер және статистика",
+  "ownerPlanPeriodMonth": "ай",
+  "ownerPlanPeriodDays": "{days} күн",
+  "ownerMenuEmpty": "Мәзірде позициялар әлі жоқ",
+  "ownerMenuOtherGroup": "Басқа",
+  "ownerTeamForbidden": "Бұл әрекетке рұқсатыңыз жоқ.",
+  "ownerTeamNotFound": "Жазба табылмады.",
+  "ownerTeamActionFailed": "Әрекет орындалмады. Кейінірек қайталап көріңіз.",
+  "ownerInviteNotFound": "Шақыру табылмады немесе сілтеме жарамсыз.",
+  "ownerAcceptingInvite": "Қабылдануда…",
+  "ownerAcceptInvite": "Шақыруды қабылдау",
+  "ownerGalleryTitle": "Галерея · {title}",
+  "ownerPhotoLimitSnackbar": "Тариф лимиті: {max} фотоға дейін. «Тариф» бөлімінде тарифті жақсартыңыз.",
+  "ownerCoverUpdated": "Мұқаба жаңартылды",
+  "ownerPhotoAdded": "Фото қосылды",
+  "ownerUploadError": "Жүктеу қатесі: {details}",
+  "ownerPhotosUsage": "Фото: {used} / {max}{suffix}",
+  "ownerPhotoLimitReached": " · лимит толды",
+  "ownerGalleryEmpty": "Галерея бос",
+  "ownerGalleryEmptyHint": "Интерьер, тағам немесе қызмет фотосын қосыңыз",
+  "ownerCoverLabel": "Мұқаба",
+  "ownerSetCover": "Мұқаба ретінде орнату",
+  "ownerPhotoLabel": "Фото",
+  "ownerEditProfileTitle": "Мекеме профилі",
+  "ownerFieldShortDesc": "Қысқа сипаттама",
+  "ownerFieldFullDesc": "Толық сипаттама",
+  "ownerContactsSection": "Байланыс",
+  "ownerWorkHoursSection": "Жұмыс уақыты",
+  "ownerWorkHoursFormat": "Формат: 09:00-22:00",
+  "ownerWorkHoursWeekdays": "Дс–Жм",
+  "ownerWorkHoursSaturday": "Сенбі",
+  "ownerWorkHoursSunday": "Жексенбі",
+  "ownerRequiredNameAddress": "Атау мен мекенжайды толтырыңыз",
+  "ownerProfileSaved": "Мекеме профилі сақталды",
+  "ownerAnalyticsTitle": "Статистика",
+  "ownerAnalyticsAds": "Жарнама",
+  "ownerAnalyticsLoadFailed": "Статистика жүктелмedi. Желі мен қайталап көріңіз.",
+  "ownerAnalyticsPeriodDays": "{days} күн",
+  "ownerAnalyticsOverview": "Шолу",
+  "ownerAnalyticsTargetActions": "Мақсатты әрекеттер",
+  "ownerAnalyticsAdsStats": "Жарнама статистикасы",
+  "ownerAnalyticsAcquisition": "Тартулар",
+  "ownerAnalyticsSourcesPro": "Көздер PRO тарифінде",
+  "ownerAnalyticsSourcesEmpty": "Көздер",
+  "ownerAnalyticsNotEnoughData": "Деректер жеткіліксіз",
+  "ownerAnalyticsSearchQueries": "Пайдаланушылар не іздейді",
+  "ownerAnalyticsSearchEmpty": "Іздеу сұрауларын талдауға деректер жеткіліксіз",
+  "ownerAnalyticsSearchPro": "Іздеу сұраулары PRO тарифінде",
+  "ownerExportFailed": "Есеп дайындалмады. Қайталап көріңіз.",
+  "ownerExportForbidden": "Экспорт рөл немесе тарифке қолжетімсіз.",
+  "ownerExportCsv": "CSV экспорт",
+  "ownerExportPreparing": "Дайындалуда…",
+  "ownerSearchOtherQueries": "Басқа сұраулар — {count}",
+  "ownerSearchTransitions": "{count} өту",
+  "ownerSourcesDetailLater": "Көздердің егжей-тегжейлі атрибуциясы кейінірек.",
+  "ownerBenchmarkSection": "Санатпен салыстыру",
+  "ownerBenchmarkNotEnough": "Салыстыруға деректер әлі жеткіліксіз",
+  "ownerRecommendationsSection": "Ұсыныстар",
+  "ownerPackageTitle": "Пакет",
+  "ownerPackageNotFound": "Пакет табылмады",
+  "ownerPackageContents": "Пакет құрамы",
+  "ownerPackageQuoteFailed": "Пакет құны алынбады.",
+  "ownerNoPromotionsForAds": "Насихатқа белсенді акциялар жоқ.",
+  "ownerOrderTitle": "Тапсырыс",
+  "ownerOrderCreated": "Тапсырыс жасалды",
+  "ownerToPay": "Төлеуге:",
+  "ownerRefreshStatus": "Статусты жаңарту",
+  "ownerNoOrders": "Тапсырыстарыңыз әлі жоқ",
+  "ownerOrdersLoadFailed": "Тапсырыстар жүктелмedi.",
+  "ownerOrderNotFound": "Тапсырыс табылмады.",
+  "ownerYourOrder": "Сіздің тапсырысыңыз",
+  "ownerAfterPayment": "төлемнен кейін",
+  "ownerConfirmOrder": "Тапсырысты растау",
+  "ownerOrderCreateFailed": "Тапсырыс жасалмады.",
+  "ownerCampaignsLoadFailed": "Насихаттар жүктелмedi.",
+  "ownerNoCampaigns": "Белсенді насихаттар жоқ",
+  "ownerCampaignGroupActive": "Белсенді",
+  "ownerCampaignGroupScheduled": "Жоспарланған",
+  "ownerCampaignGroupModeration": "Модерацияда",
+  "ownerCampaignGroupCompleted": "Аяқталған",
+  "ownerCampaignGroupOther": "Басқалар",
+  "ownerCampaignDaysLeft": "{days} {unit} қалды",
+  "ownerCampaignMetrics": "Көрсетулер: {served} · Қараулар: {views} · Өтулер: {clicks}",
+  "ownerCampaignNotFound": "Науқан табылмады.",
+  "ownerCampaignPeriod": "Кезең: {range}",
+  "ownerCampaignStatsFailed": "Статистика жүктелмedi.",
+  "ownerCampaignStatsPending": "Көрсетулер басталғаннан кейін статистика пайда болады.",
+  "ownerCampaignViews": "Қараулар",
+  "ownerCampaignClicks": "Өтулер",
+  "ownerGotIt": "Түсінікті",
+  "ownerCampaignActions": "Әрекеттер",
+  "ownerVipBannerTitle": "VIP-banner",
+  "ownerVipImageLoadFailed": "Сурет жүктелмedi.",
+  "ownerVipTitleMinLength": "Тақырып енгізіңіз (кемінде 2 таңба).",
+  "ownerVipSaveFailed": "Banner сақталмады.",
+  "ownerVipHeadlineLabel": "Тақырып",
+  "ownerVipHeadlineHint": "Banner тақырыбы",
+  "ownerVipDescriptionOptional": "Сипаттама (міндетті емес)",
+  "ownerVipButtonLabel": "Батырма мәтіні",
+  "ownerVipDefaultButton": "Толығырақ",
+  "ownerVipUploadImage": "Сурет жүктеу",
+  "ownerVipReplaceImage": "Суретті ауыстыру",
+  "ownerHidePreview": "Алдын ала көруді жасыру",
+  "ownerShowPreview": "Алдын ала көру",
+  "ownerContinueToOrder": "Тапсырысқа өту",
+  "@ownerAnalyticsDeltaPositive": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerAnalyticsDeltaNegative": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerPermissionsMore": {
+    "placeholders": {
+      "head": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@monetizationReasonGenericWithCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerDurationDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerDurationHours": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerWelcome": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerSummaryWeek": {
+    "placeholders": {
+      "views": {
+        "type": "int"
+      },
+      "actions": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerDeltaWeek": {
+    "placeholders": {
+      "delta": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerProfileCompletion": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerErrorWithDetails": {
+    "placeholders": {
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerTeamManagersUsage": {
+    "placeholders": {
+      "used": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerTeamManagersExtra": {
+    "placeholders": {
+      "active": {
+        "type": "int"
+      },
+      "pending": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerRevokeInviteBody": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerInviteStatusLine": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      },
+      "expires": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerDiscountPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerActiveUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerNextAvailableDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerReservedUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerPriceFrom": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerReviewsTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerReviewsSummary": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      },
+      "unanswered": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerReviewsUnansweredSuffix": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerYourReply": {
+    "placeholders": {
+      "reply": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerPromotionLimit": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerDeletePromotionBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerPromotionsTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerActivePromotionsCount": {
+    "placeholders": {
+      "active": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerPlanCurrent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerPlanPeriodDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerGalleryTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerPhotoLimitSnackbar": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerUploadError": {
+    "placeholders": {
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerPhotosUsage": {
+    "placeholders": {
+      "used": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerAnalyticsPeriodDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerSearchOtherQueries": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerSearchTransitions": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerCampaignDaysLeft": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerCampaignMetrics": {
+    "placeholders": {
+      "served": {
+        "type": "String"
+      },
+      "views": {
+        "type": "String"
+      },
+      "clicks": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerCampaignPeriod": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "ownerAnalyticsCardViews": "Карточка қараулары",
+  "ownerAnalyticsImpressionsLabel": "Көрсетулер",
+  "ownerAnalyticsConversionTitle": "Әрекетке конверсия",
+  "ownerAnalyticsConversionHint": "Карточканы қарағаннан кейін қоңырау, WhatsApp, бағыт, сайт, Instagram немесе таңдаулыға қосу сияқты мақсатты әрекет жасаған пайдаланушылар үлесі.",
+  "ownerAnalyticsChartViewsDays": "{days} күндегі қараулар",
+  "ownerAnalyticsChartActionsDays": "{days} күндегі әрекеттер",
+  "ownerAnalyticsFunnelStepImpressions": "{count} көрсету",
+  "ownerAnalyticsFunnelStepViews": "{count} қарау",
+  "ownerAnalyticsFunnelStepActions": "{count} мақсатты әрекет",
+  "ownerAnalyticsPeriodFunnel": "Кезеңнің воронкасы",
+  "ownerAnalyticsConversionLine": "Әрекетке конверсия: {value}",
+  "ownerAnalyticsAggregatedNote": "Көрсеткіштер кезеңнің агрегатталған деректері бойынша есептелген.",
+  "ownerAnalyticsVsPreviousPeriod": "Алдыңғы кезеңге салыстырғанда",
+  "ownerAnalyticsPopularHours": "Танымал уақыт",
+  "ownerAnalyticsAudience": "Аудитория",
+  "ownerAnalyticsAudienceSubtitle": "Карточка қарауларының келуші түрі бойынша үлесі",
+  "ownerAnalyticsNewVisitors": "Жаңа келушілер",
+  "ownerAnalyticsReturningVisitors": "Қайта келгендер",
+  "ownerAnalyticsAudienceDistanceEmpty": "Қашықтық бойынша аудиторияны талдауға деректер жеткіліксіз",
+  "ownerAnalyticsViewsShare": "Қараулар үлесі: {share}",
+  "ownerAnalyticsUniqueVisitors": "Бірегей келушілер",
+  "ownerAnalyticsSessions": "Сессиялар",
+  "ownerAnalyticsDailyUniqueSum": "Күн бойынша бірегей келушілер жиыны",
+  "ownerAnalyticsDailySessionsSum": "Күн бойынша сессиялар жиыны",
+  "ownerAnalyticsDistanceTitle": "Орынға дейінгі қашықтық",
+  "ownerAnalyticsDistanceHint": "Пайдаланушылардың нақты координаттарынсыз агрегатталған интервалдар.",
+  "ownerAnalyticsContentSection": "Контент",
+  "ownerAnalyticsPromotionViewsLine": "Акция қараулары: {count}",
+  "ownerAnalyticsPromotionItemTitle": "Акция · {id}",
+  "ownerAnalyticsPromotionActionsNotMeasured": "Акциялар бойынша әрекеттер әлі өлшенбейді",
+  "ownerAnalyticsCatalogSection": "Каталог",
+  "ownerAnalyticsCatalogItemTitle": "Позиция · {id}",
+  "ownerAnalyticsCatalogItemEmpty": "Позиция",
+  "ownerAnalyticsCatalogActionsNotMeasured": "Каталог позициялары бойынша әрекеттер әлі өлшенбейді",
+  "ownerAnalyticsStatsAfterFirstView": "Карточканың алғашқы қарауларынан кейін статистика пайда болады.",
+  "ownerAnalyticsSegmentViews": "Қараулар",
+  "ownerAnalyticsSegmentActions": "Әрекеттер",
+  "@ownerAnalyticsChartViewsDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerAnalyticsChartActionsDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerAnalyticsFunnelStepImpressions": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerAnalyticsFunnelStepViews": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerAnalyticsFunnelStepActions": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerAnalyticsConversionLine": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerAnalyticsViewsShare": {
+    "placeholders": {
+      "share": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerAnalyticsPromotionViewsLine": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerAnalyticsPromotionItemTitle": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerAnalyticsCatalogItemTitle": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "ownerHelpQuickStart": "Жылдам бастау",
+  "ownerHelpStep1": "1. Профильді толтырып, фото жүктеңіз",
+  "ownerHelpStep2": "2. Мәзір немесе қызметтер қосыңыз",
+  "ownerHelpStep3": "3. Алғашқы акция жасаңыз",
+  "ownerHelpStep4": "4. Негізгі беттегі статистиканы қараңыз",
+  "ownerHelpPlansPromote": "Тарифтер мен насихат",
+  "ownerTeamInvitationTitle": "Командға шақыру",
+  "ownerInvitationForEmail": "Кімге: {email}",
+  "ownerMenuNewGroup": "Жаңа топ",
+  "ownerMenuEditGroup": "Топты өңдеу",
+  "ownerMenuGroupNameLabel": "Топ атауы *",
+  "ownerMenuGroupNameHint": "Мысалы: Ыстық тағамдар, Шаш кесу",
+  "ownerMenuNewItem": "Жаңа позиция",
+  "ownerMenuGroupField": "Топ",
+  "ownerMenuNoGroup": "Топсыз",
+  "ownerMenuPriceLabel": "Баға (₸)",
+  "ownerCatalogServicesTitle": "Тауарлар мен қызметтер · {title}",
+  "ownerMenuAddGroup": "Топ",
+  "ownerMenuAddItem": "Позиция",
+  "ownerMenuNoSection": "Бөлімсіз",
+  "ownerMenuHideItem": "Жасыру",
+  "ownerMenuShowItem": "Көрсету",
+  "ownerPlanPurchaseUnavailable": "Сатып алу қолжетімсіз",
+  "ownerPlanGoToAds": "Жарнамаға өту",
+  "@ownerInvitationForEmail": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerCatalogServicesTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "ownerScheduledRange": "{start} — {end}",
+  "@ownerScheduledRange": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  }
 }

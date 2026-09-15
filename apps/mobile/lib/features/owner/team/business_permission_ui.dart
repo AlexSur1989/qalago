@@ -1,116 +1,73 @@
 import '../../../core/rbac/business_access.dart';
+import '../../../l10n/app_localizations.dart';
+import '../utils/owner_l10n.dart';
 
-/// RU labels for business permissions (aligned with Business Web).
-const businessPermissionLabelsRu = <BusinessPermission, String>{
-  BusinessPermission.businessProfileEdit: 'Редактирование профиля',
-  BusinessPermission.businessHoursEdit: 'График работы',
-  BusinessPermission.catalogEdit: 'Товары и услуги',
-  BusinessPermission.photosEdit: 'Фото и галерея',
-  BusinessPermission.promotionsEdit: 'Акции',
-  BusinessPermission.reviewsReply: 'Ответы на отзывы',
-  BusinessPermission.analyticsView: 'Просмотр статистики',
-  BusinessPermission.analyticsExport: 'Экспорт статистики',
-  BusinessPermission.adsManage: 'Реклама и продвижение',
-  BusinessPermission.paymentsView: 'Просмотр платежей',
-};
+String permissionLabel(AppLocalizations l10n, String apiValue) =>
+    businessPermissionLabel(l10n, apiValue);
 
-String permissionLabelRu(String apiValue) {
-  final permission = BusinessPermission.fromApi(apiValue);
-  if (permission == null) return apiValue;
-  return businessPermissionLabelsRu[permission] ?? apiValue;
-}
+String membershipRoleLabelRu(AppLocalizations l10n, String role) =>
+    membershipRoleLabel(l10n, role);
 
-String membershipRoleLabelRu(String role) {
-  switch (role) {
-    case 'OWNER':
-      return 'Владелец';
-    case 'MANAGER':
-      return 'Менеджер';
-    default:
-      return role;
-  }
-}
-
-String membershipStatusLabelRu(String status) {
-  switch (status) {
-    case 'ACTIVE':
-      return 'Активен';
-    case 'SUSPENDED':
-      return 'Приостановлен';
-    case 'REVOKED':
-      return 'Доступ отозван';
-    case 'INVITED':
-      return 'Приглашён';
-    default:
-      return status;
-  }
-}
+String membershipStatusLabelRu(AppLocalizations l10n, String status) =>
+    membershipStatusLabel(l10n, status);
 
 class PermissionPreset {
   const PermissionPreset({
     required this.id,
-    required this.labelRu,
     required this.permissions,
-    this.descriptionRu,
   });
 
   final String id;
-  final String labelRu;
-  final String? descriptionRu;
   final List<BusinessPermission> permissions;
+
+  String label(AppLocalizations l10n) => permissionPresetLabel(l10n, id);
+
+  String? description(AppLocalizations l10n) => permissionPresetDescription(l10n, id);
 }
 
 /// Presets aligned with apps/business-web/lib/business-access.ts
-const permissionPresets = <PermissionPreset>[
-  PermissionPreset(
-    id: 'manager',
-    labelRu: 'Управляющий',
-    descriptionRu: 'Операционный доступ без управления командой',
-    permissions: [
-      BusinessPermission.businessProfileEdit,
-      BusinessPermission.businessHoursEdit,
-      BusinessPermission.catalogEdit,
-      BusinessPermission.photosEdit,
-      BusinessPermission.promotionsEdit,
-      BusinessPermission.reviewsReply,
-      BusinessPermission.analyticsView,
-      BusinessPermission.analyticsExport,
-      BusinessPermission.adsManage,
-      BusinessPermission.paymentsView,
-    ],
-  ),
-  PermissionPreset(
-    id: 'content',
-    labelRu: 'Контент-менеджер',
-    descriptionRu: 'Профиль, каталог, фото и акции',
-    permissions: [
-      BusinessPermission.businessProfileEdit,
-      BusinessPermission.businessHoursEdit,
-      BusinessPermission.catalogEdit,
-      BusinessPermission.photosEdit,
-      BusinessPermission.promotionsEdit,
-    ],
-  ),
-  PermissionPreset(
-    id: 'marketing',
-    labelRu: 'Маркетолог',
-    descriptionRu: 'Акции, реклама и базовая аналитика',
-    permissions: [
-      BusinessPermission.promotionsEdit,
-      BusinessPermission.adsManage,
-      BusinessPermission.analyticsView,
-    ],
-  ),
-  PermissionPreset(
-    id: 'analytics',
-    labelRu: 'Аналитик',
-    descriptionRu: 'Просмотр и экспорт статистики',
-    permissions: [
-      BusinessPermission.analyticsView,
-      BusinessPermission.analyticsExport,
-    ],
-  ),
-];
+List<PermissionPreset> permissionPresets(AppLocalizations l10n) => [
+      PermissionPreset(
+        id: 'manager',
+        permissions: [
+          BusinessPermission.businessProfileEdit,
+          BusinessPermission.businessHoursEdit,
+          BusinessPermission.catalogEdit,
+          BusinessPermission.photosEdit,
+          BusinessPermission.promotionsEdit,
+          BusinessPermission.reviewsReply,
+          BusinessPermission.analyticsView,
+          BusinessPermission.analyticsExport,
+          BusinessPermission.adsManage,
+          BusinessPermission.paymentsView,
+        ],
+      ),
+      PermissionPreset(
+        id: 'content',
+        permissions: [
+          BusinessPermission.businessProfileEdit,
+          BusinessPermission.businessHoursEdit,
+          BusinessPermission.catalogEdit,
+          BusinessPermission.photosEdit,
+          BusinessPermission.promotionsEdit,
+        ],
+      ),
+      PermissionPreset(
+        id: 'marketing',
+        permissions: [
+          BusinessPermission.promotionsEdit,
+          BusinessPermission.adsManage,
+          BusinessPermission.analyticsView,
+        ],
+      ),
+      PermissionPreset(
+        id: 'analytics',
+        permissions: [
+          BusinessPermission.analyticsView,
+          BusinessPermission.analyticsExport,
+        ],
+      ),
+    ];
 
 List<BusinessPermission> allBusinessPermissions() =>
     BusinessPermission.values.toList();
@@ -128,13 +85,8 @@ List<BusinessPermission> apiValuesToPermissions(Iterable<String> values) {
       .toList();
 }
 
-String summarizePermissionsRu(List<String> apiValues, {int maxLabels = 3}) {
-  if (apiValues.isEmpty) return '—';
-  final labels = apiValues.map(permissionLabelRu).toList();
-  if (labels.length <= maxLabels) return labels.join(' · ');
-  final head = labels.take(maxLabels).join(' · ');
-  return '$head · +${labels.length - maxLabels}';
-}
+String summarizePermissionsRu(AppLocalizations l10n, List<String> apiValues, {int maxLabels = 3}) =>
+    summarizePermissions(l10n, apiValues, maxLabels: maxLabels);
 
 bool isValidInviteEmail(String raw) {
   final email = raw.trim();

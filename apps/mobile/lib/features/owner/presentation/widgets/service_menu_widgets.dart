@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 
@@ -22,7 +23,7 @@ class PublicMenuView extends StatelessWidget {
 
     if (groups.isEmpty && ungrouped.isEmpty) {
       return Text(
-        'Пока нет позиций в меню',
+        context.l10n.ownerMenuEmpty,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textMuted),
       );
     }
@@ -37,7 +38,7 @@ class PublicMenuView extends StatelessWidget {
         if (ungrouped.isNotEmpty) ...[
           if (groups.isNotEmpty) const SizedBox(height: 8),
           _MenuGroupSection(
-            title: groups.isEmpty ? '' : 'Прочее',
+            title: groups.isEmpty ? '' : context.l10n.ownerMenuOtherGroup,
             items: ungrouped,
           ),
         ],

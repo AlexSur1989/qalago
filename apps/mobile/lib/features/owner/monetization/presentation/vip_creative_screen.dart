@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -27,12 +28,22 @@ class VipCreativeScreen extends ConsumerStatefulWidget {
 class _VipCreativeScreenState extends ConsumerState<VipCreativeScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _buttonController = TextEditingController(text: 'Подробнее');
+  final _buttonController = TextEditingController();
   String? _imageUrl;
   bool _uploading = false;
   bool _saving = false;
   String? _error;
   bool _showPreview = false;
+  bool _buttonDefaultApplied = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_buttonDefaultApplied) {
+      _buttonController.text = context.l10n.ownerVipDefaultButton;
+      _buttonDefaultApplied = true;
+    }
+  }
 
   @override
   void dispose() {
@@ -60,7 +71,7 @@ class _VipCreativeScreenState extends ConsumerState<VipCreativeScreen> {
       final url = await catalog.uploadImage(file.path, bytes, file.name);
       setState(() => _imageUrl = url);
     } catch (_) {
-      setState(() => _error = 'Не удалось загрузить изображение.');
+      setState(() => _error = context.l10n.ownerVipImageLoadFailed);
     } finally {
       if (mounted) setState(() => _uploading = false);
     }
@@ -73,18 +84,18 @@ class _VipCreativeScreenState extends ConsumerState<VipCreativeScreen> {
       placementCode: 'HOME_VIP_BANNER',
       position: 1,
       sponsored: true,
-      displayLabel: 'Реклама',
+      displayLabel: context.l10n.ownerAnalyticsAds,
       creative: AdCreativeModel(
         id: 'preview',
         title: _titleController.text.trim().isEmpty
-            ? 'Заголовок баннера'
+            ? context.l10n.ownerVipHeadlineHint
             : _titleController.text.trim(),
         imageUrl: _imageUrl,
         description: _descriptionController.text.trim().isEmpty
             ? null
             : _descriptionController.text.trim(),
         buttonText: _buttonController.text.trim().isEmpty
-            ? 'Подробнее'
+            ? context.l10n.ownerVipDefaultButton
             : _buttonController.text.trim(),
         targetType: 'BUSINESS',
         targetId: businessId,
@@ -97,7 +108,7 @@ class _VipCreativeScreenState extends ConsumerState<VipCreativeScreen> {
     final businessId = widget.checkoutExtra['businessId'] as String;
     final title = _titleController.text.trim();
     if (title.length < 2) {
-      setState(() => _error = 'Введите заголовок (минимум 2 символа).');
+      setState(() => _error = context.l10n.ownerVipTitleMinLength);
       return;
     }
     setState(() {
@@ -128,7 +139,7 @@ class _VipCreativeScreenState extends ConsumerState<VipCreativeScreen> {
         },
       );
     } catch (_) {
-      setState(() => _error = 'Не удалось сохранить баннер.');
+      setState(() => _error = context.l10n.ownerVipSaveFailed);
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -139,11 +150,11 @@ class _VipCreativeScreenState extends ConsumerState<VipCreativeScreen> {
     final businessId = widget.checkoutExtra['businessId'] as String? ?? '';
 
     return OwnerScaffold(
-      title: 'VIP-баннер',
+      title: context.l10n.ownerVipBannerTitle,
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.screen),
         children: [
-          const Text(vipModerationNotice),
+          Text(vipModerationNotice(context.l10n)),
           const SizedBox(height: 16),
           if (_showPreview) ...[
             VipBannerAd(item: _previewItem(businessId), previewMode: true),
@@ -151,19 +162,19 @@ class _VipCreativeScreenState extends ConsumerState<VipCreativeScreen> {
           ],
           TextField(
             controller: _titleController,
-            decoration: const InputDecoration(labelText: 'Заголовок'),
+            decoration: InputDecoration(labelText: context.l10n.ownerVipHeadlineLabel),
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _descriptionController,
-            decoration: const InputDecoration(labelText: 'Описание (необязательно)'),
+            decoration: InputDecoration(labelText: context.l10n.ownerVipDescriptionOptional),
             maxLines: 2,
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _buttonController,
-            decoration: const InputDecoration(labelText: 'Текст кнопки'),
+            decoration: InputDecoration(labelText: context.l10n.ownerVipButtonLabel),
           ),
           const SizedBox(height: 16),
           if (_imageUrl != null)
@@ -186,7 +197,7 @@ class _VipCreativeScreenState extends ConsumerState<VipCreativeScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.image_outlined),
-            label: Text(_imageUrl == null ? 'Загрузить изображение' : 'Заменить изображение'),
+            label: Text(_imageUrl == null ? context.l10n.ownerVipUploadImage : context.l10n.ownerVipReplaceImage),
           ),
           if (_error != null) ...[
             const SizedBox(height: 8),
@@ -195,7 +206,7 @@ class _VipCreativeScreenState extends ConsumerState<VipCreativeScreen> {
           const SizedBox(height: 24),
           OutlinedButton(
             onPressed: () => setState(() => _showPreview = !_showPreview),
-            child: Text(_showPreview ? 'Скрыть предпросмотр' : 'Предпросмотр'),
+            child: Text(_showPreview ? context.l10n.ownerHidePreview : context.l10n.ownerShowPreview),
           ),
           const SizedBox(height: 12),
           FilledButton(
@@ -207,7 +218,7 @@ class _VipCreativeScreenState extends ConsumerState<VipCreativeScreen> {
                     width: 20,
                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                   )
-                : const Text('Продолжить к заказу'),
+                : Text(context.l10n.ownerContinueToOrder),
           ),
         ],
       ),

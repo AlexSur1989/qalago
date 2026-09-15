@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qalago_mobile/core/rbac/business_access.dart';
 import 'package:qalago_mobile/features/owner/owner_analytics_utils.dart';
+import 'package:qalago_mobile/features/owner/utils/owner_l10n.dart';
+import 'package:qalago_mobile/l10n/app_localizations.dart';
 import 'package:qalago_mobile/features/owner/presentation/widgets/owner_analytics_widgets.dart';
 
 Map<String, dynamic> mockDashboard({
@@ -180,7 +182,10 @@ void main() {
     test('upgrade message for FREE', () {
       final dashboard = mockDashboard(plan: 'FREE');
       expect(
-        ownerAnalyticsPrimaryUpgradeMessage(dashboard),
+        ownerAnalyticsPrimaryUpgradeMessage(
+          lookupAppLocalizations(const Locale('ru')),
+          dashboard,
+        ),
         'Больше данных доступно в тарифе Бизнес',
       );
     });
@@ -293,9 +298,10 @@ void main() {
     });
 
     test('delta percent text', () {
-      expect(ownerAnalyticsDeltaPercent(18), '+18% к предыдущему периоду');
-      expect(ownerAnalyticsDeltaPercent(-7), '-7% к предыдущему периоду');
-      expect(ownerAnalyticsDeltaPercent(null), isNull);
+      final ru = lookupAppLocalizations(const Locale('ru'));
+      expect(ownerAnalyticsDeltaPercent(ru, 18), ru.ownerAnalyticsDeltaPositive(18));
+      expect(ownerAnalyticsDeltaPercent(ru, -7), ru.ownerAnalyticsDeltaNegative(-7));
+      expect(ownerAnalyticsDeltaPercent(ru, null), isNull);
     });
   });
 
@@ -368,6 +374,9 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('ru'),
           home: Scaffold(
             body: SingleChildScrollView(
               child: OwnerAnalyticsOverviewGrid(dashboard: mockDashboard(plan: 'BASIC')),

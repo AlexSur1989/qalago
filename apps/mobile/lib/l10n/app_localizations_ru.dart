@@ -1215,4 +1215,1487 @@ class AppLocalizationsRu extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get ownerPlanTierFree => 'Бесплатный';
+
+  @override
+  String get ownerPlanTierBasic => 'Бизнес';
+
+  @override
+  String get ownerPlanTierPremium => 'PRO';
+
+  @override
+  String get ownerPlanTierVip => 'VIP';
+
+  @override
+  String get ownerStatusActive => 'Активен';
+
+  @override
+  String get ownerStatusPendingModeration => 'На модерации';
+
+  @override
+  String get ownerStatusBlocked => 'Заблокирован';
+
+  @override
+  String get ownerPromotionStatusActive => 'Активна';
+
+  @override
+  String get ownerPromotionStatusExpired => 'Истекла';
+
+  @override
+  String get ownerPromotionFeedHint =>
+      'Продвижение в ленте города — через рекламные продукты';
+
+  @override
+  String get ownerNotificationReviewNew => 'Новый отзыв';
+
+  @override
+  String get ownerNotificationReviewReply => 'Ответ на отзыв';
+
+  @override
+  String get ownerNotificationModeration => 'Модерация';
+
+  @override
+  String get ownerNotificationPromotion => 'Акция';
+
+  @override
+  String get ownerNotificationPlan => 'Тариф';
+
+  @override
+  String get ownerNotificationGeneral => 'Общее';
+
+  @override
+  String get ownerKpiViews => 'Просмотры';
+
+  @override
+  String get ownerKpiCalls => 'Звонки';
+
+  @override
+  String get ownerKpiRoutes => 'Маршруты';
+
+  @override
+  String get ownerKpiFavorites => 'Избранное';
+
+  @override
+  String get ownerAnalyticsFavorites => 'В избранное';
+
+  @override
+  String ownerAnalyticsDeltaPositive(int percent) {
+    return '+$percent% к предыдущему периоду';
+  }
+
+  @override
+  String ownerAnalyticsDeltaNegative(int percent) {
+    return '$percent% к предыдущему периоду';
+  }
+
+  @override
+  String get ownerAnalyticsDeltaZero => '0% к предыдущему периоду';
+
+  @override
+  String get ownerAnalyticsUpgradeActions => 'Доступно в тарифе Бизнес';
+
+  @override
+  String get ownerAnalyticsUpgradeSources =>
+      'Источники, поисковые запросы и CTR доступны в PRO';
+
+  @override
+  String get ownerAnalyticsUpgradeAudience => 'Analytics 360 доступна в VIP';
+
+  @override
+  String get ownerPermissionProfileEdit => 'Редактирование профиля';
+
+  @override
+  String get ownerPermissionHoursEdit => 'График работы';
+
+  @override
+  String get ownerPermissionCatalogEdit => 'Товары и услуги';
+
+  @override
+  String get ownerPermissionPhotosEdit => 'Фото и галерея';
+
+  @override
+  String get ownerPermissionPromotionsEdit => 'Акции';
+
+  @override
+  String get ownerPermissionReviewsReply => 'Ответы на отзывы';
+
+  @override
+  String get ownerPermissionAnalyticsView => 'Просмотр статистики';
+
+  @override
+  String get ownerPermissionAnalyticsExport => 'Экспорт статистики';
+
+  @override
+  String get ownerPermissionAdsManage => 'Реклама и продвижение';
+
+  @override
+  String get ownerPermissionPaymentsView => 'Просмотр платежей';
+
+  @override
+  String get ownerMembershipStatusActive => 'Активен';
+
+  @override
+  String get ownerMembershipStatusSuspended => 'Приостановлен';
+
+  @override
+  String get ownerMembershipStatusRevoked => 'Доступ отозван';
+
+  @override
+  String get ownerMembershipStatusInvited => 'Приглашён';
+
+  @override
+  String get ownerPresetManager => 'Управляющий';
+
+  @override
+  String get ownerPresetManagerDesc =>
+      'Операционный доступ без управления командой';
+
+  @override
+  String get ownerPresetContent => 'Контент-менеджер';
+
+  @override
+  String get ownerPresetContentDesc => 'Профиль, каталог, фото и акции';
+
+  @override
+  String get ownerPresetMarketing => 'Маркетолог';
+
+  @override
+  String get ownerPresetMarketingDesc => 'Акции, реклама и базовая аналитика';
+
+  @override
+  String get ownerPresetAnalytics => 'Аналитик';
+
+  @override
+  String get ownerPresetAnalyticsDesc => 'Просмотр и экспорт статистики';
+
+  @override
+  String ownerPermissionsMore(String head, int count) {
+    return '$head · +$count';
+  }
+
+  @override
+  String get monetizationProductBoost => 'Поднять карточку';
+
+  @override
+  String get monetizationProductTopCategory => 'TOP категории';
+
+  @override
+  String get monetizationProductPromotedPromotion => 'Продвинуть акцию';
+
+  @override
+  String get monetizationProductFeaturedBusiness => 'Популярное место';
+
+  @override
+  String get monetizationProductVipBanner => 'VIP-баннер';
+
+  @override
+  String get monetizationProductBoostDesc =>
+      'Дополнительная видимость вашего бизнеса в категории.';
+
+  @override
+  String get monetizationProductTopCategoryDesc =>
+      'Ваш бизнес показывается в приоритетном рекламном блоке своей категории.';
+
+  @override
+  String get monetizationProductPromotedPromotionDesc =>
+      'Ваша акция получает дополнительное рекламное размещение в QalaGo.';
+
+  @override
+  String get monetizationProductFeaturedBusinessDesc =>
+      'Ваш бизнес получает дополнительное размещение на главной странице.';
+
+  @override
+  String get monetizationProductVipBannerDesc =>
+      'Большой рекламный баннер на главной странице QalaGo.';
+
+  @override
+  String get monetizationProductDefaultDesc => 'Рекламное размещение в QalaGo.';
+
+  @override
+  String get monetizationProductTopCategoryNote =>
+      'Позиции распределяются автоматически между активными рекламодателями.';
+
+  @override
+  String get monetizationOrderAwaitingPayment => 'Ожидает оплаты';
+
+  @override
+  String get monetizationOrderPaid => 'Оплачен';
+
+  @override
+  String get monetizationOrderRefunded => 'Возврат';
+
+  @override
+  String get monetizationOrderPartialRefund => 'Частичный возврат';
+
+  @override
+  String get monetizationCampaignPendingModeration => 'На модерации';
+
+  @override
+  String get monetizationCampaignScheduled => 'Запланирована';
+
+  @override
+  String get monetizationCampaignPaused => 'Приостановлено';
+
+  @override
+  String get monetizationCampaignCompleted => 'Завершено';
+
+  @override
+  String get monetizationCreativePending => 'На проверке';
+
+  @override
+  String get monetizationCreativeApproved => 'Одобрен';
+
+  @override
+  String get monetizationAnalyticsCardOpen => 'Открытия карточки';
+
+  @override
+  String get monetizationAnalyticsPromotionOpen => 'Открытия акции';
+
+  @override
+  String get monetizationPurchaseAvailable => 'Доступно';
+
+  @override
+  String get monetizationPurchaseActive => 'Активно';
+
+  @override
+  String get monetizationPurchaseSoldOut => 'Мест нет';
+
+  @override
+  String get monetizationActionBuy => 'Купить';
+
+  @override
+  String get monetizationActionContinuePayment => 'Продолжить оплату';
+
+  @override
+  String get monetizationActionRenew => 'Продлить';
+
+  @override
+  String get monetizationReasonPendingOrder =>
+      'У вас уже есть неоплаченный заказ на это размещение.';
+
+  @override
+  String get monetizationReasonConflict =>
+      'Размещение конфликтует с текущим графиком.';
+
+  @override
+  String get monetizationReasonAlreadyActive => 'Размещение уже активно.';
+
+  @override
+  String get monetizationReasonAlreadyScheduled =>
+      'Размещение уже запланировано.';
+
+  @override
+  String get monetizationReasonTargetPromoted => 'Эта акция уже продвигается.';
+
+  @override
+  String get monetizationReasonCategoryIneligible =>
+      'Категория не подходит для этого продукта.';
+
+  @override
+  String get monetizationReasonPromotionIneligible =>
+      'Акция недоступна для продвижения.';
+
+  @override
+  String get monetizationReasonSoldOut =>
+      'Свободных мест нет на выбранный период.';
+
+  @override
+  String get monetizationReasonPackageConflict =>
+      'Компоненты пакета не укладываются в доступные слоты.';
+
+  @override
+  String get monetizationReasonReservationExpired =>
+      'Резерв места истёк — обновите статус и попробуйте снова.';
+
+  @override
+  String get monetizationReasonGeneric => 'Не удалось выполнить операцию.';
+
+  @override
+  String monetizationReasonGenericWithCode(String code) {
+    return 'Не удалось выполнить операцию ($code).';
+  }
+
+  @override
+  String get monetizationVipModerationNotice =>
+      'VIP-баннер будет опубликован после проверки модератором. Оплаченный период начнётся только после одобрения баннера.';
+
+  @override
+  String get monetizationPackageVipNotice =>
+      'Пакет включает VIP-баннер. Для запуска VIP-размещения необходимо настроить баннер и пройти модерацию.';
+
+  @override
+  String get monetizationPackageVipCta => 'Настроить VIP-баннер';
+
+  @override
+  String get monetizationPaymentInfoNotice =>
+      'После подтверждения оплаты продвижение будет активировано автоматически.';
+
+  @override
+  String get monetizationPaymentMethodUnavailable =>
+      'Способ оплаты будет доступен после подключения платёжного сервиса.';
+
+  @override
+  String get monetizationCtrTooltip =>
+      'CTR — доля переходов от количества засчитанных просмотров рекламы.';
+
+  @override
+  String get ownerInvitationStatusPending => 'Приглашение активно';
+
+  @override
+  String get ownerInvitationStatusAccepted => 'Приглашение уже принято';
+
+  @override
+  String get ownerInvitationStatusRevoked => 'Приглашение отозвано';
+
+  @override
+  String get ownerInvitationStatusExpired => 'Срок приглашения истёк';
+
+  @override
+  String ownerDurationDays(int count, String unit) {
+    return '$count $unit';
+  }
+
+  @override
+  String ownerDurationHours(int count) {
+    return '$count ч';
+  }
+
+  @override
+  String get ownerDayUnitOne => 'день';
+
+  @override
+  String get ownerDayUnitFew => 'дня';
+
+  @override
+  String get ownerDayUnitMany => 'дней';
+
+  @override
+  String get ownerNavOverview => 'Обзор';
+
+  @override
+  String get ownerNavAnalytics => 'Статистика';
+
+  @override
+  String get ownerNavPromote => 'Реклама и продвижение';
+
+  @override
+  String get ownerNavMessages => 'Сообщения';
+
+  @override
+  String get ownerNavPlan => 'Тариф';
+
+  @override
+  String get ownerNavTeam => 'Команда';
+
+  @override
+  String get ownerNavSettings => 'Настройки';
+
+  @override
+  String get ownerNavHelp => 'Помощь';
+
+  @override
+  String get ownerNavBackToApp => 'В приложение QalaGo';
+
+  @override
+  String get ownerBusinessDrawerTitle => 'QalaGo Business';
+
+  @override
+  String get ownerDashboardTitle => 'Кабинет бизнеса';
+
+  @override
+  String get ownerAddBusiness => 'Добавить';
+
+  @override
+  String get ownerBusinessLabel => 'Заведение';
+
+  @override
+  String ownerWelcome(String title) {
+    return 'Добро пожаловать, $title!';
+  }
+
+  @override
+  String get ownerNoBusinessesTitle => 'Нет заведений';
+
+  @override
+  String get ownerNoBusinessesBody =>
+      'Зарегистрируйте заведение — после модерации оно появится в QalaGo.';
+
+  @override
+  String get ownerRegisterBusiness => 'Зарегистрировать заведение';
+
+  @override
+  String ownerSummaryWeek(int views, int actions) {
+    return '$views просмотров · $actions действий за 7 дней';
+  }
+
+  @override
+  String ownerDeltaWeek(String delta) {
+    return '$delta за нед.';
+  }
+
+  @override
+  String get ownerViewsChartTitle => 'Просмотры за 7 дней';
+
+  @override
+  String get ownerTrendsLockedHint =>
+      'График действий по дням доступен на тарифе «Бизнес» и выше.';
+
+  @override
+  String get ownerPlanUsageTitle => 'Использование тарифа';
+
+  @override
+  String get ownerProfileCard => 'Профиль';
+
+  @override
+  String ownerProfileCompletion(int percent) {
+    return '$percent% заполнено';
+  }
+
+  @override
+  String get ownerFillProfile => 'Заполнить';
+
+  @override
+  String get ownerUpgradePlan => 'Улучшить';
+
+  @override
+  String get ownerActivePromotions => 'Активные акции';
+
+  @override
+  String get ownerNoActivePromotions => 'Нет активных акций';
+
+  @override
+  String get ownerPromoteCatalogSubtitle =>
+      'VIP-баннер, TOP категории, продвижение акций и пакеты';
+
+  @override
+  String get ownerOpenCatalog => 'Открыть каталог';
+
+  @override
+  String get ownerMyCampaigns => 'Мои кампании';
+
+  @override
+  String get ownerManagementSection => 'Управление';
+
+  @override
+  String get ownerPreviewCard => 'Предпросмотр карточки';
+
+  @override
+  String get ownerMgmtMyBusiness => 'Мой бизнес';
+
+  @override
+  String get ownerMgmtGallery => 'Галерея';
+
+  @override
+  String get ownerMgmtPromotions => 'Акции';
+
+  @override
+  String get ownerMgmtReviews => 'Отзывы';
+
+  @override
+  String ownerErrorWithDetails(String details) {
+    return 'Ошибка: $details';
+  }
+
+  @override
+  String get ownerSaving => 'Сохранение…';
+
+  @override
+  String get ownerSubmitting => 'Отправка…';
+
+  @override
+  String get ownerConfirm => 'Подтвердить';
+
+  @override
+  String get ownerRevoke => 'Отозвать';
+
+  @override
+  String get ownerDefaultBusiness => 'Заведение';
+
+  @override
+  String get ownerDefaultMember => 'Участник';
+
+  @override
+  String get ownerDefaultManager => 'Менеджер';
+
+  @override
+  String get ownerDefaultUser => 'Пользователь';
+
+  @override
+  String get ownerTeamNoAccessTitle => 'Нет доступа';
+
+  @override
+  String get ownerTeamNoAccessBody =>
+      'Управление командой доступно только владельцу заведения.';
+
+  @override
+  String get ownerGoHome => 'На главную';
+
+  @override
+  String get ownerInvite => 'Пригласить';
+
+  @override
+  String get ownerTeamMembers => 'Участники';
+
+  @override
+  String get ownerTeamNoMembers => 'Нет участников';
+
+  @override
+  String get ownerTeamPendingInvites => 'Ожидают приглашения';
+
+  @override
+  String get ownerTeamNoPendingInvites => 'Нет ожидающих приглашений';
+
+  @override
+  String get ownerTeamPlanNoManagers => 'Тариф не включает менеджеров.';
+
+  @override
+  String get ownerTeamManagerLimit =>
+      'Достигнут лимит менеджеров вашего тарифа.';
+
+  @override
+  String get ownerViewPlans => 'Посмотреть тарифы';
+
+  @override
+  String get ownerTeamManagersUnavailable =>
+      'Менеджеры недоступны на текущем тарифе';
+
+  @override
+  String ownerTeamManagersUsage(int used, int limit) {
+    return 'Менеджеры: $used из $limit';
+  }
+
+  @override
+  String ownerTeamManagersExtra(int active, int pending) {
+    return ' ($active активных · $pending ожидают)';
+  }
+
+  @override
+  String get ownerSuspendManagerTitle => 'Приостановить доступ менеджера?';
+
+  @override
+  String get ownerSuspendManagerBody =>
+      'Менеджер временно потеряет доступ к управлению бизнесом.';
+
+  @override
+  String get ownerAccessSuspended => 'Доступ приостановлен';
+
+  @override
+  String get ownerAccessRestored => 'Доступ восстановлен';
+
+  @override
+  String get ownerRevokeManagerTitle => 'Удалить доступ менеджера?';
+
+  @override
+  String get ownerRevokeManagerBody =>
+      'Менеджер больше не сможет управлять этим бизнесом.';
+
+  @override
+  String get ownerAccessRevoked => 'Доступ отозван';
+
+  @override
+  String get ownerEditPermissions => 'Изменить права';
+
+  @override
+  String get ownerSuspend => 'Приостановить';
+
+  @override
+  String get ownerRemoveAccess => 'Удалить доступ';
+
+  @override
+  String get ownerRestore => 'Восстановить';
+
+  @override
+  String get ownerRevokeInviteTitle => 'Отозвать приглашение?';
+
+  @override
+  String ownerRevokeInviteBody(String email) {
+    return 'Отозвать приглашение для $email?';
+  }
+
+  @override
+  String get ownerInviteRevoked => 'Приглашение отозвано';
+
+  @override
+  String ownerInviteStatusLine(String status, String expires) {
+    return '$status · до $expires';
+  }
+
+  @override
+  String get ownerInvalidEmail => 'Укажите корректный email';
+
+  @override
+  String get ownerSelectPermission => 'Выберите хотя бы одно право доступа';
+
+  @override
+  String get ownerInviteCreated => 'Приглашение создано';
+
+  @override
+  String get ownerManagerAdded => 'Менеджер добавлен в команду';
+
+  @override
+  String get ownerInviteManagerTitle => 'Пригласить менеджера';
+
+  @override
+  String get ownerInviteManagerBody =>
+      'Укажите email и права. После создания отправьте ссылку менеджеру.';
+
+  @override
+  String get ownerAccessPermissions => 'Права доступа';
+
+  @override
+  String get ownerInviteLinkHint =>
+      'Отправьте эту ссылку менеджеру. Она одноразовая и действует ограниченное время.';
+
+  @override
+  String get ownerLinkCopied => 'Ссылка скопирована';
+
+  @override
+  String get ownerCopyLink => 'Скопировать ссылку';
+
+  @override
+  String get ownerSendInvite => 'Отправить приглашение';
+
+  @override
+  String get ownerPermissionsUpdated => 'Права обновлены';
+
+  @override
+  String get ownerManagerPermissionsTitle => 'Права менеджера';
+
+  @override
+  String get ownerMonetizationTitle => 'Реклама и продвижение';
+
+  @override
+  String get ownerSelectBusinessFirst => 'Сначала выберите заведение';
+
+  @override
+  String get ownerChoosePromotionMethod => 'Выберите способ продвижения';
+
+  @override
+  String get ownerPriceLoadFailed =>
+      'Не удалось получить цены. Проверьте подключение.';
+
+  @override
+  String get ownerProductsUnavailable =>
+      'Рекламные продукты временно недоступны.';
+
+  @override
+  String get ownerReadyPackages => 'Готовые пакеты';
+
+  @override
+  String get ownerPackagesLoadFailed => 'Не удалось загрузить пакеты.';
+
+  @override
+  String get ownerMyPromotions => 'Мои продвижения';
+
+  @override
+  String get ownerMyOrders => 'Мои заказы';
+
+  @override
+  String get ownerProductTitle => 'Продукт';
+
+  @override
+  String get ownerBusinessNotSelected => 'Заведение не выбрано';
+
+  @override
+  String get ownerPriceFailedShort => 'Не удалось получить цены.';
+
+  @override
+  String get ownerProductNotFound => 'Продукт не найден';
+
+  @override
+  String get ownerPeriodLabel => 'Период';
+
+  @override
+  String get ownerStartLabel => 'Начало';
+
+  @override
+  String get ownerStartAfterPayment => 'Сразу после оплаты';
+
+  @override
+  String get ownerPickDate => 'Выбрать дату';
+
+  @override
+  String get ownerSelectDate => 'Выберите дату';
+
+  @override
+  String ownerDiscountPercent(String percent) {
+    return 'Скидка $percent%';
+  }
+
+  @override
+  String get ownerGetQuote => 'Получить стоимость';
+
+  @override
+  String get ownerQuoteFailed => 'Не удалось получить стоимость.';
+
+  @override
+  String get ownerPromotionsLoadFailed => 'Не удалось загрузить акции.';
+
+  @override
+  String get ownerCreatePromotionFirst => 'Сначала создайте активную акцию.';
+
+  @override
+  String get ownerCreatePromotion => 'Создать акцию';
+
+  @override
+  String get ownerSelectPromotion => 'Выберите акцию';
+
+  @override
+  String ownerActiveUntil(String date) {
+    return 'Активно до $date';
+  }
+
+  @override
+  String ownerNextAvailableDate(String date) {
+    return 'Ближайшая доступная дата: $date';
+  }
+
+  @override
+  String ownerReservedUntil(String date) {
+    return 'Место зарезервировано до $date';
+  }
+
+  @override
+  String ownerPriceFrom(String price) {
+    return 'от $price';
+  }
+
+  @override
+  String get ownerCostLabel => 'Стоимость';
+
+  @override
+  String get ownerTotalLabel => 'Итого';
+
+  @override
+  String get ownerSlotsOccupied =>
+      'На выбранный период рекламные места заняты.';
+
+  @override
+  String get ownerSettingsTitle => 'Настройки';
+
+  @override
+  String get ownerAccountSection => 'Аккаунт';
+
+  @override
+  String get ownerPhoneLabel => 'Телефон';
+
+  @override
+  String get ownerPhoneMissing => 'Телефон не указан';
+
+  @override
+  String get ownerDisplayNameLabel => 'Имя владельца';
+
+  @override
+  String get ownerDisplayNameHint => 'Как отображать в кабинете';
+
+  @override
+  String get ownerNameSaved => 'Имя сохранено';
+
+  @override
+  String get ownerBusinessSection => 'Заведение';
+
+  @override
+  String get ownerBusinessSettingsHint =>
+      'Редактируйте карточку, часы и контакты в профиле.';
+
+  @override
+  String get ownerGallery => 'Галерея';
+
+  @override
+  String get ownerNoBusinessApply =>
+      'Нет заведения — подайте заявку на модерацию.';
+
+  @override
+  String get ownerRegister => 'Зарегистрировать';
+
+  @override
+  String get ownerSecuritySection => 'Безопасность';
+
+  @override
+  String get ownerSecurityHint =>
+      'Вход по SMS-коду. Для смены номера обратитесь в поддержку.';
+
+  @override
+  String get ownerReviewReplySaved => 'Ответ сохранён';
+
+  @override
+  String ownerReviewsTitle(String title) {
+    return 'Отзывы · $title';
+  }
+
+  @override
+  String get ownerNoReviews => 'Пока нет отзывов';
+
+  @override
+  String ownerReviewsSummary(int total, String unanswered) {
+    return '$total отзывов$unanswered';
+  }
+
+  @override
+  String ownerReviewsUnansweredSuffix(int count) {
+    return ' · $count без ответа';
+  }
+
+  @override
+  String ownerYourReply(String reply) {
+    return 'Ваш ответ: $reply';
+  }
+
+  @override
+  String get ownerReplyLabel => 'Ответ владельца';
+
+  @override
+  String get ownerReplyAction => 'Ответить';
+
+  @override
+  String get ownerUpdateReply => 'Обновить';
+
+  @override
+  String ownerPromotionLimit(int max) {
+    return 'Лимит активных акций: $max. Улучшите тариф.';
+  }
+
+  @override
+  String get ownerNewPromotion => 'Новая акция';
+
+  @override
+  String get ownerEditPromotion => 'Редактировать акцию';
+
+  @override
+  String get ownerFieldTitle => 'Название';
+
+  @override
+  String get ownerFieldDiscount => 'Скидка';
+
+  @override
+  String get ownerFieldDescription => 'Описание';
+
+  @override
+  String get ownerFieldStatus => 'Статус';
+
+  @override
+  String get ownerPromotionStatusCompleted => 'Завершена';
+
+  @override
+  String get ownerCreate => 'Создать';
+
+  @override
+  String get ownerPromotionCreated => 'Акция создана';
+
+  @override
+  String get ownerPromotionUpdated => 'Акция обновлена';
+
+  @override
+  String get ownerDeletePromotionTitle => 'Удалить акцию?';
+
+  @override
+  String ownerDeletePromotionBody(String title) {
+    return '«$title» будет удалена без восстановления.';
+  }
+
+  @override
+  String get ownerPromotionDeleted => 'Акция удалена';
+
+  @override
+  String ownerPromotionsTitle(String title) {
+    return 'Акции · $title';
+  }
+
+  @override
+  String get ownerNoPromotions => 'Пока нет акций';
+
+  @override
+  String get ownerNoPromotionsHint =>
+      'Создайте первую акцию для привлечения гостей';
+
+  @override
+  String ownerActivePromotionsCount(int active, int max) {
+    return 'Активных: $active / $max';
+  }
+
+  @override
+  String get ownerEdit => 'Редактировать';
+
+  @override
+  String get ownerPlanTitle => 'Тариф';
+
+  @override
+  String get ownerRegisterBusinessFirst => 'Сначала зарегистрируйте заведение';
+
+  @override
+  String get ownerPlanUpdated => 'Тариф обновлён';
+
+  @override
+  String ownerPlanCurrent(String name) {
+    return 'Текущий: $name';
+  }
+
+  @override
+  String get ownerPlanPromoteSubtitle => 'TOP, VIP-баннер, пакеты и статистика';
+
+  @override
+  String get ownerPlanPeriodMonth => 'месяц';
+
+  @override
+  String ownerPlanPeriodDays(int days) {
+    return '$days дн.';
+  }
+
+  @override
+  String get ownerMenuEmpty => 'Пока нет позиций в меню';
+
+  @override
+  String get ownerMenuOtherGroup => 'Прочее';
+
+  @override
+  String get ownerTeamForbidden => 'У вас нет прав для этого действия.';
+
+  @override
+  String get ownerTeamNotFound => 'Запись не найдена.';
+
+  @override
+  String get ownerTeamActionFailed =>
+      'Не удалось выполнить действие. Попробуйте позже.';
+
+  @override
+  String get ownerInviteNotFound =>
+      'Приглашение не найдено или ссылка недействительна.';
+
+  @override
+  String get ownerAcceptingInvite => 'Принимаем…';
+
+  @override
+  String get ownerAcceptInvite => 'Принять приглашение';
+
+  @override
+  String ownerGalleryTitle(String title) {
+    return 'Галерея · $title';
+  }
+
+  @override
+  String ownerPhotoLimitSnackbar(int max) {
+    return 'Лимит тарифа: не более $max фото. Улучшите тариф в разделе «Тариф».';
+  }
+
+  @override
+  String get ownerCoverUpdated => 'Обложка обновлена';
+
+  @override
+  String get ownerPhotoAdded => 'Фото добавлено';
+
+  @override
+  String ownerUploadError(String details) {
+    return 'Ошибка загрузки: $details';
+  }
+
+  @override
+  String ownerPhotosUsage(int used, int max, String suffix) {
+    return 'Фото: $used / $max$suffix';
+  }
+
+  @override
+  String get ownerPhotoLimitReached => ' · лимит достигнут';
+
+  @override
+  String get ownerGalleryEmpty => 'Галерея пустая';
+
+  @override
+  String get ownerGalleryEmptyHint => 'Добавьте фото интерьера, блюд или услуг';
+
+  @override
+  String get ownerCoverLabel => 'Обложка';
+
+  @override
+  String get ownerSetCover => 'Сделать обложкой';
+
+  @override
+  String get ownerPhotoLabel => 'Фото';
+
+  @override
+  String get ownerEditProfileTitle => 'Профиль заведения';
+
+  @override
+  String get ownerFieldShortDesc => 'Краткое описание';
+
+  @override
+  String get ownerFieldFullDesc => 'Полное описание';
+
+  @override
+  String get ownerContactsSection => 'Контакты';
+
+  @override
+  String get ownerWorkHoursSection => 'График работы';
+
+  @override
+  String get ownerWorkHoursFormat => 'Формат: 09:00-22:00';
+
+  @override
+  String get ownerWorkHoursWeekdays => 'Пн–Пт';
+
+  @override
+  String get ownerWorkHoursSaturday => 'Суббота';
+
+  @override
+  String get ownerWorkHoursSunday => 'Воскресенье';
+
+  @override
+  String get ownerRequiredNameAddress => 'Заполните название и адрес';
+
+  @override
+  String get ownerProfileSaved => 'Профиль заведения сохранён';
+
+  @override
+  String get ownerAnalyticsTitle => 'Статистика';
+
+  @override
+  String get ownerAnalyticsAds => 'Реклама';
+
+  @override
+  String get ownerAnalyticsLoadFailed =>
+      'Не удалось загрузить статистику. Проверьте сеть и попробуйте снова.';
+
+  @override
+  String ownerAnalyticsPeriodDays(int days) {
+    return '$days дн';
+  }
+
+  @override
+  String get ownerAnalyticsOverview => 'Обзор';
+
+  @override
+  String get ownerAnalyticsTargetActions => 'Целевые действия';
+
+  @override
+  String get ownerAnalyticsAdsStats => 'Статистика рекламы';
+
+  @override
+  String get ownerAnalyticsAcquisition => 'Привлечение';
+
+  @override
+  String get ownerAnalyticsSourcesPro => 'Источники доступны в PRO';
+
+  @override
+  String get ownerAnalyticsSourcesEmpty => 'Источники';
+
+  @override
+  String get ownerAnalyticsNotEnoughData => 'Недостаточно данных';
+
+  @override
+  String get ownerAnalyticsSearchQueries => 'Что ищут пользователи';
+
+  @override
+  String get ownerAnalyticsSearchEmpty =>
+      'Недостаточно данных для анализа поисковых запросов';
+
+  @override
+  String get ownerAnalyticsSearchPro => 'Поисковые запросы доступны в PRO';
+
+  @override
+  String get ownerExportFailed =>
+      'Не удалось подготовить отчёт. Попробуйте ещё раз.';
+
+  @override
+  String get ownerExportForbidden =>
+      'Экспорт недоступен для вашей роли или тарифа.';
+
+  @override
+  String get ownerExportCsv => 'Экспорт CSV';
+
+  @override
+  String get ownerExportPreparing => 'Формирование…';
+
+  @override
+  String ownerSearchOtherQueries(String count) {
+    return 'Другие запросы — $count';
+  }
+
+  @override
+  String ownerSearchTransitions(String count) {
+    return '$count переходов';
+  }
+
+  @override
+  String get ownerSourcesDetailLater =>
+      'Детальная атрибуция источников появится позже.';
+
+  @override
+  String get ownerBenchmarkSection => 'Сравнение с категорией';
+
+  @override
+  String get ownerBenchmarkNotEnough =>
+      'Пока недостаточно данных для сравнения';
+
+  @override
+  String get ownerRecommendationsSection => 'Рекомендации';
+
+  @override
+  String get ownerPackageTitle => 'Пакет';
+
+  @override
+  String get ownerPackageNotFound => 'Пакет не найден';
+
+  @override
+  String get ownerPackageContents => 'Состав пакета';
+
+  @override
+  String get ownerPackageQuoteFailed => 'Не удалось получить стоимость пакета.';
+
+  @override
+  String get ownerNoPromotionsForAds => 'Нет активных акций для продвижения.';
+
+  @override
+  String get ownerOrderTitle => 'Заказ';
+
+  @override
+  String get ownerOrderCreated => 'Заказ создан';
+
+  @override
+  String get ownerToPay => 'К оплате:';
+
+  @override
+  String get ownerRefreshStatus => 'Обновить статус';
+
+  @override
+  String get ownerNoOrders => 'У вас пока нет заказов';
+
+  @override
+  String get ownerOrdersLoadFailed => 'Не удалось загрузить заказы.';
+
+  @override
+  String get ownerOrderNotFound => 'Заказ не найден.';
+
+  @override
+  String get ownerYourOrder => 'Ваш заказ';
+
+  @override
+  String get ownerAfterPayment => 'после оплаты';
+
+  @override
+  String get ownerConfirmOrder => 'Подтвердить заказ';
+
+  @override
+  String get ownerOrderCreateFailed => 'Не удалось создать заказ.';
+
+  @override
+  String get ownerCampaignsLoadFailed => 'Не удалось загрузить продвижения.';
+
+  @override
+  String get ownerNoCampaigns => 'Нет активных продвижений';
+
+  @override
+  String get ownerCampaignGroupActive => 'Активные';
+
+  @override
+  String get ownerCampaignGroupScheduled => 'Запланированные';
+
+  @override
+  String get ownerCampaignGroupModeration => 'На модерации';
+
+  @override
+  String get ownerCampaignGroupCompleted => 'Завершённые';
+
+  @override
+  String get ownerCampaignGroupOther => 'Другие';
+
+  @override
+  String ownerCampaignDaysLeft(int days, String unit) {
+    return 'Осталось $days $unit';
+  }
+
+  @override
+  String ownerCampaignMetrics(String served, String views, String clicks) {
+    return 'Показы: $served · Просмотры: $views · Переходы: $clicks';
+  }
+
+  @override
+  String get ownerCampaignNotFound => 'Кампания не найдена.';
+
+  @override
+  String ownerCampaignPeriod(String range) {
+    return 'Период: $range';
+  }
+
+  @override
+  String get ownerCampaignStatsFailed => 'Не удалось загрузить статистику.';
+
+  @override
+  String get ownerCampaignStatsPending =>
+      'Статистика появится после начала показов.';
+
+  @override
+  String get ownerCampaignViews => 'Просмотры';
+
+  @override
+  String get ownerCampaignClicks => 'Переходы';
+
+  @override
+  String get ownerGotIt => 'Понятно';
+
+  @override
+  String get ownerCampaignActions => 'Действия';
+
+  @override
+  String get ownerVipBannerTitle => 'VIP-баннер';
+
+  @override
+  String get ownerVipImageLoadFailed => 'Не удалось загрузить изображение.';
+
+  @override
+  String get ownerVipTitleMinLength => 'Введите заголовок (минимум 2 символа).';
+
+  @override
+  String get ownerVipSaveFailed => 'Не удалось сохранить баннер.';
+
+  @override
+  String get ownerVipHeadlineLabel => 'Заголовок';
+
+  @override
+  String get ownerVipHeadlineHint => 'Заголовок баннера';
+
+  @override
+  String get ownerVipDescriptionOptional => 'Описание (необязательно)';
+
+  @override
+  String get ownerVipButtonLabel => 'Текст кнопки';
+
+  @override
+  String get ownerVipDefaultButton => 'Подробнее';
+
+  @override
+  String get ownerVipUploadImage => 'Загрузить изображение';
+
+  @override
+  String get ownerVipReplaceImage => 'Заменить изображение';
+
+  @override
+  String get ownerHidePreview => 'Скрыть предпросмотр';
+
+  @override
+  String get ownerShowPreview => 'Предпросмотр';
+
+  @override
+  String get ownerContinueToOrder => 'Продолжить к заказу';
+
+  @override
+  String get ownerAnalyticsCardViews => 'Просмотры карточки';
+
+  @override
+  String get ownerAnalyticsImpressionsLabel => 'Показы';
+
+  @override
+  String get ownerAnalyticsConversionTitle => 'Конверсия в действие';
+
+  @override
+  String get ownerAnalyticsConversionHint =>
+      'Доля просмотров карточки, после которых пользователь совершил целевое действие: звонок, WhatsApp, маршрут, сайт, Instagram или добавление в избранное.';
+
+  @override
+  String ownerAnalyticsChartViewsDays(int days) {
+    return 'Просмотры за $days дн.';
+  }
+
+  @override
+  String ownerAnalyticsChartActionsDays(int days) {
+    return 'Действия за $days дн.';
+  }
+
+  @override
+  String ownerAnalyticsFunnelStepImpressions(String count) {
+    return '$count показов';
+  }
+
+  @override
+  String ownerAnalyticsFunnelStepViews(String count) {
+    return '$count просмотров';
+  }
+
+  @override
+  String ownerAnalyticsFunnelStepActions(String count) {
+    return '$count целевых действий';
+  }
+
+  @override
+  String get ownerAnalyticsPeriodFunnel => 'Воронка периода';
+
+  @override
+  String ownerAnalyticsConversionLine(String value) {
+    return 'Конверсия в действие: $value';
+  }
+
+  @override
+  String get ownerAnalyticsAggregatedNote =>
+      'Показатели рассчитаны по агрегированным данным периода.';
+
+  @override
+  String get ownerAnalyticsVsPreviousPeriod => 'К предыдущему периоду';
+
+  @override
+  String get ownerAnalyticsPopularHours => 'Популярное время';
+
+  @override
+  String get ownerAnalyticsAudience => 'Аудитория';
+
+  @override
+  String get ownerAnalyticsAudienceSubtitle =>
+      'Доли просмотров карточки по типу посетителя';
+
+  @override
+  String get ownerAnalyticsNewVisitors => 'Новые посетители';
+
+  @override
+  String get ownerAnalyticsReturningVisitors => 'Вернувшиеся посетители';
+
+  @override
+  String get ownerAnalyticsAudienceDistanceEmpty =>
+      'Недостаточно данных для анализа аудитории по расстоянию';
+
+  @override
+  String ownerAnalyticsViewsShare(String share) {
+    return 'Доля просмотров: $share';
+  }
+
+  @override
+  String get ownerAnalyticsUniqueVisitors => 'Уникальные посетители';
+
+  @override
+  String get ownerAnalyticsSessions => 'Сессии';
+
+  @override
+  String get ownerAnalyticsDailyUniqueSum =>
+      'Суммарно уникальных посетителей по дням';
+
+  @override
+  String get ownerAnalyticsDailySessionsSum => 'Суммарно сессий по дням';
+
+  @override
+  String get ownerAnalyticsDistanceTitle => 'Расстояние до заведения';
+
+  @override
+  String get ownerAnalyticsDistanceHint =>
+      'Агрегированные интервалы без точных координат пользователей.';
+
+  @override
+  String get ownerAnalyticsContentSection => 'Контент';
+
+  @override
+  String ownerAnalyticsPromotionViewsLine(String count) {
+    return 'Просмотры акций: $count';
+  }
+
+  @override
+  String ownerAnalyticsPromotionItemTitle(String id) {
+    return 'Акция · $id';
+  }
+
+  @override
+  String get ownerAnalyticsPromotionActionsNotMeasured =>
+      'Действия по акциям пока не измеряются';
+
+  @override
+  String get ownerAnalyticsCatalogSection => 'Каталог';
+
+  @override
+  String ownerAnalyticsCatalogItemTitle(String id) {
+    return 'Позиция · $id';
+  }
+
+  @override
+  String get ownerAnalyticsCatalogItemEmpty => 'Позиция';
+
+  @override
+  String get ownerAnalyticsCatalogActionsNotMeasured =>
+      'Действия по позициям каталога пока не измеряются';
+
+  @override
+  String get ownerAnalyticsStatsAfterFirstView =>
+      'Статистика появится после первых просмотров карточки.';
+
+  @override
+  String get ownerAnalyticsSegmentViews => 'Просмотры';
+
+  @override
+  String get ownerAnalyticsSegmentActions => 'Действия';
+
+  @override
+  String get ownerHelpQuickStart => 'Быстрый старт';
+
+  @override
+  String get ownerHelpStep1 => '1. Заполните профиль и загрузите фото';
+
+  @override
+  String get ownerHelpStep2 => '2. Добавьте меню или услуги';
+
+  @override
+  String get ownerHelpStep3 => '3. Создайте первую акцию';
+
+  @override
+  String get ownerHelpStep4 => '4. Смотрите статистику на главной';
+
+  @override
+  String get ownerHelpPlansPromote => 'Тарифы и продвижение';
+
+  @override
+  String get ownerTeamInvitationTitle => 'Приглашение в команду';
+
+  @override
+  String ownerInvitationForEmail(String email) {
+    return 'Для: $email';
+  }
+
+  @override
+  String get ownerMenuNewGroup => 'Новая группа';
+
+  @override
+  String get ownerMenuEditGroup => 'Редактировать группу';
+
+  @override
+  String get ownerMenuGroupNameLabel => 'Название группы *';
+
+  @override
+  String get ownerMenuGroupNameHint => 'Например: Горячие блюда, Стрижка';
+
+  @override
+  String get ownerMenuNewItem => 'Новая позиция';
+
+  @override
+  String get ownerMenuGroupField => 'Группа';
+
+  @override
+  String get ownerMenuNoGroup => 'Без группы';
+
+  @override
+  String get ownerMenuPriceLabel => 'Цена (₸)';
+
+  @override
+  String ownerCatalogServicesTitle(String title) {
+    return 'Товары и услуги · $title';
+  }
+
+  @override
+  String get ownerMenuAddGroup => 'Группа';
+
+  @override
+  String get ownerMenuAddItem => 'Позиция';
+
+  @override
+  String get ownerMenuNoSection => 'Без раздела';
+
+  @override
+  String get ownerMenuHideItem => 'Скрыть';
+
+  @override
+  String get ownerMenuShowItem => 'Показать';
+
+  @override
+  String get ownerPlanPurchaseUnavailable => 'Покупка недоступна';
+
+  @override
+  String get ownerPlanGoToAds => 'Перейти к рекламе';
+
+  @override
+  String ownerScheduledRange(String start, String end) {
+    return '$start — $end';
+  }
 }

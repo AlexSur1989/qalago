@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
@@ -8,6 +9,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../owner_analytics_utils.dart';
+import '../utils/owner_l10n.dart' hide ownerAnalyticsLockedMessage;
 import '../../../core/rbac/business_access.dart';
 import '../providers/owner_providers.dart';
 import '../../../shared/navigation/navigation_utils.dart';
@@ -38,19 +40,19 @@ class _OwnerAnalyticsScreenState extends ConsumerState<OwnerAnalyticsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Статистика'),
+        title: Text(context.l10n.ownerAnalyticsTitle),
         leading: qalagoBackLeading(context, fallbackLocation: '/owner'),
         actions: [
           TextButton(
             onPressed: () => context.push('/owner/monetization/campaigns'),
-            child: const Text('Реклама'),
+            child: Text(context.l10n.ownerAnalyticsAds),
           ),
         ],
       ),
       body: analyticsAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
-          message: 'Не удалось загрузить статистику. Проверьте сеть и попробуйте снова.',
+          message: context.l10n.ownerAnalyticsLoadFailed,
           onRetry: () => ref.invalidate(businessAnalyticsDashboardProvider(query)),
         ),
         data: (dashboard) {
@@ -109,7 +111,7 @@ class _AnalyticsBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final actions = dashboard['actions'] as Map<String, dynamic>?;
     final periodOptions = ownerAnalyticsPeriodOptions(dashboard);
-    final upgradeMessage = ownerAnalyticsPrimaryUpgradeMessage(dashboard);
+    final upgradeMessage = ownerAnalyticsPrimaryUpgradeMessage(context.l10n, dashboard);
     final isEmpty = ownerAnalyticsIsEmpty(dashboard);
     final canExport = ownerAnalyticsCanExportReport(dashboard, access);
 
@@ -137,7 +139,7 @@ class _AnalyticsBody extends StatelessWidget {
                   (option) => Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: ChoiceChip(
-                      label: Text('$option дн'),
+                      label: Text(context.l10n.ownerAnalyticsPeriodDays(option)),
                       selected: days == option,
                       onSelected: (_) => onDaysChanged(option),
                     ),
@@ -154,7 +156,7 @@ class _AnalyticsBody extends StatelessWidget {
           _ExportReportButton(businessId: businessId, days: days),
           const SizedBox(height: 8),
         ],
-        const OwnerAnalyticsSectionTitle('Обзор'),
+        OwnerAnalyticsSectionTitle(context.l10n.ownerAnalyticsOverview),
         if (isEmpty) const OwnerAnalyticsEmptyState() else ...[
           OwnerAnalyticsOverviewGrid(dashboard: dashboard),
           const SizedBox(height: 12),
@@ -166,12 +168,12 @@ class _AnalyticsBody extends StatelessWidget {
             OwnerAnalyticsTrendCard(dashboard: dashboard, effectiveDays: effectiveDays),
           if (actions != null) ...[
             const SizedBox(height: 8),
-            Text('Целевые действия', style: Theme.of(context).textTheme.titleSmall),
+            Text(context.l10n.ownerAnalyticsTargetActions, style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 8),
             OwnerAnalyticsActionsBreakdown(actions: actions),
           ] else if (ownerAnalyticsIsLocked(dashboard, 'actions'))
             Text(
-              ownerAnalyticsLockedMessage(dashboard, 'actions') ?? 'Доступно в тарифе Бизнес',
+              ownerAnalyticsLockedMessage(dashboard, 'actions') ?? context.l10n.ownerAnalyticsUpgradeActions,
               style: TextStyle(color: AppTheme.textMuted),
             ),
         ],
@@ -192,7 +194,7 @@ class _AnalyticsBody extends StatelessWidget {
         OutlinedButton.icon(
           onPressed: () => context.push('/owner/monetization/campaigns'),
           icon: const Icon(Icons.campaign_outlined),
-          label: const Text('Статистика рекламы'),
+          label: Text(context.l10n.ownerAnalyticsAdsStats),
         ),
       ],
     );
@@ -218,7 +220,7 @@ class _AcquisitionBlock extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const OwnerAnalyticsSectionTitle('Привлечение'),
+        OwnerAnalyticsSectionTitle(context.l10n.ownerAnalyticsAcquisition),
         if (dashboard['sources'] is List && (dashboard['sources'] as List).isNotEmpty)
           _SourcesSection(sources: dashboard['sources'] as List)
         else if (dashboard['sourcesStatus'] == 'DEFERRED')
@@ -226,10 +228,10 @@ class _AcquisitionBlock extends StatelessWidget {
         else if (ownerAnalyticsIsLocked(dashboard, 'sources'))
           _InlineLockedHint(
             message: ownerAnalyticsLockedMessage(dashboard, 'sources') ??
-                'Источники доступны в PRO',
+                context.l10n.ownerAnalyticsSourcesPro,
           )
         else if (ownerAnalyticsCap(dashboard, 'trafficSources'))
-          const _InlineEmptyHint(title: 'Источники', message: 'Недостаточно данных'),
+          _InlineEmptyHint(title: context.l10n.ownerAnalyticsSourcesEmpty, message: context.l10n.ownerAnalyticsNotEnoughData),
         if (dashboard['searchQueries'] is List &&
             (dashboard['searchQueries'] as List).isNotEmpty)
           _SearchQueriesSection(
@@ -237,14 +239,14 @@ class _AcquisitionBlock extends StatelessWidget {
             otherCount: dashboard['searchQueriesOtherCount'] as num?,
           )
         else if (dashboard['searchQueriesStatus'] == 'INSUFFICIENT_DATA')
-          const _InlineEmptyHint(
-            title: 'Что ищут пользователи',
-            message: 'Недостаточно данных для анализа поисковых запросов',
+          _InlineEmptyHint(
+            title: context.l10n.ownerAnalyticsSearchQueries,
+            message: context.l10n.ownerAnalyticsSearchEmpty,
           )
         else if (ownerAnalyticsIsLocked(dashboard, 'searchQueries'))
           _InlineLockedHint(
             message: ownerAnalyticsLockedMessage(dashboard, 'searchQueries') ??
-                'Поисковые запросы доступны в PRO',
+                context.l10n.ownerAnalyticsSearchPro,
           ),
         OwnerAnalyticsFunnelCard(dashboard: dashboard),
       ],
@@ -267,7 +269,7 @@ class _InlineLockedHint extends StatelessWidget {
 }
 
 class _InlineEmptyHint extends StatelessWidget {
-  const _InlineEmptyHint({required this.title, required this.message});
+  _InlineEmptyHint({required this.title, required this.message});
 
   final String title;
   final String message;
@@ -309,14 +311,14 @@ class _ExportReportButtonState extends ConsumerState<_ExportReportButton> {
       if (!mounted || shareResult.cancelled) return;
       if (shareResult.failed) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Не удалось подготовить отчёт. Попробуйте ещё раз.')),
+          SnackBar(content: Text(context.l10n.ownerExportFailed)),
         );
       }
     } catch (e) {
       if (!mounted) return;
       final text = e.toString().contains('403')
-          ? 'Экспорт недоступен для вашей роли или тарифа.'
-          : 'Не удалось подготовить отчёт. Попробуйте ещё раз.';
+          ? context.l10n.ownerExportForbidden
+          : context.l10n.ownerExportFailed;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
     } finally {
       if (mounted) setState(() => _exporting = false);
@@ -336,7 +338,7 @@ class _ExportReportButtonState extends ConsumerState<_ExportReportButton> {
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
             : const Icon(Icons.ios_share_outlined),
-        label: Text(_exporting ? 'Формирование…' : 'Экспорт CSV'),
+        label: Text(_exporting ? context.l10n.ownerExportPreparing : context.l10n.ownerExportCsv),
       ),
     );
   }
@@ -357,13 +359,17 @@ class _SearchQueriesSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Что ищут пользователи', style: TextStyle(fontWeight: FontWeight.w700)),
+            Text(context.l10n.ownerAnalyticsSearchQueries, style: TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             ...queries.whereType<Map>().map(
                   (row) => ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text('"${row['query'] as String? ?? ''}"'),
-                    trailing: Text('${ownerAnalyticsFormatCount(row['count'] as num?)} переходов'),
+                    trailing: Text(
+                      context.l10n.ownerSearchTransitions(
+                        ownerAnalyticsFormatCount(row['count'] as num?),
+                      ),
+                    ),
                   ),
                 ),
             if (otherCount != null && otherCount! > 0)
@@ -390,10 +396,10 @@ class _DeferredSourcesSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Источники', style: TextStyle(fontWeight: FontWeight.w700)),
+            Text(context.l10n.ownerAnalyticsSourcesEmpty, style: TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             Text(
-              'Детальная атрибуция источников появится позже.',
+              context.l10n.ownerSourcesDetailLater,
               style: TextStyle(color: AppTheme.textMuted),
             ),
           ],
@@ -417,7 +423,7 @@ class _SourcesSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Источники', style: TextStyle(fontWeight: FontWeight.w700)),
+            Text(context.l10n.ownerAnalyticsSourcesEmpty, style: TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             ...sources.whereType<Map>().map(
                   (row) => ListTile(
@@ -446,15 +452,15 @@ class _BenchmarkSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const OwnerAnalyticsSectionTitle('Сравнение с категорией'),
+        OwnerAnalyticsSectionTitle(context.l10n.ownerBenchmarkSection),
         Card(
           margin: const EdgeInsets.only(bottom: 12),
           child: ListTile(
-            title: const Text('Сравнение с категорией'),
+            title: Text(context.l10n.ownerBenchmarkSection),
             subtitle: status == 'INSUFFICIENT_DATA'
                 ? Text(
                     benchmark['message'] as String? ??
-                        'Пока недостаточно данных для сравнения',
+                        context.l10n.ownerBenchmarkNotEnough,
                   )
                 : Text(
                     'Категория: ${benchmark['categoryTitle'] ?? ''}\n'
@@ -481,7 +487,7 @@ class _RecommendationsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const OwnerAnalyticsSectionTitle('Рекомендации'),
+        OwnerAnalyticsSectionTitle(context.l10n.ownerRecommendationsSection),
         ...recommendations.whereType<Map>().map(
               (item) => Card(
                 margin: const EdgeInsets.only(bottom: 8),

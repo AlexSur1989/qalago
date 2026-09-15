@@ -74,19 +74,6 @@ List<String> buildDateRange(int days) {
   return result;
 }
 
-String ownerStatusLabel(String status) {
-  switch (status) {
-    case 'ACTIVE':
-      return 'Активен';
-    case 'PENDING':
-      return 'На модерации';
-    case 'BLOCKED':
-      return 'Заблокирован';
-    default:
-      return status;
-  }
-}
-
 bool ownerIsPromotionActiveStatus(String? status) => status == 'ACTIVE';
 
 bool ownerIsPromotionLiveNow(PromotionModel promotion, {DateTime? now}) {
@@ -101,29 +88,3 @@ bool ownerIsPromotionLiveNow(PromotionModel promotion, {DateTime? now}) {
   return true;
 }
 
-String ownerPromotionFeedHint(Map<String, dynamic> plan) {
-  return 'Продвижение в ленте города — через рекламные продукты';
-}
-
-String ownerPromotionStatusLabel(PromotionModel promotion) {
-  if (!ownerIsPromotionActiveStatus(promotion.status)) {
-    return promotion.status ?? '—';
-  }
-  if (!ownerIsPromotionLiveNow(promotion)) {
-    return 'Истекла';
-  }
-  return 'Активна';
-}
-
-String ownerNotificationTypeLabel(String type) {
-  const map = {
-    'REVIEW_NEW': 'Новый отзыв',
-    'REVIEW_REPLY': 'Ответ на отзыв',
-    'MODERATION': 'Модерация',
-    'PROMOTION': 'Акция',
-    'PLAN_ACTIVATED': 'Тариф',
-    'PLAN_EXPIRED': 'Тариф',
-    'GENERAL': 'Общее',
-  };
-  return map[type] ?? type.replaceAll('_', ' ');
-}

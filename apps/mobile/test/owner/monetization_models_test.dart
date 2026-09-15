@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qalago_mobile/l10n/app_localizations.dart';
 import 'package:qalago_mobile/features/owner/monetization/data/monetization_formatters.dart';
 import 'package:qalago_mobile/features/owner/monetization/data/monetization_labels.dart';
 import 'package:qalago_mobile/features/owner/monetization/data/monetization_models.dart';
@@ -167,15 +169,17 @@ void main() {
     });
 
     test('11. status mapping', () {
-      expect(orderStatusLabel('AWAITING_PAYMENT'), 'Ожидает оплаты');
-      expect(campaignStatusLabel('ACTIVE'), 'Активна');
-      expect(campaignStatusLabel('SCHEDULED'), 'Запланирована');
-      expect(campaignStatusLabel('PENDING_MODERATION'), 'На модерации');
+      final ru = lookupAppLocalizations(const Locale('ru'));
+      expect(orderStatusLabel(ru, 'AWAITING_PAYMENT'), 'Ожидает оплаты');
+      expect(campaignStatusLabel(ru, 'ACTIVE'), 'Активна');
+      expect(campaignStatusLabel(ru, 'SCHEDULED'), 'Запланирована');
+      expect(campaignStatusLabel(ru, 'PENDING_MODERATION'), 'На модерации');
     });
 
     test('12. product title mapping', () {
-      expect(productTitle('VIP_BANNER'), 'VIP-баннер');
-      expect(productTitle('TOP_CATEGORY'), 'TOP категории');
+      final ru = lookupAppLocalizations(const Locale('ru'));
+      expect(productTitle(ru, 'VIP_BANNER'), 'VIP-баннер');
+      expect(productTitle(ru, 'TOP_CATEGORY'), 'TOP категории');
     });
   });
 }

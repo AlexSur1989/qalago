@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -17,9 +18,9 @@ class PromoteBusinessScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final business = ref.watch(ownerSelectedBusinessProvider);
     if (business == null) {
-      return const OwnerScaffold(
-        title: 'Реклама и продвижение',
-        body: Center(child: Text('Сначала выберите заведение')),
+      return OwnerScaffold(
+        title: context.l10n.ownerMonetizationTitle,
+        body: Center(child: Text(context.l10n.ownerSelectBusinessFirst)),
       );
     }
 
@@ -41,7 +42,7 @@ class PromoteBusinessScreen extends ConsumerWidget {
         ref.watch(monetizationPurchaseStatesProvider(businessId));
 
     return OwnerScaffold(
-      title: 'Реклама и продвижение',
+      title: context.l10n.ownerMonetizationTitle,
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(monetizationProductsProvider);
@@ -52,7 +53,7 @@ class PromoteBusinessScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(AppSpacing.screen),
           children: [
             Text(
-              'Выберите способ продвижения',
+              context.l10n.ownerChoosePromotionMethod,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
@@ -61,12 +62,12 @@ class PromoteBusinessScreen extends ConsumerWidget {
             productsAsync.when(
               loading: () => const LoadingView(),
               error: (e, _) => ErrorView(
-                message: 'Не удалось получить цены. Проверьте подключение.',
+                message: context.l10n.ownerPriceLoadFailed,
                 onRetry: () => ref.invalidate(monetizationProductsProvider),
               ),
               data: (products) {
                 if (products.isEmpty) {
-                  return const Text('Рекламные продукты временно недоступны.');
+                  return Text(context.l10n.ownerProductsUnavailable);
                 }
                 final states = purchaseStatesAsync.valueOrNull ?? {};
                 return Column(
@@ -94,7 +95,7 @@ class PromoteBusinessScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Готовые пакеты',
+              context.l10n.ownerReadyPackages,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
@@ -106,7 +107,7 @@ class PromoteBusinessScreen extends ConsumerWidget {
                 child: Center(child: CircularProgressIndicator()),
               ),
               error: (e, _) => ErrorView(
-                message: 'Не удалось загрузить пакеты.',
+                message: context.l10n.ownerPackagesLoadFailed,
                 onRetry: () => ref.invalidate(monetizationPackagesProvider),
               ),
               data: (packages) => Column(
@@ -126,13 +127,13 @@ class PromoteBusinessScreen extends ConsumerWidget {
             OutlinedButton.icon(
               onPressed: () => context.push('/owner/monetization/campaigns'),
               icon: const Icon(Icons.campaign_outlined),
-              label: const Text('Мои продвижения'),
+              label: Text(context.l10n.ownerMyPromotions),
             ),
             const SizedBox(height: 8),
             OutlinedButton.icon(
               onPressed: () => context.push('/owner/monetization/orders'),
               icon: const Icon(Icons.receipt_long_outlined),
-              label: const Text('Мои заказы'),
+              label: Text(context.l10n.ownerMyOrders),
             ),
           ],
         ),

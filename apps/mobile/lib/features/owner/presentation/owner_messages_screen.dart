@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../owner_utils.dart';
+import '../utils/owner_l10n.dart';
 import 'widgets/owner_scaffold.dart';
 import '../../../core/theme/app_theme.dart';
 
@@ -16,7 +17,7 @@ class OwnerMessagesScreen extends ConsumerWidget {
     final notificationsAsync = ref.watch(notificationsProvider);
 
     return OwnerScaffold(
-      title: 'Сообщения',
+      title: context.l10n.ownerNavMessages,
       actions: [
         TextButton(
           onPressed: () async {
@@ -24,7 +25,7 @@ class OwnerMessagesScreen extends ConsumerWidget {
             ref.invalidate(notificationsProvider);
             ref.invalidate(unreadNotificationsProvider);
           },
-          child: const Text('Прочитать все'),
+          child: Text(context.l10n.notificationsMarkAllRead),
         ),
       ],
       body: notificationsAsync.when(
@@ -75,7 +76,7 @@ class OwnerMessagesScreen extends ConsumerWidget {
                         ),
                       const SizedBox(height: 6),
                       Text(
-                        ownerNotificationTypeLabel(n['type'] as String? ?? ''),
+                        ownerNotificationTypeLabel(context.l10n, n['type'] as String? ?? ''),
                         style: Theme.of(context).textTheme.labelSmall,
                       ),
                       if (dateLabel.isNotEmpty)

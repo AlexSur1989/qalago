@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_spacing.dart';
@@ -54,13 +55,13 @@ class _OwnerReviewsScreenState extends ConsumerState<OwnerReviewsScreen> {
       ref.invalidate(ownerReviewsProvider(widget.businessId));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ответ сохранён')),
+          SnackBar(content: Text(context.l10n.ownerReviewReplySaved)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: $e')),
+          SnackBar(content: Text(context.l10n.ownerErrorWithDetails('$e'))),
         );
       }
     }
@@ -73,7 +74,7 @@ class _OwnerReviewsScreenState extends ConsumerState<OwnerReviewsScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: qalagoBackLeading(context, fallbackLocation: '/owner'),
-        title: Text('Отзывы · ${widget.businessTitle}'),
+        title: Text(context.l10n.ownerReviewsTitle(widget.businessTitle)),
       ),
       body: reviewsAsync.when(
         loading: () => const LoadingView(),
@@ -85,7 +86,7 @@ class _OwnerReviewsScreenState extends ConsumerState<OwnerReviewsScreen> {
           final unanswered = reviews.where((r) => r.ownerReply == null || r.ownerReply!.isEmpty).length;
 
           if (reviews.isEmpty) {
-            return const Center(child: Text('Пока нет отзывов'));
+            return Center(child: Text(context.l10n.ownerNoReviews));
           }
 
           return ListView.separated(
@@ -115,7 +116,7 @@ class _OwnerReviewsScreenState extends ConsumerState<OwnerReviewsScreen> {
                         children: [
                           Expanded(
                             child: Text(
-                              review.userName ?? 'Пользователь',
+                              review.userName ?? context.l10n.ownerDefaultUser,
                               style: const TextStyle(fontWeight: FontWeight.w700),
                             ),
                           ),
@@ -135,7 +136,7 @@ class _OwnerReviewsScreenState extends ConsumerState<OwnerReviewsScreen> {
                             color: AppTheme.kzBlue.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text('Ваш ответ: ${review.ownerReply}'),
+                          child: Text(context.l10n.ownerYourReply(review.ownerReply ?? '')),
                         ),
                       ],
                       const SizedBox(height: 12),
@@ -143,9 +144,9 @@ class _OwnerReviewsScreenState extends ConsumerState<OwnerReviewsScreen> {
                         controller: controller,
                         minLines: 2,
                         maxLines: 4,
-                        decoration: const InputDecoration(
-                          labelText: 'Ответ владельца',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: context.l10n.ownerReplyLabel,
+                          border: const OutlineInputBorder(),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -153,7 +154,7 @@ class _OwnerReviewsScreenState extends ConsumerState<OwnerReviewsScreen> {
                         alignment: Alignment.centerRight,
                         child: FilledButton(
                           onPressed: () => _submitReply(review),
-                          child: Text(review.ownerReply == null ? 'Ответить' : 'Обновить'),
+                          child: Text(review.ownerReply == null ? context.l10n.ownerReplyAction : context.l10n.ownerUpdateReply),
                         ),
                       ),
                     ],

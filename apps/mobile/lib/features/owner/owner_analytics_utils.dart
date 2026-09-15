@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 
 import '../../core/rbac/business_access.dart';
+import '../../l10n/app_localizations.dart';
+import 'utils/owner_l10n.dart' as owner_l10n;
 
 bool ownerAnalyticsIsLocked(Map<String, dynamic> dashboard, String sectionId) {
   final locked = dashboard['lockedSections'];
@@ -68,24 +71,8 @@ IconData ownerAnalyticsActionIcon(String key) {
   }
 }
 
-String ownerAnalyticsActionLabel(String key) {
-  switch (key) {
-    case 'calls':
-      return 'Звонки';
-    case 'whatsapp':
-      return 'WhatsApp';
-    case 'routes':
-      return 'Маршрут';
-    case 'website':
-      return 'Сайт';
-    case 'instagram':
-      return 'Instagram';
-    case 'favorites':
-      return 'В избранное';
-    default:
-      return key;
-  }
-}
+String ownerAnalyticsActionLabel(AppLocalizations l10n, String key) =>
+    owner_l10n.ownerAnalyticsActionLabel(l10n, key);
 
 /// Canonical business intent actions (Stage 6.6A.1) — excludes promotionViews.
 const ownerAnalyticsIntentActionKeys = [
@@ -116,12 +103,12 @@ List<MapEntry<String, int>> ownerAnalyticsTrendSeries(
       .toList();
 }
 
-String? ownerAnalyticsDeltaPercent(num? value) {
+String? ownerAnalyticsDeltaPercent(AppLocalizations l10n, num? value) {
   if (value == null) return null;
   final rounded = value.round();
-  if (rounded > 0) return '+$rounded% к предыдущему периоду';
-  if (rounded < 0) return '$rounded% к предыдущему периоду';
-  return '0% к предыдущему периоду';
+  if (rounded > 0) return l10n.ownerAnalyticsDeltaPositive(rounded);
+  if (rounded < 0) return l10n.ownerAnalyticsDeltaNegative(rounded);
+  return l10n.ownerAnalyticsDeltaZero;
 }
 
 String ownerAnalyticsFormatCount(num? value) {
@@ -155,18 +142,6 @@ bool ownerAnalyticsCanExportReport(
   return hasPermission(access, BusinessPermission.analyticsExport);
 }
 
-String? ownerAnalyticsPrimaryUpgradeMessage(Map<String, dynamic> dashboard) {
-  if (ownerAnalyticsIsLocked(dashboard, 'actions')) {
-    return ownerAnalyticsLockedMessage(dashboard, 'actions');
-  }
-  if (ownerAnalyticsIsLocked(dashboard, 'sources')) {
-    return 'Источники, поисковые запросы и CTR доступны в PRO';
-  }
-  if (ownerAnalyticsIsLocked(dashboard, 'audience')) {
-    return 'Analytics 360 доступна в VIP';
-  }
-  return null;
-}
 
 bool ownerAnalyticsIsEmpty(Map<String, dynamic> dashboard) {
   final overview = dashboard['overview'];

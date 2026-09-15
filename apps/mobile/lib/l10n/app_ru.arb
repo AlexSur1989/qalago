@@ -1,13 +1,11 @@
 {
   "@@locale": "ru",
   "appTitle": "QalaGo",
-
   "navHome": "Главная",
   "navCategories": "Категории",
   "navMap": "Карта",
   "navFavorites": "Избранное",
   "navProfile": "Профиль",
-
   "commonRetry": "Повторить",
   "commonCancel": "Отмена",
   "commonSave": "Сохранить",
@@ -25,7 +23,6 @@
   "commonAllCategories": "Все категории",
   "commonAd": "Реклама",
   "commonViewAll": "Смотреть все",
-
   "homeSearchPlaceholder": "Поиск заведений и услуг...",
   "homeCategoriesEmpty": "Категории пока не добавлены",
   "homePromotionsEmpty": "Нет активных акций",
@@ -40,7 +37,6 @@
   "homeFeaturedNextTooltip": "Следующее заведение",
   "homeCategoryMoreSemantics": "Ещё категории",
   "homeCategoriesSection": "Категории",
-
   "categoriesTitle": "Категории",
   "categoriesFilterHint": "Фильтр по названию категории...",
   "categoriesSearchBusinesses": "Поиск заведений",
@@ -55,7 +51,6 @@
   "categoryNearestNeedsLocation": "Разрешите доступ к геопозиции, чтобы показать ближайшие места",
   "categorySponsored": "Продвигаемые места",
   "categoryAllPlaces": "Все места",
-
   "searchPlaceholder": "Поиск заведений и услуг...",
   "searchResetFilters": "Сбросить фильтры",
   "searchNoResults": "Ничего не найдено",
@@ -65,26 +60,36 @@
   "searchFoundCount": "Найдено: {count}",
   "@searchFoundCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "searchNoResultsQueryCategory": "Ничего не найдено по запросу «{query}» в выбранной категории",
   "@searchNoResultsQueryCategory": {
     "placeholders": {
-      "query": {"type": "String"}
+      "query": {
+        "type": "String"
+      }
     }
   },
   "searchNoResultsQueryCity": "Ничего не найдено по запросу «{query}» в {cityName}",
   "@searchNoResultsQueryCity": {
     "placeholders": {
-      "query": {"type": "String"},
-      "cityName": {"type": "String"}
+      "query": {
+        "type": "String"
+      },
+      "cityName": {
+        "type": "String"
+      }
     }
   },
   "searchNoInCategoryRadius": "Нет заведений в выбранной категории {radiusLabel}",
   "@searchNoInCategoryRadius": {
     "placeholders": {
-      "radiusLabel": {"type": "String"}
+      "radiusLabel": {
+        "type": "String"
+      }
     }
   },
   "searchNoInCategory": "Нет заведений в выбранной категории",
@@ -92,10 +97,11 @@
   "searchRadiusKm": "до {km} км",
   "@searchRadiusKm": {
     "placeholders": {
-      "km": {"type": "int"}
+      "km": {
+        "type": "int"
+      }
     }
   },
-
   "favoritesTitle": "Избранное",
   "favoritesEmpty": "Здесь будут ваши избранные места",
   "favoritesGuestTitle": "Войдите, чтобы сохранять избранное",
@@ -108,15 +114,22 @@
   "favoritesEmptyUser": "У вас пока нет избранных мест",
   "favoritesEmptyUserHint": "Добавляйте места в избранное, чтобы быстро вернуться к ним.",
   "favoritesEmptyInCity": "В {cityName} пока нет избранных мест",
-  "@favoritesEmptyInCity": {"placeholders": {"cityName": {"type": "String"}}},
+  "@favoritesEmptyInCity": {
+    "placeholders": {
+      "cityName": {
+        "type": "String"
+      }
+    }
+  },
   "favoritesOtherCitiesHint": "Избранные из других городов сохранены — смените город, чтобы увидеть их.",
   "searchRadiusKmExact": "{km} км",
   "@searchRadiusKmExact": {
     "placeholders": {
-      "km": {"type": "int"}
+      "km": {
+        "type": "int"
+      }
     }
   },
-
   "mapTitle": "Карта",
   "mapNoBusinessesNearby": "Рядом нет заведений",
   "mapEnableLocation": "Включить геолокацию",
@@ -125,7 +138,6 @@
   "mapDetails": "Подробнее",
   "mapBusinessesOnMap": "Заведения на карте",
   "mapNoCoordinates": "Нет заведений с координатами",
-
   "profileTitle": "Профиль",
   "profileLanguageApplyHint": "Смена языка применяется сразу.",
   "profileLanguage": "Язык",
@@ -161,12 +173,13 @@
   "profileCityLabel": "Город: {name}",
   "@profileCityLabel": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "profileDefaultUser": "Пользователь",
   "profilePhoneMissing": "Телефон не указан",
-
   "authLoginTitle": "Вход",
   "authPhoneHint": "Номер телефона",
   "authCodeHint": "Код из SMS",
@@ -176,7 +189,9 @@
   "authResendIn": "Повтор через {seconds} с",
   "@authResendIn": {
     "placeholders": {
-      "seconds": {"type": "int"}
+      "seconds": {
+        "type": "int"
+      }
     }
   },
   "authContinueWithGoogle": "Войти через Google",
@@ -193,14 +208,15 @@
   "authCodeSentTo": "Код отправлен на {phone}",
   "@authCodeSentTo": {
     "placeholders": {
-      "phone": {"type": "String"}
+      "phone": {
+        "type": "String"
+      }
     }
   },
   "authDevLogin": "Войти без SMS (dev)",
   "authOtpUnavailableBody": "Вход через аккаунт временно недоступен в этой сборке. Можно продолжить как гость.",
   "authDevOtpHint": "Локальная разработка: OTP может приходить через backend debug.",
   "authContinueWithoutAccount": "Продолжить без аккаунта",
-
   "businessCall": "Позвонить",
   "businessGenericName": "Заведение",
   "businessLoginTitle": "Войдите в QalaGo",
@@ -211,21 +227,27 @@
   "businessAllPromotions": "Все акции ({count})",
   "@businessAllPromotions": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "businessProductsServices": "Товары и услуги",
   "businessViewAllCount": "Смотреть все ({count})",
   "@businessViewAllCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "businessPhotos": "Фотографии",
   "businessAllPhotos": "Все фото ({count})",
   "@businessAllPhotos": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "businessNoReviewsYet": "Пока нет отзывов",
@@ -241,7 +263,9 @@
   "businessPromotionValidUntil": "до {date}",
   "@businessPromotionValidUntil": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
   "catalogSearchHint": "Найти товар или услугу",
@@ -250,7 +274,9 @@
   "photosTotal": "Всего: {count}",
   "@photosTotal": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "photosEmpty": "Нет фотографий",
@@ -268,7 +294,9 @@
   "reviewQualityScore": "Оценка качества: {score}/100",
   "@reviewQualityScore": {
     "placeholders": {
-      "score": {"type": "int"}
+      "score": {
+        "type": "int"
+      }
     }
   },
   "reviewLoginToLeave": "Войдите, чтобы оставить отзыв",
@@ -280,7 +308,9 @@
   "citySelectedSnack": "Город: {name}",
   "@citySelectedSnack": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "onboardingFindBusinessTitle": "Найти свой бизнес",
@@ -291,12 +321,13 @@
   "onboardingRejectionReason": "Причина отклонения: {reason}",
   "@onboardingRejectionReason": {
     "placeholders": {
-      "reason": {"type": "String"}
+      "reason": {
+        "type": "String"
+      }
     }
   },
   "onboardingOpenCabinet": "Открыть кабинет",
   "onboardingDraftSaved": "Черновик сохранён",
-
   "commonLater": "Позже",
   "commonUpdate": "Обновить",
   "commonSubmit": "Отправить",
@@ -305,9 +336,21 @@
   "promotionsSearchHint": "Поиск акций...",
   "promotionsLoadFailed": "Не удалось загрузить акции. Проверьте подключение.",
   "promotionsFoundCount": "Найдено {count} акций",
-  "@promotionsFoundCount": {"placeholders": {"count": {"type": "int"}}},
+  "@promotionsFoundCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "promotionsEmptyInCity": "В {cityName} пока нет активных акций",
-  "@promotionsEmptyInCity": {"placeholders": {"cityName": {"type": "String"}}},
+  "@promotionsEmptyInCity": {
+    "placeholders": {
+      "cityName": {
+        "type": "String"
+      }
+    }
+  },
   "promotionsEmptyHint": "Загляните позже — заведения регулярно добавляют новые предложения.",
   "promotionsNoResultsHint": "Попробуйте изменить поиск или категорию.",
   "promotionsOpenBusiness": "Открыть заведение",
@@ -316,16 +359,34 @@
   "adDetailsDefault": "Подробнее",
   "adLabelPrefix": "Реклама",
   "adSemanticLabel": "Реклама: {title}",
-  "@adSemanticLabel": {"placeholders": {"title": {"type": "String"}}},
+  "@adSemanticLabel": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "cityPickerTitle": "Выберите город",
   "cityComingSoon": "Скоро",
   "cityCurrent": "Текущий город",
   "cityTapToSelect": "Нажмите, чтобы выбрать",
   "cityLoadFailed": "Не удалось загрузить список городов",
   "emptyCityComingTitle": "{cityName} скоро откроется",
-  "@emptyCityComingTitle": {"placeholders": {"cityName": {"type": "String"}}},
+  "@emptyCityComingTitle": {
+    "placeholders": {
+      "cityName": {
+        "type": "String"
+      }
+    }
+  },
   "emptyCitySoonTitle": "{cityName} скоро в QalaGo",
-  "@emptyCitySoonTitle": {"placeholders": {"cityName": {"type": "String"}}},
+  "@emptyCitySoonTitle": {
+    "placeholders": {
+      "cityName": {
+        "type": "String"
+      }
+    }
+  },
   "emptyCityComingBody": "Мы готовим запуск города в QalaGo. Подключайте заведение заранее или выберите другой город.",
   "emptyCityEmptyBody": "Мы добавляем заведения и услуги. Пока каталог пуст — выберите другой город или предложите своё место.",
   "emptyCityPickOther": "Выбрать другой город",
@@ -344,9 +405,21 @@
   "profilePermissionsAllowed": "Можно",
   "profilePermissionsDenied": "Нельзя",
   "profilePermissionsApps": "Приложения: {apps}",
-  "@profilePermissionsApps": {"placeholders": {"apps": {"type": "String"}}},
+  "@profilePermissionsApps": {
+    "placeholders": {
+      "apps": {
+        "type": "String"
+      }
+    }
+  },
   "profilePermissionsModerationCity": "Город модерации: {city}",
-  "@profilePermissionsModerationCity": {"placeholders": {"city": {"type": "String"}}},
+  "@profilePermissionsModerationCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
   "profileDevTestAccounts": "Тестовые аккаунты (dev)",
   "profileDevOtpHint": "OTP-код: 1234",
   "profileReviewsEmpty": "Вы ещё не оставляли отзывов",
@@ -375,7 +448,13 @@
   "profileAboutLanguagesLabel": "Языки",
   "profileAboutLanguagesValue": "Русский · Қазақша",
   "profileAboutCopyright": "© {year} QalaGo. Все права защищены.",
-  "@profileAboutCopyright": {"placeholders": {"year": {"type": "int"}}},
+  "@profileAboutCopyright": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
   "profileEditNameRequired": "Введите имя",
   "profileEditSaved": "Сохранено",
   "profileEditNameLabel": "Имя",
@@ -431,7 +510,13 @@
   "onboardingApplicationsEmpty": "Заявок пока нет",
   "onboardingAddBusinessBtn": "Добавить бизнес",
   "onboardingReasonPrefix": "Причина: {reason}",
-  "@onboardingReasonPrefix": {"placeholders": {"reason": {"type": "String"}}},
+  "@onboardingReasonPrefix": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "onboardingStatusDraft": "Черновик",
   "onboardingStatusPending": "На проверке",
   "onboardingStatusApproved": "Одобрено",
@@ -450,7 +535,6 @@
   "claimCtaPending": "Заявка на подтверждении",
   "claimCtaConfirmOwner": "Подтвердить права владельца",
   "defaultSearchHint": "Поиск...",
-
   "errorInvalidOtp": "Неверный код",
   "errorUnauthorized": "Требуется вход",
   "errorForbidden": "Недостаточно прав",
@@ -460,7 +544,6 @@
   "errorRateLimited": "Слишком много попыток. Попробуйте позже",
   "errorLoadFailed": "Не удалось загрузить данные. Проверьте подключение и попробуйте снова.",
   "errorServiceUnavailable": "Сервис временно недоступен. Попробуйте позже.",
-
   "deleteAccountButton": "Удалить аккаунт",
   "deleteAccountTitle": "Удалить аккаунт?",
   "deleteAccountBody": "Это действие необратимо. Будут удалены избранное, отзывы и доступ к заведениям. Если вы единственный владелец бизнеса, сначала передайте управление.",
@@ -469,17 +552,873 @@
   "deleteAccountSuccess": "Аккаунт удалён",
   "deleteAccountConflict": "Перед удалением передайте управление заведением другому владельцу.",
   "deleteAccountFailed": "Не удалось удалить аккаунт. Попробуйте позже.",
-
   "reviewsCount": "{count, plural, =0{0 отзывов} one{{count} отзыв} few{{count} отзыва} many{{count} отзывов} other{{count} отзыва}}",
   "@reviewsCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "placesCount": "{count, plural, =0{0 мест} one{{count} место} few{{count} места} many{{count} мест} other{{count} места}}",
   "@placesCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ownerPlanTierFree": "Бесплатный",
+  "ownerPlanTierBasic": "Бизнес",
+  "ownerPlanTierPremium": "PRO",
+  "ownerPlanTierVip": "VIP",
+  "ownerStatusActive": "Активен",
+  "ownerStatusPendingModeration": "На модерации",
+  "ownerStatusBlocked": "Заблокирован",
+  "ownerPromotionStatusActive": "Активна",
+  "ownerPromotionStatusExpired": "Истекла",
+  "ownerPromotionFeedHint": "Продвижение в ленте города — через рекламные продукты",
+  "ownerNotificationReviewNew": "Новый отзыв",
+  "ownerNotificationReviewReply": "Ответ на отзыв",
+  "ownerNotificationModeration": "Модерация",
+  "ownerNotificationPromotion": "Акция",
+  "ownerNotificationPlan": "Тариф",
+  "ownerNotificationGeneral": "Общее",
+  "ownerKpiViews": "Просмотры",
+  "ownerKpiCalls": "Звонки",
+  "ownerKpiRoutes": "Маршруты",
+  "ownerKpiFavorites": "Избранное",
+  "ownerAnalyticsFavorites": "В избранное",
+  "ownerAnalyticsDeltaPositive": "+{percent}% к предыдущему периоду",
+  "ownerAnalyticsDeltaNegative": "{percent}% к предыдущему периоду",
+  "ownerAnalyticsDeltaZero": "0% к предыдущему периоду",
+  "ownerAnalyticsUpgradeActions": "Доступно в тарифе Бизнес",
+  "ownerAnalyticsUpgradeSources": "Источники, поисковые запросы и CTR доступны в PRO",
+  "ownerAnalyticsUpgradeAudience": "Analytics 360 доступна в VIP",
+  "ownerPermissionProfileEdit": "Редактирование профиля",
+  "ownerPermissionHoursEdit": "График работы",
+  "ownerPermissionCatalogEdit": "Товары и услуги",
+  "ownerPermissionPhotosEdit": "Фото и галерея",
+  "ownerPermissionPromotionsEdit": "Акции",
+  "ownerPermissionReviewsReply": "Ответы на отзывы",
+  "ownerPermissionAnalyticsView": "Просмотр статистики",
+  "ownerPermissionAnalyticsExport": "Экспорт статистики",
+  "ownerPermissionAdsManage": "Реклама и продвижение",
+  "ownerPermissionPaymentsView": "Просмотр платежей",
+  "ownerMembershipStatusActive": "Активен",
+  "ownerMembershipStatusSuspended": "Приостановлен",
+  "ownerMembershipStatusRevoked": "Доступ отозван",
+  "ownerMembershipStatusInvited": "Приглашён",
+  "ownerPresetManager": "Управляющий",
+  "ownerPresetManagerDesc": "Операционный доступ без управления командой",
+  "ownerPresetContent": "Контент-менеджер",
+  "ownerPresetContentDesc": "Профиль, каталог, фото и акции",
+  "ownerPresetMarketing": "Маркетолог",
+  "ownerPresetMarketingDesc": "Акции, реклама и базовая аналитика",
+  "ownerPresetAnalytics": "Аналитик",
+  "ownerPresetAnalyticsDesc": "Просмотр и экспорт статистики",
+  "ownerPermissionsMore": "{head} · +{count}",
+  "monetizationProductBoost": "Поднять карточку",
+  "monetizationProductTopCategory": "TOP категории",
+  "monetizationProductPromotedPromotion": "Продвинуть акцию",
+  "monetizationProductFeaturedBusiness": "Популярное место",
+  "monetizationProductVipBanner": "VIP-баннер",
+  "monetizationProductBoostDesc": "Дополнительная видимость вашего бизнеса в категории.",
+  "monetizationProductTopCategoryDesc": "Ваш бизнес показывается в приоритетном рекламном блоке своей категории.",
+  "monetizationProductPromotedPromotionDesc": "Ваша акция получает дополнительное рекламное размещение в QalaGo.",
+  "monetizationProductFeaturedBusinessDesc": "Ваш бизнес получает дополнительное размещение на главной странице.",
+  "monetizationProductVipBannerDesc": "Большой рекламный баннер на главной странице QalaGo.",
+  "monetizationProductDefaultDesc": "Рекламное размещение в QalaGo.",
+  "monetizationProductTopCategoryNote": "Позиции распределяются автоматически между активными рекламодателями.",
+  "monetizationOrderAwaitingPayment": "Ожидает оплаты",
+  "monetizationOrderPaid": "Оплачен",
+  "monetizationOrderRefunded": "Возврат",
+  "monetizationOrderPartialRefund": "Частичный возврат",
+  "monetizationCampaignPendingModeration": "На модерации",
+  "monetizationCampaignScheduled": "Запланирована",
+  "monetizationCampaignPaused": "Приостановлено",
+  "monetizationCampaignCompleted": "Завершено",
+  "monetizationCreativePending": "На проверке",
+  "monetizationCreativeApproved": "Одобрен",
+  "monetizationAnalyticsCardOpen": "Открытия карточки",
+  "monetizationAnalyticsPromotionOpen": "Открытия акции",
+  "monetizationPurchaseAvailable": "Доступно",
+  "monetizationPurchaseActive": "Активно",
+  "monetizationPurchaseSoldOut": "Мест нет",
+  "monetizationActionBuy": "Купить",
+  "monetizationActionContinuePayment": "Продолжить оплату",
+  "monetizationActionRenew": "Продлить",
+  "monetizationReasonPendingOrder": "У вас уже есть неоплаченный заказ на это размещение.",
+  "monetizationReasonConflict": "Размещение конфликтует с текущим графиком.",
+  "monetizationReasonAlreadyActive": "Размещение уже активно.",
+  "monetizationReasonAlreadyScheduled": "Размещение уже запланировано.",
+  "monetizationReasonTargetPromoted": "Эта акция уже продвигается.",
+  "monetizationReasonCategoryIneligible": "Категория не подходит для этого продукта.",
+  "monetizationReasonPromotionIneligible": "Акция недоступна для продвижения.",
+  "monetizationReasonSoldOut": "Свободных мест нет на выбранный период.",
+  "monetizationReasonPackageConflict": "Компоненты пакета не укладываются в доступные слоты.",
+  "monetizationReasonReservationExpired": "Резерв места истёк — обновите статус и попробуйте снова.",
+  "monetizationReasonGeneric": "Не удалось выполнить операцию.",
+  "monetizationReasonGenericWithCode": "Не удалось выполнить операцию ({code}).",
+  "monetizationVipModerationNotice": "VIP-баннер будет опубликован после проверки модератором. Оплаченный период начнётся только после одобрения баннера.",
+  "monetizationPackageVipNotice": "Пакет включает VIP-баннер. Для запуска VIP-размещения необходимо настроить баннер и пройти модерацию.",
+  "monetizationPackageVipCta": "Настроить VIP-баннер",
+  "monetizationPaymentInfoNotice": "После подтверждения оплаты продвижение будет активировано автоматически.",
+  "monetizationPaymentMethodUnavailable": "Способ оплаты будет доступен после подключения платёжного сервиса.",
+  "monetizationCtrTooltip": "CTR — доля переходов от количества засчитанных просмотров рекламы.",
+  "ownerInvitationStatusPending": "Приглашение активно",
+  "ownerInvitationStatusAccepted": "Приглашение уже принято",
+  "ownerInvitationStatusRevoked": "Приглашение отозвано",
+  "ownerInvitationStatusExpired": "Срок приглашения истёк",
+  "ownerDurationDays": "{count} {unit}",
+  "ownerDurationHours": "{count} ч",
+  "ownerDayUnitOne": "день",
+  "ownerDayUnitFew": "дня",
+  "ownerDayUnitMany": "дней",
+  "ownerNavOverview": "Обзор",
+  "ownerNavAnalytics": "Статистика",
+  "ownerNavPromote": "Реклама и продвижение",
+  "ownerNavMessages": "Сообщения",
+  "ownerNavPlan": "Тариф",
+  "ownerNavTeam": "Команда",
+  "ownerNavSettings": "Настройки",
+  "ownerNavHelp": "Помощь",
+  "ownerNavBackToApp": "В приложение QalaGo",
+  "ownerBusinessDrawerTitle": "QalaGo Business",
+  "ownerDashboardTitle": "Кабинет бизнеса",
+  "ownerAddBusiness": "Добавить",
+  "ownerBusinessLabel": "Заведение",
+  "ownerWelcome": "Добро пожаловать, {title}!",
+  "ownerNoBusinessesTitle": "Нет заведений",
+  "ownerNoBusinessesBody": "Зарегистрируйте заведение — после модерации оно появится в QalaGo.",
+  "ownerRegisterBusiness": "Зарегистрировать заведение",
+  "ownerSummaryWeek": "{views} просмотров · {actions} действий за 7 дней",
+  "ownerDeltaWeek": "{delta} за нед.",
+  "ownerViewsChartTitle": "Просмотры за 7 дней",
+  "ownerTrendsLockedHint": "График действий по дням доступен на тарифе «Бизнес» и выше.",
+  "ownerPlanUsageTitle": "Использование тарифа",
+  "ownerProfileCard": "Профиль",
+  "ownerProfileCompletion": "{percent}% заполнено",
+  "ownerFillProfile": "Заполнить",
+  "ownerUpgradePlan": "Улучшить",
+  "ownerActivePromotions": "Активные акции",
+  "ownerNoActivePromotions": "Нет активных акций",
+  "ownerPromoteCatalogSubtitle": "VIP-баннер, TOP категории, продвижение акций и пакеты",
+  "ownerOpenCatalog": "Открыть каталог",
+  "ownerMyCampaigns": "Мои кампании",
+  "ownerManagementSection": "Управление",
+  "ownerPreviewCard": "Предпросмотр карточки",
+  "ownerMgmtMyBusiness": "Мой бизнес",
+  "ownerMgmtGallery": "Галерея",
+  "ownerMgmtPromotions": "Акции",
+  "ownerMgmtReviews": "Отзывы",
+  "ownerErrorWithDetails": "Ошибка: {details}",
+  "ownerSaving": "Сохранение…",
+  "ownerSubmitting": "Отправка…",
+  "ownerConfirm": "Подтвердить",
+  "ownerRevoke": "Отозвать",
+  "ownerDefaultBusiness": "Заведение",
+  "ownerDefaultMember": "Участник",
+  "ownerDefaultManager": "Менеджер",
+  "ownerDefaultUser": "Пользователь",
+  "ownerTeamNoAccessTitle": "Нет доступа",
+  "ownerTeamNoAccessBody": "Управление командой доступно только владельцу заведения.",
+  "ownerGoHome": "На главную",
+  "ownerInvite": "Пригласить",
+  "ownerTeamMembers": "Участники",
+  "ownerTeamNoMembers": "Нет участников",
+  "ownerTeamPendingInvites": "Ожидают приглашения",
+  "ownerTeamNoPendingInvites": "Нет ожидающих приглашений",
+  "ownerTeamPlanNoManagers": "Тариф не включает менеджеров.",
+  "ownerTeamManagerLimit": "Достигнут лимит менеджеров вашего тарифа.",
+  "ownerViewPlans": "Посмотреть тарифы",
+  "ownerTeamManagersUnavailable": "Менеджеры недоступны на текущем тарифе",
+  "ownerTeamManagersUsage": "Менеджеры: {used} из {limit}",
+  "ownerTeamManagersExtra": " ({active} активных · {pending} ожидают)",
+  "ownerSuspendManagerTitle": "Приостановить доступ менеджера?",
+  "ownerSuspendManagerBody": "Менеджер временно потеряет доступ к управлению бизнесом.",
+  "ownerAccessSuspended": "Доступ приостановлен",
+  "ownerAccessRestored": "Доступ восстановлен",
+  "ownerRevokeManagerTitle": "Удалить доступ менеджера?",
+  "ownerRevokeManagerBody": "Менеджер больше не сможет управлять этим бизнесом.",
+  "ownerAccessRevoked": "Доступ отозван",
+  "ownerEditPermissions": "Изменить права",
+  "ownerSuspend": "Приостановить",
+  "ownerRemoveAccess": "Удалить доступ",
+  "ownerRestore": "Восстановить",
+  "ownerRevokeInviteTitle": "Отозвать приглашение?",
+  "ownerRevokeInviteBody": "Отозвать приглашение для {email}?",
+  "ownerInviteRevoked": "Приглашение отозвано",
+  "ownerInviteStatusLine": "{status} · до {expires}",
+  "ownerInvalidEmail": "Укажите корректный email",
+  "ownerSelectPermission": "Выберите хотя бы одно право доступа",
+  "ownerInviteCreated": "Приглашение создано",
+  "ownerManagerAdded": "Менеджер добавлен в команду",
+  "ownerInviteManagerTitle": "Пригласить менеджера",
+  "ownerInviteManagerBody": "Укажите email и права. После создания отправьте ссылку менеджеру.",
+  "ownerAccessPermissions": "Права доступа",
+  "ownerInviteLinkHint": "Отправьте эту ссылку менеджеру. Она одноразовая и действует ограниченное время.",
+  "ownerLinkCopied": "Ссылка скопирована",
+  "ownerCopyLink": "Скопировать ссылку",
+  "ownerSendInvite": "Отправить приглашение",
+  "ownerPermissionsUpdated": "Права обновлены",
+  "ownerManagerPermissionsTitle": "Права менеджера",
+  "ownerMonetizationTitle": "Реклама и продвижение",
+  "ownerSelectBusinessFirst": "Сначала выберите заведение",
+  "ownerChoosePromotionMethod": "Выберите способ продвижения",
+  "ownerPriceLoadFailed": "Не удалось получить цены. Проверьте подключение.",
+  "ownerProductsUnavailable": "Рекламные продукты временно недоступны.",
+  "ownerReadyPackages": "Готовые пакеты",
+  "ownerPackagesLoadFailed": "Не удалось загрузить пакеты.",
+  "ownerMyPromotions": "Мои продвижения",
+  "ownerMyOrders": "Мои заказы",
+  "ownerProductTitle": "Продукт",
+  "ownerBusinessNotSelected": "Заведение не выбрано",
+  "ownerPriceFailedShort": "Не удалось получить цены.",
+  "ownerProductNotFound": "Продукт не найден",
+  "ownerPeriodLabel": "Период",
+  "ownerStartLabel": "Начало",
+  "ownerStartAfterPayment": "Сразу после оплаты",
+  "ownerPickDate": "Выбрать дату",
+  "ownerSelectDate": "Выберите дату",
+  "ownerDiscountPercent": "Скидка {percent}%",
+  "ownerGetQuote": "Получить стоимость",
+  "ownerQuoteFailed": "Не удалось получить стоимость.",
+  "ownerPromotionsLoadFailed": "Не удалось загрузить акции.",
+  "ownerCreatePromotionFirst": "Сначала создайте активную акцию.",
+  "ownerCreatePromotion": "Создать акцию",
+  "ownerSelectPromotion": "Выберите акцию",
+  "ownerActiveUntil": "Активно до {date}",
+  "ownerNextAvailableDate": "Ближайшая доступная дата: {date}",
+  "ownerReservedUntil": "Место зарезервировано до {date}",
+  "ownerPriceFrom": "от {price}",
+  "ownerCostLabel": "Стоимость",
+  "ownerTotalLabel": "Итого",
+  "ownerSlotsOccupied": "На выбранный период рекламные места заняты.",
+  "ownerSettingsTitle": "Настройки",
+  "ownerAccountSection": "Аккаунт",
+  "ownerPhoneLabel": "Телефон",
+  "ownerPhoneMissing": "Телефон не указан",
+  "ownerDisplayNameLabel": "Имя владельца",
+  "ownerDisplayNameHint": "Как отображать в кабинете",
+  "ownerNameSaved": "Имя сохранено",
+  "ownerBusinessSection": "Заведение",
+  "ownerBusinessSettingsHint": "Редактируйте карточку, часы и контакты в профиле.",
+  "ownerGallery": "Галерея",
+  "ownerNoBusinessApply": "Нет заведения — подайте заявку на модерацию.",
+  "ownerRegister": "Зарегистрировать",
+  "ownerSecuritySection": "Безопасность",
+  "ownerSecurityHint": "Вход по SMS-коду. Для смены номера обратитесь в поддержку.",
+  "ownerReviewReplySaved": "Ответ сохранён",
+  "ownerReviewsTitle": "Отзывы · {title}",
+  "ownerNoReviews": "Пока нет отзывов",
+  "ownerReviewsSummary": "{total} отзывов{unanswered}",
+  "ownerReviewsUnansweredSuffix": " · {count} без ответа",
+  "ownerYourReply": "Ваш ответ: {reply}",
+  "ownerReplyLabel": "Ответ владельца",
+  "ownerReplyAction": "Ответить",
+  "ownerUpdateReply": "Обновить",
+  "ownerPromotionLimit": "Лимит активных акций: {max}. Улучшите тариф.",
+  "ownerNewPromotion": "Новая акция",
+  "ownerEditPromotion": "Редактировать акцию",
+  "ownerFieldTitle": "Название",
+  "ownerFieldDiscount": "Скидка",
+  "ownerFieldDescription": "Описание",
+  "ownerFieldStatus": "Статус",
+  "ownerPromotionStatusCompleted": "Завершена",
+  "ownerCreate": "Создать",
+  "ownerPromotionCreated": "Акция создана",
+  "ownerPromotionUpdated": "Акция обновлена",
+  "ownerDeletePromotionTitle": "Удалить акцию?",
+  "ownerDeletePromotionBody": "«{title}» будет удалена без восстановления.",
+  "ownerPromotionDeleted": "Акция удалена",
+  "ownerPromotionsTitle": "Акции · {title}",
+  "ownerNoPromotions": "Пока нет акций",
+  "ownerNoPromotionsHint": "Создайте первую акцию для привлечения гостей",
+  "ownerActivePromotionsCount": "Активных: {active} / {max}",
+  "ownerEdit": "Редактировать",
+  "ownerPlanTitle": "Тариф",
+  "ownerRegisterBusinessFirst": "Сначала зарегистрируйте заведение",
+  "ownerPlanUpdated": "Тариф обновлён",
+  "ownerPlanCurrent": "Текущий: {name}",
+  "ownerPlanPromoteSubtitle": "TOP, VIP-баннер, пакеты и статистика",
+  "ownerPlanPeriodMonth": "месяц",
+  "ownerPlanPeriodDays": "{days} дн.",
+  "ownerMenuEmpty": "Пока нет позиций в меню",
+  "ownerMenuOtherGroup": "Прочее",
+  "ownerTeamForbidden": "У вас нет прав для этого действия.",
+  "ownerTeamNotFound": "Запись не найдена.",
+  "ownerTeamActionFailed": "Не удалось выполнить действие. Попробуйте позже.",
+  "ownerInviteNotFound": "Приглашение не найдено или ссылка недействительна.",
+  "ownerAcceptingInvite": "Принимаем…",
+  "ownerAcceptInvite": "Принять приглашение",
+  "ownerGalleryTitle": "Галерея · {title}",
+  "ownerPhotoLimitSnackbar": "Лимит тарифа: не более {max} фото. Улучшите тариф в разделе «Тариф».",
+  "ownerCoverUpdated": "Обложка обновлена",
+  "ownerPhotoAdded": "Фото добавлено",
+  "ownerUploadError": "Ошибка загрузки: {details}",
+  "ownerPhotosUsage": "Фото: {used} / {max}{suffix}",
+  "ownerPhotoLimitReached": " · лимит достигнут",
+  "ownerGalleryEmpty": "Галерея пустая",
+  "ownerGalleryEmptyHint": "Добавьте фото интерьера, блюд или услуг",
+  "ownerCoverLabel": "Обложка",
+  "ownerSetCover": "Сделать обложкой",
+  "ownerPhotoLabel": "Фото",
+  "ownerEditProfileTitle": "Профиль заведения",
+  "ownerFieldShortDesc": "Краткое описание",
+  "ownerFieldFullDesc": "Полное описание",
+  "ownerContactsSection": "Контакты",
+  "ownerWorkHoursSection": "График работы",
+  "ownerWorkHoursFormat": "Формат: 09:00-22:00",
+  "ownerWorkHoursWeekdays": "Пн–Пт",
+  "ownerWorkHoursSaturday": "Суббота",
+  "ownerWorkHoursSunday": "Воскресенье",
+  "ownerRequiredNameAddress": "Заполните название и адрес",
+  "ownerProfileSaved": "Профиль заведения сохранён",
+  "ownerAnalyticsTitle": "Статистика",
+  "ownerAnalyticsAds": "Реклама",
+  "ownerAnalyticsLoadFailed": "Не удалось загрузить статистику. Проверьте сеть и попробуйте снова.",
+  "ownerAnalyticsPeriodDays": "{days} дн",
+  "ownerAnalyticsOverview": "Обзор",
+  "ownerAnalyticsTargetActions": "Целевые действия",
+  "ownerAnalyticsAdsStats": "Статистика рекламы",
+  "ownerAnalyticsAcquisition": "Привлечение",
+  "ownerAnalyticsSourcesPro": "Источники доступны в PRO",
+  "ownerAnalyticsSourcesEmpty": "Источники",
+  "ownerAnalyticsNotEnoughData": "Недостаточно данных",
+  "ownerAnalyticsSearchQueries": "Что ищут пользователи",
+  "ownerAnalyticsSearchEmpty": "Недостаточно данных для анализа поисковых запросов",
+  "ownerAnalyticsSearchPro": "Поисковые запросы доступны в PRO",
+  "ownerExportFailed": "Не удалось подготовить отчёт. Попробуйте ещё раз.",
+  "ownerExportForbidden": "Экспорт недоступен для вашей роли или тарифа.",
+  "ownerExportCsv": "Экспорт CSV",
+  "ownerExportPreparing": "Формирование…",
+  "ownerSearchOtherQueries": "Другие запросы — {count}",
+  "ownerSearchTransitions": "{count} переходов",
+  "ownerSourcesDetailLater": "Детальная атрибуция источников появится позже.",
+  "ownerBenchmarkSection": "Сравнение с категорией",
+  "ownerBenchmarkNotEnough": "Пока недостаточно данных для сравнения",
+  "ownerRecommendationsSection": "Рекомендации",
+  "ownerPackageTitle": "Пакет",
+  "ownerPackageNotFound": "Пакет не найден",
+  "ownerPackageContents": "Состав пакета",
+  "ownerPackageQuoteFailed": "Не удалось получить стоимость пакета.",
+  "ownerNoPromotionsForAds": "Нет активных акций для продвижения.",
+  "ownerOrderTitle": "Заказ",
+  "ownerOrderCreated": "Заказ создан",
+  "ownerToPay": "К оплате:",
+  "ownerRefreshStatus": "Обновить статус",
+  "ownerNoOrders": "У вас пока нет заказов",
+  "ownerOrdersLoadFailed": "Не удалось загрузить заказы.",
+  "ownerOrderNotFound": "Заказ не найден.",
+  "ownerYourOrder": "Ваш заказ",
+  "ownerAfterPayment": "после оплаты",
+  "ownerConfirmOrder": "Подтвердить заказ",
+  "ownerOrderCreateFailed": "Не удалось создать заказ.",
+  "ownerCampaignsLoadFailed": "Не удалось загрузить продвижения.",
+  "ownerNoCampaigns": "Нет активных продвижений",
+  "ownerCampaignGroupActive": "Активные",
+  "ownerCampaignGroupScheduled": "Запланированные",
+  "ownerCampaignGroupModeration": "На модерации",
+  "ownerCampaignGroupCompleted": "Завершённые",
+  "ownerCampaignGroupOther": "Другие",
+  "ownerCampaignDaysLeft": "Осталось {days} {unit}",
+  "ownerCampaignMetrics": "Показы: {served} · Просмотры: {views} · Переходы: {clicks}",
+  "ownerCampaignNotFound": "Кампания не найдена.",
+  "ownerCampaignPeriod": "Период: {range}",
+  "ownerCampaignStatsFailed": "Не удалось загрузить статистику.",
+  "ownerCampaignStatsPending": "Статистика появится после начала показов.",
+  "ownerCampaignViews": "Просмотры",
+  "ownerCampaignClicks": "Переходы",
+  "ownerGotIt": "Понятно",
+  "ownerCampaignActions": "Действия",
+  "ownerVipBannerTitle": "VIP-баннер",
+  "ownerVipImageLoadFailed": "Не удалось загрузить изображение.",
+  "ownerVipTitleMinLength": "Введите заголовок (минимум 2 символа).",
+  "ownerVipSaveFailed": "Не удалось сохранить баннер.",
+  "ownerVipHeadlineLabel": "Заголовок",
+  "ownerVipHeadlineHint": "Заголовок баннера",
+  "ownerVipDescriptionOptional": "Описание (необязательно)",
+  "ownerVipButtonLabel": "Текст кнопки",
+  "ownerVipDefaultButton": "Подробнее",
+  "ownerVipUploadImage": "Загрузить изображение",
+  "ownerVipReplaceImage": "Заменить изображение",
+  "ownerHidePreview": "Скрыть предпросмотр",
+  "ownerShowPreview": "Предпросмотр",
+  "ownerContinueToOrder": "Продолжить к заказу",
+  "@ownerAnalyticsDeltaPositive": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerAnalyticsDeltaNegative": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerPermissionsMore": {
+    "placeholders": {
+      "head": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@monetizationReasonGenericWithCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerDurationDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerDurationHours": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerWelcome": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerSummaryWeek": {
+    "placeholders": {
+      "views": {
+        "type": "int"
+      },
+      "actions": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerDeltaWeek": {
+    "placeholders": {
+      "delta": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerProfileCompletion": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerErrorWithDetails": {
+    "placeholders": {
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerTeamManagersUsage": {
+    "placeholders": {
+      "used": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerTeamManagersExtra": {
+    "placeholders": {
+      "active": {
+        "type": "int"
+      },
+      "pending": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerRevokeInviteBody": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerInviteStatusLine": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      },
+      "expires": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerDiscountPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerActiveUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerNextAvailableDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerReservedUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerPriceFrom": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerReviewsTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerReviewsSummary": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      },
+      "unanswered": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerReviewsUnansweredSuffix": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerYourReply": {
+    "placeholders": {
+      "reply": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerPromotionLimit": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerDeletePromotionBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerPromotionsTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerActivePromotionsCount": {
+    "placeholders": {
+      "active": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerPlanCurrent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerPlanPeriodDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerGalleryTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerPhotoLimitSnackbar": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerUploadError": {
+    "placeholders": {
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerPhotosUsage": {
+    "placeholders": {
+      "used": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerAnalyticsPeriodDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerSearchOtherQueries": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerSearchTransitions": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerCampaignDaysLeft": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerCampaignMetrics": {
+    "placeholders": {
+      "served": {
+        "type": "String"
+      },
+      "views": {
+        "type": "String"
+      },
+      "clicks": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerCampaignPeriod": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "ownerAnalyticsCardViews": "Просмотры карточки",
+  "ownerAnalyticsImpressionsLabel": "Показы",
+  "ownerAnalyticsConversionTitle": "Конверсия в действие",
+  "ownerAnalyticsConversionHint": "Доля просмотров карточки, после которых пользователь совершил целевое действие: звонок, WhatsApp, маршрут, сайт, Instagram или добавление в избранное.",
+  "ownerAnalyticsChartViewsDays": "Просмотры за {days} дн.",
+  "ownerAnalyticsChartActionsDays": "Действия за {days} дн.",
+  "ownerAnalyticsFunnelStepImpressions": "{count} показов",
+  "ownerAnalyticsFunnelStepViews": "{count} просмотров",
+  "ownerAnalyticsFunnelStepActions": "{count} целевых действий",
+  "ownerAnalyticsPeriodFunnel": "Воронка периода",
+  "ownerAnalyticsConversionLine": "Конверсия в действие: {value}",
+  "ownerAnalyticsAggregatedNote": "Показатели рассчитаны по агрегированным данным периода.",
+  "ownerAnalyticsVsPreviousPeriod": "К предыдущему периоду",
+  "ownerAnalyticsPopularHours": "Популярное время",
+  "ownerAnalyticsAudience": "Аудитория",
+  "ownerAnalyticsAudienceSubtitle": "Доли просмотров карточки по типу посетителя",
+  "ownerAnalyticsNewVisitors": "Новые посетители",
+  "ownerAnalyticsReturningVisitors": "Вернувшиеся посетители",
+  "ownerAnalyticsAudienceDistanceEmpty": "Недостаточно данных для анализа аудитории по расстоянию",
+  "ownerAnalyticsViewsShare": "Доля просмотров: {share}",
+  "ownerAnalyticsUniqueVisitors": "Уникальные посетители",
+  "ownerAnalyticsSessions": "Сессии",
+  "ownerAnalyticsDailyUniqueSum": "Суммарно уникальных посетителей по дням",
+  "ownerAnalyticsDailySessionsSum": "Суммарно сессий по дням",
+  "ownerAnalyticsDistanceTitle": "Расстояние до заведения",
+  "ownerAnalyticsDistanceHint": "Агрегированные интервалы без точных координат пользователей.",
+  "ownerAnalyticsContentSection": "Контент",
+  "ownerAnalyticsPromotionViewsLine": "Просмотры акций: {count}",
+  "ownerAnalyticsPromotionItemTitle": "Акция · {id}",
+  "ownerAnalyticsPromotionActionsNotMeasured": "Действия по акциям пока не измеряются",
+  "ownerAnalyticsCatalogSection": "Каталог",
+  "ownerAnalyticsCatalogItemTitle": "Позиция · {id}",
+  "ownerAnalyticsCatalogItemEmpty": "Позиция",
+  "ownerAnalyticsCatalogActionsNotMeasured": "Действия по позициям каталога пока не измеряются",
+  "ownerAnalyticsStatsAfterFirstView": "Статистика появится после первых просмотров карточки.",
+  "ownerAnalyticsSegmentViews": "Просмотры",
+  "ownerAnalyticsSegmentActions": "Действия",
+  "@ownerAnalyticsChartViewsDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerAnalyticsChartActionsDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@ownerAnalyticsFunnelStepImpressions": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerAnalyticsFunnelStepViews": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerAnalyticsFunnelStepActions": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerAnalyticsConversionLine": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerAnalyticsViewsShare": {
+    "placeholders": {
+      "share": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerAnalyticsPromotionViewsLine": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerAnalyticsPromotionItemTitle": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerAnalyticsCatalogItemTitle": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "ownerHelpQuickStart": "Быстрый старт",
+  "ownerHelpStep1": "1. Заполните профиль и загрузите фото",
+  "ownerHelpStep2": "2. Добавьте меню или услуги",
+  "ownerHelpStep3": "3. Создайте первую акцию",
+  "ownerHelpStep4": "4. Смотрите статистику на главной",
+  "ownerHelpPlansPromote": "Тарифы и продвижение",
+  "ownerTeamInvitationTitle": "Приглашение в команду",
+  "ownerInvitationForEmail": "Для: {email}",
+  "ownerMenuNewGroup": "Новая группа",
+  "ownerMenuEditGroup": "Редактировать группу",
+  "ownerMenuGroupNameLabel": "Название группы *",
+  "ownerMenuGroupNameHint": "Например: Горячие блюда, Стрижка",
+  "ownerMenuNewItem": "Новая позиция",
+  "ownerMenuGroupField": "Группа",
+  "ownerMenuNoGroup": "Без группы",
+  "ownerMenuPriceLabel": "Цена (₸)",
+  "ownerCatalogServicesTitle": "Товары и услуги · {title}",
+  "ownerMenuAddGroup": "Группа",
+  "ownerMenuAddItem": "Позиция",
+  "ownerMenuNoSection": "Без раздела",
+  "ownerMenuHideItem": "Скрыть",
+  "ownerMenuShowItem": "Показать",
+  "ownerPlanPurchaseUnavailable": "Покупка недоступна",
+  "ownerPlanGoToAds": "Перейти к рекламе",
+  "@ownerInvitationForEmail": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "@ownerCatalogServicesTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "ownerScheduledRange": "{start} — {end}",
+  "@ownerScheduledRange": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
     }
   }
 }

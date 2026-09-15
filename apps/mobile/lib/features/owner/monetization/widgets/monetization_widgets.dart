@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../data/monetization_formatters.dart';
@@ -37,7 +38,7 @@ class MonetizationProductCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            productTitle(product.code),
+                            productTitle(context.l10n, product.code),
                             style: const TextStyle(
                               fontWeight: FontWeight.w800,
                               fontSize: 16,
@@ -46,7 +47,7 @@ class MonetizationProductCard extends StatelessWidget {
                         ),
                         if (purchaseState != null)
                           MonetizationStatusChip(
-                            label: purchaseStateLabel(purchaseState!.state),
+                            label: purchaseStateLabel(context.l10n, purchaseState!.state),
                             color: _purchaseStateColor(purchaseState!.state),
                           ),
                       ],
@@ -54,7 +55,7 @@ class MonetizationProductCard extends StatelessWidget {
                     if (purchaseState != null) ...[
                       const SizedBox(height: 6),
                       Text(
-                        _purchaseStateDetail(purchaseState!),
+                        monetizationPurchaseStateDetail(context.l10n, purchaseState!),
                         style: TextStyle(
                           color: AppTheme.textMuted,
                           fontSize: 12,
@@ -64,7 +65,7 @@ class MonetizationProductCard extends StatelessWidget {
                     ],
                     const SizedBox(height: 6),
                     Text(
-                      productDescription(product.code),
+                      productDescription(context.l10n, product.code),
                       style: TextStyle(
                         color: AppTheme.textMuted,
                         fontSize: 13,
@@ -88,10 +89,10 @@ class MonetizationProductCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   if (purchaseState != null &&
-                      purchasePrimaryActionLabel(purchaseState!.primaryAction)
+                      purchasePrimaryActionLabel(context.l10n, purchaseState!.primaryAction)
                           .isNotEmpty)
                     Text(
-                      purchasePrimaryActionLabel(purchaseState!.primaryAction),
+                      purchasePrimaryActionLabel(context.l10n, purchaseState!.primaryAction),
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         color: AppTheme.kzBlue,
@@ -125,25 +126,6 @@ Color _purchaseStateColor(String state) {
   }
 }
 
-String _purchaseStateDetail(MonetizationPurchaseState state) {
-  if (state.state == 'ACTIVE' && state.activeUntil != null) {
-    return 'Активно до ${formatMonetizationDate(state.activeUntil!)}';
-  }
-  if (state.state == 'SCHEDULED' &&
-      state.scheduledStart != null &&
-      state.scheduledEnd != null) {
-    return '${formatMonetizationDate(state.scheduledStart!)} — ${formatMonetizationDate(state.scheduledEnd!)}';
-  }
-  if (state.state == 'SOLD_OUT' && state.nextAvailableAt != null) {
-    return 'Ближайшая доступная дата: ${formatMonetizationDate(state.nextAvailableAt!)}';
-  }
-  if (state.reservationExpiresAt != null &&
-      state.state == 'PENDING_PAYMENT') {
-    return 'Место зарезервировано до ${formatMonetizationDate(state.reservationExpiresAt!)}';
-  }
-  return '';
-}
-
 class MonetizationSchedulePreview extends StatelessWidget {
   const MonetizationSchedulePreview({super.key, required this.quote});
 
@@ -154,7 +136,7 @@ class MonetizationSchedulePreview extends StatelessWidget {
     if (quote.schedule != null) {
       final s = quote.schedule!;
       return _scheduleBox(
-        '${productTitle(quote.productCode ?? '')}: '
+        '${productTitle(context.l10n, quote.productCode ?? '')}: '
         '${formatMonetizationDate(s.projectedStartAt)} — '
         '${formatMonetizationDate(s.projectedEndAt)}',
       );
@@ -168,8 +150,8 @@ class MonetizationSchedulePreview extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: _scheduleBox(
-              '${productTitle(item.productCode)} — '
-              '${formatDurationLabel(durationDays: item.durationDays, durationHours: item.durationHours)}\n'
+              '${productTitle(context.l10n, item.productCode)} — '
+              '${formatDurationLabel(context.l10n, durationDays: item.durationDays, durationHours: item.durationHours)}\n'
               '${formatMonetizationDate(item.projectedStartAt)} — '
               '${formatMonetizationDate(item.projectedEndAt)}',
             ),
@@ -226,7 +208,7 @@ class MonetizationPackageCard extends StatelessWidget {
               ],
               const SizedBox(height: 8),
               Text(
-                '${formatDurationLabel(durationDays: package.durationDays)} · ${formatKztPrice(package.price)}',
+                '${formatDurationLabel(context.l10n, durationDays: package.durationDays)} · ${formatKztPrice(package.price)}',
                 style: const TextStyle(
                   fontWeight: FontWeight.w700,
                   color: AppTheme.kzBlue,
@@ -257,12 +239,12 @@ class MonetizationQuoteBreakdown extends StatelessWidget {
 
     return Column(
       children: [
-        _row('Стоимость', formatKztPrice(quote.basePrice)),
+        _row(context.l10n.ownerCostLabel, formatKztPrice(quote.basePrice)),
         if (quote.discountAmount > 0 && discountLabel != null)
           _row(discountLabel, '-${formatKztPrice(quote.discountAmount)}'),
         const Divider(),
         _row(
-          'Итого',
+          context.l10n.ownerTotalLabel,
           formatKztPrice(quote.finalPrice),
           bold: true,
         ),
@@ -314,13 +296,13 @@ class MonetizationAvailabilityBanner extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'На выбранный период рекламные места заняты.',
-            style: TextStyle(fontWeight: FontWeight.w700),
+          Text(
+            context.l10n.ownerSlotsOccupied,
+            style: const TextStyle(fontWeight: FontWeight.w700),
           ),
           if (next != null) ...[
             const SizedBox(height: 6),
-            Text('Ближайшая доступная дата: ${formatMonetizationDate(next)}'),
+            Text(context.l10n.ownerNextAvailableDate(formatMonetizationDate(next))),
           ],
         ],
       ),

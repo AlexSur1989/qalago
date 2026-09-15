@@ -1,6 +1,8 @@
 /// Owner menu pagination helpers (Stage 5G.1).
 library;
 
+import '../../l10n/app_localizations.dart';
+
 bool ownerMenuHasMore(Map<String, dynamic>? pagination) {
   if (pagination == null) return false;
   final page = pagination['page'] as int? ?? 1;
@@ -23,32 +25,30 @@ List<Map<String, dynamic>> mergeOwnerMenuItems(
   return merged;
 }
 
-String? ownerMenuEmptyMessage({
+String? ownerMenuEmptyMessage(
+  AppLocalizations l10n, {
   required int totalCount,
   required String? search,
   required String? sectionId,
 }) {
   if (totalCount > 0) return null;
   if (search != null && search.trim().isNotEmpty) {
-    return 'По вашему запросу ничего не найдено';
-  }
-  if (sectionId == 'uncategorized') {
-    return 'В этом разделе пока нет товаров и услуг';
+    return l10n.catalogNotFound;
   }
   if (sectionId != null && sectionId.isNotEmpty) {
-    return 'В этом разделе пока нет товаров и услуг';
+    return l10n.ownerMenuEmpty;
   }
-  return 'Товары и услуги пока не добавлены';
+  return l10n.ownerMenuEmpty;
 }
 
 String? itemSectionId(Map<String, dynamic> item) {
   return item['sectionId'] as String? ?? item['groupId'] as String?;
 }
 
-String itemSectionLabel(Map<String, dynamic> item) {
+String itemSectionLabel(AppLocalizations l10n, Map<String, dynamic> item) {
   final section = item['section'];
   if (section is Map) {
-    return section['title'] as String? ?? 'Без группы';
+    return section['title'] as String? ?? l10n.ownerMenuNoGroup;
   }
-  return itemSectionId(item) == null ? 'Без группы' : 'Раздел';
+  return itemSectionId(item) == null ? l10n.ownerMenuNoGroup : l10n.ownerMenuNoSection;
 }

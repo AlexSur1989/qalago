@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/rbac/business_access.dart';
@@ -82,7 +83,7 @@ class _OwnerDrawer extends ConsumerWidget {
               _navTile(
                 context,
                 icon: Icons.dashboard_outlined,
-                label: 'Обзор',
+                label: context.l10n.ownerAnalyticsOverview,
                 path: '/owner',
                 selected: currentPath == '/owner',
               ),
@@ -90,7 +91,7 @@ class _OwnerDrawer extends ConsumerWidget {
               _navTile(
                 context,
                 icon: Icons.bar_chart_outlined,
-                label: 'Статистика',
+                label: context.l10n.ownerAnalyticsTitle,
                 path: '/owner/analytics',
                 selected: currentPath.startsWith('/owner/analytics'),
                 onTap: (ctx) {
@@ -108,7 +109,7 @@ class _OwnerDrawer extends ConsumerWidget {
               _navTile(
                 context,
                 icon: Icons.campaign_outlined,
-                label: 'Реклама и продвижение',
+                label: context.l10n.ownerMonetizationTitle,
                 path: '/owner/promote',
                 selected: currentPath.startsWith('/owner/promote') ||
                     currentPath.startsWith('/owner/monetization'),
@@ -117,7 +118,7 @@ class _OwnerDrawer extends ConsumerWidget {
               _navTile(
                 context,
                 icon: Icons.chat_bubble_outline,
-                label: 'Сообщения',
+                label: context.l10n.ownerNavMessages,
                 path: '/owner/messages',
                 selected: currentPath == '/owner/messages',
                 badge: unreadCount,
@@ -126,7 +127,7 @@ class _OwnerDrawer extends ConsumerWidget {
               _navTile(
                 context,
                 icon: Icons.diamond_outlined,
-                label: 'Тариф',
+                label: context.l10n.ownerPlanTitle,
                 path: '/owner/plan',
                 selected: currentPath == '/owner/plan',
               ),
@@ -134,7 +135,7 @@ class _OwnerDrawer extends ConsumerWidget {
               _navTile(
                 context,
                 icon: Icons.groups_outlined,
-                label: 'Команда',
+                label: context.l10n.ownerNavTeam,
                 path: '/owner/team',
                 selected: currentPath == '/owner/team',
               ),
@@ -142,7 +143,7 @@ class _OwnerDrawer extends ConsumerWidget {
               _navTile(
                 context,
                 icon: Icons.settings_outlined,
-                label: 'Настройки',
+                label: context.l10n.ownerSettingsTitle,
                 path: '/owner/settings',
                 selected: currentPath == '/owner/settings',
               ),
@@ -150,14 +151,14 @@ class _OwnerDrawer extends ConsumerWidget {
               _navTile(
                 context,
                 icon: Icons.help_outline,
-                label: 'Помощь',
+                label: context.l10n.ownerNavHelp,
                 path: '/owner/help',
                 selected: currentPath == '/owner/help',
               ),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.home_outlined),
-              title: const Text('В приложение QalaGo'),
+              title: Text(context.l10n.ownerNavBackToApp),
               onTap: () {
                 Navigator.pop(context);
                 context.go('/home');

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_spacing.dart';
 import 'widgets/owner_scaffold.dart';
@@ -40,7 +41,7 @@ class OwnerHelpScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return OwnerScaffold(
-      title: 'Помощь',
+      title: context.l10n.ownerNavHelp,
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.screen),
         children: [
@@ -50,16 +51,16 @@ class OwnerHelpScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Быстрый старт', style: TextStyle(fontWeight: FontWeight.w800)),
+                  Text(context.l10n.ownerHelpQuickStart, style: TextStyle(fontWeight: FontWeight.w800)),
                   const SizedBox(height: 8),
-                  const Text('1. Заполните профиль и загрузите фото'),
-                  const Text('2. Добавьте меню или услуги'),
-                  const Text('3. Создайте первую акцию'),
-                  const Text('4. Смотрите статистику на главной'),
+                  Text(context.l10n.ownerHelpStep1),
+                  Text(context.l10n.ownerHelpStep2),
+                  Text(context.l10n.ownerHelpStep3),
+                  Text(context.l10n.ownerHelpStep4),
                   const SizedBox(height: 12),
                   OutlinedButton(
                     onPressed: () => context.push('/owner/plan'),
-                    child: const Text('Тарифы и продвижение'),
+                    child: Text(context.l10n.ownerHelpPlansPromote),
                   ),
                 ],
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -33,7 +34,7 @@ class _MonetizationOrderConfirmScreenState
   @override
   Widget build(BuildContext context) {
     final business = ref.watch(ownerSelectedBusinessProvider);
-    final businessTitle = business?['title'] as String? ?? 'Заведение';
+    final businessTitle = business?['title'] as String? ?? context.l10n.ownerBusinessSection;
     final productCode = widget.extra['productCode'] as String?;
     final packageCode = widget.extra['packageCode'] as String?;
     final packagesAsync = packageCode != null
@@ -52,10 +53,10 @@ class _MonetizationOrderConfirmScreenState
 
     final title = packageCode != null
         ? (_quote.packageName ?? packageCode)
-        : productTitle(productCode ?? '');
+        : productTitle(context.l10n, productCode ?? '');
 
     return OwnerScaffold(
-      title: 'Ваш заказ',
+      title: context.l10n.ownerYourOrder,
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.screen),
         children: [
@@ -65,28 +66,28 @@ class _MonetizationOrderConfirmScreenState
           const SizedBox(height: 16),
           if (productCode != null) ...[
             _infoRow(
-              'Период',
-              formatDurationLabel(
+              context.l10n.ownerPeriodLabel,
+              formatDurationLabel(context.l10n, 
                 durationDays: widget.extra['durationDays'] as int?,
                 durationHours: widget.extra['durationHours'] as int?,
               ),
             ),
             _infoRow(
-              'Начало',
+              context.l10n.ownerStartLabel,
               (widget.extra['startAsap'] as bool? ?? true)
-                  ? 'после оплаты'
+                  ? context.l10n.ownerAfterPayment
                   : formatMonetizationDate(
                       DateTime.parse(widget.extra['desiredStartAt'] as String),
                     ),
             ),
           ],
           if (packageCode != null)
-            _infoRow('Пакет', _quote.packageName ?? packageCode),
+            _infoRow(context.l10n.ownerPackageTitle, _quote.packageName ?? packageCode),
           const SizedBox(height: 16),
           MonetizationQuoteBreakdown(quote: _quote),
           if (isVip) ...[
             const SizedBox(height: 16),
-            const Text(vipModerationNotice),
+            Text(vipModerationNotice(context.l10n)),
           ],
           if (_error != null) ...[
             const SizedBox(height: 12),
@@ -105,7 +106,7 @@ class _MonetizationOrderConfirmScreenState
                     width: 20,
                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                   )
-                : const Text('Подтвердить заказ'),
+                : Text(context.l10n.ownerConfirmOrder),
           ),
         ],
       ),
@@ -177,7 +178,7 @@ class _MonetizationOrderConfirmScreenState
       if (!mounted) return;
       context.go('/owner/monetization/orders/${order.id}');
     } catch (_) {
-      setState(() => _error = 'Не удалось создать заказ.');
+      setState(() => _error = context.l10n.ownerOrderCreateFailed);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

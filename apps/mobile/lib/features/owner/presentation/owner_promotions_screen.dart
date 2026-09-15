@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
+import 'package:qalago_mobile/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -9,6 +11,7 @@ import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../owner_utils.dart';
+import '../utils/owner_l10n.dart';
 import '../providers/owner_providers.dart';
 
 final ownerPromotionsProvider =
@@ -47,7 +50,7 @@ class OwnerPromotionsScreen extends ConsumerWidget {
               'Лимит активных акций: $maxActive. Улучшите тариф.',
             ),
             action: SnackBarAction(
-              label: 'Тариф',
+              label: context.l10n.ownerPlanTitle,
               onPressed: () => context.push('/owner/plan'),
             ),
           ),
@@ -66,38 +69,38 @@ class OwnerPromotionsScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(existing == null ? 'Новая акция' : 'Редактировать акцию'),
+          title: Text(existing == null ? context.l10n.ownerNewPromotion : context.l10n.ownerEditPromotion),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: titleController,
-                  decoration: const InputDecoration(labelText: 'Название'),
+                  decoration: InputDecoration(labelText: context.l10n.ownerFieldTitle),
                 ),
                 TextField(
                   controller: discountController,
-                  decoration: const InputDecoration(labelText: 'Скидка'),
+                  decoration: InputDecoration(labelText: context.l10n.ownerFieldDiscount),
                 ),
                 TextField(
                   controller: descController,
-                  decoration: const InputDecoration(labelText: 'Описание'),
+                  decoration: InputDecoration(labelText: context.l10n.ownerFieldDescription),
                   minLines: 2,
                   maxLines: 4,
                 ),
                 const SizedBox(height: 8),
                 InputDecorator(
-                  decoration: const InputDecoration(labelText: 'Статус'),
+                  decoration: InputDecoration(labelText: context.l10n.ownerFieldStatus),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       isExpanded: true,
                       value: status,
-                      items: const [
-                        DropdownMenuItem(value: 'ACTIVE', child: Text('Активна')),
-                        DropdownMenuItem(value: 'DRAFT', child: Text('Черновик')),
+                      items: [
+                        DropdownMenuItem(value: 'ACTIVE', child: Text(context.l10n.ownerPromotionStatusActive)),
+                        DropdownMenuItem(value: 'DRAFT', child: Text(context.l10n.onboardingStatusDraft)),
                         DropdownMenuItem(
                           value: 'EXPIRED',
-                          child: Text('Завершена'),
+                          child: Text(context.l10n.ownerPromotionStatusCompleted),
                         ),
                       ],
                       onChanged: (value) {
@@ -112,11 +115,11 @@ class OwnerPromotionsScreen extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Отмена'),
+              child: Text(context.l10n.commonCancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: Text(existing == null ? 'Создать' : 'Сохранить'),
+              child: Text(existing == null ? context.l10n.ownerCreate : context.l10n.commonSave),
             ),
           ],
         ),
@@ -143,14 +146,14 @@ class OwnerPromotionsScreen extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(existing == null ? 'Акция создана' : 'Акция обновлена'),
+            content: Text(existing == null ? context.l10n.ownerPromotionCreated : context.l10n.ownerPromotionUpdated),
           ),
         );
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: $e')),
+          SnackBar(content: Text(context.l10n.ownerErrorWithDetails('$e'))),
         );
       }
     }
@@ -164,16 +167,16 @@ class OwnerPromotionsScreen extends ConsumerWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Удалить акцию?'),
-        content: Text('«${promo.title}» будет удалена без восстановления.'),
+        title: Text(context.l10n.ownerDeletePromotionTitle),
+        content: Text(context.l10n.ownerDeletePromotionBody(promo.title)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Отмена'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Удалить'),
+            child: Text(context.l10n.commonDelete),
           ),
         ],
       ),
@@ -185,19 +188,20 @@ class OwnerPromotionsScreen extends ConsumerWidget {
       _invalidate(ref);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Акция удалена')),
+          SnackBar(content: Text(context.l10n.ownerPromotionDeleted)),
         );
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: $e')),
+          SnackBar(content: Text(context.l10n.ownerErrorWithDetails('$e'))),
         );
       }
     }
   }
 
-  String _statusLabel(PromotionModel promo) => ownerPromotionStatusLabel(promo);
+  String _statusLabel(AppLocalizations l10n, PromotionModel promo) =>
+      ownerPromotionStatusLabelForModel(l10n, promo);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -206,12 +210,12 @@ class OwnerPromotionsScreen extends ConsumerWidget {
     final plan = planAsync.valueOrNull ?? {};
     final limits = plan['limits'] as Map<String, dynamic>?;
     final maxActive = limits?['maxActivePromotions'] as int?;
-    final feedHint = planAsync.hasValue ? ownerPromotionFeedHint(plan) : null;
+    final feedHint = planAsync.hasValue ? ownerPromotionFeedHint(context.l10n) : null;
 
     return Scaffold(
       appBar: AppBar(
         leading: qalagoBackLeading(context, fallbackLocation: '/owner'),
-        title: Text('Акции · $businessTitle'),
+        title: Text(context.l10n.ownerPromotionsTitle(businessTitle)),
       ),
       floatingActionButton: promotionsAsync.maybeWhen(
         data: (promotions) {
@@ -227,13 +231,13 @@ class OwnerPromotionsScreen extends ConsumerWidget {
               activeCount: activeCount,
             ),
             icon: const Icon(Icons.add),
-            label: const Text('Новая акция'),
+            label: Text(context.l10n.ownerNewPromotion),
           );
         },
         orElse: () => FloatingActionButton.extended(
           onPressed: null,
           icon: const Icon(Icons.add),
-          label: const Text('Новая акция'),
+          label: Text(context.l10n.ownerNewPromotion),
         ),
       ),
       body: promotionsAsync.when(
@@ -260,8 +264,7 @@ class OwnerPromotionsScreen extends ConsumerWidget {
                       color: AppTheme.kzBlue.withValues(alpha: 0.35),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      'Пока нет акций',
+                    Text(                context.l10n.ownerNoPromotions,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
@@ -269,7 +272,7 @@ class OwnerPromotionsScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Создайте первую акцию для привлечения гостей',
+                      context.l10n.ownerNoPromotionsHint,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppTheme.textDark.withValues(alpha: 0.55),
@@ -353,7 +356,7 @@ class OwnerPromotionsScreen extends ConsumerWidget {
                               Text(promo.description!),
                             const SizedBox(height: 4),
                             Text(
-                              _statusLabel(promo),
+                              _statusLabel(context.l10n, promo),
                               style: TextStyle(
                                 color: ownerIsPromotionLiveNow(promo)
                                     ? AppTheme.openStatus
@@ -378,9 +381,9 @@ class OwnerPromotionsScreen extends ConsumerWidget {
                               _confirmDelete(context, ref, promo);
                             }
                           },
-                          itemBuilder: (context) => const [
-                            PopupMenuItem(value: 'edit', child: Text('Редактировать')),
-                            PopupMenuItem(value: 'delete', child: Text('Удалить')),
+                          itemBuilder: (ctx) => [
+                            PopupMenuItem(value: 'edit', child: Text(ctx.l10n.ownerEdit)),
+                            PopupMenuItem(value: 'delete', child: Text(ctx.l10n.commonDelete)),
                           ],
                         ),
                       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -42,7 +43,7 @@ class OwnerGalleryScreen extends ConsumerWidget {
               'Лимит тарифа: не более $maxPhotos фото. Улучшите тариф в разделе «Тариф».',
             ),
             action: SnackBarAction(
-              label: 'Тариф',
+              label: context.l10n.ownerPlanTitle,
               onPressed: () => context.push('/owner/plan'),
             ),
           ),
@@ -67,13 +68,13 @@ class OwnerGalleryScreen extends ConsumerWidget {
       ref.invalidate(businessPlanProvider(businessId));
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(asCover ? 'Обложка обновлена' : 'Фото добавлено')),
+          SnackBar(content: Text(asCover ? context.l10n.ownerCoverUpdated : context.l10n.ownerPhotoAdded)),
         );
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка загрузки: $e')),
+          SnackBar(content: Text(context.l10n.ownerUploadError('$e'))),
         );
       }
     }
@@ -91,7 +92,7 @@ class OwnerGalleryScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         leading: qalagoBackLeading(context, fallbackLocation: '/owner'),
-        title: Text('Галерея · $businessTitle'),
+        title: Text(context.l10n.ownerGalleryTitle(businessTitle)),
       ),
       body: galleryAsync.when(
         loading: () => const LoadingView(),
@@ -111,7 +112,7 @@ class OwnerGalleryScreen extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     child: Text(
                       'Фото: ${photoUsage ?? images.length} / $maxPhotos'
-                      '${atLimit ? ' · лимит достигнут' : ''}',
+                      '${atLimit ? context.l10n.ownerPhotoLimitReached : ''}',
                       style: TextStyle(
                         fontSize: 13,
                         color: atLimit ? AppSemanticColors.warning : AppTheme.kzBlue,
@@ -131,14 +132,12 @@ class OwnerGalleryScreen extends ConsumerWidget {
                               Icon(Icons.photo_library_outlined,
                                   size: 64, color: AppTheme.textMuted),
                               const SizedBox(height: 16),
-                              const Text(
-                                'Галерея пустая',
+                              Text(                context.l10n.ownerGalleryEmpty,
                                 style:
                                     TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(height: 8),
-                              const Text(
-                                'Добавьте фото интерьера, блюд или услуг',
+                              Text(                context.l10n.ownerGalleryEmptyHint,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(color: AppTheme.textMuted),
                               ),
@@ -187,8 +186,7 @@ class OwnerGalleryScreen extends ConsumerWidget {
                                       color: AppTheme.kzGold,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
-                                    child: const Text(
-                                      'Обложка',
+                                    child: Text(                context.l10n.ownerCoverLabel,
                                       style: TextStyle(
                                           fontSize: 11, fontWeight: FontWeight.bold),
                                     ),
@@ -215,9 +213,9 @@ class OwnerGalleryScreen extends ConsumerWidget {
                                   },
                                   itemBuilder: (_) => [
                                     if (!isCover)
-                                      const PopupMenuItem(
-                                          value: 'cover', child: Text('Сделать обложкой')),
-                                    const PopupMenuItem(value: 'delete', child: Text('Удалить')),
+                                      PopupMenuItem(
+                                          value: 'cover', child: Text(context.l10n.ownerSetCover)),
+                                    PopupMenuItem(value: 'delete', child: Text(context.l10n.commonDelete)),
                                   ],
                                 ),
                               ),
@@ -246,7 +244,7 @@ class OwnerGalleryScreen extends ConsumerWidget {
               ),
             ),
             icon: const Icon(Icons.photo_camera_front_outlined),
-            label: const Text('Обложка'),
+            label: Text(context.l10n.ownerCoverLabel),
           ),
           const SizedBox(height: 12),
           FloatingActionButton.extended(
@@ -260,7 +258,7 @@ class OwnerGalleryScreen extends ConsumerWidget {
               ),
             ),
             icon: const Icon(Icons.add_photo_alternate_outlined),
-            label: const Text('Фото'),
+            label: Text(context.l10n.ownerPhotoLabel),
           ),
         ],
       ),

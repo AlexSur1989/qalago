@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -37,7 +38,7 @@ class _OwnerSettingsScreenState extends ConsumerState<OwnerSettingsScreen> {
     }
 
     return OwnerScaffold(
-      title: 'Настройки',
+      title: context.l10n.ownerSettingsTitle,
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.screen),
         children: [
@@ -47,23 +48,23 @@ class _OwnerSettingsScreenState extends ConsumerState<OwnerSettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Аккаунт', style: TextStyle(fontWeight: FontWeight.w800)),
+                  Text(context.l10n.ownerAccountSection, style: TextStyle(fontWeight: FontWeight.w800)),
                   const SizedBox(height: 12),
                   TextField(
                     readOnly: true,
                     decoration: InputDecoration(
-                      labelText: 'Телефон',
+                      labelText: context.l10n.ownerPhoneLabel,
                     ),
                     controller: TextEditingController(
-                      text: user?.phone ?? 'Телефон не указан',
+                      text: user?.phone ?? context.l10n.ownerPhoneMissing,
                     ),
                   ),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Имя владельца',
-                      hintText: 'Как отображать в кабинете',
+                    decoration: InputDecoration(
+                      labelText: context.l10n.ownerDisplayNameLabel,
+                      hintText: context.l10n.ownerDisplayNameHint,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -78,20 +79,20 @@ class _OwnerSettingsScreenState extends ConsumerState<OwnerSettingsScreen> {
                                   .updateName(_nameController.text.trim());
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Имя сохранено')),
+                                  SnackBar(content: Text(context.l10n.ownerNameSaved)),
                                 );
                               }
                             } catch (e) {
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Ошибка: $e')),
+                                  SnackBar(content: Text(context.l10n.ownerErrorWithDetails('$e'))),
                                 );
                               }
                             } finally {
                               if (mounted) setState(() => _saving = false);
                             }
                           },
-                    child: Text(_saving ? 'Сохранение…' : 'Сохранить'),
+                    child: Text(_saving ? context.l10n.ownerSaving : context.l10n.commonSave),
                   ),
                 ],
               ),
@@ -104,11 +105,11 @@ class _OwnerSettingsScreenState extends ConsumerState<OwnerSettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Заведение', style: TextStyle(fontWeight: FontWeight.w800)),
+                  Text(context.l10n.ownerBusinessSection, style: TextStyle(fontWeight: FontWeight.w800)),
                   const SizedBox(height: 8),
                   if (business != null) ...[
                     Text(
-                      'Редактируйте карточку, часы и контакты в профиле.',
+                      context.l10n.ownerBusinessSettingsHint,
                       style: TextStyle(color: AppTheme.textMuted),
                     ),
                     const SizedBox(height: 12),
@@ -124,7 +125,7 @@ class _OwnerSettingsScreenState extends ConsumerState<OwnerSettingsScreen> {
                             );
                             context.push('/owner/edit/$id?title=$title');
                           },
-                          child: const Text('Профиль'),
+                          child: Text(context.l10n.ownerProfileCard),
                         ),
                         OutlinedButton(
                           onPressed: () {
@@ -134,19 +135,19 @@ class _OwnerSettingsScreenState extends ConsumerState<OwnerSettingsScreen> {
                             );
                             context.push('/owner/gallery/$id?title=$title');
                           },
-                          child: const Text('Галерея'),
+                          child: Text(context.l10n.ownerGallery),
                         ),
                       ],
                     ),
                   ] else ...[
                     Text(
-                      'Нет заведения — подайте заявку на модерацию.',
+                      context.l10n.ownerNoBusinessApply,
                       style: TextStyle(color: AppTheme.textMuted),
                     ),
                     const SizedBox(height: 12),
                     FilledButton(
                       onPressed: () => context.push('/owner/create-business'),
-                      child: const Text('Зарегистрировать'),
+                      child: Text(context.l10n.ownerRegister),
                     ),
                   ],
                 ],
@@ -160,10 +161,10 @@ class _OwnerSettingsScreenState extends ConsumerState<OwnerSettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Безопасность', style: TextStyle(fontWeight: FontWeight.w800)),
+                  Text(context.l10n.ownerSecuritySection, style: TextStyle(fontWeight: FontWeight.w800)),
                   const SizedBox(height: 8),
                   Text(
-                    'Вход по SMS-коду. Для смены номера обратитесь в поддержку.',
+                    context.l10n.ownerSecurityHint,
                     style: TextStyle(color: AppTheme.textMuted),
                   ),
                 ],

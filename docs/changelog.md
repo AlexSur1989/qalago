@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-15 — Stage 6.10B.3: Owner / business cabinet RU-KK localization
+
+- **Migrated**: `lib/features/owner` (dashboard, edit, gallery, menu, promotions, reviews, analytics, plan, settings, team, messages, help), monetization purchase UI, centralized `owner_l10n.dart` for plan tiers, statuses, permissions, ads products.
+- **Guard**: `stage610b3ScanRoots` includes consumer + owner; removed broad `/owner/` and `monetization` exclusions.
+- **Tests**: `test/owner/localization_stage_6_10b3_test.dart`; updated owner unit tests for `AppLocalizations` parameters.
+- **Future**: multilingual business-authored content (City.nameKk, promotion/service copy); Business/Admin Web.
+
 ## 2026-09-15 — Stage 6.10B.2: Consumer UI l10n migration (map, business, profile, onboarding)
 
 - **Migrated**: map, promotions, notifications, business catalog/photos/details, profile sub-screens, business onboarding flow, shared widgets (city picker, empty city, legal links, search field, business card), consumer ad widgets; `onboarding_errors` / `onboarding_labels` delegate to `onboarding_l10n`.

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -60,7 +61,7 @@ class _PromotePackageScreenState extends ConsumerState<PromotePackageScreen> {
       });
       setState(() => _quote = MonetizationQuote.fromJson(raw));
     } catch (_) {
-      setState(() => _error = 'Не удалось получить стоимость пакета.');
+      setState(() => _error = context.l10n.ownerPackageQuoteFailed);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -97,11 +98,11 @@ class _PromotePackageScreenState extends ConsumerState<PromotePackageScreen> {
   Widget build(BuildContext context) {
     final packagesAsync = ref.watch(monetizationPackagesProvider);
     return OwnerScaffold(
-      title: 'Пакет',
+      title: context.l10n.ownerPackageTitle,
       body: packagesAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
-          message: 'Не удалось загрузить пакеты.',
+          message: context.l10n.ownerPackagesLoadFailed,
           onRetry: () => ref.invalidate(monetizationPackagesProvider),
         ),
         data: (packages) {
@@ -110,7 +111,7 @@ class _PromotePackageScreenState extends ConsumerState<PromotePackageScreen> {
                 orElse: () => null,
               );
           if (pkg == null) {
-            return const Center(child: Text('Пакет не найден'));
+            return Center(child: Text(context.l10n.ownerPackageNotFound));
           }
           final hasVip = _includesVip(pkg);
           final hasPromotion = _includesPromotedPromotion(pkg);
@@ -126,18 +127,18 @@ class _PromotePackageScreenState extends ConsumerState<PromotePackageScreen> {
               ],
               const SizedBox(height: 12),
               Text(
-                '${formatDurationLabel(durationDays: pkg.durationDays)} · ${formatKztPrice(pkg.price)}',
+                '${formatDurationLabel(context.l10n, durationDays: pkg.durationDays)} · ${formatKztPrice(pkg.price)}',
                 style: const TextStyle(fontWeight: FontWeight.w700, color: AppTheme.kzBlue),
               ),
               if (pkg.items.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                const Text('Состав пакета', style: TextStyle(fontWeight: FontWeight.w800)),
+                Text(context.l10n.ownerPackageContents, style: TextStyle(fontWeight: FontWeight.w800)),
                 ...pkg.items.map(
                   (item) => ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: Text(productTitle(item.productCode)),
+                    title: Text(productTitle(context.l10n, item.productCode)),
                     subtitle: Text(
-                      '${item.quantity} × ${formatDurationLabel(durationDays: item.durationDays, durationHours: item.durationHours)}',
+                      '${item.quantity} × ${formatDurationLabel(context.l10n, durationDays: item.durationDays, durationHours: item.durationHours)}',
                     ),
                   ),
                 ),
@@ -150,7 +151,7 @@ class _PromotePackageScreenState extends ConsumerState<PromotePackageScreen> {
                     color: AppTheme.primaryTint,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Text(packageVipNotice),
+                  child: Text(packageVipNotice(context.l10n)),
                 ),
               ],
               if (hasPromotion && businessId != null) ...[
@@ -173,7 +174,7 @@ class _PromotePackageScreenState extends ConsumerState<PromotePackageScreen> {
               FilledButton(
                 onPressed: _canContinue(pkg) ? () => _continue(pkg) : null,
                 style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-                child: Text(hasVip ? packageVipCta : 'Продолжить'),
+                child: Text(hasVip ? packageVipCta(context.l10n) : context.l10n.commonContinue),
               ),
             ],
           );
@@ -203,13 +204,13 @@ class _PackagePromotionPicker extends ConsumerWidget {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
-          return const Text('Не удалось загрузить акции.');
+          return Text(context.l10n.ownerPromotionsLoadFailed);
         }
         final promotions = (snapshot.data ?? [])
             .where((p) => ownerIsPromotionLiveNow(p))
             .toList();
         if (promotions.isEmpty) {
-          return const Text('Нет активных акций для продвижения.');
+          return Text(context.l10n.ownerNoPromotionsForAds);
         }
         final effectiveId = selectedId ?? promotions.first.id;
         if (selectedId == null) {
@@ -218,8 +219,7 @@ class _PackagePromotionPicker extends ConsumerWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Выберите акцию',
+            Text(                context.l10n.ownerSelectPromotion,
               style: TextStyle(fontWeight: FontWeight.w800),
             ),
             ...promotions.map(

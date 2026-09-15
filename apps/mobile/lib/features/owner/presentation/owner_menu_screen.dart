@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_spacing.dart';
@@ -202,17 +203,17 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(existing == null ? 'Новая группа' : 'Редактировать группу'),
+        title: Text(existing == null ? context.l10n.ownerMenuNewGroup : context.l10n.ownerMenuEditGroup),
         content: TextField(
           controller: titleController,
-          decoration: const InputDecoration(
-            labelText: 'Название группы *',
-            hintText: 'Например: Горячие блюда, Стрижка',
+          decoration: InputDecoration(
+            labelText: context.l10n.ownerMenuGroupNameLabel,
+            hintText: context.l10n.ownerMenuGroupNameHint,
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Отмена')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Сохранить')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.l10n.commonCancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(context.l10n.commonSave)),
         ],
       ),
     );
@@ -254,7 +255,7 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(existing == null ? 'Новая позиция' : 'Редактировать'),
+          title: Text(existing == null ? context.l10n.ownerMenuNewItem : context.l10n.ownerEdit),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -262,9 +263,9 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
                 if (_groupOptions.isNotEmpty)
                   DropdownButtonFormField<String?>(
                     value: selectedGroupId,
-                    decoration: const InputDecoration(labelText: 'Группа'),
+                    decoration: InputDecoration(labelText: context.l10n.ownerMenuAddGroup),
                     items: [
-                      const DropdownMenuItem(value: null, child: Text('Без группы')),
+                      DropdownMenuItem(value: null, child: Text(context.l10n.ownerMenuNoGroup)),
                       ..._groupOptions.map(
                         (g) => DropdownMenuItem(
                           value: g['id'] as String,
@@ -276,24 +277,24 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
                   ),
                 TextField(
                   controller: titleController,
-                  decoration: const InputDecoration(labelText: 'Название *'),
+                  decoration: InputDecoration(labelText: context.l10n.onboardingNameLabel),
                 ),
                 TextField(
                   controller: priceController,
-                  decoration: const InputDecoration(labelText: 'Цена (₸)'),
+                  decoration: InputDecoration(labelText: context.l10n.ownerMenuPriceLabel),
                   keyboardType: TextInputType.number,
                 ),
                 TextField(
                   controller: descController,
-                  decoration: const InputDecoration(labelText: 'Описание'),
+                  decoration: InputDecoration(labelText: context.l10n.ownerFieldDescription),
                   maxLines: 2,
                 ),
               ],
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Отмена')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Сохранить')),
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.l10n.commonCancel)),
+            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(context.l10n.commonSave)),
           ],
         ),
       ),
@@ -350,7 +351,7 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: qalagoBackLeading(context, fallbackLocation: '/owner'),
-        title: Text('Товары и услуги · ${widget.businessTitle}'),
+        title: Text(context.l10n.ownerCatalogServicesTitle(widget.businessTitle)),
       ),
       body: catalogAsync.when(
         loading: () {
@@ -378,7 +379,7 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
             heroTag: 'add_group_${widget.businessId}',
             onPressed: () => _showGroupDialog(),
             icon: const Icon(Icons.create_new_folder_outlined),
-            label: const Text('Группа'),
+            label: Text(context.l10n.ownerMenuAddGroup),
           ),
           const SizedBox(height: 12),
           FloatingActionButton.extended(
@@ -389,7 +390,7 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
               _showItemDialog(defaultGroupId: firstGroupId);
             },
             icon: const Icon(Icons.add),
-            label: const Text('Позиция'),
+            label: Text(context.l10n.ownerAnalyticsCatalogItemEmpty),
           ),
         ],
       ),
@@ -402,6 +403,7 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
   }) {
     final totalCount = _pagination?['total'] as int? ?? _items.length;
     final emptyMessage = ownerMenuEmptyMessage(
+      context.l10n,
       totalCount: totalCount,
       search: _search,
       sectionId: _sectionId,
@@ -440,7 +442,7 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
           TextField(
             controller: _searchController,
             decoration: InputDecoration(
-              hintText: 'Найти товар или услугу',
+              hintText: context.l10n.catalogSearchHint,
               prefixIcon: const Icon(Icons.search),
               suffixIcon: _search.isNotEmpty
                   ? IconButton(
@@ -468,7 +470,7 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
             child: Row(
               children: [
                 _FilterChip(
-                  label: 'Все',
+                  label: context.l10n.commonAll,
                   selected: _sectionId == null,
                   onTap: () {
                     setState(() => _sectionId = null);
@@ -477,7 +479,7 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
                   },
                 ),
                 _FilterChip(
-                  label: 'Без раздела',
+                  label: context.l10n.ownerMenuNoSection,
                   selected: _sectionId == 'uncategorized',
                   onTap: () {
                     setState(() => _sectionId = 'uncategorized');
@@ -536,7 +538,7 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
                     'Не удалось загрузить ещё',
                     style: TextStyle(color: Theme.of(context).colorScheme.error),
                   ),
-                  TextButton(onPressed: _loadMore, child: const Text('Повторить')),
+                  TextButton(onPressed: _loadMore, child: Text(context.l10n.commonRetry)),
                 ],
               ),
             )
@@ -545,7 +547,7 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: OutlinedButton(
                 onPressed: _loadMore,
-                child: const Text('Показать ещё'),
+                child: Text(context.l10n.catalogShowMore),
               ),
             ),
         ],
@@ -604,7 +606,7 @@ class _OwnerItemTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              itemSectionLabel(item),
+              itemSectionLabel(context.l10n, item),
               style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
             ),
             if (item['description'] != null) Text(item['description'] as String),
@@ -621,12 +623,12 @@ class _OwnerItemTile extends StatelessWidget {
         trailing: PopupMenuButton<String>(
           onSelected: onAction,
           itemBuilder: (_) => [
-            const PopupMenuItem(value: 'edit', child: Text('Редактировать')),
+            PopupMenuItem(value: 'edit', child: Text(context.l10n.ownerEdit)),
             PopupMenuItem(
               value: isActive ? 'hide' : 'show',
-              child: Text(isActive ? 'Скрыть' : 'Показать'),
+              child: Text(isActive ? context.l10n.ownerMenuHideItem : context.l10n.ownerMenuShowItem),
             ),
-            const PopupMenuItem(value: 'delete', child: Text('Удалить')),
+            PopupMenuItem(value: 'delete', child: Text(context.l10n.commonDelete)),
           ],
         ),
       ),

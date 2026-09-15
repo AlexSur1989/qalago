@@ -32,6 +32,13 @@ Canonical product terminology for Flutter `AppLocalizations` (`app_ru.arb` / `ap
 | Для бизнеса | Бизнес үшін | `onboardingForBusinessTitle` |
 | Удалить аккаунт | Аккаунтты жою | `deleteAccountButton` |
 | Реклама (метка) | Жарнама | `commonAd`, `adSemanticLabel` |
+| Кабинет бизнеса | Бизнес кабинеті | `ownerDashboardTitle` |
+| Тариф (FREE/BASIC/PRO/VIP) | Тариф | `ownerPlanTierFree`, `ownerPlanTierBasic`, `ownerPlanTierPremium`, `ownerPlanTierVip` |
+| Продвижение / реклама (owner) | Насихат / жарнама | `ownerMonetizationTitle`, `ownerPromoteCatalogSubtitle` |
+| Команда | Команда | `ownerNavTeam` |
+| Менеджер | Менеджер | `ownerDefaultManager`, `onboardingRoleManager` |
+| Владелец | Ие | `onboardingRoleOwner` |
+| Статистика (owner) | Статистика | `ownerAnalyticsTitle` |
 
 ## Content rules
 

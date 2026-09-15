@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
@@ -11,6 +12,7 @@ import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../team/team_error_utils.dart';
 import '../team/team_models.dart';
+import '../utils/owner_l10n.dart';
 
 class OwnerInvitationScreen extends ConsumerStatefulWidget {
   const OwnerInvitationScreen({super.key, required this.token});
@@ -78,7 +80,7 @@ class _OwnerInvitationScreenState extends ConsumerState<OwnerInvitationScreen> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _acceptMessage = mapTeamOperationError(e));
+        setState(() => _acceptMessage = mapTeamOperationError(context.l10n, e));
       }
     } finally {
       if (mounted) setState(() => _accepting = false);
@@ -92,13 +94,13 @@ class _OwnerInvitationScreenState extends ConsumerState<OwnerInvitationScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: qalagoBackLeading(context, fallbackLocation: '/home'),
-        title: const Text('Приглашение в команду'),
+        title: Text(context.l10n.ownerTeamInvitationTitle),
       ),
       body: _loading
           ? const LoadingView()
           : _loadError != null
               ? ErrorView(
-                  message: mapInvitationResolveError(_loadError!),
+                  message: mapInvitationResolveError(context.l10n, _loadError!),
                   onRetry: _resolve,
                 )
               : Padding(
@@ -113,10 +115,10 @@ class _OwnerInvitationScreenState extends ConsumerState<OwnerInvitationScreen> {
                             ),
                       ),
                       const SizedBox(height: 8),
-                      Text(invitationStatusMessageRu(_resolved!.status)),
+                      Text(invitationStatusMessage(context.l10n, _resolved!.status)),
                       if (_resolved!.recipientEmailMasked != null) ...[
                         const SizedBox(height: 8),
-                        Text('Для: ${_resolved!.recipientEmailMasked}'),
+                        Text(context.l10n.ownerInvitationForEmail(_resolved!.recipientEmailMasked ?? '')),
                       ],
                       const SizedBox(height: 8),
                       Text(
@@ -127,7 +129,7 @@ class _OwnerInvitationScreenState extends ConsumerState<OwnerInvitationScreen> {
                       if (_resolved!.status != 'PENDING') ...[
                         FilledButton(
                           onPressed: () => context.go('/home'),
-                          child: const Text('На главную'),
+                          child: Text(context.l10n.ownerGoHome),
                         ),
                       ] else if (!auth.isAuthenticated) ...[
                         const Text(
@@ -139,7 +141,7 @@ class _OwnerInvitationScreenState extends ConsumerState<OwnerInvitationScreen> {
                           onPressed: () {
                             context.push(loginRedirectPath('/invite/${widget.token}'));
                           },
-                          child: const Text('Войти'),
+                          child: Text(context.l10n.authVerify),
                         ),
                       ] else ...[
                         if (_acceptMessage != null) ...[
@@ -156,7 +158,7 @@ class _OwnerInvitationScreenState extends ConsumerState<OwnerInvitationScreen> {
                         ],
                         FilledButton(
                           onPressed: _accepting ? null : _accept,
-                          child: Text(_accepting ? 'Принимаем…' : 'Принять приглашение'),
+                          child: Text(_accepting ? context.l10n.ownerAcceptingInvite : context.l10n.ownerAcceptInvite),
                         ),
                       ],
                     ],

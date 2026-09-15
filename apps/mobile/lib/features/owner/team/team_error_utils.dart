@@ -1,9 +1,11 @@
 import 'package:dio/dio.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/utils/network_error_utils.dart';
+import '../utils/owner_l10n.dart';
 
 /// User-facing errors for owner team operations (no raw Dio/stack traces).
-String mapTeamOperationError(Object error) {
+String mapTeamOperationError(AppLocalizations l10n, Object error) {
   if (error is DioException) {
     final data = error.response?.data;
     if (data is Map) {
@@ -19,42 +21,31 @@ String mapTeamOperationError(Object error) {
 
     final status = error.response?.statusCode;
     if (status == 403) {
-      return 'У вас нет прав для этого действия.';
+      return l10n.ownerTeamForbidden;
     }
     if (status == 404) {
-      return 'Запись не найдена.';
+      return l10n.ownerTeamNotFound;
     }
     if (status == 409) {
-      return 'Достигнут лимит менеджеров вашего тарифа.';
+      return l10n.ownerTeamManagerLimit;
     }
   }
 
   final fallback = mapUserFacingLoadError(error);
   if (isUserFacingLoadMessage(fallback)) return fallback;
-  return 'Не удалось выполнить действие. Попробуйте позже.';
+  return l10n.ownerTeamActionFailed;
 }
 
-String mapInvitationResolveError(Object error) {
+String mapInvitationResolveError(AppLocalizations l10n, Object error) {
   if (error is DioException && error.response?.statusCode == 404) {
-    return 'Приглашение не найдено или ссылка недействительна.';
+    return l10n.ownerInviteNotFound;
   }
-  return mapTeamOperationError(error);
+  return mapTeamOperationError(l10n, error);
 }
 
-String invitationStatusMessageRu(String status) {
-  switch (status) {
-    case 'PENDING':
-      return 'Приглашение активно';
-    case 'ACCEPTED':
-      return 'Приглашение уже принято';
-    case 'REVOKED':
-      return 'Приглашение отозвано';
-    case 'EXPIRED':
-      return 'Срок приглашения истёк';
-    default:
-      return status;
-  }
-}
+@Deprecated('Use invitationStatusMessage from owner_l10n.dart')
+String invitationStatusMessageRu(AppLocalizations l10n, String status) =>
+    invitationStatusMessage(l10n, status);
 
 bool _isSafeBackendMessage(String message) {
   if (message.contains('DioException') ||

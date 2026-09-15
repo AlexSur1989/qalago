@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qalago_mobile/features/owner/owner_menu_utils.dart';
+import 'package:qalago_mobile/l10n/app_localizations.dart';
 import 'package:qalago_mobile/features/owner/providers/owner_menu_provider.dart';
 
 void main() {
@@ -36,24 +38,26 @@ void main() {
   });
 
   group('ownerMenuEmptyMessage', () {
+    final ru = lookupAppLocalizations(const Locale('ru'));
+
     test('empty business message', () {
       expect(
-        ownerMenuEmptyMessage(totalCount: 0, search: null, sectionId: null),
-        'Товары и услуги пока не добавлены',
+        ownerMenuEmptyMessage(ru, totalCount: 0, search: null, sectionId: null),
+        ru.ownerMenuEmpty,
       );
     });
 
     test('empty search message', () {
       expect(
-        ownerMenuEmptyMessage(totalCount: 0, search: 'iphone', sectionId: null),
-        'По вашему запросу ничего не найдено',
+        ownerMenuEmptyMessage(ru, totalCount: 0, search: 'iphone', sectionId: null),
+        ru.catalogNotFound,
       );
     });
 
     test('empty section message', () {
       expect(
-        ownerMenuEmptyMessage(totalCount: 0, search: null, sectionId: 'sec-1'),
-        'В этом разделе пока нет товаров и услуг',
+        ownerMenuEmptyMessage(ru, totalCount: 0, search: null, sectionId: 'sec-1'),
+        ru.ownerMenuEmpty,
       );
     });
   });

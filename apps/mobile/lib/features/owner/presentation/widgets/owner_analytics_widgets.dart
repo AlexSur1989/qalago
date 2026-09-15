@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 
 import '../../../../core/theme/theme_extensions.dart';
 import '../../owner_analytics_utils.dart';
 import 'owner_views_chart.dart';
 
 class OwnerAnalyticsSectionTitle extends StatelessWidget {
-  const OwnerAnalyticsSectionTitle(this.title, {super.key, this.subtitle});
+  OwnerAnalyticsSectionTitle(this.title, {super.key, this.subtitle});
 
   final String title;
   final String? subtitle;
@@ -59,7 +60,7 @@ class OwnerAnalyticsCompactUpgradeCard extends StatelessWidget {
                   const SizedBox(height: 10),
                   TextButton(
                     onPressed: onUpgrade,
-                    child: const Text('Посмотреть тарифы'),
+                    child: Text(context.l10n.ownerViewPlans),
                   ),
                 ],
               ),
@@ -78,6 +79,7 @@ class OwnerAnalyticsOverviewGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final overview = dashboard['overview'] as Map<String, dynamic>? ?? {};
     final caps = ownerAnalyticsCapabilities(dashboard);
     final tiles = <Widget>[];
@@ -86,16 +88,16 @@ class OwnerAnalyticsOverviewGrid extends StatelessWidget {
       tiles.add(_OverviewTile(label: label, value: value, hint: hint));
     }
 
-    addTile('Просмотры карточки', ownerAnalyticsFormatCount(overview['views'] as num?));
+    addTile(l10n.ownerAnalyticsCardViews, ownerAnalyticsFormatCount(overview['views'] as num?));
 
     if (caps['impressions'] == true && overview.containsKey('impressions')) {
-      addTile('Показы', ownerAnalyticsFormatCount(overview['impressions'] as num?));
+      addTile(l10n.ownerAnalyticsImpressionsLabel, ownerAnalyticsFormatCount(overview['impressions'] as num?));
     }
 
     if (caps['actions'] == true) {
       final actionsVal = overview['actions'] ?? overview['totalCustomerActions'];
       if (actionsVal != null) {
-        addTile('Целевые действия', ownerAnalyticsFormatCount(actionsVal as num?));
+        addTile(context.l10n.ownerAnalyticsTargetActions, ownerAnalyticsFormatCount(actionsVal as num?));
       }
     }
 
@@ -108,12 +110,9 @@ class OwnerAnalyticsOverviewGrid extends StatelessWidget {
       final conv = ownerAnalyticsFormatRatePercent(overview['conversionRate'] as num?);
       if (conv != null) {
         addTile(
-          'Конверсия в действие',
+          l10n.ownerAnalyticsConversionTitle,
           conv,
-          hint:
-              'Доля просмотров карточки, после которых пользователь совершил '
-              'целевое действие: звонок, WhatsApp, маршрут, сайт, Instagram '
-              'или добавление в избранное.',
+          hint: l10n.ownerAnalyticsConversionHint,
         );
       }
     }
@@ -200,9 +199,10 @@ class _OwnerAnalyticsTrendCardState extends State<OwnerAnalyticsTrendCard> {
         ownerAnalyticsCap(widget.dashboard, 'actionTrend') && actionTrend.isNotEmpty;
 
     final series = _showActions && canActions ? actionTrend : viewTrend;
+    final l10n = context.l10n;
     final title = _showActions && canActions
-        ? 'Действия за ${widget.effectiveDays} дн.'
-        : 'Просмотры за ${widget.effectiveDays} дн.';
+        ? l10n.ownerAnalyticsChartActionsDays(widget.effectiveDays)
+        : l10n.ownerAnalyticsChartViewsDays(widget.effectiveDays);
 
     return Card(
       child: Padding(
@@ -215,9 +215,9 @@ class _OwnerAnalyticsTrendCardState extends State<OwnerAnalyticsTrendCard> {
                 Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.w700))),
                 if (canActions)
                   SegmentedButton<bool>(
-                    segments: const [
-                      ButtonSegment(value: false, label: Text('Просмотры')),
-                      ButtonSegment(value: true, label: Text('Действия')),
+                    segments: [
+                      ButtonSegment(value: false, label: Text(l10n.ownerAnalyticsSegmentViews)),
+                      ButtonSegment(value: true, label: Text(l10n.ownerAnalyticsSegmentActions)),
                     ],
                     selected: {_showActions},
                     onSelectionChanged: (set) => setState(() => _showActions = set.first),
@@ -250,7 +250,7 @@ class OwnerAnalyticsActionsBreakdown extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 8),
           child: ListTile(
             leading: Icon(ownerAnalyticsActionIcon(key)),
-            title: Text(ownerAnalyticsActionLabel(key)),
+            title: Text(ownerAnalyticsActionLabel(context.l10n, key)),
             trailing: Text(
               ownerAnalyticsFormatCount(count),
               style: context.metricValueStyle?.copyWith(fontSize: 18),
@@ -279,15 +279,16 @@ class OwnerAnalyticsFunnelCard extends StatelessWidget {
     final actions =
         (overview['actions'] ?? overview['totalCustomerActions'] ?? (dashboard['actions'] as Map?)?['total']) as num?;
 
+    final l10n = context.l10n;
     final steps = <String>[];
     if (ownerAnalyticsCap(dashboard, 'impressions') && impressions != null) {
-      steps.add('${ownerAnalyticsFormatCount(impressions)} показов');
+      steps.add(l10n.ownerAnalyticsFunnelStepImpressions(ownerAnalyticsFormatCount(impressions)));
     }
     if (views != null) {
-      steps.add('${ownerAnalyticsFormatCount(views)} просмотров');
+      steps.add(l10n.ownerAnalyticsFunnelStepViews(ownerAnalyticsFormatCount(views)));
     }
     if (ownerAnalyticsCap(dashboard, 'actions') && actions != null) {
-      steps.add('${ownerAnalyticsFormatCount(actions)} целевых действий');
+      steps.add(l10n.ownerAnalyticsFunnelStepActions(ownerAnalyticsFormatCount(actions)));
     }
 
     if (steps.length < 2) return const SizedBox.shrink();
@@ -302,7 +303,7 @@ class OwnerAnalyticsFunnelCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Воронка периода', style: TextStyle(fontWeight: FontWeight.w700)),
+            Text(l10n.ownerAnalyticsPeriodFunnel, style: const TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 12),
             for (var i = 0; i < steps.length; i++) ...[
               Text(steps[i], style: const TextStyle(fontSize: 16)),
@@ -315,11 +316,11 @@ class OwnerAnalyticsFunnelCard extends StatelessWidget {
             if (ctr != null || conversion != null) ...[
               const SizedBox(height: 12),
               if (ctr != null) Text('CTR: $ctr'),
-              if (conversion != null) Text('Конверсия в действие: $conversion'),
+              if (conversion != null) Text(l10n.ownerAnalyticsConversionLine(conversion)),
             ],
             const SizedBox(height: 8),
             Text(
-              'Показатели рассчитаны по агрегированным данным периода.',
+              l10n.ownerAnalyticsAggregatedNote,
               style: context.captionStyle,
             ),
           ],
@@ -346,10 +347,10 @@ class OwnerAnalyticsComparisonCompact extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('К предыдущему периоду', style: TextStyle(fontWeight: FontWeight.w700)),
+            Text(context.l10n.ownerAnalyticsVsPreviousPeriod, style: const TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             ...metrics.whereType<Map>().map((row) {
-              final delta = ownerAnalyticsDeltaPercent(row['deltaPercent'] as num?);
+              final delta = ownerAnalyticsDeltaPercent(context.l10n, row['deltaPercent'] as num?);
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
@@ -397,9 +398,9 @@ class OwnerAnalyticsPopularHoursSection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Популярное время', style: TextStyle(fontWeight: FontWeight.w700)),
+              Text(context.l10n.ownerAnalyticsPopularHours, style: const TextStyle(fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
-              Text('Недостаточно данных', style: context.captionStyle),
+              Text(context.l10n.ownerAnalyticsNotEnoughData, style: context.captionStyle),
             ],
           ),
         ),
@@ -418,7 +419,7 @@ class OwnerAnalyticsPopularHoursSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Популярное время', style: TextStyle(fontWeight: FontWeight.w700)),
+            Text(context.l10n.ownerAnalyticsPopularHours, style: const TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 12),
             ...hours.take(8).map((row) {
               final hour = (row['hour'] as num?)?.toInt() ?? 0;
@@ -466,9 +467,9 @@ class OwnerAnalyticsAudienceSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const OwnerAnalyticsSectionTitle(
-          'Аудитория',
-          subtitle: 'Доли просмотров карточки по типу посетителя',
+        OwnerAnalyticsSectionTitle(
+          context.l10n.ownerAnalyticsAudience,
+          subtitle: context.l10n.ownerAnalyticsAudienceSubtitle,
         ),
         if (audience != null) ...[
           Card(
@@ -478,13 +479,15 @@ class OwnerAnalyticsAudienceSection extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _audienceRow(
-                    'Новые посетители',
+                    context,
+                    context.l10n.ownerAnalyticsNewVisitors,
                     audience['newShare'],
                     audience['newVisitorViews'],
                   ),
                   const Divider(),
                   _audienceRow(
-                    'Вернувшиеся посетители',
+                    context,
+                    context.l10n.ownerAnalyticsReturningVisitors,
                     audience['returningShare'],
                     audience['returningVisitorViews'],
                   ),
@@ -509,7 +512,7 @@ class OwnerAnalyticsAudienceSection extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
-                'Недостаточно данных для анализа аудитории по расстоянию',
+                context.l10n.ownerAnalyticsAudienceDistanceEmpty,
                 style: context.captionStyle,
               ),
             ),
@@ -518,12 +521,12 @@ class OwnerAnalyticsAudienceSection extends StatelessWidget {
     );
   }
 
-  Widget _audienceRow(String title, dynamic share, dynamic views) {
+  Widget _audienceRow(BuildContext context, String title, dynamic share, dynamic views) {
     final shareText = ownerAnalyticsFormatRatePercent(share as num?);
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(title),
-      subtitle: shareText != null ? Text('Доля просмотров: $shareText') : null,
+      subtitle: shareText != null ? Text(context.l10n.ownerAnalyticsViewsShare(shareText)) : null,
       trailing: views != null
           ? Text(
               ownerAnalyticsFormatCount(views as num),
@@ -548,19 +551,20 @@ class _VisitorMetricsOverview extends StatelessWidget {
 
     final tiles = <Widget>[];
 
+    final l10n = context.l10n;
     if (periodUv != null) {
-      tiles.add(_metricLine('Уникальные посетители', periodUv));
+      tiles.add(_metricLine(l10n.ownerAnalyticsUniqueVisitors, periodUv));
     }
     if (periodSessions != null) {
-      tiles.add(_metricLine('Сессии', periodSessions));
+      tiles.add(_metricLine(l10n.ownerAnalyticsSessions, periodSessions));
     }
 
     if (tiles.isEmpty && (dailyUv != null || dailySessions != null)) {
       if (dailyUv != null) {
-        tiles.add(_metricLine('Суммарно уникальных посетителей по дням', dailyUv));
+        tiles.add(_metricLine(l10n.ownerAnalyticsDailyUniqueSum, dailyUv));
       }
       if (dailySessions != null) {
-        tiles.add(_metricLine('Суммарно сессий по дням', dailySessions));
+        tiles.add(_metricLine(l10n.ownerAnalyticsDailySessionsSum, dailySessions));
       }
     }
 
@@ -605,10 +609,10 @@ class _AudienceGeographyList extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Расстояние до заведения', style: TextStyle(fontWeight: FontWeight.w700)),
+            Text(context.l10n.ownerAnalyticsDistanceTitle, style: const TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 6),
             Text(
-              'Агрегированные интервалы без точных координат пользователей.',
+              context.l10n.ownerAnalyticsDistanceHint,
               style: context.captionStyle,
             ),
             const SizedBox(height: 8),
@@ -649,7 +653,7 @@ class OwnerAnalyticsContentSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const OwnerAnalyticsSectionTitle('Контент'),
+        OwnerAnalyticsSectionTitle(context.l10n.ownerAnalyticsContentSection),
         if (showPromo) _PromotionsBlock(promotions: promoMap!),
         if (showCatalog) _CatalogBlock(catalog: catalogMap!),
       ],
@@ -674,11 +678,13 @@ class _PromotionsBlock extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Акции', style: TextStyle(fontWeight: FontWeight.w700)),
+            Text(context.l10n.ownerMgmtPromotions, style: TextStyle(fontWeight: FontWeight.w700)),
             if (promotions.containsKey('promotionViews')) ...[
               const SizedBox(height: 8),
               Text(
-                'Просмотры акций: ${ownerAnalyticsFormatCount(promotions['promotionViews'] as num?)}',
+                context.l10n.ownerAnalyticsPromotionViewsLine(
+                  ownerAnalyticsFormatCount(promotions['promotionViews'] as num?),
+                ),
               ),
             ],
             if (byPromotion is List && byPromotion.isNotEmpty) ...[
@@ -688,7 +694,9 @@ class _PromotionsBlock extends StatelessWidget {
                 final shortId = id.length > 8 ? '${id.substring(0, 8)}…' : id;
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(id.isEmpty ? 'Акция' : 'Акция · $shortId'),
+                  title: Text(id.isEmpty
+                      ? context.l10n.ownerNotificationPromotion
+                      : context.l10n.ownerAnalyticsPromotionItemTitle(shortId)),
                   trailing: Text(ownerAnalyticsFormatCount(row['views'] as num?)),
                 );
               }),
@@ -696,7 +704,7 @@ class _PromotionsBlock extends StatelessWidget {
             if (actionsUnavailable) ...[
               const SizedBox(height: 8),
               Text(
-                'Действия по акциям пока не измеряются',
+                context.l10n.ownerAnalyticsPromotionActionsNotMeasured,
                 style: context.captionStyle,
               ),
             ],
@@ -724,23 +732,25 @@ class _CatalogBlock extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Каталог', style: TextStyle(fontWeight: FontWeight.w700)),
+            Text(context.l10n.ownerAnalyticsCatalogSection, style: const TextStyle(fontWeight: FontWeight.w700)),
             if (items is List && items.isNotEmpty)
               ...items.whereType<Map>().take(10).map((row) {
                 final id = row['catalogItemId'] as String? ?? '';
                 final shortId = id.length > 8 ? '${id.substring(0, 8)}…' : id;
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(id.isEmpty ? 'Позиция' : 'Позиция · $shortId'),
+                  title: Text(id.isEmpty
+                      ? context.l10n.ownerAnalyticsCatalogItemEmpty
+                      : context.l10n.ownerAnalyticsCatalogItemTitle(shortId)),
                   trailing: Text(ownerAnalyticsFormatCount(row['views'] as num?)),
                 );
               })
             else
-              Text('Недостаточно данных', style: context.captionStyle),
+              Text(context.l10n.ownerAnalyticsNotEnoughData, style: context.captionStyle),
             if (actionsUnavailable) ...[
               const SizedBox(height: 8),
               Text(
-                'Действия по позициям каталога пока не измеряются',
+                context.l10n.ownerAnalyticsCatalogActionsNotMeasured,
                 style: context.captionStyle,
               ),
             ],
@@ -760,7 +770,7 @@ class OwnerAnalyticsEmptyState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 32),
       child: Center(
         child: Text(
-          'Статистика появится после первых просмотров карточки.',
+          context.l10n.ownerAnalyticsStatsAfterFirstView,
           textAlign: TextAlign.center,
           style: context.captionStyle,
         ),

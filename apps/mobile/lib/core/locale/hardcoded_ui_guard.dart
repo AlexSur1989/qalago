@@ -1,7 +1,7 @@
 import 'dart:io';
 
-/// Consumer UI paths scanned for hardcoded Cyrillic (Stage 6.10B.2).
-const stage610b2ScanRoots = [
+/// Product UI paths scanned for hardcoded Cyrillic (Stage 6.10B.3: consumer + owner).
+const stage610b3ScanRoots = [
   'lib/core/router/app_router.dart',
   'lib/features/home',
   'lib/features/categories/presentation',
@@ -17,13 +17,17 @@ const stage610b2ScanRoots = [
   'lib/features/analytics',
   'lib/features/recommendations',
   'lib/features/ads/widgets',
+  'lib/features/owner',
   'lib/core/auth',
   'lib/core/release',
   'lib/shared/widgets',
 ];
 
-@Deprecated('Use stage610b2ScanRoots')
-const stage610b1ScanRoots = stage610b2ScanRoots;
+@Deprecated('Use stage610b3ScanRoots')
+const stage610b2ScanRoots = stage610b3ScanRoots;
+
+@Deprecated('Use stage610b3ScanRoots')
+const stage610b1ScanRoots = stage610b3ScanRoots;
 
 const _allowPathFragments = [
   '/l10n/',
@@ -31,9 +35,7 @@ const _allowPathFragments = [
   '/tool/',
   'category_discovery_strings.dart',
   'dev_quick_login_panel.dart',
-  '/owner/',
   '/admin/',
-  'monetization',
 ];
 
 const _allowLineSubstrings = [
@@ -50,7 +52,7 @@ const _allowLineSubstrings = [
 ];
 
 List<String> scanHardcodedConsumerUiStrings({
-  List<String> roots = stage610b2ScanRoots,
+  List<String> roots = stage610b3ScanRoots,
 }) {
   final violations = <String>[];
   for (final root in roots) {
