@@ -1,5 +1,10 @@
+import 'qalago_spacing.dart';
+
+/// Legacy spacing aliases — prefer [QalaGoSpacing] for new code.
 class AppSpacing {
-  static const screen = 16.0;
-  static const section = 20.0;
-  static const item = 12.0;
+  /// Owner/onboarding/list screens (16px). Consumer often uses [QalaGoSpacing.screenPadding] (20).
+  static const screen = QalaGoSpacing.screenPaddingCompact;
+
+  static const section = QalaGoSpacing.space20;
+  static const item = QalaGoSpacing.itemGap;
 }

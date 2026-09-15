@@ -1,53 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Semantic colors outside [ColorScheme.error] — use for status, not primary CTAs.
-class AppSemanticColors {
-  static const success = Color(0xFF2E7D32);
-  static const onSuccess = Color(0xFFFFFFFF);
-  static const warning = Color(0xFFE65100);
-  static const onWarning = Color(0xFFFFFFFF);
-  static const info = Color(0xFF0277BD);
-}
+import 'qalago_colors.dart';
+import 'qalago_elevation.dart';
+import 'qalago_icon_sizes.dart';
+import 'qalago_radius.dart';
+import 'qalago_touch_targets.dart';
 
+export 'qalago_colors.dart' show AppSemanticColors, QalaGoColors;
+
+/// Application [ThemeData] built on [QalaGoColors] foundations (light theme only).
 class AppTheme {
-  // Brand tokens (KZ flag accents)
-  static const Color kzBlue = Color(0xFF00A8D6);
-  static const Color kzGold = Color(0xFFFEC50C);
-  static const Color background = Color(0xFFF5F7FA);
-  static const Color textDark = Color(0xFF1A1A1A);
-  static const Color textMuted = Color(0xFF6B7280);
-  static const Color outlineLight = Color(0xFFE0E4EA);
-  /// Subtle filled surfaces (info blocks, chips).
-  static const Color surfaceSubtle = Color(0xFFF7FAFC);
-  static const Color borderSubtle = Color(0xFFE8EBF0);
-  static const Color primaryTint = Color(0xFFEAF8FC);
-  static const Color primaryTintBorder = Color(0xFFD6ECF3);
-  static const Color openStatus = Color(0xFF1B7F4A);
-  static const Color closedStatus = Color(0xFFC0392B);
-  static const Color openStatusBg = Color(0xFFE8F8EE);
-  static const Color closedStatusBg = Color(0xFFFCEFEE);
-  static const Color error = Color(0xFFB3261E);
+  /// Brand primary `#00A8D6` — alias of [QalaGoColors.primary].
+  static const Color kzBlue = QalaGoColors.primary;
 
-  static const double cardRadius = 20;
-  static const double buttonRadius = 16;
-  static const double inputRadius = 16;
-  static const double chipRadius = 12;
+  /// Brand accent gold — not a generic semantic secondary.
+  static const Color kzGold = QalaGoColors.brandAccentGold;
+
+  static const Color background = QalaGoColors.background;
+  static const Color textDark = QalaGoColors.textPrimary;
+  static const Color textMuted = QalaGoColors.textMuted;
+  static const Color outlineLight = QalaGoColors.border;
+  static const Color surfaceSubtle = QalaGoColors.surfaceSubtle;
+  static const Color borderSubtle = QalaGoColors.borderSubtle;
+  static const Color primaryTint = QalaGoColors.primaryTint;
+  static const Color primaryTintBorder = QalaGoColors.primaryTintBorder;
+  static const Color openStatus = QalaGoColors.openStatus;
+  static const Color closedStatus = QalaGoColors.closedStatus;
+  static const Color openStatusBg = QalaGoColors.openStatusBg;
+  static const Color closedStatusBg = QalaGoColors.closedStatusBg;
+  static const Color error = QalaGoColors.error;
+
+  static const double cardRadius = QalaGoRadius.card;
+  static const double buttonRadius = QalaGoRadius.button;
+  static const double inputRadius = QalaGoRadius.input;
+  static const double chipRadius = QalaGoRadius.chip;
 
   static ColorScheme get _colorScheme => const ColorScheme(
         brightness: Brightness.light,
-        primary: kzBlue,
-        onPrimary: Colors.white,
-        secondary: kzGold,
-        onSecondary: textDark,
-        surface: Colors.white,
-        onSurface: textDark,
-        onSurfaceVariant: textMuted,
-        surfaceContainerHighest: background,
-        outline: outlineLight,
-        outlineVariant: Color(0xFFF0F2F5),
-        error: Color(0xFFB3261E),
-        onError: Colors.white,
+        primary: QalaGoColors.primary,
+        onPrimary: QalaGoColors.onPrimary,
+        secondary: QalaGoColors.brandAccentGold,
+        onSecondary: QalaGoColors.textPrimary,
+        surface: QalaGoColors.surface,
+        onSurface: QalaGoColors.textPrimary,
+        onSurfaceVariant: QalaGoColors.textSecondary,
+        surfaceContainerHighest: QalaGoColors.background,
+        outline: QalaGoColors.border,
+        outlineVariant: QalaGoColors.divider,
+        error: QalaGoColors.error,
+        onError: QalaGoColors.onError,
       );
 
   static ThemeData get light {
@@ -69,9 +71,12 @@ class AppTheme {
 
     return baseTheme.copyWith(
       textTheme: textTheme,
-      iconTheme: IconThemeData(color: scheme.onSurfaceVariant, size: 24),
-      dividerTheme: DividerThemeData(
-        color: scheme.outlineVariant,
+      iconTheme: const IconThemeData(
+        color: QalaGoColors.textSecondary,
+        size: QalaGoIconSizes.standard,
+      ),
+      dividerTheme: const DividerThemeData(
+        color: QalaGoColors.divider,
         thickness: 1,
         space: 1,
       ),
@@ -79,8 +84,8 @@ class AppTheme {
         centerTitle: false,
         backgroundColor: scheme.surface,
         foregroundColor: scheme.onSurface,
-        elevation: 0,
-        scrolledUnderElevation: 0,
+        elevation: QalaGoElevation.flat,
+        scrolledUnderElevation: QalaGoElevation.flat,
         titleTextStyle: textTheme.titleLarge?.copyWith(
           fontWeight: FontWeight.w700,
           color: scheme.onSurface,
@@ -90,8 +95,8 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: scheme.surface,
-        elevation: 2,
-        shadowColor: Colors.black.withValues(alpha: 0.05),
+        elevation: QalaGoElevation.card,
+        shadowColor: QalaGoElevation.cardShadowColor(scheme.onSurface),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(cardRadius)),
         margin: EdgeInsets.zero,
         clipBehavior: Clip.antiAlias,
@@ -130,7 +135,7 @@ class AppTheme {
           foregroundColor: scheme.onPrimary,
           disabledBackgroundColor: scheme.primary.withValues(alpha: 0.38),
           disabledForegroundColor: scheme.onPrimary.withValues(alpha: 0.62),
-          minimumSize: const Size(64, 48),
+          minimumSize: const Size(64, QalaGoTouchTargets.minInteractive),
           shape: buttonShape,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           textStyle: textTheme.labelLarge?.copyWith(
@@ -143,7 +148,7 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: scheme.primary,
           disabledForegroundColor: scheme.onSurfaceVariant.withValues(alpha: 0.5),
-          minimumSize: const Size(64, 48),
+          minimumSize: const Size(64, QalaGoTouchTargets.minInteractive),
           shape: buttonShape,
           side: BorderSide(color: scheme.outline),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -173,7 +178,7 @@ class AppTheme {
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: scheme.surface,
-        elevation: 8,
+        elevation: QalaGoElevation.dialog,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(cardRadius)),
         titleTextStyle: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         contentTextStyle: textTheme.bodyMedium,
@@ -189,7 +194,7 @@ class AppTheme {
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(QalaGoRadius.medium)),
         backgroundColor: textDark,
         contentTextStyle: textTheme.bodyMedium?.copyWith(color: Colors.white),
       ),
@@ -197,7 +202,7 @@ class AppTheme {
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: scheme.secondary,
         foregroundColor: scheme.onSecondary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(QalaGoRadius.large)),
       ),
     );
   }

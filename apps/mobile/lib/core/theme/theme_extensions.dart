@@ -1,48 +1,70 @@
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+import 'qalago_colors.dart';
+import 'qalago_elevation.dart';
+import 'qalago_typography.dart';
 
-/// BuildContext helpers for consistent typography and colors.
+/// BuildContext helpers — canonical access path for typography and colors.
 extension QalagoTheme on BuildContext {
   ColorScheme get cs => Theme.of(this).colorScheme;
   TextTheme get tt => Theme.of(this).textTheme;
 
-  TextStyle? get sectionTitleStyle =>
-      tt.titleMedium?.copyWith(fontWeight: FontWeight.w700, color: cs.onSurface);
+  TextStyle get pageTitleStyle => QalaGoTypography.pageTitle(tt);
 
-  TextStyle? get cardTitleStyle =>
-      tt.titleSmall?.copyWith(fontWeight: FontWeight.w600, color: cs.onSurface);
+  TextStyle get sectionTitleStyle => QalaGoTypography.sectionTitle(tt, cs);
 
-  TextStyle? get bodySecondaryStyle =>
-      tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant);
+  TextStyle get sectionTitleEmphasisStyle => QalaGoTypography.sectionTitleEmphasis(tt);
 
-  TextStyle? get captionStyle =>
-      tt.bodySmall?.copyWith(color: cs.onSurfaceVariant);
+  TextStyle get cardTitleStyle => QalaGoTypography.cardTitle(tt, cs);
 
-  TextStyle? get metricValueStyle =>
-      tt.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: cs.onSurface);
+  TextStyle get bodyStyle => QalaGoTypography.body(tt, cs);
 
-  TextStyle? get pricePrimaryStyle =>
-      tt.titleLarge?.copyWith(fontWeight: FontWeight.w700, color: cs.onSurface);
+  TextStyle get bodyStrongStyle => QalaGoTypography.bodyStrong(tt, cs);
 
-  TextStyle? get navLabelStyle => tt.labelMedium;
+  TextStyle get bodySecondaryStyle => QalaGoTypography.body(tt, cs).copyWith(
+        color: cs.onSurfaceVariant,
+      );
+
+  TextStyle get metadataStyle => QalaGoTypography.metadata(tt, cs);
+
+  TextStyle get captionStyle => QalaGoTypography.caption(tt, cs);
+
+  TextStyle get metricValueStyle => QalaGoTypography.price(tt, cs).copyWith(
+        fontWeight: FontWeight.bold,
+      );
+
+  TextStyle get pricePrimaryStyle => QalaGoTypography.price(tt, cs);
+
+  TextStyle get buttonLabelStyle => QalaGoTypography.buttonLabel(tt, cs);
+
+  TextStyle navigationLabelStyle({required bool selected}) =>
+      QalaGoTypography.navigationLabel(tt, selected: selected);
+
+  TextStyle get navLabelStyle => QalaGoTypography.navigationLabel(tt, selected: false);
+
+  TextStyle get ratingTextStyle => QalaGoTypography.rating(tt);
 
   Color get navUnselectedColor => cs.onSurfaceVariant;
 
   Color get navSelectedColor => cs.primary;
 
-  Color get successColor => AppSemanticColors.success;
+  Color get successColor => QalaGoColors.success;
 
-  Color get warningColor => AppSemanticColors.warning;
+  Color get warningColor => QalaGoColors.warning;
 
-  Color get infoColor => AppSemanticColors.info;
+  Color get infoColor => QalaGoColors.info;
+
+  Color get favoriteActiveColor => QalaGoColors.favoriteActive;
+
+  Color get ratingColor => QalaGoColors.rating;
 
   Color primarySurfaceTint([double alpha = 0.12]) =>
       cs.primary.withValues(alpha: alpha);
 
   Color get softBorderColor => cs.outline.withValues(alpha: 0.55);
 
-  Color get cardShadowColor => cs.onSurface.withValues(alpha: 0.08);
+  Color get cardShadowColor => QalaGoElevation.cardShadowColor(cs.onSurface);
 
   /// Unified in-app search field decoration (home tap-through, categories, search, promotions).
   InputDecoration qalagoSearchDecoration({

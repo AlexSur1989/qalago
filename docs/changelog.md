@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-16 — Stage 6.11A.UI.1: Mobile design system foundations
+
+- **Added**: QalaGo Mobile foundation tokens under `apps/mobile/lib/core/theme/` — colors (`#00A8D6` primary), typography roles, spacing, radius, elevation, icon sizes, touch targets, breakpoints, minimal motion; barrel `qalago_foundation.dart`.
+- **Changed**: `AppTheme` / `AppSpacing` / `QalagoTheme` extensions wired to foundations without screen migration; legacy `AppTheme.kzBlue`, `AppSpacing.screen` preserved.
+- **Future**: 6.11A.UI.2 shared core components; bottom nav / a11y in UI.3 and UI.7.
+
 ## 2026-09-16 — Stage 6.10D.2: Business Web UX / localization / discoverability
 
 - **Changed**: User-visible «Сообщения» → «Уведомления» / «Хабарландырулар» (`/messages` route kept); notification dates use RU/KK locale formatting.
