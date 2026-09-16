@@ -64,8 +64,11 @@ class _PopularPlacesStrip extends StatelessWidget {
       );
     }
 
+    final scale = MediaQuery.textScalerOf(context).scale(1.0);
+    final stripHeight = (194.0 * scale).clamp(194.0, 320.0);
+
     return SizedBox(
-      height: 194,
+      height: stripHeight,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: items.length,
@@ -74,6 +77,7 @@ class _PopularPlacesStrip extends StatelessWidget {
           final entry = items[index];
           return SizedBox(
             width: 168,
+            height: stripHeight,
             child: BusinessImpressionHost(
               businessId: entry.business.id,
               trafficSource: BusinessTrafficSource.home,

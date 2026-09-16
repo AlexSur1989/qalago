@@ -373,7 +373,7 @@ class _CompactVerticalBusinessCard extends StatelessWidget {
   final String? subtitle;
   final VoidCallback? onTap;
 
-  static const _coverHeight = 100.0;
+  static const _coverHeight = 92.0;
 
   @override
   Widget build(BuildContext context) {
@@ -383,18 +383,12 @@ class _CompactVerticalBusinessCard extends StatelessWidget {
         ? subtitle!.trim()
         : (business.categoryTitle ?? '');
 
-    return _BusinessCardShell(
-      onTap: onTap,
-      borderRadius: radius,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _BusinessCardCover(
-            coverUrl: coverUrl,
-            height: _coverHeight,
-            borderRadius: BorderRadius.vertical(top: radius.topLeft),
-          ),
-          Padding(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final boundedHeight = constraints.hasBoundedHeight;
+
+        Widget textBlock({required bool expandSecondary}) {
+          return Padding(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -411,24 +405,75 @@ class _CompactVerticalBusinessCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (secondary.isNotEmpty) ...[
-                  const SizedBox(height: QalaGoSpacing.space8),
-                  Text(
-                    secondary,
-                    style: const TextStyle(
-                      color: QalaGoColors.textSecondary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      height: 1.25,
+                  const SizedBox(height: QalaGoSpacing.space4),
+                  if (expandSecondary)
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.topLeft,
+                        child: Text(
+                          secondary,
+                          style: const TextStyle(
+                            color: QalaGoColors.textSecondary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            height: 1.25,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    )
+                  else
+                    Text(
+                      secondary,
+                      style: const TextStyle(
+                        color: QalaGoColors.textSecondary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        height: 1.25,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
                 ],
               ],
             ),
+          );
+        }
+
+        final cover = _BusinessCardCover(
+          coverUrl: coverUrl,
+          height: _coverHeight,
+          borderRadius: BorderRadius.vertical(top: radius.topLeft),
+        );
+
+        if (boundedHeight) {
+          return _BusinessCardShell(
+            onTap: onTap,
+            borderRadius: radius,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                cover,
+                Expanded(child: textBlock(expandSecondary: true)),
+              ],
+            ),
+          );
+        }
+
+        return _BusinessCardShell(
+          onTap: onTap,
+          borderRadius: radius,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              cover,
+              textBlock(expandSecondary: false),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

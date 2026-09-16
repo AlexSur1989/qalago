@@ -111,14 +111,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       }
 
       if (isAuthed && isLoggingIn) {
-        final redirect = state.uri.queryParameters['redirect'];
-        if (redirect != null && redirect.isNotEmpty) {
-          return sanitizeLoginRedirect(redirect);
-        }
-        if (_hasBusinessCabinetAccess(ref, authState)) {
-          return '/owner';
-        }
-        return '/home';
+        return resolvePostLoginRoute(
+          redirectQuery: state.uri.queryParameters['redirect'],
+        );
       }
 
       if (isOwnerRoute(location)) {

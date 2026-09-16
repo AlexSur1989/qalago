@@ -65,6 +65,44 @@ class QalaGoBottomNavItem {
   final VoidCallback onTap;
 }
 
+class _BottomNavLabel extends StatelessWidget {
+  const _BottomNavLabel({
+    required this.label,
+    required this.color,
+    required this.selected,
+  });
+
+  final String label;
+  final Color color;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = context.navigationLabelStyle(selected: selected).copyWith(
+          color: color,
+        );
+    final textScaler = MediaQuery.textScalerOf(context);
+    final allowTwoLines = textScaler.scale(12) >= 16;
+
+    final text = Text(
+      label,
+      textAlign: TextAlign.center,
+      maxLines: allowTwoLines ? 2 : 1,
+      overflow: TextOverflow.ellipsis,
+      style: style,
+    );
+
+    if (allowTwoLines) {
+      return text;
+    }
+
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: text,
+    );
+  }
+}
+
 class _QalaGoBottomNavTab extends StatelessWidget {
   const _QalaGoBottomNavTab({
     required this.item,
@@ -104,14 +142,10 @@ class _QalaGoBottomNavTab extends StatelessWidget {
                   children: [
                     Icon(icon, color: color, size: QalaGoIconSizes.navigation),
                     const SizedBox(height: QalaGoSpacing.space4),
-                    Text(
-                      item.label,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: context.navigationLabelStyle(selected: isSelected).copyWith(
-                            color: color,
-                          ),
+                    _BottomNavLabel(
+                      label: item.label,
+                      color: color,
+                      selected: isSelected,
                     ),
                   ],
                 ),

@@ -231,11 +231,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  void _navigateAfterSuccessfulLogin() {
+    if (!mounted) return;
+    final redirect = GoRouterState.of(context).uri.queryParameters['redirect'];
+    context.go(resolvePostLoginRoute(redirectQuery: redirect));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final auth = ref.watch(authProvider);
     final isBusy = auth.isLoading;
+
+    ref.listen<AuthState>(authProvider, (previous, next) {
+      if (next.isLoading || !next.isAuthenticated) return;
+      if (previous?.isAuthenticated == true) return;
+      _navigateAfterSuccessfulLogin();
+    });
 
     return Scaffold(
       backgroundColor: QalaGoColors.background,

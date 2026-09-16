@@ -86,6 +86,18 @@ String sanitizeLoginRedirect(String? redirect, {String fallback = '/home'}) {
   return path;
 }
 
+/// Consumer-first post-login route: safe redirect wins; never auto-open owner cabinet.
+String resolvePostLoginRoute({
+  String? redirectQuery,
+  String fallback = '/home',
+}) {
+  final trimmed = redirectQuery?.trim();
+  if (trimmed != null && trimmed.isNotEmpty) {
+    return sanitizeLoginRedirect(trimmed, fallback: fallback);
+  }
+  return fallback;
+}
+
 String mapAuthError(Object error) {
   if (error is DioException) {
     switch (error.type) {

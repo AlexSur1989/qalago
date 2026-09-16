@@ -153,10 +153,16 @@ class _OrganicPromotionsStrip extends StatelessWidget {
   final List<PromotionModel> items;
   final ValueChanged<PromotionModel> onTap;
 
+  double _stripHeight(BuildContext context) {
+    final scale = MediaQuery.textScalerOf(context).scale(1.0);
+    return (210.0 * scale).clamp(210.0, 360.0);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final stripHeight = _stripHeight(context);
     return SizedBox(
-      height: 210,
+      height: stripHeight,
       child: ScrollConfiguration(
         behavior: ScrollConfiguration.of(context).copyWith(
           dragDevices: {
@@ -174,6 +180,7 @@ class _OrganicPromotionsStrip extends StatelessWidget {
           itemBuilder: (context, index) => _PromotionCard(
             localeCode: localeCode,
             promotion: items[index],
+            cardHeight: stripHeight,
             onTap: () => onTap(items[index]),
           ),
         ),
@@ -186,11 +193,13 @@ class _PromotionCard extends StatelessWidget {
   const _PromotionCard({
     required this.localeCode,
     required this.promotion,
+    required this.cardHeight,
     required this.onTap,
   });
 
   final String localeCode;
   final PromotionModel promotion;
+  final double cardHeight;
   final VoidCallback onTap;
 
   @override
@@ -209,36 +218,37 @@ class _PromotionCard extends StatelessWidget {
       promotion.imageUrl ?? promotion.business?.coverImageUrl,
     );
 
+    const imageHeight = 92.0;
+
     return SizedBox(
       width: 210,
+      height: cardHeight,
       child: Material(
         color: Colors.white,
         elevation: 2,
         shadowColor: Colors.black.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
           onTap: promotion.business != null ? onTap : null,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16),
-                ),
+              SizedBox(
+                height: imageHeight,
+                width: double.infinity,
                 child: Stack(
+                  fit: StackFit.expand,
                   children: [
                     if (imageUrl.isNotEmpty)
                       Image.network(
                         imageUrl,
-                        width: double.infinity,
-                        height: 100,
                         fit: BoxFit.cover,
                         errorBuilder: (_, _, _) =>
-                            _promoImagePlaceholder(116),
+                            _promoImagePlaceholder(imageHeight),
                       )
                     else
-                      _promoImagePlaceholder(116),
+                      _promoImagePlaceholder(imageHeight),
                     if (promotion.discountText != null)
                       Positioned(
                         left: 10,
@@ -248,46 +258,54 @@ class _PromotionCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      displayTitle,
-                      style: const TextStyle(
-                        color: AppTheme.textDark,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        height: 1.15,
-                      ),
-                      maxLines: 2,
-                    ),
-                    const SizedBox(height: 7),
-                    Text(
-                      promotion.business?.title ?? 'QalaGo',
-                      style: const TextStyle(
-                        color: AppTheme.textMuted,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (displayDescription != null) ...[
-                      const SizedBox(height: 7),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        displayDescription,
+                        displayTitle,
                         style: const TextStyle(
-                          color: AppTheme.textMuted,
-                          fontSize: 12,
-                          height: 1.2,
+                          color: AppTheme.textDark,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          height: 1.15,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
+                      const SizedBox(height: 4),
+                      Text(
+                        promotion.business?.title ?? 'QalaGo',
+                        style: const TextStyle(
+                          color: AppTheme.textMuted,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (displayDescription != null) ...[
+                        const SizedBox(height: 4),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.topLeft,
+                            child: Text(
+                              displayDescription,
+                              style: const TextStyle(
+                                color: AppTheme.textMuted,
+                                fontSize: 12,
+                                height: 1.2,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ],

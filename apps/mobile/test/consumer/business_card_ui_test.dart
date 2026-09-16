@@ -132,10 +132,18 @@ void main() {
     testWidgets('KK locale compact vertical', (tester) async {
       await _pumpCard(
         tester,
-        BusinessCard(
-          business: _sampleBusiness(categoryTitle: 'Кофехана'),
-          layout: BusinessCardLayout.compactVertical,
-          subtitle: 'Ұсыныс',
+        SizedBox(
+          width: 168,
+          height: 194,
+          child: BusinessCard(
+            business: _sampleBusiness(
+              title:
+                  'Ресторан с очень длинным названием заведения в центре города',
+              categoryTitle: 'Кофехана',
+            ),
+            layout: BusinessCardLayout.compactVertical,
+            subtitle: 'Популярно сейчас среди посетителей города',
+          ),
         ),
         locale: const Locale('kk'),
         width: 320,

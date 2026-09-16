@@ -78,6 +78,25 @@ void main() {
     });
   });
 
+  group('resolvePostLoginRoute', () {
+    test('uses safe redirect when provided', () {
+      expect(resolvePostLoginRoute(redirectQuery: '/profile'), '/profile');
+      expect(resolvePostLoginRoute(redirectQuery: '/favorites'), '/favorites');
+    });
+
+    test('falls back to home without redirect', () {
+      expect(resolvePostLoginRoute(redirectQuery: null), '/home');
+      expect(resolvePostLoginRoute(redirectQuery: ''), '/home');
+    });
+
+    test('rejects unsafe redirect', () {
+      expect(
+        resolvePostLoginRoute(redirectQuery: 'https://evil.com'),
+        '/home',
+      );
+    });
+  });
+
   group('isValidOtpCode', () {
     test('accepts 4-6 digit codes', () {
       expect(isValidOtpCode('1234'), isTrue);
