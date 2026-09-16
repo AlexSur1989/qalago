@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/locale/l10n_extension.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/qalago_colors.dart';
 
 class ProfileLanguageScreen extends ConsumerWidget {
   const ProfileLanguageScreen({super.key});
@@ -45,7 +45,10 @@ class ProfileLanguageScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(20),
             child: Text(
               l10n.profileLanguageApplyHint,
-              style: TextStyle(color: AppTheme.textDark.withValues(alpha: 0.6), fontSize: 14),
+              style: TextStyle(
+                color: QalaGoColors.textSecondary,
+                fontSize: 14,
+              ),
             ),
           ),
         ],

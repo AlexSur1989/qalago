@@ -293,6 +293,18 @@ class AppLocalizationsRu extends AppLocalizations {
       'Избранные из других городов сохранены — смените город, чтобы увидеть их.';
 
   @override
+  String get favoritesBrowseCategories => 'Перейти в категории';
+
+  @override
+  String get favoritesRemoveFailed =>
+      'Не удалось убрать из избранного. Попробуйте ещё раз.';
+
+  @override
+  String favoritesRemoveAccessibility(String businessTitle) {
+    return 'Удалить $businessTitle из избранного';
+  }
+
+  @override
   String searchRadiusKmExact(int km) {
     return '$km км';
   }
@@ -408,6 +420,17 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get profileSignOut => 'Выйти из аккаунта';
+
+  @override
+  String get profileLogoutConfirmTitle => 'Выйти из аккаунта?';
+
+  @override
+  String get profileLogoutConfirmBody =>
+      'Вы выйдете из текущей сессии на этом устройстве.';
+
+  @override
+  String get profileGuestBusinessSubtitle =>
+      'Найдите заведение или подайте заявку — для продолжения потребуется вход.';
 
   @override
   String get profileGuestTitle => 'Войдите в аккаунт';

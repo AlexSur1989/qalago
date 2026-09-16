@@ -626,6 +626,24 @@ abstract class AppLocalizations {
   /// **'Избранные из других городов сохранены — смените город, чтобы увидеть их.'**
   String get favoritesOtherCitiesHint;
 
+  /// No description provided for @favoritesBrowseCategories.
+  ///
+  /// In ru, this message translates to:
+  /// **'Перейти в категории'**
+  String get favoritesBrowseCategories;
+
+  /// No description provided for @favoritesRemoveFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось убрать из избранного. Попробуйте ещё раз.'**
+  String get favoritesRemoveFailed;
+
+  /// No description provided for @favoritesRemoveAccessibility.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить {businessTitle} из избранного'**
+  String favoritesRemoveAccessibility(String businessTitle);
+
   /// No description provided for @searchRadiusKmExact.
   ///
   /// In ru, this message translates to:
@@ -853,6 +871,24 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Выйти из аккаунта'**
   String get profileSignOut;
+
+  /// No description provided for @profileLogoutConfirmTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выйти из аккаунта?'**
+  String get profileLogoutConfirmTitle;
+
+  /// No description provided for @profileLogoutConfirmBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вы выйдете из текущей сессии на этом устройстве.'**
+  String get profileLogoutConfirmBody;
+
+  /// No description provided for @profileGuestBusinessSubtitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Найдите заведение или подайте заявку — для продолжения потребуется вход.'**
+  String get profileGuestBusinessSubtitle;
 
   /// No description provided for @profileGuestTitle.
   ///

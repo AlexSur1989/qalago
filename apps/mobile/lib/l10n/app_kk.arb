@@ -95,6 +95,16 @@
     }
   },
   "favoritesOtherCitiesHint": "Басқа қалалардағы таңдаулылар сақталды — көру үшін қаланы ауыстырыңыз.",
+  "favoritesBrowseCategories": "Санаттарға өту",
+  "favoritesRemoveFailed": "Таңдаулылардан алу сәтсіз. Қайта көріңіз.",
+  "favoritesRemoveAccessibility": "{businessTitle} таңдаулылардан алу",
+  "@favoritesRemoveAccessibility": {
+    "placeholders": {
+      "businessTitle": {
+        "type": "String"
+      }
+    }
+  },
   "searchRadiusKmExact": "{km} км",
   "mapTitle": "Карта",
   "mapNoBusinessesNearby": "Жақыннан мекемелер жоқ",
@@ -133,6 +143,9 @@
   "profileBusinessDefault": "Бизнес",
   "profileLogout": "Шығу",
   "profileSignOut": "Аккаунттан шығу",
+  "profileLogoutConfirmTitle": "Аккаунттан шығу керек пе?",
+  "profileLogoutConfirmBody": "Осы құрылғыдағы ағымдағы сессиядан шығасыз.",
+  "profileGuestBusinessSubtitle": "Мекемені табыңыз немесе өтінім беріңіз — жалғастыру үшін кіру қажет.",
   "profileGuestTitle": "Аккаунтқа кіріңіз",
   "profileGuestSubtitle": "Таңдаулыларды сақтаңыз және пікір қалдырыңыз",
   "profileGuestBody": "Таңдаулыларды сақтаңыз, пікір қалдырыңыз және жеке функцияларды пайдаланыңыз.",

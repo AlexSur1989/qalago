@@ -8,6 +8,10 @@ import 'package:go_router/go_router.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/qalago_colors.dart';
+import '../../../core/theme/qalago_radius.dart';
+import '../../../core/theme/qalago_spacing.dart';
+import '../../../core/theme/qalago_touch_targets.dart';
 import '../../../shared/utils/auth_utils.dart';
 import '../data/social_auth_platform.dart';
 import 'dev_quick_login_panel.dart';
@@ -47,6 +51,46 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool get _showSocial => _showGoogle || _showApple;
 
   bool get _anyLoginMethod => _showSocial || _showOtp;
+
+  List<Widget> _socialProviderButtons({
+    required bool isBusy,
+    required String appleLabel,
+  }) {
+    final widgets = <Widget>[];
+    void addApple() {
+      widgets.add(
+        SignInWithAppleButton(
+          onPressed: isBusy ? null : _signInWithApple,
+          height: QalaGoTouchTargets.minInteractive,
+          borderRadius: BorderRadius.circular(QalaGoRadius.card),
+          text: appleLabel,
+        ),
+      );
+      widgets.add(const SizedBox(height: QalaGoSpacing.space12));
+    }
+
+    void addGoogle() {
+      widgets.add(
+        _GoogleSignInButton(
+          onPressed: isBusy ? null : _signInWithGoogle,
+          loading: isBusy,
+        ),
+      );
+      widgets.add(const SizedBox(height: QalaGoSpacing.space12));
+    }
+
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      if (_showApple) addApple();
+      if (_showGoogle) addGoogle();
+    } else {
+      if (_showGoogle) addGoogle();
+    }
+
+    if (widgets.isNotEmpty) {
+      widgets.removeLast();
+    }
+    return widgets;
+  }
 
   @override
   void initState() {
@@ -194,6 +238,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final isBusy = auth.isLoading;
 
     return Scaffold(
+      backgroundColor: QalaGoColors.background,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -233,23 +278,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 28),
-                    if (_showGoogle) ...[
-                      _GoogleSignInButton(
-                        onPressed: isBusy ? null : _signInWithGoogle,
-                        loading: isBusy,
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                    if (_showApple) ...[
-                      SignInWithAppleButton(
-                        onPressed: isBusy ? null : _signInWithApple,
-                        height: 52,
-                        borderRadius: BorderRadius.circular(18),
-                        text: l10n.authContinueWithApple,
-                      ),
-                      const SizedBox(height: 12),
-                    ],
+                    const SizedBox(height: QalaGoSpacing.space28),
+                    ..._socialProviderButtons(
+                      isBusy: isBusy,
+                      appleLabel: l10n.authContinueWithApple,
+                    ),
                     if (_showSocial && _showOtp) ...[
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
@@ -356,13 +389,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             },
                           ),
                           const SizedBox(height: 8),
-                          Row(
+                          Wrap(
+                            alignment: WrapAlignment.spaceBetween,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: QalaGoSpacing.space8,
+                            runSpacing: QalaGoSpacing.space4,
                             children: [
                               TextButton(
                                 onPressed: isBusy ? null : _changePhone,
                                 child: Text(l10n.authChangePhone),
                               ),
-                              const Spacer(),
                               TextButton(
                                 onPressed: isBusy || _resendCooldownSec > 0
                                     ? null
@@ -491,11 +527,13 @@ class _GoogleSignInButton extends StatelessWidget {
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        foregroundColor: Theme.of(context).colorScheme.onSurface,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        minimumSize: const Size.fromHeight(52),
-        side: BorderSide(color: Theme.of(context).colorScheme.outline),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        foregroundColor: QalaGoColors.textPrimary,
+        backgroundColor: QalaGoColors.surface,
+        minimumSize: const Size.fromHeight(QalaGoTouchTargets.minInteractive),
+        side: const BorderSide(color: QalaGoColors.border),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(QalaGoRadius.card),
+        ),
       ),
       child: loading
           ? const SizedBox(
@@ -506,28 +544,23 @@ class _GoogleSignInButton extends StatelessWidget {
           : Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: Colors.black12),
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    'G',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      color: AppTheme.kzBlue,
-                      fontSize: 14,
+                Icon(
+                  Icons.login_rounded,
+                  color: QalaGoColors.textPrimary,
+                  size: 22,
+                ),
+                const SizedBox(width: QalaGoSpacing.space12),
+                Flexible(
+                  child: Text(
+                    context.l10n.authContinueWithGoogle,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  context.l10n.authContinueWithGoogle,
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
                 ),
               ],
             ),
@@ -593,17 +626,21 @@ class _CityArtwork extends StatelessWidget {
             left: 8,
             right: 8,
             bottom: 24,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                _Building(width: 48, height: 84),
-                _Building(width: 34, height: 112),
-                _Tower(),
-                _Building(width: 64, height: 124, roundedTop: true),
-                _Building(width: 42, height: 96),
-                _Wheel(),
-              ],
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.bottomCenter,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [
+                  _Building(width: 48, height: 84),
+                  _Building(width: 34, height: 112),
+                  _Tower(),
+                  _Building(width: 64, height: 124, roundedTop: true),
+                  _Building(width: 42, height: 96),
+                  _Wheel(),
+                ],
+              ),
             ),
           ),
           Positioned(

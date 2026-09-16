@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-16 — Stage 6.11A.UI.6B: Favorites, Profile, Auth UI (mobile)
+
+- **Changed**: Favorites/Profile/Login aligned to QalaGo design system; guest favorites/profile flows; empty favorites CTA to Categories; favorite remove analytics + error feedback; profile avatar on main card; logout confirmation; guest language + business entries; iOS Apple-before-Google provider order; neutral Google button (no unofficial logo art).
+- **Changed**: `/profile/language` public for guest language selection (routing only).
+- **Future**: UI.7+ polish; 6.11E notifications settings; provider activation external.
+
 ## 2026-09-16 — Stage 6.11A.UI.5B.1: Business Detail visual closure (mobile)
 
 - **Changed**: Hero, identity, and contacts blocks on Business Detail aligned to QalaGo tokens (overlay, 48dp hero controls, typography/spacing, informational contact rows).

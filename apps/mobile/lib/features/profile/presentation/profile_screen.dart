@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/rbac/role_permissions.dart';
+
+import '../../../core/constants/app_constants.dart';
 import '../../../core/locale/app_locale_provider.dart';
+import '../../../core/locale/l10n_extension.dart';
 import '../../../core/providers/city_provider.dart';
+import '../../../core/rbac/role_permissions.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/qalago_colors.dart';
+import '../../../core/theme/qalago_radius.dart';
+import '../../../core/theme/qalago_spacing.dart';
+import '../../../core/theme/qalago_touch_targets.dart';
 import '../../../shared/widgets/city_picker.dart';
+import '../../../shared/widgets/legal_links.dart';
+import '../../../shared/widgets/qalago_components.dart';
 import '../../../shared/widgets/qalago_logo.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../business_onboarding/utils/onboarding_labels.dart';
-import '../../../shared/widgets/legal_links.dart';
-import '../../../core/locale/l10n_extension.dart';
 
 Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
   final l10n = context.l10n;
@@ -68,6 +75,30 @@ Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
   }
 }
 
+Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
+  final l10n = context.l10n;
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(l10n.profileLogoutConfirmTitle),
+      content: Text(l10n.profileLogoutConfirmBody),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: Text(l10n.commonCancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: Text(l10n.profileSignOut),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true || !context.mounted) return;
+  await ref.read(authProvider.notifier).logout();
+  if (context.mounted) context.go('/home');
+}
+
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
@@ -84,37 +115,38 @@ class ProfileScreen extends ConsumerWidget {
 
     final user = auth.user;
     final role = user?.role ?? 'USER';
-    final city = ref.watch(cityProvider);
     final canModerateRole = canModerate(role);
     final entriesAsync = ref.watch(myBusinessEntriesProvider);
+    final hasMemberships =
+        entriesAsync.valueOrNull?.isNotEmpty ?? false;
 
     return Scaffold(
+      backgroundColor: QalaGoColors.background,
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
+          padding: const EdgeInsets.fromLTRB(
+            QalaGoSpacing.space20,
+            QalaGoSpacing.space16,
+            QalaGoSpacing.space20,
+            QalaGoSpacing.space28,
+          ),
           children: [
             _ProfileHeader(
               cityName: ref.watch(cityLocalizedNameProvider),
               onCityTap: () => showCityPickerSheet(context, ref),
             ),
-            const SizedBox(height: 28),
-            Text(
-              l10n.profileTitle,
-              style: const TextStyle(
-                color: AppTheme.textDark,
-                fontSize: 34,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 0,
-              ),
-            ),
-            const SizedBox(height: 20),
+            const SizedBox(height: QalaGoSpacing.space24),
+            QalaGoPageTitle(text: l10n.profileTitle),
+            const SizedBox(height: QalaGoSpacing.space20),
             _UserCard(
               name: user?.name ?? l10n.profileDefaultUser,
               phone: user?.phone ?? l10n.profilePhoneMissing,
+              avatarUrl: user?.avatarUrl,
               cityName: ref.watch(cityLocalizedNameProvider),
               roleLabel: profileRoleLabel(role),
-              onTap: () => context.push('/profile/permissions'),
+              showRoleChip: !hasMemberships,
+              onTap: () => context.push('/profile/edit'),
             ),
             const SizedBox(height: 24),
             _ProfileMenu(
@@ -170,9 +202,9 @@ class ProfileScreen extends ConsumerWidget {
             Text(
               l10n.profileForBusiness,
               style: const TextStyle(
-                color: AppTheme.textDark,
+                color: QalaGoColors.textPrimary,
                 fontSize: 20,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 12),
@@ -262,16 +294,13 @@ class ProfileScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             OutlinedButton.icon(
-              onPressed: () async {
-                await ref.read(authProvider.notifier).logout();
-                if (context.mounted) context.go('/home');
-              },
+              onPressed: () => _confirmLogout(context, ref),
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppTheme.kzBlue,
-                minimumSize: const Size.fromHeight(58),
-                side: BorderSide(color: AppTheme.textDark.withValues(alpha: 0.08)),
+                foregroundColor: QalaGoColors.primary,
+                minimumSize: const Size.fromHeight(QalaGoTouchTargets.minInteractive),
+                side: const BorderSide(color: QalaGoColors.borderSubtle),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(QalaGoRadius.card),
                 ),
               ),
               icon: const Icon(Icons.logout),
@@ -297,93 +326,124 @@ class _GuestProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
+      backgroundColor: QalaGoColors.background,
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
+          padding: const EdgeInsets.fromLTRB(
+            QalaGoSpacing.space20,
+            QalaGoSpacing.space16,
+            QalaGoSpacing.space20,
+            QalaGoSpacing.space28,
+          ),
           children: [
             _ProfileHeader(cityName: cityName, onCityTap: onCityTap),
-            const SizedBox(height: 28),
-            Text(
-              l10n.profileTitle,
-              style: const TextStyle(
-                color: AppTheme.textDark,
-                fontSize: 34,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(height: 24),
+            const SizedBox(height: QalaGoSpacing.space24),
+            QalaGoPageTitle(text: l10n.profileTitle),
+            const SizedBox(height: QalaGoSpacing.space24),
             CircleAvatar(
               radius: 48,
-              backgroundColor: AppTheme.kzBlue.withValues(alpha: 0.12),
-              child: const Icon(Icons.person_outline, size: 48, color: AppTheme.kzBlue),
+              backgroundColor: QalaGoColors.primary.withValues(alpha: 0.12),
+              child: Icon(
+                Icons.person_outline,
+                size: 48,
+                color: QalaGoColors.primary,
+              ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: QalaGoSpacing.space20),
             Text(
               l10n.profileGuestTitle,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: AppTheme.textDark,
+                color: QalaGoColors.textPrimary,
                 fontSize: 24,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w800,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: QalaGoSpacing.space12),
             Text(
               l10n.profileGuestBody,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: AppTheme.textMuted,
+                color: QalaGoColors.textSecondary,
                 fontSize: 16,
                 height: 1.35,
               ),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: QalaGoSpacing.space28),
             FilledButton(
-              onPressed: () => context.push('/login?redirect=${Uri.encodeComponent('/profile')}'),
+              onPressed: () => context.push(
+                '/login?redirect=${Uri.encodeComponent('/profile')}',
+              ),
               style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(58),
+                minimumSize: const Size.fromHeight(QalaGoTouchTargets.minInteractive),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(QalaGoRadius.card),
                 ),
               ),
               child: Text(l10n.commonLogin),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: QalaGoSpacing.space12),
+            _ProfileMenu(
+              items: [
+                _ProfileItem(
+                  icon: Icons.language_outlined,
+                  title: l10n.profileLanguage,
+                  onTap: () => context.push('/profile/language'),
+                ),
+              ],
+            ),
+            const SizedBox(height: QalaGoSpacing.space12),
             OutlinedButton.icon(
               onPressed: onCityTap,
               icon: const Icon(Icons.location_on_outlined),
               label: Text(l10n.profileCityLabel(cityName)),
               style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
+                minimumSize: const Size.fromHeight(QalaGoTouchTargets.minInteractive),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(QalaGoRadius.card),
                 ),
               ),
             ),
-            const SizedBox(height: 8),
-            OutlinedButton(
-              onPressed: () => context.push('/profile/help'),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
+            const SizedBox(height: QalaGoSpacing.space28),
+            Text(
+              l10n.profileForBusiness,
+              style: const TextStyle(
+                color: QalaGoColors.textPrimary,
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
               ),
-              child: Text(l10n.profileHelp),
             ),
-            const SizedBox(height: 8),
-            OutlinedButton(
-              onPressed: () => context.push('/profile/about'),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
+            const SizedBox(height: QalaGoSpacing.space12),
+            _BusinessActionCard(
+              title: l10n.profileFindBusiness,
+              subtitle: l10n.profileGuestBusinessSubtitle,
+              icon: Icons.search,
+              onTap: () => context.push('/business/search'),
+            ),
+            const SizedBox(height: QalaGoSpacing.space12),
+            _BusinessActionCard(
+              title: l10n.profileAddBusiness,
+              subtitle: l10n.profileGuestBusinessSubtitle,
+              icon: Icons.storefront,
+              onTap: () => context.push('/business/apply'),
+            ),
+            const SizedBox(height: QalaGoSpacing.space24),
+            _ProfileMenu(
+              items: [
+                _ProfileItem(
+                  icon: Icons.help_outline,
+                  title: l10n.profileHelp,
+                  onTap: () => context.push('/profile/help'),
                 ),
-              ),
-              child: Text(l10n.profileAbout),
+                _ProfileItem(
+                  icon: Icons.info_outline,
+                  title: l10n.profileAbout,
+                  onTap: () => context.push('/profile/about'),
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: QalaGoSpacing.space24),
             const LegalLinksSection(),
           ],
         ),
@@ -405,51 +465,103 @@ class _ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(
-          child: const QalaGoLogo(fontSize: 36),
+        const Flexible(
+          fit: FlexFit.loose,
+          child: QalaGoLogo(fontSize: 30, fit: true),
         ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppTheme.textDark.withValues(alpha: 0.09)),
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
+        const SizedBox(width: QalaGoSpacing.space8),
+        Flexible(
+          fit: FlexFit.loose,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: Colors.white,
               borderRadius: BorderRadius.circular(14),
-              onTap: onCityTap,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                child: Row(
-                  children: [
-                    const Icon(Icons.location_on, color: AppTheme.kzBlue, size: 20),
-                    const SizedBox(width: 6),
-                    Text(
-                      cityName,
-                      style: const TextStyle(
-                        color: AppTheme.textDark,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
+              border: Border.all(color: AppTheme.textDark.withValues(alpha: 0.09)),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(14),
+                onTap: onCityTap,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.location_on, color: AppTheme.kzBlue, size: 20),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          cityName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppTheme.textDark,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                          ),
+                        ),
                       ),
-                    ),
-                    const Icon(
-                      Icons.keyboard_arrow_down,
-                      color: Color(0xFF808796),
-                      size: 20,
-                    ),
-                  ],
+                      const Icon(
+                        Icons.keyboard_arrow_down,
+                        color: Color(0xFF808796),
+                        size: 20,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
         ),
-        const SizedBox(width: 8),
         IconButton(
           onPressed: () => context.push('/notifications'),
           icon: const Icon(Icons.notifications_none_rounded, size: 31),
         ),
       ],
+    );
+  }
+}
+
+class _ProfileAvatar extends StatelessWidget {
+  const _ProfileAvatar({
+    required this.radius,
+    required this.name,
+    this.imageUrl,
+  });
+
+  final double radius;
+  final String name;
+  final String? imageUrl;
+
+  Widget _initialFallback() {
+    return Text(
+      name.isNotEmpty ? name.characters.first.toUpperCase() : 'Q',
+      style: TextStyle(
+        color: QalaGoColors.primary,
+        fontSize: radius * 0.72,
+        fontWeight: FontWeight.w800,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final url = imageUrl?.trim();
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: QalaGoColors.primary.withValues(alpha: 0.12),
+      child: url != null && url.isNotEmpty
+          ? ClipOval(
+              child: Image.network(
+                url,
+                width: radius * 2,
+                height: radius * 2,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _initialFallback(),
+              ),
+            )
+          : _initialFallback(),
     );
   }
 }
@@ -461,6 +573,8 @@ class _UserCard extends StatelessWidget {
     required this.cityName,
     required this.roleLabel,
     required this.onTap,
+    this.avatarUrl,
+    this.showRoleChip = true,
   });
 
   final String name;
@@ -468,32 +582,31 @@ class _UserCard extends StatelessWidget {
   final String cityName;
   final String roleLabel;
   final VoidCallback onTap;
+  final String? avatarUrl;
+  final bool showRoleChip;
 
   @override
   Widget build(BuildContext context) {
+    final resolvedAvatar = avatarUrl != null && avatarUrl!.trim().isNotEmpty
+        ? AppConstants.resolveMediaUrl(avatarUrl)
+        : null;
+
     return Material(
-      color: Colors.white,
+      color: QalaGoColors.surface,
       elevation: 2,
       shadowColor: Colors.black.withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(QalaGoRadius.card),
       child: InkWell(
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(QalaGoRadius.card),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(QalaGoSpacing.space16),
           child: Row(
             children: [
-              CircleAvatar(
+              _ProfileAvatar(
                 radius: 42,
-                backgroundColor: AppTheme.kzBlue.withValues(alpha: 0.12),
-                child: Text(
-                  name.isNotEmpty ? name.characters.first.toUpperCase() : 'Q',
-                  style: const TextStyle(
-                    color: AppTheme.kzBlue,
-                    fontSize: 30,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
+                name: name,
+                imageUrl: resolvedAvatar,
               ),
               const SizedBox(width: 18),
               Expanded(
@@ -503,49 +616,56 @@ class _UserCard extends StatelessWidget {
                     Text(
                       name,
                       style: const TextStyle(
-                        color: AppTheme.textDark,
+                        color: QalaGoColors.textPrimary,
                         fontSize: 22,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: QalaGoSpacing.space8),
                     Text(
                       phone,
                       style: const TextStyle(
-                        color: AppTheme.textMuted,
+                        color: QalaGoColors.textSecondary,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 7),
+                    const SizedBox(height: QalaGoSpacing.space8),
                     Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: AppTheme.kzGold.withValues(alpha: 0.35),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            roleLabel,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
+                        if (showRoleChip) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: QalaGoSpacing.space8,
+                              vertical: QalaGoSpacing.space4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: QalaGoColors.brandAccentGold
+                                  .withValues(alpha: 0.35),
+                              borderRadius:
+                                  BorderRadius.circular(QalaGoRadius.medium),
+                            ),
+                            child: Text(
+                              roleLabel,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
+                          const SizedBox(width: QalaGoSpacing.space8),
+                        ],
                         const Icon(
                           Icons.location_on_outlined,
-                          color: AppTheme.textMuted,
+                          color: QalaGoColors.textSecondary,
                           size: 18,
                         ),
-                        const SizedBox(width: 2),
+                        const SizedBox(width: QalaGoSpacing.space4),
                         Expanded(
                           child: Text(
                             cityName,
                             style: const TextStyle(
-                              color: AppTheme.textMuted,
+                              color: QalaGoColors.textSecondary,
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
                             ),
@@ -557,7 +677,7 @@ class _UserCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, color: AppTheme.textMuted, size: 30),
+              const Icon(Icons.chevron_right, color: QalaGoColors.textSecondary, size: 30),
             ],
           ),
         ),
@@ -574,16 +694,16 @@ class _ProfileMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: QalaGoColors.surface,
       elevation: 2,
       shadowColor: Colors.black.withValues(alpha: 0.08),
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(QalaGoRadius.card),
       child: Column(
         children: [
           for (var i = 0; i < items.length; i++) ...[
             _ProfileMenuRow(item: items[i]),
             if (i != items.length - 1)
-              Divider(height: 1, color: AppTheme.textDark.withValues(alpha: 0.06)),
+              const Divider(height: 1, color: QalaGoColors.divider),
           ],
         ],
       ),
@@ -614,18 +734,18 @@ class _ProfileMenuRow extends StatelessWidget {
       minLeadingWidth: 48,
       leading: CircleAvatar(
         radius: 22,
-        backgroundColor: AppTheme.kzBlue.withValues(alpha: 0.1),
-        child: Icon(item.icon, color: AppTheme.kzBlue),
+        backgroundColor: QalaGoColors.primary.withValues(alpha: 0.1),
+        child: Icon(item.icon, color: QalaGoColors.primary),
       ),
       title: Text(
         item.title,
         style: const TextStyle(
-          color: AppTheme.textDark,
+          color: QalaGoColors.textPrimary,
           fontSize: 16,
           fontWeight: FontWeight.w700,
         ),
       ),
-      trailing: const Icon(Icons.chevron_right, color: AppTheme.textMuted),
+      trailing: const Icon(Icons.chevron_right, color: QalaGoColors.textSecondary),
       onTap: item.onTap,
     );
   }
@@ -647,33 +767,33 @@ class _BusinessActionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: QalaGoColors.surface,
       elevation: 2,
       shadowColor: Colors.black.withValues(alpha: 0.08),
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(QalaGoRadius.card),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 12,
+          horizontal: QalaGoSpacing.space16,
+          vertical: QalaGoSpacing.space12,
         ),
         leading: CircleAvatar(
           radius: 30,
-          backgroundColor: AppTheme.kzBlue.withValues(alpha: 0.1),
-          child: Icon(icon, color: AppTheme.kzBlue, size: 30),
+          backgroundColor: QalaGoColors.primary.withValues(alpha: 0.1),
+          child: Icon(icon, color: QalaGoColors.primary, size: 30),
         ),
         title: Text(
           title,
           style: const TextStyle(
-            color: AppTheme.textDark,
+            color: QalaGoColors.textPrimary,
             fontSize: 16,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w800,
           ),
         ),
         subtitle: Text(
           subtitle,
-          style: const TextStyle(color: AppTheme.textMuted, height: 1.25),
+          style: const TextStyle(color: QalaGoColors.textSecondary, height: 1.25),
         ),
-        trailing: const Icon(Icons.chevron_right, color: AppTheme.textMuted),
+        trailing: const Icon(Icons.chevron_right, color: QalaGoColors.textSecondary),
         onTap: onTap,
       ),
     );

@@ -140,16 +140,19 @@ class CityPill extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(Icons.location_on, color: AppTheme.kzBlue, size: 20),
-                const SizedBox(width: 6),
-                Text(
-                  cityName,
-                  style: const TextStyle(
-                    color: AppTheme.textDark,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    cityName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppTheme.textDark,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 2),
                 const Icon(
                   Icons.keyboard_arrow_down,
                   color: Color(0xFF808796),

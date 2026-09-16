@@ -143,6 +143,16 @@
     }
   },
   "favoritesOtherCitiesHint": "Избранные из других городов сохранены — смените город, чтобы увидеть их.",
+  "favoritesBrowseCategories": "Перейти в категории",
+  "favoritesRemoveFailed": "Не удалось убрать из избранного. Попробуйте ещё раз.",
+  "favoritesRemoveAccessibility": "Удалить {businessTitle} из избранного",
+  "@favoritesRemoveAccessibility": {
+    "placeholders": {
+      "businessTitle": {
+        "type": "String"
+      }
+    }
+  },
   "searchRadiusKmExact": "{km} км",
   "@searchRadiusKmExact": {
     "placeholders": {
@@ -188,6 +198,9 @@
   "profileBusinessDefault": "Бизнес",
   "profileLogout": "Выйти",
   "profileSignOut": "Выйти из аккаунта",
+  "profileLogoutConfirmTitle": "Выйти из аккаунта?",
+  "profileLogoutConfirmBody": "Вы выйдете из текущей сессии на этом устройстве.",
+  "profileGuestBusinessSubtitle": "Найдите заведение или подайте заявку — для продолжения потребуется вход.",
   "profileGuestTitle": "Войдите в аккаунт",
   "profileGuestSubtitle": "Сохраняйте избранное и оставляйте отзывы",
   "profileGuestBody": "Сохраняйте избранное, оставляйте отзывы и используйте персональные функции.",

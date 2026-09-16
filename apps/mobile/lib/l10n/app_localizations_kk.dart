@@ -294,6 +294,18 @@ class AppLocalizationsKk extends AppLocalizations {
       'Басқа қалалардағы таңдаулылар сақталды — көру үшін қаланы ауыстырыңыз.';
 
   @override
+  String get favoritesBrowseCategories => 'Санаттарға өту';
+
+  @override
+  String get favoritesRemoveFailed =>
+      'Таңдаулылардан алу сәтсіз. Қайта көріңіз.';
+
+  @override
+  String favoritesRemoveAccessibility(String businessTitle) {
+    return '$businessTitle таңдаулылардан алу';
+  }
+
+  @override
   String searchRadiusKmExact(int km) {
     return '$km км';
   }
@@ -409,6 +421,17 @@ class AppLocalizationsKk extends AppLocalizations {
 
   @override
   String get profileSignOut => 'Аккаунттан шығу';
+
+  @override
+  String get profileLogoutConfirmTitle => 'Аккаунттан шығу керек пе?';
+
+  @override
+  String get profileLogoutConfirmBody =>
+      'Осы құрылғыдағы ағымдағы сессиядан шығасыз.';
+
+  @override
+  String get profileGuestBusinessSubtitle =>
+      'Мекемені табыңыз немесе өтінім беріңіз — жалғастыру үшін кіру қажет.';
 
   @override
   String get profileGuestTitle => 'Аккаунтқа кіріңіз';

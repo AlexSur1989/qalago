@@ -1,20 +1,27 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../core/locale/app_locale_provider.dart';
+import '../../../core/locale/l10n_extension.dart';
+import '../../../core/providers/city_provider.dart';
+import '../../../core/theme/qalago_colors.dart';
+import '../../../core/theme/qalago_radius.dart';
+import '../../../core/theme/qalago_spacing.dart';
+import '../../../core/theme/qalago_touch_targets.dart';
+import '../../../shared/models/models.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/navigation/open_business.dart';
-import '../../../core/locale/app_locale_provider.dart';
-import '../../../core/providers/city_provider.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../shared/models/models.dart';
 import '../../../shared/utils/consumer_discovery_utils.dart';
-import '../../analytics/widgets/tracked_business_card.dart';
 import '../../../shared/widgets/city_picker.dart';
-import '../../../shared/widgets/qalago_logo.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
+import '../../../shared/widgets/qalago_components.dart';
+import '../../../shared/widgets/qalago_logo.dart';
+import '../../analytics/widgets/tracked_business_card.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../../../core/locale/l10n_extension.dart';
 
 class FavoritesScreen extends ConsumerStatefulWidget {
   const FavoritesScreen({super.key});
@@ -26,10 +33,21 @@ class FavoritesScreen extends ConsumerStatefulWidget {
 class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
   FavoriteSortMode _sort = FavoriteSortMode.recent;
 
-  Future<void> _removeFavorite(String businessId) async {
-    await ref.read(favoritesRepositoryProvider).remove(businessId);
-    ref.invalidate(favoritesProvider);
-    ref.invalidate(businessFavoriteProvider(businessId));
+  Future<void> _removeFavorite(BusinessModel business) async {
+    final l10n = context.l10n;
+    try {
+      await ref.read(favoritesRepositoryProvider).remove(business.id);
+      unawaited(
+        ref.read(catalogRepositoryProvider).trackFavoriteRemove(business.id),
+      );
+      ref.invalidate(favoritesProvider);
+      ref.invalidate(businessFavoriteProvider(business.id));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.favoritesRemoveFailed)),
+      );
+    }
   }
 
   @override
@@ -41,9 +59,15 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
 
     if (!isAuthed) {
       return Scaffold(
+        backgroundColor: QalaGoColors.background,
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
+            padding: const EdgeInsets.fromLTRB(
+              QalaGoSpacing.space20,
+              QalaGoSpacing.space16,
+              QalaGoSpacing.space20,
+              QalaGoSpacing.space28,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -51,8 +75,17 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
                   cityName: ref.watch(cityLocalizedNameProvider),
                   onCityTap: () => showCityPickerSheet(context, ref),
                 ),
-                const SizedBox(height: 48),
-                const Expanded(child: _GuestFavoritesPrompt()),
+                const SizedBox(height: QalaGoSpacing.space24),
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: _GuestFavoritesPrompt(
+                      onLogin: () => context.push(
+                        '/login?redirect=${Uri.encodeComponent('/favorites')}',
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -61,40 +94,40 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
     }
 
     return Scaffold(
+      backgroundColor: QalaGoColors.background,
       body: SafeArea(
         child: RefreshIndicator(
-          color: Theme.of(context).colorScheme.primary,
+          color: QalaGoColors.primary,
           onRefresh: () async => ref.invalidate(favoritesProvider),
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
+            padding: const EdgeInsets.fromLTRB(
+              QalaGoSpacing.space20,
+              QalaGoSpacing.space16,
+              QalaGoSpacing.space20,
+              QalaGoSpacing.space28,
+            ),
             physics: const AlwaysScrollableScrollPhysics(),
             children: [
               _FavoritesHeader(
                 cityName: ref.watch(cityLocalizedNameProvider),
                 onCityTap: () => showCityPickerSheet(context, ref),
               ),
-              const SizedBox(height: 28),
-              Text(
-                l10n.favoritesTitle,
-                style: const TextStyle(
-                  color: AppTheme.textDark,
-                  fontSize: 34,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0,
-                ),
-              ),
-              const SizedBox(height: 18),
-              Row(
+              const SizedBox(height: QalaGoSpacing.space24),
+              QalaGoPageTitle(text: l10n.favoritesTitle),
+              const SizedBox(height: QalaGoSpacing.space16),
+              Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: QalaGoSpacing.space8,
+                runSpacing: QalaGoSpacing.space8,
                 children: [
                   Text(
                     l10n.favoritesSortLabel,
                     style: const TextStyle(
-                      color: AppTheme.textMuted,
+                      color: QalaGoColors.textSecondary,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(width: 8),
                   DropdownButtonHideUnderline(
                     child: DropdownButton<FavoriteSortMode>(
                       value: _sort,
@@ -116,21 +149,27 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: QalaGoSpacing.space16),
               favoritesAsync.when(
                 loading: () => const LoadingView(),
                 error: (_, __) => ErrorView(
-                  message: context.l10n.favoritesLoadFailed,
+                  message: l10n.favoritesLoadFailed,
                   onRetry: () => ref.invalidate(favoritesProvider),
                 ),
                 data: (allItems) {
                   if (allItems.isEmpty) {
-                    return const _EmptyFavoritesAll();
+                    return _EmptyFavoritesAll(
+                      onBrowseCategories: () => context.go('/categories'),
+                    );
                   }
 
-                  final cityItems = filterFavoritesByCity(allItems, city.slug);
+                  final cityItems =
+                      filterFavoritesByCity(allItems, city.slug);
                   if (cityItems.isEmpty) {
-                    return _EmptyFavoritesInCity(cityName: ref.watch(cityLocalizedNameProvider));
+                    return _EmptyFavoritesInCity(
+                      cityName: ref.watch(cityLocalizedNameProvider),
+                      onBrowseCategories: () => context.go('/categories'),
+                    );
                   }
 
                   final sorted = sortFavorites(cityItems, _sort);
@@ -147,37 +186,49 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
                     children: [
                       for (final business in businesses) ...[
                         Stack(
+                          clipBehavior: Clip.none,
                           children: [
                             TrackedBusinessCard(
                               business: business,
                               trafficSource: BusinessTrafficSource.favorites,
-                              onTap: () =>
-                                  openBusiness(
-                                    context,
-                                    business.id,
-                                    BusinessTrafficSource.favorites,
-                                  ),
+                              onTap: () => openBusiness(
+                                context,
+                                business.id,
+                                BusinessTrafficSource.favorites,
+                              ),
                             ),
                             Positioned(
-                              top: 4,
-                              right: 4,
-                              child: Material(
-                                color: Colors.white.withValues(alpha: 0.92),
-                                shape: const CircleBorder(),
-                                child: IconButton(
-                                  tooltip: context.l10n.favoritesRemoveTooltip,
-                                  onPressed: () =>
-                                      _removeFavorite(business.id),
-                                  icon: Icon(
-                                    Icons.favorite,
-                                    color: Theme.of(context).colorScheme.primary,
+                              top: QalaGoSpacing.space4,
+                              right: QalaGoSpacing.space4,
+                              child: Semantics(
+                                button: true,
+                                label: l10n.favoritesRemoveAccessibility(
+                                  business.title,
+                                ),
+                                child: Material(
+                                  color: QalaGoColors.surface
+                                      .withValues(alpha: 0.92),
+                                  shape: const CircleBorder(),
+                                  elevation: 1,
+                                  child: IconButton(
+                                    tooltip: l10n.favoritesRemoveTooltip,
+                                    constraints: const BoxConstraints(
+                                      minWidth: QalaGoTouchTargets.minInteractive,
+                                      minHeight: QalaGoTouchTargets.minInteractive,
+                                    ),
+                                    onPressed: () =>
+                                        _removeFavorite(business),
+                                    icon: Icon(
+                                      Icons.favorite,
+                                      color: QalaGoColors.primary,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: QalaGoSpacing.space12),
                       ],
                     ],
                   );
@@ -204,12 +255,22 @@ class _FavoritesHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Expanded(child: QalaGoLogo(fontSize: 36)),
-        CityPill(cityName: cityName, onTap: onCityTap),
-        const SizedBox(width: 8),
+        const Flexible(
+          fit: FlexFit.loose,
+          child: QalaGoLogo(fontSize: 30, fit: true),
+        ),
+        const SizedBox(width: QalaGoSpacing.space8),
+        Flexible(
+          fit: FlexFit.loose,
+          child: CityPill(cityName: cityName, onTap: onCityTap),
+        ),
         IconButton(
+          constraints: const BoxConstraints(
+            minWidth: QalaGoTouchTargets.minInteractive,
+            minHeight: QalaGoTouchTargets.minInteractive,
+          ),
           onPressed: () => context.push('/notifications'),
-          icon: const Icon(Icons.notifications_none_rounded, size: 31),
+          icon: const Icon(Icons.notifications_none_rounded, size: 28),
         ),
       ],
     );
@@ -217,44 +278,63 @@ class _FavoritesHeader extends StatelessWidget {
 }
 
 class _GuestFavoritesPrompt extends StatelessWidget {
-  const _GuestFavoritesPrompt();
+  const _GuestFavoritesPrompt({required this.onLogin});
+
+  final VoidCallback onLogin;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       children: [
         CircleAvatar(
           radius: 42,
-          backgroundColor: AppTheme.kzBlue.withValues(alpha: 0.1),
+          backgroundColor: QalaGoColors.primary.withValues(alpha: 0.12),
           child: Icon(
             Icons.favorite_border,
-            color: Theme.of(context).colorScheme.primary,
+            color: QalaGoColors.primary,
             size: 42,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: QalaGoSpacing.space16),
         Text(
-          context.l10n.favoritesGuestTitle,
+          l10n.favoritesGuestTitle,
           textAlign: TextAlign.center,
           style: const TextStyle(
-            color: AppTheme.textDark,
+            color: QalaGoColors.textPrimary,
             fontSize: 20,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w800,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: QalaGoSpacing.space8),
         Text(
-          context.l10n.favoritesGuestBody,
+          l10n.favoritesGuestBody,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: AppTheme.textMuted, height: 1.35),
-        ),
-        const SizedBox(height: 24),
-        FilledButton(
-          onPressed: () => context.push(
-            '/login?redirect=${Uri.encodeComponent('/favorites')}',
+          style: const TextStyle(
+            color: QalaGoColors.textSecondary,
+            height: 1.35,
           ),
-          child: Text(context.l10n.commonLogin),
+        ),
+        const SizedBox(height: QalaGoSpacing.space24),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton(
+            onPressed: onLogin,
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(QalaGoTouchTargets.minInteractive),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(QalaGoRadius.card),
+              ),
+            ),
+            child: Text(
+              l10n.commonLogin,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ),
       ],
     );
@@ -262,39 +342,55 @@ class _GuestFavoritesPrompt extends StatelessWidget {
 }
 
 class _EmptyFavoritesAll extends StatelessWidget {
-  const _EmptyFavoritesAll();
+  const _EmptyFavoritesAll({required this.onBrowseCategories});
+
+  final VoidCallback onBrowseCategories;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 56),
+      padding: const EdgeInsets.symmetric(vertical: 48),
       child: Column(
         children: [
           CircleAvatar(
             radius: 42,
-            backgroundColor: AppTheme.kzBlue.withValues(alpha: 0.1),
+            backgroundColor: QalaGoColors.primary.withValues(alpha: 0.12),
             child: Icon(
               Icons.favorite_border,
-              color: Theme.of(context).colorScheme.primary,
+              color: QalaGoColors.primary,
               size: 42,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: QalaGoSpacing.space16),
           Text(
             l10n.favoritesEmptyUser,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: AppTheme.textDark,
+              color: QalaGoColors.textPrimary,
               fontSize: 22,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: QalaGoSpacing.space8),
           Text(
             l10n.favoritesEmptyUserHint,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppTheme.textMuted, height: 1.35),
+            style: const TextStyle(
+              color: QalaGoColors.textSecondary,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: QalaGoSpacing.space24),
+          FilledButton(
+            onPressed: onBrowseCategories,
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(QalaGoTouchTargets.minInteractive),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(QalaGoRadius.card),
+              ),
+            ),
+            child: Text(l10n.favoritesBrowseCategories),
           ),
         ],
       ),
@@ -303,41 +399,59 @@ class _EmptyFavoritesAll extends StatelessWidget {
 }
 
 class _EmptyFavoritesInCity extends StatelessWidget {
-  const _EmptyFavoritesInCity({required this.cityName});
+  const _EmptyFavoritesInCity({
+    required this.cityName,
+    required this.onBrowseCategories,
+  });
 
   final String cityName;
+  final VoidCallback onBrowseCategories;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 56),
+      padding: const EdgeInsets.symmetric(vertical: 48),
       child: Column(
         children: [
           CircleAvatar(
             radius: 42,
-            backgroundColor: AppTheme.kzBlue.withValues(alpha: 0.1),
+            backgroundColor: QalaGoColors.primary.withValues(alpha: 0.12),
             child: Icon(
               Icons.location_city_outlined,
-              color: Theme.of(context).colorScheme.primary,
+              color: QalaGoColors.primary,
               size: 42,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: QalaGoSpacing.space16),
           Text(
             l10n.favoritesEmptyInCity(cityName),
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: AppTheme.textDark,
+              color: QalaGoColors.textPrimary,
               fontSize: 22,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: QalaGoSpacing.space8),
           Text(
             l10n.favoritesOtherCitiesHint,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppTheme.textMuted, height: 1.35),
+            style: const TextStyle(
+              color: QalaGoColors.textSecondary,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: QalaGoSpacing.space24),
+          FilledButton(
+            onPressed: onBrowseCategories,
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(QalaGoTouchTargets.minInteractive),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(QalaGoRadius.card),
+              ),
+            ),
+            child: Text(l10n.favoritesBrowseCategories),
           ),
         ],
       ),
