@@ -333,7 +333,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             categoriesAsync.when(
               loading: () => const SizedBox.shrink(),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (_, _) => const SizedBox.shrink(),
               data: (categories) {
                 final scopeLabel = _categoryId != null
                     ? _categoryScopeLabel(categories, localeCode, l10n)
@@ -551,7 +551,7 @@ class _SearchResultsPane extends StatelessWidget {
               HomeLayout.bottomPadding,
             ),
             itemCount: data.items.length + 1,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            separatorBuilder: (_, _) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               if (index == 0) {
                 return Text(
