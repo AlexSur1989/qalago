@@ -7,6 +7,10 @@ import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/qalago_colors.dart';
+import '../../../core/theme/qalago_radius.dart';
+import '../../../core/theme/qalago_spacing.dart';
+import '../../../core/theme/qalago_touch_targets.dart';
 import '../../../core/location/passive_user_position.dart';
 import '../../../core/location/user_location_provider.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
@@ -967,41 +971,37 @@ class _PrimaryActionsRow extends StatelessWidget {
     final children = <Widget>[];
     if (phone != null && normalizeTelUri(phone) != null) {
       children.add(
-        Expanded(
-          child: _PrimaryAction(
-            icon: Icons.phone_rounded,
-            label: l10n.businessCall,
-            onTap: onCall,
-          ),
+        _PrimaryAction(
+          icon: Icons.phone_rounded,
+          label: l10n.businessCall,
+          onTap: onCall,
         ),
       );
     }
     if (whatsapp != null && normalizeWhatsAppUrl(whatsapp) != null) {
-      if (children.isNotEmpty) children.add(const SizedBox(width: 10));
       children.add(
-        Expanded(
-          child: _PrimaryAction(
-            icon: Icons.chat_bubble_outline_rounded,
-            label: 'WhatsApp',
-            onTap: onWhatsApp,
-          ),
+        _PrimaryAction(
+          icon: Icons.chat_bubble_outline_rounded,
+          label: 'WhatsApp',
+          onTap: onWhatsApp,
         ),
       );
     }
     if (routeAvailable) {
-      if (children.isNotEmpty) children.add(const SizedBox(width: 10));
       children.add(
-        Expanded(
-          child: _PrimaryAction(
-            icon: Icons.assistant_direction_rounded,
-            label: l10n.businessRoute,
-            onTap: onRoute,
-          ),
+        _PrimaryAction(
+          icon: Icons.assistant_direction_rounded,
+          label: l10n.businessRoute,
+          onTap: onRoute,
         ),
       );
     }
     if (children.isEmpty) return const SizedBox.shrink();
-    return Row(children: children);
+    return Wrap(
+      spacing: QalaGoSpacing.space12,
+      runSpacing: QalaGoSpacing.space12,
+      children: children,
+    );
   }
 }
 
@@ -1019,34 +1019,44 @@ class _PrimaryAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: QalaGoColors.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppTheme.borderSubtle),
+        borderRadius: BorderRadius.circular(QalaGoRadius.card),
+        side: const BorderSide(color: QalaGoColors.borderSubtle),
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(QalaGoRadius.card),
         onTap: onTap,
-        child: SizedBox(
-          height: 78,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: AppTheme.kzBlue, size: 26),
-              const SizedBox(height: 6),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minWidth: 104,
+            minHeight: QalaGoTouchTargets.minInteractive,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: QalaGoSpacing.space16,
+              vertical: QalaGoSpacing.space12,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: QalaGoColors.primary, size: 26),
+                const SizedBox(height: QalaGoSpacing.space8),
+                Text(
                   label,
-                  maxLines: 1,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: AppTheme.kzBlue,
+                    color: QalaGoColors.primary,
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
+                    height: 1.15,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-16 — Stage 6.11A.UI.5B: Business cards & detail intents (mobile)
+
+- **Changed**: Shared `BusinessCard` with `standard`, `compactHorizontal`, and `compactVertical` layouts (QalaGo tokens, image placeholder, semantics); Home Nearby/Popular use compact variants; Popular decorative favorite removed.
+- **Changed**: Business Detail primary intent row uses `Wrap` (no `FittedBox` on labels), 48dp targets, QalaGo styling.
+- **Future**: UI.6 Favorites redesign; verified/public-data/report-error product+backend; category title locale on list payloads.
+
 ## 2026-09-16 — Stage 6.11A.UI.4F: Global Search UI/UX (mobile)
 
 - **Changed**: Consumer `/search` layout aligned with Home/Categories (SafeArea, 20px rhythm, back + `QalagoSearchField`); category scope chip; honest result count when total &gt; loaded page; retain prior results while refetching; stale `SEARCH_PERFORMED` guard.

@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
-import '../../../../core/constants/app_constants.dart';
 import '../../../../core/locale/consumer_api_errors.dart';
 import '../../../../core/locale/l10n_extension.dart';
 import '../../../../core/location/user_location_provider.dart';
 import '../../../../core/providers/city_provider.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/models/models.dart';
+import '../../../../shared/widgets/business_card.dart';
 import '../../../../shared/navigation/business_traffic_source.dart';
 import '../../../../shared/navigation/open_business.dart';
 import '../../../../shared/utils/business_rank.dart';
@@ -120,130 +119,16 @@ class _NearbyBusinessList extends StatelessWidget {
             businessId: business.id,
             trafficSource: BusinessTrafficSource.home,
             discoverySurface: 'NEARBY_LIST',
-            child: _NearbyBusinessTile(business: business),
+            child: BusinessCard(
+              business: business,
+              layout: BusinessCardLayout.compactHorizontal,
+              onTap: () =>
+                  openBusiness(context, business.id, BusinessTrafficSource.home),
+            ),
           ),
           const SizedBox(height: 12),
         ],
       ],
     );
   }
-}
-
-class _NearbyBusinessTile extends StatelessWidget {
-  const _NearbyBusinessTile({required this.business});
-
-  final BusinessModel business;
-
-  @override
-  Widget build(BuildContext context) {
-    final coverUrl = AppConstants.resolveMediaUrl(business.coverImageUrl);
-
-    return Material(
-      color: Colors.white,
-      elevation: 2,
-      shadowColor: Colors.black.withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () =>
-            openBusiness(context, business.id, BusinessTrafficSource.home),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: coverUrl.isNotEmpty
-                    ? Image.network(
-                        coverUrl,
-                        width: 112,
-                        height: 92,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) =>
-                            _nearbyImagePlaceholder(92, width: 112),
-                      )
-                    : _nearbyImagePlaceholder(92, width: 112),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      business.title,
-                      style: const TextStyle(
-                        color: AppTheme.textDark,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
-                      ),
-                      maxLines: 2,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      business.categoryTitle ??
-                          context.l10n.businessGenericName,
-                      style: const TextStyle(
-                        color: AppTheme.textMuted,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (business.shortDesc != null) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        business.shortDesc!,
-                        style: const TextStyle(
-                          color: AppTheme.textMuted,
-                          fontSize: 13,
-                          height: 1.25,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on_outlined,
-                          color: AppTheme.textMuted,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            business.distanceMeters != null
-                                ? '${formatDistanceMeters(business.distanceMeters)} · ${business.address}'
-                                : business.address,
-                            style: const TextStyle(
-                              color: AppTheme.textMuted,
-                              fontSize: 12,
-                            ),
-                            maxLines: 2,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-Widget _nearbyImagePlaceholder(double height, {double? width}) {
-  return Container(
-    width: width ?? double.infinity,
-    height: height,
-    color: AppTheme.background,
-    child: const Center(
-      child: Icon(Icons.storefront, color: AppTheme.textMuted),
-    ),
-  );
 }
