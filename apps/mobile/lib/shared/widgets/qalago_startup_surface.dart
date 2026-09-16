@@ -9,21 +9,32 @@ class QalaGoStartupSurface extends StatelessWidget {
 
   static const Color background = Color(0xFFF7FAFC);
 
+  /// ~30–40% of width, clamped for phones and large text layouts.
+  static double wordmarkWidthFor(BoxConstraints constraints) {
+    final target = constraints.maxWidth * 0.36;
+    return target.clamp(120.0, 200.0);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       backgroundColor: background,
       body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 32),
-            child: QalaGoLogo(
-              height: 40,
-              fit: true,
-              navigateOnTap: false,
-              excludeSemantics: false,
-            ),
-          ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final logoWidth = wordmarkWidthFor(constraints);
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: QalaGoLogo(
+                  width: logoWidth,
+                  fit: true,
+                  navigateOnTap: false,
+                  excludeSemantics: false,
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

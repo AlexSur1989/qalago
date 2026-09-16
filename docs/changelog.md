@@ -27,6 +27,14 @@
 
 ---
 
+## 2026-09-17 — Stage 6.11A.UI.10B.1: Physical Android splash branding fix
+
+- Remove default Flutter `ic_launcher` from native splash; pre-12 QalaGo wordmark on `#F7FAFC`.
+- Android 12+ minimal primary-brand splash icon (compact symbol still deferred).
+- Larger wordmark on Flutter startup surface and Welcome (~30–35% width).
+
+---
+
 ## 2026-09-17 — Stage 6.11A.UI.10B: Launch experience & first-run (mobile)
 
 - First-run Welcome (RU/KK) + city confirmation; onboarding version 1 in SharedPreferences.

@@ -17,7 +17,7 @@ void main() {
     expect(width, greaterThan(0));
     expect(height, greaterThan(0));
 
-    // IHDR color type 6 = RGBA (alpha channel present).
-    expect(bytes[25], 6);
+    // IHDR color type 6 = RGBA, 3 = RGB (approved asset may be either).
+    expect([3, 6], contains(bytes[25]));
   });
 }

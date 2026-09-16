@@ -6,6 +6,7 @@ class QalaGoLogo extends StatelessWidget {
   const QalaGoLogo({
     super.key,
     this.height = 30,
+    this.width,
     this.fit = false,
     this.navigateOnTap = true,
     this.excludeSemantics = true,
@@ -14,7 +15,8 @@ class QalaGoLogo extends StatelessWidget {
 
   static const _assetPath = 'assets/branding/qalago_wordmark.png';
 
-  final double height;
+  final double? height;
+  final double? width;
   final bool fit;
   final bool navigateOnTap;
   final bool excludeSemantics;
@@ -24,7 +26,8 @@ class QalaGoLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     final image = Image.asset(
       _assetPath,
-      height: height,
+      height: width == null ? height : null,
+      width: width,
       fit: BoxFit.contain,
       filterQuality: FilterQuality.high,
     );

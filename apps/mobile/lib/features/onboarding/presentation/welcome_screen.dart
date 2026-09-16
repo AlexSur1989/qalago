@@ -23,7 +23,8 @@ class WelcomeScreen extends ConsumerWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final compact = constraints.maxWidth < 360;
-            final logoHeight = compact ? 36.0 : 44.0;
+            final logoWidth =
+                (constraints.maxWidth * (compact ? 0.28 : 0.32)).clamp(96.0, 168.0);
 
             return SingleChildScrollView(
               padding: const EdgeInsets.symmetric(
@@ -40,7 +41,7 @@ class WelcomeScreen extends ConsumerWidget {
                     SizedBox(height: compact ? 16 : 32),
                     Center(
                       child: QalaGoLogo(
-                        height: logoHeight,
+                        width: logoWidth,
                         fit: true,
                         navigateOnTap: false,
                         excludeSemantics: false,
