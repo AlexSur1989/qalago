@@ -210,6 +210,20 @@ class AppLocalizationsKk extends AppLocalizations {
   }
 
   @override
+  String searchFoundCountPartial(int shown, int total) {
+    return 'Көрсетілген: $shown, барлығы: $total';
+  }
+
+  @override
+  String get searchUpdatingResults => 'Нәтижелер жаңартылуда';
+
+  @override
+  String get searchScopeClearSemantics => 'Санат сүзгісін алу';
+
+  @override
+  String get searchClearCategoryScope => 'Санат сүзгісін алу';
+
+  @override
   String searchNoResultsQueryCategory(String query) {
     return '«$query» сұрауы бойынша таңдалған санатта ештеңе табылмады';
   }

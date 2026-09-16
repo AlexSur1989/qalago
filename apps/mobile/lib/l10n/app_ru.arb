@@ -72,6 +72,20 @@
       }
     }
   },
+  "searchFoundCountPartial": "Показано {shown} из {total}",
+  "@searchFoundCountPartial": {
+    "placeholders": {
+      "shown": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "searchUpdatingResults": "Обновление результатов",
+  "searchScopeClearSemantics": "Убрать фильтр категории",
+  "searchClearCategoryScope": "Убрать фильтр категории",
   "searchNoResultsQueryCategory": "Ничего не найдено по запросу «{query}» в выбранной категории",
   "@searchNoResultsQueryCategory": {
     "placeholders": {

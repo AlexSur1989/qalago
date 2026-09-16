@@ -20,9 +20,11 @@ class QalagoSearchField extends StatelessWidget {
     this.autofocus = false,
     this.onClear,
     this.clearSemanticsLabel,
+    this.focusNode,
   });
 
   final TextEditingController? controller;
+  final FocusNode? focusNode;
   final String? hintText;
   final bool readOnly;
   final VoidCallback? onTap;
@@ -56,6 +58,7 @@ class QalagoSearchField extends StatelessWidget {
 
     final field = TextField(
       controller: controller,
+      focusNode: focusNode,
       readOnly: readOnly,
       autofocus: autofocus,
       textInputAction: textInputAction,

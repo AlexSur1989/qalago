@@ -209,6 +209,20 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String searchFoundCountPartial(int shown, int total) {
+    return 'Показано $shown из $total';
+  }
+
+  @override
+  String get searchUpdatingResults => 'Обновление результатов';
+
+  @override
+  String get searchScopeClearSemantics => 'Убрать фильтр категории';
+
+  @override
+  String get searchClearCategoryScope => 'Убрать фильтр категории';
+
+  @override
   String searchNoResultsQueryCategory(String query) {
     return 'Ничего не найдено по запросу «$query» в выбранной категории';
   }

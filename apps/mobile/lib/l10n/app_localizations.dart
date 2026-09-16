@@ -488,6 +488,30 @@ abstract class AppLocalizations {
   /// **'Найдено: {count}'**
   String searchFoundCount(int count);
 
+  /// No description provided for @searchFoundCountPartial.
+  ///
+  /// In ru, this message translates to:
+  /// **'Показано {shown} из {total}'**
+  String searchFoundCountPartial(int shown, int total);
+
+  /// No description provided for @searchUpdatingResults.
+  ///
+  /// In ru, this message translates to:
+  /// **'Обновление результатов'**
+  String get searchUpdatingResults;
+
+  /// No description provided for @searchScopeClearSemantics.
+  ///
+  /// In ru, this message translates to:
+  /// **'Убрать фильтр категории'**
+  String get searchScopeClearSemantics;
+
+  /// No description provided for @searchClearCategoryScope.
+  ///
+  /// In ru, this message translates to:
+  /// **'Убрать фильтр категории'**
+  String get searchClearCategoryScope;
+
   /// No description provided for @searchNoResultsQueryCategory.
   ///
   /// In ru, this message translates to:

@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-16 — Stage 6.11A.UI.4F: Global Search UI/UX (mobile)
+
+- **Changed**: Consumer `/search` layout aligned with Home/Categories (SafeArea, 20px rhythm, back + `QalagoSearchField`); category scope chip; honest result count when total &gt; loaded page; retain prior results while refetching; stale `SEARCH_PERFORMED` guard.
+- **Future**: 6.11B search quality (relevance, KK/service indexing, pagination); optional recent searches product decision.
+
 ## 2026-09-16 — Stage 6.10D.2: Business Web UX / localization / discoverability
 
 - **Changed**: User-visible «Сообщения» → «Уведомления» / «Хабарландырулар» (`/messages` route kept); notification dates use RU/KK locale formatting.
