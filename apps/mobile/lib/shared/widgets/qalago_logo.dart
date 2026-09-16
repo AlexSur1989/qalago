@@ -1,49 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/theme/app_theme.dart';
 
-/// Brand wordmark. Tapping navigates to the home tab when [navigateOnTap] is true.
+/// Brand wordmark image. Tapping navigates to the home tab when [navigateOnTap] is true.
 class QalaGoLogo extends StatelessWidget {
   const QalaGoLogo({
     super.key,
-    this.fontSize = 36,
+    this.height = 30,
     this.fit = false,
     this.navigateOnTap = true,
+    this.excludeSemantics = true,
+    this.semanticLabel = 'QalaGo',
   });
 
-  final double fontSize;
+  static const _assetPath = 'assets/branding/qalago_wordmark.png';
+
+  final double height;
   final bool fit;
   final bool navigateOnTap;
+  final bool excludeSemantics;
+  final String semanticLabel;
 
   @override
   Widget build(BuildContext context) {
-    final logo = RichText(
-      text: TextSpan(
-        style: TextStyle(
-          fontSize: fontSize,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 0,
-        ),
-        children: const [
-          TextSpan(
-            text: 'Qala',
-            style: TextStyle(color: AppTheme.textDark),
-          ),
-          TextSpan(
-            text: 'Go',
-            style: TextStyle(color: AppTheme.kzBlue),
-          ),
-        ],
-      ),
+    final image = Image.asset(
+      _assetPath,
+      height: height,
+      fit: BoxFit.contain,
+      filterQuality: FilterQuality.high,
     );
 
-    Widget child = logo;
-    if (fit) {
-      child = FittedBox(
-        fit: BoxFit.scaleDown,
-        alignment: Alignment.centerLeft,
-        child: logo,
-      );
+    Widget child = fit
+        ? FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: image,
+          )
+        : image;
+
+    if (excludeSemantics) {
+      child = ExcludeSemantics(child: child);
+    } else {
+      child = Semantics(label: semanticLabel, child: child);
     }
 
     if (!navigateOnTap) return child;

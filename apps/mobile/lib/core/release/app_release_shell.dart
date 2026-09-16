@@ -6,6 +6,7 @@ import 'semver.dart';
 import '../locale/l10n_extension.dart';
 import '../locale/release_message.dart';
 import 'release_gate_screens.dart';
+import '../../shared/widgets/qalago_startup_surface.dart';
 import '../../l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -34,7 +35,7 @@ class _AppReleaseShellState extends ConsumerState<AppReleaseShell> {
 
     return gate.when(
       loading: () => const MaterialApp(
-        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+        home: QalaGoStartupSurface(),
       ),
       error: (_, __) => widget.child,
       data: (state) {

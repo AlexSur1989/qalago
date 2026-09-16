@@ -371,7 +371,7 @@ class _MapHeader extends StatelessWidget {
         Flexible(
           fit: FlexFit.loose,
           child: QalaGoLogo(
-            fontSize: compactHeader ? 24 : 30,
+            height: compactHeader ? 26 : 30,
             fit: true,
           ),
         ),

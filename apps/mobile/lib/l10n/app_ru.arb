@@ -1463,5 +1463,12 @@
         "type": "String"
       }
     }
-  }
+  },
+  "onboardingWelcomeHeadline": "Ваш город рядом",
+  "onboardingWelcomeBody": "Находите места, услуги и предложения в вашем городе.",
+  "onboardingWelcomeCta": "Начать",
+  "onboardingLanguageLabel": "Язык приложения",
+  "onboardingCityTitle": "Выберите город",
+  "onboardingCityBody": "Вы всегда сможете изменить город позже в профиле.",
+  "onboardingCityCta": "Продолжить"
 }

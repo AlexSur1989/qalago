@@ -1,6 +1,9 @@
 /// Consumer routes reachable without authentication (Stage 5A guest-first).
 bool isPublicConsumerRoute(String location) {
   final path = Uri.parse(location).path;
+  if (path == '/startup') return true;
+  if (path == '/welcome') return true;
+  if (path == '/onboarding/city') return true;
   if (path == '/home') return true;
   if (path == '/categories') return true;
   if (path.startsWith('/categories/')) return true;

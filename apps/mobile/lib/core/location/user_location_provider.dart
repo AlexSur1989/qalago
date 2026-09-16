@@ -3,6 +3,92 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import '../providers/city_provider.dart';
 
+/// Injectable geolocator surface for tests (passive vs explicit permission).
+@visibleForTesting
+UserLocationGeolocatorBridge userLocationGeolocator =
+    const UserLocationGeolocatorBridge();
+
+class UserLocationGeolocatorBridge {
+  const UserLocationGeolocatorBridge();
+
+  Future<bool> isLocationServiceEnabled() => Geolocator.isLocationServiceEnabled();
+
+  Future<LocationPermission> checkPermission() => Geolocator.checkPermission();
+
+  Future<LocationPermission> requestPermission() =>
+      Geolocator.requestPermission();
+
+  Future<Position> getCurrentPosition() => Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+        ),
+      );
+
+  Stream<Position> positionStream() => Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+          distanceFilter: 75,
+        ),
+      );
+}
+
+enum UserLocationPermissionMode { passive, explicit }
+
+Stream<UserPosition?> userLocationStream({
+  UserLocationPermissionMode permissionMode =
+      UserLocationPermissionMode.passive,
+}) async* {
+  if (kIsWeb && !await _ensureWebGeolocation()) {
+    yield null;
+    return;
+  }
+
+  final bridge = userLocationGeolocator;
+  final serviceEnabled = await bridge.isLocationServiceEnabled();
+  if (!serviceEnabled) {
+    yield null;
+    return;
+  }
+
+  var permission = await bridge.checkPermission();
+  if (permission == LocationPermission.denied &&
+      permissionMode == UserLocationPermissionMode.explicit) {
+    permission = await bridge.requestPermission();
+  }
+  if (permission == LocationPermission.denied ||
+      permission == LocationPermission.deniedForever) {
+    yield null;
+    return;
+  }
+
+  try {
+    final current = await bridge.getCurrentPosition();
+    yield UserPosition(
+      latitude: current.latitude,
+      longitude: current.longitude,
+    ).snapped;
+  } catch (_) {
+    // Stream may still deliver positions.
+  }
+
+  yield* bridge.positionStream().map(
+        (position) => UserPosition(
+          latitude: position.latitude,
+          longitude: position.longitude,
+        ).snapped,
+      );
+}
+
+/// Explicit user-intent permission request (map/nearby actions — not Home render).
+Future<bool> requestUserLocationPermission() async {
+  var permission = await userLocationGeolocator.checkPermission();
+  if (permission == LocationPermission.denied) {
+    permission = await userLocationGeolocator.requestPermission();
+  }
+  return permission == LocationPermission.always ||
+      permission == LocationPermission.whileInUse;
+}
+
 class UserPosition {
   const UserPosition({required this.latitude, required this.longitude});
 
@@ -25,55 +111,12 @@ class UserPosition {
   int get hashCode => Object.hash(latitude, longitude);
 }
 
-/// Live user position; updates when the user moves (~75 m by default).
-final userLocationProvider = StreamProvider<UserPosition?>((ref) async* {
-  if (kIsWeb && !await _ensureWebGeolocation()) {
-    yield null;
-    return;
-  }
-
-  final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-  if (!serviceEnabled) {
-    yield null;
-    return;
-  }
-
-  var permission = await Geolocator.checkPermission();
-  if (permission == LocationPermission.denied) {
-    permission = await Geolocator.requestPermission();
-  }
-  if (permission == LocationPermission.denied ||
-      permission == LocationPermission.deniedForever) {
-    yield null;
-    return;
-  }
-
-  try {
-    final current = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.medium,
-      ),
-    );
-    yield UserPosition(
-      latitude: current.latitude,
-      longitude: current.longitude,
-    ).snapped;
-  } catch (_) {
-    // Stream may still deliver positions.
-  }
-
-  yield* Geolocator.getPositionStream(
-    locationSettings: const LocationSettings(
-      accuracy: LocationAccuracy.medium,
-      distanceFilter: 75,
-    ),
-  ).map(
-    (position) => UserPosition(
-      latitude: position.latitude,
-      longitude: position.longitude,
-    ).snapped,
-  );
-});
+/// Passive user position — never prompts for permission (Home/Map initial render).
+final userLocationProvider = StreamProvider<UserPosition?>(
+  (ref) => userLocationStream(
+    permissionMode: UserLocationPermissionMode.passive,
+  ),
+);
 
 /// If user GPS is far from the selected city, search from city center instead.
 /// Otherwise «Рядом с вами» returns 0 while admin still lists all city businesses.

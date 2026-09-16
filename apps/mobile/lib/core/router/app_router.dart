@@ -58,6 +58,10 @@ import '../../features/owner/monetization/presentation/monetization_orders_scree
 import '../../features/owner/monetization/presentation/monetization_campaigns_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../../shared/widgets/qalago_bottom_navigation.dart';
+import '../../shared/widgets/qalago_startup_surface.dart';
+import '../../core/onboarding/onboarding_provider.dart';
+import '../../features/onboarding/presentation/welcome_screen.dart';
+import '../../features/onboarding/presentation/onboarding_city_screen.dart';
 import 'consumer_shell_navigation.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -67,9 +71,35 @@ class _RouterRefresh extends ChangeNotifier {
   _RouterRefresh(this._ref) {
     _ref.listen(authProvider, (_, __) => notifyListeners());
     _ref.listen(myBusinessEntriesProvider, (_, __) => notifyListeners());
+    _ref.listen(onboardingProvider, (_, __) => notifyListeners());
   }
 
   final Ref _ref;
+}
+
+bool _isOnboardingRoute(String location) {
+  return location == '/startup' ||
+      location == '/welcome' ||
+      location == '/onboarding/city';
+}
+
+String? _onboardingRedirect(Ref ref, String location) {
+  final onboarding = ref.read(onboardingProvider);
+  if (onboarding.isLoading) {
+    return location == '/startup' ? null : '/startup';
+  }
+  if (onboarding.hasError) {
+    return location == '/welcome' ? null : '/welcome';
+  }
+  final snapshot = onboarding.requireValue;
+  if (snapshot.requiresOnboarding) {
+    if (location == '/welcome' || location == '/onboarding/city') return null;
+    return '/welcome';
+  }
+  if (_isOnboardingRoute(location)) {
+    return '/home';
+  }
+  return null;
 }
 
 bool _hasBusinessCabinetAccess(Ref ref, AuthState authState) {
@@ -91,11 +121,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/home',
+    initialLocation: '/startup',
     refreshListenable: refresh,
     redirect: (context, state) {
-      final authState = ref.read(authProvider);
       final location = state.matchedLocation;
+      final onboardingRedirect = _onboardingRedirect(ref, location);
+      if (onboardingRedirect != null) return onboardingRedirect;
+
+      final authState = ref.read(authProvider);
       final isLoggingIn = location == '/login';
       final isAuthed = authState.isAuthenticated;
 
@@ -130,6 +163,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/startup',
+        builder: (context, state) => const QalaGoStartupSurface(),
+      ),
+      GoRoute(
+        path: '/welcome',
+        builder: (context, state) => const WelcomeScreen(),
+      ),
+      GoRoute(
+        path: '/onboarding/city',
+        builder: (context, state) => const OnboardingCityScreen(),
+      ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,

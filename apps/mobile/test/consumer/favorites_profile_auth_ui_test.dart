@@ -142,7 +142,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byType(Image), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is Image && w.image is NetworkImage,
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('logout confirmation cancels without leaving', (tester) async {

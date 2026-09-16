@@ -2790,4 +2790,27 @@ class AppLocalizationsRu extends AppLocalizations {
   String ownerScheduledRange(String start, String end) {
     return '$start — $end';
   }
+
+  @override
+  String get onboardingWelcomeHeadline => 'Ваш город рядом';
+
+  @override
+  String get onboardingWelcomeBody =>
+      'Находите места, услуги и предложения в вашем городе.';
+
+  @override
+  String get onboardingWelcomeCta => 'Начать';
+
+  @override
+  String get onboardingLanguageLabel => 'Язык приложения';
+
+  @override
+  String get onboardingCityTitle => 'Выберите город';
+
+  @override
+  String get onboardingCityBody =>
+      'Вы всегда сможете изменить город позже в профиле.';
+
+  @override
+  String get onboardingCityCta => 'Продолжить';
 }

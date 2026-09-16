@@ -5065,6 +5065,48 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'{start} — {end}'**
   String ownerScheduledRange(String start, String end);
+
+  /// No description provided for @onboardingWelcomeHeadline.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ваш город рядом'**
+  String get onboardingWelcomeHeadline;
+
+  /// No description provided for @onboardingWelcomeBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Находите места, услуги и предложения в вашем городе.'**
+  String get onboardingWelcomeBody;
+
+  /// No description provided for @onboardingWelcomeCta.
+  ///
+  /// In ru, this message translates to:
+  /// **'Начать'**
+  String get onboardingWelcomeCta;
+
+  /// No description provided for @onboardingLanguageLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Язык приложения'**
+  String get onboardingLanguageLabel;
+
+  /// No description provided for @onboardingCityTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите город'**
+  String get onboardingCityTitle;
+
+  /// No description provided for @onboardingCityBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вы всегда сможете изменить город позже в профиле.'**
+  String get onboardingCityBody;
+
+  /// No description provided for @onboardingCityCta.
+  ///
+  /// In ru, this message translates to:
+  /// **'Продолжить'**
+  String get onboardingCityCta;
 }
 
 class _AppLocalizationsDelegate

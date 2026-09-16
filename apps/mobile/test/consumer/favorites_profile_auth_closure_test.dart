@@ -353,7 +353,12 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('T'), findsWidgets);
-      expect(find.byType(Image), findsNothing);
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is Image && w.image is NetworkImage,
+        ),
+        findsNothing,
+      );
     });
   });
 

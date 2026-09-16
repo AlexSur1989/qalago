@@ -27,6 +27,15 @@
 
 ---
 
+## 2026-09-17 — Stage 6.11A.UI.10B: Launch experience & first-run (mobile)
+
+- First-run Welcome (RU/KK) + city confirmation; onboarding version 1 in SharedPreferences.
+- Branded startup surface (ReleaseShell + router `/startup`); approved wordmark in consumer headers.
+- Passive location on Home (no automatic permission prompt); Android/iOS launch background alignment.
+- Future: compact Android 12 splash symbol, store/adaptive icons.
+
+---
+
 ## 2026-09-16 — Stage 6.11A.UI.6B: Favorites, Profile, Auth UI (mobile)
 
 - **Changed**: Favorites/Profile/Login aligned to QalaGo design system; guest favorites/profile flows; empty favorites CTA to Categories; favorite remove analytics + error feedback; profile avatar on main card; logout confirmation; guest language + business entries; iOS Apple-before-Google provider order; neutral Google button (no unofficial logo art).

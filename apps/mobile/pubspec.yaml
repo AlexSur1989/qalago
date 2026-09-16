@@ -39,3 +39,5 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+  assets:
+    - assets/branding/qalago_wordmark.png

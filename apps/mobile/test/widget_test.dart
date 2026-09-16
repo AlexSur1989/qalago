@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'support/onboarding_test_support.dart';
 import 'package:qalago_mobile/app.dart';
 import 'package:qalago_mobile/core/location/user_location_provider.dart';
 import 'package:qalago_mobile/core/providers/city_catalog_provider.dart';
@@ -13,6 +14,7 @@ import 'package:qalago_mobile/shared/models/models.dart';
 
 void main() {
   testWidgets('QalaGo app smoke', (WidgetTester tester) async {
+    await seedReturningUserOnboarding();
     await tester.pumpWidget(
       ProviderScope(
         overrides: _homeSmokeOverrides,

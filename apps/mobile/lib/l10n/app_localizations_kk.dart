@@ -2780,4 +2780,27 @@ class AppLocalizationsKk extends AppLocalizations {
   String ownerScheduledRange(String start, String end) {
     return '$start — $end';
   }
+
+  @override
+  String get onboardingWelcomeHeadline => 'Қалаңыз жаныңызда';
+
+  @override
+  String get onboardingWelcomeBody =>
+      'Қалаңыздағы орындарды, қызметтерді және ұсыныстарды табыңыз.';
+
+  @override
+  String get onboardingWelcomeCta => 'Бастау';
+
+  @override
+  String get onboardingLanguageLabel => 'Қолданба тілі';
+
+  @override
+  String get onboardingCityTitle => 'Қаланы таңдаңыз';
+
+  @override
+  String get onboardingCityBody =>
+      'Қаланы кейін профильде кез келген уақытта өзгерте аласыз.';
+
+  @override
+  String get onboardingCityCta => 'Жалғастыру';
 }

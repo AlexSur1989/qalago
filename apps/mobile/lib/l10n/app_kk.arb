@@ -1261,5 +1261,12 @@
         "type": "String"
       }
     }
-  }
+  },
+  "onboardingWelcomeHeadline": "Қалаңыз жаныңызда",
+  "onboardingWelcomeBody": "Қалаңыздағы орындарды, қызметтерді және ұсыныстарды табыңыз.",
+  "onboardingWelcomeCta": "Бастау",
+  "onboardingLanguageLabel": "Қолданба тілі",
+  "onboardingCityTitle": "Қаланы таңдаңыз",
+  "onboardingCityBody": "Қаланы кейін профильде кез келген уақытта өзгерте аласыз.",
+  "onboardingCityCta": "Жалғастыру"
 }

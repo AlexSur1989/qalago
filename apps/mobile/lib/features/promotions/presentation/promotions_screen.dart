@@ -323,7 +323,7 @@ class _PromotionsHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Expanded(child: QalaGoLogo(fontSize: 36)),
+        const Expanded(child: QalaGoLogo(height: 30, fit: true)),
         CityPill(cityName: cityName, onTap: onCityTap),
         const SizedBox(width: 8),
         IconButton(

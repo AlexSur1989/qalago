@@ -26,13 +26,11 @@ class HomeHeaderSection extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 360;
-        final logoSize = compact ? 30.0 : 38.0;
+        final logoHeight = compact ? 26.0 : 30.0;
         return Row(
           children: [
             Expanded(
-              child: ExcludeSemantics(
-                child: QalaGoLogo(fontSize: logoSize, fit: true),
-              ),
+              child: QalaGoLogo(height: logoHeight, fit: true),
             ),
             const SizedBox(width: 8),
             Flexible(
