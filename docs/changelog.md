@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-16 — Stage 6.11A.UI.5B.1: Business Detail visual closure (mobile)
+
+- **Changed**: Hero, identity, and contacts blocks on Business Detail aligned to QalaGo tokens (overlay, 48dp hero controls, typography/spacing, informational contact rows).
+- **Added**: Widget tests for primary intent layout (320 KK textScale 2.0 + additional widths) and minimal-detail regression.
+
 ## 2026-09-16 — Stage 6.11A.UI.5B: Business cards & detail intents (mobile)
 
 - **Changed**: Shared `BusinessCard` with `standard`, `compactHorizontal`, and `compactVertical` layouts (QalaGo tokens, image placeholder, semantics); Home Nearby/Popular use compact variants; Popular decorative favorite removed.

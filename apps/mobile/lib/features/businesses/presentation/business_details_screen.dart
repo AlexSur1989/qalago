@@ -20,6 +20,7 @@ import '../../../shared/utils/json_parse.dart';
 import '../../../shared/utils/business_detail_utils.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
+import '../../../shared/widgets/qalago_components.dart';
 import '../../../core/auth/auth_prompt.dart';
 import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/locale/localized_content.dart';
@@ -713,18 +714,28 @@ class _HeroPhoto extends StatelessWidget {
                   )
                 : _HeroPlaceholder(),
           ),
-          const DecoratedBox(
+          DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Colors.black54, Colors.transparent, Colors.black26],
+                colors: [
+                  Colors.black.withValues(alpha: 0.55),
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.28),
+                ],
               ),
             ),
           ),
           SafeArea(
+            bottom: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(18, 10, 18, 0),
+              padding: const EdgeInsets.fromLTRB(
+                QalaGoSpacing.space16,
+                QalaGoSpacing.space8,
+                QalaGoSpacing.space16,
+                0,
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -732,15 +743,29 @@ class _HeroPhoto extends StatelessWidget {
                     icon: Icons.arrow_back_ios_new_rounded,
                     onTap: onBack,
                   ),
-                  const Spacer(),
-                  _CityPill(cityName: cityName),
-                  const SizedBox(width: 10),
-                  _RoundIconButton(
-                    icon: isFavorite
-                        ? Icons.favorite_rounded
-                        : Icons.favorite_border_rounded,
-                    iconColor: isFavorite ? AppTheme.kzGold : Colors.black,
-                    onTap: onFavorite,
+                  const SizedBox(width: QalaGoSpacing.space8),
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Wrap(
+                        alignment: WrapAlignment.end,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: QalaGoSpacing.space8,
+                        runSpacing: QalaGoSpacing.space8,
+                        children: [
+                          _CityPill(cityName: cityName),
+                          _RoundIconButton(
+                            icon: isFavorite
+                                ? Icons.favorite_rounded
+                                : Icons.favorite_border_rounded,
+                            iconColor: isFavorite
+                                ? QalaGoColors.favoriteActive
+                                : QalaGoColors.textPrimary,
+                            onTap: onFavorite,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -755,10 +780,14 @@ class _HeroPhoto extends StatelessWidget {
 class _HeroPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppTheme.primaryTint,
-      child: const Center(
-        child: Icon(Icons.storefront_rounded, size: 64, color: AppTheme.kzBlue),
+    return ColoredBox(
+      color: QalaGoColors.surfaceSubtle,
+      child: Center(
+        child: Icon(
+          Icons.storefront_outlined,
+          size: 64,
+          color: QalaGoColors.primary.withValues(alpha: 0.85),
+        ),
       ),
     );
   }
@@ -773,10 +802,17 @@ class _DetailsPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
+      padding: const EdgeInsets.fromLTRB(
+        QalaGoSpacing.space20,
+        QalaGoSpacing.space20,
+        QalaGoSpacing.space20,
+        0,
+      ),
       decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        color: QalaGoColors.surface,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(QalaGoRadius.card),
+        ),
       ),
       child: child,
     );
@@ -807,77 +843,83 @@ class _TitleBlock extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.textDark,
-                  height: 1.08,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            _RatingPill(
-              averageRating: averageRating,
-              reviewCount: reviewCount,
-            ),
-          ],
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w800,
+            color: QalaGoColors.textPrimary,
+            height: 1.12,
+          ),
+          maxLines: 4,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: QalaGoSpacing.space12),
+        _RatingPill(
+          averageRating: averageRating,
+          reviewCount: reviewCount,
         ),
         if (categoryTitle.isNotEmpty) ...[
-          const SizedBox(height: 6),
+          const SizedBox(height: QalaGoSpacing.space8),
           Text(
             categoryTitle,
             style: const TextStyle(
-              color: AppTheme.textMuted,
+              color: QalaGoColors.textSecondary,
               fontSize: 16,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
+              height: 1.25,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
         if (openLabel.isNotEmpty) ...[
-          const SizedBox(height: 10),
+          const SizedBox(height: QalaGoSpacing.space12),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding: const EdgeInsets.symmetric(
+              horizontal: QalaGoSpacing.space12,
+              vertical: QalaGoSpacing.space8,
+            ),
             decoration: BoxDecoration(
               color: openStatus == BusinessOpenStatus.open
-                  ? AppTheme.openStatusBg
-                  : AppTheme.closedStatusBg,
-              borderRadius: BorderRadius.circular(12),
+                  ? QalaGoColors.openStatusBg
+                  : QalaGoColors.closedStatusBg,
+              borderRadius: BorderRadius.circular(QalaGoRadius.medium),
             ),
             child: Text(
               openLabel,
               style: TextStyle(
                 color: openStatus == BusinessOpenStatus.open
-                    ? AppTheme.openStatus
-                    : AppTheme.closedStatus,
+                    ? QalaGoColors.openStatus
+                    : QalaGoColors.closedStatus,
                 fontWeight: FontWeight.w700,
                 fontSize: 13,
+                height: 1.2,
               ),
             ),
           ),
         ],
         if (address.isNotEmpty) ...[
-          const SizedBox(height: 14),
+          const SizedBox(height: QalaGoSpacing.space12),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Icon(
                 Icons.location_on_outlined,
-                color: AppTheme.textMuted,
-                size: 22,
+                color: QalaGoColors.textSecondary,
+                size: 20,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: QalaGoSpacing.space8),
               Expanded(
                 child: Text(
                   address,
                   style: const TextStyle(
-                    color: AppTheme.textMuted,
+                    color: QalaGoColors.textSecondary,
                     fontSize: 15,
+                    height: 1.35,
                   ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -904,45 +946,52 @@ class _RatingPill extends StatelessWidget {
         ? l10n.businessNoReviewsShort
         : averageRating!.toStringAsFixed(1);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: AppTheme.primaryTint,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (reviewCount > 0) ...[
-            const Icon(
-              Icons.star_rounded,
-              color: AppTheme.kzGold,
-              size: 20,
-            ),
-            const SizedBox(width: 4),
-          ],
-          Text(
-            label,
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: reviewCount == 0 ? 13 : 15,
-              color: reviewCount == 0
-                  ? AppTheme.textMuted
-                  : Colors.black,
-            ),
-          ),
-          if (reviewCount > 0) ...[
-            const SizedBox(width: 4),
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: QalaGoSpacing.space12,
+          vertical: QalaGoSpacing.space8,
+        ),
+        decoration: BoxDecoration(
+          color: QalaGoColors.primaryTint,
+          borderRadius: BorderRadius.circular(QalaGoRadius.medium),
+        ),
+        child: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: QalaGoSpacing.space4,
+          runSpacing: QalaGoSpacing.space4,
+          children: [
+            if (reviewCount > 0)
+              const Icon(
+                Icons.star_rounded,
+                color: QalaGoColors.rating,
+                size: 20,
+              ),
             Text(
-              '($reviewCount)',
-              style: const TextStyle(
-                color: AppTheme.textMuted,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+              label,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: reviewCount == 0 ? 13 : 15,
+                color: reviewCount == 0
+                    ? QalaGoColors.textSecondary
+                    : QalaGoColors.textPrimary,
+                height: 1.15,
               ),
             ),
+            if (reviewCount > 0)
+              Text(
+                '($reviewCount)',
+                style: const TextStyle(
+                  color: QalaGoColors.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
           ],
-        ],
+        ),
       ),
     );
   }
@@ -997,10 +1046,22 @@ class _PrimaryActionsRow extends StatelessWidget {
       );
     }
     if (children.isEmpty) return const SizedBox.shrink();
-    return Wrap(
-      spacing: QalaGoSpacing.space12,
-      runSpacing: QalaGoSpacing.space12,
-      children: children,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxWidth = constraints.maxWidth;
+        final tileWidth = maxWidth > 240
+            ? (maxWidth - QalaGoSpacing.space12) / 2
+            : maxWidth;
+
+        return Wrap(
+          spacing: QalaGoSpacing.space12,
+          runSpacing: QalaGoSpacing.space12,
+          children: [
+            for (final child in children)
+              SizedBox(width: tileWidth, child: child),
+          ],
+        );
+      },
     );
   }
 }
@@ -1029,12 +1090,11 @@ class _PrimaryAction extends StatelessWidget {
         onTap: onTap,
         child: ConstrainedBox(
           constraints: const BoxConstraints(
-            minWidth: 104,
             minHeight: QalaGoTouchTargets.minInteractive,
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: QalaGoSpacing.space16,
+              horizontal: QalaGoSpacing.space12,
               vertical: QalaGoSpacing.space12,
             ),
             child: Column(
@@ -1048,6 +1108,7 @@ class _PrimaryAction extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
+                  softWrap: true,
                   style: const TextStyle(
                     color: QalaGoColors.primary,
                     fontSize: 14,
@@ -1676,14 +1737,16 @@ class _RoundIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: QalaGoColors.surface,
+      elevation: 2,
+      shadowColor: Colors.black.withValues(alpha: 0.12),
       shape: const CircleBorder(),
       child: InkWell(
         customBorder: const CircleBorder(),
         onTap: onTap,
         child: SizedBox(
-          width: 52,
-          height: 52,
+          width: QalaGoTouchTargets.heroControl,
+          height: QalaGoTouchTargets.heroControl,
           child: Icon(icon, color: iconColor, size: 24),
         ),
       ),
@@ -1699,14 +1762,17 @@ class _CityPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 42,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      constraints: const BoxConstraints(minHeight: QalaGoTouchTargets.minInteractive),
+      padding: const EdgeInsets.symmetric(
+        horizontal: QalaGoSpacing.space12,
+        vertical: QalaGoSpacing.space8,
+      ),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        color: QalaGoColors.surface,
+        borderRadius: BorderRadius.circular(QalaGoRadius.card),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.textDark.withValues(alpha: 0.08),
+            color: QalaGoColors.textPrimary.withValues(alpha: 0.08),
             blurRadius: 14,
             offset: const Offset(0, 6),
           ),
@@ -1715,11 +1781,20 @@ class _CityPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.location_on, color: AppTheme.kzBlue, size: 20),
-          const SizedBox(width: 5),
-          Text(
-            cityName,
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+          const Icon(Icons.location_on, color: QalaGoColors.primary, size: 20),
+          const SizedBox(width: QalaGoSpacing.space8),
+          Flexible(
+            child: Text(
+              cityName,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 15,
+                color: QalaGoColors.textPrimary,
+                height: 1.15,
+              ),
+            ),
           ),
         ],
       ),
@@ -1746,12 +1821,12 @@ class _ContactsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionTitle(title: l10n.businessContacts),
-        const SizedBox(height: 10),
+        QalaGoSectionHeader(title: l10n.businessContacts),
+        const SizedBox(height: QalaGoSpacing.space12),
         if (phone != null && phone!.trim().isNotEmpty)
-          _ContactRow(icon: Icons.phone_outlined, label: phone!),
+          _ContactRow(icon: Icons.phone_outlined, label: phone!.trim()),
         if (whatsapp != null && whatsapp!.trim().isNotEmpty)
-          _ContactRow(icon: Icons.chat_bubble_outline, label: whatsapp!),
+          _ContactRow(icon: Icons.chat_bubble_outline, label: whatsapp!.trim()),
         if (websiteUrl != null)
           _ContactRow(icon: Icons.language_outlined, label: websiteUrl!),
         if (instagramUrl != null)
@@ -1770,21 +1845,39 @@ class _ContactRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: AppTheme.textMuted),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: AppTheme.textMuted,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+      padding: const EdgeInsets.only(bottom: QalaGoSpacing.space8),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: QalaGoColors.surfaceSubtle,
+          borderRadius: BorderRadius.circular(QalaGoRadius.medium),
+          border: Border.all(color: QalaGoColors.borderSubtle),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: QalaGoSpacing.space12,
+            vertical: QalaGoSpacing.space12,
           ),
-        ],
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, size: 20, color: QalaGoColors.textSecondary),
+              const SizedBox(width: QalaGoSpacing.space12),
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    color: QalaGoColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    height: 1.35,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
