@@ -13,6 +13,8 @@ import '../../../core/location/user_location_provider.dart';
 import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/qalago_spacing.dart';
+import '../../../core/theme/qalago_touch_targets.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/utils/business_detail_utils.dart';
 import '../../../shared/utils/business_rank.dart';
@@ -248,7 +250,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               ),
             ),
           SafeArea(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -265,6 +267,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                         readOnly: true,
                         decoration: InputDecoration(
                           hintText: l10n.searchPlaceholder,
+                          isDense: MediaQuery.textScalerOf(context).scale(1) > 1.4,
                           prefixIcon: const Icon(
                             Icons.search,
                             color: AppTheme.textMuted,
@@ -296,7 +299,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: businessesAsync.maybeWhen(
+            child: SafeArea(
+              top: false,
+              child: businessesAsync.maybeWhen(
               data: (data) {
                 if (selectedBusiness != null) {
                   final business = selectedBusiness;
@@ -340,6 +345,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               },
               orElse: () => const SizedBox.shrink(),
             ),
+            ),
           ),
         ],
       ),
@@ -358,14 +364,34 @@ class _MapHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final compactHeader = MediaQuery.sizeOf(context).width < 360;
     return Row(
       children: [
-        const Expanded(child: QalaGoLogo(fontSize: 34)),
-        CityPill(cityName: cityName, onTap: onCityTap),
-        const SizedBox(width: 8),
+        Flexible(
+          fit: FlexFit.loose,
+          child: QalaGoLogo(
+            fontSize: compactHeader ? 24 : 30,
+            fit: true,
+          ),
+        ),
+        const SizedBox(width: QalaGoSpacing.space8),
+        Flexible(
+          fit: FlexFit.loose,
+          child: CityPill(cityName: cityName, onTap: onCityTap),
+        ),
         IconButton(
+          padding: compactHeader ? EdgeInsets.zero : null,
+          constraints: BoxConstraints(
+            minWidth: compactHeader ? 40 : QalaGoTouchTargets.minInteractive,
+            minHeight: QalaGoTouchTargets.minInteractive,
+          ),
+          tooltip: l10n.homeNotificationsTooltip,
           onPressed: () => context.push('/notifications'),
-          icon: const Icon(Icons.notifications_none_rounded, size: 31),
+          icon: Icon(
+            Icons.notifications_none_rounded,
+            size: compactHeader ? 24 : 31,
+          ),
         ),
       ],
     );
@@ -387,40 +413,49 @@ class _MapPin extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = _categoryColor(business.categoryTitle);
 
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: business.title,
+      selected: selected,
       onTap: onTap,
-      child: SizedBox(
-        width: selected ? 48 : 42,
-        height: 68,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Container(
-              width: selected ? 48 : 42,
-              height: selected ? 48 : 42,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-                border: selected
-                    ? Border.all(color: Colors.white, width: 3)
-                    : null,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.textDark.withValues(alpha: 0.18),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
+      child: ExcludeSemantics(
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: SizedBox(
+            width: selected ? 48 : 42,
+            height: 68,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Container(
+                  width: selected ? 48 : 42,
+                  height: selected ? 48 : 42,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: selected
+                        ? Border.all(color: Colors.white, width: 3)
+                        : null,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.textDark.withValues(alpha: 0.18),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Icon(
-                _categoryIcon(business.categoryTitle),
-                color: Colors.white,
-                size: selected ? 22 : 20,
-              ),
+                  child: Icon(
+                    _categoryIcon(business.categoryTitle),
+                    color: Colors.white,
+                    size: selected ? 22 : 20,
+                  ),
+                ),
+                Icon(Icons.arrow_drop_down, color: color, size: 20),
+              ],
             ),
-            Icon(Icons.arrow_drop_down, color: color, size: 20),
-          ],
+          ),
         ),
       ),
     );
@@ -555,30 +590,30 @@ class _MapBusinessPreview extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 14),
-            Row(
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Expanded(
+                SizedBox(
+                  width: double.infinity,
                   child: FilledButton(
                     onPressed: onDetails,
                     child: Text(l10n.mapDetails),
                   ),
                 ),
-                if (whatsappUrl != null) ...[
-                  const SizedBox(width: 8),
+                if (whatsappUrl != null)
                   IconButton.outlined(
                     tooltip: 'WhatsApp',
                     onPressed: () => _launch(whatsappUrl),
                     icon: const Icon(Icons.chat),
                   ),
-                ],
-                if (routeUrl != null) ...[
-                  const SizedBox(width: 4),
+                if (routeUrl != null)
                   IconButton.outlined(
                     tooltip: l10n.businessRoute,
                     onPressed: () => _launch(routeUrl),
                     icon: const Icon(Icons.near_me),
                   ),
-                ],
               ],
             ),
           ],
@@ -615,13 +650,16 @@ class _MapCitySheet extends StatelessWidget {
         .toList();
     final visible = sortNearbyBusinesses(withDistance).take(5).toList();
 
+    final sheetMaxHeight = MediaQuery.sizeOf(context).height * 0.42;
+    final compactSheet = MediaQuery.sizeOf(context).width < 360;
+
     return Material(
       color: Colors.white,
       elevation: 8,
       shadowColor: Colors.black.withValues(alpha: 0.16),
       borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-      child: SizedBox(
-        height: 286,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: sheetMaxHeight.clamp(240, 360)),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 10, 20, 18),
           child: Column(
@@ -640,12 +678,14 @@ class _MapCitySheet extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 l10n.mapBusinessesOnMap,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppTheme.textDark,
-                  fontSize: 24,
+                  fontSize: compactSheet ? 20 : 24,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 0,
                 ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 12),
               Expanded(

@@ -277,6 +277,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get favoritesRemoveTooltip => 'Убрать из избранного';
 
   @override
+  String get businessFavoriteAddTooltip => 'Добавить в избранное';
+
+  @override
   String get favoritesEmptyUser => 'У вас пока нет избранных мест';
 
   @override

@@ -278,6 +278,9 @@ class AppLocalizationsKk extends AppLocalizations {
   String get favoritesRemoveTooltip => 'Таңдаулылардан алу';
 
   @override
+  String get businessFavoriteAddTooltip => 'Таңдаулыларға қосу';
+
+  @override
   String get favoritesEmptyUser => 'Таңдаулы орындар әлі жоқ';
 
   @override

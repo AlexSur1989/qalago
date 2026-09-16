@@ -128,8 +128,10 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  DropdownButtonHideUnderline(
-                    child: DropdownButton<FavoriteSortMode>(
+                  Semantics(
+                    label: l10n.favoritesSortLabel,
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<FavoriteSortMode>(
                       value: _sort,
                       items: [
                         DropdownMenuItem(
@@ -145,6 +147,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
                         if (value == null) return;
                         setState(() => _sort = value);
                       },
+                    ),
                     ),
                   ),
                 ],
@@ -253,11 +256,16 @@ class _FavoritesHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final compactHeader = MediaQuery.sizeOf(context).width < 360;
     return Row(
       children: [
-        const Flexible(
+        Flexible(
           fit: FlexFit.loose,
-          child: QalaGoLogo(fontSize: 30, fit: true),
+          child: QalaGoLogo(
+            fontSize: compactHeader ? 24 : 30,
+            fit: true,
+          ),
         ),
         const SizedBox(width: QalaGoSpacing.space8),
         Flexible(
@@ -269,8 +277,12 @@ class _FavoritesHeader extends StatelessWidget {
             minWidth: QalaGoTouchTargets.minInteractive,
             minHeight: QalaGoTouchTargets.minInteractive,
           ),
+          tooltip: l10n.homeNotificationsTooltip,
           onPressed: () => context.push('/notifications'),
-          icon: const Icon(Icons.notifications_none_rounded, size: 28),
+          icon: Icon(
+            Icons.notifications_none_rounded,
+            size: compactHeader ? 24 : 28,
+          ),
         ),
       ],
     );

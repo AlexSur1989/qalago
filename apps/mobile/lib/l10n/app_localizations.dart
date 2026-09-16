@@ -602,6 +602,12 @@ abstract class AppLocalizations {
   /// **'Убрать из избранного'**
   String get favoritesRemoveTooltip;
 
+  /// No description provided for @businessFavoriteAddTooltip.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить в избранное'**
+  String get businessFavoriteAddTooltip;
+
   /// No description provided for @favoritesEmptyUser.
   ///
   /// In ru, this message translates to:

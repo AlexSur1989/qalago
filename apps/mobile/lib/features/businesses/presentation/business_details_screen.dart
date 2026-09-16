@@ -741,6 +741,7 @@ class _HeroPhoto extends StatelessWidget {
                 children: [
                   _RoundIconButton(
                     icon: Icons.arrow_back_ios_new_rounded,
+                    tooltip: context.l10n.commonBack,
                     onTap: onBack,
                   ),
                   const SizedBox(width: QalaGoSpacing.space8),
@@ -761,6 +762,9 @@ class _HeroPhoto extends StatelessWidget {
                             iconColor: isFavorite
                                 ? QalaGoColors.favoriteActive
                                 : QalaGoColors.textPrimary,
+                            tooltip: isFavorite
+                                ? context.l10n.favoritesRemoveTooltip
+                                : context.l10n.businessFavoriteAddTooltip,
                             onTap: onFavorite,
                           ),
                         ],
@@ -1728,15 +1732,17 @@ class _RoundIconButton extends StatelessWidget {
     required this.icon,
     required this.onTap,
     this.iconColor = Colors.black,
+    this.tooltip,
   });
 
   final IconData icon;
   final VoidCallback onTap;
   final Color iconColor;
+  final String? tooltip;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
+    final button = Material(
       color: QalaGoColors.surface,
       elevation: 2,
       shadowColor: Colors.black.withValues(alpha: 0.12),
@@ -1751,6 +1757,10 @@ class _RoundIconButton extends StatelessWidget {
         ),
       ),
     );
+    if (tooltip == null || tooltip!.isEmpty) {
+      return button;
+    }
+    return Tooltip(message: tooltip, child: button);
   }
 }
 

@@ -17,18 +17,27 @@ Future<void> showAuthRequiredDialog(
     context: context,
     builder: (ctx) => AlertDialog(
       title: Text(title),
-      content: Text(message),
+      content: SingleChildScrollView(
+        child: Text(message),
+      ),
+      actionsOverflowButtonSpacing: 8,
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx),
-          child: Text(l10n.commonLater),
-        ),
-        FilledButton(
-          onPressed: () {
-            Navigator.pop(ctx);
-            context.push(loginRedirectPath(path));
-          },
-          child: Text(l10n.commonLogin),
+        OverflowBar(
+          spacing: 8,
+          overflowAlignment: OverflowBarAlignment.end,
+          children: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonLater),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                context.push(loginRedirectPath(path));
+              },
+              child: Text(l10n.commonLogin),
+            ),
+          ],
         ),
       ],
     ),

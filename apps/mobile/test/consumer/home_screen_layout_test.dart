@@ -157,6 +157,46 @@ void main() {
     await _disposeAdTimers(tester);
   });
 
+  testWidgets('320px KK textScale 2.0 avoids overflow', (tester) async {
+    tester.view.physicalSize = const Size(320, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final cats = List.generate(9, _cat);
+    await tester.pumpWidget(
+      MediaQuery(
+        data: const MediaQueryData(
+          size: Size(320, 800),
+          textScaler: TextScaler.linear(2),
+        ),
+        child: ProviderScope(
+          overrides: [
+            cityProvider.overrideWith(() => _UralskCityNotifier()),
+            cityCatalogTotalProvider.overrideWith((ref) async => 20),
+            categoriesProvider.overrideWith((ref) async => cats),
+            promotionsProvider.overrideWith(
+              (ref) async => PaginatedPromotions(items: const []),
+            ),
+            homeOrganicRecommendationsProvider.overrideWith((ref) async => const []),
+            businessesProvider.overrideWith(
+              (ref, query) async => PaginatedBusinesses(items: const [], total: 0),
+            ),
+            unreadNotificationsProvider.overrideWith((ref) async => 0),
+            userLocationProvider.overrideWith((ref) => Stream.value(null)),
+            homeVipBannerAdsProvider.overrideWith((ref) async => [_vipAd()]),
+            homeFeaturedAdsProvider.overrideWith((ref) async => const []),
+            homePromotionsAdsProvider.overrideWith((ref) async => const []),
+          ],
+          child: wrapWithL10n(const HomeScreen(), locale: const Locale('kk')),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final l10n = lookupAppLocalizations(const Locale('kk'));
+    expect(find.text(l10n.homePopularSection), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await _disposeAdTimers(tester);
+  });
+
   testWidgets('320px RU textScale 2.0 avoids overflow', (tester) async {
     tester.view.physicalSize = const Size(320, 800);
     tester.view.devicePixelRatio = 1;

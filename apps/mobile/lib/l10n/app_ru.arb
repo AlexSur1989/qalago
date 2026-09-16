@@ -132,6 +132,7 @@
   "favoritesSortLabel": "Сортировка:",
   "favoritesLoadFailed": "Не удалось загрузить избранное.",
   "favoritesRemoveTooltip": "Убрать из избранного",
+  "businessFavoriteAddTooltip": "Добавить в избранное",
   "favoritesEmptyUser": "У вас пока нет избранных мест",
   "favoritesEmptyUserHint": "Добавляйте места в избранное, чтобы быстро вернуться к ним.",
   "favoritesEmptyInCity": "В {cityName} пока нет избранных мест",

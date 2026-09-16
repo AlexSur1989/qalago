@@ -507,6 +507,7 @@ class _ProfileHeader extends StatelessWidget {
             minWidth: compactHeader ? 40 : QalaGoTouchTargets.minInteractive,
             minHeight: QalaGoTouchTargets.minInteractive,
           ),
+          tooltip: context.l10n.homeNotificationsTooltip,
           onPressed: () => context.push('/notifications'),
           icon: Icon(
             Icons.notifications_none_rounded,

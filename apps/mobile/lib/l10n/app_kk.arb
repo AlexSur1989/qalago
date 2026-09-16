@@ -84,6 +84,7 @@
   "favoritesSortLabel": "Сұрыптау:",
   "favoritesLoadFailed": "Таңдаулыларды жүктеу сәтсіз.",
   "favoritesRemoveTooltip": "Таңдаулылардан алу",
+  "businessFavoriteAddTooltip": "Таңдаулыларға қосу",
   "favoritesEmptyUser": "Таңдаулы орындар әлі жоқ",
   "favoritesEmptyUserHint": "Орындарды таңдаулыларға қосып, оларға тез оралыңыз.",
   "favoritesEmptyInCity": "{cityName} қалasında таңдаулы орындар әлі жоқ",
