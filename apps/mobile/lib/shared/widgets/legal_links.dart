@@ -45,7 +45,7 @@ class LegalLinksSection extends StatelessWidget {
         ),
         if (showAccountDeletion && onDeleteAccount != null) ...[
           const SizedBox(height: 8),
-          OutlinedButton.icon(
+          OutlinedButton(
             onPressed: onDeleteAccount,
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.red.shade700,
@@ -55,8 +55,21 @@ class LegalLinksSection extends StatelessWidget {
                 borderRadius: BorderRadius.circular(18),
               ),
             ),
-            icon: const Icon(Icons.delete_forever_outlined),
-            label: Text(l10n.deleteAccountButton),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.delete_forever_outlined),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    l10n.deleteAccountButton,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ],

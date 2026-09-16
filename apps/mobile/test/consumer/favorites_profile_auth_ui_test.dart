@@ -111,8 +111,14 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
 
       expect(find.text('Язык'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Для бизнеса'),
+        120,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.text('Для бизнеса'), findsOneWidget);
       await tester.scrollUntilVisible(
         find.text('Найти свой бизнес'),
@@ -154,11 +160,11 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.scrollUntilVisible(
-        find.widgetWithText(OutlinedButton, 'Выйти из аккаунта'),
+        find.text('Выйти из аккаунта'),
         200,
         scrollable: find.byType(Scrollable).first,
       );
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Выйти из аккаунта'));
+      await tester.tap(find.text('Выйти из аккаунта'), warnIfMissed: false);
       await tester.pumpAndSettle();
       expect(find.text('Выйти из аккаунта?'), findsOneWidget);
 
@@ -171,10 +177,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(auth.logoutInvoked, isFalse);
       expect(find.text('Выйти из аккаунта?'), findsNothing);
-      expect(
-        find.widgetWithText(OutlinedButton, 'Выйти из аккаунта'),
-        findsOneWidget,
-      );
+      expect(find.text('Выйти из аккаунта'), findsOneWidget);
     });
   });
 

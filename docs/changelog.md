@@ -33,6 +33,11 @@
 - **Changed**: `/profile/language` public for guest language selection (routing only).
 - **Future**: UI.7+ polish; 6.11E notifications settings; provider activation external.
 
+## 2026-09-16 — Stage 6.11A.UI.6B.1: Favorites / Profile / Auth QA closure (mobile)
+
+- **Added**: Consumer tests for favorite remove success/failure analytics, OWNER/MANAGER/multi-business profile, auth flag matrix, redirect regression, logout confirm, and 320×KK×2.0 spot checks.
+- **Fixed**: Profile/legal responsive overflow on narrow widths and large text (header, user card, menu/business rows, logout/delete actions).
+
 ## 2026-09-16 — Stage 6.11A.UI.5B.1: Business Detail visual closure (mobile)
 
 - **Changed**: Hero, identity, and contacts blocks on Business Detail aligned to QalaGo tokens (overlay, 48dp hero controls, typography/spacing, informational contact rows).

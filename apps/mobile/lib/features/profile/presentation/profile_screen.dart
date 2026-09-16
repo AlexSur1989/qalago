@@ -99,6 +99,12 @@ Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
   if (context.mounted) context.go('/home');
 }
 
+double _profileHorizontalPadding(BuildContext context) {
+  return MediaQuery.sizeOf(context).width < 360
+      ? QalaGoSpacing.space8
+      : QalaGoSpacing.space20;
+}
+
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
@@ -125,10 +131,10 @@ class ProfileScreen extends ConsumerWidget {
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(
-            QalaGoSpacing.space20,
+          padding: EdgeInsets.fromLTRB(
+            _profileHorizontalPadding(context),
             QalaGoSpacing.space16,
-            QalaGoSpacing.space20,
+            _profileHorizontalPadding(context),
             QalaGoSpacing.space28,
           ),
           children: [
@@ -293,18 +299,34 @@ class ProfileScreen extends ConsumerWidget {
               onDeleteAccount: () => _confirmDeleteAccount(context, ref),
             ),
             const SizedBox(height: 12),
-            OutlinedButton.icon(
-              onPressed: () => _confirmLogout(context, ref),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: QalaGoColors.primary,
-                minimumSize: const Size.fromHeight(QalaGoTouchTargets.minInteractive),
-                side: const BorderSide(color: QalaGoColors.borderSubtle),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(QalaGoRadius.card),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () => _confirmLogout(context, ref),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: QalaGoColors.primary,
+                  minimumSize: const Size.fromHeight(QalaGoTouchTargets.minInteractive),
+                  side: const BorderSide(color: QalaGoColors.borderSubtle),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(QalaGoRadius.card),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.logout),
+                    const SizedBox(width: QalaGoSpacing.space8),
+                    Flexible(
+                      child: Text(
+                        l10n.profileSignOut,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              icon: const Icon(Icons.logout),
-              label: Text(l10n.profileSignOut),
             ),
           ],
         ),
@@ -330,10 +352,10 @@ class _GuestProfileScreen extends StatelessWidget {
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(
-            QalaGoSpacing.space20,
+          padding: EdgeInsets.fromLTRB(
+            _profileHorizontalPadding(context),
             QalaGoSpacing.space16,
-            QalaGoSpacing.space20,
+            _profileHorizontalPadding(context),
             QalaGoSpacing.space28,
           ),
           children: [
@@ -463,60 +485,33 @@ class _ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compactHeader = MediaQuery.sizeOf(context).width < 360;
     return Row(
       children: [
-        const Flexible(
-          fit: FlexFit.loose,
-          child: QalaGoLogo(fontSize: 30, fit: true),
-        ),
-        const SizedBox(width: QalaGoSpacing.space8),
         Flexible(
           fit: FlexFit.loose,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppTheme.textDark.withValues(alpha: 0.09)),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(14),
-                onTap: onCityTap,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.location_on, color: AppTheme.kzBlue, size: 20),
-                      const SizedBox(width: 4),
-                      Flexible(
-                        child: Text(
-                          cityName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: AppTheme.textDark,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                      const Icon(
-                        Icons.keyboard_arrow_down,
-                        color: Color(0xFF808796),
-                        size: 20,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+          child: QalaGoLogo(
+            fontSize: compactHeader ? 24 : 30,
+            fit: true,
           ),
         ),
+        const SizedBox(width: QalaGoSpacing.space8),
+        if (onCityTap != null)
+          Flexible(
+            fit: FlexFit.loose,
+            child: CityPill(cityName: cityName, onTap: onCityTap!),
+          ),
         IconButton(
+          padding: compactHeader ? EdgeInsets.zero : null,
+          constraints: BoxConstraints(
+            minWidth: compactHeader ? 40 : QalaGoTouchTargets.minInteractive,
+            minHeight: QalaGoTouchTargets.minInteractive,
+          ),
           onPressed: () => context.push('/notifications'),
-          icon: const Icon(Icons.notifications_none_rounded, size: 31),
+          icon: Icon(
+            Icons.notifications_none_rounded,
+            size: compactHeader ? 24 : 31,
+          ),
         ),
       ],
     );
@@ -590,6 +585,8 @@ class _UserCard extends StatelessWidget {
     final resolvedAvatar = avatarUrl != null && avatarUrl!.trim().isNotEmpty
         ? AppConstants.resolveMediaUrl(avatarUrl)
         : null;
+    final compact = MediaQuery.sizeOf(context).width < 360;
+    final avatarRadius = compact ? 32.0 : 42.0;
 
     return Material(
       color: QalaGoColors.surface,
@@ -604,17 +601,19 @@ class _UserCard extends StatelessWidget {
           child: Row(
             children: [
               _ProfileAvatar(
-                radius: 42,
+                radius: avatarRadius,
                 name: name,
                 imageUrl: resolvedAvatar,
               ),
-              const SizedBox(width: 18),
+              SizedBox(width: compact ? 12 : 18),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: QalaGoColors.textPrimary,
                         fontSize: 22,
@@ -624,6 +623,8 @@ class _UserCard extends StatelessWidget {
                     const SizedBox(height: QalaGoSpacing.space8),
                     Text(
                       phone,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: QalaGoColors.textSecondary,
                         fontSize: 15,
@@ -631,9 +632,12 @@ class _UserCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: QalaGoSpacing.space8),
-                    Row(
+                    Wrap(
+                      spacing: QalaGoSpacing.space8,
+                      runSpacing: QalaGoSpacing.space4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        if (showRoleChip) ...[
+                        if (showRoleChip)
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: QalaGoSpacing.space8,
@@ -647,30 +651,39 @@ class _UserCard extends StatelessWidget {
                             ),
                             child: Text(
                               roleLabel,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
-                          const SizedBox(width: QalaGoSpacing.space8),
-                        ],
-                        const Icon(
-                          Icons.location_on_outlined,
-                          color: QalaGoColors.textSecondary,
-                          size: 18,
-                        ),
-                        const SizedBox(width: QalaGoSpacing.space4),
-                        Expanded(
-                          child: Text(
-                            cityName,
-                            style: const TextStyle(
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.location_on_outlined,
                               color: QalaGoColors.textSecondary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
+                              size: 18,
                             ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                            const SizedBox(width: QalaGoSpacing.space4),
+                            ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: MediaQuery.sizeOf(context).width * 0.45,
+                              ),
+                              child: Text(
+                                cityName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: QalaGoColors.textSecondary,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -730,23 +743,37 @@ class _ProfileMenuRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      minLeadingWidth: 48,
-      leading: CircleAvatar(
-        radius: 22,
-        backgroundColor: QalaGoColors.primary.withValues(alpha: 0.1),
-        child: Icon(item.icon, color: QalaGoColors.primary),
-      ),
-      title: Text(
-        item.title,
-        style: const TextStyle(
-          color: QalaGoColors.textPrimary,
-          fontSize: 16,
-          fontWeight: FontWeight.w700,
+    return InkWell(
+      onTap: item.onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: QalaGoSpacing.space16,
+          vertical: QalaGoSpacing.space12,
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 22,
+              backgroundColor: QalaGoColors.primary.withValues(alpha: 0.1),
+              child: Icon(item.icon, color: QalaGoColors.primary),
+            ),
+            const SizedBox(width: QalaGoSpacing.space12),
+            Expanded(
+              child: Text(
+                item.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: QalaGoColors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: QalaGoColors.textSecondary),
+          ],
         ),
       ),
-      trailing: const Icon(Icons.chevron_right, color: QalaGoColors.textSecondary),
-      onTap: item.onTap,
     );
   }
 }
@@ -771,30 +798,54 @@ class _BusinessActionCard extends StatelessWidget {
       elevation: 2,
       shadowColor: Colors.black.withValues(alpha: 0.08),
       borderRadius: BorderRadius.circular(QalaGoRadius.card),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: QalaGoSpacing.space16,
-          vertical: QalaGoSpacing.space12,
-        ),
-        leading: CircleAvatar(
-          radius: 30,
-          backgroundColor: QalaGoColors.primary.withValues(alpha: 0.1),
-          child: Icon(icon, color: QalaGoColors.primary, size: 30),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            color: QalaGoColors.textPrimary,
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(QalaGoRadius.card),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: QalaGoSpacing.space16,
+            vertical: QalaGoSpacing.space12,
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: QalaGoColors.primary.withValues(alpha: 0.1),
+                child: Icon(icon, color: QalaGoColors.primary, size: 30),
+              ),
+              const SizedBox(width: QalaGoSpacing.space12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: QalaGoColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: QalaGoSpacing.space4),
+                    Text(
+                      subtitle,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: QalaGoColors.textSecondary,
+                        height: 1.25,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: QalaGoColors.textSecondary),
+            ],
           ),
         ),
-        subtitle: Text(
-          subtitle,
-          style: const TextStyle(color: QalaGoColors.textSecondary, height: 1.25),
-        ),
-        trailing: const Icon(Icons.chevron_right, color: QalaGoColors.textSecondary),
-        onTap: onTap,
       ),
     );
   }
