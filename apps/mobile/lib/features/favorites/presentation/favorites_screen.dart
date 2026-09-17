@@ -262,10 +262,7 @@ class _FavoritesHeader extends StatelessWidget {
       children: [
         Flexible(
           fit: FlexFit.loose,
-          child: QalaGoLogo(
-            height: compactHeader ? 26 : 30,
-            fit: true,
-          ),
+          child: const QalaGoConsumerHeaderLogo(),
         ),
         const SizedBox(width: QalaGoSpacing.space8),
         Flexible(

@@ -328,14 +328,14 @@ void main() {
           ),
           child: const SizedBox(
             width: 320,
-            child: QalaGoLogo(height: 26, fit: true),
+            child: QalaGoConsumerHeaderLogo(),
           ),
         ),
         locale: const Locale('kk'),
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.byType(QalaGoLogo), findsOneWidget);
+    expect(find.byType(QalaGoConsumerHeaderLogo), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

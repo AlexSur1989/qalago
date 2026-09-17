@@ -490,10 +490,7 @@ class _ProfileHeader extends StatelessWidget {
       children: [
         Flexible(
           fit: FlexFit.loose,
-          child: QalaGoLogo(
-            height: compactHeader ? 26 : 30,
-            fit: true,
-          ),
+          child: const QalaGoConsumerHeaderLogo(),
         ),
         const SizedBox(width: QalaGoSpacing.space8),
         if (onCityTap != null)
@@ -503,8 +500,8 @@ class _ProfileHeader extends StatelessWidget {
           ),
         IconButton(
           padding: compactHeader ? EdgeInsets.zero : null,
-          constraints: BoxConstraints(
-            minWidth: compactHeader ? 40 : QalaGoTouchTargets.minInteractive,
+          constraints: const BoxConstraints(
+            minWidth: QalaGoTouchTargets.minInteractive,
             minHeight: QalaGoTouchTargets.minInteractive,
           ),
           tooltip: context.l10n.homeNotificationsTooltip,
