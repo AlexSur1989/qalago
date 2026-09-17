@@ -27,13 +27,73 @@ class CityState {
   bool get isComingSoon => launchStatus == 'COMING_SOON';
 }
 
-/// Emergency offline names when `/cities` is unreachable (must match catalog seed/DB).
-const _offlineCityTaxonomy = <String, ({String nameRu, String? nameKk})>{
-  'uralsk': (nameRu: 'Уральск', nameKk: 'Орал'),
-  'aktobe': (nameRu: 'Актобе', nameKk: 'Ақтөбе'),
-  'shymkent': (nameRu: 'Шымкент', nameKk: 'Шымкент'),
-  'astana': (nameRu: 'Астана', nameKk: 'Астана'),
-};
+/// Emergency offline catalog when `/cities` is unreachable (must match catalog seed/DB).
+List<Map<String, dynamic>> offlineCityCatalogMaps() {
+  return [
+    {
+      'slug': 'uralsk',
+      'nameRu': 'Уральск',
+      'nameKk': 'Орал',
+      'launchStatus': 'LIVE',
+      'centerLat': 51.2278,
+      'centerLng': 51.3865,
+    },
+    {
+      'slug': 'aktobe',
+      'nameRu': 'Актобе',
+      'nameKk': 'Ақтөбе',
+      'launchStatus': 'LIVE',
+      'centerLat': 50.2839,
+      'centerLng': 57.167,
+    },
+    {
+      'slug': 'shymkent',
+      'nameRu': 'Шымкент',
+      'nameKk': 'Шымкент',
+      'launchStatus': 'LIVE',
+      'centerLat': 42.3417,
+      'centerLng': 69.5901,
+    },
+    {
+      'slug': 'astana',
+      'nameRu': 'Астана',
+      'nameKk': 'Астана',
+      'launchStatus': 'COMING_SOON',
+      'centerLat': 51.1605,
+      'centerLng': 71.4704,
+    },
+  ];
+}
+
+typedef OfflineCityNames = ({String nameRu, String? nameKk});
+
+Map<String, dynamic> offlineCityBySlug(String slug) {
+  return offlineCityCatalogMaps().firstWhere(
+    (c) => c['slug'] == slug,
+    orElse: () => offlineCityCatalogMaps().first,
+  );
+}
+
+OfflineCityNames _offlineNamesForSlug(String slug) {
+  final city = offlineCityBySlug(slug);
+  return (
+    nameRu: city['nameRu'] as String,
+    nameKk: city['nameKk'] as String?,
+  );
+}
+
+/// Resolves city list from API, falling back to [offlineCityCatalogMaps] on failure.
+Future<List<Map<String, dynamic>>> resolveCityCatalogList(
+  Future<List<Map<String, dynamic>>> Function() fetch,
+) async {
+  try {
+    return await fetch();
+  } catch (_) {
+    final offline = offlineCityCatalogMaps();
+    if (offline.isEmpty) rethrow;
+    return offline;
+  }
+}
 
 class CityNotifier extends Notifier<CityState> {
   @override
@@ -54,13 +114,14 @@ class CityNotifier extends Notifier<CityState> {
       );
       state = _cityFromJson(match, fallbackSlug: slug);
     } catch (_) {
-      final offline = _offlineCityTaxonomy[slug] ?? _offlineCityTaxonomy['uralsk']!;
+      final catalog = offlineCityBySlug(slug);
       state = CityState(
         slug: slug,
-        nameRu: offline.nameRu,
-        nameKk: offline.nameKk,
-        centerLat: slug == 'aktobe' ? 50.2839 : 51.2278,
-        centerLng: slug == 'aktobe' ? 57.167 : 51.3865,
+        nameRu: catalog['nameRu'] as String,
+        nameKk: catalog['nameKk'] as String?,
+        centerLat: parseJsonDouble(catalog['centerLat']),
+        centerLng: parseJsonDouble(catalog['centerLng']),
+        launchStatus: catalog['launchStatus'] as String? ?? 'LIVE',
       );
     }
   }
@@ -110,7 +171,7 @@ class CityNotifier extends Notifier<CityState> {
 
   CityState _cityFromJson(Map<String, dynamic> json, {String? fallbackSlug}) {
     final slug = json['slug'] as String? ?? fallbackSlug ?? AppConstants.defaultCitySlug;
-    final offline = _offlineCityTaxonomy[slug];
+    final offline = _offlineNamesForSlug(slug);
     return CityState(
       slug: slug,
       nameRu: json['nameRu'] as String? ?? offline?.nameRu ?? 'Уральск',
@@ -125,5 +186,7 @@ class CityNotifier extends Notifier<CityState> {
 final cityProvider = NotifierProvider<CityNotifier, CityState>(CityNotifier.new);
 
 final citiesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  return CatalogRepository(ref.read(dioProvider)).fetchCities();
+  return resolveCityCatalogList(
+    () => CatalogRepository(ref.read(dioProvider)).fetchCities(),
+  );
 });

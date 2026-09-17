@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-17 — Stage 6.11A.UI.10B.3: Android startup closure
+
+- Pre-12 native splash: solid `#F7FAFC` only (no bitmap); removed unused splash wordmark PNG.
+- City catalog: API failure falls back to existing offline taxonomy (onboarding no longer blocked).
+
+---
+
 ## 2026-09-17 — Stage 6.11A.UI.10B.2: Android native splash scaling fix
 
 - Trim opaque black canvas from native splash wordmark; inset-based ~30% width layout.
