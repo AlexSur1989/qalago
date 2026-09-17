@@ -5,6 +5,7 @@ import '../qalago_map_camera.dart';
 import '../qalago_map_controller.dart';
 import '../qalago_map_marker.dart';
 import '../qalago_map_renderer.dart';
+import '../qalago_map_bounds.dart';
 import '../qalago_map_style_config.dart';
 import '../widgets/qalago_map_attribution_bar.dart';
 import 'maplibre_qalago_map_controller.dart';
@@ -17,12 +18,14 @@ class MapLibreQalaGoMapView extends StatefulWidget {
     this.controller,
     this.markers = const [],
     this.interactionEnabled = true,
+    this.onCameraIdle,
   });
 
   final QalaGoMapCamera initialCamera;
   final QalaGoMapController? controller;
   final List<QalaGoMapMarker> markers;
   final bool interactionEnabled;
+  final QalaGoMapCameraIdleCallback? onCameraIdle;
 
   @override
   State<MapLibreQalaGoMapView> createState() => _MapLibreQalaGoMapViewState();
@@ -67,13 +70,24 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
     }
   }
 
+  Future<void> _onCameraIdle() async {
+    await _syncMarkerPositions();
+    final callback = widget.onCameraIdle;
+    final qController = widget.controller;
+    if (callback == null || qController == null) return;
+    final bounds = await qController.readVisibleBounds();
+    if (bounds != null && mounted) {
+      callback(bounds);
+    }
+  }
+
   void _onMapCreated(MapLibreMapController controller) {
     _nativeController = controller;
     _qalagoController?.attach(
       controller,
       initialZoom: widget.initialCamera.zoom,
     );
-    _syncMarkerPositions();
+    _onCameraIdle();
   }
 
   @override
@@ -95,14 +109,14 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
             target: qalaGoCoordinateToMapLibreLatLng(widget.initialCamera.center),
             zoom: widget.initialCamera.zoom,
           ),
-          rotateGesturesEnabled: gestures,
+          // Pitch/rotation break screen-projected Flutter marker overlays (C.3).
+          rotateGesturesEnabled: false,
           scrollGesturesEnabled: gestures,
           zoomGesturesEnabled: gestures,
-          tiltGesturesEnabled: gestures,
+          tiltGesturesEnabled: false,
           myLocationEnabled: false,
           onMapCreated: _onMapCreated,
-          onCameraMove: (_) => _syncMarkerPositions(),
-          onCameraIdle: _syncMarkerPositions,
+          onCameraIdle: _onCameraIdle,
         ),
         ...widget.markers.asMap().entries.map((entry) {
           final index = entry.key;

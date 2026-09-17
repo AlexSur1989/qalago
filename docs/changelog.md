@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-17 — Stage 6.11C.3: MapLibre business discovery hardening
+
+- Mobile: viewport-aware map business loading (`MapBusinessesNotifier`) with camera-idle bounds, padded bbox fetch, multi-page dedupe (removes silent 100-business cap), stale-request protection, city/category scope invalidation, invalid-coordinate filtering.
+- Map abstraction: `QalaGoMapBounds`, `readVisibleBounds()`, `onCameraIdle` on both MapLibre and flutter_map adapters; MapLibre disables rotate/tilt for overlay marker accuracy.
+- Catalog API: optional `forMap` + bbox query params (`minLat`/`maxLat`/`minLng`/`maxLng`) — map-only non-null coordinate filter; search/list semantics unchanged when omitted.
+- Future: native MapLibre symbol layers + clustering (6.11C.6), PostGIS bbox (6.11C.5), geocoding/location picker (6.11C.4).
+
 ## 2026-09-17 — Stage 6.11C.2: MapLibre renderer integration (Flutter)
 
 - Added `maplibre_gl` ^0.27.1 behind existing QalaGo map abstraction; flutter_map OSM fallback retained.

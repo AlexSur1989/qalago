@@ -120,6 +120,44 @@ export class ListBusinessesQueryDto {
   @IsOptional()
   @IsEnum(BusinessCatalogSort)
   sort?: BusinessCatalogSort;
+
+  /**
+   * Map marker mode: only businesses with stored coordinates (does not affect
+   * normal list/search when omitted).
+   */
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  @IsBoolean()
+  forMap?: boolean;
+
+  /** Map viewport bbox — must be sent together with maxLat/minLng/maxLng. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  minLat?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  maxLat?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  minLng?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  maxLng?: number;
 }
 
 export class UpdateBusinessDto {

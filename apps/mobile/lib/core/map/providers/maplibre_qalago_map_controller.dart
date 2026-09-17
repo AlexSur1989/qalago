@@ -1,5 +1,6 @@
 import 'package:maplibre_gl/maplibre_gl.dart';
 
+import '../qalago_map_bounds.dart';
 import '../qalago_map_controller.dart';
 import '../qalago_map_coordinate.dart';
 
@@ -49,6 +50,27 @@ class MapLibreQalaGoMapController implements QalaGoMapController {
         zoom,
       ),
     );
+  }
+
+  @override
+  Future<QalaGoMapBounds?> readVisibleBounds() async {
+    final delegate = _delegate;
+    if (delegate == null) return null;
+    try {
+      final region = await delegate.getVisibleRegion();
+      return QalaGoMapBounds(
+        southwest: QalaGoMapCoordinate(
+          latitude: region.southwest.latitude,
+          longitude: region.southwest.longitude,
+        ),
+        northeast: QalaGoMapCoordinate(
+          latitude: region.northeast.latitude,
+          longitude: region.northeast.longitude,
+        ),
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   @override

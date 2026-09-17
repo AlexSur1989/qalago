@@ -12,6 +12,7 @@ import 'package:qalago_mobile/features/catalog/data/catalog_repository.dart';
 import 'package:qalago_mobile/features/favorites/presentation/favorites_screen.dart';
 import 'package:qalago_mobile/features/map/presentation/map_screen.dart';
 
+import '../features/map/map_test_overrides.dart';
 import '../support/l10n_test_harness.dart';
 import 'package:qalago_mobile/features/promotions/presentation/promotions_screen.dart';
 import 'package:qalago_mobile/shared/models/models.dart';
@@ -322,22 +323,19 @@ void main() {
             authProvider.overrideWith(() => _GuestAuthNotifier()),
             cityProvider.overrideWith(() => _UralskCityNotifier()),
             userLocationProvider.overrideWith((ref) => Stream.value(null)),
-            mapBusinessesProvider.overrideWith((ref) async {
-              return PaginatedBusinesses(
-                items: [
-                  BusinessModel(
-                    id: 'b1',
-                    title: 'Map Cafe',
-                    slug: 'map-cafe',
-                    address: 'Street 1',
-                    latitude: 51.23,
-                    longitude: 51.38,
-                    categoryTitle: 'Кафе',
-                  ),
-                ],
-                total: 1,
-              );
-            }),
+            mapBusinessesForTest(
+              items: [
+                BusinessModel(
+                  id: 'b1',
+                  title: 'Map Cafe',
+                  slug: 'map-cafe',
+                  address: 'Street 1',
+                  latitude: 51.23,
+                  longitude: 51.38,
+                  categoryTitle: 'Кафе',
+                ),
+              ],
+            ),
           ],
           child: wrapWithL10n(const MapScreen()),
         ),
@@ -357,9 +355,10 @@ void main() {
             authProvider.overrideWith(() => _GuestAuthNotifier()),
             cityProvider.overrideWith(() => _UralskCityNotifier()),
             userLocationProvider.overrideWith((ref) => Stream.value(null)),
-            mapBusinessesProvider.overrideWith((ref) async {
-              throw Exception('network');
-            }),
+            mapBusinessesForTest(
+              items: const [],
+              error: Exception('network'),
+            ),
           ],
           child: wrapWithL10n(const MapScreen()),
         ),
@@ -390,22 +389,19 @@ void main() {
             authProvider.overrideWith(() => _GuestAuthNotifier()),
             cityProvider.overrideWith(() => _UralskCityNotifier()),
             userLocationProvider.overrideWith((ref) => Stream.value(null)),
-            mapBusinessesProvider.overrideWith((ref) async {
-              return PaginatedBusinesses(
-                items: [
-                  BusinessModel(
-                    id: 'b1',
-                    title: 'Map Cafe',
-                    slug: 'map-cafe',
-                    address: 'Street 1',
-                    latitude: 51.23,
-                    longitude: 51.38,
-                    categoryTitle: 'Кафе',
-                  ),
-                ],
-                total: 1,
-              );
-            }),
+            mapBusinessesForTest(
+              items: [
+                BusinessModel(
+                  id: 'b1',
+                  title: 'Map Cafe',
+                  slug: 'map-cafe',
+                  address: 'Street 1',
+                  latitude: 51.23,
+                  longitude: 51.38,
+                  categoryTitle: 'Кафе',
+                ),
+              ],
+            ),
           ],
           child: wrapRouterWithL10n(router),
         ),
@@ -431,19 +427,16 @@ void main() {
             authProvider.overrideWith(() => _GuestAuthNotifier()),
             cityProvider.overrideWith(() => _UralskCityNotifier()),
             userLocationProvider.overrideWith((ref) => Stream.value(null)),
-            mapBusinessesProvider.overrideWith((ref) async {
-              return PaginatedBusinesses(
-                items: [
-                  BusinessModel(
-                    id: 'b-no-coords',
-                    title: 'Hidden Marker',
-                    slug: 'hidden',
-                    address: 'Street',
-                  ),
-                ],
-                total: 1,
-              );
-            }),
+            mapBusinessesForTest(
+              items: [
+                BusinessModel(
+                  id: 'b-no-coords',
+                  title: 'Hidden Marker',
+                  slug: 'hidden',
+                  address: 'Street',
+                ),
+              ],
+            ),
           ],
           child: wrapWithL10n(const MapScreen()),
         ),

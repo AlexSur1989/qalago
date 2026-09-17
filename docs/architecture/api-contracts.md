@@ -302,6 +302,8 @@ Query:
 | latitude, longitude | number — user position; required for `sort=nearest` |
 | radiusKm | number (default 15) — max distance in km when geo params set |
 | sort | `recommended` \| `nearest` \| `rating` \| `popular` — organic catalog sort (Stage 6.7D) |
+| forMap | boolean (optional) — when `true`, only businesses with non-null stored `latitude`/`longitude` (map marker mode; does not affect list/search when omitted) |
+| minLat, maxLat, minLng, maxLng | number (optional) — map viewport bbox; **all four required together** or 400; filters stored coordinates within the box (Stage 6.11C.3) |
 
 When `latitude` and `longitude` are provided, each item may include `distanceMeters` (integer). Businesses without coordinates are listed after geo-sorted items when `sort=nearest`.
 

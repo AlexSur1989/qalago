@@ -33,6 +33,7 @@ import { isGlobalAdmin } from '../../common/utils/system-access.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { changedFieldsFromDto, toMembershipRole } from '../audit-log/audit-log.util';
+import { appendMapCatalogFilters } from './business-map-query.util';
 import { CreateBusinessDto, ListBusinessesQueryDto, UpdateBusinessDto } from './dto/business.dto';
 import { BusinessPublicContentService } from './business-public-content.service';
 import { BusinessSubcategoryService } from './business-subcategory.service';
@@ -178,6 +179,8 @@ export class BusinessesService {
       categoryId: query.categoryId,
       subcategoryId: query.subcategoryId,
     });
+
+    appendMapCatalogFilters(where, query);
 
     const [items, total] = await this.findPagedItems(
       where,

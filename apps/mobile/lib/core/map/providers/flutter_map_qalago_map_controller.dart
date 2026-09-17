@@ -1,6 +1,7 @@
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../qalago_map_bounds.dart';
 import '../qalago_map_controller.dart';
 import '../qalago_map_coordinate.dart';
 
@@ -23,6 +24,25 @@ class FlutterMapQalaGoMapController implements QalaGoMapController {
   @override
   void move(QalaGoMapCoordinate center, double zoom) {
     _delegate.move(qalaGoCoordinateToLatLng(center), zoom);
+  }
+
+  @override
+  Future<QalaGoMapBounds?> readVisibleBounds() async {
+    try {
+      final bounds = _delegate.camera.visibleBounds;
+      return QalaGoMapBounds(
+        southwest: QalaGoMapCoordinate(
+          latitude: bounds.south,
+          longitude: bounds.west,
+        ),
+        northeast: QalaGoMapCoordinate(
+          latitude: bounds.north,
+          longitude: bounds.east,
+        ),
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   @override

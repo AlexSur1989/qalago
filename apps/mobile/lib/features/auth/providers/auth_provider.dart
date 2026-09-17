@@ -6,8 +6,6 @@ import '../../../core/network/dio_provider.dart';
 import '../../../core/providers/city_catalog_provider.dart';
 import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/providers/city_provider.dart';
-import '../../../core/release/app_config_provider.dart';
-import '../../map/map_discovery_scope.dart';
 import '../../../core/storage/auth_storage.dart';
 import '../../../shared/models/models.dart';
 import '../../ads/providers/ad_serve_provider.dart';
@@ -78,7 +76,6 @@ void invalidateCityScopedProviders(Ref ref) {
   ref.invalidate(cityCatalogTotalProvider);
   ref.invalidate(categoriesProvider);
   ref.invalidate(businessesProvider);
-  ref.invalidate(mapBusinessesProvider);
   ref.invalidate(featuredBusinessesProvider);
   ref.invalidate(recommendedBusinessesProvider);
   ref.invalidate(promotionsProvider);
@@ -507,25 +504,6 @@ final businessesProvider = FutureProvider.family<PaginatedBusinesses, Businesses
         );
   },
 );
-
-/// City-wide businesses for map markers (no geo radius filter). Limit 100 per MVP.
-/// When [mapDiscoveryScopeProvider] carries a subcategory (flag ON), reuses catalog API filter.
-final mapBusinessesProvider = FutureProvider<PaginatedBusinesses>((ref) async {
-  final city = ref.watch(cityProvider);
-  final enabled = ref.watch(subcategoriesEnabledProvider);
-  final scope = ref.watch(mapDiscoveryScopeProvider);
-  final params = resolveMapBusinessesFetchParams(
-    subcategoriesEnabled: enabled,
-    scope: scope,
-    citySlug: city.slug,
-  );
-  return ref.watch(catalogRepositoryProvider).fetchBusinesses(
-        citySlug: params.citySlug,
-        categoryId: params.categoryId,
-        subcategoryId: params.subcategoryId,
-        limit: 100,
-      );
-});
 
 final featuredBusinessesProvider = FutureProvider((ref) async {
   final city = ref.watch(cityProvider);

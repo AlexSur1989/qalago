@@ -2,10 +2,13 @@ import 'package:flutter/widgets.dart';
 
 import 'providers/flutter_map_qalago_map_view.dart';
 import 'providers/maplibre_qalago_map_view.dart';
+import 'qalago_map_bounds.dart';
 import 'qalago_map_camera.dart';
 import 'qalago_map_controller.dart';
 import 'qalago_map_marker.dart';
 import 'qalago_map_renderer.dart';
+
+export 'qalago_map_bounds.dart' show QalaGoMapBounds, QalaGoMapCameraIdleCallback;
 
 export 'providers/flutter_map_qalago_map_view.dart' show FlutterMapQalaGoMapView;
 export 'providers/maplibre_qalago_map_view.dart' show MapLibreQalaGoMapView;
@@ -18,12 +21,14 @@ class QalaGoMapView extends StatelessWidget {
     this.controller,
     this.markers = const [],
     this.interactionEnabled = true,
+    this.onCameraIdle,
   });
 
   final QalaGoMapCamera initialCamera;
   final QalaGoMapController? controller;
   final List<QalaGoMapMarker> markers;
   final bool interactionEnabled;
+  final QalaGoMapCameraIdleCallback? onCameraIdle;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +40,7 @@ class QalaGoMapView extends StatelessWidget {
           controller: controller,
           markers: markers,
           interactionEnabled: interactionEnabled,
+          onCameraIdle: onCameraIdle,
         );
       case QalaGoMapRenderer.flutterMap:
         return FlutterMapQalaGoMapView(
@@ -43,6 +49,7 @@ class QalaGoMapView extends StatelessWidget {
           controller: controller,
           markers: markers,
           interactionEnabled: interactionEnabled,
+          onCameraIdle: onCameraIdle,
         );
     }
   }

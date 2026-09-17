@@ -25,6 +25,7 @@ import 'package:qalago_mobile/l10n/app_localizations.dart';
 import 'package:qalago_mobile/shared/models/models.dart';
 import 'package:dio/dio.dart';
 
+import '../features/map/map_test_overrides.dart';
 import '../support/l10n_test_harness.dart';
 
 Future<void> _disposeTimers(WidgetTester tester) async {
@@ -90,9 +91,7 @@ void main() {
               () => _UralskCityNotifier(),
             ),
             userLocationProvider.overrideWith((ref) => Stream.value(null)),
-            mapBusinessesProvider.overrideWith((ref) async {
-              return PaginatedBusinesses(items: [_mapBusiness()], total: 1);
-            }),
+            mapBusinessesForTest(items: [_mapBusiness()]),
           ],
           child: const MapScreen(),
         ),
@@ -110,9 +109,7 @@ void main() {
             authProvider.overrideWith(() => _GuestAuthNotifier()),
             cityProvider.overrideWith(() => _UralskCityNotifier()),
             userLocationProvider.overrideWith((ref) => Stream.value(null)),
-            mapBusinessesProvider.overrideWith(
-              (ref) async => PaginatedBusinesses(items: const [], total: 0),
-            ),
+            mapBusinessesForTest(items: const [], catalogTotal: 0),
           ],
           child: const MapScreen(),
         ),
@@ -131,9 +128,7 @@ void main() {
             authProvider.overrideWith(() => _GuestAuthNotifier()),
             cityProvider.overrideWith(() => _UralskCityNotifier()),
             userLocationProvider.overrideWith((ref) => Stream.value(null)),
-            mapBusinessesProvider.overrideWith((ref) async {
-              return PaginatedBusinesses(items: [_mapBusiness()], total: 1);
-            }),
+            mapBusinessesForTest(items: [_mapBusiness()]),
           ],
           child: const MapScreen(),
         ),
@@ -157,9 +152,7 @@ void main() {
             authProvider.overrideWith(() => _GuestAuthNotifier()),
             cityProvider.overrideWith(() => _UralskCityNotifier()),
             userLocationProvider.overrideWith((ref) => Stream.value(null)),
-            mapBusinessesProvider.overrideWith((ref) async {
-              return PaginatedBusinesses(items: [_mapBusiness()], total: 1);
-            }),
+            mapBusinessesForTest(items: [_mapBusiness()]),
           ],
           child: const MapScreen(),
         ),

@@ -4,7 +4,7 @@ import '../../core/map/qalago_map_coordinate.dart';
 import '../../core/map/qalago_map_marker.dart';
 import '../../core/theme/app_theme.dart';
 import '../../shared/models/models.dart';
-import '../../shared/utils/consumer_discovery_utils.dart';
+import 'map_coordinate_validity.dart';
 
 /// Builds QalaGo map markers from catalog businesses (skips missing coordinates).
 List<QalaGoMapMarker> buildBusinessMapMarkers({
@@ -45,7 +45,7 @@ List<QalaGoMapMarker> buildBusinessMapMarkers({
     );
   }
 
-  for (final business in businessesWithCoordinates(businesses)) {
+  for (final business in businessesWithValidMapCoordinates(businesses)) {
     final selected = business.id == selectedBusinessId;
     markers.add(
       QalaGoMapMarker(

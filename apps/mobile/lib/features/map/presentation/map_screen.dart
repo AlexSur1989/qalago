@@ -26,8 +26,9 @@ import '../../../shared/widgets/empty_city_view.dart';
 import '../../../shared/widgets/qalago_logo.dart';
 import '../../analytics/widgets/business_impression_host.dart';
 import '../../analytics/widgets/map_business_preview_impression.dart';
-import '../../auth/providers/auth_provider.dart';
 import '../map_business_markers.dart';
+import '../map_businesses_notifier.dart';
+import '../map_discovery_scope.dart';
 import '../map_screen_center.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
@@ -97,7 +98,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   Widget build(BuildContext context) {
     final city = ref.watch(cityProvider);
     final userPosition = ref.watch(userLocationProvider).valueOrNull;
-    final businessesAsync = ref.watch(mapBusinessesProvider);
+    final mapBusinesses = ref.watch(mapBusinessesProvider);
+    final businesses = mapBusinesses.items;
 
     ref.listen(userLocationProvider, (previous, next) {
       next.whenData((position) => _followUser(city, position));
@@ -106,15 +108,24 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     ref.listen(cityProvider, (previous, next) {
       if (previous?.slug == next.slug) return;
       setState(() => _selectedBusinessId = null);
-      businessesAsync.whenData((data) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          _moveToCity(next, userPosition, data.items);
-        });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _moveToCity(next, userPosition, businesses);
       });
     });
 
-    final businesses = businessesAsync.valueOrNull?.items ?? const <BusinessModel>[];
+    ref.listen(mapDiscoveryScopeProvider, (previous, next) {
+      if (previous == next) return;
+      setState(() => _selectedBusinessId = null);
+    });
+
+    ref.listen(mapBusinessesProvider, (previous, next) {
+      final id = _selectedBusinessId;
+      if (id == null) return;
+      if (!next.byId.containsKey(id)) {
+        setState(() => _selectedBusinessId = null);
+      }
+    });
     final center = resolveMapScreenCenter(
       city: city,
       userPosition: userPosition,
@@ -143,15 +154,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         onTap: onTap,
       ),
     );
-    BusinessModel? selectedBusiness;
-    if (_selectedBusinessId != null) {
-      for (final business in businesses) {
-        if (business.id == _selectedBusinessId) {
-          selectedBusiness = business;
-          break;
-        }
-      }
-    }
+    final selectedBusiness = _selectedBusinessId == null
+        ? null
+        : mapBusinesses.byId[_selectedBusinessId];
 
     if (_trackedCitySlug != city.slug) {
       _trackedCitySlug = city.slug;
@@ -171,8 +176,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             controller: _mapController,
             initialCamera: QalaGoMapCamera(center: center, zoom: _cityZoom),
             markers: mapMarkers,
+            onCameraIdle: (bounds) {
+              ref
+                  .read(mapBusinessesNotifierProvider.notifier)
+                  .onViewportIdle(bounds);
+            },
           ),
-          if (businessesAsync.hasError)
+          if (mapBusinesses.error != null)
             Positioned(
               left: 20,
               right: 20,
@@ -191,7 +201,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                         child: Text(l10n.mapLoadFailed),
                       ),
                       TextButton(
-                        onPressed: () => ref.invalidate(mapBusinessesProvider),
+                        onPressed: () => ref
+                            .read(mapBusinessesNotifierProvider.notifier)
+                            .retry(),
                         child: Text(l10n.commonRetry),
                       ),
                     ],
@@ -251,8 +263,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             bottom: 0,
             child: SafeArea(
               top: false,
-              child: businessesAsync.maybeWhen(
-              data: (data) {
+              child: Builder(
+                builder: (context) {
                 if (selectedBusiness != null) {
                   final business = selectedBusiness;
                   return MapBusinessPreviewImpression(
@@ -273,7 +285,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   );
                 }
 
-                if (data.total == 0) {
+                if (!mapBusinesses.loading &&
+                    mapBusinesses.catalogTotal == 0 &&
+                    mapBusinesses.error == null) {
                   return Padding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                     child: EmptyCityView(
@@ -286,14 +300,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 }
 
                 return _MapCitySheet(
-                  businesses: data.items,
+                  businesses: businesses,
                   userLat: userPosition?.latitude,
                   userLng: userPosition?.longitude,
                   onSelect: (business) =>
                       setState(() => _selectedBusinessId = business.id),
                 );
               },
-              orElse: () => const SizedBox.shrink(),
             ),
             ),
           ),
