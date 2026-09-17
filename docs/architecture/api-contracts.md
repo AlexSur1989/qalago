@@ -284,6 +284,21 @@ Public list of **active** subcategories for a category (`id`, `categoryId`, `slu
 
 ---
 
+## Geocoding (Stage 6.11C.4)
+
+Authenticated geocoding for business onboarding and location picker (server-side provider; API key never exposed to clients).
+
+| Method | Path | Auth | Notes |
+|--------|------|------|-------|
+| GET | `/geocoding/autocomplete` | JWT | Query: `q` (2–200 chars), optional `citySlug` or `cityId` (city center bias), optional `language` `ru` \| `kk` (default `ru`). Country filter `kz`. Rate limit per user + IP. |
+| GET | `/geocoding/reverse` | JWT | Query: `lat`, `lng` (valid pair; rejects `0,0`), optional `language` `ru` \| `kk`. |
+
+Response item (`GeocodingSuggestion`): `{ id, label, address, latitude, longitude, placeType? }`.
+
+Env: `QALAGO_GEOCODING_PROVIDER` = `mock` (default) \| `maptiler`; `MAPTILER_API_KEY` when using MapTiler; `GEOCODING_USER_*`, `GEOCODING_IP_*` rate limits.
+
+---
+
 ## Businesses
 
 ### GET /businesses
@@ -325,6 +340,8 @@ List items may include `planTier`, `planExpiresAt`, `featuredSlot`, `isFeatured`
 ### PATCH /businesses/:id
 
 Owner/manager patch may include optional `subcategoryIds: string[]` (requires `BUSINESS_PROFILE_EDIT`). Empty array clears assignments. Subcategories must belong to business `categoryId`.
+
+Optional `latitude`/`longitude` (pair validated together; ranges enforced; rejects `0,0`) and optional `locationSource` (`GEOCODED` \| `MANUALLY_ADJUSTED` \| `LEGACY_UNKNOWN`) — Stage 6.11C.4.
 
 ### PATCH /admin/businesses/:id/taxonomy
 
@@ -452,7 +469,11 @@ Safe new-business registration. No ownership until moderation approval.
 | POST | `/business-applications/:id/submit` | JWT | `DRAFT` → `PENDING` |
 | POST | `/business-applications/:id/cancel` | JWT | `DRAFT`/`PENDING` → `CANCELLED` |
 
-Applicant-editable body (create/patch): `title`, `categoryId`, `citySlug`/`cityId`, `address`, `shortDesc?`, `phone?`. Server sets `dedupeKey`, `status`, reviewer fields.
+Applicant-editable body (create/patch): `title`, `categoryId`, `citySlug`/`cityId`, `address`, `shortDesc?`, `phone?`, optional `latitude`/`longitude` (pair required together; rejects null island `0,0`), optional `locationSource` (`GEOCODED` \| `MANUALLY_ADJUSTED`; default `MANUALLY_ADJUSTED` when coords saved without source). Server sets `dedupeKey`, `status`, reviewer fields.
+
+**Submit (Stage 6.11C.4):** `POST .../submit` requires a valid stored coordinate pair on the application. Legacy drafts without coordinates remain approvable by moderators but cannot be submitted until coordinates are set.
+
+**Approval coordinates:** When the application has `latitude`/`longitude`, approval copies them and `locationSource` onto the created `Business`. Applications without coordinates (legacy) still approve with null business coordinates.
 
 Admin moderation:
 

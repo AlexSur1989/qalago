@@ -9,6 +9,7 @@ import {
   AuditAction,
   AuditResourceType,
   BusinessApplicationStatus,
+  BusinessLocationSource,
   BusinessStatus,
   CityLaunchStatus,
   NotificationType,
@@ -24,6 +25,11 @@ import {
   buildApplicationDedupeKey,
   businessMatchesApplicationDedupe,
 } from '../../common/utils/business-application-dedupe.util';
+import {
+  assertValidBusinessCoordinatePair,
+  isOptionalBusinessCoordinatePairValid,
+  isValidBusinessCoordinatePair,
+} from '../../common/utils/business-coordinates.util';
 import { normalizeKazakhstanPhone } from '../auth/auth-phone.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
@@ -74,6 +80,7 @@ export class BusinessApplicationsService {
     await this.assertNoDuplicateActiveApplication(user.id, dedupeKey);
 
     const phone = this.normalizeOptionalPhone(dto.phone);
+    const coordinates = this.resolveCoordinateInput(dto);
 
     return this.prisma.businessApplication.create({
       data: {
@@ -86,6 +93,7 @@ export class BusinessApplicationsService {
         phone,
         dedupeKey,
         status: BusinessApplicationStatus.DRAFT,
+        ...coordinates,
       },
       include: applicationInclude,
     });
@@ -137,6 +145,7 @@ export class BusinessApplicationsService {
 
     const phone =
       dto.phone !== undefined ? this.normalizeOptionalPhone(dto.phone) : application.phone;
+    const coordinates = this.resolveCoordinateInput(dto, application);
 
     return this.prisma.businessApplication.update({
       where: { id },
@@ -152,6 +161,7 @@ export class BusinessApplicationsService {
         rejectionReason: null,
         reviewedByUserId: null,
         reviewedAt: null,
+        ...coordinates,
       },
       include: applicationInclude,
     });
@@ -165,7 +175,7 @@ export class BusinessApplicationsService {
       throw new BadRequestException('Only DRAFT applications can be submitted');
     }
 
-    await this.validateApplicationPayload(application);
+    await this.validateApplicationPayload(application, undefined, { requireCoordinates: true });
     await this.assertNoDuplicateActiveApplication(user.id, application.dedupeKey, id);
     await this.assertNoExistingBusinessDuplicate(
       application.cityId,
@@ -390,6 +400,9 @@ export class BusinessApplicationsService {
           phone: locked.phone,
           ownerId: locked.applicantUserId,
           status: businessStatus,
+          latitude: locked.latitude ?? undefined,
+          longitude: locked.longitude ?? undefined,
+          locationSource: locked.locationSource ?? undefined,
         },
       });
 
@@ -510,14 +523,73 @@ export class BusinessApplicationsService {
     }
   }
 
+  private resolveCoordinateInput(
+    dto: {
+      latitude?: number;
+      longitude?: number;
+      locationSource?: BusinessLocationSource;
+    },
+    existing?: {
+      latitude: Prisma.Decimal | null;
+      longitude: Prisma.Decimal | null;
+      locationSource: BusinessLocationSource | null;
+    },
+  ): {
+    latitude?: number;
+    longitude?: number;
+    locationSource?: BusinessLocationSource | null;
+  } {
+    const latProvided = dto.latitude !== undefined;
+    const lngProvided = dto.longitude !== undefined;
+
+    if (latProvided || lngProvided) {
+      if (!isOptionalBusinessCoordinatePairValid(dto.latitude, dto.longitude)) {
+        throw new BadRequestException(
+          'latitude and longitude must be provided together and form a valid coordinate pair',
+        );
+      }
+      assertValidBusinessCoordinatePair(dto.latitude, dto.longitude);
+      return {
+        latitude: dto.latitude,
+        longitude: dto.longitude,
+        locationSource:
+          dto.locationSource ??
+          existing?.locationSource ??
+          BusinessLocationSource.MANUALLY_ADJUSTED,
+      };
+    }
+
+    if (dto.locationSource !== undefined) {
+      throw new BadRequestException('locationSource requires latitude and longitude');
+    }
+
+    return {};
+  }
+
+  private applicationHasValidCoordinates(application: {
+    latitude?: Prisma.Decimal | null;
+    longitude?: Prisma.Decimal | null;
+  }): boolean {
+    if (application.latitude == null || application.longitude == null) {
+      return false;
+    }
+    return isValidBusinessCoordinatePair(
+      Number(application.latitude),
+      Number(application.longitude),
+    );
+  }
+
   private async validateApplicationPayload(
     application: {
       title: string;
       categoryId: string;
       cityId: string;
       address: string;
+      latitude?: Prisma.Decimal | null;
+      longitude?: Prisma.Decimal | null;
     },
     tx?: Prisma.TransactionClient,
+    options?: { requireCoordinates?: boolean },
   ) {
     const client = tx ?? this.prisma;
     if (!application.title.trim() || application.title.trim().length < 2) {
@@ -533,6 +605,10 @@ export class BusinessApplicationsService {
     }
 
     await this.validateCategory(application.categoryId);
+
+    if (options?.requireCoordinates && !this.applicationHasValidCoordinates(application)) {
+      throw new BadRequestException('Business location coordinates are required before submit');
+    }
   }
 
   private normalizeOptionalPhone(phone?: string | null) {

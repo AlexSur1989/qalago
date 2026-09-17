@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -35,6 +36,10 @@ import { AuditLogService } from '../audit-log/audit-log.service';
 import { changedFieldsFromDto, toMembershipRole } from '../audit-log/audit-log.util';
 import { appendMapCatalogFilters } from './business-map-query.util';
 import { CreateBusinessDto, ListBusinessesQueryDto, UpdateBusinessDto } from './dto/business.dto';
+import {
+  assertValidBusinessCoordinatePair,
+  isOptionalBusinessCoordinatePairValid,
+} from '../../common/utils/business-coordinates.util';
 import { BusinessPublicContentService } from './business-public-content.service';
 import { BusinessSubcategoryService } from './business-subcategory.service';
 import { SubcategoriesService } from '../categories/subcategories.service';
@@ -599,12 +604,39 @@ export class BusinessesService {
 
     const { subcategoryIds, ...patch } = dto;
 
+    let latitude = dto.latitude;
+    let longitude = dto.longitude;
+    if (dto.latitude !== undefined || dto.longitude !== undefined) {
+      const mergedLat =
+        dto.latitude !== undefined
+          ? dto.latitude
+          : business.latitude != null
+            ? Number(business.latitude)
+            : undefined;
+      const mergedLng =
+        dto.longitude !== undefined
+          ? dto.longitude
+          : business.longitude != null
+            ? Number(business.longitude)
+            : undefined;
+      if (!isOptionalBusinessCoordinatePairValid(mergedLat, mergedLng)) {
+        throw new BadRequestException(
+          'latitude and longitude must be provided together and form a valid coordinate pair',
+        );
+      }
+      if (mergedLat !== undefined && mergedLng !== undefined) {
+        assertValidBusinessCoordinatePair(mergedLat, mergedLng);
+        latitude = mergedLat;
+        longitude = mergedLng;
+      }
+    }
+
     const updated = await this.prisma.business.update({
       where: { id },
       data: {
         ...patch,
-        latitude: dto.latitude !== undefined ? dto.latitude : undefined,
-        longitude: dto.longitude !== undefined ? dto.longitude : undefined,
+        latitude: latitude !== undefined ? latitude : undefined,
+        longitude: longitude !== undefined ? longitude : undefined,
       },
       include: businessDetailInclude,
     });

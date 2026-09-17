@@ -1,14 +1,17 @@
-import { BusinessApplicationStatus } from '@prisma/client';
+import { BusinessApplicationStatus, BusinessLocationSource } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   IsEnum,
   IsInt,
+  IsNumber,
   IsOptional,
   IsString,
   Length,
   Max,
   Min,
+  Validate,
 } from 'class-validator';
+import { BusinessCoordinatePairConstraint } from '../../../common/validators/business-coordinate-pair.validator';
 
 export class CreateBusinessApplicationDto {
   @IsOptional()
@@ -42,6 +45,28 @@ export class CreateBusinessApplicationDto {
   @IsString()
   @Length(0, 32)
   phone?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  latitude?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  longitude?: number;
+
+  @IsOptional()
+  @IsEnum(BusinessLocationSource)
+  locationSource?: BusinessLocationSource;
+
+  @Validate(BusinessCoordinatePairConstraint)
+  @IsOptional()
+  private readonly coordinatePairValidation?: unknown;
 }
 
 export class UpdateBusinessApplicationDto {
@@ -76,6 +101,28 @@ export class UpdateBusinessApplicationDto {
   @IsString()
   @Length(0, 32)
   phone?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  latitude?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  longitude?: number;
+
+  @IsOptional()
+  @IsEnum(BusinessLocationSource)
+  locationSource?: BusinessLocationSource;
+
+  @Validate(BusinessCoordinatePairConstraint)
+  @IsOptional()
+  private readonly coordinatePairValidation?: unknown;
 }
 
 export class RejectBusinessApplicationDto {

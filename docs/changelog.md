@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-18 — Stage 6.11C.4: Address geocoding and business location picker
+
+- Backend: provider-neutral geocoding API (MapTiler or mock), application/business coordinate persistence, approval pipeline, validation — see `docs/architecture/geocoding.md`.
+- Mobile: debounced address autocomplete, MapLibre center-pin location picker, BusinessApply + OwnerEdit integration (RU/KK l10n).
+- Business Web: Leaflet location picker component, onboarding apply + business profile; Admin: application coordinate preview.
+- Future: PostGIS search (6.11C.5); production MapTiler key and live KZ quality verification by operator.
+
 ## 2026-09-17 — Stage 6.11C.3: MapLibre business discovery hardening
 
 - Mobile: viewport-aware map business loading (`MapBusinessesNotifier`) with camera-idle bounds, padded bbox fetch, multi-page dedupe (removes silent 100-business cap), stale-request protection, city/category scope invalidation, invalid-coordinate filtering.

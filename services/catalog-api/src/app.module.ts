@@ -34,6 +34,7 @@ import { AppConfigModule } from './modules/app-config/app-config.module';
 import { SafetyModule } from './modules/safety/safety.module';
 import { StaffModule } from './modules/staff/staff.module';
 import { AdminReportingModule } from './modules/admin-reporting/admin-reporting.module';
+import { GeocodingModule } from './modules/geocoding/geocoding.module';
 
 @Module({
   imports: [
@@ -77,6 +78,7 @@ import { AdminReportingModule } from './modules/admin-reporting/admin-reporting.
     SafetyModule,
     StaffModule,
     AdminReportingModule,
+    GeocodingModule,
   ],
   controllers: [HealthController],
   providers: [

@@ -12,8 +12,10 @@ import {
   Max,
   MaxLength,
   Min,
+  Validate,
 } from 'class-validator';
-import { BusinessStatus } from '@prisma/client';
+import { BusinessCoordinatePairConstraint } from '../../../common/validators/business-coordinate-pair.validator';
+import { BusinessLocationSource, BusinessStatus } from '@prisma/client';
 import { BusinessCatalogSort } from '../../../common/utils/business-catalog-sort.util';
 import {
   CATALOG_SEARCH_MAX_LENGTH,
@@ -181,12 +183,20 @@ export class UpdateBusinessDto {
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
+  @Min(-90)
+  @Max(90)
   latitude?: number;
 
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
+  @Min(-180)
+  @Max(180)
   longitude?: number;
+
+  @IsOptional()
+  @IsEnum(BusinessLocationSource)
+  locationSource?: BusinessLocationSource;
 
   @IsOptional()
   @IsString()
@@ -217,4 +227,8 @@ export class UpdateBusinessDto {
   @IsArray()
   @IsString({ each: true })
   subcategoryIds?: string[];
+
+  @Validate(BusinessCoordinatePairConstraint)
+  @IsOptional()
+  private readonly coordinatePairValidation?: unknown;
 }

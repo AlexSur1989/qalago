@@ -56,6 +56,12 @@ export const validationSchema = Joi.object({
   BUSINESS_APPLICATION_SUBMIT_WINDOW_SECONDS: Joi.number().integer().min(1).default(3600),
   OWNERSHIP_CLAIM_CREATE_LIMIT: Joi.number().integer().min(1).default(5),
   OWNERSHIP_CLAIM_CREATE_WINDOW_SECONDS: Joi.number().integer().min(1).default(3600),
+  QALAGO_GEOCODING_PROVIDER: Joi.string().valid('maptiler', 'mock').default('mock'),
+  MAPTILER_API_KEY: Joi.string().allow('').default(''),
+  GEOCODING_USER_LIMIT: Joi.number().integer().min(1).default(30),
+  GEOCODING_USER_WINDOW_SECONDS: Joi.number().integer().min(1).default(60),
+  GEOCODING_IP_LIMIT: Joi.number().integer().min(1).default(60),
+  GEOCODING_IP_WINDOW_SECONDS: Joi.number().integer().min(1).default(60),
 }).custom((value, helpers) => {
   try {
     assertProductionConfig({

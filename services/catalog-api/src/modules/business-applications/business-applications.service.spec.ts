@@ -43,6 +43,9 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
     title: 'Cafe Sultan',
     shortDesc: null,
     address: 'Abay 10',
+    latitude: null,
+    longitude: null,
+    locationSource: null,
     phone: null,
     status: BusinessApplicationStatus.DRAFT,
     dedupeKey: buildApplicationDedupeKey('city-uralsk', 'Cafe Sultan', 'Abay 10'),
@@ -158,6 +161,8 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
   it('submits DRAFT to PENDING and writes audit', async () => {
     prisma.businessApplication.findUnique = jest.fn().mockResolvedValue({
       ...baseApplication,
+      latitude: 51.2278,
+      longitude: 51.3865,
       city: null,
       category: null,
       approvedBusiness: null,
@@ -192,6 +197,8 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
   it('rejects submit when matching business already exists', async () => {
     prisma.businessApplication.findUnique = jest.fn().mockResolvedValue({
       ...baseApplication,
+      latitude: 51.2278,
+      longitude: 51.3865,
       city: null,
       category: null,
       approvedBusiness: null,
@@ -201,6 +208,95 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
     ]);
 
     await expect(service.submit(user, 'app-1')).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('requires coordinates on submit', async () => {
+    prisma.businessApplication.findUnique = jest.fn().mockResolvedValue({
+      ...baseApplication,
+      status: BusinessApplicationStatus.DRAFT,
+      city: null,
+      category: null,
+      approvedBusiness: null,
+    });
+
+    await expect(service.submit(user, 'app-1')).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('approves legacy application without coordinates', async () => {
+    prisma.businessApplication.findUnique = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ...baseApplication,
+        status: BusinessApplicationStatus.PENDING,
+        latitude: null,
+        longitude: null,
+        applicant: { id: 'user-1', name: 'User', role: UserRole.USER },
+        reviewedBy: null,
+        city: { launchStatus: CityLaunchStatus.LIVE },
+        category: null,
+        approvedBusiness: null,
+      })
+      .mockResolvedValueOnce({ ...baseApplication, status: BusinessApplicationStatus.PENDING });
+
+    prisma.businessApplication.updateMany = jest.fn().mockResolvedValue({ count: 1 });
+    prisma.businessApplication.findUniqueOrThrow = jest.fn().mockResolvedValue({
+      ...baseApplication,
+      status: BusinessApplicationStatus.APPROVED,
+    });
+
+    await service.adminApprove(admin, 'app-1');
+
+    expect(prisma.business.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          latitude: undefined,
+          longitude: undefined,
+          locationSource: undefined,
+        }),
+      }),
+    );
+  });
+
+  it('copies coordinates and locationSource on approval', async () => {
+    prisma.businessApplication.findUnique = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ...baseApplication,
+        status: BusinessApplicationStatus.PENDING,
+        latitude: { toString: () => '51.2278' },
+        longitude: { toString: () => '51.3865' },
+        locationSource: 'GEOCODED',
+        applicant: { id: 'user-1', name: 'User', role: UserRole.USER },
+        reviewedBy: null,
+        city: { launchStatus: CityLaunchStatus.LIVE },
+        category: null,
+        approvedBusiness: null,
+      })
+      .mockResolvedValueOnce({
+        ...baseApplication,
+        status: BusinessApplicationStatus.PENDING,
+        latitude: { toString: () => '51.2278' },
+        longitude: { toString: () => '51.3865' },
+        locationSource: 'GEOCODED',
+      });
+
+    prisma.businessApplication.updateMany = jest.fn().mockResolvedValue({ count: 1 });
+    prisma.businessApplication.findUniqueOrThrow = jest.fn().mockResolvedValue({
+      ...baseApplication,
+      status: BusinessApplicationStatus.APPROVED,
+    });
+
+    await service.adminApprove(admin, 'app-1');
+
+    expect(prisma.business.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          latitude: expect.anything(),
+          longitude: expect.anything(),
+          locationSource: 'GEOCODED',
+        }),
+      }),
+    );
   });
 
   it('approves atomically and keeps applicant USER role untouched', async () => {
