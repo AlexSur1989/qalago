@@ -1,5 +1,10 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import {
+  CATALOG_SEARCH_MAX_LENGTH,
+  normalizeCatalogSearchQuery,
+} from '../../../common/utils/catalog-search-query.util';
 import {
   PUBLIC_CATALOG_DEFAULT_LIMIT,
   PUBLIC_CATALOG_MAX_LIMIT,
@@ -26,6 +31,11 @@ export class ListBusinessCatalogQueryDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(CATALOG_SEARCH_MAX_LENGTH)
+  @Transform(({ value }) => {
+    if (typeof value !== 'string') return value;
+    return normalizeCatalogSearchQuery(value) ?? undefined;
+  })
   search?: string;
 }
 

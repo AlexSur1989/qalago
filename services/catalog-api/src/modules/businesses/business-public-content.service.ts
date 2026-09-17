@@ -16,6 +16,7 @@ import {
   sliceToPublicLimit,
 } from '../../common/utils/plan-entitlements.util';
 import { sortCatalogItems } from '../../common/utils/catalog-sort.util';
+import { publicServiceItemMatchesCatalogSearch } from '../../common/utils/catalog-search-query.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListBusinessCatalogQueryDto } from './dto/business-catalog.dto';
 import { ListBusinessPhotosQueryDto } from './dto/business-photos.dto';
@@ -23,7 +24,9 @@ import { ListBusinessPhotosQueryDto } from './dto/business-photos.dto';
 const catalogItemSelect = {
   id: true,
   title: true,
+  titleKk: true,
   description: true,
+  descriptionKk: true,
   price: true,
   imageUrl: true,
   sortOrder: true,
@@ -143,12 +146,9 @@ export class BusinessPublicContentService {
       filtered = filtered.filter((item) => item.groupId === query.sectionId);
     }
     if (query.search?.trim()) {
-      const needle = query.search.trim().toLowerCase();
-      filtered = filtered.filter((item) => {
-        const inTitle = item.title.toLowerCase().includes(needle);
-        const inDescription = item.description?.toLowerCase().includes(needle) ?? false;
-        return inTitle || inDescription;
-      });
+      filtered = filtered.filter((item) =>
+        publicServiceItemMatchesCatalogSearch(item, query.search),
+      );
     }
 
     const skip = (page - 1) * limit;

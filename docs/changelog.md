@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-17 — Stage 6.11B.1: Search backend foundation
+
+- **Added:** `GET /businesses?search=` multilingual catalog discovery (business fields, category/subcategory RU+KK, public service items RU+KK); query normalization util; max search length 100; per-business catalog search includes `titleKk` / `descriptionKk`.
+- **Docs:** `api-contracts.md` search semantics.
+- **Future:** DB-level pagination/relevance (6.11B.5); plan-tier catalog slot limits in global service-item match; SearchScreen UX (6.11B.3+).
+
 ## 2026-09-17 — Stage 6.11A.UI.10B.3: Android startup closure
 
 - Pre-12 native splash: solid `#F7FAFC` only (no bitmap); removed unused splash wordmark PNG.

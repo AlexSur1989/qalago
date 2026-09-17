@@ -20,6 +20,7 @@ import {
   compareBusinessBySort,
 } from '../../common/utils/business-catalog-sort.util';
 import { compareBusinessCatalogRank } from '../../common/utils/business-rank.util';
+import { appendBusinessCatalogTextSearch } from '../../common/utils/business-catalog-search.util';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { isGlobalAdmin } from '../../common/utils/system-access.util';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -147,13 +148,7 @@ export class BusinessesService {
         some: { subcategoryId: query.subcategoryId },
       };
     }
-    if (query.search) {
-      where.OR = [
-        { title: { contains: query.search, mode: 'insensitive' } },
-        { shortDesc: { contains: query.search, mode: 'insensitive' } },
-        { address: { contains: query.search, mode: 'insensitive' } },
-      ];
-    }
+    appendBusinessCatalogTextSearch(where, query.search);
 
     const [items, total] = await this.findPagedItems(where, query, page, limit, skip);
 

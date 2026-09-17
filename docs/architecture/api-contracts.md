@@ -295,7 +295,7 @@ Query:
 | page, limit | number |
 | categoryId | string |
 | subcategoryId | string (optional) — filter businesses assigned to subcategory; if `categoryId` also set, sub must belong to category (400 otherwise) |
-| search | string |
+| search | string (optional, max **100** chars after trim; whitespace collapsed). Case-insensitive `contains` match against approved stored fields only — see **Search semantics (Stage 6.11B.1)** below. |
 | featured | boolean |
 | status | ACTIVE (public default) |
 | citySlug / cityId | string |
@@ -310,6 +310,15 @@ When `latitude` and `longitude` are provided, each item may include `distanceMet
 **Sort semantics:** `rating` — avg rating desc (businesses with no reviews last), review count desc, title asc; may include `averageRating`, `reviewCount`. `popular` — sum of organic `AnalyticsDailyMetric.views` last 30 days desc, title asc. Plan tier, ads, and subscriptions never affect organic order (Stage 4C.1 / 6.7D). Paid visibility via AdCampaign serve only.
 
 List items may include `planTier`, `planExpiresAt`, `featuredSlot`, `isFeatured` for display; these fields are deprecated for catalog ranking. Query param `featured` is ignored on public catalog.
+
+**Search semantics (Stage 6.11B.1):** `search` is **city-scoped** (requires resolved `citySlug` / `cityId` like other list queries) and combined with `status` (default `ACTIVE`), optional `categoryId`, and optional `subcategoryId` using **AND**. Text matching uses a single **OR** group across:
+
+- Business `title`, `shortDesc`, `address`
+- Associated Category `title`, `nameRu`, `nameKk`
+- Associated Subcategory `nameRu`, `nameKk` (via business assignment)
+- **Public** ServiceItem `title`, `titleKk`, `description`, `descriptionKk` (`isActive` + active menu group semantics)
+
+**Not** matched: Promotion titles/descriptions, paid plan/ad fields, runtime translation, transliteration, or fuzzy/typo tolerance. RU and KK stored fields are searched together; **UI locale is not required** for cross-language query matching. Organic sort/ranking remains plan-neutral (Stage 4C.1 / 6.7D). Pagination may still load matching rows in memory for certain sort modes (see service implementation).
 
 ### PATCH /businesses/:id
 
@@ -343,7 +352,7 @@ Public preview limits (fixed, independent of subscription tier): gallery 6, cata
 
 Paginated public catalog for one business.
 
-Query: `page` (default 1), `limit` (default 20, max 50), `sectionId` (optional — business menu group id, or omit for all), `search` (optional — item title/description).
+Query: `page` (default 1), `limit` (default 20, max 50), `sectionId` (optional — business menu group id, or omit for all), `search` (optional, max 100 — public item `title`, `titleKk`, `description`, `descriptionKk`; case-insensitive; UI locale independent).
 
 Response:
 

@@ -10,10 +10,15 @@ import {
   IsString,
   Length,
   Max,
+  MaxLength,
   Min,
 } from 'class-validator';
 import { BusinessStatus } from '@prisma/client';
 import { BusinessCatalogSort } from '../../../common/utils/business-catalog-sort.util';
+import {
+  CATALOG_SEARCH_MAX_LENGTH,
+  normalizeCatalogSearchQuery,
+} from '../../../common/utils/catalog-search-query.util';
 
 export class CreateBusinessDto {
   @IsString()
@@ -70,6 +75,11 @@ export class ListBusinessesQueryDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(CATALOG_SEARCH_MAX_LENGTH)
+  @Transform(({ value }) => {
+    if (typeof value !== 'string') return value;
+    return normalizeCatalogSearchQuery(value) ?? undefined;
+  })
   search?: string;
 
   @IsOptional()

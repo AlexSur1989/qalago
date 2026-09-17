@@ -137,6 +137,24 @@ describe('BusinessPublicContentService (Stage 5G)', () => {
     expect(result.items.every((item) => item.title.toLowerCase().includes('phone'))).toBe(true);
   });
 
+  it('catalog search matches titleKk (6.11B.1)', async () => {
+    (prisma.serviceItem.findMany as jest.Mock).mockResolvedValue([
+      {
+        ...makeItems(1, 'other')[0],
+        title: 'Other',
+        titleKk: 'Балалар киімі',
+        description: null,
+        descriptionKk: null,
+      },
+      ...makeItems(3, 'case'),
+    ]);
+    (prisma.serviceMenuGroup.findMany as jest.Mock).mockResolvedValue([]);
+
+    const result = await service.findPublicCatalog('biz-1', { search: 'балалар' });
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0].title).toBe('Other');
+  });
+
   it('catalog section filter works', async () => {
     const items = makeItems(4).map((item, index) => ({
       ...item,
