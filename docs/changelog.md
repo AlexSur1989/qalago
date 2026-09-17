@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-17 — Stage 6.11C.2: MapLibre renderer integration (Flutter)
+
+- Added `maplibre_gl` ^0.27.1 behind existing QalaGo map abstraction; flutter_map OSM fallback retained.
+- Renderer selection via `QALAGO_MAP_RENDERER` / `QALAGO_MAP_STYLE_URL` dart-defines; default MapLibre at runtime, flutter_map in widget tests.
+- MapLibre markers use Flutter widget overlay projected with `toScreenLocationBatch` (same QalaGoMapMarker children as fallback).
+- Default style: MapLibre demo tiles — development/QA only until production tile provider (6.11C+).
+
 ## 2026-09-17 — Stage 6.11C.1: Map provider abstraction (Flutter)
 
 - Mobile: `core/map` SDK-neutral coordinate, camera, marker, controller, and `QalaGoMapView` with flutter_map OSM adapter.

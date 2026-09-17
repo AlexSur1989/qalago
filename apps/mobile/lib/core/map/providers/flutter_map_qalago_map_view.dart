@@ -6,9 +6,9 @@ import '../qalago_map_controller.dart';
 import '../qalago_map_marker.dart';
 import 'flutter_map_qalago_map_controller.dart';
 
-/// flutter_map-backed map view (Stage 6.11C.1).
-class QalaGoMapView extends StatelessWidget {
-  const QalaGoMapView({
+/// flutter_map-backed map view (Stage 6.11C.1 fallback).
+class FlutterMapQalaGoMapView extends StatelessWidget {
+  const FlutterMapQalaGoMapView({
     super.key,
     required this.initialCamera,
     this.controller,
