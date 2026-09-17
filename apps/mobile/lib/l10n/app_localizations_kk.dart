@@ -1161,6 +1161,27 @@ class AppLocalizationsKk extends AppLocalizations {
   String get onboardingAddressRequired => 'Мекенжайды енгізіңіз';
 
   @override
+  String get businessLocationPickerHint =>
+      'Нүкте дұрыс емес болса — картаны жылжытыңыз.';
+
+  @override
+  String get businessLocationConfirm => 'Нүктені растау';
+
+  @override
+  String get businessLocationCancel => 'Болдырмау';
+
+  @override
+  String get businessLocationAdjustOnMap => 'Картада нақтылау';
+
+  @override
+  String get businessLocationRequired =>
+      'Мекенжайды ұсыныстардан таңдап, картада нүктені растаңыз';
+
+  @override
+  String get businessLocationGeocodingError =>
+      'Мекенжай ұсыныстарын жүктеу сәтсіз. Кейінірек қайталаңыз.';
+
+  @override
   String get onboardingPhoneLabel => 'Телефон';
 
   @override

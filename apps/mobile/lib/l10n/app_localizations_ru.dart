@@ -1161,6 +1161,27 @@ class AppLocalizationsRu extends AppLocalizations {
   String get onboardingAddressRequired => 'Введите адрес';
 
   @override
+  String get businessLocationPickerHint =>
+      'Если точка указана неточно — переместите карту.';
+
+  @override
+  String get businessLocationConfirm => 'Подтвердить точку';
+
+  @override
+  String get businessLocationCancel => 'Отмена';
+
+  @override
+  String get businessLocationAdjustOnMap => 'Уточнить на карте';
+
+  @override
+  String get businessLocationRequired =>
+      'Выберите адрес из подсказок и подтвердите точку на карте';
+
+  @override
+  String get businessLocationGeocodingError =>
+      'Не удалось загрузить подсказки адреса. Повторите позже.';
+
+  @override
   String get onboardingPhoneLabel => 'Телефон';
 
   @override

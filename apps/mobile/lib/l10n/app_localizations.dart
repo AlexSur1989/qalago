@@ -2210,6 +2210,42 @@ abstract class AppLocalizations {
   /// **'Введите адрес'**
   String get onboardingAddressRequired;
 
+  /// No description provided for @businessLocationPickerHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Если точка указана неточно — переместите карту.'**
+  String get businessLocationPickerHint;
+
+  /// No description provided for @businessLocationConfirm.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подтвердить точку'**
+  String get businessLocationConfirm;
+
+  /// No description provided for @businessLocationCancel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отмена'**
+  String get businessLocationCancel;
+
+  /// No description provided for @businessLocationAdjustOnMap.
+  ///
+  /// In ru, this message translates to:
+  /// **'Уточнить на карте'**
+  String get businessLocationAdjustOnMap;
+
+  /// No description provided for @businessLocationRequired.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите адрес из подсказок и подтвердите точку на карте'**
+  String get businessLocationRequired;
+
+  /// No description provided for @businessLocationGeocodingError.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить подсказки адреса. Повторите позже.'**
+  String get businessLocationGeocodingError;
+
   /// No description provided for @onboardingPhoneLabel.
   ///
   /// In ru, this message translates to:

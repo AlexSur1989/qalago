@@ -8,6 +8,8 @@ import '../../auth/providers/auth_provider.dart';
 import '../providers/onboarding_providers.dart';
 import '../utils/onboarding_errors.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../location/business_location_value.dart';
+import '../../location/widgets/business_address_location_field.dart';
 
 class BusinessApplyScreen extends ConsumerStatefulWidget {
   const BusinessApplyScreen({super.key, this.applicationId});
@@ -21,7 +23,7 @@ class BusinessApplyScreen extends ConsumerStatefulWidget {
 class _BusinessApplyScreenState extends ConsumerState<BusinessApplyScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
-  final _addressController = TextEditingController();
+  BusinessLocationValue _location = const BusinessLocationValue();
   final _phoneController = TextEditingController();
   final _descController = TextEditingController();
   String? _selectedCategoryId;
@@ -42,7 +44,6 @@ class _BusinessApplyScreenState extends ConsumerState<BusinessApplyScreen> {
   @override
   void dispose() {
     _titleController.dispose();
-    _addressController.dispose();
     _phoneController.dispose();
     _descController.dispose();
     super.dispose();
@@ -54,7 +55,8 @@ class _BusinessApplyScreenState extends ConsumerState<BusinessApplyScreen> {
   Future<void> _loadDraft(String id) async {
     final app = await ref.read(onboardingRepositoryProvider).getApplication(id);
     _titleController.text = app['title'] as String? ?? '';
-    _addressController.text = app['address'] as String? ?? '';
+    _location = BusinessLocationValue.fromApplicationJson(app) ??
+        BusinessLocationValue(displayAddress: app['address'] as String? ?? '');
     _phoneController.text = app['phone'] as String? ?? '';
     _descController.text = app['shortDesc'] as String? ?? '';
     _selectedCategoryId = (app['category'] as Map?)?['id'] as String?;
@@ -111,12 +113,11 @@ class _BusinessApplyScreenState extends ConsumerState<BusinessApplyScreen> {
               error: (e, _) => Text(mapOnboardingError(l10n, e)),
             ),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _addressController,
-              enabled: !_readOnly,
-              decoration: InputDecoration(labelText: l10n.onboardingAddressLabel),
-              validator: (v) =>
-                  v == null || v.trim().length < 2 ? l10n.onboardingAddressRequired : null,
+            BusinessAddressLocationField(
+              citySlug: ref.watch(cityProvider).slug,
+              readOnly: _readOnly,
+              value: _location,
+              onChanged: (next) => setState(() => _location = next),
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -160,7 +161,8 @@ class _BusinessApplyScreenState extends ConsumerState<BusinessApplyScreen> {
       'title': _titleController.text.trim(),
       'categoryId': _selectedCategoryId,
       'citySlug': citySlug,
-      'address': _addressController.text.trim(),
+      'address': _location.displayAddress.trim(),
+      ..._location.toPayload(),
       if (_phoneController.text.trim().isNotEmpty) 'phone': _phoneController.text.trim(),
       if (_descController.text.trim().isNotEmpty) 'shortDesc': _descController.text.trim(),
     };
@@ -197,6 +199,12 @@ class _BusinessApplyScreenState extends ConsumerState<BusinessApplyScreen> {
   Future<void> _submit() async {
     final l10n = context.l10n;
     if (!_formKey.currentState!.validate()) return;
+    if (!_location.hasValidCoordinates) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.businessLocationRequired)),
+      );
+      return;
+    }
     setState(() => _loading = true);
     try {
       final repo = ref.read(onboardingRepositoryProvider);

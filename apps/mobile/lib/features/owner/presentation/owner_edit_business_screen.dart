@@ -8,6 +8,8 @@ import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../owner_profile_errors.dart';
 import '../owner_subcategory_edit.dart';
+import '../../location/business_location_value.dart';
+import '../../location/widgets/business_address_location_field.dart';
 import 'widgets/owner_subcategories_section.dart';
 
 Map<String, String> _parseWorkHours(dynamic raw) {
@@ -51,7 +53,8 @@ class _OwnerEditBusinessScreenState
   final _titleController = TextEditingController();
   final _shortDescController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _addressController = TextEditingController();
+  BusinessLocationValue _location = const BusinessLocationValue();
+  String _citySlug = 'uralsk';
   final _phoneController = TextEditingController();
   final _whatsappController = TextEditingController();
   final _instagramController = TextEditingController();
@@ -68,7 +71,6 @@ class _OwnerEditBusinessScreenState
     _titleController.dispose();
     _shortDescController.dispose();
     _descriptionController.dispose();
-    _addressController.dispose();
     _phoneController.dispose();
     _whatsappController.dispose();
     _instagramController.dispose();
@@ -84,7 +86,9 @@ class _OwnerEditBusinessScreenState
     _titleController.text = data['title'] as String? ?? '';
     _shortDescController.text = data['shortDesc'] as String? ?? '';
     _descriptionController.text = data['description'] as String? ?? '';
-    _addressController.text = data['address'] as String? ?? '';
+    _location = BusinessLocationValue.fromBusinessJson(data) ??
+        BusinessLocationValue(displayAddress: data['address'] as String? ?? '');
+    _citySlug = (data['city'] as Map?)?['slug'] as String? ?? _citySlug;
     _phoneController.text = data['phone'] as String? ?? '';
     _whatsappController.text = data['whatsapp'] as String? ?? '';
     _instagramController.text = data['instagram'] as String? ?? '';
@@ -100,7 +104,7 @@ class _OwnerEditBusinessScreenState
 
   Future<void> _save() async {
     final title = _titleController.text.trim();
-    final address = _addressController.text.trim();
+    final address = _location.displayAddress.trim();
     if (title.isEmpty || address.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.l10n.ownerRequiredNameAddress)),
@@ -117,6 +121,7 @@ class _OwnerEditBusinessScreenState
           'shortDesc': _shortDescController.text.trim(),
           'description': _descriptionController.text.trim(),
           'address': address,
+          ..._location.toPayload(),
           'phone': _phoneController.text.trim(),
           'whatsapp': _whatsappController.text.trim(),
           'instagram': _instagramController.text.trim(),
@@ -190,9 +195,12 @@ class _OwnerEditBusinessScreenState
                 maxLines: 6,
               ),
               const SizedBox(height: 12),
-              TextField(
-                controller: _addressController,
-                decoration: InputDecoration(labelText: context.l10n.businessAddress),
+              BusinessAddressLocationField(
+                citySlug: _citySlug,
+                value: _location,
+                onChanged: (next) => setState(() => _location = next),
+                addressLabel: context.l10n.businessAddress,
+                addressRequiredMessage: context.l10n.ownerRequiredNameAddress,
               ),
               const SizedBox(height: 20),
               OwnerSubcategoriesSection(
