@@ -2,12 +2,16 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@color/splash_background" />
 
-    <item
-        android:width="140dp"
-        android:height="178dp"
-        android:gravity="center">
-        <bitmap
-            android:gravity="center"
-            android:src="@drawable/qalago_splash_wordmark" />
+    <!-- Inset constrains artwork to ~30% of the shorter axis; bitmap is not stretched to screen. -->
+    <item android:gravity="center">
+        <inset
+            android:insetLeft="32%"
+            android:insetRight="32%"
+            android:insetTop="38%"
+            android:insetBottom="38%">
+            <bitmap
+                android:gravity="center"
+                android:src="@drawable/qalago_splash_wordmark" />
+        </inset>
     </item>
 </layer-list>

@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-17 — Stage 6.11A.UI.10B.2: Android native splash scaling fix
+
+- Trim opaque black canvas from native splash wordmark; inset-based ~30% width layout.
+- Night-mode launch theme aligned to light `#F7FAFC` splash (no dark flash).
+
+---
+
 ## 2026-09-17 — Stage 6.11A.UI.10B.1: Physical Android splash branding fix
 
 - Remove default Flutter `ic_launcher` from native splash; pre-12 QalaGo wordmark on `#F7FAFC`.
