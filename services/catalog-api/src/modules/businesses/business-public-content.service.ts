@@ -15,7 +15,7 @@ import {
   selectPublicPromotions,
   sliceToPublicLimit,
 } from '../../common/utils/plan-entitlements.util';
-import { sortCatalogItems } from '../../common/utils/catalog-sort.util';
+import { selectPublishedCatalogServiceItemsForEffectiveTier } from '../../common/utils/public-catalog-service-items.util';
 import { publicServiceItemMatchesCatalogSearch } from '../../common/utils/catalog-search-query.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListBusinessCatalogQueryDto } from './dto/business-catalog.dto';
@@ -90,8 +90,10 @@ export class BusinessPublicContentService {
       },
       select: catalogItemSelect,
     });
-    const sorted = sortCatalogItems(items);
-    const published = sliceToPublicLimit(sorted, ctx.limits.maxServiceItems);
+    const published = selectPublishedCatalogServiceItemsForEffectiveTier(
+      items,
+      ctx.effectiveTier,
+    );
     return { items: published, totalCount: published.length };
   }
 

@@ -75,6 +75,7 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
   describe('GET /businesses search where-clause', () => {
     const prisma = {
       business: { findMany: jest.fn().mockResolvedValue([]) },
+      serviceItem: { findMany: jest.fn().mockResolvedValue([]) },
     } as unknown as PrismaService;
 
     const service = buildService(prisma);
@@ -122,18 +123,27 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
       expect(JSON.stringify(subBranch)).toContain('nameKk');
     });
 
-    it('I/J: service item title and titleKk branches', async () => {
+    it('I/J: visible service search uses dedicated query with titleKk', async () => {
       await service.findAll({ citySlug: 'uralsk', search: 'балалар киімі' });
-      const or = lastWhere(prisma).OR!;
-      const serviceBranch = or.find((b: Prisma.BusinessWhereInput) => 'serviceItems' in b);
-      expect(JSON.stringify(serviceBranch)).toContain('titleKk');
-      expect(JSON.stringify(serviceBranch)).toContain('isActive');
+      expect(prisma.serviceItem.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            AND: expect.arrayContaining([
+              expect.objectContaining({
+                OR: expect.arrayContaining([
+                  { titleKk: { contains: 'балалар киімі', mode: 'insensitive' } },
+                ]),
+              }),
+            ]),
+          }),
+        }),
+      );
     });
 
-    it('K/L: service description RU/KK included', async () => {
-      const or = buildBusinessCatalogSearchOr('oil');
-      const serviceBranch = or.find((b: Prisma.BusinessWhereInput) => 'serviceItems' in b);
-      expect(JSON.stringify(serviceBranch)).toContain('descriptionKk');
+    it('K/L: service description RU/KK included in visible-service query', async () => {
+      await service.findAll({ citySlug: 'uralsk', search: 'oil' });
+      const call = (prisma.serviceItem.findMany as jest.Mock).mock.calls.at(-1)![0];
+      expect(JSON.stringify(call.where)).toContain('descriptionKk');
     });
 
     it('W/X: whitespace normalization; empty search omits OR', async () => {
@@ -152,7 +162,7 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
       await service.findAll({ citySlug: 'uralsk', search: 'детская одежда' });
       const where = lastWhere(prisma);
       expect(where.cityId).toBe('city-uralsk');
-      expect(where.OR).toHaveLength(6);
+      expect(where.OR!.length).toBeGreaterThanOrEqual(5);
     });
 
     it('O: ACTIVE default with search', async () => {
@@ -198,12 +208,11 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
       expect(where.OR).toBeDefined();
     });
 
-    it('R: hidden service branch requires isActive and active group', async () => {
-      const or = buildBusinessCatalogSearchOr('secret');
-      const serviceBranch = or.find((b: Prisma.BusinessWhereInput) => 'serviceItems' in b) as {
-        serviceItems: { some: { AND: unknown[] } };
-      };
-      expect(JSON.stringify(serviceBranch.serviceItems.some.AND[0])).toContain('isActive');
+    it('R: visible service query requires isActive and active group', async () => {
+      await service.findAll({ citySlug: 'uralsk', search: 'secret' });
+      const call = (prisma.serviceItem.findMany as jest.Mock).mock.calls.at(-1)![0];
+      expect(JSON.stringify(call.where)).toContain('isActive');
+      expect(JSON.stringify(call.where)).toContain('groupId');
     });
 
     it('U: promotions are not searchable via business OR', async () => {
@@ -246,6 +255,7 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
             makeBusiness('biz-a', 'Магазин А'),
           ]),
         },
+        serviceItem: { findMany: jest.fn().mockResolvedValue([]) },
       } as unknown as PrismaService;
       const service = buildService(prisma);
       const result = await service.findAll({
@@ -265,6 +275,7 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
             makeBusiness('free', 'Alpha Free', { planTier: BusinessPlanTier.FREE }),
           ]),
         },
+        serviceItem: { findMany: jest.fn().mockResolvedValue([]) },
       } as unknown as PrismaService;
       const service = buildService(prisma);
       const result = await service.findAll({
@@ -281,6 +292,7 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
     it('TEST 1: wrong-city filter enforced in AND, not OR', async () => {
       const prisma = {
         business: { findMany: jest.fn().mockResolvedValue([]) },
+        serviceItem: { findMany: jest.fn().mockResolvedValue([]) },
       } as unknown as PrismaService;
       const service = buildService(prisma);
       await service.findAll({ citySlug: 'uralsk', search: 'aktobe-only-item' });
@@ -290,6 +302,7 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
     it('TEST 2: category filter AND text search', async () => {
       const prisma = {
         business: { findMany: jest.fn().mockResolvedValue([]) },
+        serviceItem: { findMany: jest.fn().mockResolvedValue([]) },
       } as unknown as PrismaService;
       const service = buildService(prisma);
       await service.findAll({
@@ -305,17 +318,23 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
     it('TEST 3: inactive businesses excluded by default status filter', async () => {
       const prisma = {
         business: { findMany: jest.fn().mockResolvedValue([]) },
+        serviceItem: { findMany: jest.fn().mockResolvedValue([]) },
       } as unknown as PrismaService;
       const service = buildService(prisma);
       await service.findAll({ citySlug: 'uralsk', search: 'exact-title' });
       expect(lastWhere(prisma).status).toBe(BusinessStatus.ACTIVE);
     });
 
-    it('TEST 4: service branch requires public visibility predicates', async () => {
-      const or = buildBusinessCatalogSearchOr('hidden-item');
-      const branch = or.find((b: Prisma.BusinessWhereInput) => 'serviceItems' in b);
-      expect(JSON.stringify(branch)).toMatch(/isActive/);
-      expect(JSON.stringify(branch)).toMatch(/groupId/);
+    it('TEST 4: visible service query requires public visibility predicates', async () => {
+      const localPrisma = {
+        business: { findMany: jest.fn().mockResolvedValue([]) },
+        serviceItem: { findMany: jest.fn().mockResolvedValue([]) },
+      } as unknown as PrismaService;
+      const localService = buildService(localPrisma);
+      await localService.findAll({ citySlug: 'uralsk', search: 'hidden-item' });
+      const call = (localPrisma.serviceItem.findMany as jest.Mock).mock.calls[0][0];
+      expect(JSON.stringify(call.where)).toMatch(/isActive/);
+      expect(JSON.stringify(call.where)).toMatch(/groupId/);
     });
   });
 });

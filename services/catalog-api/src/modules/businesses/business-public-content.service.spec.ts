@@ -57,6 +57,7 @@ describe('BusinessPublicContentService (Stage 5G)', () => {
     jest.clearAllMocks();
     (prisma.business.findFirst as jest.Mock).mockResolvedValue({ id: 'biz-1' });
     (planLimits.getBusinessPlanContext as jest.Mock).mockResolvedValue({
+      effectiveTier: BusinessPlanTier.VIP,
       limits: {
         maxPhotos: 100,
         maxServiceItems: 300,
@@ -187,6 +188,7 @@ describe('BusinessPublicContentService (Stage 5G)', () => {
 
   it('public preview independent from FREE plan storage cap', async () => {
     (planLimits.getBusinessPlanContext as jest.Mock).mockResolvedValue({
+      effectiveTier: BusinessPlanTier.FREE,
       limits: {
         maxPhotos: 5,
         maxServiceItems: 10,

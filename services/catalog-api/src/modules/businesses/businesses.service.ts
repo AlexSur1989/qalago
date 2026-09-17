@@ -148,7 +148,12 @@ export class BusinessesService {
         some: { subcategoryId: query.subcategoryId },
       };
     }
-    appendBusinessCatalogTextSearch(where, query.search);
+    await appendBusinessCatalogTextSearch(this.prisma, where, query.search, {
+      cityId,
+      status: (query.status ?? BusinessStatus.ACTIVE) as BusinessStatus,
+      categoryId: query.categoryId,
+      subcategoryId: query.subcategoryId,
+    });
 
     const [items, total] = await this.findPagedItems(where, query, page, limit, skip);
 

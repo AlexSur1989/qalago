@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-17 — Stage 6.11B.2: Multilingual search integrity
+
+- **Fixed:** Global `GET /businesses?search=` service-item matching now uses the same plan-cap + catalog sort as consumer catalog (two-query bounded resolver; no N+1).
+- **Added:** Shared `public-catalog-service-items.util`; integration tests in `stage-6-11b2-search-integrity.spec.ts`.
+- **Future:** DB-level list pagination/relevance (6.11B.5); SearchScreen UX (6.11B.3+).
+
 ## 2026-09-17 — Stage 6.11B.1: Search backend foundation
 
 - **Added:** `GET /businesses?search=` multilingual catalog discovery (business fields, category/subcategory RU+KK, public service items RU+KK); query normalization util; max search length 100; per-business catalog search includes `titleKk` / `descriptionKk`.

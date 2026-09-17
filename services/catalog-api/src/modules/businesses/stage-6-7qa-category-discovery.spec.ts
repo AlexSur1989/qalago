@@ -141,6 +141,7 @@ describe('Stage 6.7QA — category discovery adversarial', () => {
         business: {
           findMany: jest.fn().mockResolvedValue([makeBusiness('biz-1', 'Pizza House')]),
         },
+        serviceItem: { findMany: jest.fn().mockResolvedValue([]) },
       } as unknown as PrismaService;
 
       const service = buildService(prisma);

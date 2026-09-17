@@ -316,7 +316,7 @@ List items may include `planTier`, `planExpiresAt`, `featuredSlot`, `isFeatured`
 - Business `title`, `shortDesc`, `address`
 - Associated Category `title`, `nameRu`, `nameKk`
 - Associated Subcategory `nameRu`, `nameKk` (via business assignment)
-- **Public** ServiceItem `title`, `titleKk`, `description`, `descriptionKk` (`isActive` + active menu group semantics)
+- **Public** ServiceItem `title`, `titleKk`, `description`, `descriptionKk` — only items that are **consumer-visible** on the business catalog (active item, active/ungrouped section, then plan-tier publish cap using the same deterministic sort + limit as `GET /businesses/:id/catalog`; Stage 6.11B.2)
 
 **Not** matched: Promotion titles/descriptions, paid plan/ad fields, runtime translation, transliteration, or fuzzy/typo tolerance. RU and KK stored fields are searched together; **UI locale is not required** for cross-language query matching. Organic sort/ranking remains plan-neutral (Stage 4C.1 / 6.7D). Pagination may still load matching rows in memory for certain sort modes (see service implementation).
 
