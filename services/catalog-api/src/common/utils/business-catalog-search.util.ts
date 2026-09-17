@@ -1,6 +1,8 @@
 import { BusinessPlanTier, BusinessStatus, Prisma } from '@prisma/client';
 import { normalizeCatalogSearchQuery } from './catalog-search-query.util';
 import { selectPublishedCatalogServiceItems } from './public-catalog-service-items.util';
+import type { ServiceSearchMatchKind } from './business-catalog-search-relevance.util';
+import { catalogSearchNeedle } from './catalog-search-query.util';
 
 const insensitiveContains = (search: string): Prisma.StringFilter => ({
   contains: search,
@@ -58,11 +60,36 @@ type ServiceItemSearchClient = {
  * Businesses whose *consumer-visible* catalog items match search text.
  * One bounded query; plan cap applied in memory using canonical sort + slice.
  */
-export async function findBusinessIdsWithVisibleServiceItemSearch(
+export type VisibleServiceItemSearchMatches = {
+  businessIds: string[];
+  matchKindByBusinessId: Map<string, ServiceSearchMatchKind>;
+};
+
+function serviceItemTextMatchKind(
+  item: {
+    title: string | null;
+    titleKk?: string | null;
+    description?: string | null;
+    descriptionKk?: string | null;
+  },
+  needle: string,
+): ServiceSearchMatchKind | null {
+  const titleHit =
+    (item.title != null && item.title.toLocaleLowerCase().includes(needle)) ||
+    (item.titleKk != null && item.titleKk.toLocaleLowerCase().includes(needle));
+  if (titleHit) return 'service_title';
+  const descHit =
+    (item.description != null && item.description.toLocaleLowerCase().includes(needle)) ||
+    (item.descriptionKk != null && item.descriptionKk.toLocaleLowerCase().includes(needle));
+  if (descHit) return 'service_description';
+  return null;
+}
+
+export async function findVisibleServiceItemSearchMatches(
   prisma: ServiceItemSearchClient,
   scope: BusinessCatalogSearchScope,
   search: string,
-): Promise<string[]> {
+): Promise<VisibleServiceItemSearchMatches> {
   const contains = insensitiveContains(search);
   const businessScope: Prisma.BusinessWhereInput = {
     cityId: scope.cityId,
@@ -119,13 +146,21 @@ export async function findBusinessIdsWithVisibleServiceItemSearch(
   };
 
   const matches = matchingItems as Row[];
-  if (matches.length === 0) return [];
+  const needle = catalogSearchNeedle(search);
+  if (matches.length === 0 || !needle) {
+    return { businessIds: [], matchKindByBusinessId: new Map() };
+  }
 
   const matchingIdsByBusiness = new Map<string, Set<string>>();
+  const rawMatchKindByItemId = new Map<string, ServiceSearchMatchKind>();
   for (const item of matches) {
     const set = matchingIdsByBusiness.get(item.businessId) ?? new Set<string>();
     set.add(item.id);
     matchingIdsByBusiness.set(item.businessId, set);
+    const kind = serviceItemTextMatchKind(item, needle);
+    if (kind) {
+      rawMatchKindByItemId.set(item.id, kind);
+    }
   }
 
   const candidateBusinessIds = [...matchingIdsByBusiness.keys()];
@@ -144,6 +179,7 @@ export async function findBusinessIdsWithVisibleServiceItemSearch(
   }
 
   const businessIds: string[] = [];
+  const matchKindByBusinessId = new Map<string, ServiceSearchMatchKind>();
   for (const businessId of candidateBusinessIds) {
     const catalog = catalogByBusiness.get(businessId) ?? [];
     if (catalog.length === 0) continue;
@@ -151,12 +187,40 @@ export async function findBusinessIdsWithVisibleServiceItemSearch(
     const published = selectPublishedCatalogServiceItems(catalog, planTier, planExpiresAt);
     const publishedIds = new Set(published.map((item) => item.id));
     const matchingIds = matchingIdsByBusiness.get(businessId)!;
-    if ([...matchingIds].some((id) => publishedIds.has(id))) {
+    let bestKind: ServiceSearchMatchKind | null = null;
+    for (const id of matchingIds) {
+      if (!publishedIds.has(id)) continue;
+      const kind = rawMatchKindByItemId.get(id);
+      if (!kind) continue;
+      if (kind === 'service_title') {
+        bestKind = 'service_title';
+        break;
+      }
+      if (bestKind == null) {
+        bestKind = kind;
+      }
+    }
+    if (bestKind != null) {
       businessIds.push(businessId);
+      matchKindByBusinessId.set(businessId, bestKind);
     }
   }
+  return { businessIds, matchKindByBusinessId };
+}
+
+export async function findBusinessIdsWithVisibleServiceItemSearch(
+  prisma: ServiceItemSearchClient,
+  scope: BusinessCatalogSearchScope,
+  search: string,
+): Promise<string[]> {
+  const { businessIds } = await findVisibleServiceItemSearchMatches(prisma, scope, search);
   return businessIds;
 }
+
+export type BusinessCatalogSearchContext = {
+  normalized: string;
+  serviceMatchKindByBusinessId: Map<string, ServiceSearchMatchKind>;
+};
 
 /** Applies text-search OR under existing AND-scoped Business where (city, status, filters). */
 export async function appendBusinessCatalogTextSearch(
@@ -164,19 +228,16 @@ export async function appendBusinessCatalogTextSearch(
   where: Prisma.BusinessWhereInput,
   rawSearch: string | null | undefined,
   scope: BusinessCatalogSearchScope,
-): Promise<string | null> {
+): Promise<BusinessCatalogSearchContext | null> {
   const normalized = normalizeCatalogSearchQuery(rawSearch);
   if (!normalized) return null;
 
   const orBranches: Prisma.BusinessWhereInput[] = buildBusinessCatalogTextSearchOr(normalized);
-  const visibleServiceBusinessIds = await findBusinessIdsWithVisibleServiceItemSearch(
-    prisma,
-    scope,
-    normalized,
-  );
+  const { businessIds: visibleServiceBusinessIds, matchKindByBusinessId } =
+    await findVisibleServiceItemSearchMatches(prisma, scope, normalized);
   if (visibleServiceBusinessIds.length > 0) {
     orBranches.push({ id: { in: visibleServiceBusinessIds } });
   }
   where.OR = orBranches;
-  return normalized;
+  return { normalized, serviceMatchKindByBusinessId: matchKindByBusinessId };
 }

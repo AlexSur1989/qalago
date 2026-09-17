@@ -11,6 +11,7 @@ import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-aud
 import { ListBusinessesQueryDto } from './dto/business.dto';
 import { createMockSubcategoryDeps } from '../../test-utils/mock-subcategory-deps';
 import { BusinessCatalogSort } from '../../common/utils/business-catalog-sort.util';
+import { withBusinessListCount } from '../../test-utils/mock-business-catalog-prisma';
 
 describe('Stage 6.7QA — category discovery adversarial', () => {
   const cityScope = {
@@ -121,7 +122,19 @@ describe('Stage 6.7QA — category discovery adversarial', () => {
         makeBusiness('free', 'Alpha Free', BusinessPlanTier.FREE),
       ];
       const prisma = {
-        business: { findMany: jest.fn().mockResolvedValue(businesses) },
+        ...withBusinessListCount(
+          {
+            business: {
+              findMany: jest.fn().mockImplementation(({ skip, take }: { skip: number; take: number }) => {
+                const sorted = [...businesses].sort((a, b) =>
+                  a.title.localeCompare(b.title, 'ru'),
+                );
+                return Promise.resolve(sorted.slice(skip, skip + take));
+              }),
+            },
+          },
+          businesses.length,
+        ),
       } as unknown as PrismaService;
 
       const service = buildService(prisma);
@@ -138,9 +151,14 @@ describe('Stage 6.7QA — category discovery adversarial', () => {
   describe('§39 search + sort composition', () => {
     it('applies categoryId, search, and sort together', async () => {
       const prisma = {
-        business: {
-          findMany: jest.fn().mockResolvedValue([makeBusiness('biz-1', 'Pizza House')]),
-        },
+        ...withBusinessListCount(
+          {
+            business: {
+              findMany: jest.fn().mockResolvedValue([makeBusiness('biz-1', 'Pizza House')]),
+            },
+          },
+          1,
+        ),
         serviceItem: { findMany: jest.fn().mockResolvedValue([]) },
       } as unknown as PrismaService;
 

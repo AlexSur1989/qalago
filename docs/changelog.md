@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-17 — Stage 6.11B.5: Search relevance & DB pagination
+
+- **Added:** Organic discovery (`sort=recommended`, no text query) uses PostgreSQL `ORDER BY title, id` with `skip`/`take` and separate `count` for `meta.total` (no full-city load for page 1).
+- **Added:** Text search + recommended uses deterministic relevance tiers (exact/prefix/contains title → taxonomy → visible service title → description fields) before pagination; plan-neutral tie-break `title` + `id`.
+- **Preserved:** Service-item eligibility via bounded visibility resolver + `OR id IN (...)` before pagination (6.11B.2); rating/popular/nearest remain in-memory with existing semantics.
+- **Future:** DB-level relevance pagination for text search (raw SQL / indexed fields); PostGIS or aggregate columns for nearest/rating/popular at scale.
+
 ## 2026-09-17 — Stage 6.11B.4: Search filters, sorting & pagination
 
 - **Added:** Consumer sort menu (recommended / nearby / rating / popular) mapped to `BusinessCatalogSort` API values; compact filters bar + bottom sheet (category, subcategory, radius).

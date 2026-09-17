@@ -13,6 +13,7 @@ import { ListBusinessesQueryDto } from './dto/business.dto';
 import { BusinessCatalogSort } from '../../common/utils/business-catalog-sort.util';
 import { CATALOG_SEARCH_MAX_LENGTH } from '../../common/utils/catalog-search-query.util';
 import { buildBusinessCatalogSearchOr } from '../../common/utils/business-catalog-search.util';
+import { withBusinessListCount } from '../../test-utils/mock-business-catalog-prisma';
 
 describe('Stage 6.11B.1 — search backend foundation', () => {
   const cityScope = {
@@ -74,7 +75,10 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
 
   describe('GET /businesses search where-clause', () => {
     const prisma = {
-      business: { findMany: jest.fn().mockResolvedValue([]) },
+      ...withBusinessListCount(
+        { business: { findMany: jest.fn().mockResolvedValue([]) } },
+        0,
+      ),
       serviceItem: { findMany: jest.fn().mockResolvedValue([]) },
     } as unknown as PrismaService;
 
@@ -250,11 +254,14 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
   describe('Result shape and ordering', () => {
     it('S/T: duplicate prevention — one row per business from findMany', async () => {
       const prisma = {
-        business: {
-          findMany: jest.fn().mockResolvedValue([
-            makeBusiness('biz-a', 'Магазин А'),
-          ]),
-        },
+        ...withBusinessListCount(
+          {
+            business: {
+              findMany: jest.fn().mockResolvedValue([makeBusiness('biz-a', 'Магазин А')]),
+            },
+          },
+          1,
+        ),
         serviceItem: { findMany: jest.fn().mockResolvedValue([]) },
       } as unknown as PrismaService;
       const service = buildService(prisma);
@@ -269,12 +276,17 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
 
     it('V: VIP vs FREE both eligible; sort remains plan-neutral title order', async () => {
       const prisma = {
-        business: {
-          findMany: jest.fn().mockResolvedValue([
-            makeBusiness('vip', 'Zulu VIP', { planTier: BusinessPlanTier.VIP }),
-            makeBusiness('free', 'Alpha Free', { planTier: BusinessPlanTier.FREE }),
-          ]),
-        },
+        ...withBusinessListCount(
+          {
+            business: {
+              findMany: jest.fn().mockResolvedValue([
+                makeBusiness('vip', 'Zulu VIP', { planTier: BusinessPlanTier.VIP }),
+                makeBusiness('free', 'Alpha Free', { planTier: BusinessPlanTier.FREE }),
+              ]),
+            },
+          },
+          2,
+        ),
         serviceItem: { findMany: jest.fn().mockResolvedValue([]) },
       } as unknown as PrismaService;
       const service = buildService(prisma);
@@ -291,7 +303,7 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
   describe('Adversarial OR-grouping (mandatory)', () => {
     it('TEST 1: wrong-city filter enforced in AND, not OR', async () => {
       const prisma = {
-        business: { findMany: jest.fn().mockResolvedValue([]) },
+        ...withBusinessListCount({ business: { findMany: jest.fn().mockResolvedValue([]) } }, 0),
         serviceItem: { findMany: jest.fn().mockResolvedValue([]) },
       } as unknown as PrismaService;
       const service = buildService(prisma);
@@ -301,7 +313,7 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
 
     it('TEST 2: category filter AND text search', async () => {
       const prisma = {
-        business: { findMany: jest.fn().mockResolvedValue([]) },
+        ...withBusinessListCount({ business: { findMany: jest.fn().mockResolvedValue([]) } }, 0),
         serviceItem: { findMany: jest.fn().mockResolvedValue([]) },
       } as unknown as PrismaService;
       const service = buildService(prisma);
@@ -317,7 +329,7 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
 
     it('TEST 3: inactive businesses excluded by default status filter', async () => {
       const prisma = {
-        business: { findMany: jest.fn().mockResolvedValue([]) },
+        ...withBusinessListCount({ business: { findMany: jest.fn().mockResolvedValue([]) } }, 0),
         serviceItem: { findMany: jest.fn().mockResolvedValue([]) },
       } as unknown as PrismaService;
       const service = buildService(prisma);
@@ -327,7 +339,7 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
 
     it('TEST 4: visible service query requires public visibility predicates', async () => {
       const localPrisma = {
-        business: { findMany: jest.fn().mockResolvedValue([]) },
+        ...withBusinessListCount({ business: { findMany: jest.fn().mockResolvedValue([]) } }, 0),
         serviceItem: { findMany: jest.fn().mockResolvedValue([]) },
       } as unknown as PrismaService;
       const localService = buildService(localPrisma);

@@ -10,6 +10,7 @@ import { createMockSubcategoryDeps } from '../../test-utils/mock-subcategory-dep
 import { findBusinessIdsWithVisibleServiceItemSearch } from '../../common/utils/business-catalog-search.util';
 import { normalizeCatalogSearchQuery } from '../../common/utils/catalog-search-query.util';
 import { BusinessCatalogSort } from '../../common/utils/business-catalog-sort.util';
+import { withBusinessListCount } from '../../test-utils/mock-business-catalog-prisma';
 
 describe('Stage 6.11B.2 — multilingual search integrity', () => {
   const cityUralsk = 'city-uralsk';
@@ -208,7 +209,7 @@ describe('Stage 6.11B.2 — multilingual search integrity', () => {
     it('returns business once when title + service paths both match', async () => {
       const biz = makeBusiness('biz-a', 'Магазин А', cityUralsk, 'cat-1');
       const prisma = {
-        business: { findMany: jest.fn().mockResolvedValue([biz]) },
+        ...withBusinessListCount({ business: { findMany: jest.fn().mockResolvedValue([biz]) } }, 1),
         serviceItem: {
           findMany: jest.fn().mockResolvedValue([
             {
@@ -239,7 +240,7 @@ describe('Stage 6.11B.2 — multilingual search integrity', () => {
 
     it('category filter AND search — wrong category excluded at query level', async () => {
       const prisma = {
-        business: { findMany: jest.fn().mockResolvedValue([]) },
+        ...withBusinessListCount({ business: { findMany: jest.fn().mockResolvedValue([]) } }, 0),
         serviceItem: { findMany: jest.fn().mockResolvedValue([]) },
       } as unknown as PrismaService;
       const service = buildService(prisma);
@@ -257,7 +258,7 @@ describe('Stage 6.11B.2 — multilingual search integrity', () => {
 
     it('inactive business excluded by status AND', async () => {
       const prisma = {
-        business: { findMany: jest.fn().mockResolvedValue([]) },
+        ...withBusinessListCount({ business: { findMany: jest.fn().mockResolvedValue([]) } }, 0),
         serviceItem: { findMany: jest.fn().mockResolvedValue([]) },
       } as unknown as PrismaService;
       const service = buildService(prisma);
@@ -268,7 +269,7 @@ describe('Stage 6.11B.2 — multilingual search integrity', () => {
 
     it('adds visible-service business ids to OR without planTier in where', async () => {
       const prisma = {
-        business: { findMany: jest.fn().mockResolvedValue([]) },
+        ...withBusinessListCount({ business: { findMany: jest.fn().mockResolvedValue([]) } }, 0),
         serviceItem: {
           findMany: jest.fn().mockResolvedValue([
             {

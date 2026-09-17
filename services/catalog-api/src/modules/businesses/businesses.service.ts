@@ -20,7 +20,14 @@ import {
   compareBusinessBySort,
 } from '../../common/utils/business-catalog-sort.util';
 import { compareBusinessCatalogRank } from '../../common/utils/business-rank.util';
-import { appendBusinessCatalogTextSearch } from '../../common/utils/business-catalog-search.util';
+import {
+  appendBusinessCatalogTextSearch,
+  type BusinessCatalogSearchContext,
+} from '../../common/utils/business-catalog-search.util';
+import {
+  compareBusinessBySearchRelevance,
+  type BusinessSearchRelevanceRow,
+} from '../../common/utils/business-catalog-search-relevance.util';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { isGlobalAdmin } from '../../common/utils/system-access.util';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -52,6 +59,23 @@ const businessListSelect = {
   featuredSlot: true,
   createdAt: true,
   category: { select: { id: true, title: true, slug: true, icon: true } },
+} satisfies Prisma.BusinessSelect;
+
+const businessListSelectForSearchRelevance = {
+  ...businessListSelect,
+  category: {
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      icon: true,
+      nameRu: true,
+      nameKk: true,
+    },
+  },
+  businessSubcategories: {
+    select: { subcategory: { select: { nameRu: true, nameKk: true } } },
+  },
 } satisfies Prisma.BusinessSelect;
 
 const businessDetailInclude = {
@@ -148,14 +172,21 @@ export class BusinessesService {
         some: { subcategoryId: query.subcategoryId },
       };
     }
-    await appendBusinessCatalogTextSearch(this.prisma, where, query.search, {
+    const searchContext = await appendBusinessCatalogTextSearch(this.prisma, where, query.search, {
       cityId,
       status: (query.status ?? BusinessStatus.ACTIVE) as BusinessStatus,
       categoryId: query.categoryId,
       subcategoryId: query.subcategoryId,
     });
 
-    const [items, total] = await this.findPagedItems(where, query, page, limit, skip);
+    const [items, total] = await this.findPagedItems(
+      where,
+      query,
+      page,
+      limit,
+      skip,
+      searchContext,
+    );
 
     return {
       items,
@@ -169,12 +200,38 @@ export class BusinessesService {
     page: number,
     limit: number,
     skip: number,
+    searchContext: BusinessCatalogSearchContext | null,
   ) {
     const hasGeo = query.latitude != null && query.longitude != null;
     const sort =
       query.sort ??
       (hasGeo ? BusinessCatalogSort.NEAREST : BusinessCatalogSort.RECOMMENDED);
     const useGeoSort = hasGeo && sort === BusinessCatalogSort.NEAREST;
+    const effectiveSort =
+      sort === BusinessCatalogSort.NEAREST && !hasGeo
+        ? BusinessCatalogSort.RECOMMENDED
+        : sort;
+
+    if (
+      effectiveSort === BusinessCatalogSort.RECOMMENDED &&
+      !searchContext &&
+      !useGeoSort
+    ) {
+      return this.findPagedItemsRecommendedAtDatabase(where, skip, limit);
+    }
+
+    if (
+      effectiveSort === BusinessCatalogSort.RECOMMENDED &&
+      searchContext &&
+      !useGeoSort
+    ) {
+      return this.findPagedItemsSearchRelevanceInMemory(
+        where,
+        searchContext,
+        skip,
+        limit,
+      );
+    }
 
     const allItems = await this.prisma.business.findMany({
       where,
@@ -231,11 +288,6 @@ export class BusinessesService {
       return [items, ranked.length] as const;
     }
 
-    const effectiveSort =
-      sort === BusinessCatalogSort.NEAREST && !hasGeo
-        ? BusinessCatalogSort.RECOMMENDED
-        : sort;
-
     const sorted = [...allItems].sort((a, b) =>
       compareBusinessBySort(
         this.toSortRow(a, null, metrics),
@@ -255,6 +307,82 @@ export class BusinessesService {
     }));
 
     return [items, sorted.length] as const;
+  }
+
+  /** Organic discovery (no text query): ORDER BY + SKIP/TAKE in PostgreSQL. */
+  private async findPagedItemsRecommendedAtDatabase(
+    where: Prisma.BusinessWhereInput,
+    skip: number,
+    limit: number,
+  ) {
+    const [total, items] = await Promise.all([
+      this.prisma.business.count({ where }),
+      this.prisma.business.findMany({
+        where,
+        select: businessListSelect,
+        orderBy: [{ title: 'asc' }, { id: 'asc' }],
+        skip,
+        take: limit,
+      }),
+    ]);
+    return [items, total] as const;
+  }
+
+  /**
+   * Text search + recommended: relevance tiers applied before slice.
+   * Still loads the full eligible match set (MVP-scale); count uses same WHERE.
+   */
+  private async findPagedItemsSearchRelevanceInMemory(
+    where: Prisma.BusinessWhereInput,
+    searchContext: BusinessCatalogSearchContext,
+    skip: number,
+    limit: number,
+  ) {
+    const [total, allItems] = await Promise.all([
+      this.prisma.business.count({ where }),
+      this.prisma.business.findMany({
+        where,
+        select: businessListSelectForSearchRelevance,
+      }),
+    ]);
+
+    const toRelevanceRow = (
+      item: (typeof allItems)[number],
+    ): BusinessSearchRelevanceRow => ({
+      id: item.id,
+      title: item.title,
+      shortDesc: item.shortDesc,
+      address: item.address,
+      category: item.category,
+      businessSubcategories: item.businessSubcategories,
+      serviceMatchKind:
+        searchContext.serviceMatchKindByBusinessId.get(item.id) ?? null,
+    });
+
+    const sorted = [...allItems].sort((a, b) =>
+      compareBusinessBySearchRelevance(
+        toRelevanceRow(a),
+        toRelevanceRow(b),
+        searchContext.normalized,
+      ),
+    );
+
+    const pageRows = sorted.slice(skip, skip + limit);
+    const items = pageRows.map((row) => {
+      const { businessSubcategories: _sub, category, ...rest } = row;
+      return {
+        ...rest,
+        category: category
+          ? {
+              id: category.id,
+              title: category.title,
+              slug: category.slug,
+              icon: category.icon,
+            }
+          : category,
+      };
+    });
+    return [items, total] as const;
   }
 
   private toSortRow(

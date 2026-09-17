@@ -40,9 +40,11 @@ describe('BusinessesService.findAll', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    prisma.business.count = jest.fn().mockResolvedValue(0);
   });
 
   it('sorts catalog by title only (plan-neutral)', async () => {
+    prisma.business.count = jest.fn().mockResolvedValue(3);
     prisma.business.findMany = jest.fn().mockResolvedValue([
       {
         id: 'free',
@@ -211,7 +213,7 @@ describe('BusinessesService.recommended', () => {
 
   const prisma = {
     favorite: { findMany: jest.fn() },
-    business: { findMany: jest.fn() },
+    business: { findMany: jest.fn(), count: jest.fn().mockResolvedValue(0) },
   } as unknown as PrismaService;
 
   const subDeps2 = createMockSubcategoryDeps();
