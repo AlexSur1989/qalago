@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qalago_mobile/core/location/user_location_provider.dart';
 import 'package:qalago_mobile/core/providers/city_provider.dart';
+import 'package:qalago_mobile/core/theme/qalago_spacing.dart';
 import 'package:qalago_mobile/core/theme/qalago_touch_targets.dart';
 import 'package:qalago_mobile/features/analytics/providers/analytics_identity_provider.dart';
 import 'package:qalago_mobile/features/auth/providers/auth_provider.dart';
@@ -69,6 +70,7 @@ Future<void> pumpHeroOverlay(
   Locale locale = const Locale('ru'),
   double width = 390,
   TextScaler textScaler = TextScaler.noScaling,
+  double viewPaddingTop = 0,
 }) async {
   await tester.binding.setSurfaceSize(Size(width, 900));
   addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -93,6 +95,8 @@ Future<void> pumpHeroOverlay(
           data: MediaQueryData(
             size: Size(width, 900),
             textScaler: textScaler,
+            padding: EdgeInsets.only(top: viewPaddingTop),
+            viewPadding: EdgeInsets.only(top: viewPaddingTop),
           ),
           child: const BusinessDetailsScreen(id: _businessId),
         ),
@@ -106,6 +110,41 @@ Future<void> pumpHeroOverlay(
 
 Rect heroControlRect(WidgetTester tester, Key key) {
   return tester.getRect(find.byKey(key));
+}
+
+Rect heroPhotoRect(WidgetTester tester) {
+  return tester.getRect(find.byKey(const Key('business_detail_hero_photo')));
+}
+
+void expectTopOverlayAnchor(
+  WidgetTester tester, {
+  double viewPaddingTop = 0,
+  double tolerance = 4,
+}) {
+  final hero = heroPhotoRect(tester);
+  final back = heroControlRect(tester, const Key('business_detail_hero_back'));
+  final city = heroControlRect(tester, const Key('business_detail_hero_city_pill'));
+  final favorite =
+      heroControlRect(tester, const Key('business_detail_hero_favorite'));
+
+  final bandCenterY = (back.center.dy + favorite.center.dy) / 2;
+  expect(bandCenterY, lessThan(hero.top + hero.height * 0.35));
+
+  final expectedTop = hero.top + viewPaddingTop + QalaGoSpacing.space8;
+  expect(back.top, closeTo(expectedTop, tolerance + 14));
+  expect(bandCenterY, lessThan(hero.top + viewPaddingTop + hero.height * 0.28));
+
+  final bandBottom = [
+    back.bottom,
+    city.bottom,
+    favorite.bottom,
+  ].reduce((a, b) => a > b ? a : b);
+  expect(hero.bottom - bandBottom, greaterThan(hero.height * 0.55));
+
+  expect(back.top, greaterThanOrEqualTo(hero.top));
+  expect(back.bottom, lessThanOrEqualTo(hero.bottom));
+  expect(favorite.top, greaterThanOrEqualTo(hero.top));
+  expect(favorite.bottom, lessThanOrEqualTo(hero.bottom));
 }
 
 void expectVerticalCentersAligned(
@@ -152,9 +191,21 @@ void main() {
 
       expectVerticalCentersAligned(
         tester,
+        const Key('business_detail_hero_back'),
+        const Key('business_detail_hero_city_pill'),
+      );
+      expectVerticalCentersAligned(
+        tester,
+        const Key('business_detail_hero_back'),
+        const Key('business_detail_hero_favorite'),
+      );
+      expectVerticalCentersAligned(
+        tester,
         const Key('business_detail_hero_city_pill'),
         const Key('business_detail_hero_favorite'),
       );
+
+      expectTopOverlayAnchor(tester);
 
       expect(city.right, lessThanOrEqualTo(favorite.left));
       expect(favorite.left - city.right, greaterThan(0));
@@ -207,6 +258,34 @@ void main() {
         textScaler: TextScaler.noScaling,
         cityLabel: 'Очень длинное название города для проверки',
       );
+    });
+
+    testWidgets('top band stays in upper hero with simulated SafeArea inset',
+        (tester) async {
+      const insetTop = 48.0;
+      await pumpHeroOverlay(
+        tester,
+        data: _businessFixture(nameRu: 'Уральск'),
+        width: 390,
+        viewPaddingTop: insetTop,
+      );
+      expect(tester.takeException(), isNull);
+
+      final hero = heroPhotoRect(tester);
+      final back = heroControlRect(tester, const Key('business_detail_hero_back'));
+      expectTopOverlayAnchor(tester, viewPaddingTop: insetTop);
+
+      expect(
+        back.top,
+        lessThan(hero.top + insetTop + QalaGoSpacing.space8 + 24),
+      );
+      expect(
+        back.top,
+        greaterThan(hero.top + insetTop + QalaGoSpacing.space8 - 4),
+      );
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(milliseconds: 700));
     });
   });
 }

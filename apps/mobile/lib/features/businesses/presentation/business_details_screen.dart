@@ -700,9 +700,11 @@ class _HeroPhoto extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
+      key: const Key('business_detail_hero_photo'),
       height: 310,
       child: Stack(
         fit: StackFit.expand,
+        alignment: Alignment.topCenter,
         children: [
           GestureDetector(
             onTap: onImageTap,
@@ -727,56 +729,62 @@ class _HeroPhoto extends StatelessWidget {
               ),
             ),
           ),
-          SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                QalaGoSpacing.space16,
-                QalaGoSpacing.space8,
-                QalaGoSpacing.space16,
-                0,
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _RoundIconButton(
-                    key: const Key('business_detail_hero_back'),
-                    icon: Icons.arrow_back_ios_new_rounded,
-                    tooltip: context.l10n.commonBack,
-                    onTap: onBack,
-                  ),
-                  Expanded(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Spacer(),
-                        Flexible(
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: _CityPill(
-                              key: const Key('business_detail_hero_city_pill'),
-                              cityName: cityName,
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  QalaGoSpacing.space16,
+                  QalaGoSpacing.space8,
+                  QalaGoSpacing.space16,
+                  0,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _RoundIconButton(
+                      key: const Key('business_detail_hero_back'),
+                      icon: Icons.arrow_back_ios_new_rounded,
+                      tooltip: context.l10n.commonBack,
+                      onTap: onBack,
+                    ),
+                    Expanded(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Spacer(),
+                          Flexible(
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              heightFactor: 1,
+                              child: _CityPill(
+                                key: const Key('business_detail_hero_city_pill'),
+                                cityName: cityName,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: QalaGoSpacing.space8),
-                        _RoundIconButton(
-                          key: const Key('business_detail_hero_favorite'),
-                          icon: isFavorite
-                              ? Icons.favorite_rounded
-                              : Icons.favorite_border_rounded,
-                          iconColor: isFavorite
-                              ? QalaGoColors.favoriteActive
-                              : QalaGoColors.textPrimary,
-                          tooltip: isFavorite
-                              ? context.l10n.favoritesRemoveTooltip
-                              : context.l10n.businessFavoriteAddTooltip,
-                          onTap: onFavorite,
-                        ),
-                      ],
+                          const SizedBox(width: QalaGoSpacing.space8),
+                          _RoundIconButton(
+                            key: const Key('business_detail_hero_favorite'),
+                            icon: isFavorite
+                                ? Icons.favorite_rounded
+                                : Icons.favorite_border_rounded,
+                            iconColor: isFavorite
+                                ? QalaGoColors.favoriteActive
+                                : QalaGoColors.textPrimary,
+                            tooltip: isFavorite
+                                ? context.l10n.favoritesRemoveTooltip
+                                : context.l10n.businessFavoriteAddTooltip,
+                            onTap: onFavorite,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
