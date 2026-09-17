@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart' as fm;
+import 'package:qalago_mobile/core/map/qalago_map_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -368,7 +368,7 @@ void main() {
 
       expect(find.textContaining('Не удалось загрузить заведения'), findsOneWidget);
       expect(find.text('Повторить'), findsOneWidget);
-      expect(find.byType(fm.FlutterMap), findsOneWidget);
+      expect(find.byType(QalaGoMapView), findsOneWidget);
       await _disposeTrackedImpressionTimers(tester);
     });
 

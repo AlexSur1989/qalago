@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/navigation/open_business.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/map/qalago_map_camera.dart';
+import '../../../core/map/qalago_map_coordinate.dart';
+import '../../../core/map/qalago_map_provider.dart';
+import '../../../core/map/qalago_map_view.dart';
 import '../../../core/locale/l10n_extension.dart';
 import '../../../core/location/user_location_provider.dart';
 import '../../../core/locale/app_locale_provider.dart';
@@ -25,6 +27,8 @@ import '../../../shared/widgets/qalago_logo.dart';
 import '../../analytics/widgets/business_impression_host.dart';
 import '../../analytics/widgets/map_business_preview_impression.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../map_business_markers.dart';
+import '../map_screen_center.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
@@ -34,8 +38,10 @@ class MapScreen extends ConsumerStatefulWidget {
 }
 
 class _MapScreenState extends ConsumerState<MapScreen> {
-  final _mapController = MapController();
-  LatLng? _lastUserCenter;
+  static const _cityZoom = 12.0;
+
+  late final _mapController = createQalaGoMapController();
+  QalaGoMapCoordinate? _lastUserCenter;
   String? _trackedCitySlug;
   String? _selectedBusinessId;
 
@@ -45,41 +51,17 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     super.dispose();
   }
 
-  LatLng _resolveCenter(
-    CityState city,
-    UserPosition? userPosition,
-    List<BusinessModel> businesses,
-  ) {
-    final center = mapInitialCenter(
-      cityCenterLat: city.centerLat,
-      cityCenterLng: city.centerLng,
-      userLat: userPosition?.latitude,
-      userLng: userPosition?.longitude,
-    );
-    if (center.lat == city.centerLat && center.lng == city.centerLng) {
-      return LatLng(center.lat, center.lng);
-    }
-    if (userPosition != null &&
-        center.lat == userPosition.latitude &&
-        center.lng == userPosition.longitude) {
-      return LatLng(center.lat, center.lng);
-    }
-    final withCoords = businessesWithCoordinates(businesses);
-    if (withCoords.isNotEmpty &&
-        city.centerLat == null &&
-        city.centerLng == null) {
-      return LatLng(withCoords.first.latitude!, withCoords.first.longitude!);
-    }
-    return LatLng(center.lat, center.lng);
-  }
-
   void _moveToCity(
     CityState city,
     UserPosition? userPosition,
     List<BusinessModel> businesses,
   ) {
-    final next = _resolveCenter(city, userPosition, businesses);
-    _mapController.move(next, 12);
+    final next = resolveMapScreenCenter(
+      city: city,
+      userPosition: userPosition,
+      businesses: businesses,
+    );
+    _mapController.move(next, _cityZoom);
   }
 
   void _followUser(CityState city, UserPosition? userPosition) {
@@ -94,74 +76,21 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       if (distanceFromCity > maxUserDistanceFromCityMeters) return;
     }
 
-    final next = LatLng(userPosition.latitude, userPosition.longitude);
-    if (_lastUserCenter != null &&
-        const Distance().as(
-              LengthUnit.Meter,
-              _lastUserCenter!,
-              next,
-            ) <
-            40) {
-      return;
+    final next = QalaGoMapCoordinate(
+      latitude: userPosition.latitude,
+      longitude: userPosition.longitude,
+    );
+    if (_lastUserCenter != null) {
+      final movedMeters = Geolocator.distanceBetween(
+        _lastUserCenter!.latitude,
+        _lastUserCenter!.longitude,
+        next.latitude,
+        next.longitude,
+      );
+      if (movedMeters < 40) return;
     }
     _lastUserCenter = next;
-    _mapController.move(next, _mapController.camera.zoom);
-  }
-
-  List<Widget> _mapLayers({
-    required List<BusinessModel> businesses,
-    required UserPosition? userPosition,
-    required void Function(BusinessModel business) onMarkerTap,
-  }) {
-    final withCoords = businessesWithCoordinates(businesses);
-
-    final markers = <Marker>[
-      if (userPosition != null)
-        Marker(
-          point: LatLng(userPosition.latitude, userPosition.longitude),
-          width: 28,
-          height: 28,
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppTheme.kzBlue,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 3),
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.textDark.withValues(alpha: 0.2),
-                  blurRadius: 8,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ...withCoords.map(
-        (business) => Marker(
-          point: LatLng(business.latitude!, business.longitude!),
-          width: 50,
-          height: business.id == _selectedBusinessId ? 72 : 68,
-          child: _MapPin(
-            business: business,
-            selected: business.id == _selectedBusinessId,
-            onTap: () => onMarkerTap(business),
-          ),
-        ),
-      ),
-    ];
-
-    return [
-      TileLayer(
-        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-        userAgentPackageName: 'kz.qalago.mobile',
-      ),
-      MarkerLayer(markers: markers),
-      RichAttributionWidget(
-        alignment: AttributionAlignment.bottomLeft,
-        attributions: const [
-          TextSourceAttribution('OpenStreetMap contributors'),
-        ],
-      ),
-    ];
+    _mapController.move(next, _mapController.zoom);
   }
 
   @override
@@ -186,7 +115,34 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     });
 
     final businesses = businessesAsync.valueOrNull?.items ?? const <BusinessModel>[];
-    final center = _resolveCenter(city, userPosition, businesses);
+    final center = resolveMapScreenCenter(
+      city: city,
+      userPosition: userPosition,
+      businesses: businesses,
+    );
+    final mapMarkers = buildBusinessMapMarkers(
+      businesses: businesses,
+      selectedBusinessId: _selectedBusinessId,
+      onMarkerTap: (business) {
+        setState(() => _selectedBusinessId = business.id);
+      },
+      userLocation: userPosition == null
+          ? null
+          : QalaGoMapCoordinate(
+              latitude: userPosition.latitude,
+              longitude: userPosition.longitude,
+            ),
+      pinBuilder: ({
+        required business,
+        required selected,
+        required onTap,
+      }) =>
+          _MapPin(
+        business: business,
+        selected: selected,
+        onTap: onTap,
+      ),
+    );
     BusinessModel? selectedBusiness;
     if (_selectedBusinessId != null) {
       for (final business in businesses) {
@@ -210,17 +166,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          FlutterMap(
+          QalaGoMapView(
             key: ValueKey('map-${city.slug}'),
-            mapController: _mapController,
-            options: MapOptions(initialCenter: center, initialZoom: 12),
-            children: _mapLayers(
-              businesses: businesses,
-              userPosition: userPosition,
-              onMarkerTap: (business) {
-                setState(() => _selectedBusinessId = business.id);
-              },
-            ),
+            controller: _mapController,
+            initialCamera: QalaGoMapCamera(center: center, zoom: _cityZoom),
+            markers: mapMarkers,
           ),
           if (businessesAsync.hasError)
             Positioned(

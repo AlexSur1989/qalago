@@ -1,11 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:latlong2/latlong.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/map/qalago_map_camera.dart';
+import '../../../core/map/qalago_map_coordinate.dart';
+import '../../../core/map/qalago_map_marker.dart';
+import '../../../core/map/qalago_map_view.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/qalago_colors.dart';
 import '../../../core/theme/qalago_radius.dart';
@@ -1921,7 +1923,10 @@ class _MiniMapSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final point = LatLng(latitude, longitude);
+    final coordinate = QalaGoMapCoordinate(
+      latitude: latitude,
+      longitude: longitude,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1931,32 +1936,20 @@ class _MiniMapSection extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
           child: SizedBox(
             height: 160,
-            child: FlutterMap(
-              options: MapOptions(
-                initialCenter: point,
-                initialZoom: 15,
-                interactionOptions: const InteractionOptions(
-                  flags: InteractiveFlag.none,
-                ),
-              ),
-              children: [
-                TileLayer(
-                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'kz.qalago.mobile',
-                ),
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: point,
-                      width: 36,
-                      height: 36,
-                      child: const Icon(
-                        Icons.location_on,
-                        color: AppTheme.kzBlue,
-                        size: 36,
-                      ),
-                    ),
-                  ],
+            child: QalaGoMapView(
+              interactionEnabled: false,
+              initialCamera: QalaGoMapCamera(center: coordinate, zoom: 15),
+              markers: [
+                QalaGoMapMarker(
+                  id: 'business_location',
+                  position: coordinate,
+                  width: 36,
+                  height: 36,
+                  child: const Icon(
+                    Icons.location_on,
+                    color: AppTheme.kzBlue,
+                    size: 36,
+                  ),
                 ),
               ],
             ),

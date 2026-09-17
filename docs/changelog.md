@@ -27,6 +27,12 @@
 
 ---
 
+## 2026-09-17 — Stage 6.11C.1: Map provider abstraction (Flutter)
+
+- Mobile: `core/map` SDK-neutral coordinate, camera, marker, controller, and `QalaGoMapView` with flutter_map OSM adapter.
+- MapScreen and business detail mini-map refactored to abstraction; behavior unchanged.
+- Future: MapLibre renderer behind same contract (6.11C.2); geocoding/location picker unchanged.
+
 ## 2026-09-17 — Stage 6.11B.6: Recent searches & catalog suggestions
 
 - **Added:** Local recent search history (SharedPreferences, max 10, deduped, clear action) on empty Search; RU/KK strings.
