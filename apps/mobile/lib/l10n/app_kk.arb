@@ -70,6 +70,30 @@
   "searchEmptyHintSpelling": "Жазуды тексеріңіз",
   "searchEmptyHintGeneral": "Жалпылау сұранымын қолданып көріңіз",
   "searchEmptyHintFilters": "Сүзгілер немесе санатты өзгертіңіз",
+  "searchFiltersTitle": "Сүзгілер",
+  "searchFiltersWithCount": "Сүзгілер ({count})",
+  "@searchFiltersWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchApplyFilters": "Қолдану",
+  "searchResetFiltersOnly": "Сүзгілерді тастау",
+  "searchSubcategoriesTitle": "Ішкі санаттар",
+  "searchSubcategoryAll": "Барлық ішкі санат",
+  "searchRadiusSectionTitle": "Іздеу радиусы",
+  "searchSortRecommended": "Ұсынылады",
+  "searchSortNearby": "Жақын",
+  "searchSortRating": "Рейтинг бойынша",
+  "searchSortPopular": "Танымал",
+  "searchSortMenuTooltip": "Сұрыптау",
+  "searchLoadMore": "Тағы көрсету",
+  "searchLoadingMore": "Жүктелуде…",
+  "searchLoadMoreFailed": "Тағы жүктеу сәтсіз",
+  "searchLoadMoreRetry": "Қайта жүктеу",
+  "searchEndOfResults": "Барлық нәтиже көрсетілді",
   "searchEnterQuery": "Атауын енгізіңіз немесе санатты таңдаңыз",
   "searchFoundCount": "Табылды: {count}",
   "searchFoundCountPartial": "Көрсетілген: {shown}, барлығы: {total}",

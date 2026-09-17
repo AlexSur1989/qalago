@@ -215,7 +215,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Сбросить фильтры'), findsOneWidget);
+    expect(find.text('Сбросить фильтры'), findsWidgets);
   });
 
   testWidgets('category chip selection visible', (tester) async {
@@ -233,6 +233,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Кофейни'), findsWidgets);
+    await tester.tap(find.textContaining('Фильтры'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('Все категории'), findsOneWidget);
   });
 
@@ -250,6 +253,8 @@ void main() {
 
     await tester.pumpAndSettle();
 
+    await tester.tap(find.textContaining('Фильтры'));
+    await tester.pumpAndSettle();
     expect(find.text('Весь город'), findsOneWidget);
   });
 
@@ -264,6 +269,8 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Фильтры'));
     await tester.pumpAndSettle();
     expect(find.text('Весь город'), findsOneWidget);
   });

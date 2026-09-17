@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-17 — Stage 6.11B.4: Search filters, sorting & pagination
+
+- **Added:** Consumer sort menu (recommended / nearby / rating / popular) mapped to `BusinessCatalogSort` API values; compact filters bar + bottom sheet (category, subcategory, radius).
+- **Added:** Search pagination page size 20, load-more (scroll threshold + button), deduped append, next-page error/retry, `_loadMoreGeneration` stale-page guard.
+- **Preserved:** 6.11B.3 generation/cancel semantics; SEARCH analytics on debounced query only (not per page).
+- **Future:** DB relevance/pagination (6.11B.5); search history/suggestions (6.11B.6).
+
 ## 2026-09-17 — Stage 6.11B.3: Consumer mobile search UX & state
 
 - **Added:** SearchScreen initial / continue-typing / active pane modes; min free-text length 2; localized empty hints and load-error copy (RU/KK).

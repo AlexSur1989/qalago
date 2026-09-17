@@ -224,6 +224,59 @@ class AppLocalizationsKk extends AppLocalizations {
   String get searchEmptyHintFilters => 'Сүзгілер немесе санатты өзгертіңіз';
 
   @override
+  String get searchFiltersTitle => 'Сүзгілер';
+
+  @override
+  String searchFiltersWithCount(int count) {
+    return 'Сүзгілер ($count)';
+  }
+
+  @override
+  String get searchApplyFilters => 'Қолдану';
+
+  @override
+  String get searchResetFiltersOnly => 'Сүзгілерді тастау';
+
+  @override
+  String get searchSubcategoriesTitle => 'Ішкі санаттар';
+
+  @override
+  String get searchSubcategoryAll => 'Барлық ішкі санат';
+
+  @override
+  String get searchRadiusSectionTitle => 'Іздеу радиусы';
+
+  @override
+  String get searchSortRecommended => 'Ұсынылады';
+
+  @override
+  String get searchSortNearby => 'Жақын';
+
+  @override
+  String get searchSortRating => 'Рейтинг бойынша';
+
+  @override
+  String get searchSortPopular => 'Танымал';
+
+  @override
+  String get searchSortMenuTooltip => 'Сұрыптау';
+
+  @override
+  String get searchLoadMore => 'Тағы көрсету';
+
+  @override
+  String get searchLoadingMore => 'Жүктелуде…';
+
+  @override
+  String get searchLoadMoreFailed => 'Тағы жүктеу сәтсіз';
+
+  @override
+  String get searchLoadMoreRetry => 'Қайта жүктеу';
+
+  @override
+  String get searchEndOfResults => 'Барлық нәтиже көрсетілді';
+
+  @override
   String get searchEnterQuery => 'Атауын енгізіңіз немесе санатты таңдаңыз';
 
   @override

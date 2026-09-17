@@ -70,6 +70,30 @@
   "searchEmptyHintSpelling": "Проверьте написание",
   "searchEmptyHintGeneral": "Попробуйте более общий запрос",
   "searchEmptyHintFilters": "Измените фильтры или категорию",
+  "searchFiltersTitle": "Фильтры",
+  "searchFiltersWithCount": "Фильтры ({count})",
+  "@searchFiltersWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchApplyFilters": "Применить",
+  "searchResetFiltersOnly": "Сбросить фильтры",
+  "searchSubcategoriesTitle": "Подкategории",
+  "searchSubcategoryAll": "Все подkategории",
+  "searchRadiusSectionTitle": "Радиус поиска",
+  "searchSortRecommended": "Рекомендуем",
+  "searchSortNearby": "Рядом",
+  "searchSortRating": "По рейтингу",
+  "searchSortPopular": "Популярные",
+  "searchSortMenuTooltip": "Сортировка",
+  "searchLoadMore": "Показать ещё",
+  "searchLoadingMore": "Загрузка…",
+  "searchLoadMoreFailed": "Не удалось загрузить ещё",
+  "searchLoadMoreRetry": "Повторить загрузку",
+  "searchEndOfResults": "Показаны все результаты",
   "searchEnterQuery": "Введите название или выберите категорию",
   "searchFoundCount": "Найдено: {count}",
   "@searchFoundCount": {

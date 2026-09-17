@@ -247,7 +247,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => SearchScreen(
               initialQuery: state.uri.queryParameters['q'],
               categoryId: state.uri.queryParameters['categoryId'],
+              subcategoryId: state.uri.queryParameters['subcategoryId'],
               initialRadiusKm: state.uri.queryParameters['radiusKm'],
+              initialSort: state.uri.queryParameters['sort'],
             ),
           ),
           GoRoute(

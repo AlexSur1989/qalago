@@ -224,6 +224,59 @@ class AppLocalizationsRu extends AppLocalizations {
   String get searchEmptyHintFilters => 'Измените фильтры или категорию';
 
   @override
+  String get searchFiltersTitle => 'Фильтры';
+
+  @override
+  String searchFiltersWithCount(int count) {
+    return 'Фильтры ($count)';
+  }
+
+  @override
+  String get searchApplyFilters => 'Применить';
+
+  @override
+  String get searchResetFiltersOnly => 'Сбросить фильтры';
+
+  @override
+  String get searchSubcategoriesTitle => 'Подкategории';
+
+  @override
+  String get searchSubcategoryAll => 'Все подkategории';
+
+  @override
+  String get searchRadiusSectionTitle => 'Радиус поиска';
+
+  @override
+  String get searchSortRecommended => 'Рекомендуем';
+
+  @override
+  String get searchSortNearby => 'Рядом';
+
+  @override
+  String get searchSortRating => 'По рейтингу';
+
+  @override
+  String get searchSortPopular => 'Популярные';
+
+  @override
+  String get searchSortMenuTooltip => 'Сортировка';
+
+  @override
+  String get searchLoadMore => 'Показать ещё';
+
+  @override
+  String get searchLoadingMore => 'Загрузка…';
+
+  @override
+  String get searchLoadMoreFailed => 'Не удалось загрузить ещё';
+
+  @override
+  String get searchLoadMoreRetry => 'Повторить загрузку';
+
+  @override
+  String get searchEndOfResults => 'Показаны все результаты';
+
+  @override
   String get searchEnterQuery => 'Введите название или выберите категорию';
 
   @override

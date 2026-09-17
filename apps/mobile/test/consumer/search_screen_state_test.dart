@@ -208,9 +208,18 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
-    await tester.tap(find.text('Рестораны'));
+    await tester.tap(find.textContaining('Фильтры'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.text('Рестораны'),
+      ),
+    );
+    await tester.tap(find.text('Применить'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('Cat2 Biz'), findsOneWidget);
     expect(find.text('Cat1 Biz'), findsNothing);
@@ -320,7 +329,7 @@ void main() {
             appLocaleCodeProvider.overrideWith((ref) => 'kk'),
           ],
           child: wrapWithL10n(
-            const SearchScreen(initialQuery: 'x', categoryId: 'cat1'),
+            const SearchScreen(initialQuery: 'xx', categoryId: 'cat1'),
             locale: const Locale('kk'),
           ),
         ),

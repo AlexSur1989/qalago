@@ -82,7 +82,9 @@ String buildSearchFilterSummary({
 Map<String, String> buildSearchRouteParams({
   String? query,
   String? categoryId,
+  String? subcategoryId,
   SearchRadiusMode radiusMode = SearchRadiusMode.wholeCity,
+  String? sortApiValue,
 }) {
   final params = <String, String>{};
   final q = query?.trim();
@@ -90,7 +92,15 @@ Map<String, String> buildSearchRouteParams({
   if (categoryId != null && categoryId.isNotEmpty) {
     params['categoryId'] = categoryId;
   }
+  if (subcategoryId != null && subcategoryId.isNotEmpty) {
+    params['subcategoryId'] = subcategoryId;
+  }
   final radius = radiusMode.routeParam;
   if (radius != null) params['radiusKm'] = radius;
+  if (sortApiValue != null &&
+      sortApiValue.isNotEmpty &&
+      sortApiValue != 'recommended') {
+    params['sort'] = sortApiValue;
+  }
   return params;
 }

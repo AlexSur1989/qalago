@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -22,12 +23,19 @@ import '../../../shared/widgets/qalago_search_field.dart';
 import '../../analytics/providers/analytics_identity_provider.dart';
 import '../../analytics/widgets/tracked_business_card.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../catalog/data/catalog_repository.dart';
 import '../../categories/utils/category_display.dart';
 import '../../home/presentation/home_layout.dart';
+import '../search_active_filters.dart';
+import '../search_catalog_sort.dart';
 import '../search_filters.dart';
+import '../search_geo_policy.dart';
+import '../search_pagination.dart';
 import '../search_query_policy.dart';
 import '../search_result_count.dart';
+import 'search_controls_bar.dart';
 import 'search_filter_sections.dart';
+import 'search_filters_sheet.dart';
 import 'search_scope_chip.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
@@ -35,12 +43,16 @@ class SearchScreen extends ConsumerStatefulWidget {
     super.key,
     this.initialQuery,
     this.categoryId,
+    this.subcategoryId,
     this.initialRadiusKm,
+    this.initialSort,
   });
 
   final String? initialQuery;
   final String? categoryId;
+  final String? subcategoryId;
   final String? initialRadiusKm;
+  final String? initialSort;
 
   @override
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
@@ -52,21 +64,34 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   String _query = '';
   String? _resultAttributionQuery;
   String? _categoryId;
+  String? _subcategoryId;
   SearchRadiusMode _radiusMode = SearchRadiusMode.wholeCity;
+  SearchCatalogSort _sort = SearchCatalogSort.recommended;
   Timer? _debounce;
   bool _syncingRoute = false;
   String? _lastSearchPerformedQuery;
   int _fetchGeneration = 0;
   int? _verifiedResultsGeneration;
+  List<BusinessModel> _loadedItems = const [];
+  int _resultTotal = 0;
+  int _loadedPage = 0;
+  bool _loadingMore = false;
+  Object? _loadMoreError;
+  CancelToken? _loadMoreCancelToken;
+  int _loadMoreGeneration = 0;
+  final ScrollController _resultsScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _query = widget.initialQuery?.trim() ?? '';
     _categoryId = widget.categoryId;
+    _subcategoryId = widget.subcategoryId;
     _radiusMode = SearchRadiusModeX.fromRadiusKmParam(widget.initialRadiusKm);
+    _sort = SearchCatalogSort.fromApi(widget.initialSort);
     _controller = TextEditingController(text: _query);
     _focusNode = FocusNode();
+    _resultsScrollController.addListener(_onResultsScroll);
   }
 
   @override
@@ -78,20 +103,27 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final nextCategory = widget.categoryId;
     final nextRadius = SearchRadiusModeX.fromRadiusKmParam(widget.initialRadiusKm);
 
+    final nextSubcategory = widget.subcategoryId;
+    final nextSort = SearchCatalogSort.fromApi(widget.initialSort);
+
     if (nextQuery == _query &&
         nextCategory == _categoryId &&
-        nextRadius == _radiusMode) {
+        nextSubcategory == _subcategoryId &&
+        nextRadius == _radiusMode &&
+        nextSort == _sort) {
       return;
     }
 
     _debounce?.cancel();
-    setState(() {
-      _query = nextQuery;
-      _categoryId = nextCategory;
-      _radiusMode = nextRadius;
-      _fetchGeneration++;
-      _verifiedResultsGeneration = null;
-    });
+    _invalidateSearchResults(
+      applyState: () {
+        _query = nextQuery;
+        _categoryId = nextCategory;
+        _subcategoryId = nextSubcategory;
+        _radiusMode = nextRadius;
+        _sort = nextSort;
+      },
+    );
     if (_controller.text != nextQuery) {
       _controller.text = nextQuery;
     }
@@ -100,9 +132,44 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   @override
   void dispose() {
     _debounce?.cancel();
+    _loadMoreCancelToken?.cancel();
+    _resultsScrollController.removeListener(_onResultsScroll);
+    _resultsScrollController.dispose();
     _focusNode.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  void _invalidateSearchResults({VoidCallback? applyState}) {
+    _loadMoreCancelToken?.cancel();
+    _loadMoreCancelToken = null;
+    setState(() {
+      applyState?.call();
+      _fetchGeneration++;
+      _loadMoreGeneration++;
+      _verifiedResultsGeneration = null;
+      _loadedItems = const [];
+      _resultTotal = 0;
+      _loadedPage = 0;
+      _loadingMore = false;
+      _loadMoreError = null;
+    });
+  }
+
+  void _onResultsScroll() {
+    if (!_resultsScrollController.hasClients) return;
+    if (_loadingMore || _loadMoreError != null) return;
+    if (!searchHasMoreResults(
+      loadedCount: _loadedItems.length,
+      total: _resultTotal,
+    )) {
+      return;
+    }
+    final position = _resultsScrollController.position;
+    if (position.maxScrollExtent <= 0 || position.pixels <= 0) return;
+    if (position.pixels >= position.maxScrollExtent - 280) {
+      unawaited(_loadMoreResults());
+    }
   }
 
   SearchResultsPaneMode get _paneMode => resolveSearchResultsPaneMode(
@@ -114,7 +181,25 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   bool get _hasNarrowFilters =>
       _query.isNotEmpty ||
       _categoryId != null ||
-      _radiusMode != SearchRadiusMode.wholeCity;
+      _subcategoryId != null ||
+      _radiusMode != SearchRadiusMode.wholeCity ||
+      searchHasNonDefaultSort(_sort);
+
+  ({double? lat, double? lng, double? radiusKm}) _geoParams() {
+    if (_radiusMode != SearchRadiusMode.wholeCity) {
+      final position = ref.read(nearbySearchPositionProvider);
+      return (
+        lat: position.latitude,
+        lng: position.longitude,
+        radiusKm: _radiusMode.radiusKm,
+      );
+    }
+    if (_sort == SearchCatalogSort.nearest && consumerHasRealNearbyGps(ref)) {
+      final userPos = ref.read(userLocationProvider).valueOrNull!;
+      return (lat: userPos.latitude, lng: userPos.longitude, radiusKm: null);
+    }
+    return (lat: null, lng: null, radiusKm: null);
+  }
 
   BusinessesQuery _buildQuery() {
     final suppressNetwork = !searchShouldFetchBusinesses(
@@ -126,22 +211,81 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       trimmedQuery: _query,
       categoryId: _categoryId,
     );
-    if (_radiusMode == SearchRadiusMode.wholeCity) {
-      return BusinessesQuery(
-        search: search,
-        categoryId: _categoryId,
-        suppressNetwork: suppressNetwork,
-      );
-    }
-    final position = ref.read(nearbySearchPositionProvider);
+    final geo = _geoParams();
     return BusinessesQuery(
       search: search,
       categoryId: _categoryId,
-      latitude: position.latitude,
-      longitude: position.longitude,
-      radiusKm: _radiusMode.radiusKm,
+      subcategoryId: _subcategoryId,
+      latitude: geo.lat,
+      longitude: geo.lng,
+      radiusKm: geo.radiusKm,
+      sort: _sort.apiValue,
+      limit: kSearchResultsPageSize,
       suppressNetwork: suppressNetwork,
     );
+  }
+
+  Future<void> _loadMoreResults() async {
+    if (_loadingMore || _loadMoreError != null) return;
+    if (!searchHasMoreResults(
+      loadedCount: _loadedItems.length,
+      total: _resultTotal,
+    )) {
+      return;
+    }
+    final generation = _fetchGeneration;
+    final loadMoreGeneration = _loadMoreGeneration;
+    final nextPage = _loadedPage + 1;
+    final query = _buildQuery();
+    if (query.suppressNetwork) return;
+
+    _loadMoreCancelToken?.cancel();
+    final cancelToken = CancelToken();
+    _loadMoreCancelToken = cancelToken;
+
+    setState(() {
+      _loadingMore = true;
+      _loadMoreError = null;
+    });
+
+    try {
+      final city = ref.read(cityProvider);
+      final page = await ref.read(catalogRepositoryProvider).fetchBusinesses(
+            citySlug: city.slug,
+            search: query.search,
+            categoryId: query.categoryId,
+            subcategoryId: query.subcategoryId,
+            latitude: query.latitude,
+            longitude: query.longitude,
+            radiusKm: query.radiusKm,
+            sort: query.sort,
+            page: nextPage,
+            limit: kSearchResultsPageSize,
+            cancelToken: cancelToken,
+          );
+      if (!mounted ||
+          generation != _fetchGeneration ||
+          loadMoreGeneration != _loadMoreGeneration) {
+        return;
+      }
+      setState(() {
+        _loadedItems = mergeSearchResultPages(_loadedItems, page.items);
+        _resultTotal = page.total;
+        _loadedPage = nextPage;
+        _loadingMore = false;
+      });
+    } catch (e) {
+      if (!mounted ||
+          generation != _fetchGeneration ||
+          loadMoreGeneration != _loadMoreGeneration) {
+        return;
+      }
+      if (e is DioException && CancelToken.isCancel(e)) return;
+      setState(() {
+        _loadingMore = false;
+        _loadMoreError = e;
+      });
+    }
   }
 
   void _syncRoute() {
@@ -150,7 +294,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final params = buildSearchRouteParams(
       query: _query,
       categoryId: _categoryId,
+      subcategoryId: _subcategoryId,
       radiusMode: _radiusMode,
+      sortApiValue: _sort.apiValue,
     );
     final uri = Uri(path: '/search', queryParameters: params.isEmpty ? null : params);
     if (GoRouter.maybeOf(context) != null) {
@@ -165,11 +311,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       if (!mounted) return;
       final next = value.trim();
       if (next == _query) return;
-      setState(() {
-        _query = next;
-        _fetchGeneration++;
-        _verifiedResultsGeneration = null;
-      });
+      _invalidateSearchResults(applyState: () => _query = next);
       _syncRoute();
     });
   }
@@ -181,54 +323,57 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       _focusNode.requestFocus();
       return;
     }
-    setState(() {
-      _query = '';
-      _fetchGeneration++;
-      _verifiedResultsGeneration = null;
-    });
+    _invalidateSearchResults(applyState: () => _query = '');
     _syncRoute();
     _focusNode.requestFocus();
   }
 
   void _clearCategoryScope() {
-    if (_categoryId == null) return;
-    setState(() {
-      _categoryId = null;
-      _fetchGeneration++;
-      _verifiedResultsGeneration = null;
-    });
+    if (_categoryId == null && _subcategoryId == null) return;
+    _invalidateSearchResults(
+      applyState: () {
+        _categoryId = null;
+        _subcategoryId = null;
+      },
+    );
     _syncRoute();
   }
 
-  void _resetFilters() {
-    _debounce?.cancel();
-    _controller.clear();
-    setState(() {
-      _query = '';
-      _categoryId = null;
-      _radiusMode = SearchRadiusMode.wholeCity;
-      _fetchGeneration++;
-      _verifiedResultsGeneration = null;
-    });
-    _syncRoute();
-    _focusNode.requestFocus();
-  }
-
-  void _setCategory(String? id) {
-    setState(() {
-      _categoryId = id;
-      _fetchGeneration++;
-      _verifiedResultsGeneration = null;
-    });
+  void _resetSearchFiltersOnly() {
+    _invalidateSearchResults(
+      applyState: () {
+        _categoryId = null;
+        _subcategoryId = null;
+        _radiusMode = SearchRadiusMode.wholeCity;
+        _sort = SearchCatalogSort.recommended;
+      },
+    );
     _syncRoute();
   }
 
-  void _setRadius(SearchRadiusMode mode) {
-    setState(() {
-      _radiusMode = mode;
-      _fetchGeneration++;
-      _verifiedResultsGeneration = null;
-    });
+  void _resetFilters() => _resetSearchFiltersOnly();
+
+  void _applyFilters({
+    String? categoryId,
+    String? subcategoryId,
+    required SearchRadiusMode radiusMode,
+  }) {
+    _invalidateSearchResults(
+      applyState: () {
+        _categoryId = categoryId;
+        _subcategoryId = subcategoryId;
+        _radiusMode = radiusMode;
+      },
+    );
+    _syncRoute();
+  }
+
+  void _setSort(SearchCatalogSort sort) {
+    if (sort == _sort) return;
+    if (sort == SearchCatalogSort.nearest && !consumerHasRealNearbyGps(ref)) {
+      return;
+    }
+    _invalidateSearchResults(applyState: () => _sort = sort);
     _syncRoute();
   }
 
@@ -281,14 +426,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     return l10n.categoryFallbackTitle;
   }
 
-  String? _categoryTitleForSummary(List<CategoryModel> categories) {
-    if (_categoryId == null) return null;
-    for (final c in categories) {
-      if (c.id == _categoryId) return c.title;
-    }
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -299,18 +436,28 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final categoriesAsync = ref.watch(categoriesProvider);
 
     ref.listen(businessesProvider(query), (previous, next) {
-      next.whenData((_) {
+      next.whenData((data) {
         if (!mounted || fetchGen != _fetchGeneration) return;
         if (query.suppressNetwork) return;
         setState(() {
           _resultAttributionQuery = query.search;
           _verifiedResultsGeneration = fetchGen;
+          _loadedItems = data.items;
+          _resultTotal = data.total;
+          _loadedPage = 1;
+          _loadingMore = false;
+          _loadMoreError = null;
         });
         _trackSearchPerformedIfNeeded(query.search, fetchGen);
       });
     });
 
-    final maxFilterHeight = MediaQuery.sizeOf(context).height * 0.38;
+    final activeFilterCount = searchActiveFilterCount(
+      categoryId: _categoryId,
+      subcategoryId: _subcategoryId,
+      radiusMode: _radiusMode,
+    );
+    final nearbySortEnabled = consumerHasRealNearbyGps(ref);
 
     return Scaffold(
       body: SafeArea(
@@ -350,11 +497,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           FocusManager.instance.primaryFocus?.unfocus();
                           return;
                         }
-                        setState(() {
-                          _query = next;
-                          _fetchGeneration++;
-                          _verifiedResultsGeneration = null;
-                        });
+                        _invalidateSearchResults(applyState: () => _query = next);
                         _syncRoute();
                         FocusManager.instance.primaryFocus?.unfocus();
                       },
@@ -365,75 +508,69 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 ],
               ),
             ),
-            categoriesAsync.when(
-              loading: () => const SizedBox.shrink(),
-              error: (_, _) => const SizedBox.shrink(),
-              data: (categories) {
-                final scopeLabel = _categoryId != null
-                    ? _categoryScopeLabel(categories, localeCode, l10n)
-                    : null;
-                final categoryTitle = _categoryTitleForSummary(categories);
-                return ConstrainedBox(
-                  constraints: BoxConstraints(maxHeight: maxFilterHeight),
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: HomeLayout.horizontalPadding,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (scopeLabel != null)
-                          SearchScopeChip(
-                            label: scopeLabel,
-                            l10n: l10n,
-                            onClear: _clearCategoryScope,
-                          ),
-                        SearchCategoryFilterWrap(
-                          categories: categories,
-                          selectedId: _categoryId,
-                          localeCode: localeCode,
-                          onSelected: _setCategory,
-                        ),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: HomeLayout.horizontalPadding,
+              ),
+              child: categoriesAsync.when(
+                loading: () => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
+                data: (categories) {
+                  final scopeLabel = _categoryId != null
+                      ? _categoryScopeLabel(categories, localeCode, l10n)
+                      : null;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SearchControlsBar(
+                        l10n: l10n,
+                        activeFilterCount: activeFilterCount,
+                        selectedSort: _sort,
+                        nearbySortEnabled: nearbySortEnabled,
+                        onOpenFilters: () {
+                          showSearchFiltersSheet(
+                            context: context,
+                            ref: ref,
+                            categories: categories,
+                            localeCode: localeCode,
+                            categoryId: _categoryId,
+                            subcategoryId: _subcategoryId,
+                            radiusMode: _radiusMode,
+                            onApply: (categoryId, subcategoryId, radiusMode) {
+                              _applyFilters(
+                                categoryId: categoryId,
+                                subcategoryId: subcategoryId,
+                                radiusMode: radiusMode,
+                              );
+                            },
+                            onResetFilters: _resetSearchFiltersOnly,
+                          );
+                        },
+                        onSortSelected: _setSort,
+                      ),
+                      if (scopeLabel != null) ...[
                         const SizedBox(height: QalaGoSpacing.space8),
-                        SearchRadiusFilterWrap(
-                          selected: _radiusMode,
+                        SearchScopeChip(
+                          label: scopeLabel,
                           l10n: l10n,
-                          onSelected: _setRadius,
+                          onClear: _clearCategoryScope,
                         ),
-                        if (_hasNarrowFilters) ...[
-                          const SizedBox(height: QalaGoSpacing.space8),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  buildSearchFilterSummary(
-                                    cityName:
-                                        ref.watch(cityLocalizedNameProvider),
-                                    categoryTitle: categoryTitle,
-                                    radiusMode: _radiusMode,
-                                    query: _query,
-                                    l10n: l10n,
-                                  ),
-                                  style: const TextStyle(
-                                    color: AppTheme.textMuted,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: _resetFilters,
-                                child: Text(l10n.commonReset),
-                              ),
-                            ],
-                          ),
-                        ],
-                        const SizedBox(height: QalaGoSpacing.space8),
                       ],
-                    ),
-                  ),
-                );
-              },
+                      if (_hasNarrowFilters) ...[
+                        const SizedBox(height: QalaGoSpacing.space4),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: TextButton(
+                            onPressed: _resetSearchFiltersOnly,
+                            child: Text(l10n.searchResetFiltersOnly),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: QalaGoSpacing.space8),
+                    ],
+                  );
+                },
+              ),
             ),
             Expanded(
               child: _SearchResultsPane(
@@ -444,13 +581,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 hasNarrowFilters: _hasNarrowFilters,
                 query: query,
                 trimmedQuery: _query,
+                loadedItems: _loadedItems,
+                resultTotal: _resultTotal,
+                loadingMore: _loadingMore,
+                loadMoreError: _loadMoreError,
+                scrollController: _resultsScrollController,
                 resultAttributionQuery: _resultAttributionQuery,
                 emptyMessage: _emptyMessage(
                   l10n,
                   ref.watch(cityLocalizedNameProvider),
                 ),
                 onRetry: () => ref.invalidate(businessesProvider(query)),
-                onResetFilters: _resetFilters,
+                onResetFilters: _resetSearchFiltersOnly,
+                onLoadMore: _loadMoreResults,
+                onRetryLoadMore: _loadMoreResults,
                 onClearCategoryScope:
                     _categoryId != null ? _clearCategoryScope : null,
                 l10n: l10n,
@@ -487,10 +631,17 @@ class _SearchResultsPane extends StatelessWidget {
     required this.hasNarrowFilters,
     required this.query,
     required this.trimmedQuery,
+    required this.loadedItems,
+    required this.resultTotal,
+    required this.loadingMore,
+    required this.loadMoreError,
+    required this.scrollController,
     required this.resultAttributionQuery,
     required this.emptyMessage,
     required this.onRetry,
     required this.onResetFilters,
+    required this.onLoadMore,
+    required this.onRetryLoadMore,
     required this.onClearCategoryScope,
     required this.l10n,
   });
@@ -502,10 +653,17 @@ class _SearchResultsPane extends StatelessWidget {
   final bool hasNarrowFilters;
   final BusinessesQuery query;
   final String trimmedQuery;
+  final List<BusinessModel> loadedItems;
+  final int resultTotal;
+  final bool loadingMore;
+  final Object? loadMoreError;
+  final ScrollController scrollController;
   final String? resultAttributionQuery;
   final String emptyMessage;
   final VoidCallback onRetry;
   final VoidCallback onResetFilters;
+  final VoidCallback onLoadMore;
+  final VoidCallback onRetryLoadMore;
   final VoidCallback? onClearCategoryScope;
   final AppLocalizations l10n;
 
@@ -552,10 +710,9 @@ class _SearchResultsPane extends StatelessWidget {
       );
     }
 
-    final data = businessesAsync.value!;
     final isUpdating = businessesAsync.isLoading;
 
-    if (data.items.isEmpty && !isUpdating) {
+    if (loadedItems.isEmpty && !isUpdating && !loadingMore) {
       return SingleChildScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.all(HomeLayout.horizontalPadding),
@@ -602,7 +759,17 @@ class _SearchResultsPane extends StatelessWidget {
     }
 
     final attributionQuery = resultAttributionQuery ?? query.search;
-    final countLabel = formatSearchResultCount(l10n, data);
+    final countLabel = formatSearchResultCountShown(
+      l10n,
+      shown: loadedItems.length,
+      total: resultTotal,
+    );
+    final hasMore = searchHasMoreResults(
+      loadedCount: loadedItems.length,
+      total: resultTotal,
+    );
+    final footerSlots = (hasMore || loadingMore || loadMoreError != null) ? 1 : 0;
+    final endReached = loadedItems.isNotEmpty && !hasMore && loadMoreError == null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -614,6 +781,7 @@ class _SearchResultsPane extends StatelessWidget {
           ),
         Expanded(
           child: ListView.separated(
+            controller: scrollController,
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.fromLTRB(
               HomeLayout.horizontalPadding,
@@ -621,7 +789,7 @@ class _SearchResultsPane extends StatelessWidget {
               HomeLayout.horizontalPadding,
               HomeLayout.bottomPadding,
             ),
-            itemCount: data.items.length + 1,
+            itemCount: loadedItems.length + 1 + footerSlots + (endReached ? 1 : 0),
             separatorBuilder: (_, _) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               if (index == 0) {
@@ -633,21 +801,63 @@ class _SearchResultsPane extends StatelessWidget {
                   ),
                 );
               }
-              final business = data.items[index - 1];
-              return TrackedBusinessCard(
-                business: business,
-                trafficSource: BusinessTrafficSource.search,
-                searchQuery: attributionQuery,
-                position: index - 1,
-                onTap: () {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                  openBusiness(
-                    context,
-                    business.id,
-                    BusinessTrafficSource.search,
-                    searchQuery: attributionQuery,
+              final businessIndex = index - 1;
+              if (businessIndex < loadedItems.length) {
+                final business = loadedItems[businessIndex];
+                return TrackedBusinessCard(
+                  business: business,
+                  trafficSource: BusinessTrafficSource.search,
+                  searchQuery: attributionQuery,
+                  position: businessIndex,
+                  onTap: () {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                    openBusiness(
+                      context,
+                      business.id,
+                      BusinessTrafficSource.search,
+                      searchQuery: attributionQuery,
+                    );
+                  },
+                );
+              }
+              final footerIndex = businessIndex - loadedItems.length;
+              if (footerIndex == 0 && footerSlots == 1) {
+                if (loadMoreError != null) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        l10n.searchLoadMoreFailed,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: AppTheme.textMuted),
+                      ),
+                      const SizedBox(height: QalaGoSpacing.space8),
+                      OutlinedButton(
+                        onPressed: onRetryLoadMore,
+                        child: Text(l10n.searchLoadMoreRetry),
+                      ),
+                    ],
                   );
-                },
+                }
+                if (loadingMore) {
+                  return Semantics(
+                    label: l10n.searchLoadingMore,
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                  );
+                }
+                return OutlinedButton(
+                  key: const Key('search_load_more'),
+                  onPressed: onLoadMore,
+                  child: Text(l10n.searchLoadMore),
+                );
+              }
+              return Text(
+                l10n.searchEndOfResults,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppTheme.textMuted),
               );
             },
           ),

@@ -425,21 +425,34 @@ final categoriesProvider = FutureProvider<List<CategoryModel>>((ref) async {
   return ref.watch(catalogRepositoryProvider).fetchCategories(citySlug: city.slug);
 });
 
+final subcategoriesProvider =
+    FutureProvider.family<List<SubcategoryModel>, String>((ref, categoryId) {
+  return ref
+      .watch(catalogRepositoryProvider)
+      .fetchSubcategories(categoryId);
+});
+
 class BusinessesQuery {
   const BusinessesQuery({
     this.search,
     this.categoryId,
+    this.subcategoryId,
     this.latitude,
     this.longitude,
     this.radiusKm,
+    this.sort,
+    this.limit,
     this.suppressNetwork = false,
   });
 
   final String? search;
   final String? categoryId;
+  final String? subcategoryId;
   final double? latitude;
   final double? longitude;
   final double? radiusKm;
+  final String? sort;
+  final int? limit;
 
   /// When true, skip HTTP (search idle / continue-typing states).
   final bool suppressNetwork;
@@ -449,18 +462,24 @@ class BusinessesQuery {
       other is BusinessesQuery &&
       other.search == search &&
       other.categoryId == categoryId &&
+      other.subcategoryId == subcategoryId &&
       other.latitude == latitude &&
       other.longitude == longitude &&
       other.radiusKm == radiusKm &&
+      other.sort == sort &&
+      other.limit == limit &&
       other.suppressNetwork == suppressNetwork;
 
   @override
   int get hashCode => Object.hash(
         search,
         categoryId,
+        subcategoryId,
         latitude,
         longitude,
         radiusKm,
+        sort,
+        limit,
         suppressNetwork,
       );
 }
@@ -477,9 +496,13 @@ final businessesProvider = FutureProvider.family<PaginatedBusinesses, Businesses
           citySlug: city.slug,
           search: query.search,
           categoryId: query.categoryId,
+          subcategoryId: query.subcategoryId,
           latitude: query.latitude,
           longitude: query.longitude,
           radiusKm: query.radiusKm,
+          sort: query.sort,
+          page: 1,
+          limit: query.limit,
           cancelToken: cancelToken,
         );
   },

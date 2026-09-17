@@ -518,6 +518,108 @@ abstract class AppLocalizations {
   /// **'Измените фильтры или категорию'**
   String get searchEmptyHintFilters;
 
+  /// No description provided for @searchFiltersTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фильтры'**
+  String get searchFiltersTitle;
+
+  /// No description provided for @searchFiltersWithCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фильтры ({count})'**
+  String searchFiltersWithCount(int count);
+
+  /// No description provided for @searchApplyFilters.
+  ///
+  /// In ru, this message translates to:
+  /// **'Применить'**
+  String get searchApplyFilters;
+
+  /// No description provided for @searchResetFiltersOnly.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сбросить фильтры'**
+  String get searchResetFiltersOnly;
+
+  /// No description provided for @searchSubcategoriesTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подкategории'**
+  String get searchSubcategoriesTitle;
+
+  /// No description provided for @searchSubcategoryAll.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все подkategории'**
+  String get searchSubcategoryAll;
+
+  /// No description provided for @searchRadiusSectionTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Радиус поиска'**
+  String get searchRadiusSectionTitle;
+
+  /// No description provided for @searchSortRecommended.
+  ///
+  /// In ru, this message translates to:
+  /// **'Рекомендуем'**
+  String get searchSortRecommended;
+
+  /// No description provided for @searchSortNearby.
+  ///
+  /// In ru, this message translates to:
+  /// **'Рядом'**
+  String get searchSortNearby;
+
+  /// No description provided for @searchSortRating.
+  ///
+  /// In ru, this message translates to:
+  /// **'По рейтингу'**
+  String get searchSortRating;
+
+  /// No description provided for @searchSortPopular.
+  ///
+  /// In ru, this message translates to:
+  /// **'Популярные'**
+  String get searchSortPopular;
+
+  /// No description provided for @searchSortMenuTooltip.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сортировка'**
+  String get searchSortMenuTooltip;
+
+  /// No description provided for @searchLoadMore.
+  ///
+  /// In ru, this message translates to:
+  /// **'Показать ещё'**
+  String get searchLoadMore;
+
+  /// No description provided for @searchLoadingMore.
+  ///
+  /// In ru, this message translates to:
+  /// **'Загрузка…'**
+  String get searchLoadingMore;
+
+  /// No description provided for @searchLoadMoreFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить ещё'**
+  String get searchLoadMoreFailed;
+
+  /// No description provided for @searchLoadMoreRetry.
+  ///
+  /// In ru, this message translates to:
+  /// **'Повторить загрузку'**
+  String get searchLoadMoreRetry;
+
+  /// No description provided for @searchEndOfResults.
+  ///
+  /// In ru, this message translates to:
+  /// **'Показаны все результаты'**
+  String get searchEndOfResults;
+
   /// No description provided for @searchEnterQuery.
   ///
   /// In ru, this message translates to:

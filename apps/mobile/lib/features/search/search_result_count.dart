@@ -3,8 +3,20 @@ import '../../shared/models/models.dart';
 
 /// Localized result count — honest when API total exceeds loaded page size.
 String formatSearchResultCount(AppLocalizations l10n, PaginatedBusinesses data) {
-  if (data.total <= data.items.length) {
-    return l10n.searchFoundCount(data.total);
+  return formatSearchResultCountShown(
+    l10n,
+    shown: data.items.length,
+    total: data.total,
+  );
+}
+
+String formatSearchResultCountShown(
+  AppLocalizations l10n, {
+  required int shown,
+  required int total,
+}) {
+  if (total <= shown) {
+    return l10n.searchFoundCount(total);
   }
-  return l10n.searchFoundCountPartial(data.items.length, data.total);
+  return l10n.searchFoundCountPartial(shown, total);
 }

@@ -164,6 +164,7 @@ class CatalogRepository {
     double? longitude,
     double? radiusKm,
     int? limit,
+    int? page,
     String? sort,
     CancelToken? cancelToken,
   }) async {
@@ -179,6 +180,7 @@ class CatalogRepository {
         if (longitude != null) 'longitude': longitude,
         if (radiusKm != null) 'radiusKm': radiusKm,
         if (sort != null && sort.isNotEmpty) 'sort': sort,
+        if (page != null) 'page': page,
         'limit': limit ?? 50,
       },
       cancelToken: cancelToken,
