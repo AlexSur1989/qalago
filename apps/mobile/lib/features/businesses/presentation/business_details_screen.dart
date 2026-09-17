@@ -737,38 +737,43 @@ class _HeroPhoto extends StatelessWidget {
                 0,
               ),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   _RoundIconButton(
+                    key: const Key('business_detail_hero_back'),
                     icon: Icons.arrow_back_ios_new_rounded,
                     tooltip: context.l10n.commonBack,
                     onTap: onBack,
                   ),
-                  const SizedBox(width: QalaGoSpacing.space8),
                   Expanded(
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Wrap(
-                        alignment: WrapAlignment.end,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        spacing: QalaGoSpacing.space8,
-                        runSpacing: QalaGoSpacing.space8,
-                        children: [
-                          _CityPill(cityName: cityName),
-                          _RoundIconButton(
-                            icon: isFavorite
-                                ? Icons.favorite_rounded
-                                : Icons.favorite_border_rounded,
-                            iconColor: isFavorite
-                                ? QalaGoColors.favoriteActive
-                                : QalaGoColors.textPrimary,
-                            tooltip: isFavorite
-                                ? context.l10n.favoritesRemoveTooltip
-                                : context.l10n.businessFavoriteAddTooltip,
-                            onTap: onFavorite,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Spacer(),
+                        Flexible(
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: _CityPill(
+                              key: const Key('business_detail_hero_city_pill'),
+                              cityName: cityName,
+                            ),
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: QalaGoSpacing.space8),
+                        _RoundIconButton(
+                          key: const Key('business_detail_hero_favorite'),
+                          icon: isFavorite
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border_rounded,
+                          iconColor: isFavorite
+                              ? QalaGoColors.favoriteActive
+                              : QalaGoColors.textPrimary,
+                          tooltip: isFavorite
+                              ? context.l10n.favoritesRemoveTooltip
+                              : context.l10n.businessFavoriteAddTooltip,
+                          onTap: onFavorite,
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -1729,6 +1734,7 @@ class _LoginToReviewPrompt extends StatelessWidget {
 
 class _RoundIconButton extends StatelessWidget {
   const _RoundIconButton({
+    super.key,
     required this.icon,
     required this.onTap,
     this.iconColor = Colors.black,
@@ -1765,7 +1771,7 @@ class _RoundIconButton extends StatelessWidget {
 }
 
 class _CityPill extends StatelessWidget {
-  const _CityPill({required this.cityName});
+  const _CityPill({super.key, required this.cityName});
 
   final String cityName;
 
