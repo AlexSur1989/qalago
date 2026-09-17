@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -138,6 +139,25 @@ class _BusinessAddressLocationFieldState
     });
   }
 
+  bool _isOutOfCityGeocodingError(DioException error) {
+    if (error.response?.statusCode != 400) return false;
+    final data = error.response?.data;
+    if (data is Map) {
+      final message = data['message'];
+      if (message is String) {
+        return message.contains('outside the selected city geocoding area');
+      }
+      if (message is List) {
+        return message.any(
+          (item) =>
+              item is String &&
+              item.contains('outside the selected city geocoding area'),
+        );
+      }
+    }
+    return false;
+  }
+
   Future<void> _confirmPicker(double lat, double lng) async {
     var next = widget.value.copyWith(
       latitude: lat,
@@ -148,12 +168,22 @@ class _BusinessAddressLocationFieldState
       final reverse = await ref.read(geocodingRepositoryProvider).reverse(
             latitude: lat,
             longitude: lng,
+            citySlug: widget.citySlug,
             language: _language,
           );
       if (reverse != null && reverse.address.isNotEmpty) {
         _addressController.text = reverse.address;
         next = next.copyWith(displayAddress: reverse.address);
       }
+    } on DioException catch (error) {
+      if (_isOutOfCityGeocodingError(error)) {
+        if (!mounted) return;
+        setState(() {
+          _error = context.l10n.businessLocationOutOfCityBounds;
+        });
+        return;
+      }
+      // Other failures: coordinates remain authoritative only when reverse is optional.
     } catch (_) {
       // Coordinates remain authoritative.
     }

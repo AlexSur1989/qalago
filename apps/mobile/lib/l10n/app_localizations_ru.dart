@@ -1182,6 +1182,10 @@ class AppLocalizationsRu extends AppLocalizations {
       'Не удалось загрузить подсказки адреса. Повторите позже.';
 
   @override
+  String get businessLocationOutOfCityBounds =>
+      'Точка находится за пределами выбранного города. Переместите карту в пределах города.';
+
+  @override
   String get onboardingPhoneLabel => 'Телефон';
 
   @override

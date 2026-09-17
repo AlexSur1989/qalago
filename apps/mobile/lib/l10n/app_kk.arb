@@ -386,6 +386,7 @@
   "businessLocationAdjustOnMap": "Картада нақтылау",
   "businessLocationRequired": "Мекенжайды ұсыныстардан таңдап, картада нүктені растаңыз",
   "businessLocationGeocodingError": "Мекенжай ұсыныстарын жүктеу сәтсіз. Кейінірек қайталаңыз.",
+  "businessLocationOutOfCityBounds": "Нүкте таңдалған қала шегінен тыс. Картаны қала аумағында жылжытыңыз.",
   "onboardingPhoneLabel": "Телефон",
   "onboardingDescriptionLabel": "Қысқаша сипаттама",
   "onboardingSaveDraft": "Жобаны сақтау",

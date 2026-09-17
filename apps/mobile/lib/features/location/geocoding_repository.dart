@@ -59,6 +59,7 @@ class GeocodingRepository {
   Future<GeocodingSuggestion?> reverse({
     required double latitude,
     required double longitude,
+    required String citySlug,
     required String language,
     CancelToken? cancelToken,
   }) async {
@@ -67,6 +68,7 @@ class GeocodingRepository {
       queryParameters: {
         'lat': latitude,
         'lng': longitude,
+        'citySlug': citySlug,
         'language': language,
       },
       cancelToken: cancelToken,

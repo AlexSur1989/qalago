@@ -1182,6 +1182,10 @@ class AppLocalizationsKk extends AppLocalizations {
       'Мекенжай ұсыныстарын жүктеу сәтсіз. Кейінірек қайталаңыз.';
 
   @override
+  String get businessLocationOutOfCityBounds =>
+      'Нүкте таңдалған қала шегінен тыс. Картаны қала аумағында жылжытыңыз.';
+
+  @override
   String get onboardingPhoneLabel => 'Телефон';
 
   @override

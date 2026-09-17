@@ -40,6 +40,7 @@ import {
   assertValidBusinessCoordinatePair,
   isOptionalBusinessCoordinatePairValid,
 } from '../../common/utils/business-coordinates.util';
+import { assertBusinessCoordinatesWithinCity } from '../../common/utils/city-geocoding-persistence.util';
 import { BusinessPublicContentService } from './business-public-content.service';
 import { BusinessSubcategoryService } from './business-subcategory.service';
 import { SubcategoriesService } from '../categories/subcategories.service';
@@ -626,6 +627,12 @@ export class BusinessesService {
       }
       if (mergedLat !== undefined && mergedLng !== undefined) {
         assertValidBusinessCoordinatePair(mergedLat, mergedLng);
+        await assertBusinessCoordinatesWithinCity(
+          this.prisma,
+          business.cityId,
+          mergedLat,
+          mergedLng,
+        );
         latitude = mergedLat;
         longitude = mergedLng;
       }

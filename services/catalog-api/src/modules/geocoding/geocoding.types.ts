@@ -18,6 +18,10 @@ export type GeocodingAutocompleteParams = {
   countryCode: string;
   proximityLat?: number;
   proximityLng?: number;
+  bboxMinLng?: number;
+  bboxMinLat?: number;
+  bboxMaxLng?: number;
+  bboxMaxLat?: number;
   limit?: number;
 };
 

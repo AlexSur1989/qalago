@@ -290,8 +290,8 @@ Authenticated geocoding for business onboarding and location picker (server-side
 
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
-| GET | `/geocoding/autocomplete` | JWT | Query: `q` (2–200 chars), optional `citySlug` or `cityId` (city center bias), optional `language` `ru` \| `kk` (default `ru`). Country filter `kz`. Rate limit per user + IP. |
-| GET | `/geocoding/reverse` | JWT | Query: `lat`, `lng` (valid pair; rejects `0,0`), optional `language` `ru` \| `kk`. |
+| GET | `/geocoding/autocomplete` | JWT | Query: `q` (2–200 chars), **required** `citySlug` or `cityId`, optional `language` `ru` \| `kk` (default `ru`). Country `kz`; provider bbox + server filter to city geocoding bounds. Rate limit per user + IP. |
+| GET | `/geocoding/reverse` | JWT | Query: `lat`, `lng` (valid pair; rejects `0,0`), **required** `citySlug` or `cityId`, optional `language` `ru` \| `kk`. Rejects coordinates outside city geocoding bounds before provider call. |
 
 Response item (`GeocodingSuggestion`): `{ id, label, address, latitude, longitude, placeType? }`.
 

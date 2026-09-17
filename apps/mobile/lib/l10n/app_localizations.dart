@@ -2246,6 +2246,12 @@ abstract class AppLocalizations {
   /// **'Не удалось загрузить подсказки адреса. Повторите позже.'**
   String get businessLocationGeocodingError;
 
+  /// No description provided for @businessLocationOutOfCityBounds.
+  ///
+  /// In ru, this message translates to:
+  /// **'Точка находится за пределами выбранного города. Переместите карту в пределах города.'**
+  String get businessLocationOutOfCityBounds;
+
   /// No description provided for @onboardingPhoneLabel.
   ///
   /// In ru, this message translates to:

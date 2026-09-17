@@ -284,6 +284,11 @@ model City {
   countryCode             String                    @default("KZ")
   centerLat               Decimal?                  @db.Decimal(10, 7)
   centerLng               Decimal?                  @db.Decimal(10, 7)
+  /// QalaGo geocoding search bounds (not legal admin boundaries) — Stage 6.11C.4 hotfix
+  geocodingMinLat         Decimal?                  @db.Decimal(10, 7)
+  geocodingMaxLat         Decimal?                  @db.Decimal(10, 7)
+  geocodingMinLng         Decimal?                  @db.Decimal(10, 7)
+  geocodingMaxLng         Decimal?                  @db.Decimal(10, 7)
   timezone                String                    @default("Asia/Oral")
   isActive                Boolean                   @default(true)
   launchStatus            CityLaunchStatus          @default(LIVE)

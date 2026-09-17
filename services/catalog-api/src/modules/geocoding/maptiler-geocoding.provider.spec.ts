@@ -36,12 +36,15 @@ describe('MapTilerGeocodingProvider', () => {
       countryCode: 'kz',
       proximityLat: 51.22,
       proximityLng: 51.38,
+      bboxMinLng: 51.05,
+      bboxMinLat: 51.05,
+      bboxMaxLng: 51.65,
+      bboxMaxLat: 51.35,
     });
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining('api.maptiler.com/geocoding/'),
-      expect.any(Object),
-    );
+    const calledUrl = fetchMock.mock.calls[0][0] as string;
+    expect(calledUrl).toContain('api.maptiler.com/geocoding/');
+    expect(calledUrl).toContain('bbox=51.05%2C51.05%2C51.65%2C51.35');
     expect(results).toEqual([
       expect.objectContaining({
         id: 'place.1',

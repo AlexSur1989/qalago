@@ -36,6 +36,17 @@ export class MapTilerGeocodingProvider implements GeocodingProvider {
     if (params.proximityLat != null && params.proximityLng != null) {
       search.set('proximity', `${params.proximityLng},${params.proximityLat}`);
     }
+    if (
+      params.bboxMinLng != null &&
+      params.bboxMinLat != null &&
+      params.bboxMaxLng != null &&
+      params.bboxMaxLat != null
+    ) {
+      search.set(
+        'bbox',
+        `${params.bboxMinLng},${params.bboxMinLat},${params.bboxMaxLng},${params.bboxMaxLat}`,
+      );
+    }
 
     const url = `https://api.maptiler.com/geocoding/${encodedQuery}.json?${search}`;
     const data = await this.fetchJson(url);

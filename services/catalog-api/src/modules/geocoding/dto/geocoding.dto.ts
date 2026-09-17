@@ -33,6 +33,14 @@ export class GeocodingReverseQueryDto {
   lng!: number;
 
   @IsOptional()
+  @IsString()
+  citySlug?: string;
+
+  @IsOptional()
+  @IsString()
+  cityId?: string;
+
+  @IsOptional()
   @IsIn(['ru', 'kk'])
   language?: 'ru' | 'kk' = 'ru';
 }

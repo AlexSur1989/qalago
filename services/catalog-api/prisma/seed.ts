@@ -38,9 +38,28 @@ const allWeek = (weekdays: string, saturday = weekdays, sunday = weekdays) => ({
 });
 
 async function main() {
+  const uralskGeocodingBounds = {
+    geocodingMinLat: 51.05,
+    geocodingMaxLat: 51.35,
+    geocodingMinLng: 51.05,
+    geocodingMaxLng: 51.65,
+  };
+  const aktobeGeocodingBounds = {
+    geocodingMinLat: 50.12,
+    geocodingMaxLat: 50.45,
+    geocodingMinLng: 56.85,
+    geocodingMaxLng: 57.45,
+  };
+  const shymkentGeocodingBounds = {
+    geocodingMinLat: 42.15,
+    geocodingMaxLat: 42.55,
+    geocodingMinLng: 69.35,
+    geocodingMaxLng: 69.85,
+  };
+
   const city = await prisma.city.upsert({
     where: { slug: 'uralsk' },
-    update: { nameKk: 'Орал' },
+    update: { nameKk: 'Орал', ...uralskGeocodingBounds },
     create: {
       slug: 'uralsk',
       nameRu: 'Уральск',
@@ -51,12 +70,13 @@ async function main() {
       timezone: 'Asia/Oral',
       isActive: true,
       launchDate: new Date(),
+      ...uralskGeocodingBounds,
     },
   });
 
   const aktobe = await prisma.city.upsert({
     where: { slug: 'aktobe' },
-    update: { nameKk: 'Ақтөбе' },
+    update: { nameKk: 'Ақтөбе', ...aktobeGeocodingBounds },
     create: {
       slug: 'aktobe',
       nameRu: 'Актобе',
@@ -67,12 +87,13 @@ async function main() {
       timezone: 'Asia/Aqtobe',
       isActive: true,
       launchDate: new Date(),
+      ...aktobeGeocodingBounds,
     },
   });
 
   await prisma.city.upsert({
     where: { slug: 'shymkent' },
-    update: { nameRu: 'Шымкент', nameKk: 'Шымкент' },
+    update: { nameRu: 'Шымкент', nameKk: 'Шымкент', ...shymkentGeocodingBounds },
     create: {
       slug: 'shymkent',
       nameRu: 'Шымкент',
@@ -83,6 +104,7 @@ async function main() {
       timezone: 'Asia/Almaty',
       isActive: true,
       launchDate: new Date(),
+      ...shymkentGeocodingBounds,
     },
   });
 

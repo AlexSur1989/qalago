@@ -97,6 +97,10 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
           id: 'city-uralsk',
           isActive: true,
           launchStatus: CityLaunchStatus.LIVE,
+          geocodingMinLat: 51.05,
+          geocodingMaxLat: 51.35,
+          geocodingMinLng: 51.05,
+          geocodingMaxLng: 51.65,
         }),
         findUniqueOrThrow: jest.fn().mockResolvedValue({
           id: 'city-uralsk',
@@ -220,6 +224,44 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
     });
 
     await expect(service.submit(user, 'app-1')).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('rejects coordinates outside selected city on update', async () => {
+    prisma.businessApplication.findUnique = jest.fn().mockResolvedValue({
+      ...baseApplication,
+      status: BusinessApplicationStatus.DRAFT,
+      city: null,
+      category: null,
+      approvedBusiness: null,
+    });
+
+    await expect(
+      service.updateOwn(user, 'app-1', {
+        latitude: 42.34,
+        longitude: 69.59,
+        locationSource: 'MANUALLY_ADJUSTED',
+      }),
+    ).rejects.toThrow('Location is outside the selected city geocoding area');
+  });
+
+  it('allows legacy draft update without touching coordinates', async () => {
+    prisma.businessApplication.findUnique = jest.fn().mockResolvedValue({
+      ...baseApplication,
+      status: BusinessApplicationStatus.DRAFT,
+      latitude: null,
+      longitude: null,
+      city: null,
+      category: null,
+      approvedBusiness: null,
+    });
+    prisma.businessApplication.update = jest.fn().mockResolvedValue({
+      ...baseApplication,
+      shortDesc: 'Updated',
+    });
+
+    await service.updateOwn(user, 'app-1', { shortDesc: 'Updated' });
+
+    expect(prisma.businessApplication.update).toHaveBeenCalled();
   });
 
   it('approves legacy application without coordinates', async () => {

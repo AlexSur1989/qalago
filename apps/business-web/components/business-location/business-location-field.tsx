@@ -7,10 +7,16 @@ import {
   businessLocationCancel,
   businessLocationConfirm,
   businessLocationGeocodingError,
+  businessLocationOutOfCityBounds,
   businessLocationPickerHint,
   businessLocationRequired,
 } from '@/lib/presentation';
-import { geocodingAutocomplete, geocodingReverse, type GeocodingSuggestion } from '@/lib/geocoding-api';
+import {
+  GeocodingOutOfCityError,
+  geocodingAutocomplete,
+  geocodingReverse,
+  type GeocodingSuggestion,
+} from '@/lib/geocoding-api';
 import { LocationMapPicker } from './location-map-picker';
 
 export type BusinessLocationState = {
@@ -98,12 +104,16 @@ export function BusinessLocationField({
       locationSource: 'MANUALLY_ADJUSTED',
     };
     try {
-      const reverse = await geocodingReverse(token, { lat, lng, language });
+      const reverse = await geocodingReverse(token, { lat, lng, citySlug, language });
       if (reverse?.address) {
         next = { ...next, address: reverse.address };
       }
-    } catch {
-      // coordinates authoritative
+    } catch (error) {
+      if (error instanceof GeocodingOutOfCityError) {
+        setError(businessLocationOutOfCityBounds(locale));
+        return;
+      }
+      // coordinates authoritative for other reverse failures
     }
     onChange(next);
     setShowPicker(false);

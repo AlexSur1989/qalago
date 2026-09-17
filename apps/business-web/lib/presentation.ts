@@ -898,3 +898,10 @@ export function businessLocationGeocodingError(locale: AppLocale): string {
     kk: 'Мекенжай ұсыныстарын жүктеу сәтсіз. Кейінірек қайталаңыз.',
   });
 }
+
+export function businessLocationOutOfCityBounds(locale: AppLocale): string {
+  return pick(locale, {
+    ru: 'Точка находится за пределами выбранного города. Переместите карту в пределах города.',
+    kk: 'Нүкте таңдалған қала шегінен тыс. Картаны қала аумағында жылжытыңыз.',
+  });
+}

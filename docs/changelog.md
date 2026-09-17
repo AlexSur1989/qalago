@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-18 — Stage 6.11C.4 hotfix: Geocoding city-boundary safety
+
+- City model: `geocodingMin/MaxLat/Lng` for provider-neutral search bounds (uralsk, aktobe, shymkent seeded).
+- Geocoding: MapTiler `bbox`, post-provider autocomplete filter, reverse + persistence validation against selected city.
+- Mobile/Business Web: reverse geocoding passes `citySlug`; localized out-of-bounds picker error (RU/KK).
+- Future: tune bounds per city from operator QA; PostGIS search remains C.5.
+
 ## 2026-09-18 — Stage 6.11C.4: Address geocoding and business location picker
 
 - Backend: provider-neutral geocoding API (MapTiler or mock), application/business coordinate persistence, approval pipeline, validation — see `docs/architecture/geocoding.md`.

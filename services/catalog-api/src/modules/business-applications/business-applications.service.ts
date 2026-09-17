@@ -25,6 +25,7 @@ import {
   buildApplicationDedupeKey,
   businessMatchesApplicationDedupe,
 } from '../../common/utils/business-application-dedupe.util';
+import { assertBusinessCoordinatesWithinCity } from '../../common/utils/city-geocoding-persistence.util';
 import {
   assertValidBusinessCoordinatePair,
   isOptionalBusinessCoordinatePairValid,
@@ -80,7 +81,7 @@ export class BusinessApplicationsService {
     await this.assertNoDuplicateActiveApplication(user.id, dedupeKey);
 
     const phone = this.normalizeOptionalPhone(dto.phone);
-    const coordinates = this.resolveCoordinateInput(dto);
+    const coordinates = await this.resolveCoordinateInputForCity(cityId, dto);
 
     return this.prisma.businessApplication.create({
       data: {
@@ -145,7 +146,7 @@ export class BusinessApplicationsService {
 
     const phone =
       dto.phone !== undefined ? this.normalizeOptionalPhone(dto.phone) : application.phone;
-    const coordinates = this.resolveCoordinateInput(dto, application);
+    const coordinates = await this.resolveCoordinateInputForCity(cityId, dto, application);
 
     return this.prisma.businessApplication.update({
       where: { id },
@@ -523,6 +524,35 @@ export class BusinessApplicationsService {
     }
   }
 
+  private async resolveCoordinateInputForCity(
+    cityId: string,
+    dto: {
+      latitude?: number;
+      longitude?: number;
+      locationSource?: BusinessLocationSource;
+    },
+    existing?: {
+      latitude: Prisma.Decimal | null;
+      longitude: Prisma.Decimal | null;
+      locationSource: BusinessLocationSource | null;
+    },
+  ): Promise<{
+    latitude?: number;
+    longitude?: number;
+    locationSource?: BusinessLocationSource | null;
+  }> {
+    const resolved = this.resolveCoordinateInput(dto, existing);
+    if (resolved.latitude !== undefined && resolved.longitude !== undefined) {
+      await assertBusinessCoordinatesWithinCity(
+        this.prisma,
+        cityId,
+        resolved.latitude,
+        resolved.longitude,
+      );
+    }
+    return resolved;
+  }
+
   private resolveCoordinateInput(
     dto: {
       latitude?: number;
@@ -605,6 +635,15 @@ export class BusinessApplicationsService {
     }
 
     await this.validateCategory(application.categoryId);
+
+    if (this.applicationHasValidCoordinates(application)) {
+      await assertBusinessCoordinatesWithinCity(
+        this.prisma,
+        application.cityId,
+        Number(application.latitude),
+        Number(application.longitude),
+      );
+    }
 
     if (options?.requireCoordinates && !this.applicationHasValidCoordinates(application)) {
       throw new BadRequestException('Business location coordinates are required before submit');
