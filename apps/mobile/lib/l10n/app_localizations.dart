@@ -476,6 +476,48 @@ abstract class AppLocalizations {
   /// **'Не удалось выполнить поиск.'**
   String get searchFailed;
 
+  /// No description provided for @searchResultsLoadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить результаты'**
+  String get searchResultsLoadFailed;
+
+  /// No description provided for @searchInitialTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Найдите место или услугу'**
+  String get searchInitialTitle;
+
+  /// No description provided for @searchInitialBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ищите заведения, категории и услуги — например «маникюр» или «караоке».'**
+  String get searchInitialBody;
+
+  /// No description provided for @searchContinueTyping.
+  ///
+  /// In ru, this message translates to:
+  /// **'Продолжайте ввод — нужно минимум 2 символа'**
+  String get searchContinueTyping;
+
+  /// No description provided for @searchEmptyHintSpelling.
+  ///
+  /// In ru, this message translates to:
+  /// **'Проверьте написание'**
+  String get searchEmptyHintSpelling;
+
+  /// No description provided for @searchEmptyHintGeneral.
+  ///
+  /// In ru, this message translates to:
+  /// **'Попробуйте более общий запрос'**
+  String get searchEmptyHintGeneral;
+
+  /// No description provided for @searchEmptyHintFilters.
+  ///
+  /// In ru, this message translates to:
+  /// **'Измените фильтры или категорию'**
+  String get searchEmptyHintFilters;
+
   /// No description provided for @searchEnterQuery.
   ///
   /// In ru, this message translates to:

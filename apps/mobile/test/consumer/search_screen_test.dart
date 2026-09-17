@@ -278,10 +278,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(
-      find.text('Введите название или выберите категорию'),
-      findsOneWidget,
-    );
+    expect(find.text('Найдите место или услугу'), findsOneWidget);
   });
 
   testWidgets('retains query after business pop', (tester) async {

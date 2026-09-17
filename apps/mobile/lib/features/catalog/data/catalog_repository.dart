@@ -165,6 +165,7 @@ class CatalogRepository {
     double? radiusKm,
     int? limit,
     String? sort,
+    CancelToken? cancelToken,
   }) async {
     final response = await _dio.get(
       '/businesses',
@@ -180,6 +181,7 @@ class CatalogRepository {
         if (sort != null && sort.isNotEmpty) 'sort': sort,
         'limit': limit ?? 50,
       },
+      cancelToken: cancelToken,
     );
     return PaginatedBusinesses.fromJson(response.data as Map<String, dynamic>);
   }

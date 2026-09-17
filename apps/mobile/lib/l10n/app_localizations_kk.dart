@@ -202,6 +202,28 @@ class AppLocalizationsKk extends AppLocalizations {
   String get searchFailed => 'Іздеу орындалмады.';
 
   @override
+  String get searchResultsLoadFailed => 'Нәтижелерді жүктеу мүмкін болмады';
+
+  @override
+  String get searchInitialTitle => 'Орын немесе қызмет табыңыз';
+
+  @override
+  String get searchInitialBody =>
+      'Мекемелер, санаттар және қызметтер бойынша іздеңіз — мысалы «маникюр» немесе «караоке».';
+
+  @override
+  String get searchContinueTyping => 'Жазуды жалғастырыңыз — кемінде 2 таңба';
+
+  @override
+  String get searchEmptyHintSpelling => 'Жазуды тексеріңіз';
+
+  @override
+  String get searchEmptyHintGeneral => 'Жалпылау сұранымын қолданып көріңіз';
+
+  @override
+  String get searchEmptyHintFilters => 'Сүзгілер немесе санатты өзгертіңіз';
+
+  @override
   String get searchEnterQuery => 'Атауын енгізіңіз немесе санатты таңдаңыз';
 
   @override

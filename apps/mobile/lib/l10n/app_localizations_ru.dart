@@ -201,6 +201,29 @@ class AppLocalizationsRu extends AppLocalizations {
   String get searchFailed => 'Не удалось выполнить поиск.';
 
   @override
+  String get searchResultsLoadFailed => 'Не удалось загрузить результаты';
+
+  @override
+  String get searchInitialTitle => 'Найдите место или услугу';
+
+  @override
+  String get searchInitialBody =>
+      'Ищите заведения, категории и услуги — например «маникюр» или «караоке».';
+
+  @override
+  String get searchContinueTyping =>
+      'Продолжайте ввод — нужно минимум 2 символа';
+
+  @override
+  String get searchEmptyHintSpelling => 'Проверьте написание';
+
+  @override
+  String get searchEmptyHintGeneral => 'Попробуйте более общий запрос';
+
+  @override
+  String get searchEmptyHintFilters => 'Измените фильтры или категорию';
+
+  @override
   String get searchEnterQuery => 'Введите название или выберите категорию';
 
   @override

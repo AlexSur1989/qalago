@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/location/user_location_provider.dart';
 import '../../../core/locale/app_locale_provider.dart';
-import '../../../core/locale/consumer_api_errors.dart';
 import '../../../core/locale/l10n_extension.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -26,6 +25,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../categories/utils/category_display.dart';
 import '../../home/presentation/home_layout.dart';
 import '../search_filters.dart';
+import '../search_query_policy.dart';
 import '../search_result_count.dart';
 import 'search_filter_sections.dart';
 import 'search_scope_chip.dart';
@@ -57,6 +57,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   bool _syncingRoute = false;
   String? _lastSearchPerformedQuery;
   int _fetchGeneration = 0;
+  int? _verifiedResultsGeneration;
 
   @override
   void initState() {
@@ -89,6 +90,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       _categoryId = nextCategory;
       _radiusMode = nextRadius;
       _fetchGeneration++;
+      _verifiedResultsGeneration = null;
     });
     if (_controller.text != nextQuery) {
       _controller.text = nextQuery;
@@ -103,7 +105,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     super.dispose();
   }
 
-  bool get _hasActiveSearch => _query.isNotEmpty || _categoryId != null;
+  SearchResultsPaneMode get _paneMode => resolveSearchResultsPaneMode(
+        trimmedQuery: _query,
+        categoryId: _categoryId,
+        radiusMode: _radiusMode,
+      );
 
   bool get _hasNarrowFilters =>
       _query.isNotEmpty ||
@@ -111,19 +117,30 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       _radiusMode != SearchRadiusMode.wholeCity;
 
   BusinessesQuery _buildQuery() {
+    final suppressNetwork = !searchShouldFetchBusinesses(
+      trimmedQuery: _query,
+      categoryId: _categoryId,
+      radiusMode: _radiusMode,
+    );
+    final search = searchApiTextParam(
+      trimmedQuery: _query,
+      categoryId: _categoryId,
+    );
     if (_radiusMode == SearchRadiusMode.wholeCity) {
       return BusinessesQuery(
-        search: _query.isEmpty ? null : _query,
+        search: search,
         categoryId: _categoryId,
+        suppressNetwork: suppressNetwork,
       );
     }
     final position = ref.read(nearbySearchPositionProvider);
     return BusinessesQuery(
-      search: _query.isEmpty ? null : _query,
+      search: search,
       categoryId: _categoryId,
       latitude: position.latitude,
       longitude: position.longitude,
       radiusKm: _radiusMode.radiusKm,
+      suppressNetwork: suppressNetwork,
     );
   }
 
@@ -151,6 +168,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       setState(() {
         _query = next;
         _fetchGeneration++;
+        _verifiedResultsGeneration = null;
       });
       _syncRoute();
     });
@@ -166,6 +184,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     setState(() {
       _query = '';
       _fetchGeneration++;
+      _verifiedResultsGeneration = null;
     });
     _syncRoute();
     _focusNode.requestFocus();
@@ -176,6 +195,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     setState(() {
       _categoryId = null;
       _fetchGeneration++;
+      _verifiedResultsGeneration = null;
     });
     _syncRoute();
   }
@@ -188,6 +208,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       _categoryId = null;
       _radiusMode = SearchRadiusMode.wholeCity;
       _fetchGeneration++;
+      _verifiedResultsGeneration = null;
     });
     _syncRoute();
     _focusNode.requestFocus();
@@ -197,6 +218,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     setState(() {
       _categoryId = id;
       _fetchGeneration++;
+      _verifiedResultsGeneration = null;
     });
     _syncRoute();
   }
@@ -205,6 +227,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     setState(() {
       _radiusMode = mode;
       _fetchGeneration++;
+      _verifiedResultsGeneration = null;
     });
     _syncRoute();
   }
@@ -278,7 +301,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     ref.listen(businessesProvider(query), (previous, next) {
       next.whenData((_) {
         if (!mounted || fetchGen != _fetchGeneration) return;
-        setState(() => _resultAttributionQuery = query.search);
+        if (query.suppressNetwork) return;
+        setState(() {
+          _resultAttributionQuery = query.search;
+          _verifiedResultsGeneration = fetchGen;
+        });
         _trackSearchPerformedIfNeeded(query.search, fetchGen);
       });
     });
@@ -318,11 +345,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       onChanged: _onQueryChanged,
                       onSubmitted: (value) {
                         _debounce?.cancel();
+                        final next = value.trim();
+                        if (next == _query) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          return;
+                        }
                         setState(() {
-                          _query = value.trim();
+                          _query = next;
                           _fetchGeneration++;
+                          _verifiedResultsGeneration = null;
                         });
                         _syncRoute();
+                        FocusManager.instance.primaryFocus?.unfocus();
                       },
                       onClear: _clearQuery,
                       clearSemanticsLabel: l10n.searchClearTooltip,
@@ -404,9 +438,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             Expanded(
               child: _SearchResultsPane(
                 businessesAsync: businessesAsync,
-                hasActiveSearch: _hasActiveSearch,
+                paneMode: _paneMode,
+                fetchGeneration: fetchGen,
+                verifiedResultsGeneration: _verifiedResultsGeneration,
                 hasNarrowFilters: _hasNarrowFilters,
                 query: query,
+                trimmedQuery: _query,
                 resultAttributionQuery: _resultAttributionQuery,
                 emptyMessage: _emptyMessage(
                   l10n,
@@ -444,9 +481,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 class _SearchResultsPane extends StatelessWidget {
   const _SearchResultsPane({
     required this.businessesAsync,
-    required this.hasActiveSearch,
+    required this.paneMode,
+    required this.fetchGeneration,
+    required this.verifiedResultsGeneration,
     required this.hasNarrowFilters,
     required this.query,
+    required this.trimmedQuery,
     required this.resultAttributionQuery,
     required this.emptyMessage,
     required this.onRetry,
@@ -456,9 +496,12 @@ class _SearchResultsPane extends StatelessWidget {
   });
 
   final AsyncValue<PaginatedBusinesses> businessesAsync;
-  final bool hasActiveSearch;
+  final SearchResultsPaneMode paneMode;
+  final int fetchGeneration;
+  final int? verifiedResultsGeneration;
   final bool hasNarrowFilters;
   final BusinessesQuery query;
+  final String trimmedQuery;
   final String? resultAttributionQuery;
   final String emptyMessage;
   final VoidCallback onRetry;
@@ -466,29 +509,43 @@ class _SearchResultsPane extends StatelessWidget {
   final VoidCallback? onClearCategoryScope;
   final AppLocalizations l10n;
 
+  bool get _resultsVerified =>
+      verifiedResultsGeneration != null &&
+      verifiedResultsGeneration == fetchGeneration;
+
   @override
   Widget build(BuildContext context) {
-    if (!hasActiveSearch) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(HomeLayout.horizontalPadding),
-          child: Text(
-            l10n.searchEnterQuery,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: AppTheme.textMuted),
-          ),
-        ),
-      );
+    switch (paneMode) {
+      case SearchResultsPaneMode.initial:
+        return _SearchNeutralPane(
+          title: l10n.searchInitialTitle,
+          body: l10n.searchInitialBody,
+        );
+      case SearchResultsPaneMode.continueTyping:
+        return _SearchNeutralPane(
+          title: l10n.searchContinueTyping,
+          body: l10n.searchInitialBody,
+        );
+      case SearchResultsPaneMode.active:
+        break;
     }
 
-    if (businessesAsync.hasError && !businessesAsync.hasValue) {
+    if (businessesAsync.hasError && !_resultsVerified) {
       return ErrorView(
-        message: localizedLoadError(l10n, businessesAsync.error!),
+        message: l10n.searchResultsLoadFailed,
         onRetry: onRetry,
       );
     }
 
-    if (businessesAsync.isLoading && !businessesAsync.hasValue) {
+    if (!_resultsVerified &&
+        (businessesAsync.isLoading || !businessesAsync.hasValue)) {
+      return Semantics(
+        label: l10n.searchUpdatingResults,
+        child: const LoadingView(),
+      );
+    }
+
+    if (!_resultsVerified) {
       return Semantics(
         label: l10n.searchUpdatingResults,
         child: const LoadingView(),
@@ -499,17 +556,32 @@ class _SearchResultsPane extends StatelessWidget {
     final isUpdating = businessesAsync.isLoading;
 
     if (data.items.isEmpty && !isUpdating) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(HomeLayout.horizontalPadding),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+      return SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        padding: const EdgeInsets.all(HomeLayout.horizontalPadding),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
               Text(
-                emptyMessage,
+                trimmedQuery.isNotEmpty
+                    ? l10n.searchNoResults
+                    : emptyMessage,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppTheme.textMuted),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: AppTheme.textDark,
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
+              if (trimmedQuery.isNotEmpty) ...[
+                const SizedBox(height: QalaGoSpacing.space8),
+                Text(
+                  emptyMessage,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppTheme.textMuted),
+                ),
+              ],
+              const SizedBox(height: QalaGoSpacing.space12),
+              _SearchEmptyHints(l10n: l10n),
               if (onClearCategoryScope != null) ...[
                 const SizedBox(height: 12),
                 OutlinedButton(
@@ -525,7 +597,6 @@ class _SearchResultsPane extends StatelessWidget {
                 ),
               ],
             ],
-          ),
         ),
       );
     }
@@ -582,6 +653,82 @@ class _SearchResultsPane extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _SearchNeutralPane extends StatelessWidget {
+  const _SearchNeutralPane({
+    required this.title,
+    required this.body,
+  });
+
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(HomeLayout.horizontalPadding),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          const SizedBox(height: QalaGoSpacing.space8),
+          Text(
+            body,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppTheme.textMuted),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SearchEmptyHints extends StatelessWidget {
+  const _SearchEmptyHints({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final hints = [
+      l10n.searchEmptyHintSpelling,
+      l10n.searchEmptyHintGeneral,
+      l10n.searchEmptyHintFilters,
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: hints
+          .map(
+            (hint) => Padding(
+              padding: const EdgeInsets.only(bottom: QalaGoSpacing.space4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '• ',
+                    style: TextStyle(color: AppTheme.textMuted),
+                  ),
+                  Expanded(
+                    child: Text(
+                      hint,
+                      style: const TextStyle(color: AppTheme.textMuted),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+          .toList(),
     );
   }
 }

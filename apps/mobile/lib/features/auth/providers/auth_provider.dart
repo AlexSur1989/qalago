@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/rbac/business_access.dart';
 import '../../../core/rbac/role_permissions.dart';
@@ -431,6 +432,7 @@ class BusinessesQuery {
     this.latitude,
     this.longitude,
     this.radiusKm,
+    this.suppressNetwork = false,
   });
 
   final String? search;
@@ -439,6 +441,9 @@ class BusinessesQuery {
   final double? longitude;
   final double? radiusKm;
 
+  /// When true, skip HTTP (search idle / continue-typing states).
+  final bool suppressNetwork;
+
   @override
   bool operator ==(Object other) =>
       other is BusinessesQuery &&
@@ -446,15 +451,27 @@ class BusinessesQuery {
       other.categoryId == categoryId &&
       other.latitude == latitude &&
       other.longitude == longitude &&
-      other.radiusKm == radiusKm;
+      other.radiusKm == radiusKm &&
+      other.suppressNetwork == suppressNetwork;
 
   @override
-  int get hashCode =>
-      Object.hash(search, categoryId, latitude, longitude, radiusKm);
+  int get hashCode => Object.hash(
+        search,
+        categoryId,
+        latitude,
+        longitude,
+        radiusKm,
+        suppressNetwork,
+      );
 }
 
 final businessesProvider = FutureProvider.family<PaginatedBusinesses, BusinessesQuery>(
   (ref, query) async {
+    if (query.suppressNetwork) {
+      return PaginatedBusinesses(items: const [], total: 0);
+    }
+    final cancelToken = CancelToken();
+    ref.onDispose(cancelToken.cancel);
     final city = ref.watch(cityProvider);
     return ref.watch(catalogRepositoryProvider).fetchBusinesses(
           citySlug: city.slug,
@@ -463,6 +480,7 @@ final businessesProvider = FutureProvider.family<PaginatedBusinesses, Businesses
           latitude: query.latitude,
           longitude: query.longitude,
           radiusKm: query.radiusKm,
+          cancelToken: cancelToken,
         );
   },
 );

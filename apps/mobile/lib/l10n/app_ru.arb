@@ -63,6 +63,13 @@
   "searchNoResults": "Ничего не найдено",
   "searchClearTooltip": "Очистить",
   "searchFailed": "Не удалось выполнить поиск.",
+  "searchResultsLoadFailed": "Не удалось загрузить результаты",
+  "searchInitialTitle": "Найдите место или услугу",
+  "searchInitialBody": "Ищите заведения, категории и услуги — например «маникюр» или «караоке».",
+  "searchContinueTyping": "Продолжайте ввод — нужно минимум 2 символа",
+  "searchEmptyHintSpelling": "Проверьте написание",
+  "searchEmptyHintGeneral": "Попробуйте более общий запрос",
+  "searchEmptyHintFilters": "Измените фильтры или категорию",
   "searchEnterQuery": "Введите название или выберите категорию",
   "searchFoundCount": "Найдено: {count}",
   "@searchFoundCount": {

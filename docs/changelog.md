@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-17 — Stage 6.11B.3: Consumer mobile search UX & state
+
+- **Added:** SearchScreen initial / continue-typing / active pane modes; min free-text length 2; localized empty hints and load-error copy (RU/KK).
+- **Added:** Stale-result guard via fetch generation + verified results; Dio `CancelToken` on `businessesProvider` dispose; `suppressNetwork` idle queries.
+- **Tests:** `search_screen_state_test.dart` (stale response, clear/filter in-flight, retry, keyboard submit, 320dp KK 2.0).
+- **Future:** Sort UI + load-more (6.11B.4); search history/suggestions (6.11B.6); maps/geo UX (6.11C).
+
 ## 2026-09-17 — Stage 6.11B.2: Multilingual search integrity
 
 - **Fixed:** Global `GET /businesses?search=` service-item matching now uses the same plan-cap + catalog sort as consumer catalog (two-query bounded resolver; no N+1).
