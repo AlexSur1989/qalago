@@ -253,6 +253,28 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ),
           ),
           GoRoute(
+            path: '/business/apply',
+            builder: (context, state) => BusinessApplyScreen(
+              applicationId: state.uri.queryParameters['id'],
+            ),
+          ),
+          GoRoute(
+            path: '/business/search',
+            builder: (context, state) => const BusinessSearchScreen(),
+          ),
+          GoRoute(
+            path: '/business/start',
+            builder: (context, state) => const BusinessStartScreen(),
+          ),
+          GoRoute(
+            path: '/business/applications',
+            builder: (context, state) => const BusinessApplicationsScreen(),
+          ),
+          GoRoute(
+            path: '/business/claims',
+            builder: (context, state) => const BusinessClaimsScreen(),
+          ),
+          GoRoute(
             path: '/business/:id',
             builder: (context, state) => BusinessDetailsScreen(
               id: state.pathParameters['id']!,
