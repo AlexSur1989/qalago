@@ -28,14 +28,19 @@ import '../../categories/utils/category_display.dart';
 import '../../home/presentation/home_layout.dart';
 import '../search_active_filters.dart';
 import '../search_catalog_sort.dart';
+import '../search_catalog_suggestions.dart';
 import '../search_filters.dart';
 import '../search_geo_policy.dart';
 import '../search_pagination.dart';
+import '../search_query_normalize.dart';
 import '../search_query_policy.dart';
+import '../search_recent_history_provider.dart';
 import '../search_result_count.dart';
+import '../search_taxonomy_provider.dart';
 import 'search_controls_bar.dart';
 import 'search_filter_sections.dart';
 import 'search_filters_sheet.dart';
+import 'search_history_suggestions_pane.dart';
 import 'search_scope_chip.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
@@ -91,7 +96,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     _sort = SearchCatalogSort.fromApi(widget.initialSort);
     _controller = TextEditingController(text: _query);
     _focusNode = FocusNode();
+    _focusNode.addListener(_onSearchFieldFocusChanged);
     _resultsScrollController.addListener(_onResultsScroll);
+  }
+
+  void _onSearchFieldFocusChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
@@ -135,6 +145,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     _loadMoreCancelToken?.cancel();
     _resultsScrollController.removeListener(_onResultsScroll);
     _resultsScrollController.dispose();
+    _focusNode.removeListener(_onSearchFieldFocusChanged);
     _focusNode.dispose();
     _controller.dispose();
     super.dispose();
@@ -314,6 +325,35 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       _invalidateSearchResults(applyState: () => _query = next);
       _syncRoute();
     });
+    if (mounted) setState(() {});
+  }
+
+  void _recordRecentSearchIfEligible(String rawQuery) {
+    final normalized = normalizeConsumerSearchQuery(rawQuery);
+    if (normalized == null) return;
+    if (!shouldPersistConsumerSearchHistory(
+      trimmedQuery: normalized,
+      categoryId: _categoryId,
+    )) {
+      return;
+    }
+    unawaited(ref.read(searchRecentHistoryProvider.notifier).push(normalized));
+  }
+
+  void _applyCommittedQuery(String rawQuery, {bool unfocus = true}) {
+    _debounce?.cancel();
+    final next = normalizeConsumerSearchQuery(rawQuery) ?? '';
+    if (_controller.text != next) {
+      _controller.text = next;
+    }
+    if (next != _query) {
+      _invalidateSearchResults(applyState: () => _query = next);
+      _syncRoute();
+    }
+    _recordRecentSearchIfEligible(next);
+    if (unfocus) {
+      FocusManager.instance.primaryFocus?.unfocus();
+    }
   }
 
   void _clearQuery() {
@@ -383,6 +423,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     if (normalized == null || normalized.isEmpty) return;
     if (_lastSearchPerformedQuery == normalized) return;
     _lastSearchPerformedQuery = normalized;
+    _recordRecentSearchIfEligible(normalized);
 
     final cities = ref.read(citiesProvider).valueOrNull;
     if (cities == null || cities.isEmpty) return;
@@ -434,6 +475,22 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final fetchGen = _fetchGeneration;
     final businessesAsync = ref.watch(businessesProvider(query));
     final categoriesAsync = ref.watch(categoriesProvider);
+    final recentHistoryAsync = ref.watch(searchRecentHistoryProvider);
+    final subcategoriesAsync = ref.watch(searchTaxonomySubcategoriesProvider);
+    final recentQueries = recentHistoryAsync.valueOrNull ?? const <String>[];
+    final showRecentHistory =
+        _query.isEmpty && _paneMode == SearchResultsPaneMode.initial && recentQueries.isNotEmpty;
+    final categories = categoriesAsync.valueOrNull ?? const <CategoryModel>[];
+    final subcategories = subcategoriesAsync.valueOrNull ?? const <SubcategoryModel>[];
+    final catalogSuggestions = _focusNode.hasFocus && _query.isNotEmpty
+        ? buildSearchCatalogSuggestions(
+            rawQuery: _query,
+            categories: categories,
+            subcategories: subcategories,
+            localeCode: localeCode,
+          )
+        : const <SearchCatalogSuggestion>[];
+    final showSuggestionList = catalogSuggestions.isNotEmpty && _focusNode.hasFocus;
 
     ref.listen(businessesProvider(query), (previous, next) {
       next.whenData((data) {
@@ -490,17 +547,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       textInputAction: TextInputAction.search,
                       hintText: l10n.searchPlaceholder,
                       onChanged: _onQueryChanged,
-                      onSubmitted: (value) {
-                        _debounce?.cancel();
-                        final next = value.trim();
-                        if (next == _query) {
-                          FocusManager.instance.primaryFocus?.unfocus();
-                          return;
-                        }
-                        _invalidateSearchResults(applyState: () => _query = next);
-                        _syncRoute();
-                        FocusManager.instance.primaryFocus?.unfocus();
-                      },
+                      onSubmitted: (value) => _applyCommittedQuery(value),
                       onClear: _clearQuery,
                       clearSemanticsLabel: l10n.searchClearTooltip,
                     ),
@@ -573,31 +620,63 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
             ),
             Expanded(
-              child: _SearchResultsPane(
-                businessesAsync: businessesAsync,
-                paneMode: _paneMode,
-                fetchGeneration: fetchGen,
-                verifiedResultsGeneration: _verifiedResultsGeneration,
-                hasNarrowFilters: _hasNarrowFilters,
-                query: query,
-                trimmedQuery: _query,
-                loadedItems: _loadedItems,
-                resultTotal: _resultTotal,
-                loadingMore: _loadingMore,
-                loadMoreError: _loadMoreError,
-                scrollController: _resultsScrollController,
-                resultAttributionQuery: _resultAttributionQuery,
-                emptyMessage: _emptyMessage(
-                  l10n,
-                  ref.watch(cityLocalizedNameProvider),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: HomeLayout.horizontalPadding,
                 ),
-                onRetry: () => ref.invalidate(businessesProvider(query)),
-                onResetFilters: _resetSearchFiltersOnly,
-                onLoadMore: _loadMoreResults,
-                onRetryLoadMore: _loadMoreResults,
-                onClearCategoryScope:
-                    _categoryId != null ? _clearCategoryScope : null,
-                l10n: l10n,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (showSuggestionList)
+                      SearchCatalogSuggestionsList(
+                        suggestions: catalogSuggestions,
+                        l10n: l10n,
+                        onSelect: (suggestion) =>
+                            _applyCommittedQuery(suggestion.commitText),
+                      ),
+                    Expanded(
+                      child: showRecentHistory
+                          ? SingleChildScrollView(
+                              keyboardDismissBehavior:
+                                  ScrollViewKeyboardDismissBehavior.onDrag,
+                              child: SearchRecentHistorySection(
+                                queries: recentQueries,
+                                l10n: l10n,
+                                onSelect: _applyCommittedQuery,
+                                onClear: () => ref
+                                    .read(searchRecentHistoryProvider.notifier)
+                                    .clear(),
+                              ),
+                            )
+                          : _SearchResultsPane(
+                              businessesAsync: businessesAsync,
+                              paneMode: _paneMode,
+                              fetchGeneration: fetchGen,
+                              verifiedResultsGeneration: _verifiedResultsGeneration,
+                              hasNarrowFilters: _hasNarrowFilters,
+                              query: query,
+                              trimmedQuery: _query,
+                              loadedItems: _loadedItems,
+                              resultTotal: _resultTotal,
+                              loadingMore: _loadingMore,
+                              loadMoreError: _loadMoreError,
+                              scrollController: _resultsScrollController,
+                              resultAttributionQuery: _resultAttributionQuery,
+                              emptyMessage: _emptyMessage(
+                                l10n,
+                                ref.watch(cityLocalizedNameProvider),
+                              ),
+                              onRetry: () => ref.invalidate(businessesProvider(query)),
+                              onResetFilters: _resetSearchFiltersOnly,
+                              onLoadMore: _loadMoreResults,
+                              onRetryLoadMore: _loadMoreResults,
+                              onClearCategoryScope:
+                                  _categoryId != null ? _clearCategoryScope : null,
+                              l10n: l10n,
+                            ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

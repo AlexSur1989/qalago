@@ -211,6 +211,18 @@ class AppLocalizationsRu extends AppLocalizations {
       'Ищите заведения, категории и услуги — например «маникюр» или «караоке».';
 
   @override
+  String get searchRecentQueriesTitle => 'Недавние запросы';
+
+  @override
+  String get searchRecentQueriesClear => 'Очистить';
+
+  @override
+  String get searchSuggestionTypeCategory => 'Категория';
+
+  @override
+  String get searchSuggestionTypeSubcategory => 'Подкатегория';
+
+  @override
   String get searchContinueTyping =>
       'Продолжайте ввод — нужно минимум 2 символа';
 

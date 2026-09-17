@@ -494,6 +494,30 @@ abstract class AppLocalizations {
   /// **'Ищите заведения, категории и услуги — например «маникюр» или «караоке».'**
   String get searchInitialBody;
 
+  /// No description provided for @searchRecentQueriesTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Недавние запросы'**
+  String get searchRecentQueriesTitle;
+
+  /// No description provided for @searchRecentQueriesClear.
+  ///
+  /// In ru, this message translates to:
+  /// **'Очистить'**
+  String get searchRecentQueriesClear;
+
+  /// No description provided for @searchSuggestionTypeCategory.
+  ///
+  /// In ru, this message translates to:
+  /// **'Категория'**
+  String get searchSuggestionTypeCategory;
+
+  /// No description provided for @searchSuggestionTypeSubcategory.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подкатегория'**
+  String get searchSuggestionTypeSubcategory;
+
   /// No description provided for @searchContinueTyping.
   ///
   /// In ru, this message translates to:

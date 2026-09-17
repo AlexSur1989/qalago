@@ -212,6 +212,18 @@ class AppLocalizationsKk extends AppLocalizations {
       'Мекемелер, санаттар және қызметтер бойынша іздеңіз — мысалы «маникюр» немесе «караоке».';
 
   @override
+  String get searchRecentQueriesTitle => 'Соңғы сұраныстар';
+
+  @override
+  String get searchRecentQueriesClear => 'Тазалау';
+
+  @override
+  String get searchSuggestionTypeCategory => 'Санат';
+
+  @override
+  String get searchSuggestionTypeSubcategory => 'Ішкі санат';
+
+  @override
   String get searchContinueTyping => 'Жазуды жалғастырыңыз — кемінде 2 таңба';
 
   @override

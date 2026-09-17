@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-17 — Stage 6.11B.6: Recent searches & catalog suggestions
+
+- **Added:** Local recent search history (SharedPreferences, max 10, deduped, clear action) on empty Search; RU/KK strings.
+- **Added:** In-client taxonomy suggestions (categories + one-time subcategory prefetch per city) with exact/prefix/contains ordering; tap commits canonical `GET /businesses?search=`.
+- **Preserved:** 320ms debounce, pagination/generation guards, SEARCH analytics on committed searches only; no backend/API changes.
+- **Deferred:** Service-item and business-title suggestions (no lightweight client vocabulary without new endpoint).
+
 ## 2026-09-17 — Stage 6.11B.5: Search relevance & DB pagination
 
 - **Added:** Organic discovery (`sort=recommended`, no text query) uses PostgreSQL `ORDER BY title, id` with `skip`/`take` and separate `count` for `meta.total` (no full-city load for page 1).
