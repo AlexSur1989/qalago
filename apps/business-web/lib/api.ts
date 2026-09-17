@@ -81,6 +81,9 @@ export type BusinessRow = {
   title: string;
   status: string;
   address: string;
+  latitude?: number | string | null;
+  longitude?: number | string | null;
+  locationSource?: string | null;
   shortDesc?: string | null;
   description?: string | null;
   phone?: string | null;
@@ -1124,6 +1127,9 @@ export const ownerApi = {
       categoryId?: string;
       citySlug?: string;
       address?: string;
+      latitude?: number;
+      longitude?: number;
+      locationSource?: 'GEOCODED' | 'MANUALLY_ADJUSTED';
       shortDesc?: string;
       phone?: string;
     },
@@ -1142,6 +1148,9 @@ export const ownerApi = {
       categoryId?: string;
       citySlug?: string;
       address?: string;
+      latitude?: number;
+      longitude?: number;
+      locationSource?: 'GEOCODED' | 'MANUALLY_ADJUSTED';
       shortDesc?: string;
       phone?: string;
     },
@@ -1195,6 +1204,9 @@ export type BusinessApplicationRow = {
   id: string;
   title: string;
   address: string;
+  latitude?: number | string | null;
+  longitude?: number | string | null;
+  locationSource?: string | null;
   shortDesc?: string | null;
   phone?: string | null;
   status: string;

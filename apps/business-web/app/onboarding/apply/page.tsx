@@ -9,7 +9,11 @@ import { OnboardingShell } from '@/components/onboarding-shell';
 import { useAuth } from '@/lib/use-auth';
 import { mapOnboardingError } from '@/lib/onboarding-utils';
 import { cityDisplayName } from '@/lib/localized-content';
-import { onboardingRejectionBannerLabel } from '@/lib/presentation';
+import { businessLocationRequired, onboardingRejectionBannerLabel } from '@/lib/presentation';
+import {
+  BusinessLocationField,
+  type BusinessLocationState,
+} from '@/components/business-location/business-location-field';
 
 export default function OnboardingApplyPage() {
   const locale = useLocale();
@@ -35,7 +39,7 @@ function OnboardingApplyContent() {
   const [citySlug, setCitySlug] = useState('uralsk');
   const [title, setTitle] = useState('');
   const [categoryId, setCategoryId] = useState('');
-  const [address, setAddress] = useState('');
+  const [location, setLocation] = useState<BusinessLocationState>({ address: '' });
   const [phone, setPhone] = useState('');
   const [shortDesc, setShortDesc] = useState('');
   const [status, setStatus] = useState<string>('DRAFT');
@@ -67,7 +71,13 @@ function OnboardingApplyContent() {
       .then((app) => {
         setDraftId(app.id);
         setTitle(app.title);
-        setAddress(app.address);
+        setLocation({
+          address: app.address,
+          latitude: app.latitude != null ? Number(app.latitude) : undefined,
+          longitude: app.longitude != null ? Number(app.longitude) : undefined,
+          locationSource:
+            app.locationSource === 'MANUALLY_ADJUSTED' ? 'MANUALLY_ADJUSTED' : 'GEOCODED',
+        });
         setCategoryId(app.category?.id ?? '');
         setCitySlug(app.city?.slug ?? 'uralsk');
         setPhone(app.phone ?? '');
@@ -90,7 +100,14 @@ function OnboardingApplyContent() {
       title: title.trim(),
       categoryId,
       citySlug,
-      address: address.trim(),
+      address: location.address.trim(),
+      ...(location.latitude != null && location.longitude != null
+        ? {
+            latitude: location.latitude,
+            longitude: location.longitude,
+            locationSource: location.locationSource ?? 'GEOCODED',
+          }
+        : {}),
       phone: phone.trim() || undefined,
       shortDesc: shortDesc.trim() || undefined,
     };
@@ -102,7 +119,7 @@ function OnboardingApplyContent() {
 
   async function handleSave(e: FormEvent) {
     e.preventDefault();
-    if (!title.trim() || !categoryId || !address.trim() || !citySlug) {
+    if (!title.trim() || !categoryId || !location.address.trim() || !citySlug) {
       setError(ui.____d37b94);
       return;
     }
@@ -127,6 +144,10 @@ function OnboardingApplyContent() {
   async function handleSubmit() {
     if (!token || !draftId) {
       setError(ui.___93a01e);
+      return;
+    }
+    if (location.latitude == null || location.longitude == null) {
+      setError(businessLocationRequired(locale));
       return;
     }
     setLoading(true);
@@ -192,8 +213,17 @@ function OnboardingApplyContent() {
             ))}
           </select>
         </label>
-        <label>{ui.text_6a21b9}<input value={address} onChange={(e) => setAddress(e.target.value)} required disabled={readOnly} />
-        </label>
+        {token && (
+          <BusinessLocationField
+            locale={locale}
+            token={token}
+            citySlug={citySlug}
+            value={location}
+            onChange={setLocation}
+            readOnly={readOnly}
+            addressLabel={ui.text_6a21b9}
+          />
+        )}
         <label>{ui.text_2928e1}<input value={phone} onChange={(e) => setPhone(e.target.value)} disabled={readOnly} />
         </label>
         <label>{ui.__62b685}<textarea value={shortDesc} onChange={(e) => setShortDesc(e.target.value)} rows={3} disabled={readOnly} />

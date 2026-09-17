@@ -135,6 +135,23 @@ export default function BusinessApplicationDetailPage() {
         <dd>{item.category?.title ?? '—'}</dd>
         <dt>Адрес</dt>
         <dd>{item.address}</dd>
+        {item.latitude != null && item.longitude != null && (
+          <>
+            <dt>Координаты</dt>
+            <dd>
+              {Number(item.latitude).toFixed(6)}, {Number(item.longitude).toFixed(6)}
+              {item.locationSource ? ` (${item.locationSource})` : ''}
+              {' '}
+              <a
+                href={`https://www.openstreetmap.org/?mlat=${item.latitude}&mlon=${item.longitude}#map=18/${item.latitude}/${item.longitude}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Карта
+              </a>
+            </dd>
+          </>
+        )}
         {item.shortDesc && (
           <>
             <dt>Описание</dt>

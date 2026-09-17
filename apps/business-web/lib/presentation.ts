@@ -865,3 +865,36 @@ export function onboardingRejectionReasonLabel(locale: AppLocale): string {
 export function onboardingRejectionBannerLabel(locale: AppLocale): string {
   return pick(locale, { ru: 'Причина отклонения:', kk: 'Қабылданбаған себебі:' });
 }
+
+export function businessLocationPickerHint(locale: AppLocale): string {
+  return pick(locale, {
+    ru: 'Если точка указана неточно — переместите карту.',
+    kk: 'Нүкте дұрыс емес болса — картаны жылжытыңыз.',
+  });
+}
+
+export function businessLocationConfirm(locale: AppLocale): string {
+  return pick(locale, { ru: 'Подтвердить точку', kk: 'Нүктені растау' });
+}
+
+export function businessLocationCancel(locale: AppLocale): string {
+  return pick(locale, { ru: 'Отмена', kk: 'Болдырмау' });
+}
+
+export function businessLocationAdjustOnMap(locale: AppLocale): string {
+  return pick(locale, { ru: 'Уточнить на карте', kk: 'Картада нақтылау' });
+}
+
+export function businessLocationRequired(locale: AppLocale): string {
+  return pick(locale, {
+    ru: 'Выберите адрес из подсказок и подтвердите точку на карте',
+    kk: 'Мекенжайды ұсыныстардан таңдап, картада нүктені растаңыз',
+  });
+}
+
+export function businessLocationGeocodingError(locale: AppLocale): string {
+  return pick(locale, {
+    ru: 'Не удалось загрузить подсказки адреса. Повторите позже.',
+    kk: 'Мекенжай ұсыныстарын жүктеу сәтсіз. Кейінірек қайталаңыз.',
+  });
+}

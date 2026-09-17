@@ -9,6 +9,9 @@ export type BusinessApplicationRow = {
   title: string;
   shortDesc?: string | null;
   address: string;
+  latitude?: number | string | null;
+  longitude?: number | string | null;
+  locationSource?: string | null;
   phone?: string | null;
   status: string;
   rejectionReason?: string | null;

@@ -9,6 +9,10 @@ import { BusinessRow, myBusinessRows, ownerApi, SubcategoryRow } from '@/lib/api
 import { useAuth } from '@/lib/use-auth';
 import { BusinessShell } from '@/components/business-shell';
 import { parseApiError } from '@/lib/monetization-utils';
+import {
+  BusinessLocationField,
+  type BusinessLocationState,
+} from '@/components/business-location/business-location-field';
 
 function parseHours(raw: BusinessRow['workHours']) {
   const weekdays = raw?.mon ?? raw?.tue ?? '09:00-22:00';
@@ -27,11 +31,11 @@ export default function BusinessEditPage() {
   const id = params.id;
   const { token, user, ready, logout } = useAuth();
   const [businesses, setBusinesses] = useState<BusinessRow[]>([]);
+  const [location, setLocation] = useState<BusinessLocationState>({ address: '' });
   const [form, setForm] = useState({
     title: '',
     shortDesc: '',
     description: '',
-    address: '',
     phone: '',
     whatsapp: '',
     instagram: '',
@@ -62,11 +66,17 @@ export default function BusinessEditPage() {
       try {
         const b = await ownerApi.getBusiness(token, id);
         const hours = parseHours(b.workHours);
+        setLocation({
+          address: b.address ?? '',
+          latitude: b.latitude != null ? Number(b.latitude) : undefined,
+          longitude: b.longitude != null ? Number(b.longitude) : undefined,
+          locationSource:
+            b.locationSource === 'MANUALLY_ADJUSTED' ? 'MANUALLY_ADJUSTED' : 'GEOCODED',
+        });
         setForm({
           title: b.title ?? '',
           shortDesc: b.shortDesc ?? '',
           description: b.description ?? '',
-          address: b.address ?? '',
           phone: b.phone ?? '',
           whatsapp: b.whatsapp ?? '',
           instagram: b.instagram ?? '',
@@ -119,7 +129,14 @@ export default function BusinessEditPage() {
         title: form.title,
         shortDesc: form.shortDesc,
         description: form.description,
-        address: form.address,
+        address: location.address,
+        ...(location.latitude != null && location.longitude != null
+          ? {
+              latitude: location.latitude,
+              longitude: location.longitude,
+              locationSource: location.locationSource ?? 'GEOCODED',
+            }
+          : {}),
         phone: form.phone,
         whatsapp: form.whatsapp,
         instagram: form.instagram,
@@ -200,7 +217,16 @@ export default function BusinessEditPage() {
         {field(ui.text_602680, form.title, (v) => setForm({ ...form, title: v }))}
         {field(ui.__62b685, form.shortDesc, (v) => setForm({ ...form, shortDesc: v }))}
         {area(ui.text_38ca0a, form.description, (v) => setForm({ ...form, description: v }))}
-        {field(ui.text_80148f, form.address, (v) => setForm({ ...form, address: v }))}
+        {token && (
+          <BusinessLocationField
+            locale={locale}
+            token={token}
+            citySlug={business?.city?.slug ?? 'uralsk'}
+            value={location}
+            onChange={setLocation}
+            addressLabel={ui.text_80148f}
+          />
+        )}
         {field(ui.text_2928e1, form.phone, (v) => setForm({ ...form, phone: v }))}
         {field('WhatsApp', form.whatsapp, (v) => setForm({ ...form, whatsapp: v }))}
         {field('Instagram', form.instagram, (v) => setForm({ ...form, instagram: v }))}
