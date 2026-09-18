@@ -4,7 +4,7 @@
 
 Future catalog geo queries (C.5D/E) will use **geography** + GiST for nearby, radius, and map bbox at scale. Until then, `Business.latitude` / `Business.longitude` remain the application-facing fields (hybrid architecture).
 
-C.5B only enables the **`postgis`** extension. **C.5C** adds `Business.location`, sync, backfill, and indexes.
+C.5B enables the **`postgis`** extension. **C.5C** (closed) adds `Business.location`, trigger sync, backfill, and GiST — see `docs/architecture/business-spatial-location.md`.
 
 ## Docker image
 
@@ -75,7 +75,7 @@ Expect on the order of hundreds of meters (Uralsk QA points).
 
 ## Prisma 6.x
 
-No spatial fields in Prisma schema until C.5C. Extension-only migration does not change generated client types. Spatial queries will use **`$queryRaw`** / raw SQL in C.5D+; no PostGIS preview feature required for C.5B.
+`Business.location` is `Unsupported("geography(Point,4326)")?` in schema (C.5C) — validates with Prisma, not exposed on Prisma Client reads/writes. Spatial queries use **`$queryRaw`** in C.5D+; no preview feature required.
 
 ## Production / PS.kz
 

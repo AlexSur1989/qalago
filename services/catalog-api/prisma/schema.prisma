@@ -635,6 +635,8 @@ model Business {
   address                   String
   latitude                  Decimal?                        @db.Decimal(10, 7)
   longitude                 Decimal?                        @db.Decimal(10, 7)
+  /// Derived PostGIS geography (Point, 4326). Maintained by DB trigger from latitude/longitude; not exposed via API.
+  location                  Unsupported("geography(Point,4326)")?
   locationSource            BusinessLocationSource?
   phone                     String?
   whatsapp                  String?

@@ -8,7 +8,7 @@
 |------|------------|--------------|-------|
 | **A — Catalog** | city only (+ category/search) | `recommended` | DB pagination when no search geo |
 | **B — Nearest / radius** | `latitude` + `longitude`, optional `radiusKm`, optional `sort=nearest` | nearest when geo present | `distanceMeters` int, straight-line geodesic (Haversine in Node until C.5D) |
-| **C — Map viewport** | `forMap=true` + bbox four corners | `recommended` with DB skip/take | Server excludes invalid stored coords |
+| **C — Map viewport** | `forMap=true` + bbox four corners | `recommended` with DB skip/take | Server excludes invalid stored coords; lat/lng SQL until C.5E |
 
 ## Validation (C.5A)
 
@@ -22,7 +22,7 @@ City geocoding bounds are **not** applied on read (C.5F).
 ## Performance baseline (C.5A)
 
 - **Nearest:** `findMany` loads **all** matching city rows → sort/filter in Node → slice (C.5D: PostGIS SQL + LIMIT).
-- **Map recommended + bbox:** PostgreSQL `skip`/`take` on `(cityId, status)` + coordinate filters; **no geo index** yet (C.5B/C).
+- **Map recommended + bbox:** PostgreSQL `skip`/`take` on `(cityId, status)` + coordinate filters; GiST on derived `Business.location` (C.5C) — query path still lat/lng until C.5E.
 
 ## C.5D in-memory sort inventory
 
@@ -39,10 +39,15 @@ Monetization ad `nearest` placement uses separate serve path (documented in mone
 
 No dedicated HTTP access logger; bootstrap does not log query strings. Exception filter logs stack only for unhandled 500s — not query params.
 
+## Spatial storage (C.5C)
+
+- `Business.latitude` / `Business.longitude` — authoritative API fields.
+- `Business.location` — derived `geography(Point,4326)`, DB trigger sync, partial GiST index. See `docs/architecture/business-spatial-location.md`.
+- `BusinessApplication` — no spatial column.
+
 ## Deferred
 
-- C.5B: PostGIS extension enabled via migration + PostGIS Docker image (see `docs/infra/postgis-local.md`)
-- C.5C: `Business.location geography` + GiST
-- C.5D: SQL nearest/radius
-- C.5E: SQL bbox on geography
+- C.5B: PostGIS extension (closed) — `docs/infra/postgis-local.md`
+- C.5D: SQL nearest/radius + `ST_Distance` / `ST_DWithin` on `Business.location`
+- C.5E: SQL map viewport bbox on geography
 - C.5F: optional read-path city bounds hygiene
