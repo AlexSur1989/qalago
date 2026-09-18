@@ -76,6 +76,21 @@ $env:PORT = "3002"
 npm run start:dev
 ```
 
+## Map basemap (DEV/QA, Stage 6.11C.4)
+
+Physical Android QA default MapLibre style: **OpenFreeMap Liberty** (`https://tiles.openfreemap.org/styles/liberty`). No `QALAGO_MAP_STYLE_URL` needed unless testing another style. MapLibre `demotiles` is no longer the QalaGo default (blank vectors on SM-J610FN QA device).
+
+Override: `--dart-define=QALAGO_MAP_STYLE_URL=<style.json URL>`. **Not** production basemap approval — public OpenFreeMap has no SLA.
+
+Example physical debug APK (replace LAN IP):
+
+```powershell
+cd apps/mobile
+flutter build apk --debug `
+  --dart-define=QALAGO_DEV_HOST=<PC-LAN-IPv4> `
+  --dart-define=QALAGO_DEV_LOGIN=true
+```
+
 Demo ad campaigns (DEV only):
 
 ```powershell

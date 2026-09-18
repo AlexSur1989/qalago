@@ -18,7 +18,8 @@ class QalaGoMapAttributionBar extends StatelessWidget {
     final labels = switch (renderer) {
       QalaGoMapRenderer.flutterMap => [OsmRasterMapConfig.attributionLabel],
       QalaGoMapRenderer.mapLibre => [
-          QalaGoMapStyleConfig.mapLibreAttribution,
+          QalaGoMapStyleConfig.openFreeMapAttribution,
+          QalaGoMapStyleConfig.openMapTilesAttribution,
           QalaGoMapStyleConfig.openStreetMapAttribution,
         ],
     };

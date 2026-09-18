@@ -31,6 +31,12 @@ Optional overrides:
 | `QALAGO_API_BASE_URL` | Catalog API base (includes `/api/v1`) |
 | `QALAGO_AI_BASE_URL` | AI orchestrator base (includes `/api/v1`) |
 | `QALAGO_DEV_HOST` | Dev host for catalog/media/AI when overrides empty (default `127.0.0.1`, web uses `localhost`) |
+| `QALAGO_MAP_STYLE_URL` | MapLibre style JSON URL (default: OpenFreeMap Liberty — DEV/QA only) |
+| `QALAGO_MAP_RENDERER` | `maplibre` (device default) or `flutter_map` (widget tests / override) |
+
+### Map basemap (DEV/QA)
+
+Default MapLibre style is [OpenFreeMap Liberty](https://tiles.openfreemap.org/styles/liberty) (validated on physical Android QA). Override with `--dart-define=QALAGO_MAP_STYLE_URL=...`. This is **not** approved production map infrastructure.
 
 ## Tests
 

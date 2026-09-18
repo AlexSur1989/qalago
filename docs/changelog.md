@@ -27,6 +27,13 @@
 
 ---
 
+## 2026-09-18 — Stage 6.11C.4: DEV/QA MapLibre basemap (OpenFreeMap Liberty)
+
+- Mobile: default MapLibre style URL changed from MapLibre `demotiles` demo to **OpenFreeMap Liberty** (`https://tiles.openfreemap.org/styles/liberty`) after physical QA on Samsung SM-J610FN (Android 10): demotiles showed blank geographic vectors; Liberty renders roads/buildings/labels on Map tab and business location picker.
+- `QALAGO_MAP_STYLE_URL` dart-define override unchanged. MapLibre remains the default runtime renderer on device; `flutter_map` fallback unchanged.
+- Attribution bar updated for OpenFreeMap / OpenMapTiles / OpenStreetMap (DEV style compliance).
+- **Not** production basemap approval: public OpenFreeMap has no SLA; production provider decision remains deferred (6.11C+).
+
 ## 2026-09-18 — Stage 6.11C.4 hotfix: Geocoding city-boundary safety
 
 - City model: `geocodingMin/MaxLat/Lng` for provider-neutral search bounds (uralsk, aktobe, shymkent seeded).
