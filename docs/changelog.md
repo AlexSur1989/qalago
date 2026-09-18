@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-18 — Stage 6.11C.5A: catalog geo query validation & baseline
+
+- `GET /businesses`: hardened user geo pair + `radiusKm` rules, map bbox max viewport spans, server-side invalid stored coordinate filter for map/bbox; performance baseline documented for in-memory nearest (PostGIS deferred C.5B–D).
+- Docs: `docs/architecture/catalog-geo-query.md`, `api-contracts.md`.
+
 ## 2026-09-18 — Stage 6.11C.4: MapLibre overlay marker camera sync (bridge)
 
 - Mobile MapLibre: reproject Flutter overlay business pins during camera pan/zoom (`trackCameraPosition`, throttled `toScreenLocationBatch`, stale-result guard); catalog viewport fetch remains on camera idle only.

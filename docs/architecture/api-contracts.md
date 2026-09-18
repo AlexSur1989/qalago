@@ -318,9 +318,13 @@ Query:
 | radiusKm | number (default 15) — max distance in km when geo params set |
 | sort | `recommended` \| `nearest` \| `rating` \| `popular` — organic catalog sort (Stage 6.7D) |
 | forMap | boolean (optional) — when `true`, only businesses with non-null stored `latitude`/`longitude` (map marker mode; does not affect list/search when omitted) |
-| minLat, maxLat, minLng, maxLng | number (optional) — map viewport bbox; **all four required together** or 400; filters stored coordinates within the box (Stage 6.11C.3) |
+| minLat, maxLat, minLng, maxLng | number (optional) — map viewport bbox; **all four required together** or 400; filters stored coordinates within the box (Stage 6.11C.3). Max span: **1.2° latitude**, **1.8° longitude** (Stage 6.11C.5A). |
 
-When `latitude` and `longitude` are provided, each item may include `distanceMeters` (integer). Businesses without coordinates are listed after geo-sorted items when `sort=nearest`.
+When `latitude` and `longitude` are provided, each item may include `distanceMeters` (integer, straight-line/geodesic meters — not road distance). Businesses without coordinates are listed after geo-sorted items when `sort=nearest`.
+
+**Geo validation (Stage 6.11C.5A):** user `latitude`/`longitude` must be supplied as a **pair** (finite, in range; **0,0 allowed** for user position). `radiusKm` without a coordinate pair → **400**. Map mode (`forMap` and/or bbox) excludes null and invalid stored business coordinates (including **0,0** sentinel) server-side.
+
+See [catalog-geo-query.md](./catalog-geo-query.md) for modes A/B/C and C.5 performance notes.
 
 **Default sort (backward compatible):** without `sort`, if geo is provided → nearest (distance asc, title tie-break); otherwise → `recommended` (title `ru` asc, id tie-break). Explicit `sort=recommended` always uses title order even with geo.
 

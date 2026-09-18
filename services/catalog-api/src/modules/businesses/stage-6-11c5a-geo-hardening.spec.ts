@@ -1,0 +1,117 @@
+import { BadRequestException } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
+import { BusinessPlanTier, BusinessStatus } from '@prisma/client';
+import { BusinessesService } from './businesses.service';
+import { CityScopeService } from '../../common/services/city-scope.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { PlanLimitsService } from '../../common/services/plan-limits.service';
+import { BusinessPublicContentService } from './business-public-content.service';
+import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
+import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
+import { createMockSubcategoryDeps } from '../../test-utils/mock-subcategory-deps';
+import { ListBusinessesQueryDto } from './dto/business.dto';
+
+describe('Stage 6.11C.5A geo hardening', () => {
+  const cityScope = {
+    resolveCityId: jest.fn().mockResolvedValue('city-uralsk'),
+  } as unknown as CityScopeService;
+
+  const category = { id: 'cat-1', title: 'Кафе', slug: 'cafe', icon: null };
+
+  let prisma: {
+    business: { findMany: jest.Mock; count: jest.Mock };
+  };
+  let service: BusinessesService;
+
+  beforeEach(() => {
+    prisma = {
+      business: {
+        findMany: jest.fn().mockResolvedValue([]),
+        count: jest.fn().mockResolvedValue(0),
+      },
+    };
+    const subDeps = createMockSubcategoryDeps();
+    service = new BusinessesService(
+      prisma as unknown as PrismaService,
+      cityScope,
+      asBusinessAccessService(createMockBusinessAccess()),
+      { createActiveOwnerMembership: jest.fn() } as never,
+      {} as PlanLimitsService,
+      {} as BusinessPublicContentService,
+      asAuditLogService(createMockAuditLog()),
+      subDeps.businessSubcategories,
+      subDeps.subcategories,
+    );
+  });
+
+  it('rejects partial latitude/longitude at service layer', async () => {
+    await expect(
+      service.findAll({ citySlug: 'uralsk', latitude: 51.2 } as never),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('scopes nearest results to resolved cityId', async () => {
+    prisma.business.findMany.mockResolvedValue([
+      {
+        id: 'b1',
+        title: 'Near',
+        slug: 'near',
+        cityId: 'city-uralsk',
+        categoryId: 'cat-1',
+        address: 'A',
+        latitude: 51.228,
+        longitude: 51.387,
+        status: BusinessStatus.ACTIVE,
+        isFeatured: false,
+        planTier: BusinessPlanTier.FREE,
+        planExpiresAt: null,
+        featuredSlot: null,
+        category,
+      },
+    ]);
+
+    await service.findAll({
+      citySlug: 'uralsk',
+      latitude: 51.2278,
+      longitude: 51.3865,
+      radiusKm: 3,
+    });
+
+    const where = prisma.business.findMany.mock.calls[0][0].where;
+    expect(where.cityId).toBe('city-uralsk');
+    expect(where.status).toBe(BusinessStatus.ACTIVE);
+  });
+
+  it('forMap applies valid stored coordinate AND clause', async () => {
+    prisma.business.count.mockResolvedValue(0);
+    prisma.business.findMany.mockResolvedValue([]);
+
+    await service.findAll({
+      citySlug: 'uralsk',
+      forMap: true,
+      minLat: 51.1,
+      maxLat: 51.3,
+      minLng: 51.2,
+      maxLng: 51.5,
+    });
+
+    const where = prisma.business.findMany.mock.calls[0][0].where;
+    expect(where.AND).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          NOT: { AND: [{ latitude: 0 }, { longitude: 0 }] },
+        }),
+      ]),
+    );
+  });
+
+  it('DTO rejects non-numeric latitude after transform', async () => {
+    const dto = plainToInstance(ListBusinessesQueryDto, {
+      citySlug: 'uralsk',
+      latitude: 'not-a-number',
+    });
+    const errors = await validate(dto);
+    expect(errors.some((e) => e.property === 'latitude')).toBe(true);
+  });
+});

@@ -35,6 +35,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { changedFieldsFromDto, toMembershipRole } from '../audit-log/audit-log.util';
 import { appendMapCatalogFilters } from './business-map-query.util';
+import { assertCatalogGeoQuery } from '../../common/utils/catalog-geo-query.util';
 import { CreateBusinessDto, ListBusinessesQueryDto, UpdateBusinessDto } from './dto/business.dto';
 import {
   assertValidBusinessCoordinatePair,
@@ -153,6 +154,8 @@ export class BusinessesService {
   }
 
   async findAll(query: ListBusinessesQueryDto) {
+    const normalizedBbox = assertCatalogGeoQuery(query);
+
     const cityId = await this.cityScope.resolveCityId({
       cityId: query.cityId,
       citySlug: query.citySlug,
@@ -186,7 +189,7 @@ export class BusinessesService {
       subcategoryId: query.subcategoryId,
     });
 
-    appendMapCatalogFilters(where, query);
+    appendMapCatalogFilters(where, query, normalizedBbox);
 
     const [items, total] = await this.findPagedItems(
       where,

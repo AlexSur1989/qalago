@@ -15,6 +15,7 @@ import {
   Validate,
 } from 'class-validator';
 import { BusinessCoordinatePairConstraint } from '../../../common/validators/business-coordinate-pair.validator';
+import { CatalogListGeoQueryConstraint } from '../../../common/validators/catalog-list-geo-query.validator';
 import { BusinessLocationSource, BusinessStatus } from '@prisma/client';
 import { BusinessCatalogSort } from '../../../common/utils/business-catalog-sort.util';
 import {
@@ -97,7 +98,7 @@ export class ListBusinessesQueryDto {
   /** User latitude — enables distance sort when paired with longitude. */
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsNumber({ allowNaN: false, allowInfinity: false })
   @Min(-90)
   @Max(90)
   latitude?: number;
@@ -105,7 +106,7 @@ export class ListBusinessesQueryDto {
   /** User longitude — enables distance sort when paired with latitude. */
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsNumber({ allowNaN: false, allowInfinity: false })
   @Min(-180)
   @Max(180)
   longitude?: number;
@@ -113,7 +114,7 @@ export class ListBusinessesQueryDto {
   /** Max distance from user in km (default 15). Used only with latitude/longitude. */
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsNumber({ allowNaN: false, allowInfinity: false })
   @Min(0.5)
   @Max(100)
   radiusKm?: number;
@@ -135,31 +136,35 @@ export class ListBusinessesQueryDto {
   /** Map viewport bbox — must be sent together with maxLat/minLng/maxLng. */
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsNumber({ allowNaN: false, allowInfinity: false })
   @Min(-90)
   @Max(90)
   minLat?: number;
 
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsNumber({ allowNaN: false, allowInfinity: false })
   @Min(-90)
   @Max(90)
   maxLat?: number;
 
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsNumber({ allowNaN: false, allowInfinity: false })
   @Min(-180)
   @Max(180)
   minLng?: number;
 
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsNumber({ allowNaN: false, allowInfinity: false })
   @Min(-180)
   @Max(180)
   maxLng?: number;
+
+  @Validate(CatalogListGeoQueryConstraint)
+  @IsOptional()
+  private readonly catalogListGeoQueryValidation?: unknown;
 }
 
 export class UpdateBusinessDto {
