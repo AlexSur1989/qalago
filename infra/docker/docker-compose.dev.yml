@@ -1,6 +1,7 @@
 services:
   postgres:
-    image: postgres:16-alpine
+    # PG 16 + PostGIS 3.4 (Stage 6.11C.5B). Same major as postgres:16-alpine — reuse qalago_pg_data; never `down -v`.
+    image: postgis/postgis:16-3.4-alpine
     container_name: qalago-postgres
     restart: unless-stopped
     ports:

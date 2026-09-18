@@ -8,6 +8,8 @@ npm run dev:infra
 
 See `docker/docker-compose.dev.yml` and `env/.env.example`.
 
+Dev Postgres uses **PostGIS** (`postgis/postgis:16-3.4-alpine`). Upgrade/verify: [docs/infra/postgis-local.md](../docs/infra/postgis-local.md).
+
 ## Docker staging (API + Postgres, production-like)
 
 Runs catalog-api on **http://localhost:3002** (same port as local dev API).

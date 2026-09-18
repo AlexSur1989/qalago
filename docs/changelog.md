@@ -27,6 +27,10 @@
 
 ---
 
+## 2026-09-18 — Stage 6.11C.5B: PostGIS infrastructure (extension only)
+
+- Docker dev/staging/prod compose: `postgis/postgis:16-3.4-alpine` (PG16); migration `CREATE EXTENSION IF NOT EXISTS postgis`; docs `docs/infra/postgis-local.md`. No `Business.location` yet (C.5C).
+
 ## 2026-09-18 — Stage 6.11C.5A: catalog geo query validation & baseline
 
 - `GET /businesses`: hardened user geo pair + `radiusKm` rules, map bbox max viewport spans, server-side invalid stored coordinate filter for map/bbox; performance baseline documented for in-memory nearest (PostGIS deferred C.5B–D).

@@ -41,7 +41,7 @@ No dedicated HTTP access logger; bootstrap does not log query strings. Exception
 
 ## Deferred
 
-- C.5B: PostGIS extension / Docker image (operator approval)
+- C.5B: PostGIS extension enabled via migration + PostGIS Docker image (see `docs/infra/postgis-local.md`)
 - C.5C: `Business.location geography` + GiST
 - C.5D: SQL nearest/radius
 - C.5E: SQL bbox on geography

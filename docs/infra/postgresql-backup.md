@@ -5,7 +5,8 @@ DEV snapshot counts (`scripts/stage-*-pre-migration-counts.json`) are **not** a 
 
 ## Prerequisites
 
-- `pg_dump` client matching server major version (PostgreSQL 15+)
+- `pg_dump` client matching server major version (PostgreSQL 16+)
+- Restore host must provide the same extensions as source (e.g. **PostGIS 3.x** after Stage 6.11C.5B — see [postgis-local.md](./postgis-local.md))
 - Network access to the database host
 - Sufficient disk space for a custom-format dump (typically 1–3× DB size)
 
