@@ -8,7 +8,7 @@
 |------|------------|--------------|-------|
 | **A — Catalog** | city only (+ category/search) | `recommended` | DB pagination when no search geo |
 | **B — Nearest / radius** | `latitude` + `longitude`, optional `radiusKm`, optional `sort=nearest` | nearest when geo present | `distanceMeters` int, PostGIS `ST_Distance` on `Business.location` (C.5D) |
-| **C — Map viewport** | `forMap=true` + bbox four corners | `recommended` with DB skip/take | Server excludes invalid stored coords; lat/lng SQL until C.5E |
+| **C — Map viewport** | `forMap=true` + bbox four corners | `recommended`, title asc | PostGIS `ST_Intersects` on `Business.location` (C.5E) |
 
 ## Validation (C.5A)
 
@@ -24,7 +24,7 @@ City geocoding bounds are **not** applied on read (C.5F).
 - **Nearest / radius (`sort=nearest` + user geo):** PostGIS `ST_DWithin` + `ST_Distance`, `ORDER BY` distance, SQL `LIMIT`/`OFFSET`; page hydrated by ID (no full-city load in Node).
 - **Default radius:** 15 km when `radiusKm` omitted on **nearest** requests only.
 - **Explicit `radiusKm`:** geographic filter via `ST_DWithin` for **all** sort modes; ordering unchanged (nearest = SQL distance sort; recommended/rating/popular = existing logic on radius set only).
-- **Map recommended + bbox:** PostgreSQL `skip`/`take` on lat/lng filters — **C.5E** will move viewport to geography.
+- **Map viewport + bbox:** `ST_Intersects(location, ST_MakeEnvelope(w,s,e,n,4326)::geography)` with SQL `LIMIT`/`OFFSET`.
 
 ## In-memory sort inventory (post C.5D)
 
@@ -48,7 +48,12 @@ No dedicated HTTP access logger; bootstrap does not log query strings. Exception
 - `Business.location` — derived `geography(Point,4326)`, DB trigger sync, partial GiST index. See `docs/architecture/business-spatial-location.md`.
 - `BusinessApplication` — no spatial column.
 
+## Map viewport (C.5E)
+
+- Bbox params: `minLat`, `maxLat`, `minLng`, `maxLng` (normalized south/north/west/east in service).
+- Antimeridian: validation normalizes west ≤ east; cross-180° viewports are **not** supported (MVP city scope).
+- GiST on `Business.location` (geography) — see C.5E EXPLAIN notes in `business-spatial-location.md`.
+
 ## Deferred
 
-- C.5E: SQL map viewport bbox on geography
 - C.5F: optional read-path city bounds hygiene

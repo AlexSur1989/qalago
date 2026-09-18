@@ -92,9 +92,11 @@ describe('Stage 6.11C.5A geo hardening', () => {
     expect(JSON.stringify(rawArgs)).toContain('city-uralsk');
   });
 
-  it('forMap applies valid stored coordinate AND clause', async () => {
-    prisma.business.count.mockResolvedValue(0);
-    prisma.business.findMany.mockResolvedValue([]);
+  it('forMap with bbox uses PostGIS viewport path', async () => {
+    prisma.$queryRaw = jest
+      .fn()
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ count: 0n }]);
 
     await service.findAll({
       citySlug: 'uralsk',
@@ -105,14 +107,7 @@ describe('Stage 6.11C.5A geo hardening', () => {
       maxLng: 51.5,
     });
 
-    const where = prisma.business.findMany.mock.calls[0][0].where;
-    expect(where.AND).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          NOT: { AND: [{ latitude: 0 }, { longitude: 0 }] },
-        }),
-      ]),
-    );
+    expect(prisma.$queryRaw).toHaveBeenCalled();
   });
 
   it('DTO rejects non-numeric latitude after transform', async () => {

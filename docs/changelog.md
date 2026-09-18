@@ -27,6 +27,10 @@
 
 ---
 
+## 2026-09-19 — Stage 6.11C.5E: PostGIS map viewport bbox
+
+- `forMap` + bbox: `ST_Intersects` on `Business.location` with SQL pagination; lat/lng API unchanged. No new index.
+
 ## 2026-09-19 — Stage 6.11C.5D closure: radiusKm filter independent of sort
 
 - Explicit `radiusKm` + user geo applies PostGIS `ST_DWithin` for recommended/rating/popular/search, not only `sort=nearest`.

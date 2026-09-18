@@ -85,14 +85,18 @@ describe('Catalog geo performance baseline (mocked)', () => {
     expect(hydrateCall).toBeDefined();
   });
 
-  it('recommended map bbox uses DB skip/take (contrast)', async () => {
+  it('map bbox uses PostGIS viewport query with LIMIT (not full-city findMany)', async () => {
     const prisma = {
       business: {
         findMany: jest.fn().mockResolvedValue([]),
-        count: jest.fn().mockResolvedValue(0),
+        count: jest.fn(),
       },
+      $queryRaw: jest
+        .fn()
+        .mockResolvedValueOnce([{ id: 'b1' }])
+        .mockResolvedValueOnce([{ count: 1n }]),
     };
-    const service = buildService(prisma);
+    const service = buildService(prisma as never);
 
     await service.findAll({
       citySlug: 'uralsk',
@@ -105,8 +109,10 @@ describe('Catalog geo performance baseline (mocked)', () => {
       limit: 100,
     });
 
-    expect(prisma.business.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ skip: 0, take: 100 }),
+    expect(prisma.$queryRaw).toHaveBeenCalled();
+    const cityWide = prisma.business.findMany.mock.calls.find(
+      (call) => call[0]?.where?.cityId === 'city-uralsk' && !call[0]?.take,
     );
+    expect(cityWide).toBeUndefined();
   });
 });

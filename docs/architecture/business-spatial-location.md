@@ -37,7 +37,7 @@ Prisma 6.x: `location Unsupported("geography(Point,4326)")?` — validated in sc
 | Feature | Status |
 |---------|--------|
 | Nearest / radius (`sort=nearest` + user geo) | **C.5D** — `ST_DWithin` / `ST_Distance` on `Business.location` |
-| Map bbox (lat/lng columns) | Unchanged until **C.5E** |
+| Map viewport bbox | **C.5E** — `ST_Intersects` + envelope geography |
 
 Implementation: `business-catalog-postgis-geo.query.ts` + `findPagedItemsNearestPostgis`.
 
