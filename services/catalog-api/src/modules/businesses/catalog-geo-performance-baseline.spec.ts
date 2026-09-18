@@ -53,41 +53,37 @@ describe('Catalog geo performance baseline (mocked)', () => {
     );
   }
 
-  for (const size of [100, 1000, 10000] as const) {
-    it(`nearest sort loads all ${size} city rows into Node (no SQL LIMIT)`, async () => {
-      const rows = Array.from({ length: size }, (_, i) =>
-        makeBusiness(`id-${i}`, 51.22 + (i % 10) * 0.001, 51.38),
-      );
-      const prisma = {
-        business: {
-          findMany: jest.fn().mockResolvedValue(rows),
-          count: jest.fn(),
-        },
-      };
-      const service = buildService(prisma);
+  it('nearest sort uses PostGIS raw query with LIMIT (not full-city findMany)', async () => {
+    const prisma = {
+      business: {
+        findMany: jest.fn().mockResolvedValue([]),
+        count: jest.fn(),
+      },
+      $queryRaw: jest
+        .fn()
+        .mockResolvedValueOnce([{ id: 'id-1', distance_meters: 100 }])
+        .mockResolvedValueOnce([{ count: 1n }]),
+    };
+    const service = buildService(prisma as never);
 
-      const started = performance.now();
-      await service.findAll({
-        citySlug: 'uralsk',
-        latitude: 51.2278,
-        longitude: 51.3865,
-        radiusKm: 15,
-        limit: 20,
-      });
-      const elapsedMs = performance.now() - started;
-
-      expect(prisma.business.findMany).toHaveBeenCalledTimes(1);
-      const call = prisma.business.findMany.mock.calls[0][0];
-      expect(call.take).toBeUndefined();
-      expect(call.skip).toBeUndefined();
-      expect(rows.length).toBe(size);
-
-      // eslint-disable-next-line no-console -- baseline artifact for C.5A report
-      console.log(
-        `[C.5A baseline] nearest size=${size} findManyRows=${size} serviceMs=${elapsedMs.toFixed(1)}`,
-      );
+    await service.findAll({
+      citySlug: 'uralsk',
+      latitude: 51.2278,
+      longitude: 51.3865,
+      radiusKm: 15,
+      limit: 20,
     });
-  }
+
+    expect(prisma.$queryRaw).toHaveBeenCalled();
+    const fullListCall = prisma.business.findMany.mock.calls.find(
+      (call) => call[0]?.where?.cityId === 'city-uralsk' && !call[0]?.take,
+    );
+    expect(fullListCall).toBeUndefined();
+    const hydrateCall = prisma.business.findMany.mock.calls.find(
+      (call) => call[0]?.where?.id?.in,
+    );
+    expect(hydrateCall).toBeDefined();
+  });
 
   it('recommended map bbox uses DB skip/take (contrast)', async () => {
     const prisma = {

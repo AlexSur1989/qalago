@@ -7,7 +7,7 @@
 | Mode | Parameters | Sort default | Notes |
 |------|------------|--------------|-------|
 | **A — Catalog** | city only (+ category/search) | `recommended` | DB pagination when no search geo |
-| **B — Nearest / radius** | `latitude` + `longitude`, optional `radiusKm`, optional `sort=nearest` | nearest when geo present | `distanceMeters` int, straight-line geodesic (Haversine in Node until C.5D) |
+| **B — Nearest / radius** | `latitude` + `longitude`, optional `radiusKm`, optional `sort=nearest` | nearest when geo present | `distanceMeters` int, PostGIS `ST_Distance` on `Business.location` (C.5D) |
 | **C — Map viewport** | `forMap=true` + bbox four corners | `recommended` with DB skip/take | Server excludes invalid stored coords; lat/lng SQL until C.5E |
 
 ## Validation (C.5A)
@@ -19,18 +19,20 @@
 
 City geocoding bounds are **not** applied on read (C.5F).
 
-## Performance baseline (C.5A)
+## Performance (C.5D+)
 
-- **Nearest:** `findMany` loads **all** matching city rows → sort/filter in Node → slice (C.5D: PostGIS SQL + LIMIT).
-- **Map recommended + bbox:** PostgreSQL `skip`/`take` on `(cityId, status)` + coordinate filters; GiST on derived `Business.location` (C.5C) — query path still lat/lng until C.5E.
+- **Nearest / radius (`sort=nearest` + user geo):** PostGIS `ST_DWithin` + `ST_Distance`, `ORDER BY` distance, SQL `LIMIT`/`OFFSET`; page hydrated by ID (no full-city load in Node).
+- **Default radius:** 15 km when `radiusKm` omitted (unchanged).
+- **Map recommended + bbox:** PostgreSQL `skip`/`take` on lat/lng filters — **C.5E** will move viewport to geography.
 
-## C.5D in-memory sort inventory
+## In-memory sort inventory (post C.5D)
 
 | Branch | Service method | Loads full set in Node |
 |--------|----------------|------------------------|
-| Nearest + geo | `findPagedItems` → `useGeoSort` | Yes |
+| Nearest + geo | `findPagedItemsNearestPostgis` | **No** (SQL page + hydrate) |
 | Rating / popular | `findPagedItems` | Yes |
 | Search + recommended | `findPagedItemsSearchRelevanceInMemory` | Yes |
+| Search + radius without `sort=nearest` | same as recommended/search paths | Yes (unchanged; not C.5D scope) |
 | Recommended (no search, no geo) | `findPagedItemsRecommendedAtDatabase` | No |
 
 Monetization ad `nearest` placement uses separate serve path (documented in monetization stage); not changed in C.5A.
@@ -47,7 +49,5 @@ No dedicated HTTP access logger; bootstrap does not log query strings. Exception
 
 ## Deferred
 
-- C.5B: PostGIS extension (closed) — `docs/infra/postgis-local.md`
-- C.5D: SQL nearest/radius + `ST_Distance` / `ST_DWithin` on `Business.location`
 - C.5E: SQL map viewport bbox on geography
 - C.5F: optional read-path city bounds hygiene

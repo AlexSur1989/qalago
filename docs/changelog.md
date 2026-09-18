@@ -27,6 +27,10 @@
 
 ---
 
+## 2026-09-19 — Stage 6.11C.5D: PostGIS nearest / radius catalog queries
+
+- `GET /businesses` nearest path: SQL `ST_DWithin` + `ST_DDistance`, paginated in DB; lat/lng API unchanged. Map bbox still lat/lng (C.5E).
+
 ## 2026-09-19 — Stage 6.11C.5C: Business spatial location + trigger + GiST
 
 - Migration: nullable `Business.location` geography(Point,4326), trigger `business_derive_location_from_coordinates`, backfill, partial GiST `Business_location_gist_idx`. Lat/lng remain authoritative; API unchanged. Docs: `docs/architecture/business-spatial-location.md`. C.5D/E query migration deferred.

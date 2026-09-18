@@ -15,7 +15,11 @@ import {
   PROFILE_FIELDS,
   HOURS_FIELDS,
 } from '../../common/utils/business-permission.util';
-import { haversineMeters } from '../../common/utils/geo.utils';
+import type { NormalizedMapBbox } from './business-map-query.util';
+import {
+  queryCatalogNearestPage,
+  resolveNearestRadiusMeters,
+} from './business-catalog-postgis-geo.query';
 import {
   BusinessCatalogSort,
   compareBusinessBySort,
@@ -198,6 +202,8 @@ export class BusinessesService {
       limit,
       skip,
       searchContext,
+      normalizedBbox,
+      cityId,
     );
 
     return {
@@ -213,6 +219,8 @@ export class BusinessesService {
     limit: number,
     skip: number,
     searchContext: BusinessCatalogSearchContext | null,
+    normalizedBbox: NormalizedMapBbox | null,
+    cityId: string,
   ) {
     const hasGeo = query.latitude != null && query.longitude != null;
     const sort =
@@ -245,6 +253,17 @@ export class BusinessesService {
       );
     }
 
+    if (useGeoSort) {
+      return this.findPagedItemsNearestPostgis(
+        query,
+        skip,
+        limit,
+        searchContext,
+        normalizedBbox,
+        cityId,
+      );
+    }
+
     const allItems = await this.prisma.business.findMany({
       where,
       select: businessListSelect,
@@ -254,51 +273,6 @@ export class BusinessesService {
       sort === BusinessCatalogSort.RATING || sort === BusinessCatalogSort.POPULAR
         ? await this.loadCatalogSortMetrics(allItems.map((i) => i.id))
         : null;
-
-    if (useGeoSort) {
-      const radiusMeters = (query.radiusKm ?? 15) * 1000;
-      const ranked = allItems
-        .map((item) => {
-          const lat = item.latitude != null ? Number(item.latitude) : null;
-          const lng = item.longitude != null ? Number(item.longitude) : null;
-          if (lat == null || lng == null) {
-            return { item, distanceMeters: null as number | null };
-          }
-          const distanceMeters = haversineMeters(
-            query.latitude!,
-            query.longitude!,
-            lat,
-            lng,
-          );
-          return { item, distanceMeters };
-        })
-        .filter(({ distanceMeters }) =>
-          distanceMeters == null ? true : distanceMeters <= radiusMeters,
-        );
-
-      ranked.sort((a, b) =>
-        compareBusinessBySort(
-          this.toSortRow(a.item, a.distanceMeters, metrics),
-          this.toSortRow(b.item, b.distanceMeters, metrics),
-          BusinessCatalogSort.NEAREST,
-        ),
-      );
-
-      const items = ranked.slice(skip, skip + limit).map(({ item, distanceMeters }) => ({
-        ...item,
-        ...(distanceMeters != null
-          ? { distanceMeters: Math.round(distanceMeters) }
-          : {}),
-        ...(metrics?.ratings.get(item.id)
-          ? {
-              averageRating: metrics.ratings.get(item.id)!.averageRating,
-              reviewCount: metrics.ratings.get(item.id)!.reviewCount,
-            }
-          : {}),
-      }));
-
-      return [items, ranked.length] as const;
-    }
 
     const sorted = [...allItems].sort((a, b) =>
       compareBusinessBySort(
@@ -319,6 +293,55 @@ export class BusinessesService {
     }));
 
     return [items, sorted.length] as const;
+  }
+
+  /** Nearest / radius: PostGIS ST_DWithin + ST_Distance with SQL LIMIT/OFFSET. */
+  private async findPagedItemsNearestPostgis(
+    query: ListBusinessesQueryDto,
+    skip: number,
+    limit: number,
+    searchContext: BusinessCatalogSearchContext | null,
+    normalizedBbox: NormalizedMapBbox | null,
+    cityId: string,
+  ) {
+    const serviceSearchBusinessIds = searchContext
+      ? [...searchContext.serviceMatchKindByBusinessId.keys()]
+      : undefined;
+
+    const { rows, total } = await queryCatalogNearestPage(this.prisma, {
+      cityId,
+      status: query.status ?? BusinessStatus.ACTIVE,
+      latitude: query.latitude!,
+      longitude: query.longitude!,
+      radiusMeters: resolveNearestRadiusMeters(query.radiusKm),
+      categoryId: query.categoryId,
+      subcategoryId: query.subcategoryId,
+      searchPattern: searchContext?.normalized ?? null,
+      serviceSearchBusinessIds,
+      mapBbox: normalizedBbox,
+      skip,
+      limit,
+    });
+
+    if (rows.length === 0) {
+      return [[], total] as const;
+    }
+
+    const hydrated = await this.prisma.business.findMany({
+      where: { id: { in: rows.map((row) => row.id) } },
+      select: businessListSelect,
+    });
+    const byId = new Map(hydrated.map((item) => [item.id, item]));
+
+    const items = rows
+      .map((row) => {
+        const item = byId.get(row.id);
+        if (!item) return null;
+        return { ...item, distanceMeters: row.distanceMeters };
+      })
+      .filter((item): item is NonNullable<typeof item> => item != null);
+
+    return [items, total] as const;
   }
 
   /** Organic discovery (no text query): ORDER BY + SKIP/TAKE in PostgreSQL. */

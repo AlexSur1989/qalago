@@ -21,6 +21,7 @@ describe('Stage 6.11C.5A geo hardening', () => {
 
   let prisma: {
     business: { findMany: jest.Mock; count: jest.Mock };
+    $queryRaw: jest.Mock;
   };
   let service: BusinessesService;
 
@@ -30,6 +31,10 @@ describe('Stage 6.11C.5A geo hardening', () => {
         findMany: jest.fn().mockResolvedValue([]),
         count: jest.fn().mockResolvedValue(0),
       },
+      $queryRaw: jest
+        .fn()
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([{ count: 0n }]),
     };
     const subDeps = createMockSubcategoryDeps();
     service = new BusinessesService(
@@ -51,7 +56,11 @@ describe('Stage 6.11C.5A geo hardening', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
-  it('scopes nearest results to resolved cityId', async () => {
+  it('nearest path uses PostGIS query scoped to resolved cityId', async () => {
+    prisma.$queryRaw = jest
+      .fn()
+      .mockResolvedValueOnce([{ id: 'b1', distance_meters: 120 }])
+      .mockResolvedValueOnce([{ count: 1n }]);
     prisma.business.findMany.mockResolvedValue([
       {
         id: 'b1',
@@ -78,9 +87,9 @@ describe('Stage 6.11C.5A geo hardening', () => {
       radiusKm: 3,
     });
 
-    const where = prisma.business.findMany.mock.calls[0][0].where;
-    expect(where.cityId).toBe('city-uralsk');
-    expect(where.status).toBe(BusinessStatus.ACTIVE);
+    expect(prisma.$queryRaw).toHaveBeenCalled();
+    const rawArgs = prisma.$queryRaw.mock.calls[0]?.slice(1) ?? [];
+    expect(JSON.stringify(rawArgs)).toContain('city-uralsk');
   });
 
   it('forMap applies valid stored coordinate AND clause', async () => {

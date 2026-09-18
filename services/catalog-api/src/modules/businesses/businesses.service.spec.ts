@@ -18,6 +18,7 @@ describe('BusinessesService.findAll', () => {
       findMany: jest.fn(),
       count: jest.fn(),
     },
+    $queryRaw: jest.fn(),
   } as unknown as PrismaService;
 
   const serviceMenuService = {} as BusinessPublicContentService;
@@ -106,6 +107,13 @@ describe('BusinessesService.findAll', () => {
   });
 
   it('sorts by distance when geo is provided (no tier priority)', async () => {
+    prisma.$queryRaw = jest
+      .fn()
+      .mockResolvedValueOnce([
+        { id: 'near-free', distance_meters: 100 },
+        { id: 'far-premium', distance_meters: 2000 },
+      ])
+      .mockResolvedValueOnce([{ count: 2n }]);
     prisma.business.findMany = jest.fn().mockResolvedValue([
       {
         id: 'near-free',
@@ -154,6 +162,13 @@ describe('BusinessesService.findAll', () => {
   });
 
   it('sorts by distance within same tier when geo is provided', async () => {
+    prisma.$queryRaw = jest
+      .fn()
+      .mockResolvedValueOnce([
+        { id: 'near', distance_meters: 100 },
+        { id: 'far', distance_meters: 2000 },
+      ])
+      .mockResolvedValueOnce([{ count: 2n }]);
     prisma.business.findMany = jest.fn().mockResolvedValue([
       {
         id: 'far',
