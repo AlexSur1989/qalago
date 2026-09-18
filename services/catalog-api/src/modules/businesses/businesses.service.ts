@@ -16,8 +16,11 @@ import {
   HOURS_FIELDS,
 } from '../../common/utils/business-permission.util';
 import type { NormalizedMapBbox } from './business-map-query.util';
+import { mergeWhereWithAnd } from '../../common/utils/catalog-geo-query.util';
 import {
   queryCatalogNearestPage,
+  queryCatalogRadiusMembers,
+  resolveExplicitRadiusMeters,
   resolveNearestRadiusMeters,
 } from './business-catalog-postgis-geo.query';
 import {
@@ -223,6 +226,7 @@ export class BusinessesService {
     cityId: string,
   ) {
     const hasGeo = query.latitude != null && query.longitude != null;
+    const hasExplicitRadius = hasGeo && query.radiusKm != null;
     const sort =
       query.sort ??
       (hasGeo ? BusinessCatalogSort.NEAREST : BusinessCatalogSort.RECOMMENDED);
@@ -231,6 +235,30 @@ export class BusinessesService {
       sort === BusinessCatalogSort.NEAREST && !hasGeo
         ? BusinessCatalogSort.RECOMMENDED
         : sort;
+
+    if (useGeoSort) {
+      return this.findPagedItemsNearestPostgis(
+        query,
+        skip,
+        limit,
+        searchContext,
+        normalizedBbox,
+        cityId,
+      );
+    }
+
+    if (hasExplicitRadius) {
+      return this.findPagedItemsWithRadiusFilter(
+        where,
+        query,
+        skip,
+        limit,
+        searchContext,
+        normalizedBbox,
+        cityId,
+        effectiveSort,
+      );
+    }
 
     if (
       effectiveSort === BusinessCatalogSort.RECOMMENDED &&
@@ -250,17 +278,6 @@ export class BusinessesService {
         searchContext,
         skip,
         limit,
-      );
-    }
-
-    if (useGeoSort) {
-      return this.findPagedItemsNearestPostgis(
-        query,
-        skip,
-        limit,
-        searchContext,
-        normalizedBbox,
-        cityId,
       );
     }
 
@@ -342,6 +359,105 @@ export class BusinessesService {
       .filter((item): item is NonNullable<typeof item> => item != null);
 
     return [items, total] as const;
+  }
+
+  /**
+   * Explicit radiusKm is a filter independent of sort.
+   * PostGIS ST_DWithin defines membership; sort/ranking runs on that set only.
+   */
+  private async findPagedItemsWithRadiusFilter(
+    where: Prisma.BusinessWhereInput,
+    query: ListBusinessesQueryDto,
+    skip: number,
+    limit: number,
+    searchContext: BusinessCatalogSearchContext | null,
+    normalizedBbox: NormalizedMapBbox | null,
+    cityId: string,
+    effectiveSort: BusinessCatalogSort,
+  ) {
+    const { rows: radiusMembers } = await queryCatalogRadiusMembers(this.prisma, {
+      cityId,
+      status: query.status ?? BusinessStatus.ACTIVE,
+      latitude: query.latitude!,
+      longitude: query.longitude!,
+      radiusMeters: resolveExplicitRadiusMeters(query.radiusKm!),
+      categoryId: query.categoryId,
+      subcategoryId: query.subcategoryId,
+      mapBbox: normalizedBbox,
+    });
+
+    if (radiusMembers.length === 0) {
+      return [[], 0] as const;
+    }
+
+    const distanceById = new Map(
+      radiusMembers.map((row) => [row.id, row.distanceMeters]),
+    );
+    mergeWhereWithAnd(where, { id: { in: radiusMembers.map((row) => row.id) } });
+
+    const attachDistance = <T extends { id: string }>(items: T[]): T[] =>
+      items.map((item) => ({
+        ...item,
+        distanceMeters: distanceById.get(item.id)!,
+      }));
+
+    if (effectiveSort === BusinessCatalogSort.RECOMMENDED && !searchContext) {
+      const [items, total] = await this.findPagedItemsRecommendedAtDatabase(
+        where,
+        skip,
+        limit,
+      );
+      return [attachDistance(items), total] as const;
+    }
+
+    if (effectiveSort === BusinessCatalogSort.RECOMMENDED && searchContext) {
+      const [items, total] = await this.findPagedItemsSearchRelevanceInMemory(
+        where,
+        searchContext,
+        skip,
+        limit,
+      );
+      return [attachDistance(items), total] as const;
+    }
+
+    const allItems = await this.prisma.business.findMany({
+      where,
+      select: businessListSelect,
+    });
+
+    const metrics =
+      effectiveSort === BusinessCatalogSort.RATING ||
+      effectiveSort === BusinessCatalogSort.POPULAR
+        ? await this.loadCatalogSortMetrics(allItems.map((i) => i.id))
+        : null;
+
+    const sorted = [...allItems].sort((a, b) =>
+      compareBusinessBySort(
+        this.toSortRow(
+          a,
+          distanceById.get(a.id) ?? null,
+          metrics,
+        ),
+        this.toSortRow(
+          b,
+          distanceById.get(b.id) ?? null,
+          metrics,
+        ),
+        effectiveSort,
+      ),
+    );
+
+    const items = attachDistance(sorted.slice(skip, skip + limit).map((item) => ({
+      ...item,
+      ...(metrics?.ratings.get(item.id)
+        ? {
+            averageRating: metrics.ratings.get(item.id)!.averageRating,
+            reviewCount: metrics.ratings.get(item.id)!.reviewCount,
+          }
+        : {}),
+    })));
+
+    return [items, sorted.length] as const;
   }
 
   /** Organic discovery (no text query): ORDER BY + SKIP/TAKE in PostgreSQL. */

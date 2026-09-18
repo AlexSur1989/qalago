@@ -219,6 +219,46 @@ describe('BusinessesService.findAll', () => {
     expect(second.id).toBe('far');
     expect(first.distanceMeters!).toBeLessThan(second.distanceMeters!);
   });
+
+  it('applies explicit radiusKm with sort=recommended via PostGIS membership', async () => {
+    prisma.$queryRaw = jest
+      .fn()
+      .mockResolvedValueOnce([{ id: 'near-free', distance_meters: 500 }]);
+    prisma.business.count = jest.fn().mockResolvedValue(1);
+    prisma.business.findMany = jest.fn().mockResolvedValue([
+      {
+        id: 'near-free',
+        title: 'Near Basic',
+        slug: 'near-basic',
+        cityId: 'city-uralsk',
+        categoryId: 'cat-1',
+        address: 'Near street',
+        latitude: 51.228,
+        longitude: 51.387,
+        status: BusinessStatus.ACTIVE,
+        isFeatured: false,
+        planTier: BusinessPlanTier.FREE,
+        planExpiresAt: null,
+        featuredSlot: null,
+        category,
+      },
+    ]);
+
+    const result = await service.findAll({
+      citySlug: 'uralsk',
+      latitude: 51.2278,
+      longitude: 51.3865,
+      radiusKm: 3,
+      sort: 'recommended' as never,
+      page: 1,
+      limit: 20,
+    });
+
+    expect(prisma.$queryRaw).toHaveBeenCalled();
+    expect(result.meta.total).toBe(1);
+    const first = result.items[0] as { distanceMeters?: number };
+    expect(first.distanceMeters).toBe(500);
+  });
 });
 
 describe('BusinessesService.recommended', () => {

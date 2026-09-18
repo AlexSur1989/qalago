@@ -27,6 +27,10 @@
 
 ---
 
+## 2026-09-19 — Stage 6.11C.5D closure: radiusKm filter independent of sort
+
+- Explicit `radiusKm` + user geo applies PostGIS `ST_DWithin` for recommended/rating/popular/search, not only `sort=nearest`.
+
 ## 2026-09-19 — Stage 6.11C.5D: PostGIS nearest / radius catalog queries
 
 - `GET /businesses` nearest path: SQL `ST_DWithin` + `ST_DDistance`, paginated in DB; lat/lng API unchanged. Map bbox still lat/lng (C.5E).

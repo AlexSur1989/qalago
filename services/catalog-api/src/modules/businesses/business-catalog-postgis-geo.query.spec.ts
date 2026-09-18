@@ -22,8 +22,6 @@ describe('business-catalog-postgis-geo.query', () => {
         radiusMeters: 3000,
         searchPattern: "'; DROP TABLE \"Business\"; --",
         serviceSearchBusinessIds: ['biz-a'],
-        skip: 0,
-        limit: 20,
       },
       point,
     );

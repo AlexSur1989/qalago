@@ -22,7 +22,8 @@ City geocoding bounds are **not** applied on read (C.5F).
 ## Performance (C.5D+)
 
 - **Nearest / radius (`sort=nearest` + user geo):** PostGIS `ST_DWithin` + `ST_Distance`, `ORDER BY` distance, SQL `LIMIT`/`OFFSET`; page hydrated by ID (no full-city load in Node).
-- **Default radius:** 15 km when `radiusKm` omitted (unchanged).
+- **Default radius:** 15 km when `radiusKm` omitted on **nearest** requests only.
+- **Explicit `radiusKm`:** geographic filter via `ST_DWithin` for **all** sort modes; ordering unchanged (nearest = SQL distance sort; recommended/rating/popular = existing logic on radius set only).
 - **Map recommended + bbox:** PostgreSQL `skip`/`take` on lat/lng filters — **C.5E** will move viewport to geography.
 
 ## In-memory sort inventory (post C.5D)
@@ -32,7 +33,7 @@ City geocoding bounds are **not** applied on read (C.5F).
 | Nearest + geo | `findPagedItemsNearestPostgis` | **No** (SQL page + hydrate) |
 | Rating / popular | `findPagedItems` | Yes |
 | Search + recommended | `findPagedItemsSearchRelevanceInMemory` | Yes |
-| Search + radius without `sort=nearest` | same as recommended/search paths | Yes (unchanged; not C.5D scope) |
+| Search + explicit `radiusKm` (any sort) | `findPagedItemsWithRadiusFilter` | **No** (PostGIS membership first) |
 | Recommended (no search, no geo) | `findPagedItemsRecommendedAtDatabase` | No |
 
 Monetization ad `nearest` placement uses separate serve path (documented in monetization stage); not changed in C.5A.

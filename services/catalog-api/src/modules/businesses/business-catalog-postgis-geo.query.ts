@@ -4,7 +4,7 @@ import type { NormalizedMapBbox } from './business-map-query.util';
 /** Default nearest radius when client omits radiusKm (matches legacy Node path). */
 export const DEFAULT_NEAREST_RADIUS_KM = 15;
 
-export type CatalogPostgisNearestParams = {
+export type CatalogPostgisGeoFilterParams = {
   cityId: string;
   status: BusinessStatus;
   latitude: number;
@@ -17,6 +17,9 @@ export type CatalogPostgisNearestParams = {
   /** Businesses matched via visible service-item search (same as Prisma OR branch). */
   serviceSearchBusinessIds?: string[];
   mapBbox?: NormalizedMapBbox | null;
+};
+
+export type CatalogPostgisNearestParams = CatalogPostgisGeoFilterParams & {
   skip: number;
   limit: number;
 };
@@ -25,12 +28,16 @@ export function resolveNearestRadiusMeters(radiusKm: number | undefined): number
   return (radiusKm ?? DEFAULT_NEAREST_RADIUS_KM) * 1000;
 }
 
+export function resolveExplicitRadiusMeters(radiusKm: number): number {
+  return radiusKm * 1000;
+}
+
 function queryGeographyPoint(latitude: number, longitude: number): Prisma.Sql {
   return Prisma.sql`ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography`;
 }
 
 export function buildCatalogNearestWhereSql(
-  params: CatalogPostgisNearestParams,
+  params: CatalogPostgisGeoFilterParams,
   queryPoint: Prisma.Sql,
 ): Prisma.Sql {
   const parts: Prisma.Sql[] = [
@@ -102,6 +109,36 @@ export type CatalogPostgisNearestRow = {
   id: string;
   distanceMeters: number;
 };
+
+export type CatalogPostgisRadiusFilterParams = CatalogPostgisGeoFilterParams;
+
+/** All businesses within explicit radius (ST_DWithin), with distances — for non-nearest sorts. */
+export async function queryCatalogRadiusMembers(
+  prisma: Pick<PrismaClient, '$queryRaw'>,
+  params: CatalogPostgisRadiusFilterParams,
+): Promise<{ rows: CatalogPostgisNearestRow[]; total: number }> {
+  const queryPoint = queryGeographyPoint(params.latitude, params.longitude);
+  const whereSql = buildCatalogNearestWhereSql(params, queryPoint);
+
+  const rows = await prisma.$queryRaw<
+    Array<{ id: string; distance_meters: number }>
+  >`
+    SELECT
+      b.id,
+      ROUND(ST_Distance(b.location, ${queryPoint}))::int AS distance_meters
+    FROM "Business" b
+    WHERE ${whereSql}
+    ORDER BY b.id ASC
+  `;
+
+  return {
+    rows: rows.map((row) => ({
+      id: row.id,
+      distanceMeters: row.distance_meters,
+    })),
+    total: rows.length,
+  };
+}
 
 export async function queryCatalogNearestPage(
   prisma: Pick<PrismaClient, '$queryRaw'>,
