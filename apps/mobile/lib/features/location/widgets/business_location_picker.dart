@@ -19,6 +19,7 @@ class BusinessLocationPicker extends StatefulWidget {
     this.onConfirmed,
     this.onCancelled,
     this.height = 220,
+    this.mapExpanded = false,
   });
 
   final double initialLatitude;
@@ -30,11 +31,16 @@ class BusinessLocationPicker extends StatefulWidget {
   final VoidCallback? onCancelled;
   final double height;
 
+  /// When true, map fills remaining vertical space (parent must be a [Column] in a
+  /// bounded-height container, e.g. fullscreen dialog).
+  final bool mapExpanded;
+
   @override
-  State<BusinessLocationPicker> createState() => _BusinessLocationPickerState();
+  State<BusinessLocationPicker> createState() => BusinessLocationPickerState();
 }
 
-class _BusinessLocationPickerState extends State<BusinessLocationPicker> {
+@visibleForTesting
+class BusinessLocationPickerState extends State<BusinessLocationPicker> {
   late final _controller = createQalaGoMapController();
   late double _latitude = widget.initialLatitude;
   late double _longitude = widget.initialLongitude;
@@ -52,11 +58,47 @@ class _BusinessLocationPickerState extends State<BusinessLocationPicker> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
+  @visibleForTesting
+  void applyBoundsForTesting(QalaGoMapBounds bounds) => _updateFromBounds(bounds);
+
+  Widget _buildMapStack() {
     final center = QalaGoMapCoordinate(
       latitude: widget.initialLatitude,
       longitude: widget.initialLongitude,
+    );
+
+    return Stack(
+      fit: widget.mapExpanded ? StackFit.expand : StackFit.loose,
+      children: [
+        QalaGoMapView(
+          key: ValueKey(
+            'location-picker-${widget.initialLatitude},${widget.initialLongitude}',
+          ),
+          controller: _controller,
+          initialCamera: QalaGoMapCamera(center: center, zoom: 16),
+          markers: const [],
+          onCameraIdle: _updateFromBounds,
+        ),
+        IgnorePointer(
+          child: Center(
+            child: Icon(
+              Icons.location_on,
+              size: 44,
+              color: AppTheme.kzBlue.withValues(alpha: 0.92),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final mapRegion = ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: widget.mapExpanded
+          ? _buildMapStack()
+          : SizedBox(height: widget.height, child: _buildMapStack()),
     );
 
     return Column(
@@ -67,31 +109,7 @@ class _BusinessLocationPickerState extends State<BusinessLocationPicker> {
           style: const TextStyle(color: AppTheme.textMuted, fontSize: 13),
         ),
         const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: SizedBox(
-            height: widget.height,
-            child: Stack(
-              children: [
-                QalaGoMapView(
-                  controller: _controller,
-                  initialCamera: QalaGoMapCamera(center: center, zoom: 16),
-                  markers: const [],
-                  onCameraIdle: _updateFromBounds,
-                ),
-                IgnorePointer(
-                  child: Center(
-                    child: Icon(
-                      Icons.location_on,
-                      size: 44,
-                      color: AppTheme.kzBlue.withValues(alpha: 0.92),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        if (widget.mapExpanded) Expanded(child: mapRegion) else mapRegion,
         const SizedBox(height: 8),
         Row(
           children: [

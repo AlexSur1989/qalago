@@ -116,6 +116,10 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
           tiltGesturesEnabled: false,
           myLocationEnabled: false,
           onMapCreated: _onMapCreated,
+          onStyleLoadedCallback: () {
+            if (!mounted) return;
+            _onCameraIdle();
+          },
           onCameraIdle: _onCameraIdle,
         ),
         ...widget.markers.asMap().entries.map((entry) {

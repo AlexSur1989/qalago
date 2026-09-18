@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -47,7 +46,6 @@ class _BusinessAddressLocationFieldState
   bool _loading = false;
   String? _error;
   List<GeocodingSuggestion> _suggestions = const [];
-  bool _showPicker = false;
 
   @override
   void initState() {
@@ -133,10 +131,58 @@ class _BusinessAddressLocationFieldState
         source: BusinessLocationSource.geocoded,
       ),
     );
-    setState(() {
-      _suggestions = const [];
-      _showPicker = true;
-    });
+    setState(() => _suggestions = const []);
+    _openLocationPicker();
+  }
+
+  void _openLocationPicker() {
+    if (widget.readOnly || !widget.value.hasValidCoordinates) return;
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    final lat = widget.value.latitude!;
+    final lng = widget.value.longitude!;
+    final l10n = context.l10n;
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return Dialog.fullscreen(
+          child: Scaffold(
+            body: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: BusinessLocationPicker(
+                  mapExpanded: true,
+                  initialLatitude: lat,
+                  initialLongitude: lng,
+                  instruction: l10n.businessLocationPickerHint,
+                  confirmLabel: l10n.businessLocationConfirm,
+                  cancelLabel: l10n.businessLocationCancel,
+                  onCancelled: () => Navigator.of(dialogContext).pop(),
+                  onConfirmed: (pickedLat, pickedLng) async {
+                    final confirmed = await _confirmPicker(pickedLat, pickedLng);
+                    if (!confirmed) {
+                      if (dialogContext.mounted) {
+                        ScaffoldMessenger.of(dialogContext).showSnackBar(
+                          SnackBar(
+                            content: Text(l10n.businessLocationOutOfCityBounds),
+                          ),
+                        );
+                      }
+                      return;
+                    }
+                    if (dialogContext.mounted) {
+                      Navigator.of(dialogContext).pop();
+                    }
+                  },
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   bool _isOutOfCityGeocodingError(DioException error) {
@@ -158,7 +204,7 @@ class _BusinessAddressLocationFieldState
     return false;
   }
 
-  Future<void> _confirmPicker(double lat, double lng) async {
+  Future<bool> _confirmPicker(double lat, double lng) async {
     var next = widget.value.copyWith(
       latitude: lat,
       longitude: lng,
@@ -177,18 +223,18 @@ class _BusinessAddressLocationFieldState
       }
     } on DioException catch (error) {
       if (_isOutOfCityGeocodingError(error)) {
-        if (!mounted) return;
+        if (!mounted) return false;
         setState(() {
           _error = context.l10n.businessLocationOutOfCityBounds;
         });
-        return;
+        return false;
       }
       // Other failures: coordinates remain authoritative only when reverse is optional.
     } catch (_) {
       // Coordinates remain authoritative.
     }
     widget.onChanged(next);
-    setState(() => _showPicker = false);
+    return true;
   }
 
   @override
@@ -251,27 +297,16 @@ class _BusinessAddressLocationFieldState
             ),
           ),
         ],
-        if (widget.value.hasValidCoordinates && (_showPicker || !widget.readOnly)) ...[
+        if (widget.value.hasValidCoordinates && !widget.readOnly) ...[
           const SizedBox(height: 16),
-          if (_showPicker && !widget.readOnly)
-            BusinessLocationPicker(
-              initialLatitude: widget.value.latitude!,
-              initialLongitude: widget.value.longitude!,
-              instruction: l10n.businessLocationPickerHint,
-              confirmLabel: l10n.businessLocationConfirm,
-              cancelLabel: l10n.businessLocationCancel,
-              onCancelled: () => setState(() => _showPicker = false),
-              onConfirmed: _confirmPicker,
-            )
-          else if (!widget.readOnly)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: () => setState(() => _showPicker = true),
-                icon: const Icon(Icons.edit_location_alt_outlined),
-                label: Text(l10n.businessLocationAdjustOnMap),
-              ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: _openLocationPicker,
+              icon: const Icon(Icons.edit_location_alt_outlined),
+              label: Text(l10n.businessLocationAdjustOnMap),
             ),
+          ),
         ],
         if (!widget.readOnly &&
             widget.value.displayAddress.trim().length >= 2 &&
