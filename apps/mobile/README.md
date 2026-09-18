@@ -38,6 +38,8 @@ Optional overrides:
 
 Default MapLibre style is [OpenFreeMap Liberty](https://tiles.openfreemap.org/styles/liberty) (validated on physical Android QA). Override with `--dart-define=QALAGO_MAP_STYLE_URL=...`. This is **not** approved production map infrastructure.
 
+MapLibre business markers use Flutter overlays projected during camera movement (bridge until C.6 native symbol layers / clustering).
+
 ## Tests
 
 ```powershell

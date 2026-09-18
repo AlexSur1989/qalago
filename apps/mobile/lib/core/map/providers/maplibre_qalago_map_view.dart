@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
@@ -8,6 +10,7 @@ import '../qalago_map_renderer.dart';
 import '../qalago_map_bounds.dart';
 import '../qalago_map_style_config.dart';
 import '../widgets/qalago_map_attribution_bar.dart';
+import 'maplibre_overlay_projection_sync.dart';
 import 'maplibre_qalago_map_controller.dart';
 
 /// MapLibre-backed [QalaGoMapView] implementation (Stage 6.11C.2).
@@ -34,16 +37,62 @@ class MapLibreQalaGoMapView extends StatefulWidget {
 class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
   MapLibreMapController? _nativeController;
   Map<int, Offset> _markerOffsets = const {};
+  final MapLibreOverlayProjectionSync _projectionSync =
+      MapLibreOverlayProjectionSync();
 
   MapLibreQalaGoMapController? get _qalagoController =>
       widget.controller is MapLibreQalaGoMapController
           ? widget.controller as MapLibreQalaGoMapController
           : null;
 
-  Future<void> _syncMarkerPositions() async {
+  @override
+  void dispose() {
+    _projectionSync.dispose();
+    super.dispose();
+  }
+
+  void _onCameraMove(CameraPosition position) {
+    _projectionSync.bumpGeneration();
+    _projectionSync.scheduleFrame(() {
+      if (!mounted) return;
+      unawaited(_runMarkerProjection());
+    });
+  }
+
+  Future<void> _runMarkerProjection({bool waitForTurn = false}) async {
+    while (mounted) {
+      if (!_projectionSync.beginProjection()) {
+        if (!waitForTurn) return;
+        await Future<void>.delayed(Duration.zero);
+        continue;
+      }
+      final generation = _projectionSync.generation;
+      try {
+        await _projectMarkersForGeneration(generation);
+      } finally {
+        _projectionSync.endProjection(() {
+          if (mounted) unawaited(_runMarkerProjection());
+        });
+      }
+      return;
+    }
+  }
+
+  Future<void> _finalizeMarkerProjection() async {
+    await _runMarkerProjection(waitForTurn: true);
+    while (mounted &&
+        (_projectionSync.isProjectionInFlight ||
+            _projectionSync.hasPendingRerun)) {
+      await _runMarkerProjection(waitForTurn: true);
+    }
+  }
+
+  Future<void> _projectMarkersForGeneration(int generation) async {
     final native = _nativeController;
+    if (!mounted || _projectionSync.isStale(generation)) return;
+
     if (native == null || widget.markers.isEmpty) {
-      if (_markerOffsets.isNotEmpty) {
+      if (_markerOffsets.isNotEmpty && mounted && !_projectionSync.isStale(generation)) {
         setState(() => _markerOffsets = const {});
       }
       return;
@@ -54,7 +103,7 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
         .toList();
     try {
       final points = await native.toScreenLocationBatch(latLngs);
-      if (!mounted) return;
+      if (!mounted || _projectionSync.isStale(generation)) return;
       final next = <int, Offset>{};
       for (var i = 0; i < widget.markers.length; i++) {
         final point = points[i];
@@ -71,7 +120,8 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
   }
 
   Future<void> _onCameraIdle() async {
-    await _syncMarkerPositions();
+    _projectionSync.bumpGeneration();
+    await _finalizeMarkerProjection();
     final callback = widget.onCameraIdle;
     final qController = widget.controller;
     if (callback == null || qController == null) return;
@@ -87,14 +137,15 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
       controller,
       initialZoom: widget.initialCamera.zoom,
     );
-    _onCameraIdle();
+    unawaited(_onCameraIdle());
   }
 
   @override
   void didUpdateWidget(covariant MapLibreQalaGoMapView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.markers != widget.markers) {
-      _syncMarkerPositions();
+      _projectionSync.bumpGeneration();
+      unawaited(_runMarkerProjection());
     }
   }
 
@@ -105,6 +156,7 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
       children: [
         MapLibreMap(
           styleString: QalaGoMapStyleConfig.styleUrl,
+          trackCameraPosition: true,
           initialCameraPosition: CameraPosition(
             target: qalaGoCoordinateToMapLibreLatLng(widget.initialCamera.center),
             zoom: widget.initialCamera.zoom,
@@ -118,8 +170,9 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
           onMapCreated: _onMapCreated,
           onStyleLoadedCallback: () {
             if (!mounted) return;
-            _onCameraIdle();
+            unawaited(_onCameraIdle());
           },
+          onCameraMove: _onCameraMove,
           onCameraIdle: _onCameraIdle,
         ),
         ...widget.markers.asMap().entries.map((entry) {

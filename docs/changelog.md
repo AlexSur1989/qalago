@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-18 — Stage 6.11C.4: MapLibre overlay marker camera sync (bridge)
+
+- Mobile MapLibre: reproject Flutter overlay business pins during camera pan/zoom (`trackCameraPosition`, throttled `toScreenLocationBatch`, stale-result guard); catalog viewport fetch remains on camera idle only.
+- Future: native GeoJSON/SymbolLayer + clustering (6.11C.6), not overlay polling at scale.
+
 ## 2026-09-18 — Stage 6.11C.4: DEV/QA MapLibre basemap (OpenFreeMap Liberty)
 
 - Mobile: default MapLibre style URL changed from MapLibre `demotiles` demo to **OpenFreeMap Liberty** (`https://tiles.openfreemap.org/styles/liberty`) after physical QA on Samsung SM-J610FN (Android 10): demotiles showed blank geographic vectors; Liberty renders roads/buildings/labels on Map tab and business location picker.
