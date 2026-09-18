@@ -5,6 +5,10 @@ import {
   queryCatalogNearestPage,
   resolveNearestRadiusMeters,
 } from './business-catalog-postgis-geo.query';
+import {
+  POSTGIS_TEST_ROLLBACK,
+  withPostgisIntegrationTransaction,
+} from './postgis-integration-test.util';
 
 describe('Stage 6.11C.5D — PostGIS nearest (runtime DB)', () => {
   jest.setTimeout(30_000);
@@ -127,14 +131,13 @@ describe('Stage 6.11C.5D — PostGIS nearest (runtime DB)', () => {
 
   it('excludes null location and respects city isolation', async () => {
     if (skip) return;
-    const ROLLBACK = '__C5D_ROLLBACK__';
     const slug = `c5d-null-loc-${randomBytes(4).toString('hex')}`;
     const category = await prisma.category.findFirst({ select: { id: true } });
     if (!category) return;
 
     try {
-      await prisma.$transaction(async () => {
-        await prisma.business.create({
+      await withPostgisIntegrationTransaction(prisma, async (tx) => {
+        await tx.business.create({
           data: {
             title: 'C5D Null Loc',
             slug,
@@ -146,7 +149,7 @@ describe('Stage 6.11C.5D — PostGIS nearest (runtime DB)', () => {
             longitude: null,
           },
         });
-        const { total } = await queryCatalogNearestPage(prisma, {
+        const { total } = await queryCatalogNearestPage(tx, {
           cityId,
           status: BusinessStatus.ACTIVE,
           latitude: uralskCenterLat,
@@ -155,9 +158,9 @@ describe('Stage 6.11C.5D — PostGIS nearest (runtime DB)', () => {
           skip: 0,
           limit: 500,
         });
-        const hit = await prisma.business.findFirst({ where: { slug } });
+        const hit = await tx.business.findFirst({ where: { slug } });
         expect(hit).toBeTruthy();
-        const listed = await prisma.$queryRaw<Array<{ id: string }>>`
+        const listed = await tx.$queryRaw<Array<{ id: string }>>`
           SELECT b.id FROM "Business" b
           WHERE b.slug = ${slug}
             AND b."cityId" = ${cityId}
@@ -170,10 +173,10 @@ describe('Stage 6.11C.5D — PostGIS nearest (runtime DB)', () => {
         `;
         expect(listed.length).toBe(0);
         expect(total).toBeGreaterThan(0);
-        throw new Error(ROLLBACK);
+        throw new Error(POSTGIS_TEST_ROLLBACK);
       });
-    } catch (e) {
-      if (!(e instanceof Error) || e.message !== ROLLBACK) throw e;
+    } finally {
+      await prisma.business.deleteMany({ where: { slug } });
     }
   });
 });

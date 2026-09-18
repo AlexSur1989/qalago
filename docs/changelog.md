@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-19 — Stage 6.11C.5F.1: PostGIS integration test isolation
+
+- C.5C/C.5D runtime DB fixtures use Prisma interactive transaction client (`tx`) so rollback aborts writes; per-test slug-scoped `finally` cleanup as safety net.
+- Future: optional dedicated integration DB if parallel Jest workers ever share mutable geo fixtures.
+
 ## 2026-09-19 — Stage 6.11C.5E: PostGIS map viewport bbox
 
 - `forMap` + bbox: `ST_Intersects` on `Business.location` with SQL pagination; lat/lng API unchanged. No new index.

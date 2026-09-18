@@ -1,7 +1,9 @@
 import { randomBytes } from 'crypto';
-import { PrismaClient } from '@prisma/client';
-
-const ROLLBACK = '__C5C_ROLLBACK__';
+import { Prisma, PrismaClient } from '@prisma/client';
+import {
+  POSTGIS_TEST_ROLLBACK,
+  withPostgisIntegrationTransaction,
+} from './postgis-integration-test.util';
 
 describe('Stage 6.11C.5C — Business.location trigger (runtime DB)', () => {
   const prisma = new PrismaClient();
@@ -42,27 +44,31 @@ describe('Stage 6.11C.5C — Business.location trigger (runtime DB)', () => {
     await prisma.$disconnect();
   });
 
-  async function withRollback<T>(fn: (slug: string) => Promise<T>): Promise<T> {
+  async function withRollback<T>(
+    fn: (tx: Prisma.TransactionClient, slug: string) => Promise<T>,
+  ): Promise<T | undefined> {
     if (skip) {
-      return undefined as T;
+      return undefined;
     }
     const slug = `c5c-trigger-${randomBytes(6).toString('hex')}`;
     try {
-      return await prisma.$transaction(async () => fn(slug));
-    } catch (e) {
-      if (e instanceof Error && e.message === ROLLBACK) {
-        return undefined as T;
-      }
-      throw e;
+      return await withPostgisIntegrationTransaction(prisma, (tx) => fn(tx, slug));
+    } finally {
+      await prisma.business.deleteMany({
+        where: {
+          OR: [{ slug }, { slug: { startsWith: `${slug}-` } }],
+        },
+      });
     }
   }
 
   async function insertFixture(
+    tx: Prisma.TransactionClient,
     slug: string,
     latitude: number | null,
     longitude: number | null,
   ): Promise<string> {
-    const created = await prisma.business.create({
+    const created = await tx.business.create({
       data: {
         title: 'C5C Trigger Fixture',
         slug,
@@ -78,12 +84,15 @@ describe('Stage 6.11C.5C — Business.location trigger (runtime DB)', () => {
     return created.id;
   }
 
-  async function readLocation(id: string): Promise<{
+  async function readLocation(
+    tx: Prisma.TransactionClient,
+    id: string,
+  ): Promise<{
     locationIsNull: boolean;
     stX: number | null;
     stY: number | null;
   }> {
-    const rows = await prisma.$queryRaw<
+    const rows = await tx.$queryRaw<
       Array<{ location_is_null: boolean; st_x: number | null; st_y: number | null }>
     >`
       SELECT
@@ -102,64 +111,64 @@ describe('Stage 6.11C.5C — Business.location trigger (runtime DB)', () => {
   }
 
   it('valid coordinates → location populated (lng X, lat Y)', async () => {
-    await withRollback(async (slug) => {
-      const id = await insertFixture(slug, 51.2224711, 51.3946096);
-      const loc = await readLocation(id);
+    await withRollback(async (tx, slug) => {
+      const id = await insertFixture(tx, slug, 51.2224711, 51.3946096);
+      const loc = await readLocation(tx, id);
       expect(loc.locationIsNull).toBe(false);
       expect(loc.stX).toBeCloseTo(51.3946096, 5);
       expect(loc.stY).toBeCloseTo(51.2224711, 5);
 
-      await prisma.business.update({
+      await tx.business.update({
         where: { id },
         data: { latitude: 51.23, longitude: 51.4 },
       });
-      const updated = await readLocation(id);
+      const updated = await readLocation(tx, id);
       expect(updated.stX).toBeCloseTo(51.4, 5);
       expect(updated.stY).toBeCloseTo(51.23, 5);
 
-      throw new Error(ROLLBACK);
+      throw new Error(POSTGIS_TEST_ROLLBACK);
     });
   });
 
   it('NULL partial / both NULL / 0,0 / out-of-range → location NULL', async () => {
-    await withRollback(async (slug) => {
-      const idNullLat = await insertFixture(`${slug}-a`, null, 51.39);
-      expect((await readLocation(idNullLat)).locationIsNull).toBe(true);
+    await withRollback(async (tx, slug) => {
+      const idNullLat = await insertFixture(tx, `${slug}-a`, null, 51.39);
+      expect((await readLocation(tx, idNullLat)).locationIsNull).toBe(true);
 
-      const idNullLng = await insertFixture(`${slug}-b`, 51.22, null);
-      expect((await readLocation(idNullLng)).locationIsNull).toBe(true);
+      const idNullLng = await insertFixture(tx, `${slug}-b`, 51.22, null);
+      expect((await readLocation(tx, idNullLng)).locationIsNull).toBe(true);
 
-      const idBothNull = await insertFixture(`${slug}-c`, null, null);
-      expect((await readLocation(idBothNull)).locationIsNull).toBe(true);
+      const idBothNull = await insertFixture(tx, `${slug}-c`, null, null);
+      expect((await readLocation(tx, idBothNull)).locationIsNull).toBe(true);
 
-      const idZero = await insertFixture(`${slug}-d`, 0, 0);
-      expect((await readLocation(idZero)).locationIsNull).toBe(true);
+      const idZero = await insertFixture(tx, `${slug}-d`, 0, 0);
+      expect((await readLocation(tx, idZero)).locationIsNull).toBe(true);
 
-      const idBadLat = await insertFixture(`${slug}-e`, 91, 51.39);
-      expect((await readLocation(idBadLat)).locationIsNull).toBe(true);
+      const idBadLat = await insertFixture(tx, `${slug}-e`, 91, 51.39);
+      expect((await readLocation(tx, idBadLat)).locationIsNull).toBe(true);
 
-      const idBadLng = await insertFixture(`${slug}-f`, 51.22, 181);
-      expect((await readLocation(idBadLng)).locationIsNull).toBe(true);
+      const idBadLng = await insertFixture(tx, `${slug}-f`, 51.22, 181);
+      expect((await readLocation(tx, idBadLng)).locationIsNull).toBe(true);
 
-      throw new Error(ROLLBACK);
+      throw new Error(POSTGIS_TEST_ROLLBACK);
     });
   });
 
   it('restore valid coordinates after NULL → location repopulated', async () => {
-    await withRollback(async (slug) => {
-      const id = await insertFixture(slug, null, null);
-      expect((await readLocation(id)).locationIsNull).toBe(true);
+    await withRollback(async (tx, slug) => {
+      const id = await insertFixture(tx, slug, null, null);
+      expect((await readLocation(tx, id)).locationIsNull).toBe(true);
 
-      await prisma.business.update({
+      await tx.business.update({
         where: { id },
         data: { latitude: 51.2224711, longitude: 51.3946096 },
       });
-      const loc = await readLocation(id);
+      const loc = await readLocation(tx, id);
       expect(loc.locationIsNull).toBe(false);
       expect(loc.stX).toBeCloseTo(51.3946096, 5);
       expect(loc.stY).toBeCloseTo(51.2224711, 5);
 
-      throw new Error(ROLLBACK);
+      throw new Error(POSTGIS_TEST_ROLLBACK);
     });
   });
 
