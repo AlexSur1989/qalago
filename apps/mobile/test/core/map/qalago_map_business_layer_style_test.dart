@@ -23,9 +23,16 @@ void main() {
     expect(filter, ['has', 'point_count']);
   });
 
-  test('cluster count expression present', () {
-    final expr = QalaGoMapBusinessLayerStyle.clusterCountTextExpression();
-    expect(expr.first, 'coalesce');
+  test('FIX1 cluster count uses point_count and Noto font', () {
+    expect(
+      QalaGoMapBusinessLayerStyle.fix1ClusterCountTextField(),
+      ['get', 'point_count'],
+    );
+    expect(
+      QalaGoMapBusinessLayerStyle.fix1ClusterCountTextFont(),
+      ['Noto Sans Regular'],
+    );
+    expect(QalaGoMapBusinessLayerStyle.fix1ClusterCircleRadius, 22.0);
   });
 
   test('normal filter excludes clusters and selected', () {

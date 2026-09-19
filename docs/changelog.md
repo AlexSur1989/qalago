@@ -5,6 +5,11 @@
 
 ---
 
+## 2026-09-19 — Stage 6.11C.6D FIX 1 native cluster pipeline reliability
+
+- Mobile: defer clustered GeoJSON source until features exist; per-layer install with retry; FIX1 constant cluster radius + Noto count labels; omit `clusterMinPoints` on wire (native default 2).
+- Future: restore step radius tuning after physical PASS; C.6E/C.6F unchanged.
+
 ## 2026-09-19 — Stage 6.11C.6D native map business clustering
 
 - Mobile: clustered GeoJSON source, cluster circle/count layers, cluster tap → `getClusterExpansionZoom` with fallback; C.6C individual/selected layers preserved.

@@ -11,6 +11,22 @@ abstract final class QalaGoMapBusinessLayerStyle {
   static const clusterFillColor = BusinessMapCategoryColors.defaultHex;
   static const clusterStrokeColor = '#FFFFFF';
 
+  /// C.6D FIX 1: constant cluster paint until physical PASS (then re-tune).
+  static const fix1ClusterCircleRadius = 22.0;
+  static const fix1ClusterCircleOpacity = 1.0;
+  static const fix1ClusterStrokeWidth = 4.0;
+
+  /// OpenFreeMap Liberty uses Noto Sans (glyphs on tiles.openfreemap.org).
+  static const fix1ClusterCountFontStack = 'Noto Sans Regular';
+
+  static List<Object> fix1ClusterCountTextField() {
+    return ['get', 'point_count'];
+  }
+
+  static List<String> fix1ClusterCountTextFont() {
+    return [fix1ClusterCountFontStack];
+  }
+
   static List<Object> clusterFeatureFilter() {
     return [
       'has',
