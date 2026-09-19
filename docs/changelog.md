@@ -5,6 +5,11 @@
 
 ---
 
+## 2026-09-19 — Stage 6.11C.6F.1 commercial basemap POI suppression
+
+- Mobile: `QalaGoMapBasemapHardening` runs once per MapLibre style load before native business layers; merges OpenFreeMap Liberty `poi_r1` / `poi_r7` / `poi_r20` filters with city-agnostic OpenMapTiles class/subclass commercial deny policy (transit/airport/housenumber untouched).
+- Future: C.6F.2 QalaGo Light + house-number labels; C.6F full visual redesign.
+
 ## 2026-09-19 — Stage 6.11C.6E map selection and interaction parity
 
 - Mobile: single `_selectedBusinessId` path for native tap, list, preview close; cluster tap clears stale preview; viewport/catalog selection reconciliation; Flutter semantics on preview/list/search.

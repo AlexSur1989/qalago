@@ -17,6 +17,7 @@ import '../qalago_map_business_layer_ids.dart';
 import '../qalago_native_map_business_layer_config.dart';
 import 'maplibre_overlay_projection_sync.dart';
 import 'maplibre_qalago_map_controller.dart';
+import '../qalago_map_basemap_hardening.dart';
 import 'qalago_map_business_layer_controller.dart';
 
 /// MapLibre-backed [QalaGoMapView] implementation (Stage 6.11C.2).
@@ -53,6 +54,8 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
       MapLibreOverlayProjectionSync();
   final QalaGoMapBusinessLayerController _businessLayerController =
       QalaGoMapBusinessLayerController();
+  final QalaGoMapBasemapHardening _basemapHardening =
+      QalaGoMapBasemapHardening();
   MapLibreMapController? _featureTapController;
   OnFeatureInteractionCallback? _featureTapCallback;
 
@@ -222,11 +225,14 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
       return;
     }
     final native = _nativeController;
-    if (native != null &&
-        QalaGoNativeMapBusinessLayerConfig.enabled) {
-      await _businessLayerController.onStyleLoaded(native);
-      await _syncNativeBusinessLayer();
-      _attachBusinessFeatureTapListener(native);
+    if (native != null) {
+      _basemapHardening.beginStyleLoad();
+      await _basemapHardening.apply(native);
+      if (QalaGoNativeMapBusinessLayerConfig.enabled) {
+        await _businessLayerController.onStyleLoaded(native);
+        await _syncNativeBusinessLayer();
+        _attachBusinessFeatureTapListener(native);
+      }
     }
     await _onCameraIdle();
   }
