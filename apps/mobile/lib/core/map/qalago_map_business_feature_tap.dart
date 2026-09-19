@@ -8,6 +8,10 @@ abstract final class QalaGoMapBusinessFeatureTap {
     required String layerId,
     Map<String, dynamic>? properties,
   }) {
+    if (QalaGoMapBusinessLayerStyle.isClusterLayerId(layerId)) {
+      return null;
+    }
+
     if (!QalaGoMapBusinessLayerStyle.isBusinessLayerId(layerId)) {
       return null;
     }

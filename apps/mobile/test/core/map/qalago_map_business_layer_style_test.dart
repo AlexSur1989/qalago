@@ -11,8 +11,21 @@ void main() {
     expect(QalaGoMapBusinessLayerIds.selected, 'qalago-business-selected');
   });
 
-  test('C.6C uses unclustered source mode', () {
-    expect(QalaGoMapBusinessClusterConfig.enabledOnSource, isFalse);
+  test('C.6D enables clustered source mode', () {
+    expect(QalaGoMapBusinessClusterConfig.enabledOnSource, isTrue);
+    expect(QalaGoMapBusinessClusterConfig.clusterRadius, 55.0);
+    expect(QalaGoMapBusinessClusterConfig.clusterMaxZoom, 14.0);
+    expect(QalaGoMapBusinessClusterConfig.clusterMinPoints, 2.0);
+  });
+
+  test('cluster filter uses point_count', () {
+    final filter = QalaGoMapBusinessLayerStyle.clusterFeatureFilter();
+    expect(filter, ['has', 'point_count']);
+  });
+
+  test('cluster count expression present', () {
+    final expr = QalaGoMapBusinessLayerStyle.clusterCountTextExpression();
+    expect(expr.first, 'coalesce');
   });
 
   test('normal filter excludes clusters and selected', () {

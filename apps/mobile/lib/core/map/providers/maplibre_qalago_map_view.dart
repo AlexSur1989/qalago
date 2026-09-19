@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -10,7 +11,9 @@ import '../qalago_map_renderer.dart';
 import '../qalago_map_bounds.dart';
 import '../qalago_map_style_config.dart';
 import '../widgets/qalago_map_attribution_bar.dart';
+import '../qalago_map_business_cluster_tap.dart';
 import '../qalago_map_business_feature_tap.dart';
+import '../qalago_map_business_layer_ids.dart';
 import '../qalago_native_map_business_layer_config.dart';
 import 'maplibre_overlay_projection_sync.dart';
 import 'maplibre_qalago_map_controller.dart';
@@ -75,19 +78,115 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
     _featureTapController = map;
     _featureTapCallback =
         (point, latLng, id, layerId, annotation) {
-      if (!mounted) {
-        return;
-      }
-      final businessId = QalaGoMapBusinessFeatureTap.parseBusinessId(
-        featureId: id,
-        layerId: layerId,
+      unawaited(
+        _handleMapFeatureTap(
+          point: point,
+          latLng: latLng,
+          featureId: id,
+          layerId: layerId,
+        ),
       );
-      if (businessId == null) {
-        return;
-      }
-      widget.onBusinessFeatureTap?.call(businessId);
     };
     map.onFeatureTapped.add(_featureTapCallback!);
+  }
+
+  Future<void> _handleMapFeatureTap({
+    required Point<double> point,
+    required LatLng latLng,
+    required String featureId,
+    required String layerId,
+  }) async {
+    if (!mounted) {
+      return;
+    }
+    final map = _nativeController;
+    if (map == null) {
+      return;
+    }
+
+    if (QalaGoMapBusinessClusterTap.isClusterLayerId(layerId)) {
+      await _handleClusterFeatureTap(
+        map,
+        point,
+        latLng,
+        featureId: featureId,
+      );
+      return;
+    }
+
+    final businessId = QalaGoMapBusinessFeatureTap.parseBusinessId(
+      featureId: featureId,
+      layerId: layerId,
+    );
+    if (businessId == null) {
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
+    widget.onBusinessFeatureTap?.call(businessId);
+  }
+
+  Future<void> _handleClusterFeatureTap(
+    MapLibreMapController map,
+    Point<double> point,
+    LatLng latLng, {
+    required String featureId,
+  }) async {
+    if (!mounted) {
+      return;
+    }
+
+    QalaGoMapClusterTapTarget? target;
+    try {
+      final queried = await map.queryRenderedFeatures(
+        point,
+        [
+          QalaGoMapBusinessLayerIds.clusterCircles,
+          QalaGoMapBusinessLayerIds.clusterCount,
+        ],
+        null,
+      );
+      for (final raw in queried) {
+        target = QalaGoMapBusinessClusterTap.parseClusterFeature(
+          raw,
+          tapCoordinates: latLng,
+        );
+        if (target != null) {
+          break;
+        }
+      }
+    } catch (_) {
+      // Query can fail before style is ready; fall back to tap coords only.
+    }
+
+    if (target == null) {
+      final clusterId = int.tryParse(featureId);
+      if (clusterId != null) {
+        target = QalaGoMapClusterTapTarget(
+          clusterId: clusterId,
+          center: latLng,
+        );
+      }
+    }
+
+    if (target == null) {
+      return;
+    }
+
+    final currentZoom =
+        map.cameraPosition?.zoom ?? widget.initialCamera.zoom;
+    final nextZoom = await QalaGoMapBusinessClusterTap.resolveExpansionZoom(
+      map: map,
+      clusterId: target.clusterId,
+      currentZoom: currentZoom,
+    );
+    if (!mounted) {
+      return;
+    }
+    await map.animateCamera(
+      CameraUpdate.newLatLngZoom(target.center, nextZoom),
+    );
   }
 
   void _detachBusinessFeatureTapListener() {

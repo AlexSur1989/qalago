@@ -5,6 +5,11 @@
 
 ---
 
+## 2026-09-19 — Stage 6.11C.6D native map business clustering
+
+- Mobile: clustered GeoJSON source, cluster circle/count layers, cluster tap → `getClusterExpansionZoom` with fallback; C.6C individual/selected layers preserved.
+- Future: basemap POI (C.6F), native a11y (C.6E).
+
 ## 2026-09-19 — Stage 6.11C.6C native unclustered map businesses
 
 - Mobile: MapLibre CircleLayer business points, selection highlight layer, feature tap → MapScreen selection; overlay business pins hidden when `QALAGO_NATIVE_MAP_BUSINESS_LAYER=true`. Source `cluster: false` until C.6D.

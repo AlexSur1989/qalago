@@ -6,23 +6,19 @@ import '../qalago_map_business_layer_ids.dart';
 import '../qalago_map_business_layer_style.dart';
 import '../qalago_native_map_business_layer_config.dart';
 
-/// MapLibre GeoJSON source + circle layers for catalog businesses (C.6B/C.6C).
-///
-/// Selection uses GeoJSON `selected` 0/1 (not feature-state). C.6D enables
-/// [QalaGoMapBusinessClusterConfig.enabledOnSource] and recreates the source.
+/// MapLibre GeoJSON source + layers for catalog businesses (C.6B–C.6D).
 class QalaGoMapBusinessLayerController {
   bool _sourceInstalled = false;
   bool _layersInstalled = false;
+  bool? _installedClusterMode;
 
   bool get sourceInstalled => _sourceInstalled;
 
-  /// Call when the map style finishes loading (or reloads).
   Future<void> onStyleLoaded(MapLibreMapController map) async {
     if (!QalaGoNativeMapBusinessLayerConfig.enabled) {
       return;
     }
-    _sourceInstalled = false;
-    _layersInstalled = false;
+    await _tearDownSourceAndLayers(map);
     await ensureSource(map, emptyFeatureCollection());
     await ensureLayers(map);
   }
@@ -43,7 +39,27 @@ class QalaGoMapBusinessLayerController {
     );
   }
 
-  /// Idempotent source install. C.6C uses `cluster: false`.
+  Future<void> _tearDownSourceAndLayers(MapLibreMapController map) async {
+    for (final layerId in QalaGoMapBusinessLayerStyle.allManagedLayerIds()) {
+      try {
+        await map.removeLayer(layerId);
+      } catch (_) {}
+    }
+    try {
+      await map.removeSource(QalaGoMapBusinessLayerIds.source);
+    } catch (_) {}
+    _sourceInstalled = false;
+    _layersInstalled = false;
+    _installedClusterMode = null;
+  }
+
+  Future<void> _ensureClusterMode(MapLibreMapController map) async {
+    final wantCluster = QalaGoMapBusinessClusterConfig.enabledOnSource;
+    if (_sourceInstalled && _installedClusterMode != wantCluster) {
+      await _tearDownSourceAndLayers(map);
+    }
+  }
+
   Future<void> ensureSource(
     MapLibreMapController map,
     Map<String, dynamic> featureCollection,
@@ -52,6 +68,8 @@ class QalaGoMapBusinessLayerController {
       return;
     }
 
+    await _ensureClusterMode(map);
+
     if (!_sourceInstalled) {
       try {
         await map.addSource(
@@ -59,9 +77,11 @@ class QalaGoMapBusinessLayerController {
           _sourceProperties(featureCollection),
         );
         _sourceInstalled = true;
+        _installedClusterMode = QalaGoMapBusinessClusterConfig.enabledOnSource;
         return;
       } catch (_) {
         _sourceInstalled = true;
+        _installedClusterMode = QalaGoMapBusinessClusterConfig.enabledOnSource;
       }
     }
 
@@ -77,6 +97,34 @@ class QalaGoMapBusinessLayerController {
     }
 
     try {
+      if (QalaGoMapBusinessClusterConfig.enabledOnSource) {
+        await map.addCircleLayer(
+          QalaGoMapBusinessLayerIds.source,
+          QalaGoMapBusinessLayerIds.clusterCircles,
+          CircleLayerProperties(
+            circleColor: QalaGoMapBusinessLayerStyle.clusterFillColor,
+            circleOpacity: 0.88,
+            circleStrokeWidth: 2,
+            circleStrokeColor: QalaGoMapBusinessLayerStyle.clusterStrokeColor,
+            circleRadius: QalaGoMapBusinessLayerStyle.clusterCircleRadiusExpression(),
+          ),
+          filter: QalaGoMapBusinessLayerStyle.clusterFeatureFilter(),
+        );
+
+        await map.addSymbolLayer(
+          QalaGoMapBusinessLayerIds.source,
+          QalaGoMapBusinessLayerIds.clusterCount,
+          SymbolLayerProperties(
+            textField: QalaGoMapBusinessLayerStyle.clusterCountTextExpression(),
+            textSize: 13,
+            textColor: '#FFFFFF',
+            textAllowOverlap: true,
+            textIgnorePlacement: true,
+          ),
+          filter: QalaGoMapBusinessLayerStyle.clusterFeatureFilter(),
+        );
+      }
+
       await map.addCircleLayer(
         QalaGoMapBusinessLayerIds.source,
         QalaGoMapBusinessLayerIds.unclustered,
@@ -105,7 +153,7 @@ class QalaGoMapBusinessLayerController {
         filter: QalaGoMapBusinessLayerStyle.selectedBusinessFilter(),
       );
     } catch (_) {
-      // Style reload may race; layers are idempotent by id on fresh styles.
+      // Fresh style reload is the common case; ignore duplicate layer races.
     }
     _layersInstalled = true;
   }
@@ -131,6 +179,7 @@ class QalaGoMapBusinessLayerController {
   void dispose() {
     _sourceInstalled = false;
     _layersInstalled = false;
+    _installedClusterMode = null;
   }
 
   static Map<String, dynamic> emptyFeatureCollection() => {

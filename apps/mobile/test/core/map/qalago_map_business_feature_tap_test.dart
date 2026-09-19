@@ -56,6 +56,17 @@ void main() {
       );
     });
 
+    test('cluster layer never selects business', () {
+      expect(
+        QalaGoMapBusinessFeatureTap.parseBusinessId(
+          featureId: '42',
+          layerId: QalaGoMapBusinessLayerIds.clusterCircles,
+          properties: {'point_count': 5, 'cluster_id': 42},
+        ),
+        isNull,
+      );
+    });
+
     test('malformed properties ignored safely', () {
       expect(
         QalaGoMapBusinessFeatureTap.parseBusinessId(

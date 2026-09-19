@@ -16,7 +16,7 @@ void main() {
   });
 
   test('cluster tuning defaults are centralized', () {
-    expect(QalaGoMapBusinessClusterConfig.enabledOnSource, isFalse);
+    expect(QalaGoMapBusinessClusterConfig.enabledOnSource, isTrue);
     expect(QalaGoMapBusinessClusterConfig.clusterRadius, 55.0);
     expect(QalaGoMapBusinessClusterConfig.clusterMaxZoom, 14.0);
     expect(QalaGoMapBusinessClusterConfig.clusterMinPoints, 2.0);
