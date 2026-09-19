@@ -5,17 +5,10 @@
 
 ---
 
----
+## 2026-09-19 — Stage 6.11C.6B native map business layer foundation
 
----
-
----
-
----
-
----
-
----
+- Mobile: `BusinessMapGeoJsonBuilder`, MapLibre `QalaGoMapBusinessLayerController`, clustered source config, `QALAGO_NATIVE_MAP_BUSINESS_LAYER` flag (default off). Overlay markers unchanged by default.
+- Future: C.6C unclustered native rendering + taps; C.6D cluster UI; selection styling via GeoJSON `selected` property (not feature-state).
 
 ---
 

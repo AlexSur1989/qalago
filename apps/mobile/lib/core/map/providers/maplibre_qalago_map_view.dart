@@ -10,8 +10,10 @@ import '../qalago_map_renderer.dart';
 import '../qalago_map_bounds.dart';
 import '../qalago_map_style_config.dart';
 import '../widgets/qalago_map_attribution_bar.dart';
+import '../qalago_native_map_business_layer_config.dart';
 import 'maplibre_overlay_projection_sync.dart';
 import 'maplibre_qalago_map_controller.dart';
+import 'qalago_map_business_layer_controller.dart';
 
 /// MapLibre-backed [QalaGoMapView] implementation (Stage 6.11C.2).
 class MapLibreQalaGoMapView extends StatefulWidget {
@@ -20,6 +22,7 @@ class MapLibreQalaGoMapView extends StatefulWidget {
     required this.initialCamera,
     this.controller,
     this.markers = const [],
+    this.businessGeoJson,
     this.interactionEnabled = true,
     this.onCameraIdle,
   });
@@ -27,6 +30,7 @@ class MapLibreQalaGoMapView extends StatefulWidget {
   final QalaGoMapCamera initialCamera;
   final QalaGoMapController? controller;
   final List<QalaGoMapMarker> markers;
+  final Map<String, dynamic>? businessGeoJson;
   final bool interactionEnabled;
   final QalaGoMapCameraIdleCallback? onCameraIdle;
 
@@ -39,6 +43,8 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
   Map<int, Offset> _markerOffsets = const {};
   final MapLibreOverlayProjectionSync _projectionSync =
       MapLibreOverlayProjectionSync();
+  final QalaGoMapBusinessLayerController _businessLayerController =
+      QalaGoMapBusinessLayerController();
 
   MapLibreQalaGoMapController? get _qalagoController =>
       widget.controller is MapLibreQalaGoMapController
@@ -47,8 +53,35 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
 
   @override
   void dispose() {
+    _businessLayerController.dispose();
     _projectionSync.dispose();
     super.dispose();
+  }
+
+  Future<void> _syncNativeBusinessLayer() async {
+    if (!QalaGoNativeMapBusinessLayerConfig.enabled) {
+      return;
+    }
+    final native = _nativeController;
+    if (native == null || !mounted) {
+      return;
+    }
+    final geoJson =
+        widget.businessGeoJson ?? QalaGoMapBusinessLayerController.emptyFeatureCollection();
+    await _businessLayerController.syncBusinessGeoJson(native, geoJson);
+  }
+
+  Future<void> _onStyleLoaded() async {
+    if (!mounted) {
+      return;
+    }
+    final native = _nativeController;
+    if (native != null &&
+        QalaGoNativeMapBusinessLayerConfig.enabled) {
+      await _businessLayerController.onStyleLoaded(native);
+      await _syncNativeBusinessLayer();
+    }
+    await _onCameraIdle();
   }
 
   void _onCameraMove(CameraPosition position) {
@@ -147,6 +180,9 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
       _projectionSync.bumpGeneration();
       unawaited(_runMarkerProjection());
     }
+    if (oldWidget.businessGeoJson != widget.businessGeoJson) {
+      unawaited(_syncNativeBusinessLayer());
+    }
   }
 
   @override
@@ -169,8 +205,7 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
           myLocationEnabled: false,
           onMapCreated: _onMapCreated,
           onStyleLoadedCallback: () {
-            if (!mounted) return;
-            unawaited(_onCameraIdle());
+            unawaited(_onStyleLoaded());
           },
           onCameraMove: _onCameraMove,
           onCameraIdle: _onCameraIdle,

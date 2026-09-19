@@ -33,6 +33,7 @@ Optional overrides:
 | `QALAGO_DEV_HOST` | Dev host for catalog/media/AI when overrides empty (default `127.0.0.1`, web uses `localhost`) |
 | `QALAGO_MAP_STYLE_URL` | MapLibre style JSON URL (default: OpenFreeMap Liberty — DEV/QA only) |
 | `QALAGO_MAP_RENDERER` | `maplibre` (device default) or `flutter_map` (widget tests / override) |
+| `QALAGO_NATIVE_MAP_BUSINESS_LAYER` | `true` enables experimental MapLibre GeoJSON business source (default off; overlay markers remain until C.6C) |
 
 ### Map basemap (DEV/QA)
 

@@ -10,6 +10,8 @@ import '../../../core/map/qalago_map_camera.dart';
 import '../../../core/map/qalago_map_coordinate.dart';
 import '../../../core/map/qalago_map_provider.dart';
 import '../../../core/map/qalago_map_view.dart';
+import '../../../core/map/qalago_native_map_business_layer_config.dart';
+import '../business_map_geo_json_builder.dart';
 import '../../../core/locale/l10n_extension.dart';
 import '../../../core/location/user_location_provider.dart';
 import '../../../core/locale/app_locale_provider.dart';
@@ -167,6 +169,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     }
 
     final l10n = context.l10n;
+    final businessGeoJson = QalaGoNativeMapBusinessLayerConfig.enabled
+        ? BusinessMapGeoJsonBuilder.buildFeatureCollection(
+            businesses: businesses,
+            selectedBusinessId: _selectedBusinessId,
+          )
+        : null;
 
     return Scaffold(
       body: Stack(
@@ -176,6 +184,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             controller: _mapController,
             initialCamera: QalaGoMapCamera(center: center, zoom: _cityZoom),
             markers: mapMarkers,
+            businessGeoJson: businessGeoJson,
             onCameraIdle: (bounds) {
               ref
                   .read(mapBusinessesNotifierProvider.notifier)
