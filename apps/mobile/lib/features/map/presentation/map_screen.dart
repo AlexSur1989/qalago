@@ -31,6 +31,7 @@ import '../../../shared/widgets/qalago_logo.dart';
 import '../../analytics/widgets/business_impression_host.dart';
 import '../../analytics/widgets/map_business_preview_impression.dart';
 import '../map_business_markers.dart';
+import '../map_business_selection_policy.dart';
 import '../map_businesses_notifier.dart';
 import '../map_discovery_scope.dart';
 import '../map_screen_center.dart';
@@ -49,6 +50,25 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   QalaGoMapCoordinate? _lastUserCenter;
   String? _trackedCitySlug;
   String? _selectedBusinessId;
+  void _clearSelection() {
+    if (_selectedBusinessId == null) {
+      return;
+    }
+    setState(() => _selectedBusinessId = null);
+  }
+
+  void _selectBusiness(MapBusinessesState mapBusinesses, String businessId) {
+    if (!MapBusinessSelectionPolicy.isSelectableBusinessId(
+      businessId: businessId,
+      businesses: mapBusinesses,
+    )) {
+      return;
+    }
+    if (_selectedBusinessId == businessId) {
+      return;
+    }
+    setState(() => _selectedBusinessId = businessId);
+  }
 
   @override
   void dispose() {
@@ -111,7 +131,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
     ref.listen(cityProvider, (previous, next) {
       if (previous?.slug == next.slug) return;
-      setState(() => _selectedBusinessId = null);
+      _clearSelection();
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         _moveToCity(next, userPosition, businesses);
@@ -120,14 +140,17 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
     ref.listen(mapDiscoveryScopeProvider, (previous, next) {
       if (previous == next) return;
-      setState(() => _selectedBusinessId = null);
+      _clearSelection();
     });
 
     ref.listen(mapBusinessesProvider, (previous, next) {
       final id = _selectedBusinessId;
       if (id == null) return;
-      if (!next.byId.containsKey(id)) {
-        setState(() => _selectedBusinessId = null);
+      if (!MapBusinessSelectionPolicy.shouldRetainSelection(
+        selectedBusinessId: id,
+        businesses: next,
+      )) {
+        _clearSelection();
       }
     });
     final center = resolveMapScreenCenter(
@@ -139,7 +162,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       businesses: businesses,
       selectedBusinessId: _selectedBusinessId,
       onMarkerTap: (business) {
-        setState(() => _selectedBusinessId = business.id);
+        _selectBusiness(mapBusinesses, business.id);
       },
       userLocation: userPosition == null
           ? null
@@ -193,13 +216,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             markers: overlayMarkers,
             businessGeoJson: businessGeoJson,
             onBusinessFeatureTap: nativeBusinessLayer
-                ? (businessId) {
-                    if (!mapBusinesses.byId.containsKey(businessId)) {
-                      return;
-                    }
-                    setState(() => _selectedBusinessId = businessId);
-                  }
+                ? (businessId) => _selectBusiness(mapBusinesses, businessId)
                 : null,
+            onClusterFeatureTap: nativeBusinessLayer ? _clearSelection : null,
             onCameraIdle: (bounds) {
               ref
                   .read(mapBusinessesNotifierProvider.notifier)
@@ -246,7 +265,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                     onCityTap: () => showCityPickerSheet(context, ref),
                   ),
                   const SizedBox(height: 12),
-                  GestureDetector(
+                  Semantics(
+                    button: true,
+                    label: l10n.searchPlaceholder,
+                    child: GestureDetector(
                     onTap: () => context.push('/search'),
                     child: AbsorbPointer(
                       child: TextField(
@@ -277,6 +299,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       ),
                     ),
                   ),
+                  ),
                 ],
               ),
             ),
@@ -299,7 +322,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                         userLat: userPosition?.latitude,
                         userLng: userPosition?.longitude,
                       ),
-                      onClose: () => setState(() => _selectedBusinessId = null),
+                      onClose: _clearSelection,
                       onDetails: () => openBusiness(
                             context,
                             business.id,
@@ -328,7 +351,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   userLat: userPosition?.latitude,
                   userLng: userPosition?.longitude,
                   onSelect: (business) =>
-                      setState(() => _selectedBusinessId = business.id),
+                      _selectBusiness(mapBusinesses, business.id),
                 );
               },
             ),
@@ -477,7 +500,10 @@ class _MapBusinessPreview extends StatelessWidget {
     );
     final whatsappUrl = normalizeWhatsAppUrl(business.whatsapp);
 
-    return Material(
+    return Semantics(
+      namesRoute: true,
+      label: business.title,
+      child: Material(
       color: Colors.white,
       elevation: 10,
       shadowColor: Colors.black.withValues(alpha: 0.16),
@@ -603,6 +629,7 @@ class _MapBusinessPreview extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }
@@ -716,7 +743,10 @@ class _MapCityTile extends StatelessWidget {
     final coverUrl = AppConstants.resolveMediaUrl(business.coverImageUrl);
     final distanceLabel = formatDistanceMeters(business.distanceMeters);
 
-    return InkWell(
+    return Semantics(
+      button: true,
+      label: business.title,
+      child: InkWell(
       borderRadius: BorderRadius.circular(14),
       onTap: onTap,
       child: Row(
@@ -775,6 +805,7 @@ class _MapCityTile extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }

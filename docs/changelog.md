@@ -5,6 +5,12 @@
 
 ---
 
+## 2026-09-19 — Stage 6.11C.6E map selection and interaction parity
+
+- Mobile: single `_selectedBusinessId` path for native tap, list, preview close; cluster tap clears stale preview; viewport/catalog selection reconciliation; Flutter semantics on preview/list/search.
+- Limitation: native MapLibre circle markers are not individual Flutter semantics nodes (documented).
+- Future: C.6F basemap/POI visual work.
+
 ## 2026-09-19 — Stage 6.11C.6D FIX 1 native cluster pipeline reliability
 
 - Mobile: defer clustered GeoJSON source until features exist; per-layer install with retry; FIX1 constant cluster radius + Noto count labels; omit `clusterMinPoints` on wire (native default 2).

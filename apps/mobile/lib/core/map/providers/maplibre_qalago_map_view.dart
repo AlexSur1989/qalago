@@ -28,6 +28,7 @@ class MapLibreQalaGoMapView extends StatefulWidget {
     this.markers = const [],
     this.businessGeoJson,
     this.onBusinessFeatureTap,
+    this.onClusterFeatureTap,
     this.interactionEnabled = true,
     this.onCameraIdle,
   });
@@ -37,6 +38,7 @@ class MapLibreQalaGoMapView extends StatefulWidget {
   final List<QalaGoMapMarker> markers;
   final Map<String, dynamic>? businessGeoJson;
   final void Function(String businessId)? onBusinessFeatureTap;
+  final VoidCallback? onClusterFeatureTap;
   final bool interactionEnabled;
   final QalaGoMapCameraIdleCallback? onCameraIdle;
 
@@ -105,6 +107,9 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
     }
 
     if (QalaGoMapBusinessClusterTap.isClusterLayerId(layerId)) {
+      if (mounted) {
+        widget.onClusterFeatureTap?.call();
+      }
       await _handleClusterFeatureTap(
         map,
         point,

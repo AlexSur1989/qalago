@@ -22,6 +22,7 @@ class QalaGoMapView extends StatelessWidget {
     this.markers = const [],
     this.businessGeoJson,
     this.onBusinessFeatureTap,
+    this.onClusterFeatureTap,
     this.interactionEnabled = true,
     this.onCameraIdle,
   });
@@ -35,6 +36,9 @@ class QalaGoMapView extends StatelessWidget {
 
   /// MapLibre native business point tap (businessId); ignored when flag is off.
   final void Function(String businessId)? onBusinessFeatureTap;
+
+  /// MapLibre cluster tap (expansion only); ignored when flag is off.
+  final VoidCallback? onClusterFeatureTap;
 
   final bool interactionEnabled;
   final QalaGoMapCameraIdleCallback? onCameraIdle;
@@ -50,6 +54,7 @@ class QalaGoMapView extends StatelessWidget {
           markers: markers,
           businessGeoJson: businessGeoJson,
           onBusinessFeatureTap: onBusinessFeatureTap,
+          onClusterFeatureTap: onClusterFeatureTap,
           interactionEnabled: interactionEnabled,
           onCameraIdle: onCameraIdle,
         );

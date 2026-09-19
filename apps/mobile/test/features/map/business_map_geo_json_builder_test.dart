@@ -98,6 +98,26 @@ void main() {
       expect(props['selected'], 1);
     });
 
+    test('only one business has selected=1 at a time', () {
+      final fc = BusinessMapGeoJsonBuilder.buildFeatureCollection(
+        businesses: [
+          business(id: 'a', lat: 51.1, lng: 51.1),
+          business(id: 'b', lat: 51.2, lng: 51.2),
+        ],
+        selectedBusinessId: 'b',
+      );
+      final features = fc['features'] as List;
+      final selectedCount = features.where((f) {
+        final props = (f as Map)['properties'] as Map;
+        return props['selected'] == 1;
+      }).length;
+      expect(selectedCount, 1);
+      final bProps = (features.firstWhere((f) {
+        return ((f as Map)['properties'] as Map)['businessId'] == 'b';
+      }) as Map)['properties'] as Map;
+      expect(bProps['selected'], 1);
+    });
+
     test('selection update toggles selected property', () {
       final b = business(id: 'sel', lat: 51.0, lng: 51.0);
       final unselected = BusinessMapGeoJsonBuilder.buildFeatureCollection(
