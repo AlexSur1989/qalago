@@ -10,6 +10,7 @@ import '../qalago_map_renderer.dart';
 import '../qalago_map_bounds.dart';
 import '../qalago_map_style_config.dart';
 import '../widgets/qalago_map_attribution_bar.dart';
+import '../qalago_map_business_feature_tap.dart';
 import '../qalago_native_map_business_layer_config.dart';
 import 'maplibre_overlay_projection_sync.dart';
 import 'maplibre_qalago_map_controller.dart';
@@ -23,6 +24,7 @@ class MapLibreQalaGoMapView extends StatefulWidget {
     this.controller,
     this.markers = const [],
     this.businessGeoJson,
+    this.onBusinessFeatureTap,
     this.interactionEnabled = true,
     this.onCameraIdle,
   });
@@ -31,6 +33,7 @@ class MapLibreQalaGoMapView extends StatefulWidget {
   final QalaGoMapController? controller;
   final List<QalaGoMapMarker> markers;
   final Map<String, dynamic>? businessGeoJson;
+  final void Function(String businessId)? onBusinessFeatureTap;
   final bool interactionEnabled;
   final QalaGoMapCameraIdleCallback? onCameraIdle;
 
@@ -45,6 +48,8 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
       MapLibreOverlayProjectionSync();
   final QalaGoMapBusinessLayerController _businessLayerController =
       QalaGoMapBusinessLayerController();
+  MapLibreMapController? _featureTapController;
+  OnFeatureInteractionCallback? _featureTapCallback;
 
   MapLibreQalaGoMapController? get _qalagoController =>
       widget.controller is MapLibreQalaGoMapController
@@ -53,9 +58,46 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
 
   @override
   void dispose() {
+    _detachBusinessFeatureTapListener();
     _businessLayerController.dispose();
     _projectionSync.dispose();
     super.dispose();
+  }
+
+  void _attachBusinessFeatureTapListener(MapLibreMapController map) {
+    if (!QalaGoNativeMapBusinessLayerConfig.enabled) {
+      return;
+    }
+    if (_featureTapController == map && _featureTapCallback != null) {
+      return;
+    }
+    _detachBusinessFeatureTapListener();
+    _featureTapController = map;
+    _featureTapCallback =
+        (point, latLng, id, layerId, annotation) {
+      if (!mounted) {
+        return;
+      }
+      final businessId = QalaGoMapBusinessFeatureTap.parseBusinessId(
+        featureId: id,
+        layerId: layerId,
+      );
+      if (businessId == null) {
+        return;
+      }
+      widget.onBusinessFeatureTap?.call(businessId);
+    };
+    map.onFeatureTapped.add(_featureTapCallback!);
+  }
+
+  void _detachBusinessFeatureTapListener() {
+    final map = _featureTapController;
+    final callback = _featureTapCallback;
+    if (map != null && callback != null) {
+      map.onFeatureTapped.remove(callback);
+    }
+    _featureTapController = null;
+    _featureTapCallback = null;
   }
 
   Future<void> _syncNativeBusinessLayer() async {
@@ -80,6 +122,7 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
         QalaGoNativeMapBusinessLayerConfig.enabled) {
       await _businessLayerController.onStyleLoaded(native);
       await _syncNativeBusinessLayer();
+      _attachBusinessFeatureTapListener(native);
     }
     await _onCameraIdle();
   }

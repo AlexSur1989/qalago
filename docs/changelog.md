@@ -5,6 +5,11 @@
 
 ---
 
+## 2026-09-19 — Stage 6.11C.6C native unclustered map businesses
+
+- Mobile: MapLibre CircleLayer business points, selection highlight layer, feature tap → MapScreen selection; overlay business pins hidden when `QALAGO_NATIVE_MAP_BUSINESS_LAYER=true`. Source `cluster: false` until C.6D.
+- Future: cluster layers/UX (C.6D), TalkBack on native points (C.6E), basemap POI suppression (C.6F).
+
 ## 2026-09-19 — Stage 6.11C.6B native map business layer foundation
 
 - Mobile: `BusinessMapGeoJsonBuilder`, MapLibre `QalaGoMapBusinessLayerController`, clustered source config, `QALAGO_NATIVE_MAP_BUSINESS_LAYER` flag (default off). Overlay markers unchanged by default.

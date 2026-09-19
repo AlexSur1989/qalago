@@ -98,6 +98,32 @@ void main() {
       expect(props['selected'], 1);
     });
 
+    test('selection update toggles selected property', () {
+      final b = business(id: 'sel', lat: 51.0, lng: 51.0);
+      final unselected = BusinessMapGeoJsonBuilder.buildFeatureCollection(
+        businesses: [b],
+        selectedBusinessId: null,
+      );
+      final selected = BusinessMapGeoJsonBuilder.buildFeatureCollection(
+        businesses: [b],
+        selectedBusinessId: 'sel',
+      );
+      final uProps =
+          ((unselected['features'] as List).single as Map)['properties'] as Map;
+      final sProps =
+          ((selected['features'] as List).single as Map)['properties'] as Map;
+      expect(uProps['selected'], 0);
+      expect(sProps['selected'], 1);
+      expect(uProps['businessId'], sProps['businessId']);
+    });
+
+    test('empty update clears features', () {
+      final cleared = BusinessMapGeoJsonBuilder.buildFeatureCollection(
+        businesses: const [],
+      );
+      expect(cleared['features'], isEmpty);
+    });
+
     test('empty input yields valid empty FeatureCollection', () {
       final fc = BusinessMapGeoJsonBuilder.buildFeatureCollection(
         businesses: const [],

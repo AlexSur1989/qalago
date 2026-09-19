@@ -5,6 +5,7 @@ import '../../core/map/qalago_map_marker.dart';
 import '../../core/theme/app_theme.dart';
 import '../../shared/models/models.dart';
 import 'map_coordinate_validity.dart';
+import 'map_overlay_markers.dart';
 
 /// Builds QalaGo map markers from catalog businesses (skips missing coordinates).
 List<QalaGoMapMarker> buildBusinessMapMarkers({
@@ -24,7 +25,7 @@ List<QalaGoMapMarker> buildBusinessMapMarkers({
   if (userLocation != null) {
     markers.add(
       QalaGoMapMarker(
-        id: '__user_location__',
+        id: kUserLocationMarkerId,
         position: userLocation,
         width: 28,
         height: 28,

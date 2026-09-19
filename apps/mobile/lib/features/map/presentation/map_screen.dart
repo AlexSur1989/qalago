@@ -10,8 +10,10 @@ import '../../../core/map/qalago_map_camera.dart';
 import '../../../core/map/qalago_map_coordinate.dart';
 import '../../../core/map/qalago_map_provider.dart';
 import '../../../core/map/qalago_map_view.dart';
+import '../../../core/map/qalago_map_renderer.dart';
 import '../../../core/map/qalago_native_map_business_layer_config.dart';
 import '../business_map_geo_json_builder.dart';
+import '../map_overlay_markers.dart';
 import '../../../core/locale/l10n_extension.dart';
 import '../../../core/location/user_location_provider.dart';
 import '../../../core/locale/app_locale_provider.dart';
@@ -169,12 +171,17 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     }
 
     final l10n = context.l10n;
-    final businessGeoJson = QalaGoNativeMapBusinessLayerConfig.enabled
+    final nativeBusinessLayer = QalaGoNativeMapBusinessLayerConfig.enabled;
+    final businessGeoJson = nativeBusinessLayer
         ? BusinessMapGeoJsonBuilder.buildFeatureCollection(
             businesses: businesses,
             selectedBusinessId: _selectedBusinessId,
           )
         : null;
+    final overlayMarkers = resolveMapOverlayMarkers(
+      markers: mapMarkers,
+      renderer: resolveQalaGoMapRenderer(),
+    );
 
     return Scaffold(
       body: Stack(
@@ -183,8 +190,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             key: ValueKey('map-${city.slug}'),
             controller: _mapController,
             initialCamera: QalaGoMapCamera(center: center, zoom: _cityZoom),
-            markers: mapMarkers,
+            markers: overlayMarkers,
             businessGeoJson: businessGeoJson,
+            onBusinessFeatureTap: nativeBusinessLayer
+                ? (businessId) {
+                    if (!mapBusinesses.byId.containsKey(businessId)) {
+                      return;
+                    }
+                    setState(() => _selectedBusinessId = businessId);
+                  }
+                : null,
             onCameraIdle: (bounds) {
               ref
                   .read(mapBusinessesNotifierProvider.notifier)
