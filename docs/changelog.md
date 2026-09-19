@@ -5,6 +5,11 @@
 
 ---
 
+## 2026-09-20 — Stage 6.11C.6F.2 FIX 3 public MapLibre style mutation
+
+- Mobile: QalaGo Light merges live layer snapshots then uses public `MapLibreMapController.setLayerProperties` (no private `_maplibrePlatform` dynamic access; fixes Samsung NoSuchMethodError).
+- Future: none; closes physical style-load failure from C.6G.
+
 ## 2026-09-19 — Stage 6.11C.6F.2 FIX 2 QalaGo Light legibility tuning
 
 - Mobile: paint-only style updates (`skipNulls`) preserve Liberty line-width/text-field; stronger buildings; scaled road widths; safer street-label colors.

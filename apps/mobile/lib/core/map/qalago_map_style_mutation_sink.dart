@@ -1,6 +1,7 @@
+import 'package:flutter/services.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-import 'qalago_maplibre_layer_properties_patch.dart';
+import 'qalago_maplibre_layer_properties_merge.dart';
 
 /// Runtime style I/O for QalaGo Light + house numbers (C.6F.2).
 abstract class QalaGoMapStyleMutationSink {
@@ -50,6 +51,23 @@ class MapLibreQalaGoMapStyleMutationSink implements QalaGoMapStyleMutationSink {
     return _map.getLayerProperties(layerId);
   }
 
+  Future<LayerProperties> _mergedLayerProperties(
+    String layerId,
+    Map<String, dynamic> overrides,
+  ) async {
+    final snapshot = await _map.getLayerProperties(layerId);
+    if (snapshot == null) {
+      throw PlatformException(
+        code: 'LAYER_NOT_FOUND',
+        message: 'Layer $layerId not found in current style',
+      );
+    }
+    return qalagoLayerPropertiesWithPropertyOverrides(
+      layerSnapshot: snapshot,
+      propertyOverrides: overrides,
+    );
+  }
+
   @override
   Future<void> setLayerProperties(String layerId, LayerProperties properties) {
     if (properties is SymbolLayerProperties) {
@@ -57,8 +75,7 @@ class MapLibreQalaGoMapStyleMutationSink implements QalaGoMapStyleMutationSink {
         'SymbolLayerProperties must not use setLayerProperties (clears layout)',
       );
     }
-    return qalagoSetLayerPropertiesSkipNulls(
-      _map,
+    return _applyMergedProperties(
       layerId,
       properties.toJson(skipNulls: true),
     );
@@ -69,7 +86,15 @@ class MapLibreQalaGoMapStyleMutationSink implements QalaGoMapStyleMutationSink {
     String layerId,
     Map<String, dynamic> properties,
   ) {
-    return qalagoSetLayerPropertiesSkipNulls(_map, layerId, properties);
+    return _applyMergedProperties(layerId, properties);
+  }
+
+  Future<void> _applyMergedProperties(
+    String layerId,
+    Map<String, dynamic> overrides,
+  ) async {
+    final merged = await _mergedLayerProperties(layerId, overrides);
+    await _map.setLayerProperties(layerId, merged);
   }
 
   @override
