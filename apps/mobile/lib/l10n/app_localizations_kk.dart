@@ -262,7 +262,7 @@ class AppLocalizationsKk extends AppLocalizations {
   String get searchSortRecommended => 'Ұсынылады';
 
   @override
-  String get searchSortNearby => 'Жақын';
+  String get searchSortNearby => 'Ең жақын';
 
   @override
   String get searchSortRating => 'Рейтинг бойынша';

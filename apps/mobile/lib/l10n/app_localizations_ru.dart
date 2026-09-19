@@ -262,7 +262,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get searchSortRecommended => 'Рекомендуем';
 
   @override
-  String get searchSortNearby => 'Рядом';
+  String get searchSortNearby => 'Ближайшие';
 
   @override
   String get searchSortRating => 'По рейтингу';

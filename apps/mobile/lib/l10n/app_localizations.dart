@@ -593,7 +593,7 @@ abstract class AppLocalizations {
   /// No description provided for @searchSortNearby.
   ///
   /// In ru, this message translates to:
-  /// **'Рядом'**
+  /// **'Ближайшие'**
   String get searchSortNearby;
 
   /// No description provided for @searchSortRating.
