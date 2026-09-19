@@ -25,12 +25,19 @@ abstract final class QalaGoMapLightStylePolicy {
   static const motorwayRoadColor = '#F0C896';
   static const railLineColor = '#C4CBD4';
   static const boundaryColor = '#CBD5E1';
-  static const streetLabelColor = '#6B7280';
-  static const placeLabelMajorColor = '#374151';
-  static const placeLabelMinorColor = '#6B7280';
-  static const waterLabelColor = '#6B7280';
-  static const retainedPoiTextColor = '#6B7280';
-  static const retainedPoiIconOpacity = 0.82;
+
+  /// Liberty street/road symbol layers — audited, never runtime-mutated in FIX 1.
+  ///
+  /// `maplibre_gl` [MapLibreMapController.setLayerProperties] sends null layout
+  /// keys (`text-field`, `symbol-placement`, …) and clears working Liberty labels.
+  static const libertyStreetRoadLabelLayerIds = [
+    'highway-name-path',
+    'highway-name-minor',
+    'highway-name-major',
+    'highway-shield-non-us',
+    'highway-shield-us-interstate',
+    'road_shield_us',
+  ];
 
   static const backgroundLayerIds = ['background'];
 
@@ -113,42 +120,29 @@ abstract final class QalaGoMapLightStylePolicy {
     'boundary_disputed',
   ];
 
-  static const streetLabelLayerIds = [
-    'highway-name-path',
-    'highway-name-minor',
-    'highway-name-major',
-  ];
-
-  static const placeLabelMajorLayerIds = [
+  /// Symbol/navigation label layers preserved from Liberty (no runtime paint).
+  static const preservedSymbolNavigationLayerIds = [
+    ...libertyStreetRoadLabelLayerIds,
+    'waterway_line_label',
+    'water_name_point_label',
+    'water_name_line_label',
+    'poi_r1',
+    'poi_r7',
+    'poi_r20',
+    'poi_transit',
+    'airport',
     'label_city',
     'label_city_capital',
     'label_state',
     'label_country_1',
     'label_country_2',
     'label_country_3',
-  ];
-
-  static const placeLabelMinorLayerIds = [
     'label_town',
     'label_village',
     'label_other',
   ];
 
-  static const waterLabelLayerIds = [
-    'waterway_line_label',
-    'water_name_point_label',
-    'water_name_line_label',
-  ];
-
-  static const retainedPoiSymbolLayerIds = [
-    'poi_r1',
-    'poi_r7',
-    'poi_r20',
-    'poi_transit',
-    'airport',
-  ];
-
-  /// All explicitly targeted cosmetic layer ids (excluding dynamic `*_casing`).
+  /// Paint mutation targets only (fills/lines/raster/background — no symbol layers).
   static List<String> get explicitTargetLayerIds => [
         ...backgroundLayerIds,
         ...naturalEarthLayerIds,
@@ -163,11 +157,6 @@ abstract final class QalaGoMapLightStylePolicy {
         ...motorwayRoadLayerIds,
         ...railLineLayerIds,
         ...boundaryLineLayerIds,
-        ...streetLabelLayerIds,
-        ...placeLabelMajorLayerIds,
-        ...placeLabelMinorLayerIds,
-        ...waterLabelLayerIds,
-        ...retainedPoiSymbolLayerIds,
       ];
 
   static bool isTransportationCasingLayer(String layerId) {
@@ -229,41 +218,8 @@ abstract final class QalaGoMapLightStylePolicy {
         lineOpacity: 0.55,
       );
     }
-    if (streetLabelLayerIds.contains(layerId)) {
-      return SymbolLayerProperties(
-        textColor: streetLabelColor,
-        textHaloColor: '#F7F9FB',
-        textHaloWidth: 1,
-      );
-    }
-    if (placeLabelMajorLayerIds.contains(layerId)) {
-      return SymbolLayerProperties(
-        textColor: placeLabelMajorColor,
-        textHaloColor: '#F7F9FB',
-        textHaloWidth: 1,
-      );
-    }
-    if (placeLabelMinorLayerIds.contains(layerId)) {
-      return SymbolLayerProperties(
-        textColor: placeLabelMinorColor,
-        textHaloColor: '#F7F9FB',
-        textHaloWidth: 1,
-      );
-    }
-    if (waterLabelLayerIds.contains(layerId)) {
-      return SymbolLayerProperties(
-        textColor: waterLabelColor,
-        textHaloColor: '#F7F9FB',
-        textHaloWidth: 1,
-      );
-    }
-    if (retainedPoiSymbolLayerIds.contains(layerId)) {
-      return SymbolLayerProperties(
-        textColor: retainedPoiTextColor,
-        iconOpacity: retainedPoiIconOpacity,
-        textHaloColor: '#F7F9FB',
-        textHaloWidth: 0.8,
-      );
+    if (preservedSymbolNavigationLayerIds.contains(layerId)) {
+      return null;
     }
     if (isTransportationCasingLayer(layerId)) {
       return LineLayerProperties(lineColor: roadCasingColor);

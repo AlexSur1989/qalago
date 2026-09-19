@@ -40,6 +40,11 @@ class MapLibreQalaGoMapStyleMutationSink implements QalaGoMapStyleMutationSink {
 
   @override
   Future<void> setLayerProperties(String layerId, LayerProperties properties) {
+    if (properties is SymbolLayerProperties) {
+      throw ArgumentError(
+        'SymbolLayerProperties must not use setLayerProperties (clears layout)',
+      );
+    }
     return _map.setLayerProperties(layerId, properties);
   }
 

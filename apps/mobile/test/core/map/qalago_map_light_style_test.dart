@@ -20,8 +20,12 @@ void main() {
         contains('building'),
       );
       expect(
-        QalaGoMapLightStylePolicy.explicitTargetLayerIds,
+        QalaGoMapLightStylePolicy.preservedSymbolNavigationLayerIds,
         contains('highway-name-minor'),
+      );
+      expect(
+        QalaGoMapLightStylePolicy.explicitTargetLayerIds,
+        isNot(contains('highway-name-minor')),
       );
     });
 

@@ -5,6 +5,11 @@
 
 ---
 
+## 2026-09-19 — Stage 6.11C.6F.2 FIX 1 street labels + housenumber stack
+
+- Mobile: stop symbol-layer QalaGo Light paint (restores Liberty `text-field`); insert `qalago-housenumber` below `highway-name-*` anchor.
+- Future: Samsung re-QA z14–18+ street vs housenumber hierarchy.
+
 ## 2026-09-19 — Stage 6.11C.6F.2 QalaGo Light style + house numbers
 
 - Mobile: `QalaGoMapLightStyle` runtime paint on verified Liberty layers; `QalaGoMapHouseNumbers` symbol layer from OpenMapTiles `housenumber` (z16+, city-agnostic).

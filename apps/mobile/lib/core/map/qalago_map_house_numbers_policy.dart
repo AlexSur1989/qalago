@@ -29,5 +29,23 @@ abstract final class QalaGoMapHouseNumbersPolicy {
     return [textFontStack];
   }
 
+  /// Liberty anchors for inserting house numbers below street/road labels (C.6F.2 FIX 1).
+  static const streetLabelStackAnchorLayerIds = [
+    'highway-name-path',
+    'highway-name-minor',
+    'highway-name-major',
+  ];
+
+  /// Returns [belowLayerId] for `addSymbolLayer` so street labels stay above numbers.
+  static String? resolveBelowStreetLabelsLayerId(List<String> styleLayerIds) {
+    final ids = styleLayerIds.toSet();
+    for (final anchor in streetLabelStackAnchorLayerIds) {
+      if (ids.contains(anchor)) {
+        return anchor;
+      }
+    }
+    return null;
+  }
+
   static bool get isCityAgnostic => true;
 }

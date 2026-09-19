@@ -105,6 +105,21 @@ class QalaGoMapHouseNumbers {
       }
     } catch (_) {}
 
+    List<String> styleLayerIds = const [];
+    try {
+      styleLayerIds = await sink.getLayerIds();
+    } catch (_) {}
+
+    final belowStreetLabels =
+        QalaGoMapHouseNumbersPolicy.resolveBelowStreetLabelsLayerId(
+      styleLayerIds,
+    );
+    if (belowStreetLabels == null && kDebugMode) {
+      debugPrint(
+        '[QalaGoHouseNumbers] no street-label anchor; append fallback',
+      );
+    }
+
     try {
       await sink.addSymbolLayer(
         QalaGoMapHouseNumbersPolicy.vectorSourceId,
@@ -120,6 +135,7 @@ class QalaGoMapHouseNumbers {
           textIgnorePlacement: false,
           textOptional: true,
         ),
+        belowLayerId: belowStreetLabels,
         sourceLayer: QalaGoMapHouseNumbersPolicy.sourceLayer,
         minzoom: QalaGoMapHouseNumbersPolicy.minZoom,
       );

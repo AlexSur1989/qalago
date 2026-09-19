@@ -7,7 +7,7 @@ QalaGo Light is a **city-agnostic**, runtime MapLibre paint treatment applied on
 ## Policy
 
 - **Global only** — no per-city paint, filters, or zoom rules.
-- **Runtime mutations** — `setLayerProperties` on verified Liberty layer IDs once per style load.
+- **Runtime mutations** — `setLayerProperties` on fill/line/raster layers only once per style load. Liberty street/road symbol layers are **not** mutated (`maplibre_gl` would clear `text-field` / layout).
 - **Order** — after C.6F.1 commercial POI hardening, before house numbers and QalaGo business layers.
 - **Custom styles** — `QALAGO_MAP_STYLE_URL` overrides still work; missing layers are skipped.
 
@@ -16,6 +16,7 @@ QalaGo Light is a **city-agnostic**, runtime MapLibre paint treatment applied on
 - **Source:** existing vector source `openmaptiles`, layer `housenumber`, property `housenumber`.
 - **QalaGo layer id:** `qalago-housenumber`.
 - **Zoom:** visible from **z16** (global).
+- **Stack:** inserted **below** `highway-name-*` when present so street names outrank numbers.
 - **Coverage:** depends on OpenStreetMap / OpenMapTiles data only. QalaGo does not fabricate or geocode missing numbers.
 
 ## Production note

@@ -49,7 +49,9 @@ void main() {
     late QalaGoMapHouseNumbers houseNumbers;
 
     setUp(() {
-      sink = _RecordingSink();
+      sink = _RecordingSink(
+        layerIds: ['building', 'highway-name-path', 'label_city'],
+      );
       houseNumbers = QalaGoMapHouseNumbers(sinkForTesting: sink);
     });
 
@@ -60,6 +62,7 @@ void main() {
       expect(sink.addCalls, 1);
       expect(sink.lastMinZoom, 16.0);
       expect(sink.lastTextAllowOverlap, isFalse);
+      expect(sink.lastBelowLayerId, 'highway-name-path');
     });
 
     test('missing openmaptiles source skips gracefully', () async {
@@ -100,15 +103,19 @@ void main() {
 class _FakeMap extends Fake implements MapLibreMapController {}
 
 class _RecordingSink implements QalaGoMapStyleMutationSink {
+  _RecordingSink({this.layerIds = const []});
+
+  List<String> layerIds;
   List<String> sourceIds = ['openmaptiles'];
   int addCalls = 0;
   int removeCalls = 0;
   bool failInstall = false;
   double? lastMinZoom;
   bool? lastTextAllowOverlap;
+  String? lastBelowLayerId;
 
   @override
-  Future<List<String>> getLayerIds() async => [];
+  Future<List<String>> getLayerIds() async => layerIds;
 
   @override
   Future<List<String>> getSourceIds() async => sourceIds;
@@ -136,6 +143,7 @@ class _RecordingSink implements QalaGoMapStyleMutationSink {
     addCalls++;
     lastMinZoom = minzoom;
     lastTextAllowOverlap = properties.textAllowOverlap as bool?;
+    lastBelowLayerId = belowLayerId;
     expect(sourceId, 'openmaptiles');
     expect(sourceLayer, 'housenumber');
     expect(layerId, 'qalago-housenumber');
