@@ -17,6 +17,7 @@ import '../map_overlay_markers.dart';
 import '../../../core/locale/l10n_extension.dart';
 import '../../../core/location/user_location_provider.dart';
 import '../../../core/locale/app_locale_provider.dart';
+import '../../../core/providers/city_catalog_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/qalago_spacing.dart';
@@ -332,8 +333,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   );
                 }
 
+                final cityCatalogTotalAsync =
+                    ref.watch(cityCatalogTotalProvider);
+                final cityCatalogEmpty = cityCatalogTotalAsync.hasValue &&
+                    cityCatalogTotalAsync.value == 0;
+
                 if (!mapBusinesses.loading &&
-                    mapBusinesses.catalogTotal == 0 &&
+                    cityCatalogEmpty &&
                     mapBusinesses.error == null) {
                   return Padding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),

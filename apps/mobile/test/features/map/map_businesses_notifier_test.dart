@@ -70,6 +70,75 @@ void main() {
       expect(state.byId.keys.toSet().length, 150);
     });
 
+    test('empty viewport fetch sets viewportTotal without implying city empty',
+        () async {
+      final container = ProviderContainer(
+        overrides: [
+          cityProvider.overrideWith(() => _FixedCityNotifier()),
+          subcategoriesEnabledProvider.overrideWithValue(false),
+          mapDiscoveryScopeProvider.overrideWith((ref) => null),
+          catalogRepositoryProvider.overrideWith(
+            (ref) => _MapPagingCatalogRepository(
+              onFetch: ({required page, required limit}) async =>
+                  PaginatedBusinesses(items: const [], total: 0),
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(mapBusinessesNotifierProvider.notifier);
+      await notifier.onViewportIdle(bounds);
+      await Future<void>.delayed(Duration.zero);
+
+      final state = container.read(mapBusinessesNotifierProvider);
+      expect(state.viewportTotal, 0);
+      expect(state.byId, isEmpty);
+    });
+
+    test('refetch populated viewport restores businesses', () async {
+      var call = 0;
+      final container = ProviderContainer(
+        overrides: [
+          cityProvider.overrideWith(() => _FixedCityNotifier()),
+          subcategoriesEnabledProvider.overrideWithValue(false),
+          mapDiscoveryScopeProvider.overrideWith((ref) => null),
+          catalogRepositoryProvider.overrideWith(
+            (ref) => _MapPagingCatalogRepository(
+              onFetch: ({required page, required limit}) async {
+                call++;
+                if (call == 1) {
+                  return PaginatedBusinesses(items: const [], total: 0);
+                }
+                return PaginatedBusinesses(
+                  items: [business(1)],
+                  total: 1,
+                );
+              },
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(mapBusinessesNotifierProvider.notifier);
+      await notifier.onViewportIdle(bounds);
+      await Future<void>.delayed(Duration.zero);
+      expect(container.read(mapBusinessesNotifierProvider).byId, isEmpty);
+
+      await notifier.onViewportIdle(
+        const QalaGoMapBounds(
+          southwest: QalaGoMapCoordinate(latitude: 51, longitude: 51.3),
+          northeast: QalaGoMapCoordinate(latitude: 52, longitude: 52),
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      final state = container.read(mapBusinessesNotifierProvider);
+      expect(state.viewportTotal, 1);
+      expect(state.byId.length, 1);
+    });
+
     test('resetForScopeChange clears data and ignores stale responses', () async {
       final completer = Completer<PaginatedBusinesses>();
       final container = ProviderContainer(

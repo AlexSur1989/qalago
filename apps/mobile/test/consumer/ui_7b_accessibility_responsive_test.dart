@@ -109,7 +109,7 @@ void main() {
             authProvider.overrideWith(() => _GuestAuthNotifier()),
             cityProvider.overrideWith(() => _UralskCityNotifier()),
             userLocationProvider.overrideWith((ref) => Stream.value(null)),
-            mapBusinessesForTest(items: const [], catalogTotal: 0),
+            mapBusinessesForTest(items: const [], viewportTotal: 0),
           ],
           child: const MapScreen(),
         ),

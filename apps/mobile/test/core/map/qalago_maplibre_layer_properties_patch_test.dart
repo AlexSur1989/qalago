@@ -68,7 +68,11 @@ void main() {
         lineColor: '#D4D8DE',
         widthScale: QalaGoMapLightStylePaintMerge.lineWidthScaleMinor,
       );
-      expect(merged['line-width'], ['*', base['line-width'], 1.32]);
+      final width = merged['line-width'] as List;
+      expect(width.first, 'interpolate');
+      expect(width[2], ['zoom']);
+      expect(width[4], closeTo(2.5 * 1.32, 0.001));
+      expect(width[6], closeTo(18 * 1.32, 0.001));
 
       final lineProps = qalagoLayerPropertiesWithPaintOverrides(
         layerSnapshot: {

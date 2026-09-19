@@ -51,7 +51,8 @@ void main() {
       );
       expect(merged['line-color'], '#D4D8DE');
       expect(merged['line-width'], isA<List>());
-      expect(merged['line-width']!.first, '*');
+      expect(merged['line-width']!.first, 'interpolate');
+      expect(merged['line-width']!.contains('*'), isFalse);
     });
 
     test('street labels use paint-only overrides not layout keys', () {

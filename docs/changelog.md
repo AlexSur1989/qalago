@@ -5,6 +5,12 @@
 
 ---
 
+## 2026-09-20 — Stage 6.11C.6H PRE-CLOSURE FIX 1 map empty semantics + road widths
+
+- Mobile: `EmptyCityView` on map uses `cityCatalogTotalProvider` (city-wide); viewport PostGIS total renamed to `viewportTotal` so empty viewport ≠ empty city.
+- Mobile: QalaGo Light `line-width` scaling multiplies interpolate/step **stop outputs** only (MapLibre-valid; no `['*', zoom-expr, scale]`).
+- Future: C.6H remains blocked until full closure checklist; no new backend city count API (reused lightweight catalog total).
+
 ## 2026-09-20 — Stage 6.11C.6F.2 FIX 3 public MapLibre style mutation
 
 - Mobile: QalaGo Light merges live layer snapshots then uses public `MapLibreMapController.setLayerProperties` (no private `_maplibrePlatform` dynamic access; fixes Samsung NoSuchMethodError).

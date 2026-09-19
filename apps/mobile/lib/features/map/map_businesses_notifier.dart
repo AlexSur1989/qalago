@@ -18,13 +18,13 @@ const kMapBusinessMaxPagesPerFetch = 30;
 /// Fixed map business state for widget/integration tests.
 MapBusinessesState mapBusinessesStateForTest({
   required List<BusinessModel> items,
-  int? catalogTotal,
+  int? viewportTotal,
   Object? error,
   bool loading = false,
 }) {
   return MapBusinessesState(
     byId: {for (final b in items) b.id: b},
-    catalogTotal: catalogTotal ?? items.length,
+    viewportTotal: viewportTotal ?? items.length,
     error: error,
     loading: loading,
   );
@@ -33,7 +33,7 @@ MapBusinessesState mapBusinessesStateForTest({
 class MapBusinessesState {
   const MapBusinessesState({
     this.byId = const {},
-    this.catalogTotal = 0,
+    this.viewportTotal = 0,
     this.loading = false,
     this.error,
     this.scopeGeneration = 0,
@@ -42,7 +42,9 @@ class MapBusinessesState {
   });
 
   final Map<String, BusinessModel> byId;
-  final int catalogTotal;
+
+  /// PostGIS total for the last padded **viewport** fetch (not city-wide).
+  final int viewportTotal;
   final bool loading;
   final Object? error;
   final int scopeGeneration;
@@ -69,7 +71,7 @@ class MapBusinessesState {
 
   MapBusinessesState copyWith({
     Map<String, BusinessModel>? byId,
-    int? catalogTotal,
+    int? viewportTotal,
     bool? loading,
     Object? error,
     bool clearError = false,
@@ -79,7 +81,7 @@ class MapBusinessesState {
   }) {
     return MapBusinessesState(
       byId: byId ?? this.byId,
-      catalogTotal: catalogTotal ?? this.catalogTotal,
+      viewportTotal: viewportTotal ?? this.viewportTotal,
       loading: loading ?? this.loading,
       error: clearError ? null : (error ?? this.error),
       scopeGeneration: scopeGeneration ?? this.scopeGeneration,
@@ -150,7 +152,7 @@ class MapBusinessesNotifier extends Notifier<MapBusinessesState> {
 
     final catalog = ref.read(catalogRepositoryProvider);
     final merged = Map<String, BusinessModel>.from(state.byId);
-    var catalogTotal = 0;
+    var viewportTotal = 0;
 
     try {
       for (var page = 1; page <= kMapBusinessMaxPagesPerFetch; page++) {
@@ -174,7 +176,7 @@ class MapBusinessesNotifier extends Notifier<MapBusinessesState> {
           cancelToken: cancelToken,
         );
 
-        catalogTotal = pageResult.total;
+        viewportTotal = pageResult.total;
         for (final business in businessesWithValidMapCoordinates(pageResult.items)) {
           merged[business.id] = business;
         }
@@ -192,7 +194,7 @@ class MapBusinessesNotifier extends Notifier<MapBusinessesState> {
 
       state = state.copyWith(
         byId: merged,
-        catalogTotal: catalogTotal,
+        viewportTotal: viewportTotal,
         loading: false,
         lastFetchBounds: bounds,
         clearError: true,

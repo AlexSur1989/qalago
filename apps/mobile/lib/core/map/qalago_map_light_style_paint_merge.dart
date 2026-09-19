@@ -16,6 +16,10 @@ abstract final class QalaGoMapLightStylePaintMerge {
     return {};
   }
 
+  /// Scales MapLibre [line-width] values without nesting zoom under arithmetic.
+  ///
+  /// Valid: multiply numeric stops; scale interpolate/step **outputs** only.
+  /// Unsupported shapes are returned unchanged.
   static dynamic scaleLineWidth(dynamic lineWidth, double factor) {
     if (lineWidth == null) {
       return null;
@@ -23,10 +27,65 @@ abstract final class QalaGoMapLightStylePaintMerge {
     if (lineWidth is num) {
       return lineWidth * factor;
     }
-    if (lineWidth is List) {
-      return ['*', lineWidth, factor];
+    if (lineWidth is! List || lineWidth.isEmpty) {
+      return lineWidth;
+    }
+    final head = lineWidth.first;
+    if (head == 'interpolate') {
+      return _scaleInterpolateLineWidth(lineWidth, factor);
+    }
+    if (head == 'step') {
+      return _scaleStepLineWidth(lineWidth, factor);
     }
     return lineWidth;
+  }
+
+  static List<dynamic> _scaleInterpolateLineWidth(
+    List<dynamic> expression,
+    double factor,
+  ) {
+    if (expression.length < 4) {
+      return expression;
+    }
+    final input = expression[2];
+    if (!_isZoomInput(input)) {
+      return expression;
+    }
+    final scaled = List<dynamic>.from(expression);
+    for (var i = 3; i + 1 < scaled.length; i += 2) {
+      scaled[i + 1] = _scaleWidthOutput(scaled[i + 1], factor);
+    }
+    return scaled;
+  }
+
+  static List<dynamic> _scaleStepLineWidth(
+    List<dynamic> expression,
+    double factor,
+  ) {
+    if (expression.length < 3) {
+      return expression;
+    }
+    final input = expression[1];
+    if (!_isZoomInput(input)) {
+      return expression;
+    }
+    final scaled = List<dynamic>.from(expression);
+    scaled[2] = _scaleWidthOutput(scaled[2], factor);
+    for (var i = 3; i + 1 < scaled.length; i += 2) {
+      scaled[i + 1] = _scaleWidthOutput(scaled[i + 1], factor);
+    }
+    return scaled;
+  }
+
+  static bool _isZoomInput(dynamic input) {
+    return input is List && input.isNotEmpty && input.first == 'zoom';
+  }
+
+  static dynamic _scaleWidthOutput(dynamic value, double factor) {
+    if (value is num) {
+      return value * factor;
+    }
+    return value;
   }
 
   static Map<String, dynamic> mergeLinePaint({

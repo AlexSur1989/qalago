@@ -20,13 +20,13 @@ class TestMapBusinessesNotifier extends MapBusinessesNotifier {
 
 Override mapBusinessesForTest({
   required List<BusinessModel> items,
-  int? catalogTotal,
+  int? viewportTotal,
   Object? error,
   bool loading = false,
 }) {
   final state = mapBusinessesStateForTest(
     items: items,
-    catalogTotal: catalogTotal,
+    viewportTotal: viewportTotal,
     error: error,
     loading: loading,
   );
