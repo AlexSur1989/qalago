@@ -18,6 +18,8 @@ import '../qalago_native_map_business_layer_config.dart';
 import 'maplibre_overlay_projection_sync.dart';
 import 'maplibre_qalago_map_controller.dart';
 import '../qalago_map_basemap_hardening.dart';
+import '../qalago_map_house_numbers.dart';
+import '../qalago_map_light_style.dart';
 import 'qalago_map_business_layer_controller.dart';
 
 /// MapLibre-backed [QalaGoMapView] implementation (Stage 6.11C.2).
@@ -56,6 +58,8 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
       QalaGoMapBusinessLayerController();
   final QalaGoMapBasemapHardening _basemapHardening =
       QalaGoMapBasemapHardening();
+  final QalaGoMapLightStyle _lightStyle = QalaGoMapLightStyle();
+  final QalaGoMapHouseNumbers _houseNumbers = QalaGoMapHouseNumbers();
   MapLibreMapController? _featureTapController;
   OnFeatureInteractionCallback? _featureTapCallback;
 
@@ -228,6 +232,10 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
     if (native != null) {
       _basemapHardening.beginStyleLoad();
       await _basemapHardening.apply(native);
+      _lightStyle.beginStyleLoad();
+      await _lightStyle.apply(native);
+      _houseNumbers.beginStyleLoad();
+      await _houseNumbers.apply(native);
       if (QalaGoNativeMapBusinessLayerConfig.enabled) {
         await _businessLayerController.onStyleLoaded(native);
         await _syncNativeBusinessLayer();

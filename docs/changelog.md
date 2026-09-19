@@ -5,6 +5,12 @@
 
 ---
 
+## 2026-09-19 — Stage 6.11C.6F.2 QalaGo Light style + house numbers
+
+- Mobile: `QalaGoMapLightStyle` runtime paint on verified Liberty layers; `QalaGoMapHouseNumbers` symbol layer from OpenMapTiles `housenumber` (z16+, city-agnostic).
+- Docs: `docs/mobile/qalago-map-light-style.md`.
+- Future: physical Samsung visual QA; pinned production style after ops review.
+
 ## 2026-09-19 — Stage 6.11C.6F.1 commercial basemap POI suppression
 
 - Mobile: `QalaGoMapBasemapHardening` runs once per MapLibre style load before native business layers; merges OpenFreeMap Liberty `poi_r1` / `poi_r7` / `poi_r20` filters with city-agnostic OpenMapTiles class/subclass commercial deny policy (transit/airport/housenumber untouched).
