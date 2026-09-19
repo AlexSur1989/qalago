@@ -121,9 +121,18 @@ class _RecordingSink implements QalaGoMapStyleMutationSink {
   Future<List<String>> getSourceIds() async => sourceIds;
 
   @override
+  Future<Map<String, dynamic>?> getLayerProperties(String layerId) async => null;
+
+  @override
   Future<void> setLayerProperties(
     String layerId,
     LayerProperties properties,
+  ) async {}
+
+  @override
+  Future<void> setLayerPropertyMap(
+    String layerId,
+    Map<String, dynamic> properties,
   ) async {}
 
   @override

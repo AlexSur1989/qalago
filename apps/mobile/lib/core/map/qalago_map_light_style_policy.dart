@@ -1,35 +1,28 @@
 import 'package:maplibre_gl/maplibre_gl.dart';
 
+import 'qalago_map_light_style_paint_merge.dart';
+
 /// Verified OpenFreeMap Liberty layer registry + QalaGo Light paint targets (C.6F.2).
-///
-/// Audited against `https://tiles.openfreemap.org/styles/liberty` (111 layers).
-/// City-agnostic — no catalog or geographic coupling.
 abstract final class QalaGoMapLightStylePolicy {
   static const openMapTilesSourceId = 'openmaptiles';
-
-  /// Liberty style layer count at audit time (documentation / tests).
   static const auditedLibertyLayerCount = 111;
 
   static const backgroundColor = '#F7F9FB';
   static const waterFillColor = '#B8D4E8';
   static const waterLineColor = '#9FC5E0';
   static const parkFillColor = '#D4EDDA';
-  static const landcoverWoodColor = '#D4EDDA';
-  static const landcoverGrassColor = '#D4EDDA';
-  static const buildingFillColor = '#E8ECF0';
-  static const buildingExtrusionColor = '#E8ECF0';
-  static const minorRoadColor = '#E2E6EC';
-  static const roadCasingColor = '#D1D5DB';
-  static const secondaryRoadColor = '#DDE1E7';
-  static const primaryRoadColor = '#F5E6D3';
-  static const motorwayRoadColor = '#F0C896';
+  static const buildingFillColor = '#DDE3E8';
+  static const buildingOutlineColor = '#D1D7DE';
+  static const buildingExtrusionColor = '#DDE3E8';
+  static const buildingExtrusionOpacity = 0.55;
+  static const minorRoadColor = '#D4D8DE';
+  static const roadCasingColor = '#C5CBD3';
+  static const secondaryRoadColor = '#C8CDD6';
+  static const primaryRoadColor = '#F0DCC4';
+  static const motorwayRoadColor = '#E8B880';
   static const railLineColor = '#C4CBD4';
   static const boundaryColor = '#CBD5E1';
 
-  /// Liberty street/road symbol layers — audited, never runtime-mutated in FIX 1.
-  ///
-  /// `maplibre_gl` [MapLibreMapController.setLayerProperties] sends null layout
-  /// keys (`text-field`, `symbol-placement`, …) and clears working Liberty labels.
   static const libertyStreetRoadLabelLayerIds = [
     'highway-name-path',
     'highway-name-minor',
@@ -39,8 +32,9 @@ abstract final class QalaGoMapLightStylePolicy {
     'road_shield_us',
   ];
 
-  static const backgroundLayerIds = ['background'];
+  static const majorStreetLabelLayerIds = ['highway-name-major'];
 
+  static const backgroundLayerIds = ['background'];
   static const naturalEarthLayerIds = ['natural_earth'];
 
   static const parkAndGreenFillLayerIds = [
@@ -52,7 +46,6 @@ abstract final class QalaGoMapLightStylePolicy {
   ];
 
   static const waterFillLayerIds = ['water'];
-
   static const waterLineLayerIds = [
     'waterway_tunnel',
     'waterway_river',
@@ -60,7 +53,6 @@ abstract final class QalaGoMapLightStylePolicy {
   ];
 
   static const buildingFillLayerIds = ['building'];
-
   static const buildingExtrusionLayerIds = ['building-3d'];
 
   static const minorRoadLayerIds = [
@@ -120,7 +112,6 @@ abstract final class QalaGoMapLightStylePolicy {
     'boundary_disputed',
   ];
 
-  /// Symbol/navigation label layers preserved from Liberty (no runtime paint).
   static const preservedSymbolNavigationLayerIds = [
     ...libertyStreetRoadLabelLayerIds,
     'waterway_line_label',
@@ -142,7 +133,6 @@ abstract final class QalaGoMapLightStylePolicy {
     'label_other',
   ];
 
-  /// Paint mutation targets only (fills/lines/raster/background — no symbol layers).
   static List<String> get explicitTargetLayerIds => [
         ...backgroundLayerIds,
         ...naturalEarthLayerIds,
@@ -157,6 +147,7 @@ abstract final class QalaGoMapLightStylePolicy {
         ...motorwayRoadLayerIds,
         ...railLineLayerIds,
         ...boundaryLineLayerIds,
+        ...libertyStreetRoadLabelLayerIds,
       ];
 
   static bool isTransportationCasingLayer(String layerId) {
@@ -166,7 +157,68 @@ abstract final class QalaGoMapLightStylePolicy {
             layerId.startsWith('bridge_'));
   }
 
-  static LayerProperties? propertiesForLayer(String layerId) {
+  static bool isStreetRoadLabelLayer(String layerId) {
+    return libertyStreetRoadLabelLayerIds.contains(layerId);
+  }
+
+  static double lineWidthScaleFor(String layerId) {
+    if (minorRoadLayerIds.contains(layerId)) {
+      return QalaGoMapLightStylePaintMerge.lineWidthScaleMinor;
+    }
+    if (secondaryRoadLayerIds.contains(layerId)) {
+      return QalaGoMapLightStylePaintMerge.lineWidthScaleSecondary;
+    }
+    if (primaryRoadLayerIds.contains(layerId)) {
+      return QalaGoMapLightStylePaintMerge.lineWidthScalePrimary;
+    }
+    if (motorwayRoadLayerIds.contains(layerId)) {
+      return QalaGoMapLightStylePaintMerge.lineWidthScaleMotorway;
+    }
+    if (isTransportationCasingLayer(layerId)) {
+      return QalaGoMapLightStylePaintMerge.lineWidthScaleCasing;
+    }
+    return 1.0;
+  }
+
+  static String? lineColorFor(String layerId) {
+    if (minorRoadLayerIds.contains(layerId)) {
+      return minorRoadColor;
+    }
+    if (secondaryRoadLayerIds.contains(layerId)) {
+      return secondaryRoadColor;
+    }
+    if (primaryRoadLayerIds.contains(layerId)) {
+      return primaryRoadColor;
+    }
+    if (motorwayRoadLayerIds.contains(layerId)) {
+      return motorwayRoadColor;
+    }
+    if (railLineLayerIds.contains(layerId)) {
+      return railLineColor;
+    }
+    if (boundaryLineLayerIds.contains(layerId)) {
+      return boundaryColor;
+    }
+    if (isTransportationCasingLayer(layerId)) {
+      return roadCasingColor;
+    }
+    if (waterLineLayerIds.contains(layerId)) {
+      return waterLineColor;
+    }
+    return null;
+  }
+
+  static Map<String, dynamic>? streetLabelPaintFor(String layerId) {
+    if (!isStreetRoadLabelLayer(layerId)) {
+      return null;
+    }
+    if (majorStreetLabelLayerIds.contains(layerId)) {
+      return QalaGoMapLightStylePaintMerge.majorStreetLabelPaintOverrides();
+    }
+    return QalaGoMapLightStylePaintMerge.streetLabelPaintOverrides();
+  }
+
+  static LayerProperties? simplePropertiesForLayer(String layerId) {
     if (backgroundLayerIds.contains(layerId)) {
       return BackgroundLayerProperties(backgroundColor: backgroundColor);
     }
@@ -182,50 +234,11 @@ abstract final class QalaGoMapLightStylePolicy {
     if (waterFillLayerIds.contains(layerId)) {
       return FillLayerProperties(fillColor: waterFillColor);
     }
-    if (waterLineLayerIds.contains(layerId)) {
-      return LineLayerProperties(lineColor: waterLineColor);
-    }
-    if (buildingFillLayerIds.contains(layerId)) {
-      return FillLayerProperties(
-        fillColor: buildingFillColor,
-        fillOutlineColor: '#DDE2E8',
-      );
-    }
-    if (buildingExtrusionLayerIds.contains(layerId)) {
-      return FillExtrusionLayerProperties(
-        fillExtrusionColor: buildingExtrusionColor,
-        fillExtrusionOpacity: 0.45,
-      );
-    }
-    if (minorRoadLayerIds.contains(layerId)) {
-      return LineLayerProperties(lineColor: minorRoadColor);
-    }
-    if (secondaryRoadLayerIds.contains(layerId)) {
-      return LineLayerProperties(lineColor: secondaryRoadColor);
-    }
-    if (primaryRoadLayerIds.contains(layerId)) {
-      return LineLayerProperties(lineColor: primaryRoadColor);
-    }
-    if (motorwayRoadLayerIds.contains(layerId)) {
-      return LineLayerProperties(lineColor: motorwayRoadColor);
-    }
-    if (railLineLayerIds.contains(layerId)) {
-      return LineLayerProperties(lineColor: railLineColor);
-    }
-    if (boundaryLineLayerIds.contains(layerId)) {
-      return LineLayerProperties(
-        lineColor: boundaryColor,
-        lineOpacity: 0.55,
-      );
-    }
-    if (preservedSymbolNavigationLayerIds.contains(layerId)) {
-      return null;
-    }
-    if (isTransportationCasingLayer(layerId)) {
-      return LineLayerProperties(lineColor: roadCasingColor);
-    }
     return null;
   }
 
   static bool get isCityAgnostic => true;
+
+  /// Previous C.6F.2 building fill before FIX 2 legibility tuning.
+  static const previousBuildingFillColor = '#E8ECF0';
 }

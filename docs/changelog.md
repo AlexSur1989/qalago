@@ -5,6 +5,11 @@
 
 ---
 
+## 2026-09-19 — Stage 6.11C.6F.2 FIX 2 QalaGo Light legibility tuning
+
+- Mobile: paint-only style updates (`skipNulls`) preserve Liberty line-width/text-field; stronger buildings; scaled road widths; safer street-label colors.
+- Future: Samsung re-QA z14–18+ hierarchy.
+
 ## 2026-09-19 — Stage 6.11C.6F.2 FIX 1 street labels + housenumber stack
 
 - Mobile: stop symbol-layer QalaGo Light paint (restores Liberty `text-field`); insert `qalago-housenumber` below `highway-name-*` anchor.

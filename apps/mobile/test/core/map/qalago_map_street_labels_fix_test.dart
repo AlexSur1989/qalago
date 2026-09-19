@@ -9,26 +9,20 @@ import 'package:qalago_mobile/core/map/qalago_map_style_mutation_sink.dart';
 
 void main() {
   group('C.6F.2 FIX 1 street labels', () {
-    test('QalaGo Light does not mutate Liberty street/road symbol layers', () {
+    test('street labels use safe paint-only overrides (FIX 2)', () {
       for (final id in QalaGoMapLightStylePolicy.libertyStreetRoadLabelLayerIds) {
-        expect(
-          QalaGoMapLightStylePolicy.explicitTargetLayerIds,
-          isNot(contains(id)),
-        );
-        expect(
-          QalaGoMapLightStylePolicy.propertiesForLayer(id),
-          isNull,
-        );
+        final paint = QalaGoMapLightStylePolicy.streetLabelPaintFor(id);
+        if (id == 'highway-shield-non-us' ||
+            id == 'highway-shield-us-interstate' ||
+            id == 'road_shield_us') {
+          expect(paint, isNotNull);
+        }
+        if (paint != null) {
+          expect(paint.keys, isNot(contains('text-field')));
+        }
       }
-    });
-
-    test('preserved navigation symbol layers are excluded from paint mutations', () {
       expect(
-        QalaGoMapLightStylePolicy.preservedSymbolNavigationLayerIds,
-        contains('highway-name-minor'),
-      );
-      expect(
-        QalaGoMapLightStylePolicy.propertiesForLayer('highway-name-minor'),
+        QalaGoMapLightStylePolicy.simplePropertiesForLayer('highway-name-minor'),
         isNull,
       );
     });
@@ -108,9 +102,18 @@ class _HouseSink implements QalaGoMapStyleMutationSink {
   Future<List<String>> getSourceIds() async => ['openmaptiles'];
 
   @override
+  Future<Map<String, dynamic>?> getLayerProperties(String layerId) async => null;
+
+  @override
   Future<void> setLayerProperties(
     String layerId,
     LayerProperties properties,
+  ) async {}
+
+  @override
+  Future<void> setLayerPropertyMap(
+    String layerId,
+    Map<String, dynamic> properties,
   ) async {}
 
   @override

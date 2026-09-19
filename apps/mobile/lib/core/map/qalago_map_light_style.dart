@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
+import 'qalago_map_light_style_paint_merge.dart';
 import 'qalago_map_light_style_policy.dart';
 import 'qalago_map_style_mutation_sink.dart';
 
@@ -101,16 +102,12 @@ class QalaGoMapLightStyle {
         continue;
       }
 
-      final properties = QalaGoMapLightStylePolicy.propertiesForLayer(layerId);
-      if (properties == null) {
-        results[layerId] = LightStyleLayerResult.skippedUnknown;
-        continue;
-      }
-
       try {
-        await sink.setLayerProperties(layerId, properties);
-        results[layerId] = LightStyleLayerResult.applied;
-        if (kDebugMode) {
+        final applied = await _applyLayerMutation(sink, layerId);
+        results[layerId] = applied
+            ? LightStyleLayerResult.applied
+            : LightStyleLayerResult.skippedUnknown;
+        if (applied && kDebugMode) {
           debugPrint('[QalaGoLightStyle] styled $layerId');
         }
       } on PlatformException catch (e, st) {
@@ -138,5 +135,65 @@ class QalaGoMapLightStyle {
       layerResults: results,
       completed: true,
     );
+  }
+
+  Future<bool> _applyLayerMutation(
+    QalaGoMapStyleMutationSink sink,
+    String layerId,
+  ) async {
+    final streetPaint = QalaGoMapLightStylePolicy.streetLabelPaintFor(layerId);
+    if (streetPaint != null) {
+      await sink.setLayerPropertyMap(layerId, streetPaint);
+      return true;
+    }
+
+    if (QalaGoMapLightStylePolicy.buildingFillLayerIds.contains(layerId)) {
+      final snapshot = await sink.getLayerProperties(layerId);
+      final base = QalaGoMapLightStylePaintMerge.paintFromLayerSnapshot(snapshot);
+      final paint = QalaGoMapLightStylePaintMerge.mergeFillPaint(
+        basePaint: base,
+        fillColor: QalaGoMapLightStylePolicy.buildingFillColor,
+        fillOutlineColor: QalaGoMapLightStylePolicy.buildingOutlineColor,
+      );
+      await sink.setLayerPropertyMap(layerId, paint);
+      return true;
+    }
+
+    if (QalaGoMapLightStylePolicy.buildingExtrusionLayerIds.contains(layerId)) {
+      final snapshot = await sink.getLayerProperties(layerId);
+      final paint = Map<String, dynamic>.from(
+        QalaGoMapLightStylePaintMerge.paintFromLayerSnapshot(snapshot),
+      );
+      paint['fill-extrusion-color'] =
+          QalaGoMapLightStylePolicy.buildingExtrusionColor;
+      paint['fill-extrusion-opacity'] =
+          QalaGoMapLightStylePolicy.buildingExtrusionOpacity;
+      await sink.setLayerPropertyMap(layerId, paint);
+      return true;
+    }
+
+    final lineColor = QalaGoMapLightStylePolicy.lineColorFor(layerId);
+    if (lineColor != null) {
+      final snapshot = await sink.getLayerProperties(layerId);
+      final base = QalaGoMapLightStylePaintMerge.paintFromLayerSnapshot(snapshot);
+      final paint = QalaGoMapLightStylePaintMerge.mergeLinePaint(
+        basePaint: base,
+        lineColor: lineColor,
+        widthScale: QalaGoMapLightStylePolicy.lineWidthScaleFor(layerId),
+      );
+      if (QalaGoMapLightStylePolicy.boundaryLineLayerIds.contains(layerId)) {
+        paint['line-opacity'] = 0.55;
+      }
+      await sink.setLayerPropertyMap(layerId, paint);
+      return true;
+    }
+
+    final simple = QalaGoMapLightStylePolicy.simplePropertiesForLayer(layerId);
+    if (simple != null) {
+      await sink.setLayerProperties(layerId, simple);
+      return true;
+    }
+
+    return false;
   }
 }

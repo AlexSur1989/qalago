@@ -25,7 +25,7 @@ void main() {
       );
       expect(
         QalaGoMapLightStylePolicy.explicitTargetLayerIds,
-        isNot(contains('highway-name-minor')),
+        contains('highway-name-minor'),
       );
     });
 
@@ -46,6 +46,22 @@ void main() {
     setUp(() {
       sink = _RecordingSink(
         layerIds: ['background', 'water', 'road_minor'],
+        layerSnapshots: {
+          'road_minor': {
+            'paint': {
+              'line-color': '#fff',
+              'line-width': [
+                'interpolate',
+                ['exponential', 1.2],
+                ['zoom'],
+                14,
+                2.5,
+                20,
+                18,
+              ],
+            },
+          },
+        },
       );
       lightStyle = QalaGoMapLightStyle(sinkForTesting: sink);
     });
@@ -99,17 +115,27 @@ void main() {
 class _FakeMap extends Fake implements MapLibreMapController {}
 
 class _RecordingSink implements QalaGoMapStyleMutationSink {
-  _RecordingSink({required this.layerIds});
+  _RecordingSink({
+    required this.layerIds,
+    this.layerSnapshots = const {},
+  });
 
   List<String> layerIds;
+  Map<String, Map<String, dynamic>> layerSnapshots;
   int mutationCount = 0;
   String? failOnLayer;
+  Map<String, dynamic>? lastPropertyMap;
 
   @override
   Future<List<String>> getLayerIds() async => layerIds;
 
   @override
   Future<List<String>> getSourceIds() async => ['openmaptiles'];
+
+  @override
+  Future<Map<String, dynamic>?> getLayerProperties(String layerId) async {
+    return layerSnapshots[layerId];
+  }
 
   @override
   Future<void> setLayerProperties(
@@ -120,6 +146,18 @@ class _RecordingSink implements QalaGoMapStyleMutationSink {
       throw PlatformException(code: 'paint', message: 'test fail');
     }
     mutationCount++;
+  }
+
+  @override
+  Future<void> setLayerPropertyMap(
+    String layerId,
+    Map<String, dynamic> properties,
+  ) async {
+    if (failOnLayer == layerId) {
+      throw PlatformException(code: 'paint', message: 'test fail');
+    }
+    mutationCount++;
+    lastPropertyMap = properties;
   }
 
   @override
