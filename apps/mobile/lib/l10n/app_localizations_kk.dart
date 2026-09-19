@@ -329,6 +329,29 @@ class AppLocalizationsKk extends AppLocalizations {
   String get searchNoInCategory => 'Таңдалған санатта мекемелер жоқ';
 
   @override
+  String get searchLocationNeededForDistance =>
+      'Қашықтық бойынша іздеу үшін геопозицияға рұқсат беріңіз';
+
+  @override
+  String get searchLocationDeniedForever =>
+      'Геопозицияға қол жеткізу өшірілген. Қолданба параметрлерінде қосыңыз.';
+
+  @override
+  String get searchOpenAppSettings => 'Параметрлерді ашу';
+
+  @override
+  String get searchLocationServicesDisabled =>
+      'Геолокация қызметтері өшірілген. Жақыннан іздеу үшін GPS қосыңыз.';
+
+  @override
+  String get searchLocationOutsideSelectedCity =>
+      'Геопозицияңыз таңдалған қалаға тым алыс. Бүкіл қала бойынша іздеу қалды.';
+
+  @override
+  String get searchLocationUnavailable =>
+      'Орналасқан жеріңізді анықтау сәтсіз аяқталды. Қайта көріңіз.';
+
+  @override
   String get searchRadiusWholeCity => 'Бүкіл қала';
 
   @override

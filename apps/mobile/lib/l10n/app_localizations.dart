@@ -704,6 +704,42 @@ abstract class AppLocalizations {
   /// **'Нет заведений в выбранной категории'**
   String get searchNoInCategory;
 
+  /// No description provided for @searchLocationNeededForDistance.
+  ///
+  /// In ru, this message translates to:
+  /// **'Чтобы искать по расстоянию, разрешите доступ к геопозиции'**
+  String get searchLocationNeededForDistance;
+
+  /// No description provided for @searchLocationDeniedForever.
+  ///
+  /// In ru, this message translates to:
+  /// **'Доступ к геопозиции отключён. Включите его в настройках приложения.'**
+  String get searchLocationDeniedForever;
+
+  /// No description provided for @searchOpenAppSettings.
+  ///
+  /// In ru, this message translates to:
+  /// **'Открыть настройки'**
+  String get searchOpenAppSettings;
+
+  /// No description provided for @searchLocationServicesDisabled.
+  ///
+  /// In ru, this message translates to:
+  /// **'Службы геолокации выключены. Включите GPS, чтобы искать рядом.'**
+  String get searchLocationServicesDisabled;
+
+  /// No description provided for @searchLocationOutsideSelectedCity.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ваша геопозиция далеко от выбранного города. Оставлен поиск по всему городу.'**
+  String get searchLocationOutsideSelectedCity;
+
+  /// No description provided for @searchLocationUnavailable.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось определить ваше местоположение. Попробуйте ещё раз.'**
+  String get searchLocationUnavailable;
+
   /// No description provided for @searchRadiusWholeCity.
   ///
   /// In ru, this message translates to:

@@ -27,6 +27,11 @@
 
 ---
 
+## 2026-09-19 — Stage 6.11C.5G.1: Explicit Search location UX
+
+- Search radius (3/5/10/15 km) and nearest sort request user GPS via explicit permission flow; no city-center substitute for selected distance.
+- Localized feedback for denied, deniedForever (open settings), and disabled location services.
+
 ## 2026-09-19 — Stage 6.11C.5F.1: PostGIS integration test isolation
 
 - C.5C/C.5D runtime DB fixtures use Prisma interactive transaction client (`tx`) so rollback aborts writes; per-test slug-scoped `finally` cleanup as safety net.

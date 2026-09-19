@@ -30,6 +30,8 @@ import '../search_active_filters.dart';
 import '../search_catalog_sort.dart';
 import '../search_catalog_suggestions.dart';
 import '../search_filters.dart';
+import '../catalog_explicit_user_location.dart';
+import '../search_catalog_geo_params.dart';
 import '../search_geo_policy.dart';
 import '../search_pagination.dart';
 import '../search_query_normalize.dart';
@@ -98,6 +100,24 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     _focusNode = FocusNode();
     _focusNode.addListener(_onSearchFieldFocusChanged);
     _resultsScrollController.addListener(_onResultsScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_bootstrapGeoFromRoute());
+    });
+  }
+
+  Future<void> _bootstrapGeoFromRoute() async {
+    if (!mounted) return;
+    if (_radiusMode != SearchRadiusMode.wholeCity) {
+      await _applyFilters(
+        categoryId: _categoryId,
+        subcategoryId: _subcategoryId,
+        radiusMode: _radiusMode,
+      );
+      return;
+    }
+    if (_sort == SearchCatalogSort.nearest) {
+      await _setSort(SearchCatalogSort.nearest);
+    }
   }
 
   void _onSearchFieldFocusChanged() {
@@ -197,19 +217,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       searchHasNonDefaultSort(_sort);
 
   ({double? lat, double? lng, double? radiusKm}) _geoParams() {
-    if (_radiusMode != SearchRadiusMode.wholeCity) {
-      final position = ref.read(nearbySearchPositionProvider);
-      return (
-        lat: position.latitude,
-        lng: position.longitude,
-        radiusKm: _radiusMode.radiusKm,
-      );
-    }
-    if (_sort == SearchCatalogSort.nearest && consumerHasRealNearbyGps(ref)) {
-      final userPos = ref.read(userLocationProvider).valueOrNull!;
-      return (lat: userPos.latitude, lng: userPos.longitude, radiusKm: null);
-    }
-    return (lat: null, lng: null, radiusKm: null);
+    final geo = buildSearchCatalogGeoParams(
+      ref: ref,
+      radiusMode: _radiusMode,
+      sort: _sort,
+    );
+    return (lat: geo.lat, lng: geo.lng, radiusKm: geo.radiusKm);
+  }
+
+  String? _effectiveSortApiValue() {
+    return buildSearchCatalogGeoParams(
+      ref: ref,
+      radiusMode: _radiusMode,
+      sort: _sort,
+    ).sort;
   }
 
   BusinessesQuery _buildQuery() {
@@ -230,7 +251,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       latitude: geo.lat,
       longitude: geo.lng,
       radiusKm: geo.radiusKm,
-      sort: _sort.apiValue,
+      sort: _effectiveSortApiValue(),
       limit: kSearchResultsPageSize,
       suppressNetwork: suppressNetwork,
     );
@@ -380,6 +401,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   void _resetSearchFiltersOnly() {
+    clearCatalogExplicitUserGps(ref);
     _invalidateSearchResults(
       applyState: () {
         _categoryId = null;
@@ -393,27 +415,78 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   void _resetFilters() => _resetSearchFiltersOnly();
 
-  void _applyFilters({
+  Future<void> _applyFilters({
     String? categoryId,
     String? subcategoryId,
     required SearchRadiusMode radiusMode,
+  }) async {
+    if (radiusMode == SearchRadiusMode.wholeCity) {
+      clearCatalogExplicitUserGps(ref);
+      _commitFilters(
+        categoryId: categoryId,
+        subcategoryId: subcategoryId,
+        radiusMode: radiusMode,
+        sort: _sort,
+      );
+      return;
+    }
+
+    final location = await resolveCatalogUserLocation(ref);
+    if (!mounted) return;
+    if (!location.isSuccess) {
+      await showCatalogLocationOutcomeFeedback(context, location);
+      _commitFilters(
+        categoryId: categoryId,
+        subcategoryId: subcategoryId,
+        radiusMode: SearchRadiusMode.wholeCity,
+        sort: _sort == SearchCatalogSort.nearest
+            ? SearchCatalogSort.recommended
+            : _sort,
+      );
+      return;
+    }
+
+    _commitFilters(
+      categoryId: categoryId,
+      subcategoryId: subcategoryId,
+      radiusMode: radiusMode,
+      sort: _sort,
+    );
+  }
+
+  void _commitFilters({
+    required String? categoryId,
+    required String? subcategoryId,
+    required SearchRadiusMode radiusMode,
+    required SearchCatalogSort sort,
   }) {
     _invalidateSearchResults(
       applyState: () {
         _categoryId = categoryId;
         _subcategoryId = subcategoryId;
         _radiusMode = radiusMode;
+        _sort = sort;
       },
     );
     _syncRoute();
   }
 
-  void _setSort(SearchCatalogSort sort) {
+  Future<void> _setSort(SearchCatalogSort sort) async {
     if (sort == _sort) return;
-    if (sort == SearchCatalogSort.nearest && !consumerHasRealNearbyGps(ref)) {
+    if (sort != SearchCatalogSort.nearest) {
+      _invalidateSearchResults(applyState: () => _sort = sort);
+      _syncRoute();
       return;
     }
-    _invalidateSearchResults(applyState: () => _sort = sort);
+
+    final location = await resolveCatalogUserLocation(ref);
+    if (!mounted) return;
+    if (!location.isSuccess) {
+      await showCatalogLocationOutcomeFeedback(context, location);
+      return;
+    }
+
+    _invalidateSearchResults(applyState: () => _sort = SearchCatalogSort.nearest);
     _syncRoute();
   }
 
@@ -514,7 +587,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       subcategoryId: _subcategoryId,
       radiusMode: _radiusMode,
     );
-    final nearbySortEnabled = consumerHasRealNearbyGps(ref);
+    final nearbySortEnabled = true;
 
     return Scaffold(
       body: SafeArea(
@@ -584,16 +657,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             subcategoryId: _subcategoryId,
                             radiusMode: _radiusMode,
                             onApply: (categoryId, subcategoryId, radiusMode) {
-                              _applyFilters(
-                                categoryId: categoryId,
-                                subcategoryId: subcategoryId,
-                                radiusMode: radiusMode,
+                              unawaited(
+                                _applyFilters(
+                                  categoryId: categoryId,
+                                  subcategoryId: subcategoryId,
+                                  radiusMode: radiusMode,
+                                ),
                               );
                             },
                             onResetFilters: _resetSearchFiltersOnly,
                           );
                         },
-                        onSortSelected: _setSort,
+                        onSortSelected: (sort) => unawaited(_setSort(sort)),
                       ),
                       if (scopeLabel != null) ...[
                         const SizedBox(height: QalaGoSpacing.space8),

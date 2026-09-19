@@ -22,3 +22,18 @@ bool consumerHasRealNearbyGps(WidgetRef ref) {
   );
   return distanceFromCity <= maxUserDistanceFromCityMeters;
 }
+
+/// Whether [position] is within plausibility range of the selected city center.
+bool userPositionPlausibleForSelectedCity(WidgetRef ref, UserPosition position) {
+  final city = ref.read(cityProvider);
+  if (city.centerLat == null || city.centerLng == null) {
+    return true;
+  }
+  final distanceFromCity = Geolocator.distanceBetween(
+    position.latitude,
+    position.longitude,
+    city.centerLat!,
+    city.centerLng!,
+  );
+  return distanceFromCity <= maxUserDistanceFromCityMeters;
+}

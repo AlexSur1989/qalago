@@ -149,6 +149,12 @@
     }
   },
   "searchNoInCategory": "Нет заведений в выбранной категории",
+  "searchLocationNeededForDistance": "Чтобы искать по расстоянию, разрешите доступ к геопозиции",
+  "searchLocationDeniedForever": "Доступ к геопозиции отключён. Включите его в настройках приложения.",
+  "searchOpenAppSettings": "Открыть настройки",
+  "searchLocationServicesDisabled": "Службы геолокации выключены. Включите GPS, чтобы искать рядом.",
+  "searchLocationOutsideSelectedCity": "Ваша геопозиция далеко от выбранного города. Оставлен поиск по всему городу.",
+  "searchLocationUnavailable": "Не удалось определить ваше местоположение. Попробуйте ещё раз.",
   "searchRadiusWholeCity": "Весь город",
   "searchRadiusKm": "до {km} км",
   "@searchRadiusKm": {

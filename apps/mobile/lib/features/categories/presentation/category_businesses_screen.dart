@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/location/user_location_provider.dart';
+import '../../search/catalog_explicit_user_location.dart';
+import '../../search/search_geo_policy.dart';
 import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/locale/consumer_api_errors.dart';
 import '../../../core/locale/l10n_extension.dart';
@@ -112,13 +116,12 @@ class CategoryBusinessesScreen extends ConsumerWidget {
     final displayTitle = _resolveTitle(ref, localeCode, l10n);
     final cityName = ref.watch(cityLocalizedNameProvider);
     final sort = ref.watch(categoryCatalogSortProvider);
-    final userPosition = ref.watch(userLocationProvider).valueOrNull;
-    final lat = sort == CategoryCatalogSort.nearest
-        ? userPosition?.snapped.latitude
-        : null;
-    final lng = sort == CategoryCatalogSort.nearest
-        ? userPosition?.snapped.longitude
-        : null;
+    ref.watch(catalogExplicitUserGpsProvider);
+    final userGps = readCatalogUserGpsForGeoQueries(ref);
+    final lat =
+        sort == CategoryCatalogSort.nearest ? userGps?.latitude : null;
+    final lng =
+        sort == CategoryCatalogSort.nearest ? userGps?.longitude : null;
 
     final subcategoryId = ref.watch(categorySubcategoryFilterProvider(categoryId));
 
@@ -265,8 +268,9 @@ class CategoryBusinessesScreen extends ConsumerWidget {
                   _CategorySortBar(
                     sort: sort,
                     onSelected: (value) {
-                      ref.read(categoryCatalogSortProvider.notifier).state =
-                          value;
+                      unawaited(
+                        _onCategorySortSelected(context, ref, value),
+                      );
                     },
                   ),
                   const SizedBox(height: 80),
@@ -292,7 +296,9 @@ class CategoryBusinessesScreen extends ConsumerWidget {
                 _CategorySortBar(
                   sort: sort,
                   onSelected: (value) {
-                    ref.read(categoryCatalogSortProvider.notifier).state = value;
+                    unawaited(
+                      _onCategorySortSelected(context, ref, value),
+                    );
                   },
                 ),
                 if (nearestBlocked) ...[
@@ -413,6 +419,27 @@ class _CategorySortBar extends StatelessWidget {
       ],
     );
   }
+}
+
+Future<void> _onCategorySortSelected(
+  BuildContext context,
+  WidgetRef ref,
+  CategoryCatalogSort value,
+) async {
+  if (value != CategoryCatalogSort.nearest) {
+    ref.read(categoryCatalogSortProvider.notifier).state = value;
+    return;
+  }
+
+  final location = await resolveCatalogUserLocation(ref);
+  if (!context.mounted) return;
+  if (!location.isSuccess) {
+    await showCatalogLocationOutcomeFeedback(context, location);
+    return;
+  }
+
+  ref.read(categoryCatalogSortProvider.notifier).state =
+      CategoryCatalogSort.nearest;
 }
 
 void openCategory(

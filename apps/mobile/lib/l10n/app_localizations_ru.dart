@@ -329,6 +329,29 @@ class AppLocalizationsRu extends AppLocalizations {
   String get searchNoInCategory => 'Нет заведений в выбранной категории';
 
   @override
+  String get searchLocationNeededForDistance =>
+      'Чтобы искать по расстоянию, разрешите доступ к геопозиции';
+
+  @override
+  String get searchLocationDeniedForever =>
+      'Доступ к геопозиции отключён. Включите его в настройках приложения.';
+
+  @override
+  String get searchOpenAppSettings => 'Открыть настройки';
+
+  @override
+  String get searchLocationServicesDisabled =>
+      'Службы геолокации выключены. Включите GPS, чтобы искать рядом.';
+
+  @override
+  String get searchLocationOutsideSelectedCity =>
+      'Ваша геопозиция далеко от выбранного города. Оставлен поиск по всему городу.';
+
+  @override
+  String get searchLocationUnavailable =>
+      'Не удалось определить ваше местоположение. Попробуйте ещё раз.';
+
+  @override
   String get searchRadiusWholeCity => 'Весь город';
 
   @override

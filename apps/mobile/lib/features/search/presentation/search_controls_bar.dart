@@ -77,12 +77,9 @@ class SearchControlsBar extends StatelessWidget {
             ),
             itemBuilder: (context) {
               return SearchCatalogSort.values.map((sort) {
-                final enabled =
-                    sort != SearchCatalogSort.nearest || nearbySortEnabled;
                 return PopupMenuItem<SearchCatalogSort>(
                   key: Key('search_sort_${sort.apiValue}'),
                   value: sort,
-                  enabled: enabled,
                   child: Text(sort.localizedLabel(l10n)),
                 );
               }).toList();
