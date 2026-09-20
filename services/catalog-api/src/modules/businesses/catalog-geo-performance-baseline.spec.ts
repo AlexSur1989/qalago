@@ -50,6 +50,7 @@ describe('Catalog geo performance baseline (mocked)', () => {
       asAuditLogService(createMockAuditLog()),
       subDeps.businessSubcategories,
       subDeps.subcategories,
+      {} as never,
     );
   }
 

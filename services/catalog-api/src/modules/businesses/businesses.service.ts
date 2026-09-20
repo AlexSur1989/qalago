@@ -9,6 +9,7 @@ import { CityScopeService } from '../../common/services/city-scope.service';
 import { BusinessAccessService } from '../../common/services/business-access.service';
 import { BusinessMembershipService } from '../../common/services/business-membership.service';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
+import { ReviewAggregationService } from '../../common/services/review-aggregation.service';
 import {
   getRequiredPermissionsForPatch,
   ownerHasAllPermissions,
@@ -112,6 +113,7 @@ export class BusinessesService {
     private readonly auditLog: AuditLogService,
     private readonly businessSubcategories: BusinessSubcategoryService,
     private readonly subcategories: SubcategoriesService,
+    private readonly reviewAggregation: ReviewAggregationService,
   ) {}
 
   /**
@@ -700,17 +702,9 @@ export class BusinessesService {
       return { ratings, views };
     }
 
-    const ratingRows = await this.prisma.review.groupBy({
-      by: ['businessId'],
-      where: { businessId: { in: businessIds }, moderationHidden: false },
-      _avg: { rating: true },
-      _count: { _all: true },
-    });
-    for (const row of ratingRows) {
-      ratings.set(row.businessId, {
-        averageRating: row._avg.rating,
-        reviewCount: row._count._all,
-      });
+    const aggregated = await this.reviewAggregation.aggregateForBusinessIds(businessIds);
+    for (const [businessId, metrics] of aggregated) {
+      ratings.set(businessId, metrics);
     }
 
     const since = new Date();
@@ -740,12 +734,13 @@ export class BusinessesService {
       throw new NotFoundException('Business not found');
     }
 
-    const [galleryPreview, catalogPreview, promotionsPreview, reviewsPreview] =
+    const [galleryPreview, catalogPreview, promotionsPreview, reviewsPreview, ratingMetrics] =
       await Promise.all([
         this.publicContent.getGalleryPreview(id),
         this.publicContent.getCatalogPreview(id),
         this.publicContent.getPromotionsPreview(id),
         this.publicContent.getReviewsPreview(id),
+        this.reviewAggregation.aggregateForBusiness(id),
       ]);
 
     const coverImageUrl = await this.publicContent.resolveCoverImageUrl(
@@ -763,6 +758,8 @@ export class BusinessesService {
       catalogPreview,
       promotionsPreview,
       reviewsPreview,
+      averageRating: ratingMetrics.averageRating,
+      reviewCount: ratingMetrics.reviewCount,
       subcategories: subcategories.filter((s) => s.isActive),
     };
   }

@@ -10,6 +10,10 @@ import { createMockBusinessAccess, asBusinessAccessService } from '../../test-ut
 import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
 import { ListBusinessesQueryDto } from './dto/business.dto';
 import { createMockSubcategoryDeps } from '../../test-utils/mock-subcategory-deps';
+import {
+  asReviewAggregationService,
+  createReviewAggregationFromPrisma,
+} from '../../test-utils/mock-review-aggregation';
 import { BusinessCatalogSort } from '../../common/utils/business-catalog-sort.util';
 import { withBusinessListCount } from '../../test-utils/mock-business-catalog-prisma';
 
@@ -51,6 +55,7 @@ describe('Stage 6.7QA — category discovery adversarial', () => {
       asAuditLogService(createMockAuditLog()),
       subDeps.businessSubcategories,
       subDeps.subcategories,
+      asReviewAggregationService(createReviewAggregationFromPrisma(prisma as never)),
     );
   }
 

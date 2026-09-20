@@ -876,6 +876,7 @@ model Review {
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   business         Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, businessId])
   @@index([businessId])
   @@index([businessId, moderationHidden])
 }

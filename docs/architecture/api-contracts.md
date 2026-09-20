@@ -365,7 +365,9 @@ Response includes optional `subcategories[]` (active public shape) when assigned
   "galleryPreview": { "items": [...], "totalCount": 100 },
   "catalogPreview": { "items": [...], "totalCount": 300 },
   "promotionsPreview": { "items": [...], "totalCount": 25 },
-  "reviewsPreview": { "items": [...], "totalCount": 42 }
+  "reviewsPreview": { "items": [...], "totalCount": 42 },
+  "averageRating": 4.2,
+  "reviewCount": 42
 }
 ```
 
@@ -676,10 +678,16 @@ Response item includes `{ id, businessId, title, description?, imageUrl?, discou
 
 ## Reviews
 
-- `GET /reviews?businessId=`
-- `GET /reviews/me` — отзывы текущего пользователя (auth)
-- `POST /reviews`
+Public visibility: `moderationHidden = false` only (central `publicReviewWhere()`).
+
+- `GET /reviews?businessId=&page=&limit=` — paginated public list (`items` + `pagination`; default limit 20, max 50; newest first, tie-break `id` desc). Hidden reviews excluded.
+- `GET /reviews/me` — отзывы текущего пользователя (auth; includes moderation-hidden)
+- `POST /reviews` — one row per `(userId, businessId)`; duplicate → **409** `REVIEW_ALREADY_EXISTS`
 - `PATCH /reviews/:id/reply` (owner)
+
+**Rating integrity:** DB `CHECK (rating BETWEEN 1 AND 5)`; `@@unique([userId, businessId])`.
+
+**Business detail:** top-level `averageRating` (null when no public reviews) and `reviewCount` (0 when none) match catalog/search aggregation semantics.
 
 ---
 

@@ -62,6 +62,7 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
       asAuditLogService(createMockAuditLog()),
       subDeps.businessSubcategories,
       subDeps.subcategories,
+      {} as never,
     );
   }
 
@@ -198,6 +199,7 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
         asAuditLogService(createMockAuditLog()),
         subDeps.businessSubcategories,
         subDeps.subcategories,
+      {} as never,
       );
       await svc.findAll({
         citySlug: 'uralsk',

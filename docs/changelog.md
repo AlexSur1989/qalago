@@ -5,6 +5,15 @@
 
 ---
 
+## 2026-09-20 — Stage 6.11D.1 review data & rating integrity
+
+- **Added:** `@@unique([userId, businessId])` and PostgreSQL CHECK `rating` 1..5 on `Review`.
+- **Added:** Central public review filter (`moderationHidden = false`) for list, preview, counts, and aggregates.
+- **Added:** `ReviewAggregationService`; business detail exposes authoritative `averageRating` / `reviewCount`.
+- **Changed:** `GET /reviews` paginated envelope (`items`, `pagination`); duplicate create → 409 `REVIEW_ALREADY_EXISTS`.
+- **Changed:** Flutter business detail header uses API rating/count (not preview average).
+- **Deferred:** self-review block, soft delete, edit/delete, rate limits (Stage 6.11D.2+).
+
 ## 2026-09-20 — Stage 6.11C.6H PRE-CLOSURE FIX 1 map empty semantics + road widths
 
 - Mobile: `EmptyCityView` on map uses `cityCatalogTotalProvider` (city-wide); viewport PostGIS total renamed to `viewportTotal` so empty viewport ≠ empty city.

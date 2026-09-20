@@ -51,6 +51,7 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
       asAuditLogService(createMockAuditLog()),
       subDeps.businessSubcategories,
       subDeps.subcategories,
+      {} as never,
     );
 
     return { service, prisma, tx, membership };

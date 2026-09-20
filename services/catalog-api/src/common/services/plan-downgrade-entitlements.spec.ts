@@ -173,7 +173,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
       status: PromotionStatus.ACTIVE,
       createdAt: new Date(`2026-09-0${i + 1}T10:00:00Z`),
       startDate: new Date('2026-09-01'),
-      endDate: new Date('2026-09-20'),
+      endDate: new Date('2099-09-20'),
       title: `Promo ${i}`,
     }));
 
@@ -363,6 +363,12 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
         asAuditLogService(createMockAuditLog()),
         subDeps.businessSubcategories,
         subDeps.subcategories,
+        {
+          aggregateForBusiness: jest
+            .fn()
+            .mockResolvedValue({ averageRating: null, reviewCount: 0 }),
+          aggregateForBusinessIds: jest.fn().mockResolvedValue(new Map()),
+        } as never,
       );
 
       const result = await businessesService.findOne('b1');

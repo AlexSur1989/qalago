@@ -1,11 +1,18 @@
-import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   AuditAction,
   AuditResourceType,
   BusinessPermission,
   BusinessPlanTier,
   NotificationType,
+  Prisma,
 } from '@prisma/client';
+import { publicReviewWhere } from '../../common/constants/review.constants';
 import { publicPlanLabelRu } from '../../common/utils/plan-display.util';
 import { BusinessAccessService } from '../../common/services/business-access.service';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
@@ -14,7 +21,13 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { toMembershipRole } from '../audit-log/audit-log.util';
-import { CreateReviewDto, ReplyReviewDto } from './dto/review.dto';
+import {
+  CreateReviewDto,
+  ListReviewsQueryDto,
+  ReplyReviewDto,
+  resolvePublicReviewsPageLimit,
+} from './dto/review.dto';
+import { ReviewErrorCode } from './review-errors';
 
 @Injectable()
 export class ReviewsService {
@@ -26,14 +39,36 @@ export class ReviewsService {
     private readonly planLimits: PlanLimitsService,
   ) {}
 
-  findByBusiness(businessId: string) {
-    return this.prisma.review.findMany({
-      where: { businessId, moderationHidden: false },
-      include: {
-        user: { select: { id: true, name: true, avatarUrl: true } },
+  async findByBusiness(query: ListReviewsQueryDto) {
+    const { page, limit } = resolvePublicReviewsPageLimit(query);
+    const where: Prisma.ReviewWhereInput = {
+      businessId: query.businessId,
+      ...publicReviewWhere(),
+    };
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      this.prisma.review.findMany({
+        where,
+        include: {
+          user: { select: { id: true, name: true, avatarUrl: true } },
+        },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        skip,
+        take: limit,
+      }),
+      this.prisma.review.count({ where }),
+    ]);
+
+    return {
+      items,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit) || 0,
       },
-      orderBy: { createdAt: 'desc' },
-    });
+    };
   }
 
   findByUser(userId: string) {
@@ -52,26 +87,39 @@ export class ReviewsService {
     });
     if (!business) throw new NotFoundException('Business not found');
 
-    const review = await this.prisma.review.create({
-      data: {
-        userId: user.id,
-        businessId: dto.businessId,
-        rating: dto.rating,
-        text: dto.text,
-      },
-      include: { user: { select: { id: true, name: true, avatarUrl: true } } },
-    });
-
-    if (business.ownerId) {
-      await this.notifications.create({
-        userId: business.ownerId,
-        type: NotificationType.NEW_REVIEW,
-        title: 'Новый отзыв',
-        body: `Новый отзыв (${dto.rating}★) на «${business.title}»`,
+    try {
+      const review = await this.prisma.review.create({
+        data: {
+          userId: user.id,
+          businessId: dto.businessId,
+          rating: dto.rating,
+          text: dto.text,
+        },
+        include: { user: { select: { id: true, name: true, avatarUrl: true } } },
       });
-    }
 
-    return review;
+      if (business.ownerId) {
+        await this.notifications.create({
+          userId: business.ownerId,
+          type: NotificationType.NEW_REVIEW,
+          title: 'Новый отзыв',
+          body: `Новый отзыв (${dto.rating}★) на «${business.title}»`,
+        });
+      }
+
+      return review;
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictException({
+          message: 'Review already exists',
+          code: ReviewErrorCode.REVIEW_ALREADY_EXISTS,
+        });
+      }
+      throw error;
+    }
   }
 
   async reply(user: AuthUser, id: string, dto: ReplyReviewDto) {

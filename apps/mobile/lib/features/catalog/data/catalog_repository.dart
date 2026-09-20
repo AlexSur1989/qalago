@@ -615,7 +615,14 @@ class CatalogRepository {
       '/reviews',
       queryParameters: {'businessId': businessId},
     );
-    return (response.data as List<dynamic>)
+    final data = response.data;
+    final List<dynamic> rawItems;
+    if (data is Map<String, dynamic>) {
+      rawItems = data['items'] as List<dynamic>? ?? [];
+    } else {
+      rawItems = data as List<dynamic>;
+    }
+    return rawItems
         .map((e) => ReviewModel.fromJson(e as Map<String, dynamic>))
         .toList();
   }

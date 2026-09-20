@@ -285,7 +285,8 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
           final hasHours = hasWorkHours(data['workHours']);
           final weekRows = weeklyHoursRows(data['workHours']);
 
-          final reviewStats = reviewStatsFromPreview(reviewItems, reviewTotal);
+          final averageRating = (data['averageRating'] as num?)?.toDouble();
+          final reviewCount = (data['reviewCount'] as num?)?.toInt() ?? reviewTotal;
 
           return ListView(
             padding: EdgeInsets.zero,
@@ -315,8 +316,8 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                         title: title,
                         categoryTitle: categoryTitle,
                         address: address,
-                        averageRating: reviewStats.$1,
-                        reviewCount: reviewStats.$2,
+                        averageRating: averageRating,
+                        reviewCount: reviewCount,
                         openLabel: openLabel,
                         openStatus: openStatus,
                       ),

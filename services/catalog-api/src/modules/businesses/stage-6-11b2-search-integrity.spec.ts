@@ -44,6 +44,7 @@ describe('Stage 6.11B.2 — multilingual search integrity', () => {
       asAuditLogService(createMockAuditLog()),
       subDeps.businessSubcategories,
       subDeps.subcategories,
+      {} as never,
     );
   }
 

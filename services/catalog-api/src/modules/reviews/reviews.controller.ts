@@ -14,7 +14,7 @@ export class ReviewsController {
   @Public()
   @Get()
   findAll(@Query() query: ListReviewsQueryDto) {
-    return this.reviewsService.findByBusiness(query.businessId);
+    return this.reviewsService.findByBusiness(query);
   }
 
   @Get('me')

@@ -8,6 +8,10 @@ import {
 } from '../../common/constants/public-preview.constants';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import {
+  asReviewAggregationService,
+  createMockReviewAggregation,
+} from '../../test-utils/mock-review-aggregation';
 import { BusinessPublicContentService } from './business-public-content.service';
 
 function makeItems(count: number, prefix = 'item') {
@@ -51,7 +55,12 @@ describe('BusinessPublicContentService (Stage 5G)', () => {
     applyPublicPromotionLimit: jest.fn((items: unknown[], limit: number) => items.slice(0, limit)),
   } as unknown as PlanLimitsService;
 
-  const service = new BusinessPublicContentService(prisma, planLimits);
+  const reviewAggregation = createMockReviewAggregation();
+  const service = new BusinessPublicContentService(
+    prisma,
+    planLimits,
+    asReviewAggregationService(reviewAggregation),
+  );
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -105,13 +114,19 @@ describe('BusinessPublicContentService (Stage 5G)', () => {
     (prisma.review.findMany as jest.Mock).mockResolvedValue(
       Array.from({ length: PUBLIC_REVIEWS_PREVIEW_LIMIT }, (_, i) => ({ id: `r-${i}` })),
     );
-    (prisma.review.count as jest.Mock).mockResolvedValue(42);
+    reviewAggregation.aggregateForBusiness.mockResolvedValue({
+      averageRating: 4.5,
+      reviewCount: 42,
+    });
 
     const preview = await service.getReviewsPreview('biz-1');
     expect(preview.items).toHaveLength(PUBLIC_REVIEWS_PREVIEW_LIMIT);
     expect(preview.totalCount).toBe(42);
     expect(prisma.review.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ take: PUBLIC_REVIEWS_PREVIEW_LIMIT }),
+      expect.objectContaining({
+        take: PUBLIC_REVIEWS_PREVIEW_LIMIT,
+        where: expect.objectContaining({ moderationHidden: false }),
+      }),
     );
   });
 

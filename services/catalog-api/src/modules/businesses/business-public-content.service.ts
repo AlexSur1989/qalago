@@ -17,6 +17,8 @@ import {
 } from '../../common/utils/plan-entitlements.util';
 import { selectPublishedCatalogServiceItemsForEffectiveTier } from '../../common/utils/public-catalog-service-items.util';
 import { publicServiceItemMatchesCatalogSearch } from '../../common/utils/catalog-search-query.util';
+import { publicReviewWhere } from '../../common/constants/review.constants';
+import { ReviewAggregationService } from '../../common/services/review-aggregation.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListBusinessCatalogQueryDto } from './dto/business-catalog.dto';
 import { ListBusinessPhotosQueryDto } from './dto/business-photos.dto';
@@ -51,6 +53,7 @@ export class BusinessPublicContentService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly planLimits: PlanLimitsService,
+    private readonly reviewAggregation: ReviewAggregationService,
   ) {}
 
   async assertActiveBusiness(businessId: string) {
@@ -125,16 +128,17 @@ export class BusinessPublicContentService {
 
   async getReviewsPreview(businessId: string) {
     await this.assertActiveBusiness(businessId);
-    const [items, totalCount] = await Promise.all([
+    const publicWhere = { businessId, ...publicReviewWhere() };
+    const [items, metrics] = await Promise.all([
       this.prisma.review.findMany({
-        where: { businessId },
+        where: publicWhere,
         include: { user: { select: { id: true, name: true } } },
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         take: PUBLIC_REVIEWS_PREVIEW_LIMIT,
       }),
-      this.prisma.review.count({ where: { businessId } }),
+      this.reviewAggregation.aggregateForBusiness(businessId),
     ]);
-    return { items, totalCount };
+    return { items, totalCount: metrics.reviewCount };
   }
 
   async findPublicCatalog(businessId: string, query: ListBusinessCatalogQueryDto) {

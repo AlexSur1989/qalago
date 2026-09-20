@@ -12,6 +12,7 @@ import { OtpRateLimitService } from './services/otp-rate-limit.service';
 import { MfaRateLimitService } from './services/mfa-rate-limit.service';
 import { SocialAuthRateLimitService } from './services/social-auth-rate-limit.service';
 import { RateLimitStoreService } from './services/rate-limit-store.service';
+import { ReviewAggregationService } from './services/review-aggregation.service';
 import { AuditLogModule } from '../modules/audit-log/audit-log.module';
 
 @Global()
@@ -31,6 +32,7 @@ import { AuditLogModule } from '../modules/audit-log/audit-log.module';
     MfaRateLimitService,
     SocialAuthRateLimitService,
     RateLimitStoreService,
+    ReviewAggregationService,
   ],
   exports: [
     CityScopeService,
@@ -46,6 +48,7 @@ import { AuditLogModule } from '../modules/audit-log/audit-log.module';
     MfaRateLimitService,
     SocialAuthRateLimitService,
     RateLimitStoreService,
+    ReviewAggregationService,
   ],
 })
 export class CommonAccessModule {}

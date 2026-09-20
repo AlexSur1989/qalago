@@ -60,6 +60,7 @@ describe('Stage 6.11B.5 — search pagination and relevance', () => {
       asAuditLogService(createMockAuditLog()),
       subDeps.businessSubcategories,
       subDeps.subcategories,
+      {} as never,
     );
   }
 

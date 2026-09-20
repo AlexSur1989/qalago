@@ -47,6 +47,7 @@ describe('Stage 6.11C.5A geo hardening', () => {
       asAuditLogService(createMockAuditLog()),
       subDeps.businessSubcategories,
       subDeps.subcategories,
+      {} as never,
     );
   });
 

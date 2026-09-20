@@ -46,6 +46,7 @@ describe('BusinessesService — onboarding security (Stage 5N.5)', () => {
       asAuditLogService(createMockAuditLog()),
       subDeps.businessSubcategories,
       subDeps.subcategories,
+      {} as never,
     );
 
     return { service, tx };

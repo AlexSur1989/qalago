@@ -851,10 +851,13 @@ export const ownerApi = {
       { token },
     ),
 
-  listReviews: (token: string, businessId: string) =>
-    api<ReviewRow[]>(`/reviews?businessId=${encodeURIComponent(businessId)}`, {
-      token,
-    }),
+  listReviews: async (token: string, businessId: string) => {
+    const res = await api<{ items: ReviewRow[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
+      `/reviews?businessId=${encodeURIComponent(businessId)}`,
+      { token },
+    );
+    return res.items;
+  },
 
   replyReview: (token: string, reviewId: string, ownerReply: string) =>
     api<ReviewRow>(`/reviews/${reviewId}/reply`, {
