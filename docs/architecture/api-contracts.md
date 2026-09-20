@@ -686,7 +686,7 @@ Public visibility: `moderationHidden = false` **and** `deletedAt = null` (centra
 - `POST /reviews` — one row per `(userId, businessId)`; active duplicate → **409** `REVIEW_ALREADY_EXISTS`; soft-deleted row → **restore** same id (does not clear `moderationHidden`; no owner notification if still hidden)
 - `PATCH /reviews/:id` — author edits `rating`/`text` only; hidden stays hidden
 - `DELETE /reviews/:id` — author soft-delete (`deletedAt`); idempotent if already deleted
-- `PATCH /reviews/:id/reply` (owner; not on deleted reviews)
+- `PATCH /reviews/:id/reply` (authenticated; `BusinessMembership` + `REVIEWS_REPLY` + plan; not on soft-deleted reviews; not global `UserRole.BUSINESS`-only)
 
 Errors: `REVIEW_SELF_REVIEW_FORBIDDEN` (403), `REVIEW_NOT_ACTIVE` (400 on edit deleted), mutation rate limit **429**.
 

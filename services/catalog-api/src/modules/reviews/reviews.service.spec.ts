@@ -7,6 +7,44 @@ describe('ReviewsService', () => {
   const deps = createDefaultReviewServiceDeps();
 
   describe('reply', () => {
+    it('allows USER-role manager with REVIEWS_REPLY permission', async () => {
+      const businessAccess = deps.businessAccess as unknown as { resolveAccess: jest.Mock };
+      businessAccess.resolveAccess.mockResolvedValue({
+        permissions: ['REVIEWS_REPLY'],
+        accessRole: 'MANAGER',
+      });
+      const planLimits = deps.planLimits as unknown as { getBusinessPlanContext: jest.Mock };
+      planLimits.getBusinessPlanContext.mockResolvedValue({
+        limits: { canReplyToReviews: true },
+      });
+      const replyPrisma = {
+        review: {
+          findUnique: jest.fn().mockResolvedValue({
+            id: 'r1',
+            userId: 'u2',
+            deletedAt: null,
+            business: { id: 'b1', cityId: 'c1' },
+          }),
+          update: jest.fn().mockResolvedValue({ id: 'r1', ownerReply: 'Thanks' }),
+        },
+      };
+      const replyService = new ReviewsService(
+        replyPrisma as unknown as PrismaService,
+        deps.notifications as never,
+        deps.businessAccess,
+        deps.membership as never,
+        deps.auditLog,
+        deps.planLimits as never,
+        deps.reviewRateLimit as never,
+      );
+
+      await expect(
+        replyService.reply({ id: 'u1', phone: '+7700', role: 'USER' } as never, 'r1', {
+          ownerReply: 'Thanks',
+        }),
+      ).resolves.toMatchObject({ ownerReply: 'Thanks' });
+    });
+
     it('returns generic permission error without enum leak', async () => {
       const businessAccess = deps.businessAccess as unknown as { resolveAccess: jest.Mock };
       businessAccess.resolveAccess.mockResolvedValue({

@@ -5,6 +5,11 @@
 
 ---
 
+## 2026-09-21 — Stage 6.11D.5 reviews & trust release gate
+
+- **Fixed:** `PATCH /reviews/:id/reply` no longer requires global `BUSINESS` role; USER managers with `REVIEWS_REPLY` reach service membership checks (D.5 release blocker).
+- **Verified:** DB invariants, automated test suites, map non-regression for D.1–D.4 scope.
+
 ## 2026-09-21 — Stage 6.11D.4 consumer reviews UX & trust polish
 
 - **Added:** Flutter `/business/:id/reviews` paginated screen; Business Detail “all reviews” entry; shared consumer review card with company reply label.

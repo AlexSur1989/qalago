@@ -1,8 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import {
   CreateReviewDto,
@@ -46,7 +44,7 @@ export class ReviewsController {
     return this.reviewsService.softDelete(user, id);
   }
 
-  @Roles(UserRole.BUSINESS, UserRole.ADMIN, UserRole.CITY_ADMIN)
+  /** Membership + REVIEWS_REPLY enforced in ReviewsService (not global UserRole). */
   @Patch(':id/reply')
   reply(
     @CurrentUser() user: AuthUser,
