@@ -253,6 +253,41 @@
   "reviewRatingLabel": "Баға",
   "reviewYourReviewLabel": "Сіздің пікіріңіз",
   "reviewLeaveButton": "Пікір қалдыру",
+  "reviewsAll": "Барлық пікірлер ({count})",
+  "@reviewsAll": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "reviewsShownCount": "Көрсетілген {shown} / {total}",
+  "@reviewsShownCount": {
+    "placeholders": {
+      "shown": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "reviewYourReview": "Сіздің пікіріңіз",
+  "reviewEditTitle": "Пікірді өңдеу",
+  "reviewDelete": "Пікірді жою",
+  "reviewDeleteTitle": "Пікірді жою керек пе?",
+  "reviewDeleteBody": "Пікір жариядан жойылады. Кейінірек жаңа пікір қалдыра аласыз.",
+  "reviewCompanyReply": "Компания жауабы",
+  "reviewTextOptionalHint": "Міндетті емес — тек баға қалдыруға болады",
+  "reviewLoadMore": "Тағы жүктеу",
+  "reviewReport": "Шағымдану",
+  "reviewReportReason": "Шағым себебі",
+  "reviewReportReasonSpam": "Спам",
+  "reviewReportReasonInappropriate": "Орынсыз мазмұн",
+  "reviewReportReasonFalseInfo": "Жалған ақпарат",
+  "reviewReportReasonHarassment": "Қорлау немесе мазалау",
+  "reviewReportReasonOther": "Басқа",
+  "reviewReportDetailsOptional": "Түсініктеме (міндетті емес)",
+  "reviewReportSubmit": "Шағымды жіберу",
+  "reviewReportSent": "Шағым жіберілді. Сенімді ортаны сақтауға көмектескеніңіз үшін рахмет.",
+  "reviewReportAlreadySubmitted": "Бұл пікірге шағымды бұрын жібергенсіз.",
+  "reviewReportNotReportable": "Бұл пікірге шағымдану мүмкін емес.",
+  "reviewSelfReviewForbidden": "Өз мекемеңізге пікір қалдыруға болмайды.",
+  "reviewAlreadyExists": "Бұл орынға пікіріңіз бар. Оны өңдеңіз.",
   "reviewLooksOk": "Пікір қалыпты көрінеді",
   "reviewPossibleViolations": "Бұзушылықтар болуы мүмкін",
   "reviewRecommendCheck": "Мәтінді тексеруді ұсынамыз",

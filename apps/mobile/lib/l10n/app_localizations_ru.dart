@@ -766,6 +766,88 @@ class AppLocalizationsRu extends AppLocalizations {
   String get reviewLeaveButton => 'Оставить отзыв';
 
   @override
+  String reviewsAll(int count) {
+    return 'Все отзывы ($count)';
+  }
+
+  @override
+  String reviewsShownCount(int shown, int total) {
+    return 'Показано $shown из $total';
+  }
+
+  @override
+  String get reviewYourReview => 'Ваш отзыв';
+
+  @override
+  String get reviewEditTitle => 'Редактировать отзыв';
+
+  @override
+  String get reviewDelete => 'Удалить отзыв';
+
+  @override
+  String get reviewDeleteTitle => 'Удалить отзыв?';
+
+  @override
+  String get reviewDeleteBody =>
+      'Отзыв перестанет отображаться публично. Вы сможете оставить новый отзыв позже.';
+
+  @override
+  String get reviewCompanyReply => 'Ответ компании';
+
+  @override
+  String get reviewTextOptionalHint =>
+      'Необязательно — можно оставить только оценку';
+
+  @override
+  String get reviewLoadMore => 'Загрузить ещё';
+
+  @override
+  String get reviewReport => 'Пожаловаться';
+
+  @override
+  String get reviewReportReason => 'Причина жалобы';
+
+  @override
+  String get reviewReportReasonSpam => 'Спам';
+
+  @override
+  String get reviewReportReasonInappropriate => 'Неподходящий контент';
+
+  @override
+  String get reviewReportReasonFalseInfo => 'Ложная информация';
+
+  @override
+  String get reviewReportReasonHarassment => 'Оскорбления или домогательства';
+
+  @override
+  String get reviewReportReasonOther => 'Другое';
+
+  @override
+  String get reviewReportDetailsOptional => 'Комментарий (необязательно)';
+
+  @override
+  String get reviewReportSubmit => 'Отправить жалобу';
+
+  @override
+  String get reviewReportSent =>
+      'Жалоба отправлена. Спасибо, что помогаете поддерживать доверие.';
+
+  @override
+  String get reviewReportAlreadySubmitted =>
+      'Вы уже отправляли жалобу на этот отзыв.';
+
+  @override
+  String get reviewReportNotReportable => 'На этот отзыв нельзя пожаловаться.';
+
+  @override
+  String get reviewSelfReviewForbidden =>
+      'Нельзя оставить отзыв о своём заведении.';
+
+  @override
+  String get reviewAlreadyExists =>
+      'У вас уже есть отзыв об этом месте. Отредактируйте его.';
+
+  @override
   String get reviewLooksOk => 'Отзыв выглядит нормально';
 
   @override

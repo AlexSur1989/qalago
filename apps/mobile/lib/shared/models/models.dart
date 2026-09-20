@@ -348,6 +348,8 @@ class ReviewModel {
     this.text,
     this.ownerReply,
     this.userName,
+    this.userId,
+    this.avatarUrl,
     this.businessId,
     this.businessTitle,
     required this.createdAt,
@@ -358,6 +360,8 @@ class ReviewModel {
   final String? text;
   final String? ownerReply;
   final String? userName;
+  final String? userId;
+  final String? avatarUrl;
   final String? businessId;
   final String? businessTitle;
   final String createdAt;
@@ -367,10 +371,12 @@ class ReviewModel {
     final business = json['business'] as Map<String, dynamic>?;
     return ReviewModel(
       id: json['id'] as String,
-      rating: json['rating'] as int,
+      rating: (json['rating'] as num).toInt(),
       text: json['text'] as String?,
       ownerReply: json['ownerReply'] as String?,
-      userName: user?['name'] as String? ?? 'Пользователь',
+      userName: user?['name'] as String?,
+      userId: user?['id'] as String?,
+      avatarUrl: user?['avatarUrl'] as String?,
       businessId: business?['id'] as String? ?? json['businessId'] as String?,
       businessTitle: business?['title'] as String?,
       createdAt: json['createdAt'] as String? ?? '',

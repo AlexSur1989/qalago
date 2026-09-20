@@ -33,6 +33,11 @@ import '../../analytics/providers/analytics_identity_provider.dart';
 import '../../analytics/widgets/reviews_view_tracker.dart';
 import '../../analytics/widgets/tracked_catalog_item_card.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../reviews/data/review_error_utils.dart';
+import '../../reviews/presentation/consumer_review_card.dart';
+import '../../reviews/presentation/review_actions.dart';
+import '../../reviews/utils/review_date_format.dart';
+import '../../../shared/models/models.dart';
 import '../../business_onboarding/presentation/business_claim_cta.dart';
 import '../../recommendations/data/ai_repository.dart';
 
@@ -157,27 +162,38 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
   }
 
   Future<void> _submitReview(String text) async {
+    final l10n = context.l10n;
     final analytics = ref.read(catalogRepositoryProvider);
-    await analytics.createReview(
-      businessId: widget.id,
-      rating: _rating,
-      text: text.isEmpty ? null : text,
-    );
-    final sessionId = ref.read(analyticsSessionIdProvider);
-    unawaited(
-      ref.read(analyticsVisitorIdProvider.future).then(
-            (visitorId) => analytics.trackReviewCreated(
-              widget.id,
-              visitorId: visitorId,
-              sessionId: sessionId,
+    try {
+      await analytics.createReview(
+        businessId: widget.id,
+        rating: _rating,
+        text: text.isEmpty ? null : text,
+      );
+      final sessionId = ref.read(analyticsSessionIdProvider);
+      unawaited(
+        ref.read(analyticsVisitorIdProvider.future).then(
+              (visitorId) => analytics.trackReviewCreated(
+                widget.id,
+                visitorId: visitorId,
+                sessionId: sessionId,
+              ),
             ),
-          ),
-    );
-    ref.invalidate(businessDetailsProvider(widget.id));
-    if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(context.l10n.businessReviewSent)));
+      );
+      ref.invalidate(businessDetailsProvider(widget.id));
+      ref.invalidate(myReviewsProvider);
+      ref.invalidate(myReviewForBusinessProvider(widget.id));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.businessReviewSent)),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(mapReviewMutationError(l10n, e))),
+        );
+      }
     }
   }
 
@@ -193,6 +209,10 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                   businesses.any((b) => b['id'] == widget.id),
               orElse: () => false,
             );
+    final localeCode = ref.watch(appLocaleCodeProvider);
+    final myReviewAsync = isAuthenticated && !canManageMenu
+        ? ref.watch(myReviewForBusinessProvider(widget.id))
+        : const AsyncValue<ReviewModel?>.data(null);
 
     return Scaffold(
       body: detailsAsync.when(
@@ -539,30 +559,85 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _SectionHeaderRow(title: l10n.businessReviews),
+                            _SectionHeaderRow(
+                              title: l10n.businessReviews,
+                              actionLabel: reviewCount > 0
+                                  ? l10n.reviewsAll(reviewCount)
+                                  : null,
+                              onAction: reviewCount > 0
+                                  ? () => context.push(
+                                        '/business/${widget.id}/reviews',
+                                      )
+                                  : null,
+                            ),
                             const SizedBox(height: 8),
-                            _ReviewsPreviewBlock(reviews: reviewItems),
+                            _ReviewsPreviewBlock(
+                              reviews: reviewItems,
+                              localeCode: localeCode,
+                            ),
                           ],
                         ),
                       ),
                       if (!canManageMenu) ...[
                         const SizedBox(height: 16),
-                        if (isAuthenticated)
-                          _ReviewForm(
-                            rating: _rating,
-                            onRatingChanged: (value) =>
-                                setState(() => _rating = value ?? 5),
-                            onSubmit: _submitReview,
-                          )
-                        else
-                          _LoginToReviewPrompt(
-                            onLogin: () => showAuthRequiredDialog(
-                              context,
-                              title: l10n.businessLoginTitle,
-                              message: l10n.businessLoginReviewMessage,
-                              returnPath: '/business/${widget.id}',
-                            ),
-                          ),
+                        myReviewAsync.when(
+                          loading: () => const SizedBox.shrink(),
+                          error: (_, _) => const SizedBox.shrink(),
+                          data: (mine) {
+                            if (mine != null) {
+                              return ConsumerReviewCard(
+                                review: mine,
+                                dateLabel: formatReviewDate(
+                                  localeCode,
+                                  mine.createdAt,
+                                ),
+                                isOwnReview: true,
+                                onEdit: () => editConsumerReview(
+                                  context,
+                                  ref,
+                                  mine,
+                                  onSuccess: () {
+                                    ref.invalidate(
+                                      businessDetailsProvider(widget.id),
+                                    );
+                                    ref.invalidate(
+                                      myReviewForBusinessProvider(widget.id),
+                                    );
+                                  },
+                                ),
+                                onDelete: () => deleteConsumerReview(
+                                  context,
+                                  ref,
+                                  mine,
+                                  onSuccess: () {
+                                    ref.invalidate(
+                                      businessDetailsProvider(widget.id),
+                                    );
+                                    ref.invalidate(
+                                      myReviewForBusinessProvider(widget.id),
+                                    );
+                                  },
+                                ),
+                              );
+                            }
+                            if (isAuthenticated) {
+                              return _ReviewForm(
+                                rating: _rating,
+                                onRatingChanged: (value) =>
+                                    setState(() => _rating = value ?? 5),
+                                onSubmit: _submitReview,
+                              );
+                            }
+                            return _LoginToReviewPrompt(
+                              onLogin: () => showAuthRequiredDialog(
+                                context,
+                                title: l10n.businessLoginTitle,
+                                message: l10n.businessLoginReviewMessage,
+                                returnPath: '/business/${widget.id}',
+                              ),
+                            );
+                          },
+                        ),
                       ],
                       const SizedBox(height: 26),
                     ],
@@ -611,9 +686,13 @@ class _SectionHeaderRow extends StatelessWidget {
 }
 
 class _ReviewsPreviewBlock extends StatelessWidget {
-  const _ReviewsPreviewBlock({required this.reviews});
+  const _ReviewsPreviewBlock({
+    required this.reviews,
+    required this.localeCode,
+  });
 
   final List<Map<String, dynamic>> reviews;
+  final String localeCode;
 
   @override
   Widget build(BuildContext context) {
@@ -626,40 +705,13 @@ class _ReviewsPreviewBlock extends StatelessWidget {
     }
 
     return Column(
-      children: reviews.map((review) {
-        final user = _asMap(review['user']);
-        final name = user?['name'] as String? ?? l10n.profileDefaultUser;
-        final rating = (review['rating'] as num?)?.toInt() ?? 0;
-        return Container(
-          width: double.infinity,
-          margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: AppTheme.surfaceSubtle,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.borderSubtle),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      name,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const Icon(Icons.star, color: Colors.amber, size: 16),
-                  const SizedBox(width: 4),
-                  Text('$rating'),
-                ],
-              ),
-              if (review['text'] != null) ...[
-                const SizedBox(height: 6),
-                Text(review['text'] as String),
-              ],
-            ],
+      children: reviews.map((raw) {
+        final review = ReviewModel.fromJson(raw);
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: ConsumerReviewCard(
+            review: review,
+            dateLabel: formatReviewDate(localeCode, review.createdAt),
           ),
         );
       }).toList(),
@@ -1605,7 +1657,10 @@ class _ReviewFormState extends ConsumerState<_ReviewForm> {
           const SizedBox(height: 10),
           TextField(
             controller: _controller,
-            decoration: InputDecoration(labelText: l10n.reviewYourReviewLabel),
+            decoration: InputDecoration(
+              labelText: l10n.reviewYourReviewLabel,
+              hintText: l10n.reviewTextOptionalHint,
+            ),
             maxLines: 3,
             onChanged: (_) => _queueModerationCheck(),
           ),

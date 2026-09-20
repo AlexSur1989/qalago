@@ -766,6 +766,87 @@ class AppLocalizationsKk extends AppLocalizations {
   String get reviewLeaveButton => 'Пікір қалдыру';
 
   @override
+  String reviewsAll(int count) {
+    return 'Барлық пікірлер ($count)';
+  }
+
+  @override
+  String reviewsShownCount(int shown, int total) {
+    return 'Көрсетілген $shown / $total';
+  }
+
+  @override
+  String get reviewYourReview => 'Сіздің пікіріңіз';
+
+  @override
+  String get reviewEditTitle => 'Пікірді өңдеу';
+
+  @override
+  String get reviewDelete => 'Пікірді жою';
+
+  @override
+  String get reviewDeleteTitle => 'Пікірді жою керек пе?';
+
+  @override
+  String get reviewDeleteBody =>
+      'Пікір жариядан жойылады. Кейінірек жаңа пікір қалдыра аласыз.';
+
+  @override
+  String get reviewCompanyReply => 'Компания жауабы';
+
+  @override
+  String get reviewTextOptionalHint =>
+      'Міндетті емес — тек баға қалдыруға болады';
+
+  @override
+  String get reviewLoadMore => 'Тағы жүктеу';
+
+  @override
+  String get reviewReport => 'Шағымдану';
+
+  @override
+  String get reviewReportReason => 'Шағым себебі';
+
+  @override
+  String get reviewReportReasonSpam => 'Спам';
+
+  @override
+  String get reviewReportReasonInappropriate => 'Орынсыз мазмұн';
+
+  @override
+  String get reviewReportReasonFalseInfo => 'Жалған ақпарат';
+
+  @override
+  String get reviewReportReasonHarassment => 'Қорлау немесе мазалау';
+
+  @override
+  String get reviewReportReasonOther => 'Басқа';
+
+  @override
+  String get reviewReportDetailsOptional => 'Түсініктеме (міндетті емес)';
+
+  @override
+  String get reviewReportSubmit => 'Шағымды жіберу';
+
+  @override
+  String get reviewReportSent =>
+      'Шағым жіберілді. Сенімді ортаны сақтауға көмектескеніңіз үшін рахмет.';
+
+  @override
+  String get reviewReportAlreadySubmitted =>
+      'Бұл пікірге шағымды бұрын жібергенсіз.';
+
+  @override
+  String get reviewReportNotReportable => 'Бұл пікірге шағымдану мүмкін емес.';
+
+  @override
+  String get reviewSelfReviewForbidden =>
+      'Өз мекемеңізге пікір қалдыруға болмайды.';
+
+  @override
+  String get reviewAlreadyExists => 'Бұл орынға пікіріңіз бар. Оны өңдеңіз.';
+
+  @override
   String get reviewLooksOk => 'Пікір қалыпты көрінеді';
 
   @override

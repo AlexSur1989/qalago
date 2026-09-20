@@ -364,6 +364,41 @@
   "reviewRatingLabel": "Оценка",
   "reviewYourReviewLabel": "Ваш отзыв",
   "reviewLeaveButton": "Оставить отзыв",
+  "reviewsAll": "Все отзывы ({count})",
+  "@reviewsAll": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "reviewsShownCount": "Показано {shown} из {total}",
+  "@reviewsShownCount": {
+    "placeholders": {
+      "shown": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "reviewYourReview": "Ваш отзыв",
+  "reviewEditTitle": "Редактировать отзыв",
+  "reviewDelete": "Удалить отзыв",
+  "reviewDeleteTitle": "Удалить отзыв?",
+  "reviewDeleteBody": "Отзыв перестанет отображаться публично. Вы сможете оставить новый отзыв позже.",
+  "reviewCompanyReply": "Ответ компании",
+  "reviewTextOptionalHint": "Необязательно — можно оставить только оценку",
+  "reviewLoadMore": "Загрузить ещё",
+  "reviewReport": "Пожаловаться",
+  "reviewReportReason": "Причина жалобы",
+  "reviewReportReasonSpam": "Спам",
+  "reviewReportReasonInappropriate": "Неподходящий контент",
+  "reviewReportReasonFalseInfo": "Ложная информация",
+  "reviewReportReasonHarassment": "Оскорбления или домогательства",
+  "reviewReportReasonOther": "Другое",
+  "reviewReportDetailsOptional": "Комментарий (необязательно)",
+  "reviewReportSubmit": "Отправить жалобу",
+  "reviewReportSent": "Жалоба отправлена. Спасибо, что помогаете поддерживать доверие.",
+  "reviewReportAlreadySubmitted": "Вы уже отправляли жалобу на этот отзыв.",
+  "reviewReportNotReportable": "На этот отзыв нельзя пожаловаться.",
+  "reviewSelfReviewForbidden": "Нельзя оставить отзыв о своём заведении.",
+  "reviewAlreadyExists": "У вас уже есть отзыв об этом месте. Отредактируйте его.",
   "reviewLooksOk": "Отзыв выглядит нормально",
   "reviewPossibleViolations": "Возможные нарушения",
   "reviewRecommendCheck": "Рекомендуем проверить текст",

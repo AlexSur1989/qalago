@@ -29,9 +29,6 @@ export default function ModerationCaseDetailPage() {
   const [item, setItem] = useState<ModerationCaseDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [statusDraft, setStatusDraft] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [actionNote, setActionNote] = useState('');
   const [actionBusy, setActionBusy] = useState<'REVIEW_HIDE' | 'REVIEW_RESTORE' | null>(null);
@@ -44,7 +41,6 @@ export default function ModerationCaseDetailPage() {
       .getCase(token, params.id)
       .then((data) => {
         setItem(data);
-        setStatusDraft(data.status);
       })
       .catch((err: unknown) => setError(mapModerationError(String(err))))
       .finally(() => setLoading(false));
@@ -78,21 +74,6 @@ export default function ModerationCaseDetailPage() {
       setActionError(mapModerationError(String(err)));
     } finally {
       setActionBusy(null);
-    }
-  }
-
-  async function handleSaveStatus() {
-    if (!item || statusDraft === item.status) return;
-    setSaving(true);
-    setSaveError(null);
-    try {
-      await moderationApi.updateCase(token, item.id, { status: statusDraft });
-      setToast('Статус обновлён.');
-      await load();
-    } catch (err: unknown) {
-      setSaveError(mapModerationError(String(err)));
-    } finally {
-      setSaving(false);
     }
   }
 
@@ -148,35 +129,10 @@ export default function ModerationCaseDetailPage() {
           </div>
         </div>
 
-        <div className="toolbar" style={{ marginTop: '1rem', flexWrap: 'wrap', gap: '12px' }}>
-          <label>
-            Новый статус{' '}
-            <select value={statusDraft} onChange={(e) => setStatusDraft(e.target.value)}>
-              {[
-                'OPEN',
-                'TRIAGED',
-                'IN_REVIEW',
-                'ACTION_REQUIRED',
-                'RESOLVED',
-                'DISMISSED',
-                'APPEALED',
-              ].map((s) => (
-                <option key={s} value={s}>
-                  {moderationCaseStatusLabel(s)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button
-            type="button"
-            className="btn btn-sm"
-            disabled={saving || statusDraft === item.status}
-            onClick={handleSaveStatus}
-          >
-            {saving ? 'Сохранение…' : 'Сохранить статус'}
-          </button>
-        </div>
-        {saveError && <p className="error-text">{saveError}</p>}
+        <p className="muted" style={{ marginTop: '0.75rem', fontSize: '0.85rem' }}>
+          Статус меняется через действия модератора (скрытие/восстановление). Ручное изменение
+          статуса недоступно.
+        </p>
       </div>
 
       {item.targetType === 'REVIEW' && (

@@ -1490,6 +1490,150 @@ abstract class AppLocalizations {
   /// **'Оставить отзыв'**
   String get reviewLeaveButton;
 
+  /// No description provided for @reviewsAll.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все отзывы ({count})'**
+  String reviewsAll(int count);
+
+  /// No description provided for @reviewsShownCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'Показано {shown} из {total}'**
+  String reviewsShownCount(int shown, int total);
+
+  /// No description provided for @reviewYourReview.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ваш отзыв'**
+  String get reviewYourReview;
+
+  /// No description provided for @reviewEditTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Редактировать отзыв'**
+  String get reviewEditTitle;
+
+  /// No description provided for @reviewDelete.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить отзыв'**
+  String get reviewDelete;
+
+  /// No description provided for @reviewDeleteTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить отзыв?'**
+  String get reviewDeleteTitle;
+
+  /// No description provided for @reviewDeleteBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отзыв перестанет отображаться публично. Вы сможете оставить новый отзыв позже.'**
+  String get reviewDeleteBody;
+
+  /// No description provided for @reviewCompanyReply.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ответ компании'**
+  String get reviewCompanyReply;
+
+  /// No description provided for @reviewTextOptionalHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Необязательно — можно оставить только оценку'**
+  String get reviewTextOptionalHint;
+
+  /// No description provided for @reviewLoadMore.
+  ///
+  /// In ru, this message translates to:
+  /// **'Загрузить ещё'**
+  String get reviewLoadMore;
+
+  /// No description provided for @reviewReport.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пожаловаться'**
+  String get reviewReport;
+
+  /// No description provided for @reviewReportReason.
+  ///
+  /// In ru, this message translates to:
+  /// **'Причина жалобы'**
+  String get reviewReportReason;
+
+  /// No description provided for @reviewReportReasonSpam.
+  ///
+  /// In ru, this message translates to:
+  /// **'Спам'**
+  String get reviewReportReasonSpam;
+
+  /// No description provided for @reviewReportReasonInappropriate.
+  ///
+  /// In ru, this message translates to:
+  /// **'Неподходящий контент'**
+  String get reviewReportReasonInappropriate;
+
+  /// No description provided for @reviewReportReasonFalseInfo.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ложная информация'**
+  String get reviewReportReasonFalseInfo;
+
+  /// No description provided for @reviewReportReasonHarassment.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оскорбления или домогательства'**
+  String get reviewReportReasonHarassment;
+
+  /// No description provided for @reviewReportReasonOther.
+  ///
+  /// In ru, this message translates to:
+  /// **'Другое'**
+  String get reviewReportReasonOther;
+
+  /// No description provided for @reviewReportDetailsOptional.
+  ///
+  /// In ru, this message translates to:
+  /// **'Комментарий (необязательно)'**
+  String get reviewReportDetailsOptional;
+
+  /// No description provided for @reviewReportSubmit.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отправить жалобу'**
+  String get reviewReportSubmit;
+
+  /// No description provided for @reviewReportSent.
+  ///
+  /// In ru, this message translates to:
+  /// **'Жалоба отправлена. Спасибо, что помогаете поддерживать доверие.'**
+  String get reviewReportSent;
+
+  /// No description provided for @reviewReportAlreadySubmitted.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вы уже отправляли жалобу на этот отзыв.'**
+  String get reviewReportAlreadySubmitted;
+
+  /// No description provided for @reviewReportNotReportable.
+  ///
+  /// In ru, this message translates to:
+  /// **'На этот отзыв нельзя пожаловаться.'**
+  String get reviewReportNotReportable;
+
+  /// No description provided for @reviewSelfReviewForbidden.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нельзя оставить отзыв о своём заведении.'**
+  String get reviewSelfReviewForbidden;
+
+  /// No description provided for @reviewAlreadyExists.
+  ///
+  /// In ru, this message translates to:
+  /// **'У вас уже есть отзыв об этом месте. Отредактируйте его.'**
+  String get reviewAlreadyExists;
+
   /// No description provided for @reviewLooksOk.
   ///
   /// In ru, this message translates to:

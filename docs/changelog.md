@@ -5,6 +5,13 @@
 
 ---
 
+## 2026-09-21 — Stage 6.11D.4 consumer reviews UX & trust polish
+
+- **Added:** Flutter `/business/:id/reviews` paginated screen; Business Detail “all reviews” entry; shared consumer review card with company reply label.
+- **Added:** Mobile create/edit/delete/report flows wired to D.1–D.3 APIs with RU/KK l10n and error-code mapping.
+- **Changed:** Admin moderation case detail — removed dead manual status PATCH UI; status follows moderation actions.
+- **Deferred:** immutable report snapshot; historical manager self-reviews cleanup.
+
 ## 2026-09-21 — Stage 6.11D.3 review moderation & reports workflow
 
 - **Added:** Enriched `GET /admin/moderation/cases/:id` with linked reports, action history, and live `reviewTarget` state (business, reviewer, lifecycle, public visibility).

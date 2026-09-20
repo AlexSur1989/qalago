@@ -21,11 +21,11 @@ import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/profile/presentation/profile_edit_screen.dart';
 import '../../features/profile/presentation/profile_city_screen.dart';
 import '../../features/profile/presentation/profile_reviews_screen.dart';
+import '../../features/reviews/presentation/business_reviews_screen.dart';
 import '../../features/profile/presentation/profile_help_screen.dart';
 import '../../features/profile/presentation/profile_about_screen.dart';
 import '../../features/profile/presentation/profile_permissions_screen.dart';
 import '../../features/profile/presentation/profile_language_screen.dart';
-import '../locale/l10n_extension.dart';
 import '../../features/promotions/presentation/promotions_screen.dart';
 import '../../core/rbac/role_permissions.dart';
 import '../../features/owner/presentation/owner_dashboard_screen.dart';
@@ -295,6 +295,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/business/:id/photos',
             builder: (context, state) => BusinessPhotosScreen(
+              businessId: state.pathParameters['id']!,
+            ),
+          ),
+          GoRoute(
+            path: '/business/:id/reviews',
+            builder: (context, state) => BusinessReviewsScreen(
               businessId: state.pathParameters['id']!,
             ),
           ),

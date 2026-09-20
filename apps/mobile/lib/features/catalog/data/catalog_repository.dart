@@ -5,6 +5,7 @@ import '../../../features/ads/data/ad_models.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/utils/audience_distance_bucket.dart';
+import '../../reviews/data/review_pagination.dart';
 
 class AuthRepository {
   AuthRepository(this._dio);
@@ -611,20 +612,24 @@ class CatalogRepository {
   }
 
   Future<List<ReviewModel>> fetchReviews(String businessId) async {
+    final page = await fetchReviewsPage(businessId: businessId, page: 1);
+    return page.items;
+  }
+
+  Future<PaginatedReviews> fetchReviewsPage({
+    required String businessId,
+    int page = 1,
+    int limit = 20,
+  }) async {
     final response = await _dio.get(
       '/reviews',
-      queryParameters: {'businessId': businessId},
+      queryParameters: {
+        'businessId': businessId,
+        'page': page,
+        'limit': limit,
+      },
     );
-    final data = response.data;
-    final List<dynamic> rawItems;
-    if (data is Map<String, dynamic>) {
-      rawItems = data['items'] as List<dynamic>? ?? [];
-    } else {
-      rawItems = data as List<dynamic>;
-    }
-    return rawItems
-        .map((e) => ReviewModel.fromJson(e as Map<String, dynamic>))
-        .toList();
+    return PaginatedReviews.fromJson(response.data as Map<String, dynamic>);
   }
 
   Future<List<ReviewModel>> fetchMyReviews() async {

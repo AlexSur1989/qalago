@@ -33,6 +33,10 @@ final catalogRepositoryProvider = Provider(
   (ref) => CatalogRepository(ref.watch(dioProvider)),
 );
 
+final contentReportRepositoryProvider = Provider(
+  (ref) => ContentReportRepository(ref.watch(dioProvider)),
+);
+
 final aiRepositoryProvider = Provider(
   (ref) => AiRepository(ref.watch(aiDioProvider)),
 );
@@ -589,6 +593,16 @@ final reviewsProvider = FutureProvider.family<List<ReviewModel>, String>((ref, b
 final myReviewsProvider = FutureProvider<List<ReviewModel>>((ref) async {
   if (!ref.watch(authProvider).isAuthenticated) return [];
   return ref.watch(catalogRepositoryProvider).fetchMyReviews();
+});
+
+final myReviewForBusinessProvider =
+    FutureProvider.family<ReviewModel?, String>((ref, businessId) async {
+  if (!ref.watch(authProvider).isAuthenticated) return null;
+  final reviews = await ref.watch(myReviewsProvider.future);
+  for (final review in reviews) {
+    if (review.businessId == businessId) return review;
+  }
+  return null;
 });
 
 final myBusinessEntriesProvider = FutureProvider<List<MyBusinessEntry>>((ref) async {
