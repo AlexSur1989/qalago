@@ -11,6 +11,7 @@ import {
   BusinessMembershipRole,
   BusinessPermission,
   BusinessPlanTier,
+  NotificationTargetType,
   NotificationType,
   Prisma,
 } from '@prisma/client';
@@ -148,6 +149,9 @@ export class ReviewsService {
           type: NotificationType.NEW_REVIEW,
           title: 'Новый отзыв',
           body: `Новый отзыв (${dto.rating}★) на «${business.title}»`,
+          targetType: NotificationTargetType.REVIEW,
+          targetId: restored.id,
+          payload: { businessId: business.id, reviewId: restored.id },
         });
       }
 
@@ -181,6 +185,9 @@ export class ReviewsService {
           type: NotificationType.NEW_REVIEW,
           title: 'Новый отзыв',
           body: `Новый отзыв (${dto.rating}★) на «${business.title}»`,
+          targetType: NotificationTargetType.REVIEW,
+          targetId: review.id,
+          payload: { businessId: business.id, reviewId: review.id },
         });
       }
 
@@ -304,6 +311,9 @@ export class ReviewsService {
       type: NotificationType.REVIEW_REPLY,
       title: 'Ответ на отзыв',
       body: dto.ownerReply,
+      targetType: NotificationTargetType.REVIEW,
+      targetId: review.id,
+      payload: { businessId: review.business.id, reviewId: review.id },
     });
 
     return updated;

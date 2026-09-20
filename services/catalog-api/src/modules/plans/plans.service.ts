@@ -6,7 +6,16 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { isMockPlanCheckoutAllowed } from '../../common/utils/production-config.util';
-import { AuditAction, AuditResourceType, BusinessPlanTier, BusinessPermission, NotificationType, PlanPaymentStatus, UserRole } from '@prisma/client';
+import {
+  AuditAction,
+  AuditResourceType,
+  BusinessPlanTier,
+  BusinessPermission,
+  NotificationTargetType,
+  NotificationType,
+  PlanPaymentStatus,
+  UserRole,
+} from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { isGlobalAdmin } from '../../common/utils/system-access.util';
 import {
@@ -248,6 +257,9 @@ export class PlansService {
       type: NotificationType.PLAN_ACTIVATED,
       title: `Тариф «${planName}» подключён`,
       body: `«${business.title}»: тариф активен до ${until}. Лимиты и скидка на рекламу применены.`,
+      targetType: NotificationTargetType.BUSINESS,
+      targetId: businessId,
+      payload: { businessId, planTier: tier },
     });
   }
 }

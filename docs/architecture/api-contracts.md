@@ -900,11 +900,40 @@ Auth: owner / admin. Sets business cover to this image.
 
 ## Notifications
 
-In-app notifications (push/FCM — phase 3).
+In-app notifications (push/FCM — phase 3, not implemented in E.1).
 
-### GET /notifications
+Auth: JWT required for all routes below. Rows are scoped to the authenticated user (`userId`).
 
-List last 50 notifications for current user.
+### GET /notifications?page=1&limit=20
+
+Paginated list for the current user.
+
+- Default `limit`: 20
+- Max `limit`: 50
+- Order: `createdAt DESC`, `id DESC`
+
+Response:
+
+```json
+{
+  "items": [
+    {
+      "id": "…",
+      "type": "NEW_REVIEW",
+      "title": "…",
+      "body": "…",
+      "isRead": false,
+      "createdAt": "2026-09-20T12:00:00.000Z",
+      "targetType": "REVIEW",
+      "targetId": "…",
+      "payload": { "businessId": "…", "reviewId": "…" }
+    }
+  ],
+  "pagination": { "page": 1, "limit": 20, "total": 73, "totalPages": 4 }
+}
+```
+
+Legacy rows may have `targetType`, `targetId`, and `payload` as `null`. `title` / `body` remain for backward compatibility.
 
 ### GET /notifications/unread-count
 
@@ -912,9 +941,17 @@ Response: `{ "count": 3 }`
 
 ### PATCH /notifications/:id/read
 
+Marks one notification read for the current user. Response: `{ "success": true, "id": "…", "isRead": true }` or `404` if not owned.
+
 ### PATCH /notifications/read-all
 
-Notification types: `GENERAL`, `NEW_REVIEW`, `REVIEW_REPLY`, `BUSINESS_APPROVED`, `BUSINESS_BLOCKED`, `NEW_PROMOTION`, `PLAN_ACTIVATED`, `PLAN_EXPIRED`
+Response: `{ "success": true, "updated": 4 }`
+
+**NotificationType (canonical):** `GENERAL`, `NEW_REVIEW`, `REVIEW_REPLY`, `BUSINESS_APPROVED`, `BUSINESS_BLOCKED`, `NEW_PROMOTION`, `PLAN_ACTIVATED`, `PLAN_EXPIRED`
+
+**NotificationTargetType:** `BUSINESS`, `REVIEW`, `PROMOTION`, `BUSINESS_APPLICATION`, `OWNERSHIP_CLAIM`, `PLAN`, `ORDER`, `PAYMENT`, `AD_CAMPAIGN`, `MODERATION_CASE`
+
+Read state: `isRead` boolean (no `readAt` in E.1). Opening a notification in clients may mark read via PATCH; backend does not auto-read on GET.
 
 ---
 

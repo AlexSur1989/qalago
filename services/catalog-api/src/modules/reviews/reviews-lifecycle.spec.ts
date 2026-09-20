@@ -6,7 +6,13 @@ import {
   HttpStatus,
   NotFoundException,
 } from '@nestjs/common';
-import { AuditAction, BusinessMembershipRole, BusinessMembershipStatus } from '@prisma/client';
+import {
+  AuditAction,
+  BusinessMembershipRole,
+  BusinessMembershipStatus,
+  NotificationTargetType,
+  NotificationType,
+} from '@prisma/client';
 import { publicReviewWhere } from '../../common/constants/review.constants';
 import { PrismaService } from '../../prisma/prisma.service';
 import { createDefaultReviewServiceDeps } from '../../test-utils/mock-review-service-deps';
@@ -105,6 +111,45 @@ describe('ReviewsService lifecycle (Stage 6.11D.2)', () => {
         expect.objectContaining({ action: AuditAction.REVIEW_RESTORE }),
       );
       expect(d.notifications.create).not.toHaveBeenCalled();
+    });
+
+    it('notifies owner on visible restore with review target', async () => {
+      const deps = createDefaultReviewServiceDeps();
+      const prisma = {
+        business: {
+          findUnique: jest.fn().mockResolvedValue({
+            id: 'b1',
+            title: 'Cafe',
+            ownerId: 'owner-1',
+            cityId: 'c1',
+          }),
+        },
+        review: {
+          findUnique: jest.fn().mockResolvedValue({
+            id: 'r-old',
+            userId: 'user-1',
+            businessId: 'b1',
+            deletedAt: new Date('2026-01-01'),
+            moderationHidden: false,
+          }),
+          update: jest.fn().mockResolvedValue({
+            id: 'r-old',
+            rating: 4,
+            moderationHidden: false,
+            deletedAt: null,
+          }),
+        },
+      };
+      const { service, deps: d } = buildService(prisma, deps);
+      await service.create(user, { businessId: 'b1', rating: 4 });
+      expect(d.notifications.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: NotificationType.NEW_REVIEW,
+          targetType: NotificationTargetType.REVIEW,
+          targetId: 'r-old',
+          userId: 'owner-1',
+        }),
+      );
     });
 
     it('active duplicate remains 409', async () => {

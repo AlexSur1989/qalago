@@ -42,6 +42,7 @@ String ownerPromotionFeedHint(AppLocalizations l10n) => l10n.ownerPromotionFeedH
 
 String ownerNotificationTypeLabel(AppLocalizations l10n, String type) {
   return switch (type) {
+    'NEW_REVIEW' => l10n.ownerNotificationReviewNew,
     'REVIEW_NEW' => l10n.ownerNotificationReviewNew,
     'REVIEW_REPLY' => l10n.ownerNotificationReviewReply,
     'MODERATION' => l10n.ownerNotificationModeration,

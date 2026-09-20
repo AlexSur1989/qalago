@@ -877,6 +877,10 @@ class AppLocalizationsKk extends AppLocalizations {
   String get notificationsEmpty => 'Хабарландырулар жоқ';
 
   @override
+  String get notificationsOwnerEmptyBody =>
+      'Әзірге хабарландырулар жоқ. Мұнда пікірлер, модерация және тариф оқиғалары көрінеді.';
+
+  @override
   String get cityNotFound => 'Қалалар табылмады';
 
   @override

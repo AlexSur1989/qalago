@@ -10,6 +10,7 @@ import '../../../core/storage/auth_storage.dart';
 import '../../../shared/models/models.dart';
 import '../../ads/providers/ad_serve_provider.dart';
 import '../../catalog/data/catalog_repository.dart';
+import '../../notifications/data/notification_model.dart';
 import '../../recommendations/data/ai_repository.dart';
 import '../../business_onboarding/providers/onboarding_providers.dart';
 import '../data/apple_sign_in_adapter.dart';
@@ -649,9 +650,10 @@ final adminPendingBusinessesProvider = FutureProvider((ref) async {
       );
 });
 
-final notificationsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+final notificationsProvider = FutureProvider<List<AppNotification>>((ref) async {
   if (!ref.watch(authProvider).isAuthenticated) return [];
-  return ref.watch(notificationsRepositoryProvider).fetchAll();
+  final page = await ref.watch(notificationsRepositoryProvider).fetchPage();
+  return page.items;
 });
 
 final unreadNotificationsProvider = FutureProvider<int>((ref) async {

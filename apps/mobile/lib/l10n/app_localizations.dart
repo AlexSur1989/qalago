@@ -1688,6 +1688,12 @@ abstract class AppLocalizations {
   /// **'Нет уведомлений'**
   String get notificationsEmpty;
 
+  /// No description provided for @notificationsOwnerEmptyBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пока нет уведомлений. Здесь появятся отзывы, модерация и события по тарифу.'**
+  String get notificationsOwnerEmptyBody;
+
   /// No description provided for @cityNotFound.
   ///
   /// In ru, this message translates to:

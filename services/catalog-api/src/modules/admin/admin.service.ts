@@ -5,6 +5,7 @@ import {
   AuditResourceType,
   BusinessStatus,
   BusinessPlanTier,
+  NotificationTargetType,
   NotificationType,
   Prisma,
   UserRole,
@@ -182,6 +183,10 @@ export class AdminService {
 
         body: `«${business.title}» опубликовано в каталоге`,
 
+        targetType: NotificationTargetType.BUSINESS,
+
+        targetId: business.id,
+
       });
 
     } else if (business.ownerId && dto.status === BusinessStatus.BLOCKED) {
@@ -195,6 +200,10 @@ export class AdminService {
         title: 'Заведение заблокировано',
 
         body: `«${business.title}» скрыто из каталога`,
+
+        targetType: NotificationTargetType.BUSINESS,
+
+        targetId: business.id,
 
       });
 

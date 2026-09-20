@@ -435,6 +435,19 @@ export type NotificationRow = {
   body?: string | null;
   isRead: boolean;
   createdAt: string;
+  targetType?: string | null;
+  targetId?: string | null;
+  payload?: Record<string, unknown> | null;
+};
+
+export type PaginatedNotificationsResponse = {
+  items: NotificationRow[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 };
 
 export type MonetizationDurationOption = {
@@ -985,8 +998,11 @@ export const ownerApi = {
       token,
     }),
 
-  listNotifications: (token: string) =>
-    api<NotificationRow[]>('/notifications', { token }),
+  listNotifications: (token: string, page = 1, limit = 50) =>
+    api<PaginatedNotificationsResponse>(
+      `/notifications?page=${page}&limit=${limit}`,
+      { token },
+    ),
 
   unreadNotificationCount: (token: string) =>
     api<{ count: number }>('/notifications/unread-count', { token }),

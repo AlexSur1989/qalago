@@ -9,6 +9,7 @@ import {
   BusinessApplicationStatus,
   BusinessStatus,
   CityLaunchStatus,
+  NotificationTargetType,
   UserRole,
 } from '@prisma/client';
 import { BusinessApplicationsService } from './business-applications.service';
@@ -470,7 +471,31 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
     expect(auditLog.record).toHaveBeenCalledWith(
       expect.objectContaining({ action: AuditAction.BUSINESS_APPLICATION_REJECT }),
     );
-    expect(notifications.create).toHaveBeenCalled();
+    expect(notifications.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        targetType: NotificationTargetType.BUSINESS_APPLICATION,
+        targetId: 'app-1',
+        tx: prisma,
+      }),
+    );
+  });
+
+  it('rolls back reject transaction when notification create fails', async () => {
+    prisma.businessApplication.findUnique = jest.fn().mockResolvedValue({
+      ...baseApplication,
+      status: BusinessApplicationStatus.PENDING,
+      applicant: { id: 'user-1', name: 'User', role: UserRole.USER },
+      reviewedBy: null,
+      city: null,
+      category: null,
+      approvedBusiness: null,
+    });
+    prisma.businessApplication.updateMany = jest.fn().mockResolvedValue({ count: 1 });
+    notifications.create.mockRejectedValueOnce(new Error('notify failed'));
+
+    await expect(
+      service.adminReject(admin, 'app-1', { rejectionReason: 'Incomplete details' }),
+    ).rejects.toThrow('notify failed');
   });
 
   it('forces CITY_ADMIN to managed city on list', async () => {

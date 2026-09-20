@@ -5,6 +5,13 @@
 
 ---
 
+## 2026-09-21 — Stage 6.11E.1 notifications data & API integrity
+
+- **Added:** `NotificationTargetType`, optional `targetType` / `targetId` / `payload` on `Notification`; index `(userId, createdAt DESC)`.
+- **Changed:** `GET /notifications` returns paginated `{ items, pagination }` (default limit 20, max 50); stable mark-read DTOs.
+- **Fixed:** Notification creation participates in Prisma transactions for business applications and ownership claims.
+- **Changed:** Existing producers attach structured targets for new rows; Flutter/Business Web consume paginated API and canonical `NEW_REVIEW` type labels.
+
 ## 2026-09-21 — Stage 6.11D.5 physical QA hotfix 1 (duplicate report UX)
 
 - **Fixed:** `ProductionExceptionFilter` now preserves `code` on HTTP exception responses so mobile receives `REPORT_ALREADY_SUBMITTED` on 409.

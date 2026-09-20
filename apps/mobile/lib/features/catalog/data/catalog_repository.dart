@@ -5,6 +5,7 @@ import '../../../features/ads/data/ad_models.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/utils/audience_distance_bucket.dart';
+import '../../notifications/data/notification_model.dart';
 import '../../reviews/data/review_pagination.dart';
 
 class AuthRepository {
@@ -1142,9 +1143,14 @@ class NotificationsRepository {
   NotificationsRepository(this._dio);
   final Dio _dio;
 
-  Future<List<Map<String, dynamic>>> fetchAll() async {
-    final response = await _dio.get('/notifications');
-    return (response.data as List<dynamic>).cast<Map<String, dynamic>>();
+  Future<PaginatedNotifications> fetchPage({int page = 1, int limit = 20}) async {
+    final response = await _dio.get(
+      '/notifications',
+      queryParameters: {'page': page, 'limit': limit},
+    );
+    return PaginatedNotifications.fromJson(
+      Map<String, dynamic>.from(response.data as Map),
+    );
   }
 
   Future<int> unreadCount() async {

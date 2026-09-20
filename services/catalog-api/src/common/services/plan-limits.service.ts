@@ -8,6 +8,7 @@ import {
   BusinessMembershipRole,
   BusinessMembershipStatus,
   BusinessPlanTier,
+  NotificationTargetType,
   NotificationType,
   PromotionStatus,
 } from '@prisma/client';
@@ -510,6 +511,9 @@ export class PlanLimitsService {
         type: NotificationType.PLAN_EXPIRED,
         title: 'Тариф истёк',
         body: `Тариф «${planName}» для «${business.title}» завершён. Заведение переведено на «Бесплатный».`,
+        targetType: NotificationTargetType.BUSINESS,
+        targetId: businessId,
+        payload: { businessId, previousPlanTier: previousTier },
       });
     }
   }

@@ -13,6 +13,7 @@ import {
   BusinessOwnershipClaimStatus,
   BusinessOwnershipClaimVerificationMethod,
   BusinessStatus,
+  NotificationTargetType,
   NotificationType,
   Prisma,
   UserRole,
@@ -270,6 +271,10 @@ export class OwnershipClaimsService {
         type: NotificationType.GENERAL,
         title: 'Заявка на владение отклонена',
         body: dto.rejectionReason.trim(),
+        targetType: NotificationTargetType.OWNERSHIP_CLAIM,
+        targetId: id,
+        payload: { claimId: id, businessId: claim.businessId },
+        tx,
       });
 
       return updated;
@@ -373,6 +378,10 @@ export class OwnershipClaimsService {
         type: NotificationType.GENERAL,
         title: 'Заявка на владение одобрена',
         body: `Вам предоставлен доступ владельца к «${businessAfter.title}».`,
+        targetType: NotificationTargetType.OWNERSHIP_CLAIM,
+        targetId: id,
+        payload: { claimId: id, businessId: businessAfter.id },
+        tx,
       });
 
       return { claim: updatedClaim, business: businessAfter };

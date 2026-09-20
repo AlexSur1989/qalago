@@ -12,6 +12,7 @@ import {
   BusinessLocationSource,
   BusinessStatus,
   CityLaunchStatus,
+  NotificationTargetType,
   NotificationType,
   Prisma,
   UserRole,
@@ -348,6 +349,10 @@ export class BusinessApplicationsService {
         type: NotificationType.GENERAL,
         title: 'Заявка на бизнес отклонена',
         body: dto.rejectionReason.trim(),
+        targetType: NotificationTargetType.BUSINESS_APPLICATION,
+        targetId: id,
+        payload: { applicationId: id },
+        tx,
       });
 
       return updated;
@@ -454,6 +459,10 @@ export class BusinessApplicationsService {
         type: NotificationType.GENERAL,
         title: 'Заявка на бизнес одобрена',
         body: `«${business.title}» создан${businessStatus === BusinessStatus.ACTIVE ? ' и опубликован' : ' и ожидает запуска города'}.`,
+        targetType: NotificationTargetType.BUSINESS_APPLICATION,
+        targetId: id,
+        payload: { applicationId: id, businessId: business.id },
+        tx,
       });
 
       return { application: updatedApplication, business };

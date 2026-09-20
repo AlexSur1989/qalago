@@ -5,6 +5,8 @@ import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../../core/locale/l10n_extension.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../data/notification_model.dart';
+import '../../owner/utils/owner_l10n.dart';
 
 class NotificationsScreen extends ConsumerWidget {
   const NotificationsScreen({super.key});
@@ -43,21 +45,19 @@ class NotificationsScreen extends ConsumerWidget {
             itemCount: items.length,
             separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.item),
             itemBuilder: (context, i) {
-              final n = items[i];
-              final isRead = n['isRead'] as bool? ?? false;
+              final AppNotification n = items[i];
               return Card(
-                color: isRead ? null : Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                color: n.isRead ? null : Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
                 child: ListTile(
-                  title: Text(n['title'] as String? ?? ''),
-                  subtitle: Text(n['body'] as String? ?? ''),
+                  title: Text(n.title),
+                  subtitle: Text(n.body ?? ''),
                   trailing: Text(
-                    (n['type'] as String? ?? '').replaceAll('_', ' '),
+                    ownerNotificationTypeLabel(l10n, n.type),
                     style: Theme.of(context).textTheme.labelSmall,
                   ),
                   onTap: () async {
-                    final id = n['id'] as String?;
-                    if (id != null && !isRead) {
-                      await ref.read(notificationsRepositoryProvider).markRead(id);
+                    if (n.id.isNotEmpty && !n.isRead) {
+                      await ref.read(notificationsRepositoryProvider).markRead(n.id);
                       ref.invalidate(notificationsProvider);
                       ref.invalidate(unreadNotificationsProvider);
                     }

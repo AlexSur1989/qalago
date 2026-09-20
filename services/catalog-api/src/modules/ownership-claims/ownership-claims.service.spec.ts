@@ -395,7 +395,12 @@ describe('OwnershipClaimsService (Stage 5N.2)', () => {
     expect(auditLog.record).toHaveBeenCalledWith(
       expect.objectContaining({ action: AuditAction.BUSINESS_OWNERSHIP_CLAIM_REJECT }),
     );
-    expect(notifications.create).toHaveBeenCalled();
+    expect(notifications.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tx: expect.any(Object),
+        targetType: expect.any(String),
+      }),
+    );
   });
 
   it('cancels pending claim', async () => {

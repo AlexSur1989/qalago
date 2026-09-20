@@ -415,6 +415,7 @@
   "notificationsTitle": "Уведомления",
   "notificationsMarkAllRead": "Прочитать все",
   "notificationsEmpty": "Нет уведомлений",
+  "notificationsOwnerEmptyBody": "Пока нет уведомлений. Здесь появятся отзывы, модерация и события по тарифу.",
   "cityNotFound": "Города не найдены",
   "citySelectedSnack": "Город: {name}",
   "@citySelectedSnack": {

@@ -14,6 +14,7 @@ import {
 
 function typeLabel(ui: UiLabels, type: string) {
   const map: Record<string, string> = {
+    NEW_REVIEW: ui.__fe2c89,
     REVIEW_NEW: ui.__fe2c89,
     REVIEW_REPLY: ui.___6e031d,
     MODERATION: ui.text_424b69,
@@ -37,8 +38,8 @@ export default function MessagesPage() {
   async function load(t: string) {
     setLoading(true);
     try {
-      const list = await ownerApi.listNotifications(t);
-      setItems(list);
+      const list = await ownerApi.listNotifications(t, 1, 50);
+      setItems(list.items);
       setError(null);
     } catch (err) {
       setError(parseApiError(locale, err));

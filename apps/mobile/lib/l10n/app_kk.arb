@@ -297,6 +297,7 @@
   "notificationsTitle": "Хабарландырулар",
   "notificationsMarkAllRead": "Барлығын оқу",
   "notificationsEmpty": "Хабарландырулар жоқ",
+  "notificationsOwnerEmptyBody": "Әзірге хабарландырулар жоқ. Мұнда пікірлер, модерация және тариф оқиғалары көрінеді.",
   "cityNotFound": "Қалалар табылмады",
   "citySelectedSnack": "Қала: {name}",
   "onboardingFindBusinessTitle": "Өз бизнесіңізді табу",

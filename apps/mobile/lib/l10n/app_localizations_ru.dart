@@ -878,6 +878,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get notificationsEmpty => 'Нет уведомлений';
 
   @override
+  String get notificationsOwnerEmptyBody =>
+      'Пока нет уведомлений. Здесь появятся отзывы, модерация и события по тарифу.';
+
+  @override
   String get cityNotFound => 'Города не найдены';
 
   @override
