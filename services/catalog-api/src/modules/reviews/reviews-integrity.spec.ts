@@ -3,23 +3,20 @@ import { Prisma } from '@prisma/client';
 import { publicReviewWhere } from '../../common/constants/review.constants';
 import { ReviewAggregationService } from '../../common/services/review-aggregation.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
-import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
+import { createDefaultReviewServiceDeps } from '../../test-utils/mock-review-service-deps';
 import { ReviewErrorCode } from './review-errors';
 import { ReviewsService } from './reviews.service';
 
 function buildReviewsService(prisma: Record<string, unknown>) {
-  const planLimits = {
-    getBusinessPlanContext: jest.fn().mockResolvedValue({
-      limits: { canReplyToReviews: true },
-    }),
-  };
+  const deps = createDefaultReviewServiceDeps();
   return new ReviewsService(
     prisma as unknown as PrismaService,
-    { create: jest.fn() } as never,
-    asBusinessAccessService(createMockBusinessAccess()),
-    asAuditLogService(createMockAuditLog()),
-    planLimits as never,
+    deps.notifications as never,
+    deps.businessAccess,
+    deps.membership as never,
+    deps.auditLog,
+    deps.planLimits as never,
+    deps.reviewRateLimit as never,
   );
 }
 
@@ -27,9 +24,12 @@ describe('ReviewsService integrity (Stage 6.11D.1)', () => {
   describe('create', () => {
     it('first review succeeds', async () => {
       const prisma = {
-        business: { findUnique: jest.fn().mockResolvedValue({ id: 'b1', title: 'Cafe', ownerId: null }) },
+        business: {
+          findUnique: jest.fn().mockResolvedValue({ id: 'b1', title: 'Cafe', ownerId: null, cityId: 'c1' }),
+        },
         review: {
-          create: jest.fn().mockResolvedValue({ id: 'r1', rating: 5 }),
+          findUnique: jest.fn().mockResolvedValue(null),
+          create: jest.fn().mockResolvedValue({ id: 'r1', rating: 5, moderationHidden: false }),
         },
       };
       const service = buildReviewsService(prisma);
@@ -39,13 +39,13 @@ describe('ReviewsService integrity (Stage 6.11D.1)', () => {
     });
 
     it('duplicate maps to REVIEW_ALREADY_EXISTS', async () => {
-      const err = new Prisma.PrismaClientKnownRequestError('unique', {
-        code: 'P2002',
-        clientVersion: 'test',
-      });
       const prisma = {
-        business: { findUnique: jest.fn().mockResolvedValue({ id: 'b1', title: 'Cafe', ownerId: null }) },
-        review: { create: jest.fn().mockRejectedValue(err) },
+        business: {
+          findUnique: jest.fn().mockResolvedValue({ id: 'b1', title: 'Cafe', ownerId: null, cityId: 'c1' }),
+        },
+        review: {
+          findUnique: jest.fn().mockResolvedValue({ id: 'r1', deletedAt: null }),
+        },
       };
       const service = buildReviewsService(prisma);
       await expect(

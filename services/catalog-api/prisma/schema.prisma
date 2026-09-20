@@ -871,6 +871,7 @@ model Review {
   text             String?
   ownerReply       String?
   moderationHidden Boolean  @default(false)
+  deletedAt        DateTime?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -1646,6 +1647,10 @@ enum AuditAction {
   PROMOTION_DELETE
 
   REVIEW_REPLY_CREATE
+  REVIEW_CREATE
+  REVIEW_UPDATE
+  REVIEW_DELETE
+  REVIEW_RESTORE
 
   PLAN_CHECKOUT
   PLAN_OVERRIDE

@@ -11,6 +11,7 @@ import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../../core/locale/l10n_extension.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../catalog/data/catalog_repository.dart';
 
 class ProfileReviewsScreen extends ConsumerWidget {
   const ProfileReviewsScreen({super.key});
@@ -81,22 +82,123 @@ class ProfileReviewsScreen extends ConsumerWidget {
             itemCount: reviews.length,
             separatorBuilder: (_, _) => const SizedBox(height: 10),
             itemBuilder: (context, index) {
+              final review = reviews[index];
               return _ReviewCard(
-                review: reviews[index],
-                dateLabel: _formatDate(reviews[index].createdAt),
-                onOpenBusiness: reviews[index].businessId == null
+                review: review,
+                dateLabel: _formatDate(review.createdAt),
+                onOpenBusiness: review.businessId == null
                     ? null
                     : () => openBusiness(
                           context,
-                          reviews[index].businessId!,
+                          review.businessId!,
                           BusinessTrafficSource.direct,
                         ),
+                onEdit: () => _editReview(context, ref, review),
+                onDelete: () => _deleteReview(context, ref, review),
               );
             },
           );
         },
       ),
     );
+  }
+
+  Future<void> _editReview(
+    BuildContext context,
+    WidgetRef ref,
+    ReviewModel review,
+  ) async {
+    final l10n = context.l10n;
+    var rating = review.rating;
+    final textController = TextEditingController(text: review.text ?? '');
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.reviewEdit),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<int>(
+                initialValue: rating,
+                items: List.generate(
+                  5,
+                  (i) => DropdownMenuItem(value: i + 1, child: Text('${i + 1}')),
+                ),
+                onChanged: (v) {
+                  if (v != null) rating = v;
+                },
+                decoration: InputDecoration(labelText: l10n.reviewRatingLabel),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: textController,
+                maxLines: 4,
+                decoration: InputDecoration(labelText: l10n.reviewYourReviewLabel),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.reviewEdit),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.reviewSubmit),
+          ),
+        ],
+      ),
+    );
+    if (saved != true || !context.mounted) return;
+    try {
+      await ref.read(catalogRepositoryProvider).updateReview(
+            reviewId: review.id,
+            rating: rating,
+            text: textController.text.trim(),
+          );
+      ref.invalidate(myReviewsProvider);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      }
+    }
+    textController.dispose();
+  }
+
+  Future<void> _deleteReview(
+    BuildContext context,
+    WidgetRef ref,
+    ReviewModel review,
+  ) async {
+    final l10n = context.l10n;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.commonDelete),
+        content: Text(l10n.profileMyReviews),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.commonDelete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    try {
+      await ref.read(catalogRepositoryProvider).deleteReview(review.id);
+      ref.invalidate(myReviewsProvider);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      }
+    }
   }
 }
 
@@ -105,11 +207,15 @@ class _ReviewCard extends StatelessWidget {
     required this.review,
     required this.dateLabel,
     this.onOpenBusiness,
+    this.onEdit,
+    this.onDelete,
   });
 
   final ReviewModel review;
   final String dateLabel;
   final VoidCallback? onOpenBusiness;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -144,6 +250,25 @@ class _ReviewCard extends StatelessWidget {
                     '${review.rating}',
                     style: const TextStyle(fontWeight: FontWeight.w800),
                   ),
+                  if (onEdit != null || onDelete != null)
+                    PopupMenuButton<String>(
+                      onSelected: (value) {
+                        if (value == 'edit') onEdit?.call();
+                        if (value == 'delete') onDelete?.call();
+                      },
+                      itemBuilder: (ctx) => [
+                        if (onEdit != null)
+                          PopupMenuItem(
+                            value: 'edit',
+                            child: Text(l10n.reviewEdit),
+                          ),
+                        if (onDelete != null)
+                          PopupMenuItem(
+                            value: 'delete',
+                            child: Text(l10n.commonDelete),
+                          ),
+                      ],
+                    ),
                 ],
               ),
               if (dateLabel.isNotEmpty) ...[

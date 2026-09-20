@@ -1,46 +1,23 @@
 import { ForbiddenException } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
-import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
+import { createDefaultReviewServiceDeps } from '../../test-utils/mock-review-service-deps';
 
 describe('ReviewsService', () => {
-  let service: ReviewsService;
-  let prisma: {
-    review: { findMany: jest.Mock };
-  };
-  const planLimits = {
-    getBusinessPlanContext: jest.fn().mockResolvedValue({
-      limits: { canReplyToReviews: true },
-      catalog: { nameRu: 'Бизнес' },
-    }),
-  };
-
-  beforeEach(() => {
-    prisma = {
-      review: { findMany: jest.fn() },
-    };
-    service = new ReviewsService(
-      prisma as unknown as PrismaService,
-      { create: jest.fn() } as never,
-      asBusinessAccessService(createMockBusinessAccess()),
-      asAuditLogService(createMockAuditLog()),
-      planLimits as never,
-    );
-  });
+  const deps = createDefaultReviewServiceDeps();
 
   describe('reply', () => {
     it('returns generic permission error without enum leak', async () => {
-      const businessAccess = createMockBusinessAccess();
+      const businessAccess = deps.businessAccess as unknown as { resolveAccess: jest.Mock };
       businessAccess.resolveAccess.mockResolvedValue({
         permissions: [],
         accessRole: 'MANAGER',
       });
       const replyPrisma = {
         review: {
-          findMany: jest.fn(),
           findUnique: jest.fn().mockResolvedValue({
             id: 'r1',
+            deletedAt: null,
             business: { id: 'b1', cityId: 'c1' },
           }),
           update: jest.fn(),
@@ -48,10 +25,12 @@ describe('ReviewsService', () => {
       };
       const replyService = new ReviewsService(
         replyPrisma as unknown as PrismaService,
-        { create: jest.fn() } as never,
-        asBusinessAccessService(businessAccess),
-        asAuditLogService(createMockAuditLog()),
-        planLimits as never,
+        deps.notifications as never,
+        deps.businessAccess,
+        deps.membership as never,
+        deps.auditLog,
+        deps.planLimits as never,
+        deps.reviewRateLimit as never,
       );
 
       await expect(
@@ -63,13 +42,25 @@ describe('ReviewsService', () => {
   });
 
   describe('findByUser', () => {
-    it('returns reviews for user with business info', async () => {
+    it('returns active reviews for user with business info', async () => {
+      const prisma = {
+        review: { findMany: jest.fn() },
+      };
+      const service = new ReviewsService(
+        prisma as unknown as PrismaService,
+        deps.notifications as never,
+        deps.businessAccess,
+        deps.membership as never,
+        deps.auditLog,
+        deps.planLimits as never,
+        deps.reviewRateLimit as never,
+      );
       const rows = [{ id: 'r1', rating: 5, business: { id: 'b1', title: 'Cafe' } }];
       prisma.review.findMany.mockResolvedValue(rows);
 
       await expect(service.findByUser('user-1')).resolves.toEqual(rows);
       expect(prisma.review.findMany).toHaveBeenCalledWith({
-        where: { userId: 'user-1' },
+        where: { userId: 'user-1', deletedAt: null },
         include: {
           business: { select: { id: true, title: true, slug: true } },
         },

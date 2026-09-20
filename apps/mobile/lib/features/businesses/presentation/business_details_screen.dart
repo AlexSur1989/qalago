@@ -161,7 +161,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
     await analytics.createReview(
       businessId: widget.id,
       rating: _rating,
-      text: text,
+      text: text.isEmpty ? null : text,
     );
     final sessionId = ref.read(analyticsSessionIdProvider);
     unawaited(
@@ -1549,14 +1549,8 @@ class _ReviewFormState extends ConsumerState<_ReviewForm> {
   Future<void> _handleSubmit() async {
     final text = _controller.text.trim();
     final l10n = context.l10n;
-    if (text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.reviewWriteRequired)),
-      );
-      return;
-    }
 
-    if (_analysis?.suggestedAction == 'reject') {
+    if (_analysis?.suggestedAction == 'reject' && text.length >= 3) {
       final proceed = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -1577,7 +1571,7 @@ class _ReviewFormState extends ConsumerState<_ReviewForm> {
       if (proceed != true) return;
     }
 
-    await widget.onSubmit(text);
+    await widget.onSubmit(text.isEmpty ? '' : text);
     if (!mounted) return;
     _controller.clear();
     setState(() => _analysis = null);

@@ -1,10 +1,15 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
-import { CreateReviewDto, ListReviewsQueryDto, ReplyReviewDto } from './dto/review.dto';
+import {
+  CreateReviewDto,
+  ListReviewsQueryDto,
+  ReplyReviewDto,
+  UpdateReviewDto,
+} from './dto/review.dto';
 import { ReviewsService } from './reviews.service';
 
 @Controller('reviews')
@@ -25,6 +30,20 @@ export class ReviewsController {
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() dto: CreateReviewDto) {
     return this.reviewsService.create(user, dto);
+  }
+
+  @Patch(':id')
+  update(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateReviewDto,
+  ) {
+    return this.reviewsService.update(user, id, dto);
+  }
+
+  @Delete(':id')
+  remove(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.reviewsService.softDelete(user, id);
   }
 
   @Roles(UserRole.BUSINESS, UserRole.ADMIN, UserRole.CITY_ADMIN)

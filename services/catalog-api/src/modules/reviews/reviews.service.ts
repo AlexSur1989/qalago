@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -7,14 +8,20 @@ import {
 import {
   AuditAction,
   AuditResourceType,
+  BusinessMembershipRole,
   BusinessPermission,
   BusinessPlanTier,
   NotificationType,
   Prisma,
 } from '@prisma/client';
-import { publicReviewWhere } from '../../common/constants/review.constants';
+import {
+  activeUserReviewWhere,
+  publicReviewWhere,
+} from '../../common/constants/review.constants';
 import { publicPlanLabelRu } from '../../common/utils/plan-display.util';
+import { normalizeReviewText } from '../../common/utils/review-text.util';
 import { BusinessAccessService } from '../../common/services/business-access.service';
+import { BusinessMembershipService } from '../../common/services/business-membership.service';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -25,9 +32,15 @@ import {
   CreateReviewDto,
   ListReviewsQueryDto,
   ReplyReviewDto,
+  UpdateReviewDto,
   resolvePublicReviewsPageLimit,
 } from './dto/review.dto';
 import { ReviewErrorCode } from './review-errors';
+import { ReviewRateLimitService } from './review-rate-limit.service';
+
+const reviewAuthorInclude = {
+  user: { select: { id: true, name: true, avatarUrl: true } },
+} as const;
 
 @Injectable()
 export class ReviewsService {
@@ -35,8 +48,10 @@ export class ReviewsService {
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
     private readonly businessAccess: BusinessAccessService,
+    private readonly membership: BusinessMembershipService,
     private readonly auditLog: AuditLogService,
     private readonly planLimits: PlanLimitsService,
+    private readonly reviewRateLimit: ReviewRateLimitService,
   ) {}
 
   async findByBusiness(query: ListReviewsQueryDto) {
@@ -50,9 +65,7 @@ export class ReviewsService {
     const [items, total] = await Promise.all([
       this.prisma.review.findMany({
         where,
-        include: {
-          user: { select: { id: true, name: true, avatarUrl: true } },
-        },
+        include: reviewAuthorInclude,
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         skip,
         take: limit,
@@ -73,7 +86,7 @@ export class ReviewsService {
 
   findByUser(userId: string) {
     return this.prisma.review.findMany({
-      where: { userId },
+      where: activeUserReviewWhere(userId),
       include: {
         business: { select: { id: true, title: true, slug: true } },
       },
@@ -82,10 +95,64 @@ export class ReviewsService {
   }
 
   async create(user: AuthUser, dto: CreateReviewDto) {
+    this.reviewRateLimit.assertCanMutateReview(user.id);
+
     const business = await this.prisma.business.findUnique({
       where: { id: dto.businessId },
     });
     if (!business) throw new NotFoundException('Business not found');
+
+    await this.assertCanSubmitConsumerReview(user.id, business.id, business.ownerId);
+
+    const text = normalizeReviewText(dto.text);
+
+    const existing = await this.prisma.review.findUnique({
+      where: { userId_businessId: { userId: user.id, businessId: dto.businessId } },
+    });
+
+    if (existing) {
+      if (existing.deletedAt === null) {
+        throw new ConflictException({
+          message: 'Review already exists',
+          code: ReviewErrorCode.REVIEW_ALREADY_EXISTS,
+        });
+      }
+
+      const restored = await this.prisma.review.update({
+        where: { id: existing.id },
+        data: {
+          rating: dto.rating,
+          text: text ?? null,
+          deletedAt: null,
+        },
+        include: reviewAuthorInclude,
+      });
+
+      await this.auditLog.record({
+        actor: user,
+        action: AuditAction.REVIEW_RESTORE,
+        resourceType: AuditResourceType.REVIEW,
+        resourceId: restored.id,
+        businessId: business.id,
+        cityId: business.cityId,
+        metadata: {
+          businessId: business.id,
+          rating: dto.rating,
+          moderationHidden: restored.moderationHidden,
+        },
+      });
+
+      if (!restored.moderationHidden && business.ownerId) {
+        await this.notifications.create({
+          userId: business.ownerId,
+          type: NotificationType.NEW_REVIEW,
+          title: 'Новый отзыв',
+          body: `Новый отзыв (${dto.rating}★) на «${business.title}»`,
+        });
+      }
+
+      return restored;
+    }
 
     try {
       const review = await this.prisma.review.create({
@@ -93,9 +160,19 @@ export class ReviewsService {
           userId: user.id,
           businessId: dto.businessId,
           rating: dto.rating,
-          text: dto.text,
+          text: text ?? null,
         },
-        include: { user: { select: { id: true, name: true, avatarUrl: true } } },
+        include: reviewAuthorInclude,
+      });
+
+      await this.auditLog.record({
+        actor: user,
+        action: AuditAction.REVIEW_CREATE,
+        resourceType: AuditResourceType.REVIEW,
+        resourceId: review.id,
+        businessId: business.id,
+        cityId: business.cityId,
+        metadata: { businessId: business.id, rating: dto.rating },
       });
 
       if (business.ownerId) {
@@ -122,12 +199,77 @@ export class ReviewsService {
     }
   }
 
+  async update(user: AuthUser, id: string, dto: UpdateReviewDto) {
+    this.reviewRateLimit.assertCanMutateReview(user.id);
+
+    const review = await this.findOwnedActiveReview(user.id, id);
+    const text = normalizeReviewText(dto.text);
+    const priorRating = review.rating;
+
+    const updated = await this.prisma.review.update({
+      where: { id },
+      data: {
+        rating: dto.rating,
+        ...(dto.text !== undefined ? { text: text ?? null } : {}),
+      },
+      include: reviewAuthorInclude,
+    });
+
+    await this.auditLog.record({
+      actor: user,
+      action: AuditAction.REVIEW_UPDATE,
+      resourceType: AuditResourceType.REVIEW,
+      resourceId: id,
+      businessId: review.businessId,
+      metadata: {
+        businessId: review.businessId,
+        ratingBefore: priorRating,
+        ratingAfter: dto.rating,
+        moderationHidden: review.moderationHidden,
+      },
+    });
+
+    return updated;
+  }
+
+  async softDelete(user: AuthUser, id: string) {
+    this.reviewRateLimit.assertCanMutateReview(user.id);
+
+    const review = await this.prisma.review.findUnique({ where: { id } });
+    if (!review || review.userId !== user.id) {
+      throw new NotFoundException('Review not found');
+    }
+
+    if (review.deletedAt !== null) {
+      return { success: true, id: review.id, deletedAt: review.deletedAt };
+    }
+
+    const deletedAt = new Date();
+    await this.prisma.review.update({
+      where: { id },
+      data: { deletedAt },
+    });
+
+    await this.auditLog.record({
+      actor: user,
+      action: AuditAction.REVIEW_DELETE,
+      resourceType: AuditResourceType.REVIEW,
+      resourceId: id,
+      businessId: review.businessId,
+      metadata: { businessId: review.businessId, rating: review.rating },
+    });
+
+    return { success: true, id: review.id, deletedAt };
+  }
+
   async reply(user: AuthUser, id: string, dto: ReplyReviewDto) {
     const review = await this.prisma.review.findUnique({
       where: { id },
       include: { business: { select: { id: true, cityId: true } } },
     });
-    if (!review) throw new NotFoundException('Review not found');
+    if (!review || review.deletedAt !== null) {
+      throw new NotFoundException('Review not found');
+    }
 
     const access = await this.businessAccess.resolveAccess(user, review.business.id);
     if (!access.permissions.includes(BusinessPermission.REVIEWS_REPLY)) {
@@ -165,5 +307,40 @@ export class ReviewsService {
     });
 
     return updated;
+  }
+
+  private async assertCanSubmitConsumerReview(
+    userId: string,
+    businessId: string,
+    legacyOwnerId: string | null,
+  ) {
+    if (await this.membership.hasActiveOwnerAccess(userId, businessId, legacyOwnerId)) {
+      throw new ForbiddenException({
+        message: 'Cannot review your own business',
+        code: ReviewErrorCode.REVIEW_SELF_REVIEW_FORBIDDEN,
+      });
+    }
+
+    const membership = await this.membership.getActiveMembership(userId, businessId);
+    if (membership?.role === BusinessMembershipRole.MANAGER) {
+      throw new ForbiddenException({
+        message: 'Cannot review a business you manage',
+        code: ReviewErrorCode.REVIEW_SELF_REVIEW_FORBIDDEN,
+      });
+    }
+  }
+
+  private async findOwnedActiveReview(userId: string, id: string) {
+    const review = await this.prisma.review.findUnique({ where: { id } });
+    if (!review || review.userId !== userId) {
+      throw new NotFoundException('Review not found');
+    }
+    if (review.deletedAt !== null) {
+      throw new BadRequestException({
+        message: 'Review is not active',
+        code: ReviewErrorCode.REVIEW_NOT_ACTIVE,
+      });
+    }
+    return review;
   }
 }

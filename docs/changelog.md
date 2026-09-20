@@ -5,6 +5,14 @@
 
 ---
 
+## 2026-09-20 — Stage 6.11D.2 review lifecycle & abuse protection
+
+- **Added:** `Review.deletedAt` soft delete; public predicate includes `deletedAt = null`.
+- **Added:** `PATCH /reviews/:id`, `DELETE /reviews/:id`; POST restores soft-deleted row (same id; preserves `moderationHidden`).
+- **Added:** Self-review block (`REVIEW_SELF_REVIEW_FORBIDDEN`); review mutation rate limits; audit `REVIEW_CREATE/UPDATE/DELETE/RESTORE`.
+- **Changed:** Plain-text normalization (trim, NFC, max 2000); mobile profile edit/delete; rating-only reviews allowed on mobile.
+- **Deferred:** admin moderation UI, consumer report UX, full reviews list screen (D.3/D.4).
+
 ## 2026-09-20 — Stage 6.11D.1 review data & rating integrity
 
 - **Added:** `@@unique([userId, businessId])` and PostgreSQL CHECK `rating` 1..5 on `Review`.

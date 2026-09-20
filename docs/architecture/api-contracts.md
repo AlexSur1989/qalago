@@ -678,12 +678,16 @@ Response item includes `{ id, businessId, title, description?, imageUrl?, discou
 
 ## Reviews
 
-Public visibility: `moderationHidden = false` only (central `publicReviewWhere()`).
+Public visibility: `moderationHidden = false` **and** `deletedAt = null` (central `publicReviewWhere()`).
 
-- `GET /reviews?businessId=&page=&limit=` — paginated public list (`items` + `pagination`; default limit 20, max 50; newest first, tie-break `id` desc). Hidden reviews excluded.
-- `GET /reviews/me` — отзывы текущего пользователя (auth; includes moderation-hidden)
-- `POST /reviews` — one row per `(userId, businessId)`; duplicate → **409** `REVIEW_ALREADY_EXISTS`
-- `PATCH /reviews/:id/reply` (owner)
+- `GET /reviews?businessId=&page=&limit=` — paginated public list (`items` + `pagination`; default limit 20, max 50; newest first, tie-break `id` desc). Hidden/deleted reviews excluded.
+- `GET /reviews/me` — active user reviews only (`deletedAt = null`; includes moderation-hidden)
+- `POST /reviews` — one row per `(userId, businessId)`; active duplicate → **409** `REVIEW_ALREADY_EXISTS`; soft-deleted row → **restore** same id (does not clear `moderationHidden`; no owner notification if still hidden)
+- `PATCH /reviews/:id` — author edits `rating`/`text` only; hidden stays hidden
+- `DELETE /reviews/:id` — author soft-delete (`deletedAt`); idempotent if already deleted
+- `PATCH /reviews/:id/reply` (owner; not on deleted reviews)
+
+Errors: `REVIEW_SELF_REVIEW_FORBIDDEN` (403), `REVIEW_NOT_ACTIVE` (400 on edit deleted), mutation rate limit **429**.
 
 **Rating integrity:** DB `CHECK (rating BETWEEN 1 AND 5)`; `@@unique([userId, businessId])`.
 

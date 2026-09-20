@@ -649,6 +649,24 @@ class CatalogRepository {
     );
   }
 
+  Future<void> updateReview({
+    required String reviewId,
+    required int rating,
+    String? text,
+  }) async {
+    await _dio.patch(
+      '/reviews/$reviewId',
+      data: {
+        'rating': rating,
+        if (text != null) 'text': text,
+      },
+    );
+  }
+
+  Future<void> deleteReview(String reviewId) async {
+    await _dio.delete('/reviews/$reviewId');
+  }
+
   Future<void> replyReview(String reviewId, String ownerReply) async {
     await _dio.patch(
       '/reviews/$reviewId/reply',
