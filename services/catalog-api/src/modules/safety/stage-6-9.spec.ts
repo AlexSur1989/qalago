@@ -134,6 +134,24 @@ describe('Stage 6.9 Legal & Safety', () => {
       );
     });
 
+    it('P reports valid review when not soft-deleted', async () => {
+      prisma.review.findUnique = jest.fn().mockResolvedValue({
+        id: 'rev-1',
+        deletedAt: null,
+        business: { cityId: 'city-1' },
+      });
+      const result = await service.createReport(
+        authUser('u1', UserRole.USER),
+        '127.0.0.1',
+        {
+          targetType: ContentReportTargetType.REVIEW,
+          targetId: 'rev-1',
+          reason: ContentReportReason.SPAM,
+        },
+      );
+      expect(result.caseId).toBe('c1');
+    });
+
     it('P reports valid business', async () => {
       const result = await service.createReport(
         authUser('u1', UserRole.USER),

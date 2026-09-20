@@ -5,6 +5,15 @@
 
 ---
 
+## 2026-09-21 — Stage 6.11D.3 review moderation & reports workflow
+
+- **Added:** Enriched `GET /admin/moderation/cases/:id` with linked reports, action history, and live `reviewTarget` state (business, reviewer, lifecycle, public visibility).
+- **Added:** Required moderator `internalNote` for `REVIEW_HIDE` / `REVIEW_RESTORE`; admin case UI wired to record actions with confirmation and loading states.
+- **Changed:** `POST /reports` for `REVIEW` rejects soft-deleted targets; moderation-hidden reviews remain reportable.
+- **Changed:** Admin hard delete review writes `REVIEW_DELETE` audit before removal.
+- **Added:** Business Web “report review” via generic `POST /reports`; Flutter `ContentReportRepository` foundation.
+- **Deferred:** Immutable report-time review text snapshot; full consumer report UX (D.4).
+
 ## 2026-09-20 — Stage 6.11D.2 review lifecycle & abuse protection
 
 - **Added:** `Review.deletedAt` soft delete; public predicate includes `deletedAt = null`.

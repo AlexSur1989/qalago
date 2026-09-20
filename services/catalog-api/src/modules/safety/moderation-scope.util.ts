@@ -19,7 +19,7 @@ export async function resolveModerationTargetCityId(
         where: { id: targetId },
         select: { business: { select: { cityId: true } } },
       });
-      return row?.business.cityId ?? null;
+      return row?.business?.cityId ?? null;
     }
     case ContentReportTargetType.PROMOTION: {
       const row = await prisma.promotion.findUnique({

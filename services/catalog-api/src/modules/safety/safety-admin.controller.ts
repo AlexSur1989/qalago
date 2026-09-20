@@ -40,7 +40,7 @@ export class SafetyAdminController {
   @RequireStaffPermission(StaffPermission.MODERATION_VIEW)
   @Get('moderation/cases/:id')
   async getCase(@CurrentUser() user: AuthUser, @Param('id') id: string) {
-    return this.moderation.assertCanAccessCase(user, id);
+    return this.moderation.getCaseDetail(user, id);
   }
 
   @AdminStaffRoute()

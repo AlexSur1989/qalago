@@ -184,7 +184,8 @@ Body: `{ reason }` — eligible owner/affected user only.
 ### Admin
 
 - `GET /admin/moderation/cases` — ADMIN, CITY_ADMIN (city scoped), SUPER_ADMIN
-- `POST /admin/moderation/cases/:id/actions` — apply moderation action
+- `GET /admin/moderation/cases/:id` — case detail with linked `reports`, `actions`, and `reviewTarget` (when `targetType=REVIEW`: current review state, business/city, reviewer staff fields, `publiclyVisible`, lifecycle `state`; missing target does not error)
+- `POST /admin/moderation/cases/:id/actions` — apply moderation action (`REVIEW_HIDE` / `REVIEW_RESTORE` require `internalNote` min 3 chars; restore never clears `deletedAt`)
 - `POST /admin/legal/documents/:id/publish` — SUPER_ADMIN
 - `PATCH /admin/data-rights/requests/:id/status` — ADMIN, SUPER_ADMIN
 - `GET/PATCH /admin/legal/government-requests` — SUPER_ADMIN only

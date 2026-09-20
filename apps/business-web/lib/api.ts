@@ -866,6 +866,22 @@ export const ownerApi = {
       body: JSON.stringify({ ownerReply }),
     }),
 
+  reportReview: (
+    token: string,
+    reviewId: string,
+    body: { reason: string; details?: string },
+  ) =>
+    api<{ reportId: string; caseId: string }>('/reports', {
+      method: 'POST',
+      token,
+      body: JSON.stringify({
+        targetType: 'REVIEW',
+        targetId: reviewId,
+        reason: body.reason,
+        details: body.details,
+      }),
+    }),
+
   getServiceMenu: (token: string, businessId: string) =>
     api<ServiceMenuManage>(`/service-menu/manage/${businessId}`, { token }),
 

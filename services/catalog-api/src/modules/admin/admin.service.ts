@@ -401,6 +401,18 @@ export class AdminService {
 
     await this.cityScope.assertBusinessInAdminScope(user, review.business.cityId);
 
+    await this.auditLog.record({
+      actor: user,
+      action: AuditAction.REVIEW_DELETE,
+      resourceType: AuditResourceType.REVIEW,
+      resourceId: id,
+      cityId: review.business.cityId,
+      metadata: {
+        businessId: review.businessId,
+        source: 'admin_hard_delete',
+      },
+    });
+
     await this.prisma.review.delete({ where: { id } });
 
     return { success: true, businessTitle: review.business.title };

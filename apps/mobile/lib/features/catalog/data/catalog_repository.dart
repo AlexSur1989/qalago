@@ -1106,6 +1106,33 @@ class AdminRepository {
   }
 }
 
+/// Minimal POST /reports client for review moderation (Stage 6.11D.3).
+class ContentReportRepository {
+  ContentReportRepository(this._dio);
+  final Dio _dio;
+
+  Future<({String reportId, String caseId})> submitReviewReport({
+    required String reviewId,
+    required String reason,
+    String? details,
+  }) async {
+    final response = await _dio.post(
+      '/reports',
+      data: {
+        'targetType': 'REVIEW',
+        'targetId': reviewId,
+        'reason': reason,
+        if (details != null && details.isNotEmpty) 'details': details,
+      },
+    );
+    final data = response.data as Map<String, dynamic>;
+    return (
+      reportId: data['reportId'] as String,
+      caseId: data['caseId'] as String,
+    );
+  }
+}
+
 class NotificationsRepository {
   NotificationsRepository(this._dio);
   final Dio _dio;

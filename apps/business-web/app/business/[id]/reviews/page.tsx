@@ -32,6 +32,10 @@ export default function BusinessReviewsPage() {
   );
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [reportOpenId, setReportOpenId] = useState<string | null>(null);
+  const [reportReason, setReportReason] = useState('INAPPROPRIATE_CONTENT');
+  const [reportDetails, setReportDetails] = useState('');
+  const [reportBusy, setReportBusy] = useState(false);
 
   async function load(t: string) {
     const items = await ownerApi.listReviews(t, businessId);
@@ -45,6 +49,24 @@ export default function BusinessReviewsPage() {
     if (!token) return;
     load(token).catch((err) => setError(parseApiError(locale, err)));
   }, [token, businessId, locale, setError]);
+
+  async function submitReport(reviewId: string) {
+    if (!token) return;
+    setReportBusy(true);
+    setError(null);
+    try {
+      await ownerApi.reportReview(token, reviewId, {
+        reason: reportReason,
+        details: reportDetails.trim() || undefined,
+      });
+      setReportOpenId(null);
+      setReportDetails('');
+    } catch (err) {
+      setError(parseApiError(locale, err));
+    } finally {
+      setReportBusy(false);
+    }
+  }
 
   async function submitReply(reviewId: string) {
     if (!token) return;
@@ -136,6 +158,66 @@ export default function BusinessReviewsPage() {
                     {review.ownerReply ? ui.__5b8b2a : ui.text_e5681e}
                   </button>
                 </form>
+                <div style={{ marginTop: 12 }}>
+                  {reportOpenId === review.id ? (
+                    <form
+                      className="form-grid"
+                      style={{ maxWidth: 520 }}
+                      onSubmit={(e: FormEvent) => {
+                        e.preventDefault();
+                        void submitReport(review.id);
+                      }}
+                    >
+                      <label>
+                        Причина
+                        <select
+                          value={reportReason}
+                          onChange={(e) => setReportReason(e.target.value)}
+                        >
+                          <option value="SPAM">Спам</option>
+                          <option value="INAPPROPRIATE_CONTENT">Неподходящий контент</option>
+                          <option value="FALSE_INFORMATION">Ложная информация</option>
+                          <option value="HARASSMENT">Оскорбления</option>
+                          <option value="OTHER">Другое</option>
+                        </select>
+                      </label>
+                      <textarea
+                        rows={2}
+                        placeholder="Комментарий (необязательно)"
+                        value={reportDetails}
+                        onChange={(e) => setReportDetails(e.target.value)}
+                      />
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        <button
+                          type="submit"
+                          className="btn btn-sm"
+                          disabled={reportBusy}
+                        >
+                          {reportBusy ? 'Отправка…' : 'Отправить жалобу'}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => setReportOpenId(null)}
+                        >
+                          Отмена
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => {
+                        setReportOpenId(review.id);
+                        setReportReason('INAPPROPRIATE_CONTENT');
+                        setReportDetails('');
+                      }}
+                    >
+                      Пожаловаться на отзыв
+                    </button>
+                  )}
+                </div>
               </div>
             </article>
           ))

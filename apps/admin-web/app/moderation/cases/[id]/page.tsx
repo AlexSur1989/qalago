@@ -7,6 +7,10 @@ import { SafeReportText } from '@/components/safe-report-text';
 import { useModerationContext } from '@/components/moderation/moderation-layout-client';
 import { moderationApi, type ModerationCaseDetail } from '@/lib/moderation-api';
 import {
+  reviewPublicVisibilityLabel,
+  reviewTargetStateLabel,
+} from '@/lib/moderation-review-utils';
+import {
   contentReportReasonLabel,
   mapModerationError,
   moderationCaseStatusClass,
@@ -15,10 +19,12 @@ import {
   moderationTargetTypeLabel,
 } from '@/lib/moderation-utils';
 import { formatDateTime } from '@/lib/monetization-utils';
+import { StaffPermission, staffRoleHasPermission } from '@qalago/shared-types';
 
 export default function ModerationCaseDetailPage() {
   const params = useParams<{ id: string }>();
-  const { token } = useModerationContext();
+  const { token, user } = useModerationContext();
+  const canAct = staffRoleHasPermission(user.role, StaffPermission.MODERATION_ACT);
 
   const [item, setItem] = useState<ModerationCaseDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -27,6 +33,9 @@ export default function ModerationCaseDetailPage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [actionNote, setActionNote] = useState('');
+  const [actionBusy, setActionBusy] = useState<'REVIEW_HIDE' | 'REVIEW_RESTORE' | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -44,6 +53,33 @@ export default function ModerationCaseDetailPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  async function handleReviewAction(actionType: 'REVIEW_HIDE' | 'REVIEW_RESTORE') {
+    if (!item || !canAct) return;
+    const note = actionNote.trim();
+    if (note.length < 3) {
+      setActionError('Укажите заметку модератора (минимум 3 символа).');
+      return;
+    }
+    const label = actionType === 'REVIEW_HIDE' ? 'скрыть отзыв' : 'вернуть отзыв';
+    if (!window.confirm(`Подтвердите действие: ${label}?`)) return;
+
+    setActionBusy(actionType);
+    setActionError(null);
+    try {
+      await moderationApi.recordAction(token, item.id, {
+        actionType,
+        internalNote: note,
+      });
+      setToast(actionType === 'REVIEW_HIDE' ? 'Отзыв скрыт.' : 'Модерационное скрытие снято.');
+      setActionNote('');
+      await load();
+    } catch (err: unknown) {
+      setActionError(mapModerationError(String(err)));
+    } finally {
+      setActionBusy(null);
+    }
+  }
 
   async function handleSaveStatus() {
     if (!item || statusDraft === item.status) return;
@@ -142,6 +178,104 @@ export default function ModerationCaseDetailPage() {
         </div>
         {saveError && <p className="error-text">{saveError}</p>}
       </div>
+
+      {item.targetType === 'REVIEW' && (
+        <div className="card" style={{ marginBottom: '1rem' }}>
+          <h3>Отзыв</h3>
+          {item.reviewTarget?.contentMayHaveChangedSinceReport && (
+            <p className="muted" style={{ fontSize: '0.85rem' }}>
+              Текст отзыва мог измениться после жалобы — показано текущее состояние.
+            </p>
+          )}
+          {!item.reviewTarget?.available ? (
+            <p className="muted">
+              {reviewTargetStateLabel(item.reviewTarget?.state ?? 'MISSING')}
+            </p>
+          ) : (
+            <>
+              <div className="moderation-meta" style={{ marginTop: 8 }}>
+                <strong>{item.reviewTarget.business?.title ?? '—'}</strong>
+                {item.reviewTarget.business?.city?.nameRu
+                  ? ` · ${item.reviewTarget.business.city.nameRu}`
+                  : ''}
+              </div>
+              <div className="moderation-meta">
+                Автор отзыва:{' '}
+                {item.reviewTarget.reviewer?.name ??
+                  item.reviewTarget.reviewer?.phone ??
+                  item.reviewTarget.reviewer?.id?.slice(0, 8) ??
+                  '—'}
+                {' · '}
+                {item.reviewTarget.rating ?? '—'}★
+              </div>
+              <div className="moderation-meta">
+                {reviewTargetStateLabel(item.reviewTarget.state)} ·{' '}
+                {reviewPublicVisibilityLabel(item.reviewTarget.publiclyVisible)}
+              </div>
+              {item.reviewTarget.updatedAt && (
+                <div className="moderation-meta">
+                  Обновлён {formatDateTime(item.reviewTarget.updatedAt)}
+                </div>
+              )}
+              <div style={{ marginTop: 8 }}>
+                <SafeReportText text={item.reviewTarget.text} emptyLabel="Без текста" />
+              </div>
+              {item.reviewTarget.ownerReply && (
+                <div style={{ marginTop: 8 }}>
+                  <div className="muted" style={{ fontSize: '0.85rem' }}>
+                    Ответ заведения
+                  </div>
+                  <SafeReportText text={item.reviewTarget.ownerReply} emptyLabel="—" />
+                </div>
+              )}
+            </>
+          )}
+
+          {canAct && item.reviewTarget?.available && (
+            <div style={{ marginTop: '1rem' }}>
+              <label>
+                Заметка модератора{' '}
+                <textarea
+                  rows={3}
+                  value={actionNote}
+                  onChange={(e) => setActionNote(e.target.value)}
+                  style={{ width: '100%', maxWidth: 520 }}
+                  placeholder="Причина решения для аудита"
+                />
+              </label>
+              <div className="toolbar" style={{ marginTop: 8, flexWrap: 'wrap', gap: 8 }}>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-danger"
+                  disabled={!!actionBusy || item.reviewTarget.moderationHidden === true}
+                  onClick={() => handleReviewAction('REVIEW_HIDE')}
+                >
+                  {actionBusy === 'REVIEW_HIDE' ? 'Скрытие…' : 'Скрыть отзыв (REVIEW_HIDE)'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  disabled={
+                    !!actionBusy || item.reviewTarget.moderationHidden !== true
+                  }
+                  onClick={() => handleReviewAction('REVIEW_RESTORE')}
+                >
+                  {actionBusy === 'REVIEW_RESTORE'
+                    ? 'Восстановление…'
+                    : 'Снять скрытие (REVIEW_RESTORE)'}
+                </button>
+              </div>
+              {actionError && <p className="error-text">{actionError}</p>}
+              {item.reviewTarget.state === 'USER_SOFT_DELETED' && (
+                <p className="muted" style={{ fontSize: '0.85rem', marginTop: 8 }}>
+                  REVIEW_RESTORE снимает только модерационное скрытие и не отменяет удаление
+                  автором — отзыв останется вне публичного каталога.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="card" style={{ marginBottom: '1rem' }}>
         <h3>Жалобы ({item.reports?.length ?? 0})</h3>

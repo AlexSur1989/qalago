@@ -37,7 +37,10 @@ export class ContentReportService {
   ) {
     this.rateLimit.assertCanSubmitReport(ip);
     const details = input.details?.trim().slice(0, MAX_REPORT_DETAILS_LENGTH) ?? null;
-    await this.assertTargetExists(input.targetType, input.targetId);
+    const cityIdFromTarget = await this.assertTargetReportable(
+      input.targetType,
+      input.targetId,
+    );
 
     if (reporter) {
       const existing = await this.prisma.contentReport.findFirst({
@@ -56,11 +59,13 @@ export class ContentReportService {
       }
     }
 
-    const cityId = await resolveModerationTargetCityId(
-      this.prisma,
-      input.targetType,
-      input.targetId,
-    );
+    const cityId =
+      cityIdFromTarget ??
+      (await resolveModerationTargetCityId(
+        this.prisma,
+        input.targetType,
+        input.targetId,
+      ));
 
     return this.prisma.$transaction(async (tx) => {
       const report = await tx.contentReport.create({
@@ -98,16 +103,33 @@ export class ContentReportService {
     });
   }
 
-  private async assertTargetExists(
+  /** Validates target exists (and review lifecycle for consumer reports). Returns cityId when resolved in same query. */
+  private async assertTargetReportable(
     targetType: ContentReportTargetType,
     targetId: string,
-  ): Promise<void> {
+  ): Promise<string | null> {
     const found = await (async () => {
       switch (targetType) {
         case ContentReportTargetType.BUSINESS:
           return this.prisma.business.findUnique({ where: { id: targetId }, select: { id: true } });
-        case ContentReportTargetType.REVIEW:
-          return this.prisma.review.findUnique({ where: { id: targetId }, select: { id: true } });
+        case ContentReportTargetType.REVIEW: {
+          const row = await this.prisma.review.findUnique({
+            where: { id: targetId },
+            select: {
+              id: true,
+              deletedAt: true,
+              business: { select: { cityId: true } },
+            },
+          });
+          if (!row) return null;
+          if (row.deletedAt) {
+            throw new BadRequestException({
+              message: 'Target not reportable',
+              code: SafetyErrorCode.CONTENT_NOT_REPORTABLE,
+            });
+          }
+          return { id: row.id, cityId: row.business.cityId };
+        }
         case ContentReportTargetType.PROMOTION:
           return this.prisma.promotion.findUnique({ where: { id: targetId }, select: { id: true } });
         case ContentReportTargetType.MEDIA:
@@ -124,6 +146,15 @@ export class ContentReportService {
         code: SafetyErrorCode.CONTENT_NOT_REPORTABLE,
       });
     }
+    if (
+      targetType === ContentReportTargetType.REVIEW &&
+      found &&
+      typeof found === 'object' &&
+      'cityId' in found
+    ) {
+      return (found as { cityId: string }).cityId;
+    }
+    return null;
   }
 
   /** Admin-safe report DTO — no reporter PII. */

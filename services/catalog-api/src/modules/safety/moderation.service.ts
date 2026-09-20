@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -25,7 +26,15 @@ import { AuditLogService } from '../audit-log/audit-log.service';
 import { AuthSessionService } from '../auth/auth-session.service';
 import { SafetyErrorCode } from './safety-errors';
 import { SafetyRateLimitService } from './safety-rate-limit.service';
-import { MAX_APPEAL_REASON_LENGTH, MAX_MODERATOR_NOTE_LENGTH } from './safety.constants';
+import {
+  isReviewTargetCase,
+  resolveModerationReviewTarget,
+} from './moderation-case-detail.util';
+import {
+  MAX_APPEAL_REASON_LENGTH,
+  MAX_MODERATOR_NOTE_LENGTH,
+  MIN_MODERATOR_NOTE_LENGTH,
+} from './safety.constants';
 
 @Injectable()
 export class ModerationService {
@@ -37,11 +46,103 @@ export class ModerationService {
     private readonly rateLimit: SafetyRateLimitService,
   ) {}
 
-  async assertCanAccessCase(user: AuthUser, caseId: string) {
+  async assertCanAccessCase(
+    user: AuthUser,
+    caseId: string,
+    permission: StaffPermission = StaffPermission.MODERATION_ACT,
+  ) {
     const row = await this.prisma.moderationCase.findUnique({ where: { id: caseId } });
     if (!row) throw new NotFoundException('Case not found');
-    await this.assertCityScope(user, row.cityId);
+    await this.assertCityScope(user, row.cityId, permission);
     return row;
+  }
+
+  async getCaseDetail(user: AuthUser, caseId: string) {
+    const moderationCase = await this.assertCanAccessCase(
+      user,
+      caseId,
+      StaffPermission.MODERATION_VIEW,
+    );
+
+    const [reportLinks, actions, city, reviewRow] = await Promise.all([
+      this.prisma.moderationCaseReport.findMany({
+        where: { caseId },
+        include: {
+          report: {
+            include: {
+              reporter: { select: { id: true, name: true, phone: true } },
+            },
+          },
+        },
+        orderBy: { report: { createdAt: 'asc' } },
+      }),
+      this.prisma.moderationAction.findMany({
+        where: { caseId },
+        orderBy: { createdAt: 'asc' },
+        include: {
+          actorAdmin: { select: { id: true, name: true, role: true } },
+        },
+      }),
+      moderationCase.cityId
+        ? this.prisma.city.findUnique({
+            where: { id: moderationCase.cityId },
+            select: { id: true, slug: true, nameRu: true },
+          })
+        : Promise.resolve(null),
+      isReviewTargetCase(moderationCase.targetType)
+        ? this.prisma.review.findUnique({
+            where: { id: moderationCase.targetId },
+            select: {
+              id: true,
+              rating: true,
+              text: true,
+              ownerReply: true,
+              moderationHidden: true,
+              deletedAt: true,
+              createdAt: true,
+              updatedAt: true,
+              user: { select: { id: true, name: true, phone: true } },
+              business: {
+                select: {
+                  id: true,
+                  title: true,
+                  city: { select: { id: true, slug: true, nameRu: true } },
+                },
+              },
+            },
+          })
+        : Promise.resolve(null),
+    ]);
+
+    const reports = reportLinks.map((link) => ({
+      id: link.report.id,
+      targetType: link.report.targetType,
+      targetId: link.report.targetId,
+      reason: link.report.reason,
+      details: link.report.details,
+      status: link.report.status,
+      createdAt: link.report.createdAt,
+      updatedAt: link.report.updatedAt,
+      reporter: link.report.reporter
+        ? {
+            id: link.report.reporter.id,
+            name: link.report.reporter.name,
+            phone: link.report.reporter.phone,
+          }
+        : null,
+    }));
+
+    const reviewTarget = isReviewTargetCase(moderationCase.targetType)
+      ? resolveModerationReviewTarget(reviewRow)
+      : undefined;
+
+    return {
+      ...moderationCase,
+      city,
+      reports,
+      actions,
+      reviewTarget,
+    };
   }
 
   async applyAction(
@@ -55,6 +156,17 @@ export class ModerationService {
   ) {
     const moderationCase = await this.assertCanAccessCase(actor, caseId);
     const note = input.internalNote?.trim().slice(0, MAX_MODERATOR_NOTE_LENGTH) ?? null;
+
+    if (
+      (input.actionType === ModerationActionType.REVIEW_HIDE ||
+        input.actionType === ModerationActionType.REVIEW_RESTORE) &&
+      (!note || note.length < MIN_MODERATOR_NOTE_LENGTH)
+    ) {
+      throw new BadRequestException({
+        message: 'Moderation note required',
+        code: SafetyErrorCode.MODERATION_NOTE_REQUIRED,
+      });
+    }
 
     let effectiveSnapshot = moderationCase.targetSnapshot;
 
@@ -155,18 +267,30 @@ export class ModerationService {
         break;
       case ModerationActionType.REVIEW_HIDE:
         if (targetType === ContentReportTargetType.REVIEW) {
-          await tx.review.update({
+          const review = await tx.review.findUnique({
             where: { id: targetId },
-            data: { moderationHidden: true },
+            select: { id: true },
           });
+          if (review) {
+            await tx.review.update({
+              where: { id: targetId },
+              data: { moderationHidden: true },
+            });
+          }
         }
         break;
       case ModerationActionType.REVIEW_RESTORE:
         if (targetType === ContentReportTargetType.REVIEW) {
-          await tx.review.update({
+          const review = await tx.review.findUnique({
             where: { id: targetId },
-            data: { moderationHidden: false },
+            select: { id: true, deletedAt: true },
           });
+          if (review) {
+            await tx.review.update({
+              where: { id: targetId },
+              data: { moderationHidden: false },
+            });
+          }
         }
         break;
       case ModerationActionType.PROMOTION_HIDE:
@@ -318,11 +442,15 @@ export class ModerationService {
     return where;
   }
 
-  private async assertCityScope(user: AuthUser, cityId: string | null) {
+  private async assertCityScope(
+    user: AuthUser,
+    cityId: string | null,
+    permission: StaffPermission,
+  ) {
     const canAccess =
       isGlobalAdmin(user) ||
       user.role === UserRole.CITY_ADMIN ||
-      staffRoleHasPermission(user.role, StaffPermission.MODERATION_ACT);
+      staffRoleHasPermission(user.role, permission);
     if (!canAccess) {
       throw new ForbiddenException('Insufficient role');
     }

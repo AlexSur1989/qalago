@@ -45,10 +45,32 @@ export type ModerationActionRow = {
   actorAdmin?: { id: string; name: string | null; role: string } | null;
 };
 
+export type ModerationReviewTarget = {
+  available: boolean;
+  state: 'MISSING' | 'ACTIVE' | 'MODERATION_HIDDEN' | 'USER_SOFT_DELETED';
+  id?: string;
+  rating?: number;
+  text?: string | null;
+  ownerReply?: string | null;
+  moderationHidden?: boolean;
+  deletedAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  publiclyVisible?: boolean;
+  contentMayHaveChangedSinceReport?: boolean;
+  business?: {
+    id: string;
+    title: string;
+    city?: { id: string; slug: string; nameRu: string } | null;
+  };
+  reviewer?: { id: string; name: string | null; phone?: string | null };
+};
+
 export type ModerationCaseDetail = ModerationCaseRow & {
   targetSnapshot?: Record<string, unknown> | null;
   reports: ContentReportRow[];
   actions: ModerationActionRow[];
+  reviewTarget?: ModerationReviewTarget;
 };
 
 function listQuery(params: Record<string, string | number | undefined>): string {
