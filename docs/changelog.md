@@ -5,6 +5,11 @@
 
 ---
 
+## 2026-09-21 — Stage 6.11D.5 physical QA hotfix 1 (duplicate report UX)
+
+- **Fixed:** `ProductionExceptionFilter` now preserves `code` on HTTP exception responses so mobile receives `REPORT_ALREADY_SUBMITTED` on 409.
+- **Fixed:** Shared `extractApiErrorCode` for Dio error parsing in review report flow.
+
 ## 2026-09-21 — Stage 6.11D.5 reviews & trust release gate
 
 - **Fixed:** `PATCH /reviews/:id/reply` no longer requires global `BUSINESS` role; USER managers with `REVIEWS_REPLY` reach service membership checks (D.5 release blocker).

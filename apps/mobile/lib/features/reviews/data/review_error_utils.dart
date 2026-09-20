@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../core/locale/consumer_api_errors.dart';
+import '../../../core/network/api_error_code.dart';
 
 String mapReviewMutationError(AppLocalizations l10n, Object error) {
   final code = _responseCode(error);
@@ -32,12 +33,4 @@ String mapReviewReportError(AppLocalizations l10n, Object error) {
   }
 }
 
-String? _responseCode(Object error) {
-  if (error is DioException) {
-    final data = error.response?.data;
-    if (data is Map && data['code'] is String) {
-      return data['code'] as String;
-    }
-  }
-  return null;
-}
+String? _responseCode(Object error) => extractApiErrorCode(error);

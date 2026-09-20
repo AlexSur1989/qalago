@@ -35,6 +35,12 @@ export class ProductionExceptionFilter implements ExceptionFilter {
         message = Array.isArray(msg) ? msg.join(', ') : String(msg);
       }
       body = { statusCode: status, message };
+      if (typeof res === 'object' && res != null) {
+        const obj = res as Record<string, unknown>;
+        if (typeof obj.code === 'string') {
+          body.code = obj.code;
+        }
+      }
     } else if (production) {
       this.logger.error('Unhandled exception', exception instanceof Error ? exception.stack : String(exception));
     } else if (exception instanceof Error) {
