@@ -1316,6 +1316,18 @@ abstract class AppLocalizations {
   /// **'О заведении'**
   String get businessAbout;
 
+  /// No description provided for @businessBranchesTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Филиалы'**
+  String get businessBranchesTitle;
+
+  /// No description provided for @businessPrimaryBranchBadge.
+  ///
+  /// In ru, this message translates to:
+  /// **'Основной филиал'**
+  String get businessPrimaryBranchBadge;
+
   /// No description provided for @businessAllPromotions.
   ///
   /// In ru, this message translates to:

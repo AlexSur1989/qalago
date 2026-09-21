@@ -1,6 +1,7 @@
 import { cache } from 'react';
 import {
   fetchBusiness,
+  fetchPublicBusinessLocations,
   fetchCategories,
   fetchCity,
   fetchCities,
@@ -15,3 +16,4 @@ export const cachedFetchSubcategories = cache((categoryId: string) =>
   fetchSubcategories(categoryId),
 );
 export const cachedFetchBusiness = cache(fetchBusiness);
+export const cachedFetchPublicBusinessLocations = cache(fetchPublicBusinessLocations);

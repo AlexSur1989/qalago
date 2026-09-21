@@ -1,3 +1,4 @@
+import { parsePublicBusinessLocationsResponse } from './public-business-location';
 import {
   REVALIDATE_BUSINESS_DETAIL_SECONDS,
   REVALIDATE_BUSINESS_LIST_SECONDS,
@@ -124,4 +125,15 @@ export async function fetchBusiness(id: string): Promise<BusinessSummaryDto | nu
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(await res.text());
   return res.json() as Promise<BusinessSummaryDto>;
+}
+
+export async function fetchPublicBusinessLocations(businessId: string) {
+  const res = await fetch(
+    `${API_BASE}/businesses/${encodeURIComponent(businessId)}/locations/public`,
+    { next: { revalidate: REVALIDATE_BUSINESS_DETAIL_SECONDS } },
+  );
+  if (res.status === 404) return [];
+  if (!res.ok) throw new Error(await res.text());
+  const raw = await res.json();
+  return parsePublicBusinessLocationsResponse(raw);
 }

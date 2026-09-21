@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { BusinessPermission, Prisma } from '@prisma/client';
+import { BusinessPermission, BusinessStatus, Prisma } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { BusinessAccessService } from '../../common/services/business-access.service';
 import { BusinessPrimaryLocationService } from '../../common/services/business-primary-location.service';
@@ -15,7 +15,10 @@ import {
 import { assertBusinessCoordinatesWithinCity } from '../../common/utils/city-geocoding-persistence.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { changedFieldsFromDto } from '../audit-log/audit-log.util';
-import { toBusinessLocationResponse } from './business-location.presenter';
+import {
+  toBusinessLocationResponse,
+  toPublicBusinessLocationResponse,
+} from './business-location.presenter';
 import {
   CreateBusinessLocationDto,
   UpdateBusinessLocationDto,
@@ -28,6 +31,24 @@ export class BusinessLocationService {
     private readonly businessAccess: BusinessAccessService,
     private readonly primaryLocation: BusinessPrimaryLocationService,
   ) {}
+
+  /** Public read for ACTIVE businesses only (Stage 6.12A.6). */
+  async listPublicLocations(businessId: string) {
+    const business = await this.prisma.business.findFirst({
+      where: { id: businessId, status: BusinessStatus.ACTIVE },
+    });
+    if (!business) {
+      throw new NotFoundException('Business not found');
+    }
+    const items = await this.prisma.businessLocation.findMany({
+      where: { businessId },
+      include: {
+        city: { select: { slug: true, nameRu: true, nameKk: true } },
+      },
+      orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
+    });
+    return { items: items.map(toPublicBusinessLocationResponse) };
+  }
 
   async listLocations(user: AuthUser, businessId: string) {
     await this.assertLocationReadAccess(user, businessId);

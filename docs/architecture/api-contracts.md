@@ -435,6 +435,12 @@ OWNER `permissions` in response are the full enum (implicit all). MANAGER receiv
 | POST | `/invitations/accept` | Auth — body `{ token }` — explicit accept; creates MANAGER membership. Rate limited. |
 | GET | `/businesses/:businessId/team/audit` | **OWNER only** — team-related audit rows; paginated (`page`, `limit` max 100) |
 
+### Business locations — public read (Stage 6.12A.6)
+
+| Method | Path | Auth | Notes |
+|--------|------|------|--------|
+| GET | `/businesses/:id/locations/public` | **Public** (`@Public`) | `{ items: PublicBusinessLocation[] }` for **ACTIVE** business only; 404 otherwise. Order: primary first. Fields: id, businessId, cityId, **city** `{ slug, nameRu, nameKk }`, address, lat/lng, workHours, public contacts, **isPrimary**. No timestamps, no `locationSource`, no geography WKT. **Read-only** — mutations remain management routes below. |
+
 ### Business locations (Stage 6.12A.4 — management API)
 
 **Identity:** `businessId` = brand/business; `locationId` = physical branch (`BusinessLocation.id`). Every route validates `BusinessLocation.businessId === :businessId`.

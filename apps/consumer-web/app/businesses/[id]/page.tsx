@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { cachedFetchBusiness } from '@/lib/catalog-cache';
+import { cachedFetchBusiness, cachedFetchPublicBusinessLocations } from '@/lib/catalog-cache';
+import { BusinessBranchesSection } from '@/components/BusinessBranchesSection';
 import { getApiOrigin } from '@/lib/public-config';
 import { UI_LABELS } from '@/lib/locale';
 import { getServerLocale } from '@/lib/locale-server';
@@ -24,6 +25,7 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
   const labels = UI_LABELS[locale];
   const business = await cachedFetchBusiness(id);
   if (!business) notFound();
+  const branches = await cachedFetchPublicBusinessLocations(id);
   const apiOrigin = getApiOrigin();
   const cover = business.coverImageUrl
     ? business.coverImageUrl.startsWith('http')
@@ -51,6 +53,14 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
       </h1>
       <p style={{ color: 'var(--muted)' }}>{business.address}</p>
       {business.shortDesc ? <p>{business.shortDesc}</p> : null}
+      <BusinessBranchesSection
+        locale={locale}
+        branches={branches}
+        labels={{
+          branchesTitle: labels.businessBranchesTitle,
+          primaryBadge: labels.businessPrimaryBranchBadge,
+        }}
+      />
     </main>
   );
 }

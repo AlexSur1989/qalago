@@ -40,6 +40,7 @@ import '../../reviews/utils/review_date_format.dart';
 import '../../../shared/models/models.dart';
 import '../../business_onboarding/presentation/business_claim_cta.dart';
 import '../../recommendations/data/ai_repository.dart';
+import '../widgets/business_branches_section.dart';
 
 class BusinessDetailsScreen extends ConsumerStatefulWidget {
   const BusinessDetailsScreen({
@@ -201,6 +202,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final detailsAsync = ref.watch(businessDetailsProvider(widget.id));
+    final branchesAsync = ref.watch(businessPublicBranchesProvider(widget.id));
     final favoriteAsync = ref.watch(businessFavoriteProvider(widget.id));
     final isAuthenticated = ref.watch(authProvider).isAuthenticated;
     final canManageMenu = isAuthenticated &&
@@ -342,6 +344,18 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                         openStatus: openStatus,
                       ),
                       const SizedBox(height: 20),
+                      branchesAsync.maybeWhen(
+                        data: (branches) => branches.length > 1
+                            ? Padding(
+                                padding: const EdgeInsets.only(bottom: 20),
+                                child: BusinessBranchesSection(
+                                  branches: branches,
+                                  localeCode: localeCode,
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                        orElse: () => const SizedBox.shrink(),
+                      ),
                       _PrimaryActionsRow(
                         phone: phone,
                         whatsapp: whatsapp,

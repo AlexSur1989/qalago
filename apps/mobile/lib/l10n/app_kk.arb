@@ -224,6 +224,8 @@
   "businessLoginReviewMessage": "Пікір қалдыру үшін телефон нөмірі арқылы кіріңіз.",
   "businessReviewSent": "Пікір жіберілді",
   "businessAbout": "Мекеме туралы",
+  "businessBranchesTitle": "Филиалдар",
+  "businessPrimaryBranchBadge": "Негізгі филиал",
   "businessAllPromotions": "Барлық акциялар ({count})",
   "businessProductsServices": "Тауарлар мен қызметтер",
   "businessViewAllCount": "Барлығын көру ({count})",

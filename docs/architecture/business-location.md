@@ -53,7 +53,14 @@ Relationship: **Business 1 → N BusinessLocation**.
 - **Set primary:** `window.confirm` with city/address; `POST …/set-primary`; refreshes location list and **`listMyBusinesses`** so shell/profile primary fields stay current after cross-city switch.
 - **Permissions UX:** hide mutating actions without `BUSINESS_PROFILE_EDIT`; hours fields require `BUSINESS_HOURS_EDIT`; backend 403 unchanged. **No branch-level RBAC.**
 - **Admin Web (minimal):** read-only **`BusinessLocationsReadonly`** on approved business-application detail (staff token → same list endpoint). **No admin edit form** in A.5 — full management remains Business Web.
-- **Unchanged:** consumer-web public discovery, map/PostGIS cutover, Flutter, ads, reviews/favorites/plans scope.
+- **Unchanged:** consumer-web public discovery, map/PostGIS cutover, ads, reviews/favorites/plans scope.
+
+## Stage 6.12A.6 (Flutter & Consumer Web client consumption)
+
+- **Public read contract:** `GET /businesses/:id/locations/public` (guest-safe, ACTIVE business only). Management `GET/POST/PATCH/set-primary` unchanged and **not** used by guest clients.
+- **Flutter:** `BusinessBranchLocation` model + public fetch; consumer detail shows **Филиалы** when **>1** branch; primary badge via **`isPrimary`**; top-level Business fields unchanged; map still primary point (A.7).
+- **Consumer Web:** typed client + branch block on temporary **`/businesses/[id]`** (F.3 **noindex** preserved); no F.4 slug/SEO/LocalBusiness.
+- **Frozen:** discovery/search/category filters; map PostGIS/GeoJSON; branch reviews/favorites/plans.
 
 ## Compatibility strategy (forward)
 

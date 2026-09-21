@@ -6,6 +6,23 @@
 
 ---
 
+## 2026-09-21 — Stage 6.12A.6 BusinessLocation Flutter & Consumer client integration
+
+- **Status:** _(set at commit)_.
+- **Checkpoint:** _(implementation SHA)_.
+- **Summary:**
+  - **Public read:** `GET /businesses/:id/locations/public` (`@Public`, ACTIVE business only); `PublicBusinessLocationResponseDto` (no timestamps/provenance); management mutations stay authenticated.
+  - **Flutter:** `BusinessBranchLocation`, public fetch, consumer detail **Филиалы** when multiple branches; legacy Business top-level fields unchanged; map unchanged.
+  - **Consumer Web:** typed client + branch section on temporary `/businesses/[id]`; F.3 noindex preserved; no F.4 SEO URLs.
+  - **Docs / AI context:** A.6 strategy; F.3, shared APK/Web data, full advertising future architecture in `docs/ai-project-context.md`.
+  - **Unchanged:** discovery/search/category, map/PostGIS, Business Web owner UX, Admin read-only panel, ads implementation.
+- **Tests:** catalog-api (+ A.6 public locations spec); Flutter unit tests; Consumer Web vitest; full catalog regression if backend touched.
+- **Database:** test fixtures cleaned in specs; production baseline unchanged unless noted in report.
+- **Deferred:** A.7 map cutover; F.4 public business pages; location DELETE.
+- **Next:** 6.12A.7 map/PostGIS cutover.
+
+---
+
 ## 2026-09-21 — Stage 6.12A.5 BusinessLocation owner & admin management UX
 
 - **Status:** 6.12A.5 PASS — READY FOR A.6.

@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../../../core/rbac/business_access.dart';
 import '../../../features/ads/data/ad_models.dart';
 import '../../../shared/models/models.dart';
+import '../../../shared/models/business_branch_location.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/utils/audience_distance_bucket.dart';
 import '../../notifications/data/notification_model.dart';
@@ -219,6 +220,14 @@ class CatalogRepository {
   Future<Map<String, dynamic>> fetchBusinessDetails(String id) async {
     final response = await _dio.get('/businesses/$id');
     return response.data as Map<String, dynamic>;
+  }
+
+  Future<List<BusinessBranchLocation>> fetchPublicBusinessLocations(String businessId) async {
+    final response = await _dio.get('/businesses/$businessId/locations/public');
+    final data = response.data as Map<String, dynamic>;
+    final items = (data['items'] as List<dynamic>? ?? [])
+        .cast<Map<String, dynamic>>();
+    return items.map(BusinessBranchLocation.fromJson).toList();
   }
 
   Future<Map<String, dynamic>> fetchBusinessCatalog(

@@ -300,6 +300,8 @@
   "businessLoginReviewMessage": "Чтобы оставить отзыв, войдите по номеру телефона.",
   "businessReviewSent": "Отзыв отправлен",
   "businessAbout": "О заведении",
+  "businessBranchesTitle": "Филиалы",
+  "businessPrimaryBranchBadge": "Основной филиал",
   "businessAllPromotions": "Все акции ({count})",
   "@businessAllPromotions": {
     "placeholders": {

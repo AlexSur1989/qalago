@@ -137,6 +137,12 @@ export class BusinessesController {
   }
 
   @Public()
+  @Get(':id/locations/public')
+  listPublicLocations(@Param('id') id: string) {
+    return this.locationService.listPublicLocations(id);
+  }
+
+  @Public()
   @Get(':id/catalog')
   findCatalog(@Param('id') id: string, @Query() query: ListBusinessCatalogQueryDto) {
     return this.publicContent.findPublicCatalog(id, query);

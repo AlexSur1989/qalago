@@ -21,7 +21,7 @@ QalaGo — городской маркетплейс/гид. MVP: Уральск
 
 **FINISH:** обновить changelog → зафиксировать deferred → commit (код + changelog) → сообщить финальный HEAD.
 
-**Current-state snapshot:** после завершённых stage или существенных архитектурных решений обновлять **`docs/ai-project-context.md`** (краткий handoff для AI); **`docs/changelog.md`** остаётся исторической лентой.
+**Current-state snapshot:** после завершённых stage или существенных архитектурных решений обновлять **`docs/ai-project-context.md`** (краткий handoff для AI); **`docs/changelog.md`** остаётся исторической лентой. Тривиальные правки не требуют правок context; второй context-документ не создавать. Рабочий цикл stage: задача → реализация → отчёт → audit gate → следующий stage.
 
 ## Границы ответственности
 

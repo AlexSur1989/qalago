@@ -668,6 +668,12 @@ class AppLocalizationsKk extends AppLocalizations {
   String get businessAbout => 'Мекеме туралы';
 
   @override
+  String get businessBranchesTitle => 'Филиалдар';
+
+  @override
+  String get businessPrimaryBranchBadge => 'Негізгі филиал';
+
+  @override
   String businessAllPromotions(int count) {
     return 'Барлық акциялар ($count)';
   }

@@ -13,6 +13,29 @@ import {
 import { BusinessLocationSource } from '@prisma/client';
 import { BusinessCoordinatePairConstraint } from '../../../common/validators/business-coordinate-pair.validator';
 
+/** Guest/public read (Stage 6.12A.6) — no timestamps or internal provenance. */
+export class PublicBusinessLocationCityDto {
+  slug!: string;
+  nameRu!: string;
+  nameKk!: string | null;
+}
+
+export class PublicBusinessLocationResponseDto {
+  id!: string;
+  businessId!: string;
+  cityId!: string;
+  city!: PublicBusinessLocationCityDto;
+  address!: string;
+  latitude!: number | null;
+  longitude!: number | null;
+  workHours!: Record<string, string> | null;
+  phone!: string | null;
+  whatsapp!: string | null;
+  instagram!: string | null;
+  website!: string | null;
+  isPrimary!: boolean;
+}
+
 export class BusinessLocationResponseDto {
   id!: string;
   businessId!: string;

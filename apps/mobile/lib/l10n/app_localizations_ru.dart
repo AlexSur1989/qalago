@@ -667,6 +667,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get businessAbout => 'О заведении';
 
   @override
+  String get businessBranchesTitle => 'Филиалы';
+
+  @override
+  String get businessPrimaryBranchBadge => 'Основной филиал';
+
+  @override
   String businessAllPromotions(int count) {
     return 'Все акции ($count)';
   }

@@ -8,43 +8,62 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 ## Stack
 
-- **Backend:** NestJS `services/catalog-api`, Prisma + PostgreSQL/PostGIS, REST prefix `/api/v1/`
+- **Backend:** NestJS `services/catalog-api`, Prisma + PostgreSQL/PostGIS, REST **`/api/v1`**, local dev default **http://127.0.0.1:3002/api/v1**
+- **Mobile:** Flutter `apps/mobile`
 - **Web:** Next.js — `apps/business-web`, `apps/admin-web`, `apps/consumer-web`
-- **Mobile:** Flutter `apps/mobile` (deferred per stage)
-- **Monorepo:** npm workspaces; local API default **http://127.0.0.1:3002/api/v1**
+- **Monorepo:** npm workspaces
 
-## Stage checkpoints (BusinessLocation track)
+## Shared catalog / data principle
+
+**PostgreSQL + Catalog API** are the canonical source for catalog, business, category, and location data. **Flutter (Android/iOS) and Consumer Web consume the same backend** — do not maintain separate hardcoded production catalogs per channel. Taxonomy and business/location changes propagate via API consumption.
+
+## Consumer Web stage
+
+- **6.11F.3 PASS** — public SEO infrastructure (sitemap, robots, temporary business detail **noindex**, etc.).
+- **F.4 deferred** — final public business/branch URL architecture until BusinessLocation sequence permits (after map cutover stages as planned).
+
+## BusinessLocation track
 
 | Stage | Status | Notes |
 |-------|--------|--------|
-| 6.12A.4 | PASS | Management API; checkpoint `d5958ba5…` |
-| 6.12A.5 | PASS | checkpoint `d8904a7…` — Owner Business Web + Admin read-only |
-| **Next after A.5** | **6.12A.6** | Flutter location consumption (not started in A.5) |
+| 6.12A.5 | PASS | Owner Business Web + Admin read-only branches |
+| 6.12A.6 | see changelog | Public read + Flutter/Consumer client awareness |
+| **Next after A.6** | **6.12A.7** | Map/PostGIS cutover (not started in A.6) |
 
 ## Business vs BusinessLocation
 
-- **Business:** brand, membership, reviews, favorites, plans, ads, analytics.
-- **BusinessLocation:** physical branch (city, address, coords, hours, contacts); **1:N** under Business.
-- **Primary:** one `isPrimary=true` per business; legacy **Business** physical columns stay public/discovery authority until map/discovery cutover; A.3+ keeps primary row in sync on writes.
-- **Management API (A.4):** `/businesses/:businessId/locations` CRUD + `set-primary`; **no DELETE** yet.
+- **Business:** brand identity — membership, reviews, favorites, plans, ads, analytics (Business-scoped).
+- **BusinessLocation:** physical branch — city, address, coords, hours, contacts; **Business 1:N BusinessLocation**.
+- **Primary:** exactly one `isPrimary=true` per business; legacy **Business** physical columns mirror **primary** for public/discovery until later cutover.
+- **Cross-city:** secondary branches may live in other cities; discovery still uses **primary** `Business.cityId` until a later stage.
+- **Public read (A.6):** `GET /businesses/:id/locations/public` (ACTIVE only, guest-safe).
+- **Management (A.4):** authenticated CRUD + `set-primary`; **no DELETE** yet.
 
-## Frozen / deferred (do not scope-creep)
+## Frozen / deferred
 
-- **Map / PostGIS public queries:** still **`Business.location`** (A.7 cutover).
-- **Public discovery / consumer-web branches:** not A.5 (F.4 blocked until sequence allows).
-- **Flutter:** A.6+.
-- **Branch-level membership / DELETE archive:** deferred.
+- **Map / PostGIS / GeoJSON / MapLibre:** still **`Business.location`** and primary marker semantics (**A.7**).
+- **Public discovery:** city/category/search unchanged (primary business city).
+- **F.4 / F.5:** final business URLs, branch slugs, hreflang, branch JSON-LD — not A.6.
+- **Branch-level membership, location favorites, branch reviews:** deferred.
 
-## Advertising (future architecture only)
+## Advertising (future architecture — not implemented in location stages)
 
-One shared advertising backend for Android, iOS, and public Consumer Web; channel/surface targeting (e.g. APP vs WEB) and optional branch-level campaign targets later — **not implemented** in location UX stages unless explicitly staged.
+QalaGo must ultimately use **one shared advertising backend** across **Android, iOS, and public Consumer Web**.
+
+Existing products include: **HOME_VIP_BANNER**, **CATEGORY_TOP**, **CATEGORY_BOOST**, **HOME_FEATURED**, **HOME_PROMOTIONS**.
+
+Future targeting should support channel/surface concepts such as **ALL**, **APP**, **WEB**, and analytics breakdown such as **APP_ANDROID**, **APP_IOS**, **WEB_MOBILE**, **WEB_DESKTOP**, while keeping aggregate campaign analytics. **BusinessLocation** may later be a campaign target/destination for branch-specific ads.
 
 ## Workflow discipline
 
-1. Task → plan → contract (if API changes) → code → tests → docs → **changelog in same commit as code**.
-2. **Git safety:** no `reset --hard`, `clean`, `stash`, mass restore; do not stage protected local dirt (mobile generated Firebase/plugin files, local DB dumps, `.next` caches).
-3. **Prisma on Windows:** stop `catalog-api` dev processes before `prisma generate` if EPERM on `query_engine-windows.dll.node`.
+1. **Task → implementation → final report → audit → next stage** (do not skip audit gate).
+2. Plan → contract (if API changes) → code → tests → docs → **changelog in same commit as code** when possible.
+3. **Git safety:** no `reset --hard`, `clean`, `stash`, mass restore; do not stage protected local dirt (mobile generated registrants, local DB dumps, `.next` caches).
+4. **Prisma on Windows:** stop `catalog-api` dev processes before `prisma generate` if EPERM on `query_engine-windows.dll.node`.
 
 ## Context maintenance
 
-When a **major stage completes** or **architecture materially changes**, update **this file** (current snapshot) and **`docs/architecture/*`** as needed. Do not duplicate full changelog entries here.
+- **`docs/changelog.md`** = historical timeline.
+- **`docs/ai-project-context.md`** = **current-state** snapshot only.
+- Update context when a **major stage** or **material architecture decision** completes; **trivial changes** do not need noisy edits.
+- **Do not create duplicate** AI/project-context documents.

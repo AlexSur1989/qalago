@@ -49,6 +49,8 @@ export type UiLabels = {
   errorMessage: string;
   retry: string;
   businessCoverAlt: string;
+  businessBranchesTitle: string;
+  businessPrimaryBranchBadge: string;
   businessCardCoverAlt: string;
   mainNavAria: string;
   footerLegalAria: string;
@@ -98,6 +100,8 @@ export const UI_LABELS: Record<AppLocale, UiLabels> = {
     errorMessage: 'Проверьте подключение к интернету и попробуйте снова.',
     retry: 'Повторить',
     businessCoverAlt: 'Обложка заведения',
+    businessBranchesTitle: 'Филиалы',
+    businessPrimaryBranchBadge: 'Основной филиал',
     businessCardCoverAlt: 'Фото заведения',
     mainNavAria: 'Основная навигация',
     footerLegalAria: 'Правовая информация',
@@ -145,6 +149,8 @@ export const UI_LABELS: Record<AppLocale, UiLabels> = {
     errorMessage: 'Интернет байланысын тексеріп, қайта көріңіз.',
     retry: 'Қайталау',
     businessCoverAlt: 'Мекеме мұқабасы',
+    businessBranchesTitle: 'Филиалдар',
+    businessPrimaryBranchBadge: 'Негізгі филиал',
     businessCardCoverAlt: 'Мекеме фотосы',
     mainNavAria: 'Негізгі навигация',
     footerLegalAria: 'Құқықтық ақпарат',

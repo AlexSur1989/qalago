@@ -8,6 +8,7 @@ import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/storage/auth_storage.dart';
 import '../../../shared/models/models.dart';
+import '../../../shared/models/business_branch_location.dart';
 import '../../ads/providers/ad_serve_provider.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../../notifications/data/notification_model.dart';
@@ -561,6 +562,11 @@ final recommendedBusinessesProvider = FutureProvider<List<RecommendedBusiness>>(
 final businessDetailsProvider =
     FutureProvider.family<Map<String, dynamic>, String>((ref, id) async {
   return ref.watch(catalogRepositoryProvider).fetchBusinessDetails(id);
+});
+
+final businessPublicBranchesProvider =
+    FutureProvider.family<List<BusinessBranchLocation>, String>((ref, id) async {
+  return ref.watch(catalogRepositoryProvider).fetchPublicBusinessLocations(id);
 });
 
 final serviceItemsProvider = FutureProvider.family<List<Map<String, dynamic>>, String>(
