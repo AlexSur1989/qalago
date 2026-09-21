@@ -166,6 +166,7 @@ describe('Stage 6.11D.3 review moderation', () => {
         auditLog as never,
         { revokeAllUserSessions: jest.fn() } as never,
         {} as never,
+        { create: jest.fn() } as never,
       );
     });
 

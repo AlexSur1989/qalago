@@ -121,12 +121,12 @@ describe('PlanLimitsService', () => {
         featuredSlot: null,
         _count: { images: 0, serviceItems: 0, promotions: 0 },
       });
-    prisma.business.update = jest.fn().mockResolvedValue({});
+    prisma.business.updateMany = jest.fn().mockResolvedValue({ count: 1 });
     prisma.promotion.findMany = jest.fn().mockResolvedValue([]);
 
     await service.syncExpiredPlan('b1');
 
-    expect(prisma.business.update).toHaveBeenCalledWith(
+    expect(prisma.business.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ planTier: BusinessPlanTier.FREE }),
       }),
@@ -135,6 +135,20 @@ describe('PlanLimitsService', () => {
       expect.objectContaining({ type: 'PLAN_EXPIRED', userId: 'owner-1' }),
     );
     expect(prisma.promotion.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('does not emit duplicate PLAN_EXPIRED when transition already applied', async () => {
+    prisma.business.findUnique = jest.fn().mockResolvedValue({
+      planTier: BusinessPlanTier.VIP,
+      planExpiresAt: new Date('2020-01-01'),
+      title: 'Cafe',
+      ownerId: 'owner-1',
+    });
+    prisma.business.updateMany = jest.fn().mockResolvedValue({ count: 0 });
+
+    await service.syncExpiredPlan('b1');
+
+    expect(notifications.create).not.toHaveBeenCalled();
   });
 
   it('rejects photo at limit', async () => {

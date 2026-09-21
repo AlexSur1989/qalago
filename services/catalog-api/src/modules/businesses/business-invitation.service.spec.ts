@@ -30,6 +30,7 @@ describe('BusinessInvitationService (Stage 6.2B6)', () => {
   let auditLog: { record: jest.Mock };
   let rateLimit: { assertAllowed: jest.Mock };
   let planLimits: { assertCanAddManager: jest.Mock };
+  let notifications: { create: jest.Mock };
   let service: BusinessInvitationService;
 
   beforeEach(() => {
@@ -47,12 +48,14 @@ describe('BusinessInvitationService (Stage 6.2B6)', () => {
     auditLog = { record: jest.fn().mockResolvedValue({ id: 'audit-1' }) };
     rateLimit = { assertAllowed: jest.fn() };
     planLimits = { assertCanAddManager: jest.fn().mockResolvedValue(undefined) };
+    notifications = { create: jest.fn().mockResolvedValue({ id: 'n1' }) };
     service = new BusinessInvitationService(
       prisma as never,
       auditLog as never,
       rateLimit as never,
       { get: () => 'http://localhost:3003' } as unknown as ConfigService,
       planLimits as never,
+      notifications as never,
     );
   });
 
@@ -74,6 +77,7 @@ describe('BusinessInvitationService (Stage 6.2B6)', () => {
     prisma.businessInvitation.findFirst.mockResolvedValue({
       id: 'inv-1',
       businessId: 'biz-1',
+      invitedByUserId: 'inviter-1',
       permissions: [BusinessPermission.CATALOG_EDIT],
       status: BusinessInvitationStatus.PENDING,
       expiresAt: new Date(Date.now() + 60_000),
@@ -91,6 +95,13 @@ describe('BusinessInvitationService (Stage 6.2B6)', () => {
           role: BusinessMembershipRole.MANAGER,
           status: BusinessMembershipStatus.ACTIVE,
         }),
+      }),
+    );
+    expect(notifications.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'inviter-1',
+        type: 'BUSINESS_INVITATION_ACCEPTED',
+        tx: prisma,
       }),
     );
   });

@@ -1,8 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { AdModerationStatus, AuditAction, AuditResourceType } from '@prisma/client';
+import {
+  AdModerationStatus,
+  AuditAction,
+  AuditResourceType,
+  NotificationTargetType,
+  NotificationType,
+} from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CampaignProvisioningService } from './campaign-provisioning.service';
 import { CreateCreativeDto, UpdateCreativeDto } from './dto/monetization.dto';
 import {
@@ -19,6 +26,7 @@ export class CreativeService {
     private readonly access: MonetizationAccessService,
     private readonly provisioning: CampaignProvisioningService,
     private readonly auditLog: AuditLogService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(user: AuthUser, dto: CreateCreativeDto) {
@@ -220,6 +228,12 @@ export class CreativeService {
       metadata: { creativeId: id },
     });
 
+    await this.notifyCreativeModerationOutcome({
+      businessId: scope.businessId,
+      creativeId: id,
+      approved: true,
+    });
+
     return this.formatCreative(updated);
   }
 
@@ -258,7 +272,54 @@ export class CreativeService {
       metadata: { creativeId: id, hasComment: !!comment },
     });
 
+    await this.notifyCreativeModerationOutcome({
+      businessId: scope.businessId,
+      creativeId: id,
+      approved: false,
+      publicComment: comment?.trim() || undefined,
+    });
+
     return this.formatCreative(updated);
+  }
+
+  private async notifyCreativeModerationOutcome(params: {
+    businessId: string;
+    creativeId: string;
+    approved: boolean;
+    publicComment?: string;
+  }) {
+    const business = await this.prisma.business.findUnique({
+      where: { id: params.businessId },
+      select: { ownerId: true, title: true },
+    });
+    if (!business?.ownerId) return;
+
+    const campaign = await this.prisma.adCampaign.findFirst({
+      where: { creativeId: params.creativeId },
+      select: { id: true },
+    });
+
+    const type = params.approved
+      ? NotificationType.AD_CAMPAIGN_APPROVED
+      : NotificationType.AD_CAMPAIGN_REJECTED;
+
+    await this.notifications.create({
+      userId: business.ownerId,
+      type,
+      title: params.approved ? 'Рекламный креатив одобрен' : 'Рекламный креатив отклонён',
+      body: params.approved
+        ? `Креатив для «${business.title}» прошёл модерацию.`
+        : params.publicComment
+          ? `Креатив для «${business.title}» отклонён: ${params.publicComment}`
+          : `Креатив для «${business.title}» отклонён модерацией.`,
+      targetType: NotificationTargetType.AD_CAMPAIGN,
+      targetId: campaign?.id ?? params.creativeId,
+      payload: {
+        businessId: params.businessId,
+        creativeId: params.creativeId,
+        ...(campaign?.id ? { campaignId: campaign.id } : {}),
+      },
+    });
   }
 
   private formatCreative(creative: {

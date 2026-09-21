@@ -16,6 +16,7 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
   const manager = { id: 'mgr-1', sub: 'mgr-1', role: UserRole.USER, phone: '+2' };
 
   let prisma: {
+    business: { findUnique: jest.Mock };
     businessMembership: {
       findMany: jest.Mock;
       findFirst: jest.Mock;
@@ -30,6 +31,7 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
       update: jest.Mock;
     };
     user: { findUnique: jest.Mock };
+    authIdentity: { findFirst: jest.Mock };
     $transaction: jest.Mock;
   };
   let businessAccess: { assertOwner: jest.Mock; resolveAccess: jest.Mock };
@@ -41,10 +43,14 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
     maskRecipient: jest.Mock;
   };
   let planLimits: { assertCanAddManager: jest.Mock };
+  let notifications: { create: jest.Mock };
   let service: BusinessTeamService;
 
   beforeEach(() => {
     prisma = {
+      business: {
+        findUnique: jest.fn().mockResolvedValue({ title: 'Cafe Qala' }),
+      },
       businessMembership: {
         findMany: jest.fn().mockResolvedValue([]),
         findFirst: jest.fn(),
@@ -59,10 +65,11 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
         update: jest.fn(),
       },
       user: { findUnique: jest.fn() },
+      authIdentity: { findFirst: jest.fn().mockResolvedValue(null) },
       $transaction: jest.fn(async (fn: (tx: typeof prisma) => unknown) => fn(prisma)),
     };
     businessAccess = {
-      assertOwner: jest.fn().mockResolvedValue({ id: businessId, cityId: 'city-1' }),
+      assertOwner: jest.fn().mockResolvedValue({ id: businessId, cityId: 'city-1', title: 'Cafe Qala' }),
       resolveAccess: jest.fn().mockResolvedValue({}),
     };
     membership = { getMembership: jest.fn() };
@@ -78,6 +85,7 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
       maskRecipient: jest.fn().mockReturnValue('m***@example.com'),
     };
     planLimits = { assertCanAddManager: jest.fn().mockResolvedValue(undefined) };
+    notifications = { create: jest.fn().mockResolvedValue({ id: 'n1' }) };
     service = new BusinessTeamService(
       prisma as never,
       businessAccess as unknown as BusinessAccessService,
@@ -85,6 +93,7 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
       auditLog as never,
       invitations as never,
       planLimits as never,
+      notifications as never,
     );
   });
 
@@ -160,6 +169,24 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
     );
     const createArg = prisma.businessInvitation.create.mock.calls[0][0];
     expect(createArg.data).not.toHaveProperty('phone');
+    expect(notifications.create).not.toHaveBeenCalled();
+  });
+
+  it('email invite notifies existing QalaGo user matched by auth identity', async () => {
+    prisma.businessInvitation.create.mockResolvedValue({ id: 'inv-email-1' });
+    prisma.authIdentity.findFirst.mockResolvedValue({ userId: 'existing-u1' });
+
+    await service.inviteManager(owner, businessId, {
+      email: 'manager@example.com',
+      permissions: [BusinessPermission.CATALOG_EDIT],
+    });
+
+    expect(notifications.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'existing-u1',
+        type: 'BUSINESS_INVITATION_RECEIVED',
+      }),
+    );
   });
 
   it('invite unknown phone creates pending invitation', async () => {
@@ -173,6 +200,7 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
 
     expect(result.type).toBe('invitation');
     expect(prisma.businessInvitation.create).toHaveBeenCalled();
+    expect(notifications.create).not.toHaveBeenCalled();
   });
 
   it('ANALYTICS_EXPORT without ANALYTICS_VIEW rejected', async () => {

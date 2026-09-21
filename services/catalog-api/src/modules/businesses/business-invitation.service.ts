@@ -12,6 +12,8 @@ import {
   BusinessMembershipRole,
   BusinessMembershipStatus,
   BusinessStatus,
+  NotificationTargetType,
+  NotificationType,
 } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { SlidingWindowRateLimitService } from '../../common/services/sliding-window-rate-limit.service';
@@ -20,6 +22,7 @@ import { maskInvitationEmail, normalizeInvitationEmail } from '../../common/util
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { maskPhoneForAudit } from '../audit-log/audit-log.util';
 
 export const TEAM_INVITE_TTL_DAYS = 7;
@@ -39,6 +42,7 @@ export class BusinessInvitationService {
     private readonly rateLimit: SlidingWindowRateLimitService,
     private readonly config: ConfigService,
     private readonly planLimits: PlanLimitsService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   buildInviteUrl(rawToken: string): string {
@@ -207,6 +211,23 @@ export class BusinessInvitationService {
         },
         tx,
       });
+
+      if (invitation.invitedByUserId && invitation.invitedByUserId !== user.id) {
+        await this.notifications.create({
+          userId: invitation.invitedByUserId,
+          type: NotificationType.BUSINESS_INVITATION_ACCEPTED,
+          title: 'Приглашение принято',
+          body: `Пользователь принял приглашение в команду «${invitation.business.title}».`,
+          targetType: NotificationTargetType.BUSINESS,
+          targetId: invitation.businessId,
+          payload: {
+            businessId: invitation.businessId,
+            invitationId: invitation.id,
+            acceptedByUserId: user.id,
+          },
+          tx,
+        });
+      }
 
       return {
         businessId: invitation.businessId,

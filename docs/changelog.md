@@ -5,6 +5,12 @@
 
 ---
 
+## 2026-09-21 — Stage 6.11E.2 notification domain producers
+
+- **Added:** Review alerts to membership-aware recipients; moderation `REVIEW_HIDDEN` / `REVIEW_RESTORED`; explicit application/claim/invitation/ad types.
+- **Changed:** Plan expiry notification guarded by conditional tier transition (`updateMany` count).
+- **Docs:** `docs/architecture/notification-producers.md` producer matrix.
+
 ## 2026-09-21 — Stage 6.11E.1 notifications data & API integrity
 
 - **Added:** `NotificationTargetType`, optional `targetType` / `targetId` / `payload` on `Notification`; index `(userId, createdAt DESC)`.

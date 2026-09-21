@@ -268,7 +268,7 @@ export class OwnershipClaimsService {
 
       await this.notifications.create({
         userId: claim.claimantUserId,
-        type: NotificationType.GENERAL,
+        type: NotificationType.OWNERSHIP_CLAIM_REJECTED,
         title: 'Заявка на владение отклонена',
         body: dto.rejectionReason.trim(),
         targetType: NotificationTargetType.OWNERSHIP_CLAIM,
@@ -375,7 +375,7 @@ export class OwnershipClaimsService {
 
       await this.notifications.create({
         userId: locked.claimantUserId,
-        type: NotificationType.GENERAL,
+        type: NotificationType.OWNERSHIP_CLAIM_APPROVED,
         title: 'Заявка на владение одобрена',
         body: `Вам предоставлен доступ владельца к «${businessAfter.title}».`,
         targetType: NotificationTargetType.OWNERSHIP_CLAIM,

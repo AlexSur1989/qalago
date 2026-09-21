@@ -27,6 +27,7 @@ import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { resolveReviewNotificationRecipientUserIds } from '../notifications/notification-recipients.util';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { toMembershipRole } from '../audit-log/audit-log.util';
 import {
@@ -143,16 +144,8 @@ export class ReviewsService {
         },
       });
 
-      if (!restored.moderationHidden && business.ownerId) {
-        await this.notifications.create({
-          userId: business.ownerId,
-          type: NotificationType.NEW_REVIEW,
-          title: 'Новый отзыв',
-          body: `Новый отзыв (${dto.rating}★) на «${business.title}»`,
-          targetType: NotificationTargetType.REVIEW,
-          targetId: restored.id,
-          payload: { businessId: business.id, reviewId: restored.id },
-        });
+      if (!restored.moderationHidden) {
+        await this.notifyNewReviewToBusinessRecipients(business, restored, user.id);
       }
 
       return restored;
@@ -179,17 +172,7 @@ export class ReviewsService {
         metadata: { businessId: business.id, rating: dto.rating },
       });
 
-      if (business.ownerId) {
-        await this.notifications.create({
-          userId: business.ownerId,
-          type: NotificationType.NEW_REVIEW,
-          title: 'Новый отзыв',
-          body: `Новый отзыв (${dto.rating}★) на «${business.title}»`,
-          targetType: NotificationTargetType.REVIEW,
-          targetId: review.id,
-          payload: { businessId: business.id, reviewId: review.id },
-        });
-      }
+      await this.notifyNewReviewToBusinessRecipients(business, review, user.id);
 
       return review;
     } catch (error) {
@@ -306,17 +289,46 @@ export class ReviewsService {
       metadata: { reviewId: id },
     });
 
-    await this.notifications.create({
-      userId: review.userId,
-      type: NotificationType.REVIEW_REPLY,
-      title: 'Ответ на отзыв',
-      body: dto.ownerReply,
-      targetType: NotificationTargetType.REVIEW,
-      targetId: review.id,
-      payload: { businessId: review.business.id, reviewId: review.id },
-    });
+    if (review.userId !== user.id) {
+      await this.notifications.create({
+        userId: review.userId,
+        type: NotificationType.REVIEW_REPLY,
+        title: 'Ответ на отзыв',
+        body: dto.ownerReply,
+        targetType: NotificationTargetType.REVIEW,
+        targetId: review.id,
+        payload: { businessId: review.business.id, reviewId: review.id },
+      });
+    }
 
     return updated;
+  }
+
+  private async notifyNewReviewToBusinessRecipients(
+    business: { id: string; title: string; ownerId: string | null },
+    review: { id: string; rating: number },
+    authorUserId: string,
+  ) {
+    const recipientIds = await resolveReviewNotificationRecipientUserIds(
+      this.prisma,
+      business.id,
+      { excludeUserId: authorUserId, legacyOwnerId: business.ownerId },
+    );
+    if (recipientIds.length === 0) {
+      return;
+    }
+    await this.notifications.createForUsers(recipientIds, {
+      type: NotificationType.NEW_REVIEW,
+      title: 'Новый отзыв',
+      body: `Новый отзыв (${review.rating}★) на «${business.title}»`,
+      targetType: NotificationTargetType.REVIEW,
+      targetId: review.id,
+      payload: {
+        businessId: business.id,
+        reviewId: review.id,
+        rating: review.rating,
+      },
+    });
   }
 
   private async assertCanSubmitConsumerReview(

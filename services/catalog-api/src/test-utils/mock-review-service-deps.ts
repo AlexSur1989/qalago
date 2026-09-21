@@ -17,7 +17,10 @@ export function createMockReviewRateLimit() {
 export function createDefaultReviewServiceDeps() {
   const auditMock = createMockAuditLog();
   return {
-    notifications: { create: jest.fn() },
+    notifications: {
+      create: jest.fn(),
+      createForUsers: jest.fn(),
+    },
     businessAccess: asBusinessAccessService(createMockBusinessAccess()),
     membership: createMockReviewMembership(),
     auditLog: asAuditLogService(auditMock),

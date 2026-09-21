@@ -12,6 +12,8 @@ import {
   ModerationActionType,
   ModerationAppealStatus,
   ModerationCaseStatus,
+  NotificationTargetType,
+  NotificationType,
   UserRole,
 } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
@@ -23,6 +25,7 @@ import {
 } from '../../common/utils/staff-access.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { AuthSessionService } from '../auth/auth-session.service';
 import { SafetyErrorCode } from './safety-errors';
 import { SafetyRateLimitService } from './safety-rate-limit.service';
@@ -44,6 +47,7 @@ export class ModerationService {
     private readonly auditLog: AuditLogService,
     private readonly authSession: AuthSessionService,
     private readonly rateLimit: SafetyRateLimitService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async assertCanAccessCase(
@@ -204,6 +208,13 @@ export class ModerationService {
         }
       }
 
+      const reviewBefore =
+        (input.actionType === ModerationActionType.REVIEW_HIDE ||
+          input.actionType === ModerationActionType.REVIEW_RESTORE) &&
+        moderationCase.targetType === ContentReportTargetType.REVIEW
+          ? await this.loadReviewForModerationNotify(tx, moderationCase.targetId)
+          : null;
+
       await this.applyTargetMutation(
         tx,
         input.actionType,
@@ -211,6 +222,15 @@ export class ModerationService {
         moderationCase.targetId,
         effectiveSnapshot,
       );
+
+      if (reviewBefore) {
+        await this.notifyReviewModerationOutcome(
+          tx,
+          reviewBefore,
+          input.actionType,
+          moderationCase.targetId,
+        );
+      }
 
       await tx.moderationCase.update({
         where: { id: caseId },
@@ -440,6 +460,74 @@ export class ModerationService {
       where.cityId = cityId;
     }
     return where;
+  }
+
+  private async loadReviewForModerationNotify(
+    tx: Parameters<Parameters<PrismaService['$transaction']>[0]>[0],
+    reviewId: string,
+  ) {
+    return tx.review.findUnique({
+      where: { id: reviewId },
+      select: {
+        id: true,
+        userId: true,
+        businessId: true,
+        moderationHidden: true,
+        deletedAt: true,
+        business: { select: { title: true } },
+      },
+    });
+  }
+
+  private async notifyReviewModerationOutcome(
+    tx: Parameters<Parameters<PrismaService['$transaction']>[0]>[0],
+    before: {
+      id: string;
+      userId: string;
+      businessId: string;
+      moderationHidden: boolean;
+      deletedAt: Date | null;
+      business: { title: string };
+    },
+    actionType: ModerationActionType,
+    reviewId: string,
+  ) {
+    if (before.deletedAt !== null) {
+      return;
+    }
+
+    if (
+      actionType === ModerationActionType.REVIEW_HIDE &&
+      !before.moderationHidden
+    ) {
+      await this.notifications.create({
+        userId: before.userId,
+        type: NotificationType.REVIEW_HIDDEN,
+        title: 'Отзыв скрыт модерацией',
+        body: `Ваш отзыв о «${before.business.title}» скрыт из публичного каталога.`,
+        targetType: NotificationTargetType.REVIEW,
+        targetId: reviewId,
+        payload: { businessId: before.businessId, reviewId },
+        tx,
+      });
+      return;
+    }
+
+    if (
+      actionType === ModerationActionType.REVIEW_RESTORE &&
+      before.moderationHidden
+    ) {
+      await this.notifications.create({
+        userId: before.userId,
+        type: NotificationType.REVIEW_RESTORED,
+        title: 'Отзыв восстановлен',
+        body: `Ваш отзыв о «${before.business.title}» снова виден в каталоге.`,
+        targetType: NotificationTargetType.REVIEW,
+        targetId: reviewId,
+        payload: { businessId: before.businessId, reviewId },
+        tx,
+      });
+    }
   }
 
   private async assertCityScope(

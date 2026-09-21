@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { CommonAccessModule } from '../../common/common-access.module';
 import { AuditLogModule } from '../audit-log/audit-log.module';
 import { AuthModule } from '../auth/auth.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { ContentReportService } from './content-report.service';
 import { DataRightsService } from './data-rights.service';
 import { LegalService } from './legal.service';
@@ -12,7 +13,7 @@ import { SafetyController } from './safety.controller';
 import { SafetyRateLimitService } from './safety-rate-limit.service';
 
 @Module({
-  imports: [CommonAccessModule, AuditLogModule, AuthModule],
+  imports: [CommonAccessModule, AuditLogModule, AuthModule, NotificationsModule],
   controllers: [SafetyController, SafetyAdminController],
   providers: [
     LegalService,

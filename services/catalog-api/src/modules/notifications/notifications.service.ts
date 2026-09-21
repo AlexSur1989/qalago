@@ -99,4 +99,15 @@ export class NotificationsService {
       },
     });
   }
+
+  async createForUsers(
+    userIds: string[],
+    input: Omit<NotificationCreateInput, 'userId' | 'tx'>,
+    tx?: Prisma.TransactionClient,
+  ) {
+    const unique = [...new Set(userIds.filter(Boolean))];
+    for (const userId of unique) {
+      await this.create({ ...input, userId, tx });
+    }
+  }
 }

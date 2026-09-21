@@ -346,7 +346,7 @@ export class BusinessApplicationsService {
 
       await this.notifications.create({
         userId: application.applicantUserId,
-        type: NotificationType.GENERAL,
+        type: NotificationType.BUSINESS_APPLICATION_REJECTED,
         title: 'Заявка на бизнес отклонена',
         body: dto.rejectionReason.trim(),
         targetType: NotificationTargetType.BUSINESS_APPLICATION,
@@ -456,7 +456,7 @@ export class BusinessApplicationsService {
 
       await this.notifications.create({
         userId: locked.applicantUserId,
-        type: NotificationType.GENERAL,
+        type: NotificationType.BUSINESS_APPLICATION_APPROVED,
         title: 'Заявка на бизнес одобрена',
         body: `«${business.title}» создан${businessStatus === BusinessStatus.ACTIVE ? ' и опубликован' : ' и ожидает запуска города'}.`,
         targetType: NotificationTargetType.BUSINESS_APPLICATION,

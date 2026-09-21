@@ -124,6 +124,11 @@ describe('ReviewsService lifecycle (Stage 6.11D.2)', () => {
             cityId: 'c1',
           }),
         },
+        businessMembership: {
+          findMany: jest.fn().mockResolvedValue([
+            { userId: 'owner-1', role: BusinessMembershipRole.OWNER },
+          ]),
+        },
         review: {
           findUnique: jest.fn().mockResolvedValue({
             id: 'r-old',
@@ -142,12 +147,12 @@ describe('ReviewsService lifecycle (Stage 6.11D.2)', () => {
       };
       const { service, deps: d } = buildService(prisma, deps);
       await service.create(user, { businessId: 'b1', rating: 4 });
-      expect(d.notifications.create).toHaveBeenCalledWith(
+      expect(d.notifications.createForUsers).toHaveBeenCalledWith(
+        ['owner-1'],
         expect.objectContaining({
           type: NotificationType.NEW_REVIEW,
           targetType: NotificationTargetType.REVIEW,
           targetId: 'r-old',
-          userId: 'owner-1',
         }),
       );
     });

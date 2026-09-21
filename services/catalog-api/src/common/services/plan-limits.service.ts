@@ -477,6 +477,7 @@ export class PlanLimitsService {
   }
 
   async syncExpiredPlan(businessId: string) {
+    const now = new Date();
     const business = await this.prisma.business.findUnique({
       where: { id: businessId },
       select: {
@@ -488,22 +489,31 @@ export class PlanLimitsService {
     });
     if (!business) return;
 
-    const expired =
-      business.planTier !== BusinessPlanTier.FREE &&
-      business.planExpiresAt != null &&
-      business.planExpiresAt < new Date();
-    if (!expired) return;
-
     const previousTier = business.planTier;
+    if (
+      previousTier === BusinessPlanTier.FREE ||
+      business.planExpiresAt == null ||
+      business.planExpiresAt >= now
+    ) {
+      return;
+    }
+
     const planName = this.getCatalogItem(previousTier).nameRu;
 
-    await this.prisma.business.update({
-      where: { id: businessId },
+    const updated = await this.prisma.business.updateMany({
+      where: {
+        id: businessId,
+        planTier: { not: BusinessPlanTier.FREE },
+        planExpiresAt: { lt: now },
+      },
       data: {
         planTier: BusinessPlanTier.FREE,
         planExpiresAt: null,
       },
     });
+    if (updated.count === 0) {
+      return;
+    }
 
     if (business.ownerId) {
       await this.notifications.create({

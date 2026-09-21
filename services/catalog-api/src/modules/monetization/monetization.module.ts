@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { PlansModule } from '../plans/plans.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { AdAnalyticsService } from './ad-analytics.service';
 import { AdEventsService } from './ad-events.service';
 import { AdRotationService } from './ad-rotation.service';
@@ -27,7 +28,7 @@ import { InventoryReservationService } from './inventory-reservation.service';
 import { ProductPurchaseStateService } from './product-purchase-state.service';
 
 @Module({
-  imports: [PlansModule, ScheduleModule.forRoot()],
+  imports: [PlansModule, NotificationsModule, ScheduleModule.forRoot()],
   controllers: [MonetizationController, MonetizationAdminController],
   providers: [
     MonetizationService,

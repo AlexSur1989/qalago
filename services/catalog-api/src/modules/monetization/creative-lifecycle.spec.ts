@@ -109,6 +109,7 @@ describe('VIP creative lifecycle', () => {
       access as never,
       provisioning as never,
       auditLog as never,
+      { create: jest.fn() } as never,
     );
 
     beforeEach(() => {
@@ -165,6 +166,7 @@ describe('VIP creative lifecycle', () => {
       access as never,
       provisioning as never,
       auditLog as never,
+      { create: jest.fn() } as never,
     );
 
     beforeEach(() => {

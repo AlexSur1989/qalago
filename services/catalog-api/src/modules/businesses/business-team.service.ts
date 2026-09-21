@@ -11,6 +11,8 @@ import {
   BusinessMembershipRole,
   BusinessMembershipStatus,
   BusinessPermission,
+  NotificationTargetType,
+  NotificationType,
   Prisma,
   UserRole,
 } from '@prisma/client';
@@ -26,6 +28,7 @@ import {
 } from '../../common/utils/business-permission.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { maskPhoneForAudit, permissionDiff } from '../audit-log/audit-log.util';
 import { InviteTeamMemberDto, UpdateTeamMemberDto } from './dto/team.dto';
 import { BusinessInvitationService, TEAM_INVITE_TTL_DAYS } from './business-invitation.service';
@@ -41,6 +44,7 @@ export class BusinessTeamService {
     private readonly auditLog: AuditLogService,
     private readonly invitations: BusinessInvitationService,
     private readonly planLimits: PlanLimitsService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async listTeam(user: AuthUser, businessId: string) {
@@ -218,6 +222,13 @@ export class BusinessTeamService {
     emailRaw: string,
     permissions: BusinessPermission[],
   ) {
+    const businessTitle =
+      (
+        await this.prisma.business.findUnique({
+          where: { id: businessId },
+          select: { title: true },
+        })
+      )?.title ?? '';
     const { normalized, rawToken, tokenHash, expiresAt } =
       this.invitations.createEmailInvitationParams(emailRaw);
 
@@ -257,6 +268,16 @@ export class BusinessTeamService {
       },
     });
 
+    const inviteeUserId = await this.resolveUserIdForInvitationEmail(normalized);
+    if (inviteeUserId) {
+      await this.notifyBusinessInvitationReceived({
+        userId: inviteeUserId,
+        businessId,
+        businessTitle,
+        invitationId: invitation.id,
+      });
+    }
+
     return {
       type: 'invitation' as const,
       invitationId: invitation.id,
@@ -264,6 +285,34 @@ export class BusinessTeamService {
       inviteUrl: this.invitations.buildInviteUrl(rawToken),
       rawToken,
     };
+  }
+
+  private async resolveUserIdForInvitationEmail(email: string) {
+    const identity = await this.prisma.authIdentity.findFirst({
+      where: { email: { equals: email, mode: 'insensitive' } },
+      select: { userId: true },
+    });
+    return identity?.userId ?? null;
+  }
+
+  private async notifyBusinessInvitationReceived(params: {
+    userId: string;
+    businessId: string;
+    businessTitle: string;
+    invitationId: string;
+  }) {
+    await this.notifications.create({
+      userId: params.userId,
+      type: NotificationType.BUSINESS_INVITATION_RECEIVED,
+      title: 'Приглашение в команду бизнеса',
+      body: `Вас пригласили управлять «${params.businessTitle}».`,
+      targetType: NotificationTargetType.BUSINESS,
+      targetId: params.businessId,
+      payload: {
+        businessId: params.businessId,
+        invitationId: params.invitationId,
+      },
+    });
   }
 
   async updateMember(
