@@ -66,8 +66,8 @@ void main() {
 
       final state = container.read(mapBusinessesNotifierProvider);
       expect(pagesRequested, [1, 2]);
-      expect(state.byId.length, 150);
-      expect(state.byId.keys.toSet().length, 150);
+      expect(state.byLocationId.length, 150);
+      expect(state.byLocationId.keys.toSet().length, 150);
     });
 
     test('empty viewport fetch sets viewportTotal without implying city empty',
@@ -93,7 +93,7 @@ void main() {
 
       final state = container.read(mapBusinessesNotifierProvider);
       expect(state.viewportTotal, 0);
-      expect(state.byId, isEmpty);
+      expect(state.byLocationId, isEmpty);
     });
 
     test('refetch populated viewport restores businesses', () async {
@@ -124,7 +124,7 @@ void main() {
       final notifier = container.read(mapBusinessesNotifierProvider.notifier);
       await notifier.onViewportIdle(bounds);
       await Future<void>.delayed(Duration.zero);
-      expect(container.read(mapBusinessesNotifierProvider).byId, isEmpty);
+      expect(container.read(mapBusinessesNotifierProvider).byLocationId, isEmpty);
 
       await notifier.onViewportIdle(
         const QalaGoMapBounds(
@@ -136,7 +136,53 @@ void main() {
 
       final state = container.read(mapBusinessesNotifierProvider);
       expect(state.viewportTotal, 1);
-      expect(state.byId.length, 1);
+      expect(state.byLocationId.length, 1);
+    });
+
+    test('merge keeps multiple locations for same business across pages', () async {
+      BusinessModel row(String locId, double lat) => BusinessModel(
+            id: 'b-shared',
+            locationId: locId,
+            title: 'Shared',
+            slug: 'shared',
+            address: 'Addr $locId',
+            latitude: lat,
+            longitude: 51.39,
+          );
+
+      final container = ProviderContainer(
+        overrides: [
+          cityProvider.overrideWith(() => _FixedCityNotifier()),
+          subcategoriesEnabledProvider.overrideWithValue(false),
+          mapDiscoveryScopeProvider.overrideWith((ref) => null),
+          catalogRepositoryProvider.overrideWith(
+            (ref) => _MapPagingCatalogRepository(
+              onFetch: ({required page, required limit}) async {
+                if (page == 1) {
+                  return PaginatedBusinesses(
+                    items: [row('loc-a', 51.01)],
+                    total: 2,
+                  );
+                }
+                return PaginatedBusinesses(
+                  items: [row('loc-b', 51.02)],
+                  total: 2,
+                );
+              },
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(mapBusinessesNotifierProvider.notifier);
+      await notifier.onViewportIdle(bounds);
+      await Future<void>.delayed(Duration.zero);
+
+      final state = container.read(mapBusinessesNotifierProvider);
+      expect(state.byLocationId.length, 2);
+      expect(state.byLocationId['loc-a']?.id, 'b-shared');
+      expect(state.byLocationId['loc-b']?.address, 'Addr loc-b');
     });
 
     test('resetForScopeChange clears data and ignores stale responses', () async {
@@ -166,7 +212,7 @@ void main() {
       await Future<void>.delayed(Duration.zero);
 
       final state = container.read(mapBusinessesNotifierProvider);
-      expect(state.byId, isEmpty);
+      expect(state.byLocationId, isEmpty);
     });
   });
 }

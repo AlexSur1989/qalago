@@ -71,12 +71,20 @@ Relationship: **Business 1 → N BusinessLocation**.
 - **Status:** parent **`Business.status`** only (no `BusinessLocation.status`).
 - **Unchanged in A.7.1:** nearest/radius/search/category discovery without map viewport grain (still **one row per Business**, primary geography); Flutter map marker identity (**A.7.2**); MapLibre/style; geocoding; ads/plans/reviews/favorites scope.
 - **Search + forMap + bbox:** business text match remains parent Business semantics; branch **`bl.address`** is also matched; map+bbox+search may return multiple rows per business when several branches match viewport.
-- **Interim client note:** Flutter map still dedupes by `business.id` until **A.7.2** — backend may return multiple rows per business before marker cutover.
+## Stage 6.12A.7.2 (Flutter map physical identity)
+
+- **Scope:** Flutter map client only (`apps/mobile` map feature + shared `BusinessModel` parsing). Backend A.7.1 contract unchanged.
+- **Identity:** **`BusinessModel.id`** = **Business.id** (detail, reviews, favorites, analytics). **`locationId`** (optional on non-map payloads) = **BusinessLocation.id** for map rows.
+- **Physical key:** `mapPhysicalKey(row)` = `locationId ?? id` (legacy fallback when `locationId` absent).
+- **Map state:** `MapBusinessesState.byLocationId` keyed by physical key — multiple branches of one business are distinct entries; pagination merge uses physical key, not business id.
+- **GeoJSON:** `Feature.id` = physical key; `properties.locationId` = physical key; `properties.businessId` = Business.id; dedup by physical key.
+- **Selection / tap:** map selection is **location** identity; preview and directions use the **selected location row** (address, lat/lng); opening full detail still navigates with **Business.id**.
+- **Unchanged:** reviews/favorites/analytics Business-scoped; MapLibre style/basemap; geocoding; category map fetch semantics; cluster styling/thresholds; nearest/radius discovery grain.
 
 ## Compatibility strategy (forward)
 
 - Later substages may project legacy DTO fields from primary location before deprecating columns.
-- **A.7.2+:** Flutter GeoJSON/selection cutover; optional discovery migration to location grain is a separate product decision.
+- **Post A.7.2:** optional discovery migration to location grain is a separate product decision; physical multi-branch QA gate follows automated client cutover.
 
 ## Scope deferred
 

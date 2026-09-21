@@ -35,6 +35,7 @@ import '../map_business_markers.dart';
 import '../map_business_selection_policy.dart';
 import '../map_businesses_notifier.dart';
 import '../map_discovery_scope.dart';
+import '../map_physical_key.dart';
 import '../map_screen_center.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
@@ -50,25 +51,29 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   late final _mapController = createQalaGoMapController();
   QalaGoMapCoordinate? _lastUserCenter;
   String? _trackedCitySlug;
-  String? _selectedBusinessId;
+  String? _selectedLocationId;
   void _clearSelection() {
-    if (_selectedBusinessId == null) {
+    if (_selectedLocationId == null) {
       return;
     }
-    setState(() => _selectedBusinessId = null);
+    setState(() => _selectedLocationId = null);
   }
 
-  void _selectBusiness(MapBusinessesState mapBusinesses, String businessId) {
-    if (!MapBusinessSelectionPolicy.isSelectableBusinessId(
-      businessId: businessId,
+  void _selectMapLocation(MapBusinessesState mapBusinesses, String locationId) {
+    if (!MapBusinessSelectionPolicy.isSelectableLocationId(
+      locationId: locationId,
       businesses: mapBusinesses,
     )) {
       return;
     }
-    if (_selectedBusinessId == businessId) {
+    if (_selectedLocationId == locationId) {
       return;
     }
-    setState(() => _selectedBusinessId = businessId);
+    setState(() => _selectedLocationId = locationId);
+  }
+
+  void _selectMapRow(MapBusinessesState mapBusinesses, BusinessModel row) {
+    _selectMapLocation(mapBusinesses, mapPhysicalKey(row));
   }
 
   @override
@@ -145,10 +150,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     });
 
     ref.listen(mapBusinessesProvider, (previous, next) {
-      final id = _selectedBusinessId;
+      final id = _selectedLocationId;
       if (id == null) return;
       if (!MapBusinessSelectionPolicy.shouldRetainSelection(
-        selectedBusinessId: id,
+        selectedLocationId: id,
         businesses: next,
       )) {
         _clearSelection();
@@ -161,9 +166,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     );
     final mapMarkers = buildBusinessMapMarkers(
       businesses: businesses,
-      selectedBusinessId: _selectedBusinessId,
+      selectedLocationId: _selectedLocationId,
       onMarkerTap: (business) {
-        _selectBusiness(mapBusinesses, business.id);
+        _selectMapRow(mapBusinesses, business);
       },
       userLocation: userPosition == null
           ? null
@@ -182,9 +187,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         onTap: onTap,
       ),
     );
-    final selectedBusiness = _selectedBusinessId == null
+    final selectedBusiness = _selectedLocationId == null
         ? null
-        : mapBusinesses.byId[_selectedBusinessId];
+        : mapBusinesses.byLocationId[_selectedLocationId];
 
     if (_trackedCitySlug != city.slug) {
       _trackedCitySlug = city.slug;
@@ -199,7 +204,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     final businessGeoJson = nativeBusinessLayer
         ? BusinessMapGeoJsonBuilder.buildFeatureCollection(
             businesses: businesses,
-            selectedBusinessId: _selectedBusinessId,
+            selectedLocationId: _selectedLocationId,
           )
         : null;
     final overlayMarkers = resolveMapOverlayMarkers(
@@ -217,7 +222,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             markers: overlayMarkers,
             businessGeoJson: businessGeoJson,
             onBusinessFeatureTap: nativeBusinessLayer
-                ? (businessId) => _selectBusiness(mapBusinesses, businessId)
+                ? (locationId) => _selectMapLocation(mapBusinesses, locationId)
                 : null,
             onClusterFeatureTap: nativeBusinessLayer ? _clearSelection : null,
             onCameraIdle: (bounds) {
@@ -357,7 +362,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   userLat: userPosition?.latitude,
                   userLng: userPosition?.longitude,
                   onSelect: (business) =>
-                      _selectBusiness(mapBusinesses, business.id),
+                      _selectMapRow(mapBusinesses, business),
                 );
               },
             ),

@@ -1,30 +1,30 @@
 import 'map_businesses_notifier.dart';
+import 'map_physical_key.dart';
 
-/// Pure rules for map business selection vs catalog/viewport state (C.6E).
+/// Pure rules for map location selection vs catalog/viewport state (C.6E / A.7.2).
 abstract final class MapBusinessSelectionPolicy {
-  /// Whether [selectedBusinessId] should remain selected for the current map UI.
-  ///
-  /// Clears when the business is absent from authoritative [byId], or when it
-  /// is no longer in [MapBusinessesState.items] (viewport-filtered map payload).
+  /// Whether [selectedLocationId] should remain selected for the current map UI.
   static bool shouldRetainSelection({
-    required String selectedBusinessId,
+    required String selectedLocationId,
     required MapBusinessesState businesses,
   }) {
-    if (!businesses.byId.containsKey(selectedBusinessId)) {
+    if (!businesses.byLocationId.containsKey(selectedLocationId)) {
       return false;
     }
-    return businesses.items.any((b) => b.id == selectedBusinessId);
+    return businesses.items.any(
+      (row) => mapPhysicalKey(row) == selectedLocationId,
+    );
   }
 
-  /// Native/list taps must ignore unknown or out-of-scope ids.
-  static bool isSelectableBusinessId({
-    required String businessId,
+  /// Native/list taps must ignore unknown or out-of-scope physical keys.
+  static bool isSelectableLocationId({
+    required String locationId,
     required MapBusinessesState businesses,
   }) {
-    if (businessId.isEmpty) {
+    if (locationId.isEmpty) {
       return false;
     }
-    return businesses.byId.containsKey(businessId) &&
-        businesses.items.any((b) => b.id == businessId);
+    return businesses.byLocationId.containsKey(locationId) &&
+        businesses.items.any((row) => mapPhysicalKey(row) == locationId);
   }
 }

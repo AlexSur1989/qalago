@@ -35,7 +35,8 @@ class QalaGoMapView extends StatelessWidget {
   final Map<String, dynamic>? businessGeoJson;
 
   /// MapLibre native business point tap (businessId); ignored when flag is off.
-  final void Function(String businessId)? onBusinessFeatureTap;
+  /// Physical marker key ([BusinessLocation.id] when present).
+  final void Function(String locationId)? onBusinessFeatureTap;
 
   /// MapLibre cluster tap (expansion only); ignored when flag is off.
   final VoidCallback? onClusterFeatureTap;

@@ -13,6 +13,7 @@ import '../qalago_map_style_config.dart';
 import '../widgets/qalago_map_attribution_bar.dart';
 import '../qalago_map_business_cluster_tap.dart';
 import '../qalago_map_business_feature_tap.dart';
+import '../qalago_map_business_layer_style.dart';
 import '../qalago_map_business_layer_ids.dart';
 import '../qalago_native_map_business_layer_config.dart';
 import 'maplibre_overlay_projection_sync.dart';
@@ -126,17 +127,55 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
       return;
     }
 
-    final businessId = QalaGoMapBusinessFeatureTap.parseBusinessId(
+    final properties = await _queryBusinessFeatureProperties(
+      map,
+      point,
+      layerId,
+    );
+    final tap = QalaGoMapBusinessFeatureTap.parseTapTarget(
       featureId: featureId,
       layerId: layerId,
+      properties: properties,
     );
-    if (businessId == null) {
+    if (tap == null) {
       return;
     }
     if (!mounted) {
       return;
     }
-    widget.onBusinessFeatureTap?.call(businessId);
+    widget.onBusinessFeatureTap?.call(tap.locationId);
+  }
+
+  Future<Map<String, dynamic>?> _queryBusinessFeatureProperties(
+    MapLibreMapController map,
+    Point<double> point,
+    String layerId,
+  ) async {
+    if (!QalaGoMapBusinessLayerStyle.isBusinessLayerId(layerId)) {
+      return null;
+    }
+    try {
+      final queried = await map.queryRenderedFeatures(
+        point,
+        [layerId],
+        null,
+      );
+      for (final raw in queried) {
+        if (raw is! Map) {
+          continue;
+        }
+        final props = raw['properties'];
+        if (props is Map<String, dynamic>) {
+          return props;
+        }
+        if (props is Map) {
+          return Map<String, dynamic>.from(props);
+        }
+      }
+    } catch (_) {
+      // Style may not be ready; fall back to feature id only.
+    }
+    return null;
   }
 
   Future<void> _handleClusterFeatureTap(

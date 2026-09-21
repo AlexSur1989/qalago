@@ -10,6 +10,7 @@ import '../catalog/data/catalog_repository.dart';
 import 'map_bounds_utils.dart';
 import 'map_coordinate_validity.dart';
 import 'map_discovery_scope.dart';
+import 'map_physical_key.dart';
 import '../../shared/models/models.dart';
 
 const kMapBusinessPageSize = 100;
@@ -23,7 +24,7 @@ MapBusinessesState mapBusinessesStateForTest({
   bool loading = false,
 }) {
   return MapBusinessesState(
-    byId: {for (final b in items) b.id: b},
+    byLocationId: {for (final b in items) mapPhysicalKey(b): b},
     viewportTotal: viewportTotal ?? items.length,
     error: error,
     loading: loading,
@@ -32,7 +33,7 @@ MapBusinessesState mapBusinessesStateForTest({
 
 class MapBusinessesState {
   const MapBusinessesState({
-    this.byId = const {},
+    this.byLocationId = const {},
     this.viewportTotal = 0,
     this.loading = false,
     this.error,
@@ -41,7 +42,8 @@ class MapBusinessesState {
     this.visibleBounds,
   });
 
-  final Map<String, BusinessModel> byId;
+  /// Map rows keyed by physical marker identity ([mapPhysicalKey]).
+  final Map<String, BusinessModel> byLocationId;
 
   /// PostGIS total for the last padded **viewport** fetch (not city-wide).
   final int viewportTotal;
@@ -51,10 +53,10 @@ class MapBusinessesState {
   final QalaGoMapBounds? lastFetchBounds;
   final QalaGoMapBounds? visibleBounds;
 
-  int get total => byId.length;
+  int get total => byLocationId.length;
 
   List<BusinessModel> get items {
-    final all = businessesWithValidMapCoordinates(byId.values.toList());
+    final all = businessesWithValidMapCoordinates(byLocationId.values.toList());
     final viewport = visibleBounds;
     if (viewport == null) return all;
     return all
@@ -70,7 +72,7 @@ class MapBusinessesState {
   }
 
   MapBusinessesState copyWith({
-    Map<String, BusinessModel>? byId,
+    Map<String, BusinessModel>? byLocationId,
     int? viewportTotal,
     bool? loading,
     Object? error,
@@ -80,7 +82,7 @@ class MapBusinessesState {
     QalaGoMapBounds? visibleBounds,
   }) {
     return MapBusinessesState(
-      byId: byId ?? this.byId,
+      byLocationId: byLocationId ?? this.byLocationId,
       viewportTotal: viewportTotal ?? this.viewportTotal,
       loading: loading ?? this.loading,
       error: clearError ? null : (error ?? this.error),
@@ -151,8 +153,9 @@ class MapBusinessesNotifier extends Notifier<MapBusinessesState> {
     );
 
     final catalog = ref.read(catalogRepositoryProvider);
-    final merged = Map<String, BusinessModel>.from(state.byId);
+    final merged = Map<String, BusinessModel>.from(state.byLocationId);
     var viewportTotal = 0;
+    var itemsReceivedFromApi = 0;
 
     try {
       for (var page = 1; page <= kMapBusinessMaxPagesPerFetch; page++) {
@@ -177,12 +180,13 @@ class MapBusinessesNotifier extends Notifier<MapBusinessesState> {
         );
 
         viewportTotal = pageResult.total;
+        itemsReceivedFromApi += pageResult.items.length;
         for (final business in businessesWithValidMapCoordinates(pageResult.items)) {
-          merged[business.id] = business;
+          merged[mapPhysicalKey(business)] = business;
         }
 
         if (pageResult.items.isEmpty ||
-            page * kMapBusinessPageSize >= pageResult.total) {
+            itemsReceivedFromApi >= pageResult.total) {
           break;
         }
       }
@@ -193,7 +197,7 @@ class MapBusinessesNotifier extends Notifier<MapBusinessesState> {
       }
 
       state = state.copyWith(
-        byId: merged,
+        byLocationId: merged,
         viewportTotal: viewportTotal,
         loading: false,
         lastFetchBounds: bounds,

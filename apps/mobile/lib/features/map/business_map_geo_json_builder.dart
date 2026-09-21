@@ -1,27 +1,30 @@
 import '../../shared/models/models.dart';
 import 'map_coordinate_validity.dart';
 import 'business_map_category_key.dart';
+import 'map_physical_key.dart';
 
-/// Builds MapLibre-ready GeoJSON for catalog businesses (Stage 6.11C.6B).
+/// Builds MapLibre-ready GeoJSON for catalog map rows (Stage 6.11C.6B / A.7.2).
 abstract final class BusinessMapGeoJsonBuilder {
-  /// When [businesses] contains duplicate ids, the **first** occurrence wins.
+  /// When [businesses] contains duplicate physical keys, the **first** wins.
   static Map<String, dynamic> buildFeatureCollection({
     required Iterable<BusinessModel> businesses,
-    String? selectedBusinessId,
+    String? selectedLocationId,
   }) {
+    final selectedKey = selectedLocationId;
     final features = <Map<String, dynamic>>[];
-    final seenIds = <String>{};
+    final seenPhysicalKeys = <String>{};
 
     for (final business in businesses) {
-      if (!seenIds.add(business.id)) {
+      final physicalKey = mapPhysicalKey(business);
+      if (!seenPhysicalKeys.add(physicalKey)) {
         continue;
       }
       if (!isValidMapCoordinate(business.latitude, business.longitude)) {
         continue;
       }
 
-      final selected = business.id == selectedBusinessId;
-      features.add(_feature(business, selected: selected));
+      final selected = physicalKey == selectedKey;
+      features.add(_feature(business, physicalKey: physicalKey, selected: selected));
     }
 
     return {
@@ -37,19 +40,21 @@ abstract final class BusinessMapGeoJsonBuilder {
 
   static Map<String, dynamic> _feature(
     BusinessModel business, {
+    required String physicalKey,
     required bool selected,
   }) {
     final lat = business.latitude!;
     final lng = business.longitude!;
     return {
       'type': 'Feature',
-      'id': business.id,
+      'id': physicalKey,
       'geometry': {
         'type': 'Point',
         'coordinates': [lng, lat],
       },
       'properties': {
         'businessId': business.id,
+        'locationId': physicalKey,
         if (business.categoryId != null && business.categoryId!.isNotEmpty)
           'categoryId': business.categoryId,
         'categoryKey': businessMapCategoryKey(business.categoryTitle),

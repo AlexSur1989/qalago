@@ -6,11 +6,12 @@ import '../../core/theme/app_theme.dart';
 import '../../shared/models/models.dart';
 import 'map_coordinate_validity.dart';
 import 'map_overlay_markers.dart';
+import 'map_physical_key.dart';
 
-/// Builds QalaGo map markers from catalog businesses (skips missing coordinates).
+/// Builds QalaGo map markers from catalog map rows (skips missing coordinates).
 List<QalaGoMapMarker> buildBusinessMapMarkers({
   required List<BusinessModel> businesses,
-  required String? selectedBusinessId,
+  required String? selectedLocationId,
   required void Function(BusinessModel business) onMarkerTap,
   required Widget Function({
     required BusinessModel business,
@@ -47,10 +48,11 @@ List<QalaGoMapMarker> buildBusinessMapMarkers({
   }
 
   for (final business in businessesWithValidMapCoordinates(businesses)) {
-    final selected = business.id == selectedBusinessId;
+    final physicalKey = mapPhysicalKey(business);
+    final selected = physicalKey == selectedLocationId;
     markers.add(
       QalaGoMapMarker(
-        id: business.id,
+        id: physicalKey,
         position: QalaGoMapCoordinate(
           latitude: business.latitude!,
           longitude: business.longitude!,

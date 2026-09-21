@@ -25,6 +25,26 @@ void main() {
       );
     });
 
+    test('parseTapTarget returns locationId and businessId', () {
+      final tap = QalaGoMapBusinessFeatureTap.parseTapTarget(
+        featureId: 'loc-2',
+        layerId: QalaGoMapBusinessLayerIds.unclustered,
+        properties: {'businessId': 'b1', 'locationId': 'loc-2'},
+      );
+      expect(tap?.locationId, 'loc-2');
+      expect(tap?.businessId, 'b1');
+    });
+
+    test('legacy tap without locationId uses business id for both', () {
+      final tap = QalaGoMapBusinessFeatureTap.parseTapTarget(
+        featureId: 'b1',
+        layerId: QalaGoMapBusinessLayerIds.unclustered,
+        properties: {'businessId': 'b1'},
+      );
+      expect(tap?.locationId, 'b1');
+      expect(tap?.businessId, 'b1');
+    });
+
     test('missing businessId ignored', () {
       expect(
         QalaGoMapBusinessFeatureTap.parseBusinessId(
