@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-22 — Stage 6.12A.7.4 Physical QA hotfix (category map + branch detail)
+
+- **Status:** 6.12A.7.4 HOTFIX IMPLEMENTED — READY FOR SAMSUNG PHYSICAL RE-QA.
+- **Checkpoint (implementation):** `1cd345b`.
+- **Summary:**
+  - **Category map:** GeoJSON/native layer uses **`mapLayerItems`** (`lastFetchBounds`) so multi-branch businesses are not hidden by tighter **`visibleBounds`** after category scope entry.
+  - **Detail handoff:** optional query **`locationId`** on `/business/:id`; branch address/route/coordinates via public locations + **`resolveActiveBusinessPhysicalContext`**; reviews/favorites stay **Business.id**.
+  - **Tests:** catalog-api category map row assertion hardened; Flutter **850** passed; focused map/detail tests added.
+- **Deferred:** physical re-QA on Samsung; native layer dart-define build hardening; QA fixture geocode label mismatch.
+- **Next:** Samsung physical re-QA; L2 cleanup after acceptance.
+
+---
+
 ## 2026-09-21 — Stage 6.12A.7.2 Flutter map BusinessLocation marker identity
 
 - **Status:** 6.12A.7.2 PASS — READY FOR A.7 AUTOMATED REGRESSION / PHYSICAL QA GATE.
