@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-09-21 — Stage 6.12A.7.2 Flutter map BusinessLocation marker identity
+
+- **Status:** 6.12A.7.2 PASS — READY FOR A.7 AUTOMATED REGRESSION / PHYSICAL QA GATE.
+- **Checkpoint (implementation):** `ab48d0421939d49a48c3c828672c5af3cfdb8dcf`.
+- **Summary:**
+  - **Flutter map:** physical marker identity = **`locationId`** (fallback `id` for legacy rows); **`BusinessModel.id`** remains **Business.id** for detail/reviews/favorites/analytics.
+  - **State / GeoJSON / selection:** `byLocationId` storage, merge/dedup by physical key; `Feature.id` + `properties.locationId` = physical key; `properties.businessId` = Business.id; preview and directions use selected location row.
+  - **Unchanged:** backend A.7.1; MapLibre/style; geocoding; web apps; reviews/favorites scope.
+- **Tests:** Flutter **845** passed, **0** failed; `flutter analyze` **184** issues, **0** errors; debug APK build PASS.
+- **Deferred:** physical multi-branch map QA on device; optional analytics `locationId`.
+- **Next:** A.7 automated regression / physical QA gate.
+
+---
+
 ## 2026-09-21 — Stage 6.12A.7.1 BusinessLocation map viewport backend cutover
 
 - **Status:** 6.12A.7.1 PASS — READY FOR A.7.2.
