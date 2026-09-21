@@ -9,7 +9,7 @@
 ## 2026-09-21 — Stage 6.12A.3 primary location compatibility layer
 
 - **Status:** 6.12A.3 PASS — READY FOR A.4.
-- **Checkpoint:** _(this commit)_.
+- **Checkpoint:** `43fe98742a09ce8443f4bee6e5af25f64631d913`.
 - **Summary:**
   - **`BusinessPrimaryLocationService`**: resolve primary (`isPrimary` only), `createInitialPrimary`, `syncPrimaryFromBusinessRecord`; synchronized physical fields on legacy writes.
   - **Production creates:** admin import (`BusinessesService.create`) and business-application **approval** atomically create **Business + one primary BusinessLocation** (deterministic id aligned with A.2 backfill).
