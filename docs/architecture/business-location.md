@@ -17,9 +17,17 @@ Relationship: **Business 1 → N BusinessLocation**.
 - **Legacy `Business` physical columns unchanged** and remain authoritative for all APIs and map queries until later substages.
 - **No data backfill** in A.1; **no public API** for locations yet.
 
+## Stage 6.12A.2 (1:1 backfill)
+
+- Migration **`20260921190000_stage_6_12a2_business_location_backfill`**: idempotent `INSERT … SELECT` from `Business` where no `BusinessLocation` exists yet.
+- Copies: `cityId`, `address`, lat/lng, `locationSource`, `workHours`, phone/social/website; **`isPrimary = true`**; deterministic `id` prefix `bl` + md5 fragment.
+- **Does not UPDATE `Business`** — legacy physical columns remain authoritative for APIs and map until A.3+.
+- **Geography:** derived on insert via BusinessLocation trigger (not copied from `Business.location`).
+- **Temporary gap (until A.3):** new `Business` rows (application approval, admin create) do **not** auto-create `BusinessLocation`; primary location can become stale vs new Business writes.
+
 ## Compatibility strategy (planned)
 
-- A.2: one primary `BusinessLocation` per existing `Business` (1:1 backfill).
+- **A.3:** compatibility read/write — sync primary location on Business PATCH; create initial location on new Business.
 - Read layer: project legacy `Business` DTO fields from **primary location** before deprecating columns.
 - Map cutover to location geography: **isolated substage** after backfill (maps frozen until then).
 

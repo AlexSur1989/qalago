@@ -166,9 +166,10 @@ describe('Stage 6.12A.1 — BusinessLocation foundation (runtime DB)', () => {
     });
   });
 
-  it('production BusinessLocation table starts empty when no fixtures inserted', async () => {
+  it('BusinessLocation count is zero or matches Business count (pre/post A.2 backfill)', async () => {
     if (skip) return;
-    const count = await prisma.businessLocation.count();
-    expect(count).toBe(0);
+    const businesses = await prisma.business.count();
+    const locations = await prisma.businessLocation.count();
+    expect(locations === 0 || locations === businesses).toBe(true);
   });
 });
