@@ -41,6 +41,7 @@ export type BusinessAccessContext = {
 export type NavId =
   | 'home'
   | 'profile'
+  | 'locations'
   | 'menu'
   | 'promotions'
   | 'stats'
@@ -69,6 +70,12 @@ const MAIN_NAV_TEMPLATE: Omit<BusinessNavItem, 'label'>[] = [
     id: 'profile',
     icon: '🏪',
     href: (id) => `/business/${id}`,
+    anyOf: [BusinessPermission.BUSINESS_PROFILE_EDIT, BusinessPermission.BUSINESS_HOURS_EDIT],
+  },
+  {
+    id: 'locations',
+    icon: '📍',
+    href: (id) => `/business/${id}/locations`,
     anyOf: [BusinessPermission.BUSINESS_PROFILE_EDIT, BusinessPermission.BUSINESS_HOURS_EDIT],
   },
   {

@@ -14,6 +14,24 @@ export type CityRow = {
   nameKk?: string | null;
 };
 
+export type BusinessLocationRow = {
+  id: string;
+  businessId: string;
+  cityId: string;
+  address: string;
+  latitude: number | null;
+  longitude: number | null;
+  locationSource: string | null;
+  workHours: Record<string, string> | null;
+  phone: string | null;
+  whatsapp: string | null;
+  instagram: string | null;
+  website: string | null;
+  isPrimary: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type AuthUser = {
   id: string;
   phone?: string | null;
@@ -779,6 +797,57 @@ export const ownerApi = {
       token,
       body: JSON.stringify(data),
     }),
+
+  listBusinessLocations: (token: string, businessId: string) =>
+    api<{ items: BusinessLocationRow[] }>(
+      `/businesses/${encodeURIComponent(businessId)}/locations`,
+      { token },
+    ),
+
+  getBusinessLocation: (token: string, businessId: string, locationId: string) =>
+    api<BusinessLocationRow>(
+      `/businesses/${encodeURIComponent(businessId)}/locations/${encodeURIComponent(locationId)}`,
+      { token },
+    ),
+
+  createBusinessLocation: (
+    token: string,
+    businessId: string,
+    data: Record<string, unknown>,
+  ) =>
+    api<BusinessLocationRow>(
+      `/businesses/${encodeURIComponent(businessId)}/locations`,
+      {
+        method: 'POST',
+        token,
+        body: JSON.stringify(data),
+      },
+    ),
+
+  updateBusinessLocation: (
+    token: string,
+    businessId: string,
+    locationId: string,
+    data: Record<string, unknown>,
+  ) =>
+    api<BusinessLocationRow>(
+      `/businesses/${encodeURIComponent(businessId)}/locations/${encodeURIComponent(locationId)}`,
+      {
+        method: 'PATCH',
+        token,
+        body: JSON.stringify(data),
+      },
+    ),
+
+  setPrimaryBusinessLocation: (
+    token: string,
+    businessId: string,
+    locationId: string,
+  ) =>
+    api<BusinessLocationRow>(
+      `/businesses/${encodeURIComponent(businessId)}/locations/${encodeURIComponent(locationId)}/set-primary`,
+      { method: 'POST', token },
+    ),
 
   listPromotions: (token: string, businessId: string) =>
     api<{ items: PromotionRow[] }>(

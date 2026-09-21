@@ -13,6 +13,7 @@ import {
   BusinessLocationField,
   type BusinessLocationState,
 } from '@/components/business-location/business-location-field';
+import { navLabelForId } from '@/lib/presentation';
 
 function parseHours(raw: BusinessRow['workHours']) {
   const weekdays = raw?.mon ?? raw?.tue ?? '09:00-22:00';
@@ -184,6 +185,9 @@ export default function BusinessEditPage() {
           <Link href={`/business/${id}/reviews`} className="btn btn-sm">{ui.text_e76db3}</Link>
           <Link href={`/business/${id}/menu`} className="btn btn-sm">{ui.___dcc139}</Link>
           <Link href={`/business/${id}/promotions`} className="btn btn-sm">{ui.text_8f1e4c}</Link>
+          <Link href={`/business/${id}/locations`} className="btn btn-sm">
+            {navLabelForId(locale, 'locations')}
+          </Link>
         </div>
       </section>
 

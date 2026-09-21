@@ -21,6 +21,8 @@ QalaGo — городской маркетплейс/гид. MVP: Уральск
 
 **FINISH:** обновить changelog → зафиксировать deferred → commit (код + changelog) → сообщить финальный HEAD.
 
+**Current-state snapshot:** после завершённых stage или существенных архитектурных решений обновлять **`docs/ai-project-context.md`** (краткий handoff для AI); **`docs/changelog.md`** остаётся исторической лентой.
+
 ## Границы ответственности
 
 | Зона | Кто | Можно |

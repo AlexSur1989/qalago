@@ -1,0 +1,434 @@
+'use client';
+
+import { BusinessLocationField, type BusinessLocationState } from '@/components/business-location/business-location-field';
+import { BusinessShell } from '@/components/business-shell';
+import { useLocale, useUi } from '@/components/locale-provider';
+import {
+  BusinessPermission,
+  buildFooterNavItems,
+  buildMainNavItems,
+  filterNavByAccess,
+  hasPermission,
+} from '@/lib/business-access';
+import {
+  BusinessLocationRow,
+  CityRow,
+  ownerApi,
+} from '@/lib/api';
+import { cityDisplayName } from '@/lib/localized-content';
+import { branchManagementCopy, buildCreateBusinessLocationPayload } from '@/lib/presentation';
+import { parseApiError } from '@/lib/monetization-utils';
+import { useBusinessAccess } from '@/lib/use-business-access';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { useParams } from 'next/navigation';
+
+function parseHours(raw: BusinessLocationRow['workHours']) {
+  const weekdays = raw?.mon ?? raw?.tue ?? '09:00-22:00';
+  return {
+    weekdays,
+    saturday: raw?.sat ?? weekdays,
+    sunday: raw?.sun ?? weekdays,
+  };
+}
+
+function workHoursFromForm(weekdays: string, saturday: string, sunday: string) {
+  return {
+    mon: weekdays,
+    tue: weekdays,
+    wed: weekdays,
+    thu: weekdays,
+    fri: weekdays,
+    sat: saturday,
+    sun: sunday,
+  };
+}
+
+export default function BusinessLocationsPage() {
+  const locale = useLocale();
+  const ui = useUi();
+  const copy = branchManagementCopy(locale);
+  const params = useParams<{ id: string }>();
+  const businessId = params.id;
+  const { token, user, ready, logout, business: selectedBusiness, access, businesses, refreshBusinesses } =
+    useBusinessAccess();
+
+  const [locations, setLocations] = useState<BusinessLocationRow[]>([]);
+  const [cities, setCities] = useState<CityRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [mutating, setMutating] = useState(false);
+
+  const [mode, setMode] = useState<'list' | 'create' | 'edit'>('list');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [cityId, setCityId] = useState('');
+  const [location, setLocation] = useState<BusinessLocationState>({ address: '' });
+  const [contacts, setContacts] = useState({
+    phone: '',
+    whatsapp: '',
+    instagram: '',
+    website: '',
+  });
+  const [hours, setHours] = useState({
+    weekdays: '09:00-22:00',
+    saturday: '09:00-22:00',
+    sunday: '09:00-22:00',
+  });
+
+  const mainNav = useMemo(
+    () => filterNavByAccess(buildMainNavItems(locale), access),
+    [access, locale],
+  );
+  const footerNav = useMemo(
+    () => filterNavByAccess(buildFooterNavItems(locale), access),
+    [access, locale],
+  );
+
+  const canEditProfile = hasPermission(access, BusinessPermission.BUSINESS_PROFILE_EDIT);
+  const canEditHours = hasPermission(access, BusinessPermission.BUSINESS_HOURS_EDIT);
+  const canManage = canEditProfile;
+
+  const shellBusiness = businesses.find((b) => b.id === businessId) ?? null;
+
+  const selectedCity = cities.find((c) => c.id === cityId);
+  const citySlug = selectedCity?.slug ?? selectedBusiness?.city?.slug ?? 'uralsk';
+
+  const loadLocations = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await ownerApi.listBusinessLocations(token, businessId);
+      setLocations(res.items);
+    } catch (err) {
+      setError(parseApiError(locale, err));
+    } finally {
+      setLoading(false);
+    }
+  }, [token, businessId, locale]);
+
+  useEffect(() => {
+    if (!token) return;
+    ownerApi.listCities().then(setCities).catch(() => undefined);
+    loadLocations();
+  }, [token, loadLocations]);
+
+  function resetForm() {
+    setMode('list');
+    setEditingId(null);
+    setCityId('');
+    setLocation({ address: '' });
+    setContacts({ phone: '', whatsapp: '', instagram: '', website: '' });
+    setHours({ weekdays: '09:00-22:00', saturday: '09:00-22:00', sunday: '09:00-22:00' });
+  }
+
+  function startCreate() {
+    setMode('create');
+    setEditingId(null);
+    setCityId(
+      selectedBusiness?.city?.slug
+        ? cities.find((c) => c.slug === selectedBusiness.city?.slug)?.id ?? ''
+        : '',
+    );
+    setLocation({ address: '' });
+    setContacts({ phone: '', whatsapp: '', instagram: '', website: '' });
+    setHours({ weekdays: '09:00-22:00', saturday: '09:00-22:00', sunday: '09:00-22:00' });
+  }
+
+  function startEdit(row: BusinessLocationRow) {
+    setMode('edit');
+    setEditingId(row.id);
+    setCityId(row.cityId);
+    const h = parseHours(row.workHours);
+    setLocation({
+      address: row.address,
+      latitude: row.latitude ?? undefined,
+      longitude: row.longitude ?? undefined,
+      locationSource:
+        row.locationSource === 'MANUALLY_ADJUSTED' ? 'MANUALLY_ADJUSTED' : 'GEOCODED',
+    });
+    setContacts({
+      phone: row.phone ?? '',
+      whatsapp: row.whatsapp ?? '',
+      instagram: row.instagram ?? '',
+      website: row.website ?? '',
+    });
+    setHours(h);
+  }
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!token || !canManage) return;
+    setMutating(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const workHours = canEditHours
+        ? workHoursFromForm(hours.weekdays, hours.saturday, hours.sunday)
+        : undefined;
+      if (mode === 'create') {
+        const payload = buildCreateBusinessLocationPayload({
+          cityId,
+          address: location.address,
+          latitude: location.latitude,
+          longitude: location.longitude,
+          locationSource: location.locationSource,
+          workHours,
+          ...contacts,
+        });
+        await ownerApi.createBusinessLocation(token, businessId, payload);
+        setSuccess(copy.created);
+      } else if (mode === 'edit' && editingId) {
+        const patch: Record<string, unknown> = {};
+        if (canEditProfile) {
+          patch.cityId = cityId;
+          patch.address = location.address;
+          if (location.latitude != null && location.longitude != null) {
+            patch.latitude = location.latitude;
+            patch.longitude = location.longitude;
+            patch.locationSource = location.locationSource ?? 'GEOCODED';
+          }
+          patch.phone = contacts.phone || null;
+          patch.whatsapp = contacts.whatsapp || null;
+          patch.instagram = contacts.instagram || null;
+          patch.website = contacts.website || null;
+        }
+        if (canEditHours && workHours) patch.workHours = workHours;
+        await ownerApi.updateBusinessLocation(token, businessId, editingId, patch);
+        setSuccess(copy.saved);
+        const editedPrimary = locations.find((l) => l.id === editingId)?.isPrimary;
+        if (editedPrimary) await refreshBusinesses();
+      }
+      resetForm();
+      await loadLocations();
+    } catch (err) {
+      setError(parseApiError(locale, err));
+    } finally {
+      setMutating(false);
+    }
+  }
+
+  async function handleSetPrimary(row: BusinessLocationRow) {
+    if (!token || !canManage || row.isPrimary) return;
+    const city = cities.find((c) => c.id === row.cityId);
+    const cityName = city ? cityDisplayName(city, locale) : row.cityId;
+    if (!window.confirm(copy.setPrimaryConfirm(cityName, row.address))) return;
+    setMutating(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await ownerApi.setPrimaryBusinessLocation(token, businessId, row.id);
+      setSuccess(copy.primarySwitched);
+      await loadLocations();
+      await refreshBusinesses();
+    } catch (err) {
+      setError(parseApiError(locale, err));
+    } finally {
+      setMutating(false);
+    }
+  }
+
+  if (!ready || !token) {
+    return <p className="page-content">{ui.text_89d69a}</p>;
+  }
+
+  return (
+    <BusinessShell
+      activeNav="locations"
+      business={shellBusiness}
+      businesses={businesses}
+      userName={user?.name ?? undefined}
+      onLogout={logout}
+      mainNav={mainNav}
+      footerNav={footerNav}
+    >
+      <div className="card stack">
+        <header>
+          <h1>{copy.pageTitle}</h1>
+          <p className="muted">{copy.pageIntro}</p>
+        </header>
+
+        {error && (
+          <p className="error" role="alert">
+            {error}
+          </p>
+        )}
+        {success && (
+          <p className="success" role="status">
+            {success}
+          </p>
+        )}
+
+        {!canManage && <p className="muted">{copy.readOnlyHint}</p>}
+
+        {mode === 'list' && (
+          <>
+            {canManage && (
+              <button type="button" className="btn primary" onClick={startCreate} disabled={mutating}>
+                {copy.addBranch}
+              </button>
+            )}
+            {loading ? (
+              <p>{ui.text_89d69a}</p>
+            ) : locations.length === 0 ? (
+              <p className="muted">{copy.emptyList}</p>
+            ) : (
+              <ul className="stack" style={{ listStyle: 'none', padding: 0 }}>
+                {locations.map((row) => {
+                  const city = cities.find((c) => c.id === row.cityId);
+                  const cityName = city ? cityDisplayName(city, locale) : row.cityId;
+                  return (
+                    <li key={row.id} className="card bordered stack">
+                      <div className="row spread">
+                        <strong>{cityName}</strong>
+                        {row.isPrimary && (
+                          <span className="badge">{copy.primaryBadge}</span>
+                        )}
+                      </div>
+                      <p>{row.address}</p>
+                      {row.phone && <p className="muted">{row.phone}</p>}
+                      {row.workHours?.mon && (
+                        <p className="muted small">
+                          {copy.hoursSummary}: {row.workHours.mon}
+                        </p>
+                      )}
+                      {!row.isPrimary && canManage && (
+                        <p className="muted small">{copy.secondaryHint}</p>
+                      )}
+                      {canManage && (
+                        <div className="row gap">
+                          <button
+                            type="button"
+                            className="btn"
+                            onClick={() => startEdit(row)}
+                            disabled={mutating}
+                          >
+                            {copy.editBranch}
+                          </button>
+                          {!row.isPrimary && (
+                            <button
+                              type="button"
+                              className="btn"
+                              onClick={() => handleSetPrimary(row)}
+                              disabled={mutating}
+                            >
+                              {copy.setPrimary}
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </>
+        )}
+
+        {(mode === 'create' || mode === 'edit') && canManage && token && (
+          <form className="stack" onSubmit={onSubmit}>
+            <h2>{mode === 'create' ? copy.createTitle : copy.editTitle}</h2>
+            <label>
+              {copy.cityLabel}
+              <select
+                value={cityId}
+                onChange={(e) => setCityId(e.target.value)}
+                required
+                disabled={!canEditProfile || mutating}
+              >
+                <option value="">—</option>
+                {cities.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {cityDisplayName(c, locale)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {canEditProfile && cityId && (
+              <BusinessLocationField
+                locale={locale}
+                token={token}
+                citySlug={citySlug}
+                value={location}
+                onChange={setLocation}
+                addressLabel={ui.text_80148f}
+              />
+            )}
+            {canEditProfile && (
+              <>
+                <label>
+                  {ui.text_2928e1}
+                  <input
+                    value={contacts.phone}
+                    onChange={(e) => setContacts((p) => ({ ...p, phone: e.target.value }))}
+                    disabled={mutating}
+                  />
+                </label>
+                <label>
+                  WhatsApp
+                  <input
+                    value={contacts.whatsapp}
+                    onChange={(e) => setContacts((p) => ({ ...p, whatsapp: e.target.value }))}
+                    disabled={mutating}
+                  />
+                </label>
+                <label>
+                  Instagram
+                  <input
+                    value={contacts.instagram}
+                    onChange={(e) => setContacts((p) => ({ ...p, instagram: e.target.value }))}
+                    disabled={mutating}
+                  />
+                </label>
+                <label>
+                  Website
+                  <input
+                    value={contacts.website}
+                    onChange={(e) => setContacts((p) => ({ ...p, website: e.target.value }))}
+                    disabled={mutating}
+                  />
+                </label>
+              </>
+            )}
+            {canEditHours && (
+              <>
+                <label>
+                  {ui.__255eae}
+                  <input
+                    value={hours.weekdays}
+                    onChange={(e) => setHours((p) => ({ ...p, weekdays: e.target.value }))}
+                    disabled={mutating}
+                  />
+                </label>
+                <label>
+                  {ui.text_cee58b}
+                  <input
+                    value={hours.saturday}
+                    onChange={(e) => setHours((p) => ({ ...p, saturday: e.target.value }))}
+                    disabled={mutating}
+                  />
+                </label>
+                <label>
+                  {ui.text_aa48fa}
+                  <input
+                    value={hours.sunday}
+                    onChange={(e) => setHours((p) => ({ ...p, sunday: e.target.value }))}
+                    disabled={mutating}
+                  />
+                </label>
+              </>
+            )}
+            <div className="row gap">
+              <button type="submit" className="btn primary" disabled={mutating}>
+                {copy.save}
+              </button>
+              <button type="button" className="btn" onClick={resetForm} disabled={mutating}>
+                {ui.text_cancel}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </BusinessShell>
+  );
+}

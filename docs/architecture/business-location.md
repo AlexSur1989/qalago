@@ -45,7 +45,15 @@ Relationship: **Business 1 → N BusinessLocation**.
 - **PATCH primary / set-primary / legacy PATCH Business:** bidirectional sync of synchronized physical fields (A.3 service layer); single transaction; no HTTP recursion.
 - **Primary switch:** explicit `set-primary` only (generic PATCH cannot toggle `isPrimary`); partial unique index preserved via unset-old-then-set-new in one transaction.
 - **Authorization:** existing **Business-scoped** membership (`OWNER` / `MANAGER` + `BusinessPermission`); **no** branch-level membership.
-- **Deferred:** DELETE/archive lifecycle; public branch discovery; map markers for secondaries; owner/admin UI (A.5).
+- **Deferred:** DELETE/archive lifecycle; public branch discovery; map markers for secondaries.
+
+## Stage 6.12A.5 (owner & admin management UX)
+
+- **Business Web:** route `/business/[id]/locations` (“Филиалы” / `Филиалдар`); main nav when `BUSINESS_PROFILE_EDIT` or `BUSINESS_HOURS_EDIT`. List with **`isPrimary`** badge (not array order); create/edit via A.4 DTO; city from **`listCities()`** (cross-city secondaries allowed); reuses profile **`BusinessLocationField`** + hours/contact patterns. **No `isPrimary` on create**; **no DELETE** UI.
+- **Set primary:** `window.confirm` with city/address; `POST …/set-primary`; refreshes location list and **`listMyBusinesses`** so shell/profile primary fields stay current after cross-city switch.
+- **Permissions UX:** hide mutating actions without `BUSINESS_PROFILE_EDIT`; hours fields require `BUSINESS_HOURS_EDIT`; backend 403 unchanged. **No branch-level RBAC.**
+- **Admin Web (minimal):** read-only **`BusinessLocationsReadonly`** on approved business-application detail (staff token → same list endpoint). **No admin edit form** in A.5 — full management remains Business Web.
+- **Unchanged:** consumer-web public discovery, map/PostGIS cutover, Flutter, ads, reviews/favorites/plans scope.
 
 ## Compatibility strategy (forward)
 

@@ -129,5 +129,7 @@ describe('media/reviews nav discoverability (6.10D.2)', () => {
   it('nav labels use localized notification naming', () => {
     expect(navLabelForId('ru', 'messages')).toBe('Уведомления');
     expect(navLabelForId('kk', 'messages')).toBe('Хабарландырулар');
+    expect(navLabelForId('ru', 'locations')).toBe('Филиалы');
+    expect(navLabelForId('kk', 'locations')).toBe('Филиалдар');
   });
 });

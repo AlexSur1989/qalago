@@ -6,6 +6,22 @@
 
 ---
 
+## 2026-09-21 — Stage 6.12A.5 BusinessLocation owner & admin management UX
+
+- **Status:** 6.12A.5 PASS — READY FOR A.6.
+- **Checkpoint:** _(set at commit)_.
+- **Summary:**
+  - **Business Web:** `/business/[id]/locations` (“Филиалы” nav); list/create/edit/set-primary via A.4 endpoints; cross-city city selector from `listCities()`; reuses `BusinessLocationField`; **`isPrimary`** badge; confirm before set-primary; **`refreshBusinesses`** after primary switch / primary edit; **no DELETE**.
+  - **Admin Web:** read-only branch list on approved application detail (`BusinessLocationsReadonly`); staff uses same locations list API; **no admin edit UI**.
+  - **Docs:** `business-location.md` A.5 section; **`docs/ai-project-context.md`** + AGENTS maintenance note.
+  - **Unchanged:** catalog-api backend, consumer-web, map/PostGIS, Flutter, ads, public discovery.
+- **Tests:** business-web vitest (incl. `business-locations`, nav localization); admin-web vitest **53** PASS; business-web **build PASS**; admin-web **build PASS**. Pre-existing business-web hardcoded-UI guard failures on `reviews/page.tsx` (not A.5 scope).
+- **Database:** persistent branches not created for demo; baseline **31/31/31** unchanged.
+- **Deferred:** A.6 Flutter; A.7 map; location DELETE/archive; F.4 public branch URLs.
+- **Next:** 6.12A.6 client consumption (Flutter).
+
+---
+
 ## 2026-09-21 — Stage 6.12A.4 BusinessLocation management API
 
 - **Status:** 6.12A.4 PASS — READY FOR A.5.

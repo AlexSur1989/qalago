@@ -794,8 +794,81 @@ export function navLabelForId(locale: AppLocale, id: string): string {
     media: { ru: 'Фото', kk: 'Фото' },
     reviews: { ru: 'Отзывы', kk: 'Пікірлер' },
     messages: { ru: 'Уведомления', kk: 'Хабарландырулар' },
+    locations: { ru: 'Филиалы', kk: 'Филиалдар' },
   };
   return pick(locale, map[id] ?? { ru: id, kk: id });
+}
+
+export function branchManagementCopy(locale: AppLocale) {
+  return {
+    pageTitle: pick(locale, { ru: 'Филиалы', kk: 'Филиалдар' }),
+    pageIntro: pick(locale, {
+      ru: 'Физические точки вашего бизнеса. Основной филиал отображается в каталоге.',
+      kk: 'Бизнесіңіздің нақты орналаруы. Негізгі филиал каталогта көрсетіледі.',
+    }),
+    addBranch: pick(locale, { ru: 'Добавить филиал', kk: 'Филиал қосу' }),
+    editBranch: pick(locale, { ru: 'Редактировать', kk: 'Өңдеу' }),
+    primaryBadge: pick(locale, { ru: 'Основной филиал', kk: 'Негізгі филиал' }),
+    setPrimary: pick(locale, { ru: 'Сделать основным', kk: 'Негізгі ету' }),
+    setPrimaryConfirm: (city: string, address: string) =>
+      pick(locale, {
+        ru: `Сделать основным филиалом?\n${city}, ${address}\n\nЭтот филиал станет главной точкой бизнеса в каталоге.`,
+        kk: `Негізгі филиал ету керек пе?\n${city}, ${address}\n\nБұл филиал каталогтағы негізгі нүкте болады.`,
+      }),
+    emptyList: pick(locale, {
+      ru: 'Филиалы не найдены. Обратитесь в поддержку — у бизнеса должен быть хотя бы один филиал.',
+      kk: 'Филиалдар табылмады. Қолдауға хабарласыңыз — бизнесте кем дегенде бір филиал болуы керек.',
+    }),
+    createTitle: pick(locale, { ru: 'Новый филиал', kk: 'Жаңа филиал' }),
+    editTitle: pick(locale, { ru: 'Редактирование филиала', kk: 'Филиалды өңдеу' }),
+    cityLabel: pick(locale, { ru: 'Город', kk: 'Қала' }),
+    save: pick(locale, { ru: 'Сохранить', kk: 'Сақтау' }),
+    saved: pick(locale, { ru: 'Сохранено', kk: 'Сақталды' }),
+    created: pick(locale, { ru: 'Филиал добавлен', kk: 'Филиал қосылды' }),
+    primarySwitched: pick(locale, {
+      ru: 'Основной филиал изменён',
+      kk: 'Негізгі филиал өзгертілді',
+    }),
+    readOnlyHint: pick(locale, {
+      ru: 'Недостаточно прав для изменения филиалов.',
+      kk: 'Филиалдарды өзгертуге рұқсат жоқ.',
+    }),
+    secondaryHint: pick(locale, {
+      ru: 'Дополнительный филиал не меняет адрес бизнеса в каталоге, пока не станет основным.',
+      kk: 'Қосымша филиал негізгі болмағанша каталогтағы мекенжайды өзгертпейді.',
+    }),
+    hoursSummary: pick(locale, { ru: 'Часы (будни)', kk: 'Уақыт (будни)' }),
+  };
+}
+
+/** Payload for POST /businesses/:id/locations (no businessId / isPrimary). */
+export function buildCreateBusinessLocationPayload(input: {
+  cityId: string;
+  address: string;
+  latitude?: number;
+  longitude?: number;
+  locationSource?: string;
+  workHours?: Record<string, string>;
+  phone?: string;
+  whatsapp?: string;
+  instagram?: string;
+  website?: string;
+}): Record<string, unknown> {
+  const body: Record<string, unknown> = {
+    cityId: input.cityId,
+    address: input.address.trim(),
+  };
+  if (input.latitude != null && input.longitude != null) {
+    body.latitude = input.latitude;
+    body.longitude = input.longitude;
+    if (input.locationSource) body.locationSource = input.locationSource;
+  }
+  if (input.workHours) body.workHours = input.workHours;
+  if (input.phone !== undefined) body.phone = input.phone || null;
+  if (input.whatsapp !== undefined) body.whatsapp = input.whatsapp || null;
+  if (input.instagram !== undefined) body.instagram = input.instagram || null;
+  if (input.website !== undefined) body.website = input.website || null;
+  return body;
 }
 
 const PROMOTION_STATUS_LABELS: Record<string, L> = {

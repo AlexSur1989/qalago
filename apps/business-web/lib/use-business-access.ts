@@ -10,7 +10,7 @@ import {
 import { useAuth } from '@/lib/use-auth';
 
 export function useBusinessAccess() {
-  const { token, user, items, ready, logout } = useAuth();
+  const { token, user, items, ready, logout, refreshBusinesses } = useAuth();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -42,5 +42,6 @@ export function useBusinessAccess() {
     business,
     access,
     selectedId: business?.id ?? null,
+    refreshBusinesses,
   };
 }

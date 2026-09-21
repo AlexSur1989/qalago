@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthUser, MyBusinessItem, ownerApi } from '@/lib/api';
 import {
@@ -65,6 +65,13 @@ export function useAuth(redirectTo = '/login') {
     router.push('/login');
   }
 
+  const refreshBusinesses = useCallback(async () => {
+    const access = getWebAccessToken();
+    if (!access) return;
+    const res = await ownerApi.listMyBusinesses(access);
+    setItems(res.items);
+  }, []);
+
   return {
     token,
     user,
@@ -72,6 +79,7 @@ export function useAuth(redirectTo = '/login') {
     businesses: items,
     ready,
     logout,
+    refreshBusinesses,
   };
 }
 

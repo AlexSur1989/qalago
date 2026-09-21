@@ -14,6 +14,7 @@ import {
   REJECTION_REASON_MIN,
 } from '@/lib/business-requests-utils';
 import { formatDateTime } from '@/lib/monetization-utils';
+import { BusinessLocationsReadonly } from '@/components/business-requests/business-locations-readonly';
 
 export default function BusinessApplicationDetailPage() {
   const params = useParams<{ id: string }>();
@@ -188,6 +189,10 @@ export default function BusinessApplicationDetailPage() {
           </>
         )}
       </dl>
+
+      {approvedBusiness && item.status === 'APPROVED' && (
+        <BusinessLocationsReadonly token={token} businessId={approvedBusiness.id} />
+      )}
 
       {isPending && (
         <div className="toolbar" style={{ marginTop: '1.5rem', gap: '12px' }}>
