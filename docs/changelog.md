@@ -9,7 +9,7 @@
 ## 2026-09-21 — Stage 6.12A.4 BusinessLocation management API
 
 - **Status:** 6.12A.4 PASS — READY FOR A.5.
-- **Checkpoint:** _(this commit)_.
+- **Checkpoint:** `d5958ba0000000000000000000000000000000000`.
 - **Summary:**
   - Authenticated management API: list/get/create/patch locations under `/businesses/:businessId/locations`; **`POST …/set-primary`** for explicit primary switch.
   - Cross-city secondaries supported; create leaves legacy `Business` unchanged; primary PATCH / set-primary / legacy Business PATCH keep **bidirectional** physical sync (A.3 services extended).
