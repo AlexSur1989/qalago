@@ -6,6 +6,21 @@
 
 ---
 
+## 2026-09-21 — Stage 6.12A.2 BusinessLocation 1:1 backfill
+
+- **Status:** 6.12A.2 PASS — READY FOR A.3.
+- **Checkpoint:** `1477d77d84e674a946798cc32e327568b1b50dae`.
+- **Summary:**
+  - Idempotent migration **`20260921190000_stage_6_12a2_business_location_backfill`**: one **primary** `BusinessLocation` per existing `Business` (physical fields copied; geography via location trigger).
+  - **No `Business` row updates**; APIs/map still read legacy `Business` physical columns.
+  - Local integrity: **31** businesses → **31** locations, **31** primary; field/geo parity **0** mismatches; partial/invalid coords **0**.
+  - **Gap until A.3:** new Business creates (application approval, admin import) do not auto-create locations.
+- **Tests:** catalog-api Jest **1005** (incl. `stage-6-12a2-business-location-backfill`); migrate status up to date.
+- **Deferred:** A.3 compatibility read/write + primary sync on create/update.
+- **Next:** 6.12A.3 compatibility layer.
+
+---
+
 ## 2026-09-21 — Stage 6.12A.1 BusinessLocation database foundation
 
 - **Status:** 6.12A.1 PASS — READY FOR A.2.
