@@ -20,13 +20,20 @@ import {
 import type { NormalizedMapBbox } from './business-map-query.util';
 import { mergeWhereWithAnd } from '../../common/utils/catalog-geo-query.util';
 import {
+  queryCatalogMapLocationViewportMemberRows,
+  queryCatalogMapLocationViewportPage,
   queryCatalogMapViewportMemberIds,
   queryCatalogMapViewportPage,
   queryCatalogNearestPage,
   queryCatalogRadiusMembers,
   resolveExplicitRadiusMeters,
   resolveNearestRadiusMeters,
+  type CatalogMapLocationViewportRow,
 } from './business-catalog-postgis-geo.query';
+import {
+  assembleMapLocationBusinessListItems,
+  businessLocationMapPhysicalSelect,
+} from './business-map-location-list.presenter';
 import {
   BusinessCatalogSort,
   compareBusinessBySort,
@@ -342,7 +349,7 @@ export class BusinessesService {
     return [items, sorted.length] as const;
   }
 
-  /** Map viewport: PostGIS ST_Intersects on Business.location + SQL LIMIT/OFFSET. */
+  /** Map viewport: Business.location (legacy) or BusinessLocation.location when forMap=true. */
   private async findPagedItemsMapViewportPostgis(
     where: Prisma.BusinessWhereInput,
     query: ListBusinessesQueryDto,
@@ -353,6 +360,19 @@ export class BusinessesService {
     cityId: string,
     effectiveSort: BusinessCatalogSort,
   ) {
+    if (query.forMap === true) {
+      return this.findPagedItemsMapLocationViewportPostgis(
+        where,
+        query,
+        skip,
+        limit,
+        searchContext,
+        mapBbox,
+        cityId,
+        effectiveSort,
+      );
+    }
+
     const viewportParams = {
       cityId,
       status: query.status ?? BusinessStatus.ACTIVE,
@@ -441,6 +461,165 @@ export class BusinessesService {
       .filter((item): item is NonNullable<typeof item> => item != null);
 
     return [items, total] as const;
+  }
+
+  /** forMap viewport: one row per BusinessLocation; id remains Business.id + locationId. */
+  private async findPagedItemsMapLocationViewportPostgis(
+    where: Prisma.BusinessWhereInput,
+    query: ListBusinessesQueryDto,
+    skip: number,
+    limit: number,
+    searchContext: BusinessCatalogSearchContext | null,
+    mapBbox: NormalizedMapBbox,
+    cityId: string,
+    effectiveSort: BusinessCatalogSort,
+  ) {
+    const viewportParams = {
+      cityId,
+      status: query.status ?? BusinessStatus.ACTIVE,
+      mapBbox,
+      categoryId: query.categoryId,
+      subcategoryId: query.subcategoryId,
+      searchPattern: searchContext?.normalized ?? null,
+      serviceSearchBusinessIds: searchContext
+        ? [...searchContext.serviceMatchKindByBusinessId.keys()]
+        : undefined,
+    };
+
+    const needsBusinessExpansion =
+      (effectiveSort === BusinessCatalogSort.RECOMMENDED && searchContext != null) ||
+      (effectiveSort !== BusinessCatalogSort.RECOMMENDED &&
+        effectiveSort !== BusinessCatalogSort.NEAREST);
+
+    if (needsBusinessExpansion) {
+      const memberRows = await queryCatalogMapLocationViewportMemberRows(
+        this.prisma,
+        viewportParams,
+      );
+      if (memberRows.length === 0) {
+        return [[], 0] as const;
+      }
+      const memberBusinessIds = [...new Set(memberRows.map((row) => row.businessId))];
+      mergeWhereWithAnd(where, { id: { in: memberBusinessIds } });
+
+      let orderedBusinessIds: string[];
+      if (effectiveSort === BusinessCatalogSort.RECOMMENDED && searchContext) {
+        orderedBusinessIds = await this.orderBusinessIdsBySearchRelevance(
+          where,
+          searchContext,
+        );
+      } else {
+        const allItems = await this.prisma.business.findMany({
+          where,
+          select: businessListSelect,
+        });
+        const metrics =
+          effectiveSort === BusinessCatalogSort.RATING ||
+          effectiveSort === BusinessCatalogSort.POPULAR
+            ? await this.loadCatalogSortMetrics(allItems.map((i) => i.id))
+            : null;
+        orderedBusinessIds = [...allItems]
+          .sort((a, b) =>
+            compareBusinessBySort(
+              this.toSortRow(a, null, metrics),
+              this.toSortRow(b, null, metrics),
+              effectiveSort,
+            ),
+          )
+          .map((item) => item.id);
+      }
+
+      const expanded = this.expandMapLocationRowsByBusinessOrder(
+        memberRows,
+        orderedBusinessIds,
+      );
+      const pageRows = expanded.slice(skip, skip + limit);
+      const items = await this.hydrateMapLocationViewportRows(pageRows);
+      return [items, expanded.length] as const;
+    }
+
+    const { rows, total } = await queryCatalogMapLocationViewportPage(this.prisma, {
+      ...viewportParams,
+      skip,
+      limit,
+    });
+    if (rows.length === 0) {
+      return [[], total] as const;
+    }
+    const items = await this.hydrateMapLocationViewportRows(rows);
+    return [items, total] as const;
+  }
+
+  private expandMapLocationRowsByBusinessOrder(
+    memberRows: CatalogMapLocationViewportRow[],
+    orderedBusinessIds: string[],
+  ): CatalogMapLocationViewportRow[] {
+    const byBusiness = new Map<string, CatalogMapLocationViewportRow[]>();
+    for (const row of memberRows) {
+      const list = byBusiness.get(row.businessId) ?? [];
+      list.push(row);
+      byBusiness.set(row.businessId, list);
+    }
+    for (const list of byBusiness.values()) {
+      list.sort((a, b) => a.locationId.localeCompare(b.locationId));
+    }
+
+    const expanded: CatalogMapLocationViewportRow[] = [];
+    for (const businessId of orderedBusinessIds) {
+      const locations = byBusiness.get(businessId);
+      if (locations) expanded.push(...locations);
+    }
+    return expanded;
+  }
+
+  private async orderBusinessIdsBySearchRelevance(
+    where: Prisma.BusinessWhereInput,
+    searchContext: BusinessCatalogSearchContext,
+  ): Promise<string[]> {
+    const allItems = await this.prisma.business.findMany({
+      where,
+      select: businessListSelectForSearchRelevance,
+    });
+    const toRelevanceRow = (
+      item: (typeof allItems)[number],
+    ): BusinessSearchRelevanceRow => ({
+      id: item.id,
+      title: item.title,
+      shortDesc: item.shortDesc,
+      address: item.address,
+      category: item.category,
+      businessSubcategories: item.businessSubcategories,
+      serviceMatchKind:
+        searchContext.serviceMatchKindByBusinessId.get(item.id) ?? null,
+    });
+    return [...allItems]
+      .sort((a, b) =>
+        compareBusinessBySearchRelevance(
+          toRelevanceRow(a),
+          toRelevanceRow(b),
+          searchContext.normalized,
+        ),
+      )
+      .map((item) => item.id);
+  }
+
+  private async hydrateMapLocationViewportRows(
+    spatialRows: CatalogMapLocationViewportRow[],
+  ) {
+    if (spatialRows.length === 0) return [];
+    const businessIds = [...new Set(spatialRows.map((row) => row.businessId))];
+    const locationIds = spatialRows.map((row) => row.locationId);
+    const [businesses, locations] = await Promise.all([
+      this.prisma.business.findMany({
+        where: { id: { in: businessIds } },
+        select: businessListSelect,
+      }),
+      this.prisma.businessLocation.findMany({
+        where: { id: { in: locationIds } },
+        select: businessLocationMapPhysicalSelect,
+      }),
+    ]);
+    return assembleMapLocationBusinessListItems(spatialRows, businesses, locations);
   }
 
   /** Nearest / radius: PostGIS ST_DWithin + ST_Distance with SQL LIMIT/OFFSET. */

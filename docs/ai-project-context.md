@@ -28,7 +28,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 |-------|--------|--------|
 | 6.12A.5 | PASS | Owner Business Web + Admin read-only branches |
 | 6.12A.6 | PASS | checkpoint `fc13f679…` — public read + Flutter/Consumer client awareness |
-| **Next after A.6** | **6.12A.7** | Map/PostGIS cutover (not started in A.6) |
+| 6.12A.7.1 | PASS (pending gate) | Backend `forMap` viewport → **BusinessLocation** grain + `locationId`; Flutter markers **A.7.2** |
 
 ## Business vs BusinessLocation
 
@@ -41,8 +41,9 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 ## Frozen / deferred
 
-- **Map / PostGIS / GeoJSON / MapLibre:** still **`Business.location`** and primary marker semantics (**A.7**).
-- **Public discovery:** city/category/search unchanged (primary business city).
+- **Map backend (A.7.1):** `forMap`+bbox uses **`BusinessLocation.location`** + **`locationId`**; nearest/radius/list discovery still **Business-grain**.
+- **Map client (A.7.2):** GeoJSON/marker identity still **businessId** until Flutter cutover.
+- **Public discovery:** city/category/search unchanged (primary business city) except map viewport city filter uses branch city.
 - **F.4 / F.5:** final business URLs, branch slugs, hreflang, branch JSON-LD — not A.6.
 - **Branch-level membership, location favorites, branch reviews:** deferred.
 

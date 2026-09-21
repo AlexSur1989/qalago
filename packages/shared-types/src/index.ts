@@ -97,6 +97,8 @@ export interface CategorySummary {
 
 export interface BusinessListItem {
   id: string;
+  /** Present on forMap viewport rows (Stage 6.12A.7.1+). Omitted on ordinary business-grain lists. */
+  locationId?: string;
   cityId: string;
   categoryId: string;
   title: string;

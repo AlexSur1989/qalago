@@ -62,10 +62,21 @@ Relationship: **Business 1 → N BusinessLocation**.
 - **Consumer Web:** typed client + branch block on temporary **`/businesses/[id]`** (F.3 **noindex** preserved); no F.4 slug/SEO/LocalBusiness.
 - **Frozen:** discovery/search/category filters; map PostGIS/GeoJSON; branch reviews/favorites/plans.
 
+## Stage 6.12A.7.1 (map viewport backend cutover)
+
+- **Scope:** `GET /businesses` with **`forMap=true`** and viewport bbox only. PostGIS grain switches from **`Business.location`** to **`BusinessLocation.location`** joined to parent **`Business`**.
+- **Identity:** each matching branch is one list item — **`locationId`** = `BusinessLocation.id`; **`id`** remains **Business id** (additive contract; do not repurpose `id`).
+- **Physical fields** on map rows (`cityId`, address, coordinates, branch contacts, `workHours`) come from **BusinessLocation**; category/status/plan/cover/title from **Business**.
+- **City filter:** map uses **`BusinessLocation.cityId`** (branch city), not primary `Business.cityId`.
+- **Status:** parent **`Business.status`** only (no `BusinessLocation.status`).
+- **Unchanged in A.7.1:** nearest/radius/search/category discovery without map viewport grain (still **one row per Business**, primary geography); Flutter map marker identity (**A.7.2**); MapLibre/style; geocoding; ads/plans/reviews/favorites scope.
+- **Search + forMap + bbox:** business text match remains parent Business semantics; branch **`bl.address`** is also matched; map+bbox+search may return multiple rows per business when several branches match viewport.
+- **Interim client note:** Flutter map still dedupes by `business.id` until **A.7.2** — backend may return multiple rows per business before marker cutover.
+
 ## Compatibility strategy (forward)
 
 - Later substages may project legacy DTO fields from primary location before deprecating columns.
-- Map cutover to location geography: **isolated substage** after backfill (maps frozen until then).
+- **A.7.2+:** Flutter GeoJSON/selection cutover; optional discovery migration to location grain is a separate product decision.
 
 ## Scope deferred
 

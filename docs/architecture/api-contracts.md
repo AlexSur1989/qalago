@@ -302,7 +302,7 @@ Env: `QALAGO_GEOCODING_PROVIDER` = `mock` (default) \| `maptiler`; `MAPTILER_API
 
 ## Businesses
 
-> **Internal (6.12A.4):** `BusinessLocation` management API (authenticated) supports multi-branch CRUD and explicit primary switch. Legacy public list/detail/map still read **primary** fields from top-level `Business`. Discovery/map cutover to all branches deferred. See [business-location.md](./business-location.md).
+> **Map (6.12A.7.1):** `forMap=true` + viewport bbox returns **one row per qualifying `BusinessLocation`** (`locationId` + branch physical fields). **`id` remains the parent Business id.** Ordinary list/search/nearest (without map viewport grain) stays **Business-scoped**. See [business-location.md](./business-location.md).
 
 ### GET /businesses
 
@@ -320,12 +320,14 @@ Query:
 | latitude, longitude | number — user position; required for `sort=nearest` |
 | radiusKm | number (default 15) — max distance in km when geo params set |
 | sort | `recommended` \| `nearest` \| `rating` \| `popular` — organic catalog sort (Stage 6.7D) |
-| forMap | boolean (optional) — when `true`, only businesses with non-null stored `latitude`/`longitude` (map marker mode; does not affect list/search when omitted) |
-| minLat, maxLat, minLng, maxLng | number (optional) — map viewport bbox; **all four required together** or 400; filters stored coordinates within the box (Stage 6.11C.3). Max span: **1.2° latitude**, **1.8° longitude** (Stage 6.11C.5A). |
+| forMap | boolean (optional) — with viewport bbox: **location-grain** map mode (Stage 6.12A.7.1): each item is a qualifying **branch** with `locationId`; parent **`id` = Business id**. Without bbox: excludes businesses/locations without valid stored coordinates. Does not change ordinary discovery when omitted. |
+| minLat, maxLat, minLng, maxLng | number (optional) — map viewport bbox; **all four required together** or 400. With `forMap=true`, PostGIS intersects **`BusinessLocation.location`** and filters by **`BusinessLocation.cityId`**. Max span: **1.2° latitude**, **1.8° longitude** (Stage 6.11C.5A). |
 
 When `latitude` and `longitude` are provided, each item may include `distanceMeters` (integer, straight-line/geodesic meters — not road distance). Businesses without coordinates are listed after geo-sorted items when `sort=nearest`.
 
-**Geo validation (Stage 6.11C.5A):** user `latitude`/`longitude` must be supplied as a **pair** (finite, in range; **0,0 allowed** for user position). `radiusKm` without a coordinate pair → **400**. Map mode (`forMap` and/or bbox) excludes null and invalid stored business coordinates (including **0,0** sentinel) server-side.
+**Map list item fields (forMap + bbox, 6.12A.7.1):** additive `locationId`; branch `cityId`, `address`, `latitude`, `longitude`, `phone`, `whatsapp`, `instagram`, `website`, `workHours` from **BusinessLocation**; brand fields (`title`, `slug`, `category`, cover, plan display fields, `status`, etc.) from **Business**. No raw PostGIS geography or internal timestamps.
+
+**Geo validation (Stage 6.11C.5A):** user `latitude`/`longitude` must be supplied as a **pair** (finite, in range; **0,0 allowed** for user position). `radiusKm` without a coordinate pair → **400**. Map mode excludes null/invalid stored coordinates (including **0,0** sentinel). **`sort=nearest` / `radiusKm` discovery** still uses **Business.location** (primary point) — not location-grain duplicates (6.12A.7.1).
 
 See [catalog-geo-query.md](./catalog-geo-query.md) for modes A/B/C and C.5 performance notes.
 

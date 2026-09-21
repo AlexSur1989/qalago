@@ -93,9 +93,12 @@ describe('Catalog geo performance baseline (mocked)', () => {
         findMany: jest.fn().mockResolvedValue([]),
         count: jest.fn(),
       },
+      businessLocation: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
       $queryRaw: jest
         .fn()
-        .mockResolvedValueOnce([{ id: 'b1' }])
+        .mockResolvedValueOnce([{ business_id: 'b1', location_id: 'loc1' }])
         .mockResolvedValueOnce([{ count: 1n }]),
     };
     const service = buildService(prisma as never);

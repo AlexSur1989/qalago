@@ -47,7 +47,8 @@ export function mapViewportEnvelopeGeography(bbox: NormalizedMapBbox): Prisma.Sq
   )::geography`;
 }
 
-function buildCatalogCatalogFilterSql(
+/** Business-grain filters (nearest/radius + legacy business viewport): primary city + Business.location. */
+function buildCatalogBusinessCatalogFilterSql(
   params: Pick<
     CatalogPostgisGeoFilterParams,
     'cityId' | 'status' | 'categoryId' | 'subcategoryId' | 'searchPattern' | 'serviceSearchBusinessIds'
@@ -104,6 +105,67 @@ function buildCatalogCatalogFilterSql(
   return parts;
 }
 
+type CatalogMapLocationCatalogFilterParams = Pick<
+  CatalogPostgisGeoFilterParams,
+  'cityId' | 'status' | 'categoryId' | 'subcategoryId' | 'searchPattern' | 'serviceSearchBusinessIds'
+>;
+
+/** Location-grain map filters: branch city + BusinessLocation.location; parent Business status/taxonomy. */
+function buildCatalogMapLocationJoinFilterSql(
+  params: CatalogMapLocationCatalogFilterParams,
+): Prisma.Sql[] {
+  const parts: Prisma.Sql[] = [
+    Prisma.sql`bl."cityId" = ${params.cityId}`,
+    Prisma.sql`b.status = ${params.status}::"BusinessStatus"`,
+    Prisma.sql`bl.location IS NOT NULL`,
+  ];
+
+  if (params.categoryId) {
+    parts.push(Prisma.sql`b."categoryId" = ${params.categoryId}`);
+  }
+
+  if (params.subcategoryId) {
+    parts.push(Prisma.sql`EXISTS (
+      SELECT 1 FROM "BusinessSubcategory" bs
+      WHERE bs."businessId" = b.id AND bs."subcategoryId" = ${params.subcategoryId}
+    )`);
+  }
+
+  if (params.searchPattern) {
+    const pattern = `%${params.searchPattern}%`;
+    const searchOr: Prisma.Sql[] = [
+      Prisma.sql`b.title ILIKE ${pattern}`,
+      Prisma.sql`b."shortDesc" ILIKE ${pattern}`,
+      Prisma.sql`b.address ILIKE ${pattern}`,
+      Prisma.sql`bl.address ILIKE ${pattern}`,
+      Prisma.sql`EXISTS (
+        SELECT 1 FROM "Category" c
+        WHERE c.id = b."categoryId"
+          AND (
+            c.title ILIKE ${pattern}
+            OR c."nameRu" ILIKE ${pattern}
+            OR c."nameKk" ILIKE ${pattern}
+          )
+      )`,
+      Prisma.sql`EXISTS (
+        SELECT 1 FROM "BusinessSubcategory" bs
+        INNER JOIN "Subcategory" s ON s.id = bs."subcategoryId"
+        WHERE bs."businessId" = b.id
+          AND (s."nameRu" ILIKE ${pattern} OR s."nameKk" ILIKE ${pattern})
+      )`,
+    ];
+    const serviceIds = params.serviceSearchBusinessIds ?? [];
+    if (serviceIds.length > 0) {
+      searchOr.push(
+        Prisma.sql`b.id IN (${Prisma.join(serviceIds.map((id) => Prisma.sql`${id}`))})`,
+      );
+    }
+    parts.push(Prisma.sql`(${Prisma.join(searchOr, ' OR ')})`);
+  }
+
+  return parts;
+}
+
 export type CatalogPostgisMapViewportParams = {
   cityId: string;
   status: BusinessStatus;
@@ -118,9 +180,89 @@ export function buildCatalogMapViewportWhereSql(
   params: CatalogPostgisMapViewportParams,
 ): Prisma.Sql {
   const viewport = mapViewportEnvelopeGeography(params.mapBbox);
-  const parts = buildCatalogCatalogFilterSql(params);
+  const parts = buildCatalogBusinessCatalogFilterSql(params);
   parts.push(Prisma.sql`ST_Intersects(b.location, ${viewport})`);
   return Prisma.join(parts, ' AND ');
+}
+
+export type CatalogPostgisMapLocationViewportParams = {
+  cityId: string;
+  status: BusinessStatus;
+  mapBbox: NormalizedMapBbox;
+  categoryId?: string;
+  subcategoryId?: string;
+  searchPattern?: string | null;
+  serviceSearchBusinessIds?: string[];
+  skip: number;
+  limit: number;
+};
+
+export type CatalogMapLocationViewportRow = {
+  businessId: string;
+  locationId: string;
+};
+
+export function buildCatalogMapLocationViewportWhereSql(
+  params: Omit<CatalogPostgisMapLocationViewportParams, 'skip' | 'limit'>,
+): Prisma.Sql {
+  const viewport = mapViewportEnvelopeGeography(params.mapBbox);
+  const parts = buildCatalogMapLocationJoinFilterSql(params);
+  parts.push(Prisma.sql`ST_Intersects(bl.location, ${viewport})`);
+  return Prisma.join(parts, ' AND ');
+}
+
+export async function queryCatalogMapLocationViewportPage(
+  prisma: Pick<PrismaClient, '$queryRaw'>,
+  params: CatalogPostgisMapLocationViewportParams,
+): Promise<{ rows: CatalogMapLocationViewportRow[]; total: number }> {
+  const whereSql = buildCatalogMapLocationViewportWhereSql(params);
+
+  const rows = await prisma.$queryRaw<
+    Array<{ business_id: string; location_id: string }>
+  >`
+    SELECT b.id AS business_id, bl.id AS location_id
+    FROM "BusinessLocation" bl
+    INNER JOIN "Business" b ON b.id = bl."businessId"
+    WHERE ${whereSql}
+    ORDER BY b.title ASC, b.id ASC, bl.id ASC
+    LIMIT ${params.limit} OFFSET ${params.skip}
+  `;
+
+  const countRows = await prisma.$queryRaw<Array<{ count: bigint }>>`
+    SELECT COUNT(*)::bigint AS count
+    FROM "BusinessLocation" bl
+    INNER JOIN "Business" b ON b.id = bl."businessId"
+    WHERE ${whereSql}
+  `;
+
+  return {
+    rows: rows.map((row) => ({
+      businessId: row.business_id,
+      locationId: row.location_id,
+    })),
+    total: Number(countRows[0]?.count ?? 0n),
+  };
+}
+
+/** All location rows inside viewport (for map search / sort expansion in Node). */
+export async function queryCatalogMapLocationViewportMemberRows(
+  prisma: Pick<PrismaClient, '$queryRaw'>,
+  params: Omit<CatalogPostgisMapLocationViewportParams, 'skip' | 'limit'>,
+): Promise<CatalogMapLocationViewportRow[]> {
+  const whereSql = buildCatalogMapLocationViewportWhereSql(params);
+  const rows = await prisma.$queryRaw<
+    Array<{ business_id: string; location_id: string }>
+  >`
+    SELECT b.id AS business_id, bl.id AS location_id
+    FROM "BusinessLocation" bl
+    INNER JOIN "Business" b ON b.id = bl."businessId"
+    WHERE ${whereSql}
+    ORDER BY b.title ASC, b.id ASC, bl.id ASC
+  `;
+  return rows.map((row) => ({
+    businessId: row.business_id,
+    locationId: row.location_id,
+  }));
 }
 
 export async function queryCatalogMapViewportPage(
@@ -165,7 +307,7 @@ export function buildCatalogNearestWhereSql(
   params: CatalogPostgisGeoFilterParams,
   queryPoint: Prisma.Sql,
 ): Prisma.Sql {
-  const parts = buildCatalogCatalogFilterSql(params);
+  const parts = buildCatalogBusinessCatalogFilterSql(params);
   parts.push(Prisma.sql`ST_DWithin(b.location, ${queryPoint}, ${params.radiusMeters})`);
 
   const bbox = params.mapBbox;
