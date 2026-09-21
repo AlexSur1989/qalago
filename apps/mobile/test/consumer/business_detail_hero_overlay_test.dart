@@ -81,7 +81,7 @@ Future<void> pumpHeroOverlay(
         cityProvider.overrideWith(() => _UralskCityNotifier()),
         authProvider.overrideWith(() => _GuestAuthNotifier()),
         catalogRepositoryProvider.overrideWith((ref) => _NoopCatalogRepository()),
-        businessDetailsProvider.overrideWith((ref, id) async => data),
+        businessDetailsProvider.overrideWith((ref, request) async => data),
         businessFavoriteProvider.overrideWith((ref, id) async => false),
         myBusinessesProvider.overrideWith((ref) async => const []),
         userLocationProvider.overrideWith((ref) => Stream.value(null)),

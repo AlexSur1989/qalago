@@ -44,6 +44,20 @@ export type CategoryDto = {
   sortOrder: number;
 };
 
+export type EffectivePhysicalDto = {
+  locationId: string | null;
+  isPrimary: boolean;
+  cityId: string;
+  address: string;
+  latitude: number | null;
+  longitude: number | null;
+  phone: string | null;
+  whatsapp: string | null;
+  instagram: string | null;
+  website: string | null;
+  workHours: Record<string, unknown> | null;
+};
+
 export type BusinessSummaryDto = {
   id: string;
   title: string;
@@ -54,6 +68,9 @@ export type BusinessSummaryDto = {
   category?: { id: string; title: string; slug: string } | null;
   averageRating?: number | null;
   reviewCount?: number;
+  /** Stage 6.12A.7.6 — optional branch context (additive). */
+  activeLocationId?: string | null;
+  effectivePhysical?: EffectivePhysicalDto;
 };
 
 export type SubcategoryDto = {

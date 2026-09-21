@@ -217,8 +217,16 @@ class CatalogRepository {
         .toList();
   }
 
-  Future<Map<String, dynamic>> fetchBusinessDetails(String id) async {
-    final response = await _dio.get('/businesses/$id');
+  Future<Map<String, dynamic>> fetchBusinessDetails(
+    String id, {
+    String? locationId,
+  }) async {
+    final response = await _dio.get(
+      '/businesses/$id',
+      queryParameters: {
+        if (locationId != null && locationId.isNotEmpty) 'locationId': locationId,
+      },
+    );
     return response.data as Map<String, dynamic>;
   }
 

@@ -317,6 +317,8 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
       const business = {
         id: 'b1',
         title: 'Cafe',
+        cityId: 'city-1',
+        address: 'Main',
         coverImageUrl: 'https://cdn.example/cover.jpg',
         images,
         promotions,
@@ -324,6 +326,25 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
       };
 
       const prisma = {
+        businessLocation: {
+          findMany: jest.fn().mockResolvedValue([
+            {
+              id: 'loc-primary',
+              businessId: 'b1',
+              cityId: 'city-1',
+              address: 'Main',
+              latitude: null,
+              longitude: null,
+              isPrimary: true,
+              phone: null,
+              whatsapp: null,
+              instagram: null,
+              website: null,
+              workHours: null,
+              createdAt: new Date('2026-01-01'),
+            },
+          ]),
+        },
         business: {
           findFirst: jest.fn().mockResolvedValue(business),
           findUnique: jest.fn().mockResolvedValue({

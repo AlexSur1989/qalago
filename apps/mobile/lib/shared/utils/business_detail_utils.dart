@@ -57,21 +57,73 @@ String? normalizeInstagramUrl(String? raw) {
   return isSafeHttpUrl(url) ? url : null;
 }
 
-/// Physical branch context for consumer detail (A.7.4 map → detail handoff).
+/// Physical branch context for consumer detail (A.7.6 backend effectivePhysical).
 class ActiveBusinessPhysicalContext {
   const ActiveBusinessPhysicalContext({
     required this.address,
     required this.latitude,
     required this.longitude,
+    this.locationId,
+    this.isPrimary = false,
+    this.cityId,
     this.phone,
     this.whatsapp,
+    this.instagram,
+    this.website,
+    this.workHours,
   });
 
   final String address;
   final double? latitude;
   final double? longitude;
+  final String? locationId;
+  final bool isPrimary;
+  final String? cityId;
   final String? phone;
   final String? whatsapp;
+  final String? instagram;
+  final String? website;
+  final dynamic workHours;
+}
+
+ActiveBusinessPhysicalContext? _parseEffectivePhysicalBlock(
+  Map<String, dynamic> block,
+) {
+  return ActiveBusinessPhysicalContext(
+    locationId: block['locationId'] as String?,
+    isPrimary: block['isPrimary'] as bool? ?? false,
+    cityId: block['cityId'] as String?,
+    address: block['address'] as String? ?? '',
+    latitude: parseJsonDouble(block['latitude']),
+    longitude: parseJsonDouble(block['longitude']),
+    phone: block['phone'] as String?,
+    whatsapp: block['whatsapp'] as String?,
+    instagram: block['instagram'] as String?,
+    website: block['website'] as String?,
+    workHours: block['workHours'],
+  );
+}
+
+/// Prefers server [effectivePhysical]; falls back to legacy client merge (tests/old API).
+ActiveBusinessPhysicalContext activePhysicalContextFromDetail({
+  required Map<String, dynamic> businessData,
+  required String businessId,
+  String? selectedLocationId,
+  List<BusinessBranchLocation>? branches,
+}) {
+  final effective = businessData['effectivePhysical'];
+  if (effective is Map<String, dynamic>) {
+    return _parseEffectivePhysicalBlock(effective)!;
+  }
+  if (effective is Map) {
+    return _parseEffectivePhysicalBlock(Map<String, dynamic>.from(effective))!;
+  }
+  return resolveActiveBusinessPhysicalContext(
+    businessData: businessData,
+    businessId: businessId,
+    selectedLocationId: selectedLocationId,
+    branches: branches,
+  );
 }
 
 ActiveBusinessPhysicalContext resolveActiveBusinessPhysicalContext({
@@ -85,6 +137,9 @@ ActiveBusinessPhysicalContext resolveActiveBusinessPhysicalContext({
   final primaryLng = parseJsonDouble(businessData['longitude']);
   final primaryPhone = businessData['phone'] as String?;
   final primaryWhatsapp = businessData['whatsapp'] as String?;
+  final primaryInstagram = businessData['instagram'] as String?;
+  final primaryWebsite = businessData['website'] as String?;
+  final primaryHours = businessData['workHours'];
 
   if (selectedLocationId != null &&
       selectedLocationId.isNotEmpty &&
@@ -92,11 +147,17 @@ ActiveBusinessPhysicalContext resolveActiveBusinessPhysicalContext({
     for (final branch in branches) {
       if (branch.id == selectedLocationId && branch.businessId == businessId) {
         return ActiveBusinessPhysicalContext(
+          locationId: branch.id,
+          isPrimary: branch.isPrimary,
+          cityId: branch.cityId,
           address: branch.address.isNotEmpty ? branch.address : primaryAddress,
           latitude: branch.latitude ?? primaryLat,
           longitude: branch.longitude ?? primaryLng,
           phone: branch.phone ?? primaryPhone,
           whatsapp: branch.whatsapp ?? primaryWhatsapp,
+          instagram: primaryInstagram,
+          website: primaryWebsite,
+          workHours: branch.workHours ?? primaryHours,
         );
       }
     }
@@ -108,6 +169,9 @@ ActiveBusinessPhysicalContext resolveActiveBusinessPhysicalContext({
     longitude: primaryLng,
     phone: primaryPhone,
     whatsapp: primaryWhatsapp,
+    instagram: primaryInstagram,
+    website: primaryWebsite,
+    workHours: primaryHours,
   );
 }
 

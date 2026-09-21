@@ -62,7 +62,11 @@ class _OwnerSubcategoriesSectionState extends ConsumerState<OwnerSubcategoriesSe
             widget.businessId,
             buildSubcategoryIdsPatch(_selectedIds),
           );
-      ref.invalidate(businessDetailsProvider(widget.businessId));
+      ref.invalidate(
+        businessDetailsProvider(
+          BusinessDetailRequest(businessId: widget.businessId),
+        ),
+      );
       ref.invalidate(myBusinessEntriesProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

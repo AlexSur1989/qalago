@@ -24,7 +24,9 @@ class OwnerGalleryScreen extends ConsumerWidget {
 
   void _invalidate(WidgetRef ref) {
     ref.invalidate(businessGalleryProvider(businessId));
-    ref.invalidate(businessDetailsProvider(businessId));
+    ref.invalidate(
+      businessDetailsProvider(BusinessDetailRequest(businessId: businessId)),
+    );
     ref.invalidate(myBusinessEntriesProvider);
   }
 
@@ -83,7 +85,9 @@ class OwnerGalleryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final galleryAsync = ref.watch(businessGalleryProvider(businessId));
-    final detailsAsync = ref.watch(businessDetailsProvider(businessId));
+    final detailsAsync = ref.watch(
+      businessDetailsProvider(BusinessDetailRequest(businessId: businessId)),
+    );
     final planAsync = ref.watch(businessPlanProvider(businessId));
     final coverUrl = detailsAsync.valueOrNull?['coverImageUrl'] as String?;
     final maxPhotos = planAsync.valueOrNull?['limits']?['maxPhotos'] as int?;

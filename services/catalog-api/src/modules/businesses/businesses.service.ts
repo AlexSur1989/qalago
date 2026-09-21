@@ -64,6 +64,7 @@ import { BusinessPublicContentService } from './business-public-content.service'
 import { BusinessSubcategoryService } from './business-subcategory.service';
 import { SubcategoriesService } from '../categories/subcategories.service';
 import { randomBytes } from 'crypto';
+import { attachEffectivePhysicalToDetail } from './business-effective-physical.util';
 
 const businessListSelect = {
   id: true,
@@ -907,7 +908,7 @@ export class BusinessesService {
     return { ratings, views };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, options?: { locationId?: string }) {
     const business = await this.prisma.business.findFirst({
       where: { id, status: BusinessStatus.ACTIVE },
       include: businessDetailInclude,
@@ -915,6 +916,11 @@ export class BusinessesService {
     if (!business) {
       throw new NotFoundException('Business not found');
     }
+
+    const locations = await this.prisma.businessLocation.findMany({
+      where: { businessId: id },
+      orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
+    });
 
     const [galleryPreview, catalogPreview, promotionsPreview, reviewsPreview, ratingMetrics] =
       await Promise.all([
@@ -933,7 +939,7 @@ export class BusinessesService {
 
     const subcategories = await this.businessSubcategories.listForBusiness(id);
 
-    return {
+    const withPreviews = {
       ...business,
       coverImageUrl,
       galleryPreview,
@@ -944,6 +950,12 @@ export class BusinessesService {
       reviewCount: ratingMetrics.reviewCount,
       subcategories: subcategories.filter((s) => s.isActive),
     };
+
+    return attachEffectivePhysicalToDetail(
+      withPreviews,
+      locations,
+      options?.locationId,
+    );
   }
 
   async findMy(user: AuthUser) {

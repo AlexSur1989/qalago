@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-09-22 — Stage 6.12A.7.6 effective physical contract (Business detail)
+
+- **Status:** 6.12A.7.6 IMPLEMENTED — READY FOR PHYSICAL QA.
+- **Checkpoint (implementation):** see git HEAD after stage commit.
+- **Summary:**
+  - **API:** additive `GET /businesses/:id?locationId=`; response **`activeLocationId`** + **`effectivePhysical`** (server resolver; invalid/foreign `locationId` → primary fallback, no cross-business leak).
+  - **Flutter detail:** consumes **`effectivePhysical`** for address/route/mini-map/contacts/hours/open status; **`Business.id`** unchanged for favorites/reviews/brand sections.
+  - **Consumer Web:** shared DTO typing extended (additive); F.4 branch SEO pages not started.
+  - **Out of scope:** branch photos/catalog/promotions/reviews/favorites grain, RBAC, map changes.
+- **Deferred:** physical detail QA on Samsung; branch-level media/catalog (A.8+ / F.4).
+- **Next:** physical QA L1/L2 detail contacts/hours; plan A.8+ branch content stages.
+
+---
+
 ## 2026-09-22 — Stage 6.12A.7.4 FINALIZED (multi-branch map physical QA)
 
 - **Status:** 6.12A.7.4 FINALIZED — READY FOR A.7.6 EFFECTIVE PHYSICAL CONTRACT.

@@ -237,3 +237,10 @@ export class UpdateBusinessDto {
   @IsOptional()
   private readonly coordinatePairValidation?: unknown;
 }
+
+/** Public business detail (Stage 6.12A.7.6). */
+export class GetBusinessDetailQueryDto {
+  @IsOptional()
+  @IsString()
+  locationId?: string;
+}

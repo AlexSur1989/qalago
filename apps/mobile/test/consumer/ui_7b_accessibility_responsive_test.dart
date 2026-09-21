@@ -179,7 +179,7 @@ void main() {
               (ref) => _DetailTestCatalogRepository(),
             ),
             businessDetailsProvider.overrideWith(
-              (ref, id) async => _fullIntentFixture(),
+              (ref, request) async => _fullIntentFixture(),
             ),
             businessFavoriteProvider.overrideWith((ref, id) async => false),
             myBusinessesProvider.overrideWith((ref) async => const []),

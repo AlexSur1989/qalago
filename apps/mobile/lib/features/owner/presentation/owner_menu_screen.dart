@@ -95,7 +95,11 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
   void _invalidateMenu() {
     _resetCatalogState();
     ref.invalidate(ownerMenuItemsPageProvider(_query));
-    ref.invalidate(businessDetailsProvider(widget.businessId));
+    ref.invalidate(
+      businessDetailsProvider(
+        BusinessDetailRequest(businessId: widget.businessId),
+      ),
+    );
     ref.invalidate(serviceMenuProvider(widget.businessId));
     ref.invalidate(businessPlanProvider(widget.businessId));
   }

@@ -81,8 +81,8 @@ void main() {
             }),
           ),
           businessDetailsProvider.overrideWith(
-            (ref, id) async => {
-              'id': id,
+            (ref, request) async => {
+              'id': request.businessId,
               'title': 'Test Cafe',
               'averageRating': 4.5,
               'reviewCount': 3,
@@ -118,7 +118,7 @@ void main() {
             }),
           ),
           businessDetailsProvider.overrideWith(
-            (ref, id) async => {
+            (ref, request) async => {
               'title': 'Cafe',
               'reviewCount': 0,
             },

@@ -559,9 +559,31 @@ final recommendedBusinessesProvider = FutureProvider<List<RecommendedBusiness>>(
   }
 });
 
+/// Consumer/owner detail fetch key (Stage 6.12A.7.6 — optional branch context).
+class BusinessDetailRequest {
+  const BusinessDetailRequest({required this.businessId, this.locationId});
+
+  final String businessId;
+  final String? locationId;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BusinessDetailRequest &&
+          businessId == other.businessId &&
+          locationId == other.locationId;
+
+  @override
+  int get hashCode => Object.hash(businessId, locationId);
+}
+
 final businessDetailsProvider =
-    FutureProvider.family<Map<String, dynamic>, String>((ref, id) async {
-  return ref.watch(catalogRepositoryProvider).fetchBusinessDetails(id);
+    FutureProvider.family<Map<String, dynamic>, BusinessDetailRequest>(
+        (ref, request) async {
+  return ref.watch(catalogRepositoryProvider).fetchBusinessDetails(
+        request.businessId,
+        locationId: request.locationId,
+      );
 });
 
 final businessPublicBranchesProvider =

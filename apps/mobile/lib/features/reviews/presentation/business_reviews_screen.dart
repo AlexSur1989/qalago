@@ -128,7 +128,11 @@ class _BusinessReviewsScreenState extends ConsumerState<BusinessReviewsScreen> {
   }
 
   void _refreshAfterMutation() {
-    ref.invalidate(businessDetailsProvider(widget.businessId));
+    ref.invalidate(
+      businessDetailsProvider(
+        BusinessDetailRequest(businessId: widget.businessId),
+      ),
+    );
     ref.invalidate(myReviewsProvider);
     ref.invalidate(myReviewForBusinessProvider(widget.businessId));
     unawaited(_loadPage1());
@@ -138,7 +142,11 @@ class _BusinessReviewsScreenState extends ConsumerState<BusinessReviewsScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final localeCode = ref.watch(appLocaleCodeProvider);
-    final detailsAsync = ref.watch(businessDetailsProvider(widget.businessId));
+    final detailsAsync = ref.watch(
+      businessDetailsProvider(
+        BusinessDetailRequest(businessId: widget.businessId),
+      ),
+    );
     final auth = ref.watch(authProvider);
     final myReviewAsync = auth.isAuthenticated
         ? ref.watch(myReviewForBusinessProvider(widget.businessId))

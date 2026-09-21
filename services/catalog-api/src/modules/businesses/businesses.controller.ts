@@ -6,7 +6,12 @@ import { BusinessesService } from './businesses.service';
 import { BusinessLocationService } from './business-location.service';
 import { BusinessTeamService } from './business-team.service';
 import { BusinessPublicContentService } from './business-public-content.service';
-import { CreateBusinessDto, ListBusinessesQueryDto, UpdateBusinessDto } from './dto/business.dto';
+import {
+  CreateBusinessDto,
+  GetBusinessDetailQueryDto,
+  ListBusinessesQueryDto,
+  UpdateBusinessDto,
+} from './dto/business.dto';
 import {
   CreateBusinessLocationDto,
   UpdateBusinessLocationDto,
@@ -157,8 +162,8 @@ export class BusinessesController {
 
   @Public()
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.businessesService.findOne(id);
+  findOne(@Param('id') id: string, @Query() query: GetBusinessDetailQueryDto) {
+    return this.businessesService.findOne(id, { locationId: query.locationId });
   }
 
   @Patch(':id')

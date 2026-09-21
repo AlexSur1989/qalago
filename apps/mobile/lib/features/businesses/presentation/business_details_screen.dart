@@ -65,6 +65,11 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
   int _rating = 5;
   bool _viewTracked = false;
 
+  BusinessDetailRequest get _detailRequest => BusinessDetailRequest(
+        businessId: widget.id,
+        locationId: widget.selectedLocationId,
+      );
+
   @override
   void initState() {
     super.initState();
@@ -183,7 +188,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
               ),
             ),
       );
-      ref.invalidate(businessDetailsProvider(widget.id));
+      ref.invalidate(businessDetailsProvider(_detailRequest));
       ref.invalidate(myReviewsProvider);
       ref.invalidate(myReviewForBusinessProvider(widget.id));
       if (mounted) {
@@ -203,7 +208,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final detailsAsync = ref.watch(businessDetailsProvider(widget.id));
+    final detailsAsync = ref.watch(businessDetailsProvider(_detailRequest));
     final branchesAsync = ref.watch(businessPublicBranchesProvider(widget.id));
     final favoriteAsync = ref.watch(businessFavoriteProvider(widget.id));
     final isAuthenticated = ref.watch(authProvider).isAuthenticated;
@@ -224,7 +229,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
         error: (e, _) => ErrorView(
           message: _consumerErrorMessage(l10n, '$e'),
           onRetry: () {
-            ref.invalidate(businessDetailsProvider(widget.id));
+            ref.invalidate(businessDetailsProvider(_detailRequest));
           },
         ),
         data: (data) {
@@ -241,20 +246,22 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
               : l10n.profileAboutMvpCityValue;
           final cityTimezone =
               city?['timezone'] as String? ?? kDefaultBusinessTimezone;
-          final physical = resolveActiveBusinessPhysicalContext(
+          final physical = activePhysicalContextFromDetail(
             businessData: data,
             businessId: widget.id,
             selectedLocationId: widget.selectedLocationId,
             branches: branchesAsync.valueOrNull,
           );
+          final activeLocationId =
+              data['activeLocationId'] as String? ?? physical.locationId;
           final address = physical.address;
           final desc = sanitizeDescription(
             data['description'] as String? ?? data['shortDesc'] as String?,
           );
-          final phone = physical.phone ?? data['phone'] as String?;
-          final whatsapp = physical.whatsapp ?? data['whatsapp'] as String?;
-          final instagramUrl = normalizeInstagramUrl(data['instagram'] as String?);
-          final websiteUrl = normalizeWebsiteUrl(data['website'] as String?);
+          final phone = physical.phone;
+          final whatsapp = physical.whatsapp;
+          final instagramUrl = normalizeInstagramUrl(physical.instagram);
+          final websiteUrl = normalizeWebsiteUrl(physical.website);
           final latitude = physical.latitude;
           final longitude = physical.longitude;
           if (!_viewTracked) {
@@ -310,10 +317,10 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
               .toList();
           final photoUrls = [if (coverUrl.isNotEmpty) coverUrl, ...galleryUrls];
           final openStatus =
-              computeOpenStatus(data['workHours'], timezone: cityTimezone);
+              computeOpenStatus(physical.workHours, timezone: cityTimezone);
           final openLabel = openStatusLabel(openStatus);
-          final hasHours = hasWorkHours(data['workHours']);
-          final weekRows = weeklyHoursRows(data['workHours']);
+          final hasHours = hasWorkHours(physical.workHours);
+          final weekRows = weeklyHoursRows(physical.workHours);
 
           final averageRating = (data['averageRating'] as num?)?.toDouble();
           final reviewCount = (data['reviewCount'] as num?)?.toInt() ?? reviewTotal;
@@ -359,7 +366,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                                 child: BusinessBranchesSection(
                                   branches: branches,
                                   localeCode: localeCode,
-                                  highlightLocationId: widget.selectedLocationId,
+                                  highlightLocationId: activeLocationId,
                                 ),
                               )
                             : const SizedBox.shrink(),
@@ -513,7 +520,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                         const SizedBox(height: 24),
                         _WorkHoursBlock(
                           today: todayHoursLabel(
-                            data['workHours'],
+                            physical.workHours,
                             timezone: cityTimezone,
                           ),
                           weekRows: weekRows,
@@ -621,7 +628,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                                   mine,
                                   onSuccess: () {
                                     ref.invalidate(
-                                      businessDetailsProvider(widget.id),
+                                      businessDetailsProvider(_detailRequest),
                                     );
                                     ref.invalidate(
                                       myReviewForBusinessProvider(widget.id),
@@ -634,7 +641,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                                   mine,
                                   onSuccess: () {
                                     ref.invalidate(
-                                      businessDetailsProvider(widget.id),
+                                      businessDetailsProvider(_detailRequest),
                                     );
                                     ref.invalidate(
                                       myReviewForBusinessProvider(widget.id),

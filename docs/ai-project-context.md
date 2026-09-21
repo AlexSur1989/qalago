@@ -30,13 +30,16 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | 6.12A.6 | PASS | checkpoint `fc13f679…` — public read + Flutter/Consumer client awareness |
 | 6.12A.7.1 | PASS | checkpoint `0d8a772…` — backend `forMap` viewport → **BusinessLocation** grain + `locationId` |
 | 6.12A.7.2 | PASS | Flutter map **physical key** = `locationId`; detail/reviews/favorites stay **Business.id** |
-| 6.12A.7.4 | HOTFIX | category map `mapLayerItems`; detail optional `locationId` for branch physical UI |
+| 6.12A.7.4 | FINALIZED | multi-branch map physical QA; public locations Hotfix 2 |
+| 6.12A.7.6 | PASS (pending QA) | **`GET /businesses/:id?locationId=`** + **`effectivePhysical`** backend source of truth for detail physical UI |
 
 ## Business vs BusinessLocation
 
-- **Business:** brand identity — membership, reviews, favorites, plans, ads, analytics (Business-scoped).
-- **BusinessLocation:** physical branch — city, address, coords, hours, contacts; **Business 1:N BusinessLocation**.
-- **Primary:** exactly one `isPrimary=true` per business; legacy **Business** physical columns mirror **primary** for public/discovery until later cutover.
+- **Business:** brand identity — membership, reviews, favorites, plans, ads, analytics, gallery/catalog/promotions (Business-scoped).
+- **BusinessLocation:** physical branch identity — city, address, coords, hours, contacts; **Business 1:N BusinessLocation**.
+- **Business detail (A.7.6):** optional query **`locationId`** selects active branch; response **`effectivePhysical`** is the server-resolved physical context (contacts/hours: location → business fallback). **`Business.id`** remains canonical for reviews/favorites/analytics.
+- **Primary:** default active context when `locationId` omitted; **`isPrimary` badge ≠ forced active** when user/map selects another branch.
+- **Primary sync:** legacy **Business** physical columns mirror **primary** for backward compatibility; branch photos/catalog/promotions/reviews remain future work (not A.7.6).
 - **Cross-city:** secondary branches may live in other cities; discovery still uses **primary** `Business.cityId` until a later stage.
 - **Public read (A.6):** `GET /businesses/:id/locations/public` (ACTIVE only, guest-safe).
 - **Management (A.4):** authenticated CRUD + `set-primary`; **no DELETE** yet.

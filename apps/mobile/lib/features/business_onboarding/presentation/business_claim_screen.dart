@@ -51,7 +51,11 @@ class _BusinessClaimScreenState extends ConsumerState<BusinessClaimScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final detailsAsync = ref.watch(businessDetailsProvider(widget.businessId));
+    final detailsAsync = ref.watch(
+      businessDetailsProvider(
+        BusinessDetailRequest(businessId: widget.businessId),
+      ),
+    );
 
     if (_success) {
       return Scaffold(

@@ -133,7 +133,11 @@ class _OwnerEditBusinessScreenState
           ),
         }),
       );
-      ref.invalidate(businessDetailsProvider(widget.businessId));
+      ref.invalidate(
+        businessDetailsProvider(
+          BusinessDetailRequest(businessId: widget.businessId),
+        ),
+      );
       ref.invalidate(myBusinessEntriesProvider);
       ref.invalidate(businessesProvider);
       ref.invalidate(featuredBusinessesProvider);
@@ -156,7 +160,11 @@ class _OwnerEditBusinessScreenState
 
   @override
   Widget build(BuildContext context) {
-    final detailsAsync = ref.watch(businessDetailsProvider(widget.businessId));
+    final detailsAsync = ref.watch(
+      businessDetailsProvider(
+        BusinessDetailRequest(businessId: widget.businessId),
+      ),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -167,7 +175,11 @@ class _OwnerEditBusinessScreenState
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(
           message: '$e',
-          onRetry: () => ref.invalidate(businessDetailsProvider(widget.businessId)),
+          onRetry: () => ref.invalidate(
+                businessDetailsProvider(
+                  BusinessDetailRequest(businessId: widget.businessId),
+                ),
+              ),
         ),
         data: (data) {
           _fillFromData(data);

@@ -360,13 +360,31 @@ Platform admin: optional `categoryId`, `subcategoryIds`. Reconciles invalid subs
 
 Public business detail summary (Stage 5G). Returns core business fields plus **bounded previews** — not full collections:
 
+Query (Stage 6.12A.7.6, additive): optional **`locationId`** = `BusinessLocation.id` for the requested business. When omitted, **primary** branch is the active physical context. When `locationId` is unknown or belongs to another business, response falls back to **this business’s primary** location (no cross-business physical data).
+
 Response includes optional `subcategories[]` (active public shape) when assigned. Stage 6.8C.1.
+
+Add **`activeLocationId`** (nullable) and **`effectivePhysical`** — server-resolved branch context for detail UI (address/coords/city from active location only; contacts/hours use location → business fallback):
 
 ```json
 {
   "id": "...",
   "title": "...",
   "coverImageUrl": "...",
+  "activeLocationId": "bl…",
+  "effectivePhysical": {
+    "locationId": "bl…",
+    "isPrimary": true,
+    "cityId": "...",
+    "address": "...",
+    "latitude": 51.2,
+    "longitude": 51.3,
+    "phone": "...",
+    "whatsapp": "...",
+    "instagram": "...",
+    "website": "...",
+    "workHours": {}
+  },
   "galleryPreview": { "items": [...], "totalCount": 100 },
   "catalogPreview": { "items": [...], "totalCount": 300 },
   "promotionsPreview": { "items": [...], "totalCount": 25 },
@@ -375,6 +393,8 @@ Response includes optional `subcategories[]` (active public shape) when assigned
   "reviewCount": 42
 }
 ```
+
+Legacy top-level business physical/contact fields remain for backward compatibility (typically mirror primary). Reviews, favorites, catalog, photos, promotions stay **Business-grain**.
 
 Public preview limits (fixed, independent of subscription tier): gallery 6, catalog 6, promotions 3, reviews 3. Subscription limits apply to owner storage/publication only.
 
