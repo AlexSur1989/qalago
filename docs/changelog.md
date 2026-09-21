@@ -6,6 +6,22 @@
 
 ---
 
+## 2026-09-21 — Stage 6.11F.3 SEO infrastructure
+
+- **Status:** 6.11F.3 PASS — READY FOR 6.12A.
+- **Checkpoint:** `ed67a6f07a955f7bf51d00f64d3699340171f2ae`.
+- **Summary:**
+  - Canonical origin via `NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL` / `getConsumerWebOrigin()`; `buildCanonicalUrl()` for city/category/subcategory paths and pagination (`?page=N` when N > 1).
+  - Root + discovery **metadata** (RU/KK from cookie), Open Graph / Twitter basics; **search** and temporary **`/businesses/{id}`** → `noindex, follow` (no fake business canonical).
+  - **`app/robots.ts`**: allow public discovery, disallow `/businesses/`, sitemap URL; **`app/sitemap.ts`** from `GET /cities`, `GET /categories?citySlug=`, subcategories (no search/legacy/business ID routes).
+  - JSON-LD: **WebSite** (root), **BreadcrumbList** on categories/category/subcategory; visible breadcrumbs; React `cache()` dedupe for catalog fetches.
+  - Docs: `docs/architecture/public-consumer-web.md` (F.3 section); locale-neutral canonicals — **hreflang deferred to F.5**.
+- **Tests/build:** consumer-web vitest **56**; `check:ui-strings` OK; `next build` OK (`/robots.txt`, `/sitemap.xml` routes present).
+- **Deferred:** final business/branch canonical URLs (**6.12A** + **F.4**); hreflang/locale URLs (**F.5**); LocalBusiness / SearchAction schema; OG image assets (**F.7/F.8**).
+- **Next:** **6.12A BusinessLocation** (not F.4 yet).
+
+---
+
 ## 2026-09-21 — Stage 6.11F.2 City & category discovery
 
 - **Status:** 6.11F.2 PASS — READY FOR F.3.
