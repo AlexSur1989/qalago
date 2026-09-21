@@ -1,22 +1,62 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { BusinessList } from '@/components/BusinessList';
+import { JsonLd } from '@/components/JsonLd';
 import { PaginationLinks } from '@/components/PaginationLinks';
 import {
   findCategoryBySlug,
   findSubcategoryBySlug,
 } from '@/lib/category-resolve';
+import { cachedFetchSubcategories } from '@/lib/catalog-cache';
 import { requireCityCategories } from '@/lib/city-page-data';
-import { fetchBusinesses, fetchSubcategories } from '@/lib/catalog-api';
+import { fetchBusinesses } from '@/lib/catalog-api';
 import { parsePageParam } from '@/lib/search-query';
 import {
   UI_LABELS,
   categoryDisplayName,
   subcategoryDisplayName,
 } from '@/lib/locale';
+import { cityDisplayName } from '@/lib/localized-content';
 import { getServerLocale } from '@/lib/locale-server';
 import { toPublicBusinessCard } from '@/lib/public-business';
 import { cityCategoryPath, citySubcategoryPath } from '@/lib/routes';
+import {
+  breadcrumbsForSubcategory,
+  jsonLdFromCrumbs,
+} from '@/lib/seo/discovery-breadcrumbs';
+import { breadcrumbListJsonLd } from '@/lib/seo/json-ld';
+import { metadataForSubcategory } from '@/lib/seo/page-metadata';
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ citySlug: string; categorySlug: string; subcategorySlug: string }>;
+  searchParams: Promise<{ page?: string }>;
+}): Promise<Metadata> {
+  const { citySlug, categorySlug, subcategorySlug } = await params;
+  const { page: pageRaw } = await searchParams;
+  const page = parsePageParam(pageRaw);
+  const locale = await getServerLocale();
+  const { city, categories } = await requireCityCategories(citySlug);
+  const category = findCategoryBySlug(categories, categorySlug);
+  if (!category) notFound();
+  const subs = await cachedFetchSubcategories(category.id);
+  const sub = findSubcategoryBySlug(subs, subcategorySlug, category.id);
+  if (!sub) notFound();
+  return metadataForSubcategory(
+    city.slug,
+    cityDisplayName(city, locale),
+    category.slug,
+    categoryDisplayName(category, locale),
+    sub.slug,
+    subcategoryDisplayName(sub, locale),
+    locale,
+    page,
+  );
+}
 
 export default async function CitySubcategoryPage({
   params,
@@ -35,7 +75,7 @@ export default async function CitySubcategoryPage({
   const category = findCategoryBySlug(categories, categorySlug);
   if (!category) notFound();
 
-  const subs = await fetchSubcategories(category.id);
+  const subs = await cachedFetchSubcategories(category.id);
   const sub = findSubcategoryBySlug(subs, subcategorySlug, category.id);
   if (!sub) notFound();
 
@@ -63,9 +103,13 @@ export default async function CitySubcategoryPage({
         ).items;
 
   const publicItems = items.map((b) => toPublicBusinessCard(b));
+  const crumbs = breadcrumbsForSubcategory(city, category, sub, locale);
+  const listPath = citySubcategoryPath(city.slug, category.slug, sub.slug);
 
   return (
     <main className="page">
+      <JsonLd data={breadcrumbListJsonLd(jsonLdFromCrumbs(crumbs, listPath))} />
+      <Breadcrumbs items={crumbs} />
       <Link href={cityCategoryPath(city.slug, category.slug)} className="page-back">
         {labels.back}
       </Link>

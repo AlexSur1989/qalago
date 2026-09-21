@@ -1,14 +1,29 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
-import { fetchBusiness } from '@/lib/catalog-api';
+import { notFound } from 'next/navigation';
+import { cachedFetchBusiness } from '@/lib/catalog-cache';
 import { getApiOrigin } from '@/lib/public-config';
 import { UI_LABELS } from '@/lib/locale';
 import { getServerLocale } from '@/lib/locale-server';
+import { metadataForTemporaryBusinessDetail } from '@/lib/seo/page-metadata';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const business = await cachedFetchBusiness(id);
+  if (!business) notFound();
+  return metadataForTemporaryBusinessDetail(business.title);
+}
 
 export default async function BusinessDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const locale = await getServerLocale();
   const labels = UI_LABELS[locale];
-  const business = await fetchBusiness(id);
+  const business = await cachedFetchBusiness(id);
+  if (!business) notFound();
   const apiOrigin = getApiOrigin();
   const cover = business.coverImageUrl
     ? business.coverImageUrl.startsWith('http')

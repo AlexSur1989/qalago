@@ -4,7 +4,12 @@ import path from 'node:path';
 const CYRILLIC = /[\u0400-\u04FF]/;
 
 /** Product UI strings must live in lib/locale.ts only. */
-const DICTIONARY_FILES = new Set(['locale.ts', 'localized-content.ts']);
+const DICTIONARY_FILES = new Set([
+  'locale.ts',
+  'localized-content.ts',
+  'metadata-copy.ts',
+  'page-metadata.ts',
+]);
 
 const SCAN_ROOTS = ['app', 'components', 'lib'];
 

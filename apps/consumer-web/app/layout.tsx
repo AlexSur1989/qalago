@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
 import { Montserrat } from 'next/font/google';
 import './globals.css';
+import { JsonLd } from '@/components/JsonLd';
 import { PublicShell } from '@/components/PublicShell';
-import { fetchCities } from '@/lib/catalog-api';
+import { cachedFetchCities } from '@/lib/catalog-cache';
 import { siteMetadataForLocale } from '@/lib/locale';
 import { getServerLocale } from '@/lib/locale-server';
+import { webSiteJsonLd } from '@/lib/seo/json-ld';
+import { rootSiteMetadata } from '@/lib/seo/page-metadata';
 
 const montserrat = Montserrat({
   subsets: ['latin', 'cyrillic'],
@@ -17,15 +20,16 @@ export const revalidate = 60;
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getServerLocale();
   const { title, description } = siteMetadataForLocale(locale);
-  return { title, description };
+  return rootSiteMetadata(locale, title, description);
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getServerLocale();
-  const cities = await fetchCities().catch(() => []);
+  const cities = await cachedFetchCities().catch(() => []);
   return (
     <html lang={locale} className={montserrat.variable}>
       <body className={montserrat.className}>
+        <JsonLd data={webSiteJsonLd()} />
         <PublicShell locale={locale} cities={cities}>
           {children}
         </PublicShell>

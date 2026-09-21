@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { BusinessList } from '@/components/BusinessList';
 import { PaginationLinks } from '@/components/PaginationLinks';
 import { SearchForm } from '@/components/SearchForm';
@@ -14,9 +15,25 @@ import {
   SEARCH_RESULTS_LIMIT,
 } from '@/lib/search-query';
 import { citySearchPath } from '@/lib/routes';
+import { metadataForSearch } from '@/lib/seo/page-metadata';
 
-/** Search URLs are query-specific — do not ISR-cache HTML globally (F.3 will add noindex policy). */
+/** Search URLs are query-specific — do not ISR-cache HTML globally. */
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ citySlug: string }>;
+  searchParams: Promise<{ q?: string; page?: string }>;
+}): Promise<Metadata> {
+  const { citySlug } = await params;
+  const { q: qRaw } = await searchParams;
+  const locale = await getServerLocale();
+  const city = await requireCity(citySlug);
+  const query = normalizeSearchQuery(qRaw);
+  return metadataForSearch(city.slug, cityDisplayName(city, locale), locale, query);
+}
 
 export default async function CitySearchPage({
   params,

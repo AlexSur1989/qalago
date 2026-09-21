@@ -49,18 +49,55 @@ Static App Router segments (e.g. `categories/`, `search/`) take precedence over 
 
 - Cards link to **`/businesses/{businessId}`** until **6.12A** + **F.4** define branch-aware slug URLs.
 
-### Search indexing (F.3 handoff)
-
-- Arbitrary `?q=` search result pages should likely be **noindex**; F.3 implements robots/canonical. F.2 uses **`force-dynamic`** on search route only.
-
 ### Cache / rendering
 
 - City/category/subcategory: ISR via fetch `revalidate` + layout revalidate.
 - Search: **`dynamic = 'force-dynamic'`** (query-specific).
 
-## F.3+ (deferred)
+## F.3 SEO infrastructure
 
-- Per-route metadata, canonical, OG, sitemap, JSON-LD, hreflang.
+### Public origin (canonical / sitemap / OG)
+
+- **`getConsumerWebOrigin()`** in `lib/seo/canonical.ts` — **not** the business-web legal host from `getPublicSiteBaseUrl()`.
+- Env (first wins): `NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL`, `NEXT_PUBLIC_CONSUMER_WEB_URL`; dev default `http://localhost:3005`.
+- Production target host: `https://qalago.kz` when configured; never hardcoded in components.
+- **`buildCanonicalUrl()`** — controlled segments only; no open redirects; `page > 1` → `?page=N`; page 1 omits query; trailing slash omitted (matches App Router default).
+
+### Metadata
+
+- Root layout: `metadataBase`, title template `%s | QalaGo`, RU/KK description from cookie locale, site-level Open Graph / Twitter (no invented @handles).
+- Dynamic: city, city categories, category, subcategory (RU/KK names from API + cookie locale).
+- **Search** `/{citySlug}/search?q=`: **`robots: noindex, follow`**; canonical reflects city search path + encoded `q` when present.
+- **Temporary business** `/businesses/{id}`: **`noindex, follow`** until **6.12A + F.4**; **no** canonical to future slug URLs.
+
+### Locale SEO limitation (F.5 handoff)
+
+- Canonical URLs are **locale-neutral**; same URL serves RU or KK via `qalago_locale` cookie.
+- **No hreflang** in F.3; F.5 owns indexable language variants.
+
+### robots.txt (`app/robots.ts`)
+
+- Allow `/` for discovery pages.
+- **Disallow** `/businesses/` (compatibility detail; meta noindex is primary).
+- **Sitemap** `{origin}/sitemap.xml`.
+- Does not block static assets / `_next`.
+
+### sitemap.xml (`app/sitemap.ts`)
+
+- **Sources:** `GET /cities`, per city `GET /categories?citySlug=`, per category `GET /categories/:id/subcategories` (bounded parallel per city).
+- **Includes:** `/{citySlug}`, `/{citySlug}/categories`, `/{citySlug}/{categorySlug}`, `/{citySlug}/{categorySlug}/{subcategorySlug}`.
+- **Excludes:** search, legacy `/categories*`, `/businesses/{id}`, owner/admin paths, paginated list URLs (`?page=`).
+- **Failure:** API error → **empty sitemap** (no fabricated URLs, no stack traces).
+- **Scale:** single sitemap today; structure allows future sitemap index / segmented business sitemap when catalog grows.
+
+### Structured data
+
+- **Implemented:** root `WebSite` JSON-LD; `BreadcrumbList` on city categories / category / subcategory (visible breadcrumbs + JSON-LD).
+- **Deferred:** `LocalBusiness`, branch/location schema, `AggregateRating`, `SearchAction` until URLs and semantics are final (**6.12A**, F.4).
+
+### Pagination canonical
+
+- Category/subcategory list pages: canonical includes `?page=N` when **N > 1** (distinct paginated content). Invalid `page` query normalized via `parsePageParam` (≤0, non-numeric → 1).
 
 ## BusinessLocation (6.12A)
 

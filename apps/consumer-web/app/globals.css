@@ -341,3 +341,30 @@ body {
   font-weight: 600;
   text-decoration: none;
 }
+
+.breadcrumbs {
+  margin-bottom: 12px;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.breadcrumbs__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.breadcrumbs__item:not(:last-child)::after {
+  content: '›';
+  margin-left: 6px;
+  color: var(--muted);
+}
+
+.breadcrumbs a {
+  color: var(--blue);
+  text-decoration: none;
+  font-weight: 600;
+}

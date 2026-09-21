@@ -117,10 +117,11 @@ export async function fetchBusinesses(
   return res.json() as Promise<BusinessListResponse>;
 }
 
-export async function fetchBusiness(id: string): Promise<BusinessSummaryDto> {
+export async function fetchBusiness(id: string): Promise<BusinessSummaryDto | null> {
   const res = await fetch(`${API_BASE}/businesses/${encodeURIComponent(id)}`, {
     next: { revalidate: REVALIDATE_BUSINESS_DETAIL_SECONDS },
   });
+  if (res.status === 404) return null;
   if (!res.ok) throw new Error(await res.text());
   return res.json() as Promise<BusinessSummaryDto>;
 }
