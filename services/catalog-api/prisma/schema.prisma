@@ -373,6 +373,7 @@ model User {
   favorites                    Favorite[]
   reviews                      Review[]
   notifications                Notification[]
+  pushDevices                  PushDevice[]
   otps                         OtpCode[]
   orders                       Order[]
   sentInvitations              BusinessInvitation[]     @relation("InvitationSender")
@@ -570,6 +571,33 @@ model Notification {
 
   @@index([userId, isRead])
   @@index([userId, createdAt(sort: Desc)])
+}
+
+enum PushPlatform {
+  ANDROID
+  IOS
+}
+
+enum PushProvider {
+  FCM
+}
+
+/// FCM device registration for optional push delivery (in-app Notification remains canonical).
+model PushDevice {
+  id         String       @id @default(cuid())
+  userId     String
+  token      String       @unique
+  platform   PushPlatform
+  provider   PushProvider @default(FCM)
+  /// Client-reported locale hint for push copy (ru/kk), not authoritative user preference.
+  locale     String?
+  isActive   Boolean      @default(true)
+  lastSeenAt DateTime     @default(now())
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isActive])
 }
 
 model OtpCode {

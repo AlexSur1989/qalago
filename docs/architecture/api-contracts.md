@@ -900,7 +900,7 @@ Auth: owner / admin. Sets business cover to this image.
 
 ## Notifications
 
-In-app notifications (push/FCM — phase 3, not implemented in E.1).
+**Canonical rule (Stage 6.11E.5):** persisted in-app `Notification` is the product source of truth. FCM push is an optional delivery channel; push failure must not roll back domain actions.
 
 Auth: JWT required for all routes below. Rows are scoped to the authenticated user (`userId`).
 
@@ -946,6 +946,32 @@ Marks one notification read for the current user. Response: `{ "success": true, 
 ### PATCH /notifications/read-all
 
 Response: `{ "success": true, "updated": 4 }`
+
+### POST /notifications/devices
+
+Registers or refreshes the caller's FCM device token (upsert by unique `token`, safe reassignment on account change).
+
+Body:
+
+```json
+{ "token": "…", "platform": "ANDROID", "locale": "ru" }
+```
+
+- `platform`: `ANDROID` | `IOS`
+- `locale` (optional): client hint `ru` | `kk` for push copy
+- `userId` is always derived from JWT (never accepted from client)
+
+Response: `{ "id": "…", "platform": "ANDROID", "isActive": true, "lastSeenAt": "…" }`
+
+### DELETE /notifications/devices
+
+Revokes the caller's registration (body-based, token not in URL).
+
+Body: `{ "token": "…" }`
+
+Response: `{ "success": true }` or `404` if not owned/active.
+
+**Server push (optional):** controlled by `PUSH_ENABLED=true` plus Firebase Admin env vars (`FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`). Default local: disabled (`PUSH_ENABLED=false`).
 
 **NotificationType (canonical):** `GENERAL`, `NEW_REVIEW`, `REVIEW_REPLY`, `REVIEW_HIDDEN`, `REVIEW_RESTORED`, `BUSINESS_APPROVED`, `BUSINESS_BLOCKED`, `BUSINESS_APPLICATION_APPROVED`, `BUSINESS_APPLICATION_REJECTED`, `OWNERSHIP_CLAIM_APPROVED`, `OWNERSHIP_CLAIM_REJECTED`, `BUSINESS_INVITATION_RECEIVED`, `BUSINESS_INVITATION_ACCEPTED`, `NEW_PROMOTION` (unused), `PLAN_ACTIVATED`, `PLAN_EXPIRED`, `AD_CAMPAIGN_APPROVED`, `AD_CAMPAIGN_REJECTED`
 

@@ -67,6 +67,9 @@ import 'consumer_shell_navigation.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
+/// Used by push tap handling to reach the app navigator without a BuildContext.
+GlobalKey<NavigatorState> get qalagoRootNavigatorKey => _rootNavigatorKey;
+
 class _RouterRefresh extends ChangeNotifier {
   _RouterRefresh(this._ref) {
     _ref.listen(authProvider, (_, __) => notifyListeners());

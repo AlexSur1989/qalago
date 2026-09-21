@@ -62,6 +62,10 @@ export const validationSchema = Joi.object({
   GEOCODING_USER_WINDOW_SECONDS: Joi.number().integer().min(1).default(60),
   GEOCODING_IP_LIMIT: Joi.number().integer().min(1).default(60),
   GEOCODING_IP_WINDOW_SECONDS: Joi.number().integer().min(1).default(60),
+  PUSH_ENABLED: Joi.boolean().truthy('true').falsy('false').default(false),
+  FIREBASE_PROJECT_ID: Joi.string().allow('').default(''),
+  FIREBASE_CLIENT_EMAIL: Joi.string().allow('').default(''),
+  FIREBASE_PRIVATE_KEY: Joi.string().allow('').default(''),
 }).custom((value, helpers) => {
   try {
     assertProductionConfig({

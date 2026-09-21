@@ -229,7 +229,7 @@ export class OwnershipClaimsService {
       throw new BadRequestException('Only PENDING claims can be rejected');
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const rejected = await this.prisma.$transaction(async (tx) => {
       const result = await tx.businessOwnershipClaim.updateMany({
         where: { id, status: BusinessOwnershipClaimStatus.PENDING },
         data: {
@@ -266,7 +266,7 @@ export class OwnershipClaimsService {
         include: adminClaimInclude,
       });
 
-      await this.notifications.create({
+      const pushNotification = await this.notifications.create({
         userId: claim.claimantUserId,
         type: NotificationType.OWNERSHIP_CLAIM_REJECTED,
         title: 'Заявка на владение отклонена',
@@ -277,8 +277,10 @@ export class OwnershipClaimsService {
         tx,
       });
 
-      return updated;
+      return { updated, pushNotification };
     });
+    this.notifications.schedulePushAfterTransaction(rejected.pushNotification);
+    return rejected.updated;
   }
 
   async adminApprove(user: AuthUser, id: string) {
@@ -293,7 +295,7 @@ export class OwnershipClaimsService {
       throw new BadRequestException('Only PENDING claims can be approved');
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const approved = await this.prisma.$transaction(async (tx) => {
       const locked = await tx.businessOwnershipClaim.findUnique({
         where: { id },
         include: { business: true },
@@ -373,7 +375,7 @@ export class OwnershipClaimsService {
         include: adminClaimInclude,
       });
 
-      await this.notifications.create({
+      const pushNotification = await this.notifications.create({
         userId: locked.claimantUserId,
         type: NotificationType.OWNERSHIP_CLAIM_APPROVED,
         title: 'Заявка на владение одобрена',
@@ -384,8 +386,10 @@ export class OwnershipClaimsService {
         tx,
       });
 
-      return { claim: updatedClaim, business: businessAfter };
+      return { claim: updatedClaim, business: businessAfter, pushNotification };
     });
+    this.notifications.schedulePushAfterTransaction(approved.pushNotification);
+    return { claim: approved.claim, business: approved.business };
   }
 
   /** Centralized eligibility for claim submission (Stage 5N.2). */

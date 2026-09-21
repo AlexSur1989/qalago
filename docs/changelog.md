@@ -5,6 +5,13 @@
 
 ---
 
+## 2026-09-21 — Stage 6.11E.5 push readiness & device registration
+
+- **Added:** `PushDevice` model; `POST/DELETE /notifications/devices`; FCM delivery abstraction (`PUSH_ENABLED`, Noop vs Firebase Admin); post-commit push dispatch (never inside Prisma transactions).
+- **Added:** Flutter `firebase_core` / `firebase_messaging` foundation, token register/revoke on auth lifecycle, push tap → E.4 navigation whitelist.
+- **Requires external config:** Firebase project (`google-services.json`, `GoogleService-Info.plist`, service account); Apple Push capability / APNs key for iOS live delivery.
+- **Deferred:** preference center, marketing/guest push, delivery outbox analytics (E.6+).
+
 ## 2026-09-21 — Stage 6.11E.4 notification routing & deep links
 
 - **Added:** Central `resolveNotificationDestination` + `navigateNotificationDestination` for typed in-app routes from `type`/`targetType`/`targetId`.

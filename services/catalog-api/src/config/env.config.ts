@@ -96,6 +96,12 @@ export default () => ({
     mfaVerifyWindowSeconds: parseInt(process.env.MFA_VERIFY_WINDOW_SECONDS ?? '900', 10),
     staffStepUpTtlSeconds: parseInt(process.env.STAFF_STEP_UP_TTL_SECONDS ?? '600', 10),
   },
+  push: {
+    enabled: process.env.PUSH_ENABLED === 'true',
+    firebaseProjectId: process.env.FIREBASE_PROJECT_ID ?? '',
+    firebaseClientEmail: process.env.FIREBASE_CLIENT_EMAIL ?? '',
+    firebasePrivateKey: process.env.FIREBASE_PRIVATE_KEY ?? '',
+  },
   database: {
     url: process.env.DATABASE_URL,
   },

@@ -27,6 +27,7 @@ describe('ReviewsService integrity (Stage 6.11D.1)', () => {
         business: {
           findUnique: jest.fn().mockResolvedValue({ id: 'b1', title: 'Cafe', ownerId: null, cityId: 'c1' }),
         },
+        businessMembership: { findMany: jest.fn().mockResolvedValue([]) },
         review: {
           findUnique: jest.fn().mockResolvedValue(null),
           create: jest.fn().mockResolvedValue({ id: 'r1', rating: 5, moderationHidden: false }),

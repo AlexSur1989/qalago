@@ -309,7 +309,7 @@ export class BusinessApplicationsService {
       throw new BadRequestException('Only PENDING applications can be rejected');
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const updated = await this.prisma.$transaction(async (tx) => {
       const result = await tx.businessApplication.updateMany({
         where: { id, status: BusinessApplicationStatus.PENDING },
         data: {
@@ -339,12 +339,12 @@ export class BusinessApplicationsService {
         tx,
       });
 
-      const updated = await tx.businessApplication.findUniqueOrThrow({
+      const row = await tx.businessApplication.findUniqueOrThrow({
         where: { id },
         include: adminApplicationInclude,
       });
 
-      await this.notifications.create({
+      const pushNotification = await this.notifications.create({
         userId: application.applicantUserId,
         type: NotificationType.BUSINESS_APPLICATION_REJECTED,
         title: 'Заявка на бизнес отклонена',
@@ -355,8 +355,10 @@ export class BusinessApplicationsService {
         tx,
       });
 
-      return updated;
+      return { row, pushNotification };
     });
+    this.notifications.schedulePushAfterTransaction(updated.pushNotification);
+    return updated.row;
   }
 
   async adminApprove(user: AuthUser, id: string) {
@@ -374,7 +376,7 @@ export class BusinessApplicationsService {
       throw new BadRequestException('Only PENDING applications can be approved');
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const approved = await this.prisma.$transaction(async (tx) => {
       const locked = await tx.businessApplication.findUnique({ where: { id } });
       if (!locked || locked.status !== BusinessApplicationStatus.PENDING) {
         throw new ConflictException('Application is no longer pending');
@@ -454,7 +456,7 @@ export class BusinessApplicationsService {
         include: adminApplicationInclude,
       });
 
-      await this.notifications.create({
+      const pushNotification = await this.notifications.create({
         userId: locked.applicantUserId,
         type: NotificationType.BUSINESS_APPLICATION_APPROVED,
         title: 'Заявка на бизнес одобрена',
@@ -465,8 +467,10 @@ export class BusinessApplicationsService {
         tx,
       });
 
-      return { application: updatedApplication, business };
+      return { application: updatedApplication, business, pushNotification };
     });
+    this.notifications.schedulePushAfterTransaction(approved.pushNotification);
+    return { application: approved.application, business: approved.business };
   }
 
   private assertModerator(user: AuthUser) {

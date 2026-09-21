@@ -196,6 +196,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
               _count: { images: 0, serviceItems: 0, promotions: 7 },
             }),
           update: jest.fn().mockResolvedValue({}),
+          updateMany: jest.fn().mockResolvedValue({ count: 1 }),
         },
         promotion: {
           count: jest.fn(),
@@ -205,13 +206,13 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
         ...teamCountMocks,
       } as unknown as PrismaService;
 
-      const notifications = { create: jest.fn() };
+      const notifications = { create: jest.fn().mockResolvedValue({ id: 'n1' }) };
       const limitsService = new PlanLimitsService(prisma, notifications as never);
 
       await limitsService.syncExpiredPlan('b1');
 
       expect(prisma.promotion.updateMany).not.toHaveBeenCalled();
-      expect(prisma.business.update).toHaveBeenCalledWith(
+      expect(prisma.business.updateMany).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ planTier: BusinessPlanTier.FREE }),
         }),

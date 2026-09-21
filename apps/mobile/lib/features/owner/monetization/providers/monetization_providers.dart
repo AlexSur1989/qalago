@@ -113,7 +113,7 @@ void invalidateOwnerMonetization(WidgetRef ref, String businessId) {
   ref.invalidate(ownerMonetizationCampaignsProvider(businessId));
 }
 
-void invalidateOwnerMonetizationOnBusinessSwitch(WidgetRef ref, String? businessId) {
+void invalidateOwnerMonetizationOnBusinessSwitch(dynamic ref, String? businessId) {
   ref.invalidate(monetizationProductsProvider);
   ref.invalidate(monetizationPackagesProvider);
   ref.invalidate(monetizationQuoteProvider);

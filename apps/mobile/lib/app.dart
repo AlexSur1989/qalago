@@ -5,6 +5,7 @@ import 'core/locale/app_locale_provider.dart';
 import 'core/release/app_release_shell.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/push/push_bootstrap.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'l10n/app_localizations.dart';
 
@@ -16,6 +17,7 @@ class QalaGoApp extends ConsumerWidget {
     ref.watch(cityChangeInvalidatorProvider);
     ref.watch(authSessionGuardProvider);
     ref.watch(userScopedCacheCleanupProvider);
+    ref.watch(pushLifecycleProvider);
     final router = ref.watch(appRouterProvider);
     final locale = ref.watch(appLocaleProvider);
     return AppReleaseShell(

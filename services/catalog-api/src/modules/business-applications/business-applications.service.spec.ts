@@ -60,7 +60,10 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
 
   const auditLog = { record: jest.fn().mockResolvedValue({}) };
   const membership = { createActiveOwnerMembership: jest.fn().mockResolvedValue({}) };
-  const notifications = { create: jest.fn().mockResolvedValue({}) };
+  const notifications = {
+    create: jest.fn().mockResolvedValue({ id: 'n1' }),
+    schedulePushAfterTransaction: jest.fn(),
+  };
   const rateLimit = {
     assertApplicationCreate: jest.fn(),
     assertApplicationSubmit: jest.fn(),

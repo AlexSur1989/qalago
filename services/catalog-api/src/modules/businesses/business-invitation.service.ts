@@ -91,7 +91,7 @@ export class BusinessInvitationService {
     const tokenHash = hashInviteToken(rawToken.trim());
     const now = new Date();
 
-    return this.prisma.$transaction(async (tx) => {
+    const accepted = await this.prisma.$transaction(async (tx) => {
       const invitation = await tx.businessInvitation.findFirst({
         where: { tokenHash },
         include: {
@@ -212,8 +212,9 @@ export class BusinessInvitationService {
         tx,
       });
 
+      let pushNotification;
       if (invitation.invitedByUserId && invitation.invitedByUserId !== user.id) {
-        await this.notifications.create({
+        pushNotification = await this.notifications.create({
           userId: invitation.invitedByUserId,
           type: NotificationType.BUSINESS_INVITATION_ACCEPTED,
           title: 'Приглашение принято',
@@ -233,8 +234,24 @@ export class BusinessInvitationService {
         businessId: invitation.businessId,
         membershipId: membership.id,
         alreadyMember: false,
+        pushNotification,
       };
     });
+    this.notifications.schedulePushAfterTransaction(
+      'pushNotification' in accepted ? accepted.pushNotification : undefined,
+    );
+    if ('alreadyAccepted' in accepted && accepted.alreadyAccepted) {
+      return {
+        businessId: accepted.businessId,
+        membershipId: accepted.membershipId,
+        alreadyAccepted: true as const,
+      };
+    }
+    return {
+      businessId: accepted.businessId,
+      membershipId: accepted.membershipId,
+      alreadyMember: accepted.alreadyMember ?? false,
+    };
   }
 
   createEmailInvitationParams(email: string) {

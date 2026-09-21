@@ -19,6 +19,7 @@ import '../data/apple_sign_in_adapter.dart';
 import '../data/google_sign_in_adapter.dart';
 import '../data/social_sign_in_types.dart';
 import '../../../shared/utils/auth_utils.dart';
+import '../../../core/push/push_providers.dart';
 
 final googleSignInGatewayProvider = Provider<GoogleSignInGateway>(
   (ref) => GoogleSignInAdapter(),
@@ -391,6 +392,11 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<void> logout() async {
+    try {
+      await ref.read(pushRegistrationServiceProvider).revokeCurrentTokenBestEffort();
+    } catch (_) {
+      // Best-effort push revoke before session ends.
+    }
     final refresh = await _storage.readRefreshToken();
     try {
       await _repo.logoutSession(refresh);

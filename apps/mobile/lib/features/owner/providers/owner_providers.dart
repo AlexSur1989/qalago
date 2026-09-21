@@ -19,7 +19,7 @@ class SelectedOwnerBusinessIdNotifier extends Notifier<String?> {
   }
 }
 
-void onOwnerBusinessSelected(WidgetRef ref, String businessId) {
+void onOwnerBusinessSelected(dynamic ref, String businessId) {
   ref.read(selectedOwnerBusinessIdProvider.notifier).select(businessId);
   invalidateOwnerMonetizationOnBusinessSwitch(ref, businessId);
   ref.invalidate(businessAnalyticsDashboardProvider);

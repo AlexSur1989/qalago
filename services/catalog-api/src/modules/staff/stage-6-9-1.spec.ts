@@ -166,7 +166,7 @@ describe('Stage 6.9.1 Staff RBAC', () => {
         { record: jest.fn() } as never,
         { revokeAllUserSessions: jest.fn() } as never,
         {} as never,
-        { create: jest.fn() } as never,
+        { create: jest.fn(), schedulePushAfterTransaction: jest.fn() } as never,
       );
 
       prisma.moderationCase.findUnique = jest.fn().mockResolvedValue({

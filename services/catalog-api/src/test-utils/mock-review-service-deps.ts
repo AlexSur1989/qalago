@@ -1,5 +1,6 @@
 import { createMockAuditLog, asAuditLogService } from './mock-audit-log';
 import { createMockBusinessAccess, asBusinessAccessService } from './mock-business-access';
+import { createMockNotificationsService } from './mock-notifications.service';
 
 export function createMockReviewMembership() {
   return {
@@ -17,10 +18,7 @@ export function createMockReviewRateLimit() {
 export function createDefaultReviewServiceDeps() {
   const auditMock = createMockAuditLog();
   return {
-    notifications: {
-      create: jest.fn(),
-      createForUsers: jest.fn(),
-    },
+    notifications: createMockNotificationsService(),
     businessAccess: asBusinessAccessService(createMockBusinessAccess()),
     membership: createMockReviewMembership(),
     auditLog: asAuditLogService(auditMock),

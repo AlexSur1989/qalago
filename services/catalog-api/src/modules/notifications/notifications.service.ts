@@ -1,10 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import {
+  Notification,
   NotificationTargetType,
   NotificationType,
   Prisma,
 } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PushDeliveryService } from './push/push-delivery.service';
 import {
   ListNotificationsQueryDto,
   MarkAllReadResponseDto,
@@ -28,7 +30,10 @@ export type NotificationCreateInput = {
 
 @Injectable()
 export class NotificationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly pushDelivery: PushDeliveryService,
+  ) {}
 
   async findPage(
     userId: string,
@@ -85,9 +90,9 @@ export class NotificationsService {
     return { success: true, updated: result.count };
   }
 
-  create(input: NotificationCreateInput) {
+  async create(input: NotificationCreateInput): Promise<Notification> {
     const client = input.tx ?? this.prisma;
-    return client.notification.create({
+    const row = await client.notification.create({
       data: {
         userId: input.userId,
         type: input.type,
@@ -98,16 +103,31 @@ export class NotificationsService {
         payload: input.payload ?? undefined,
       },
     });
+    if (!input.tx) {
+      this.pushDelivery.deliverAfterCommit(row);
+    }
+    return row;
+  }
+
+  /** Call after a successful transaction that created notifications with `tx`. */
+  schedulePushAfterTransaction(
+    notifications: Notification | Notification[] | null | undefined,
+  ): void {
+    if (!notifications) return;
+    const list = Array.isArray(notifications) ? notifications : [notifications];
+    this.pushDelivery.deliverAfterCommitMany(list);
   }
 
   async createForUsers(
     userIds: string[],
     input: Omit<NotificationCreateInput, 'userId' | 'tx'>,
     tx?: Prisma.TransactionClient,
-  ) {
+  ): Promise<Notification[]> {
     const unique = [...new Set(userIds.filter(Boolean))];
+    const created: Notification[] = [];
     for (const userId of unique) {
-      await this.create({ ...input, userId, tx });
+      created.push(await this.create({ ...input, userId, tx }));
     }
+    return created;
   }
 }

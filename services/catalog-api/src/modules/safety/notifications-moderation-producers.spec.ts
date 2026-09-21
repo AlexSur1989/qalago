@@ -10,7 +10,7 @@ describe('ModerationService review notification producers', () => {
   const actor = { id: 'admin-1', role: UserRole.ADMIN } as never;
 
   it('notifies review author on hide transition', async () => {
-    const notifications = { create: jest.fn() };
+    const notifications = { create: jest.fn(), schedulePushAfterTransaction: jest.fn() };
     const txReview = {
       findUnique: jest.fn().mockResolvedValue({
         id: 'rev-1',
@@ -65,7 +65,7 @@ describe('ModerationService review notification producers', () => {
   });
 
   it('does not notify when review already hidden', async () => {
-    const notifications = { create: jest.fn() };
+    const notifications = { create: jest.fn(), schedulePushAfterTransaction: jest.fn() };
     const txReview = {
       findUnique: jest.fn().mockResolvedValue({
         id: 'rev-1',

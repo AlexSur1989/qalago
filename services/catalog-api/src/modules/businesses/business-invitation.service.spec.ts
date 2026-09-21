@@ -30,7 +30,7 @@ describe('BusinessInvitationService (Stage 6.2B6)', () => {
   let auditLog: { record: jest.Mock };
   let rateLimit: { assertAllowed: jest.Mock };
   let planLimits: { assertCanAddManager: jest.Mock };
-  let notifications: { create: jest.Mock };
+  let notifications: { create: jest.Mock; schedulePushAfterTransaction: jest.Mock };
   let service: BusinessInvitationService;
 
   beforeEach(() => {
@@ -48,7 +48,10 @@ describe('BusinessInvitationService (Stage 6.2B6)', () => {
     auditLog = { record: jest.fn().mockResolvedValue({ id: 'audit-1' }) };
     rateLimit = { assertAllowed: jest.fn() };
     planLimits = { assertCanAddManager: jest.fn().mockResolvedValue(undefined) };
-    notifications = { create: jest.fn().mockResolvedValue({ id: 'n1' }) };
+    notifications = {
+      create: jest.fn().mockResolvedValue({ id: 'n1' }),
+      schedulePushAfterTransaction: jest.fn(),
+    };
     service = new BusinessInvitationService(
       prisma as never,
       auditLog as never,

@@ -6,11 +6,12 @@ import '../../../core/locale/l10n_extension.dart';
 import '../../owner/providers/owner_providers.dart';
 import '../data/notification_model.dart';
 import '../providers/notifications_inbox_provider.dart';
+import '../providers/notifications_repository_provider.dart';
 import 'notification_destination.dart';
 
 /// Navigates to [destination] using existing canonical routes (push, preserves back stack).
 Future<void> navigateNotificationDestination(
-  WidgetRef ref,
+  dynamic ref,
   BuildContext context,
   NotificationDestination destination,
 ) async {
@@ -47,6 +48,32 @@ Future<void> navigateNotificationDestination(
       );
     case BusinessClaimsListDestination():
       context.push('/business/claims');
+  }
+}
+
+/// Push open handler — same E.4 routing; usable from [Ref] (non-widget) contexts.
+Future<void> handlePushNotificationOpen(
+  dynamic ref,
+  BuildContext context,
+  AppNotification notification,
+) async {
+  final destination = resolveNotificationDestination(notification);
+  if (notificationDestinationIsEmpty(destination)) return;
+
+  try {
+    await ref.read(notificationsRepositoryProvider).markRead(notification.id);
+  } catch (_) {
+    // In-app row remains; navigation may still proceed.
+  }
+
+  if (!context.mounted) return;
+  try {
+    await navigateNotificationDestination(ref, context, destination);
+  } catch (_) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(context.l10n.notificationEntityUnavailable)),
+    );
   }
 }
 

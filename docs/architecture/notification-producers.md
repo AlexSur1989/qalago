@@ -1,6 +1,6 @@
 # Notification producers (Stage 6.11E.2+)
 
-In-app notifications only. Push/FCM deferred.
+In-app notifications are canonical. Push/FCM (Stage 6.11E.5) is optional delivery after the in-app row is committed.
 
 ## Client rendering (Stage 6.11E.3)
 
@@ -45,7 +45,15 @@ In-app notifications only. Push/FCM deferred.
 
 Security: never navigate from arbitrary payload paths/URLs; supplementary `businessId` only for `REVIEW` targets per E.2 contract.
 
-Push / FCM: E.5.
+## Push delivery (Stage 6.11E.5)
+
+- **Flow:** domain action → persist `Notification` → after commit, best-effort FCM fan-out to active `PushDevice` rows.
+- **Never** call FCM inside Prisma `$transaction` (tx-bound producers schedule push after commit).
+- **Eligibility:** all meaningful E.2 types except `GENERAL` and `NEW_PROMOTION`.
+- **Payload (data):** `notificationId`, `type`, optional `targetType`, `targetId`, optional `businessId` (REVIEW only). No UGC, secrets, or arbitrary routes.
+- **Localization:** OS title/body use persisted notification strings; device `locale` hint on registration for future copy. No server-side user locale preference yet.
+- **Client tap:** whitelisted data → `AppNotification` → E.4 `resolveNotificationDestination`.
+- **Config:** `PUSH_ENABLED=false` by default; Firebase Admin creds via env. Mobile requires external `google-services.json` / `GoogleService-Info.plist`.
 
 ## Deferred (E.3+ / infrastructure)
 

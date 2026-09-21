@@ -49,7 +49,10 @@ describe('OwnershipClaimsService (Stage 5N.2)', () => {
   };
 
   const auditLog = { record: jest.fn().mockResolvedValue({}) };
-  const notifications = { create: jest.fn().mockResolvedValue({}) };
+  const notifications = {
+    create: jest.fn().mockResolvedValue({ id: 'n1' }),
+    schedulePushAfterTransaction: jest.fn(),
+  };
   const cityScope = {
     resolveAdminCityId: jest.fn().mockResolvedValue('city-uralsk'),
     assertBusinessInAdminScope: jest.fn().mockResolvedValue(undefined),

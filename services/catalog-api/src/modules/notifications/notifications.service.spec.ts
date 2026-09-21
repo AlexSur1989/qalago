@@ -11,8 +11,13 @@ describe('NotificationsService', () => {
   const userA = 'user-a';
   const userB = 'user-b';
 
+  const pushDelivery = {
+    deliverAfterCommit: jest.fn(),
+    deliverAfterCommitMany: jest.fn(),
+  };
+
   function buildService(prisma: Partial<PrismaService>) {
-    return new NotificationsService(prisma as PrismaService);
+    return new NotificationsService(prisma as PrismaService, pushDelivery as never);
   }
 
   it('lists paginated notifications for current user only with deterministic order', async () => {
@@ -169,5 +174,40 @@ describe('NotificationsService', () => {
 
     expect(txCreate).toHaveBeenCalled();
     expect(rootCreate).not.toHaveBeenCalled();
+    expect(pushDelivery.deliverAfterCommit).not.toHaveBeenCalled();
+  });
+
+  it('schedules push after create outside transaction', async () => {
+    const created = { id: 'n-push', userId: userA, type: NotificationType.GENERAL, title: 't' };
+    const create = jest.fn().mockResolvedValue(created);
+    const service = buildService({
+      notification: { create },
+    } as unknown as PrismaService);
+
+    await service.create({
+      userId: userA,
+      type: NotificationType.GENERAL,
+      title: 'Hello',
+    });
+    expect(pushDelivery.deliverAfterCommit).toHaveBeenCalledWith(created);
+  });
+
+  it('does not schedule push when created inside transaction', async () => {
+    pushDelivery.deliverAfterCommit.mockClear();
+    const txCreate = jest.fn().mockResolvedValue({ id: 'n-tx' });
+    const tx = {
+      notification: { create: txCreate },
+    } as unknown as Prisma.TransactionClient;
+    const service = buildService({
+      notification: { create: jest.fn() },
+    } as unknown as PrismaService);
+
+    await service.create({
+      userId: userA,
+      type: NotificationType.GENERAL,
+      title: 'Tx',
+      tx,
+    });
+    expect(pushDelivery.deliverAfterCommit).not.toHaveBeenCalled();
   });
 });

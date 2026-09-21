@@ -12,6 +12,7 @@ import {
   ModerationActionType,
   ModerationAppealStatus,
   ModerationCaseStatus,
+  Notification,
   NotificationTargetType,
   NotificationType,
   UserRole,
@@ -174,7 +175,7 @@ export class ModerationService {
 
     let effectiveSnapshot = moderationCase.targetSnapshot;
 
-    await this.prisma.$transaction(async (tx) => {
+    const pushAfterCommit = await this.prisma.$transaction(async (tx) => {
       await tx.moderationAction.create({
         data: {
           caseId,
@@ -223,8 +224,9 @@ export class ModerationService {
         effectiveSnapshot,
       );
 
+      let pushNotification: Notification | undefined;
       if (reviewBefore) {
-        await this.notifyReviewModerationOutcome(
+        pushNotification = await this.notifyReviewModerationOutcome(
           tx,
           reviewBefore,
           input.actionType,
@@ -239,7 +241,9 @@ export class ModerationService {
           resolvedAt: new Date(),
         },
       });
+      return pushNotification;
     });
+    this.notifications.schedulePushAfterTransaction(pushAfterCommit);
 
     if (input.actionType === ModerationActionType.USER_SUSPEND) {
       await this.suspendUserSessions(moderationCase.targetId);
@@ -491,16 +495,16 @@ export class ModerationService {
     },
     actionType: ModerationActionType,
     reviewId: string,
-  ) {
+  ): Promise<Notification | undefined> {
     if (before.deletedAt !== null) {
-      return;
+      return undefined;
     }
 
     if (
       actionType === ModerationActionType.REVIEW_HIDE &&
       !before.moderationHidden
     ) {
-      await this.notifications.create({
+      return this.notifications.create({
         userId: before.userId,
         type: NotificationType.REVIEW_HIDDEN,
         title: 'Отзыв скрыт модерацией',
@@ -510,14 +514,13 @@ export class ModerationService {
         payload: { businessId: before.businessId, reviewId },
         tx,
       });
-      return;
     }
 
     if (
       actionType === ModerationActionType.REVIEW_RESTORE &&
       before.moderationHidden
     ) {
-      await this.notifications.create({
+      return this.notifications.create({
         userId: before.userId,
         type: NotificationType.REVIEW_RESTORED,
         title: 'Отзыв восстановлен',
@@ -528,6 +531,7 @@ export class ModerationService {
         tx,
       });
     }
+    return undefined;
   }
 
   private async assertCityScope(
