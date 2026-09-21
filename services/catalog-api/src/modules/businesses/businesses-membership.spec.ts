@@ -18,6 +18,10 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
     createActiveOwnerMembership: jest.fn().mockResolvedValue({ id: 'mem-1' }),
   } as unknown as BusinessMembershipService;
 
+  const primaryLocation = {
+    createInitialPrimary: jest.fn().mockResolvedValue({ id: 'bl-primary', isPrimary: true }),
+  };
+
   function createService() {
     const tx = {
       business: {
@@ -52,13 +56,14 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
       subDeps.businessSubcategories,
       subDeps.subcategories,
       {} as never,
+      primaryLocation as never,
     );
 
-    return { service, prisma, tx, membership };
+    return { service, prisma, tx, membership, primaryLocation };
   }
 
   it('create business sets ownerId and ACTIVE OWNER membership atomically for admin', async () => {
-    const { service, tx } = createService();
+    const { service, tx, primaryLocation } = createService();
     const user = { id: 'admin-1', sub: 'admin-1', phone: '+7', role: UserRole.ADMIN };
 
     await service.create(user, {
@@ -77,6 +82,10 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
       tx,
       'admin-1',
       'biz-new',
+    );
+    expect(primaryLocation.createInitialPrimary).toHaveBeenCalledWith(
+      tx,
+      expect.objectContaining({ id: 'biz-new' }),
     );
   });
 

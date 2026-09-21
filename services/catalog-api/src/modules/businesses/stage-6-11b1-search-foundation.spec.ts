@@ -63,6 +63,7 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
       subDeps.businessSubcategories,
       subDeps.subcategories,
       {} as never,
+      {} as never,
     );
   }
 
@@ -200,7 +201,8 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
         subDeps.businessSubcategories,
         subDeps.subcategories,
       {} as never,
-      );
+      {} as never,
+    );
       await svc.findAll({
         citySlug: 'uralsk',
         categoryId: 'cat-food',

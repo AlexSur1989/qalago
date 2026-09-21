@@ -48,6 +48,7 @@ describe('Stage 6.11C.5A geo hardening', () => {
       subDeps.businessSubcategories,
       subDeps.subcategories,
       {} as never,
+      {} as never,
     );
   });
 

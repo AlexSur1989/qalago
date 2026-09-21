@@ -45,6 +45,7 @@ describe('Stage 6.11B.2 — multilingual search integrity', () => {
       subDeps.businessSubcategories,
       subDeps.subcategories,
       {} as never,
+      {} as never,
     );
   }
 

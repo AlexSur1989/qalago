@@ -23,12 +23,22 @@ Relationship: **Business 1 → N BusinessLocation**.
 - Copies: `cityId`, `address`, lat/lng, `locationSource`, `workHours`, phone/social/website; **`isPrimary = true`**; deterministic `id` prefix `bl` + md5 fragment.
 - **Does not UPDATE `Business`** — legacy physical columns remain authoritative for APIs and map until A.3+.
 - **Geography:** derived on insert via BusinessLocation trigger (not copied from `Business.location`).
-- **Temporary gap (until A.3):** new `Business` rows (application approval, admin create) do **not** auto-create `BusinessLocation`; primary location can become stale vs new Business writes.
+- **Temporary gap (until A.3):** closed in A.3 — see below.
 
-## Compatibility strategy (planned)
+## Stage 6.12A.3 (primary compatibility & write sync)
 
-- **A.3:** compatibility read/write — sync primary location on Business PATCH; create initial location on new Business.
-- Read layer: project legacy `Business` DTO fields from **primary location** before deprecating columns.
+- **Transition policy:** legacy `Business` physical columns remain on public API responses; **writes** to those fields and **production creates** keep the **primary** `BusinessLocation` in sync in the **same DB transaction**.
+- **Synchronized fields:** `cityId`, `address`, `latitude`, `longitude`, `locationSource`, `workHours`, `phone`, `whatsapp`, `instagram`, `website` (brand/plan/taxonomy fields are **not** mirrored).
+- **Central services:** `BusinessPrimaryLocationService` — resolve primary (`isPrimary=true` only; no “first by createdAt” fallback); `createInitialPrimary`; `syncPrimaryFromBusinessRecord`.
+- **Production create paths:** admin `POST /businesses` (import) and business-application **approval** create `Business` + one primary location atomically.
+- **Owner PATCH:** `PATCH /businesses/:id` — when the DTO touches any synchronized physical field, update Business + primary location in one transaction; brand-only patches skip location writes; partial PATCH semantics unchanged (omitted fields not cleared).
+- **Primary resolution errors:** missing or multiple primary rows → controlled internal error on sync paths (no silent repair during ordinary PATCH).
+- **Read layer (A.3):** public list/detail still read top-level **Business** fields while synchronized; optional internal use of primary resolution for A.4.
+- **Map:** unchanged — catalog/map PostGIS still queries **`Business.location`**; triggers keep Business and primary `BusinessLocation` geography aligned on coordinate writes.
+
+## Compatibility strategy (forward)
+
+- Later substages may project legacy DTO fields from primary location before deprecating columns.
 - Map cutover to location geography: **isolated substage** after backfill (maps frozen until then).
 
 ## Scope deferred

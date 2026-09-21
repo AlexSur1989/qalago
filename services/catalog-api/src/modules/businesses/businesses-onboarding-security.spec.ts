@@ -19,6 +19,10 @@ describe('BusinessesService — onboarding security (Stage 5N.5)', () => {
     createActiveOwnerMembership: jest.fn().mockResolvedValue({ id: 'mem-1' }),
   } as unknown as BusinessMembershipService;
 
+  const primaryLocation = {
+    createInitialPrimary: jest.fn().mockResolvedValue({ id: 'bl-primary' }),
+  };
+
   function createService() {
     const tx = {
       business: {
@@ -47,6 +51,7 @@ describe('BusinessesService — onboarding security (Stage 5N.5)', () => {
       subDeps.businessSubcategories,
       subDeps.subcategories,
       {} as never,
+      primaryLocation as never,
     );
 
     return { service, tx };

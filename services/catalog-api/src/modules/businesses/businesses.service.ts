@@ -10,6 +10,7 @@ import { BusinessAccessService } from '../../common/services/business-access.ser
 import { BusinessMembershipService } from '../../common/services/business-membership.service';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { ReviewAggregationService } from '../../common/services/review-aggregation.service';
+import { BusinessPrimaryLocationService } from '../../common/services/business-primary-location.service';
 import {
   getRequiredPermissionsForPatch,
   ownerHasAllPermissions,
@@ -114,6 +115,7 @@ export class BusinessesService {
     private readonly businessSubcategories: BusinessSubcategoryService,
     private readonly subcategories: SubcategoriesService,
     private readonly reviewAggregation: ReviewAggregationService,
+    private readonly primaryLocation: BusinessPrimaryLocationService,
   ) {}
 
   /**
@@ -158,6 +160,7 @@ export class BusinessesService {
         },
       });
 
+      await this.primaryLocation.createInitialPrimary(tx, business);
       await this.membership.createActiveOwnerMembership(tx, user.id, business.id);
 
       return business;
@@ -903,14 +906,22 @@ export class BusinessesService {
       }
     }
 
-    const updated = await this.prisma.business.update({
-      where: { id },
-      data: {
-        ...patch,
-        latitude: latitude !== undefined ? latitude : undefined,
-        longitude: longitude !== undefined ? longitude : undefined,
-      },
-      include: businessDetailInclude,
+    const syncPrimary = this.primaryLocation.shouldSyncAfterPatch(changedKeys);
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const row = await tx.business.update({
+        where: { id },
+        data: {
+          ...patch,
+          latitude: latitude !== undefined ? latitude : undefined,
+          longitude: longitude !== undefined ? longitude : undefined,
+        },
+        include: businessDetailInclude,
+      });
+      if (syncPrimary) {
+        await this.primaryLocation.syncPrimaryFromBusinessRecord(tx, row);
+      }
+      return row;
     });
 
     await this.businessSubcategories.syncForBusiness(

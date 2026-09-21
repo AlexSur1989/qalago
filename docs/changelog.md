@@ -6,6 +6,22 @@
 
 ---
 
+## 2026-09-21 — Stage 6.12A.3 primary location compatibility layer
+
+- **Status:** 6.12A.3 PASS — READY FOR A.4.
+- **Checkpoint:** _(this commit)_.
+- **Summary:**
+  - **`BusinessPrimaryLocationService`**: resolve primary (`isPrimary` only), `createInitialPrimary`, `syncPrimaryFromBusinessRecord`; synchronized physical fields on legacy writes.
+  - **Production creates:** admin import (`BusinessesService.create`) and business-application **approval** atomically create **Business + one primary BusinessLocation** (deterministic id aligned with A.2 backfill).
+  - **Owner PATCH `/businesses/:id`:** physical-field patches update Business and primary location in **one transaction**; brand-only patches skip location writes; partial PATCH semantics preserved.
+  - **Public API unchanged** — list/detail still read top-level **Business** physical fields; **map** still uses **`Business.location`**; no location CRUD endpoints.
+  - **Prisma generate:** PASS after stopping local `catalog-api` dev processes (Windows EPERM on `query_engine-windows.dll.node`); validate + migrate status up to date; **no new migration**.
+- **Tests:** catalog-api Jest **1018** / **145** suites (incl. `business-primary-location.service`, `stage-6-12a3-business-location-sync`); local DB integrity **31/31/31**, missing/multi primary **0**.
+- **Deferred:** A.4 BusinessLocation CRUD + multi-branch public contracts.
+- **Next:** 6.12A.4 location-aware APIs.
+
+---
+
 ## 2026-09-21 — Stage 6.12A.2 BusinessLocation 1:1 backfill
 
 - **Status:** 6.12A.2 PASS — READY FOR A.3.

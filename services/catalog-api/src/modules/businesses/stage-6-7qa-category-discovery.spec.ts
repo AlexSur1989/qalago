@@ -56,6 +56,7 @@ describe('Stage 6.7QA — category discovery adversarial', () => {
       subDeps.businessSubcategories,
       subDeps.subcategories,
       asReviewAggregationService(createReviewAggregationFromPrisma(prisma as never)),
+      {} as never,
     );
   }
 

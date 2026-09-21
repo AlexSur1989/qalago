@@ -35,8 +35,9 @@ describe('BusinessesService.findAll', () => {
     asAuditLogService(createMockAuditLog()),
     subDeps.businessSubcategories,
     subDeps.subcategories,
-    {} as never,
-  );
+      {} as never,
+      {} as never,
+    );
 
   const category = { id: 'cat-1', title: 'Кафе', slug: 'cafe', icon: null };
 
@@ -283,6 +284,7 @@ describe('BusinessesService.recommended', () => {
     asAuditLogService(createMockAuditLog()),
     subDeps2.businessSubcategories,
     subDeps2.subcategories,
+    {} as never,
     {} as never,
   );
 

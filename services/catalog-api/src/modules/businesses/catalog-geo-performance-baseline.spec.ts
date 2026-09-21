@@ -51,6 +51,7 @@ describe('Catalog geo performance baseline (mocked)', () => {
       subDeps.businessSubcategories,
       subDeps.subcategories,
       {} as never,
+      {} as never,
     );
   }
 

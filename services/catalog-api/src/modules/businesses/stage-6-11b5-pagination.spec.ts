@@ -61,6 +61,7 @@ describe('Stage 6.11B.5 — search pagination and relevance', () => {
       subDeps.businessSubcategories,
       subDeps.subcategories,
       {} as never,
+      {} as never,
     );
   }
 

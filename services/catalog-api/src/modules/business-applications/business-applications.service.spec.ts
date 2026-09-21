@@ -69,6 +69,9 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
     assertApplicationSubmit: jest.fn(),
     assertOwnershipClaimCreate: jest.fn(),
   };
+  const primaryLocation = {
+    createInitialPrimary: jest.fn().mockResolvedValue({ id: 'bl-primary', isPrimary: true }),
+  };
   const cityScope = {
     resolveCityId: jest.fn().mockResolvedValue('city-uralsk'),
     resolveAdminCityId: jest.fn().mockResolvedValue('city-uralsk'),
@@ -130,6 +133,7 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
       auditLog as never,
       notifications as never,
       rateLimit as never,
+      primaryLocation as never,
     );
   });
 
@@ -300,6 +304,10 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
           locationSource: undefined,
         }),
       }),
+    );
+    expect(primaryLocation.createInitialPrimary).toHaveBeenCalledWith(
+      prisma,
+      expect.objectContaining({ id: 'biz-new' }),
     );
   });
 

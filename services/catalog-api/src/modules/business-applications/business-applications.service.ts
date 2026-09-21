@@ -21,6 +21,7 @@ import { randomBytes } from 'crypto';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { BusinessMembershipService } from '../../common/services/business-membership.service';
+import { BusinessPrimaryLocationService } from '../../common/services/business-primary-location.service';
 import { OnboardingRateLimitService } from '../../common/services/onboarding-rate-limit.service';
 import {
   buildApplicationDedupeKey,
@@ -64,6 +65,7 @@ export class BusinessApplicationsService {
     private readonly auditLog: AuditLogService,
     private readonly notifications: NotificationsService,
     private readonly rateLimit: OnboardingRateLimitService,
+    private readonly primaryLocation: BusinessPrimaryLocationService,
   ) {}
 
   async createDraft(user: AuthUser, dto: CreateBusinessApplicationDto) {
@@ -413,6 +415,8 @@ export class BusinessApplicationsService {
           locationSource: locked.locationSource ?? undefined,
         },
       });
+
+      await this.primaryLocation.createInitialPrimary(tx, business);
 
       await this.membership.createActiveOwnerMembership(
         tx,
