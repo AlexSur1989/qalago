@@ -9,7 +9,7 @@
 ## 2026-09-22 — Stage 6.12A.7.7.1 branch media data foundation
 
 - **Status:** 6.12A.7.7.1 IMPLEMENTED — READY FOR A.7.7.2 (API/read path).
-- **Checkpoint (implementation):** see git HEAD after stage commit.
+- **Checkpoint (implementation):** `5cda615e9175f4792058c3bf7483d79b8839ba94`.
 - **Summary:**
   - **Schema:** nullable **`BusinessImage.locationId`** — `null` = shared/brand image; non-null = scoped to **`BusinessLocation`**.
   - **Integrity:** composite FK **`(businessId, locationId)` → `BusinessLocation(businessId, id)`**; **`@@unique([businessId, id])`** on locations; **`ON DELETE RESTRICT`** on branch (no silent promotion to brand).
