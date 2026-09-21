@@ -49,6 +49,13 @@ export class BusinessesController {
     return this.businessesService.recommended(user, citySlug);
   }
 
+  /** Must register before `:businessId/locations/:locationId` (Stage 6.12A.7.4). */
+  @Public()
+  @Get(':id/locations/public')
+  listPublicLocations(@Param('id') id: string) {
+    return this.locationService.listPublicLocations(id);
+  }
+
   @Get(':businessId/locations')
   listLocations(
     @CurrentUser() user: AuthUser,
@@ -134,12 +141,6 @@ export class BusinessesController {
     @Param('invitationId') invitationId: string,
   ) {
     return this.teamService.revokeInvitation(user, businessId, invitationId);
-  }
-
-  @Public()
-  @Get(':id/locations/public')
-  listPublicLocations(@Param('id') id: string) {
-    return this.locationService.listPublicLocations(id);
   }
 
   @Public()
