@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-09-22 — Stage 6.12A.7.4 FINALIZED (multi-branch map physical QA)
+
+- **Status:** 6.12A.7.4 FINALIZED — READY FOR A.7.6 EFFECTIVE PHYSICAL CONTRACT.
+- **Checkpoint (implementation/cleanup):** see git HEAD after finalize commit (`docs/changelog.md` + instrumentation removal only).
+- **Summary:**
+  - **Physical QA (Samsung SM-J610FN):** native MapLibre business layer confirmed; one Business → multiple **BusinessLocation** markers (Bar Code 51 L1+L2); map fetch → parse → state → GeoJSON → source/layers pipeline observed (16 viewport features in instrumented run).
+  - **Hotfix 2:** `GET /businesses/:id/locations/public` route shadowing fixed (`cd66f7d8`); unauthenticated public branches list returns L1+L2.
+  - **Cleanup:** temporary `[A74MAP]` runtime instrumentation removed from Flutter; local capture `infra/local-backups/samsung-a74map-logcat.txt` retained uncommitted.
+  - **QA fixture:** L2 `cmubk34fk0001uls458d1nta9` intentionally retained for A.7.6+ branch QA (may skew local A.1/A.2 exact-count tests — not weakened in this stage).
+  - **Deferred:** effective physical contract for detail (hours/socials/media/catalog/promotions branch-aware) → **A.7.6+**; A.7.5 branch content architecture audit PASS (read-only, no commit); F.4 / full branch content not complete.
+- **Next:** 6.12A.7.6 effective physical contract (backend DTO + client wiring).
+
+---
+
 ## 2026-09-22 — Stage 6.12A.7.4 Hotfix 2 (public locations route shadowing)
 
 - **Status:** 6.12A.7.4 HOTFIX 2 IMPLEMENTED — READY FOR SAMSUNG DETAIL RE-QA (backend restart on LAN API).
