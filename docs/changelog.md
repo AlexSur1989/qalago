@@ -9,6 +9,7 @@
 ## 2026-09-21 — Stage 6.11F.2 City & category discovery
 
 - **Status:** 6.11F.2 PASS — READY FOR F.3.
+- **Checkpoint:** `7f84e30baae743605f6c82d249bec6b789042c86`.
 - **Summary:**
   - City-aware routes: `/{citySlug}`, `/{citySlug}/categories`, `/{citySlug}/{categorySlug}`, `/{citySlug}/{categorySlug}/{subcategorySlug}`, `/{citySlug}/search?q=`.
   - Root `/` permanent redirect → `/uralsk`; legacy `/categories` + `/categories/[id]` → default city slug routes.
