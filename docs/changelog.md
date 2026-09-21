@@ -6,6 +6,21 @@
 
 ---
 
+## 2026-09-21 — Stage 6.12A.7.1 BusinessLocation map viewport backend cutover
+
+- **Status:** 6.12A.7.1 PASS — READY FOR A.7.2.
+- **Checkpoint (implementation):** `0d8a772ceeb6133a2cbe7ce3f59e9877628c5bf4`.
+- **Summary:**
+  - **`GET /businesses` + `forMap=true` + bbox:** PostGIS grain switches to **`BusinessLocation.location`** joined to parent **`Business`**; one list row per qualifying branch.
+  - **Contract:** **`id`** remains **Business.id**; additive **`locationId`** = **BusinessLocation.id**; branch physical fields (`cityId`, address, coordinates, contacts, `workHours`) from location row; brand/taxonomy/status/plan display from Business.
+  - **City filter (map viewport):** **`BusinessLocation.cityId`** (branch city).
+  - **Unchanged:** nearest/radius/search/category **Business-grain** discovery; Flutter map marker identity (**A.7.2**); MapLibre/style; geocoding; schema/migrations; ads/plans/reviews/favorites scope.
+- **Tests:** catalog-api Jest **1046** / **148** suites (incl. `stage-6-12a7-1-map-location-viewport` **10** cases); prior 6.11C geo suites PASS.
+- **Deferred:** A.7.2 Flutter GeoJSON/selection/route cutover; optional discovery location-grain migration (product decision).
+- **Next:** 6.12A.7.2 Flutter map marker identity.
+
+---
+
 ## 2026-09-21 — Stage 6.12A.6 BusinessLocation Flutter & Consumer client integration
 
 - **Status:** 6.12A.6 PASS — READY FOR A.7.
