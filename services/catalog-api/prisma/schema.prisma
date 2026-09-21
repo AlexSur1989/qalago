@@ -760,7 +760,9 @@ model BusinessLocation {
   updatedAt      DateTime                @updatedAt
   business       Business                @relation(fields: [businessId], references: [id], onDelete: Cascade)
   city           City                    @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  images         BusinessImage[]
 
+  @@unique([businessId, id])
   @@index([businessId])
   @@index([cityId])
   @@index([businessId, cityId])
@@ -867,15 +869,20 @@ model BusinessInvitation {
 }
 
 model BusinessImage {
-  id                String   @id @default(cuid())
+  id                String            @id @default(cuid())
   businessId        String
+  /// Null = shared/brand image; non-null = scoped to one BusinessLocation (Stage 6.12A.7.7.1).
+  locationId        String?
   imageUrl          String
-  sortOrder         Int      @default(0)
-  moderationHidden  Boolean  @default(false)
-  createdAt         DateTime @default(now())
-  business          Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  sortOrder         Int               @default(0)
+  moderationHidden  Boolean           @default(false)
+  createdAt         DateTime          @default(now())
+  business          Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  branchLocation    BusinessLocation? @relation(fields: [businessId, locationId], references: [businessId, id], onDelete: Restrict)
 
   @@index([businessId, moderationHidden])
+  @@index([businessId, locationId, sortOrder])
+  @@index([businessId, locationId, moderationHidden])
 }
 
 model ServiceMenuGroup {

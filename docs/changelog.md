@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-09-22 — Stage 6.12A.7.7.1 branch media data foundation
+
+- **Status:** 6.12A.7.7.1 IMPLEMENTED — READY FOR A.7.7.2 (API/read path).
+- **Checkpoint (implementation):** see git HEAD after stage commit.
+- **Summary:**
+  - **Schema:** nullable **`BusinessImage.locationId`** — `null` = shared/brand image; non-null = scoped to **`BusinessLocation`**.
+  - **Integrity:** composite FK **`(businessId, locationId)` → `BusinessLocation(businessId, id)`**; **`@@unique([businessId, id])`** on locations; **`ON DELETE RESTRICT`** on branch (no silent promotion to brand).
+  - **Migration:** all existing rows remain **`locationId = NULL`**; counts preserved.
+  - **Tests:** runtime integrity spec (shared, same-business branch, cross-business reject, Business cascade, location RESTRICT).
+- **Deferred (A.7.7.2):** upload/attach `locationId`, public **`moderationHidden`** filter, **`effectiveMedia`** / scoped gallery — **no public API behavior change in 7.7.1**.
+- **Next:** A.7.7.2 scoped management + public read path.
+
+---
+
 ## 2026-09-22 — Stage 6.12A.7.6 effective physical contract (Business detail)
 
 - **Status:** 6.12A.7.6 PHYSICAL QA PASS — STAGE CLOSED, READY FOR A.7.7.
