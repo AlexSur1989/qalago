@@ -6,10 +6,24 @@
 
 ---
 
+## 2026-09-22 — Stage 6.12A.7.4 Hotfix 2 (public locations route shadowing)
+
+- **Status:** 6.12A.7.4 HOTFIX 2 IMPLEMENTED — READY FOR SAMSUNG DETAIL RE-QA (backend restart on LAN API).
+- **Checkpoint (implementation):** `cd66f7d8` (see git `cd66f7d…`).
+- **Summary:**
+  - **Root cause:** `GET /businesses/:id/locations/public` was shadowed by authenticated `GET :businessId/locations/:locationId` (`locationId = "public"`) → mobile `businessPublicBranchesProvider` never received L1+L2 → detail fell back to primary address despite correct `locationId` query.
+  - **Fix:** register `@Public() @Get(':id/locations/public')` **before** dynamic location routes in `businesses.controller.ts`; URL unchanged.
+  - **Tests:** HTTP/controller regression (`stage-6-12a7-4-public-locations-http.spec.ts`) — unauthenticated 200 + L1/L2 ids; protected single-location 401; optional QA DB fixture assertion.
+- **Mobile:** no Flutter changes; installed APK at `1cd345b…` sufficient after backend fix (no rebuild required for this hotfix).
+- **Deferred:** Samsung physical detail re-QA; QA L2 cleanup after acceptance; fixture geocode label mismatch.
+- **Next:** Samsung map L2 → detail re-QA on `192.168.8.101:3002`.
+
+---
+
 ## 2026-09-22 — Stage 6.12A.7.4 Physical QA hotfix (category map + branch detail)
 
 - **Status:** 6.12A.7.4 HOTFIX IMPLEMENTED — READY FOR SAMSUNG PHYSICAL RE-QA.
-- **Checkpoint (implementation):** `1cd345b`.
+- **Checkpoint (implementation):** `1cd345b8` (see git `1cd345b…`).
 - **Summary:**
   - **Category map:** GeoJSON/native layer uses **`mapLayerItems`** (`lastFetchBounds`) so multi-branch businesses are not hidden by tighter **`visibleBounds`** after category scope entry.
   - **Detail handoff:** optional query **`locationId`** on `/business/:id`; branch address/route/coordinates via public locations + **`resolveActiveBusinessPhysicalContext`**; reviews/favorites stay **Business.id**.
@@ -45,6 +59,15 @@
 - **Tests:** catalog-api Jest **1046** / **148** suites (incl. `stage-6-12a7-1-map-location-viewport` **10** cases); prior 6.11C geo suites PASS.
 - **Deferred:** A.7.2 Flutter GeoJSON/selection/route cutover; optional discovery location-grain migration (product decision).
 - **Next:** 6.12A.7.2 Flutter map marker identity.
+
+---
+
+## 2026-09-21 — Dev CORS: LAN 172.x for physical-device web
+
+- **Status:** local-dev only.
+- **Summary:** catalog-api development CORS now allows `http://172.x.x.x` origins (plus existing localhost / 192.168 / 10.x) and explicit `CORS_ORIGINS`, so Flutter web on a LAN IP works from a phone. Production still uses the allow-list only.
+- **Files:** `services/catalog-api/src/main.ts`.
+- **Deferred:** none.
 
 ---
 
