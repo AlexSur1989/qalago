@@ -1,7 +1,17 @@
 import type { Metadata } from 'next';
+import { Montserrat } from 'next/font/google';
 import './globals.css';
+import { PublicShell } from '@/components/PublicShell';
 import { siteMetadataForLocale } from '@/lib/locale';
 import { getServerLocale } from '@/lib/locale-server';
+
+const montserrat = Montserrat({
+  subsets: ['latin', 'cyrillic'],
+  variable: '--font-sans',
+});
+
+/** Must be a literal for Next.js segment config (see lib/cache-policy.ts). */
+export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getServerLocale();
@@ -12,8 +22,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getServerLocale();
   return (
-    <html lang={locale}>
-      <body>{children}</body>
+    <html lang={locale} className={montserrat.variable}>
+      <body className={montserrat.className}>
+        <PublicShell locale={locale}>{children}</PublicShell>
+      </body>
     </html>
   );
 }

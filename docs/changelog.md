@@ -1,19 +1,53 @@
 # Changelog — QalaGo
 
-Все значимые продуктовые и технические нововведения фиксируются здесь.  
-Формат: дата → что сделано → что заложить на будущее.
+**Каноническая инженерная история проекта** (не заменяется git log).  
+Формат: дата → stage → Status / Checkpoint → Summary → Deferred → Next.  
+Дисциплина обновления: `AGENTS.md` (Workflow §6, чеклист START/FINISH).
+
+---
+
+## 2026-09-21 — Stage 6.11F.1 Public Web foundation
+
+- **Status:** 6.11F.1 PASS — READY FOR F.2.
+- **Checkpoint:** `acf19dc134a53a355d53a8dc1404452b1d65867a`.
+- **Summary:**
+  - Public **PublicShell** (nav, footer legal links via `NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL`), Montserrat + design tokens (`--blue`, `--accent`).
+  - Central **public-config**, **cache-policy** (ISR-friendly fetches; layout `revalidate = 60`; removed page `force-dynamic`).
+  - Root **`npm run dev:consumer`**; `start-all.ps1` + CORS/env examples for port 3005.
+  - Docs: `docs/architecture/public-consumer-web.md`; consumer-web README; `.gitignore` for `.next`.
+  - Tests: consumer-web **30** vitest; `check:ui-strings` OK; **next build** OK.
+- **Deferred:** city/category slug routes (F.2), SEO metadata/sitemap (F.3), rich business pages until after **6.12A**, legal pages on public host (F.7).
+- **Next:** 6.11F.2 City/category discovery.
+
+---
+
+## 2026-09-21 — Stage 6.11F.0 Public Web / SEO / Deep Links architecture audit
+
+- **Status:** 6.11F.0 AUDIT PASS — ROADMAP REORDER REQUIRED (read-only; **no commit**).
+- **Checkpoint:** `ec633c4dd1acf773b3d8ebd0b0152b1f6630ec8f` (unchanged; audit at accepted 6.11E HEAD).
+- **Summary:**
+  - Preserve and extend `apps/consumer-web` (Next.js 15 App Router); do not spawn a second public site.
+  - Consumer web = partial discovery MVP (categories + minimal business); public catalog API sufficient for SSR without JWT.
+  - Slugs exist in DB (City/Category/Business); web routes still use internal IDs; no RU/KK SEO URL architecture; no Universal/App Links.
+  - Final public business/branch URL architecture **deferred until Stage 6.12A BusinessLocation**.
+- **Roadmap (approved order):** F.1 → F.2 → F.3 → **6.12A** → F.4 → F.5 → F.6 → F.7 → F.8.
+- **Next:** 6.11F.1 Public Web foundation.
 
 ---
 
 ## 2026-09-21 — Stage 6.11E.6 notifications final QA & release gate
 
-- **Verified:** Single architecture (NotificationsService + post-commit push); 992 backend / 45 Flutter notification tests; Firebase-less debug APK build.
-- **Documented:** `docs/architecture/notifications-final-architecture.md` (canonical in-app notification, setImmediate push debt, external Firebase gate).
-- **Dev-only:** `scripts/dev/seed-notification-navigation-fixture.mjs` for Samsung physical navigation QA.
-- **Physical QA:** E.3/E.4 inbox + navigation on device still required before “finalized” verdict.
+- **Status:** 6.11E.6 AUTOMATED PASS — **IN-APP NOTIFICATIONS FINALIZED**; live FCM/APNs **not** physically verified.
+- **Checkpoint:** `ec633c4dd1acf773b3d8ebd0b0152b1f6630ec8f`.
+- **Verified (automated):** Single architecture (`NotificationsService` + post-commit push); backend/Flutter notification test suites; Firebase-less debug APK build.
+- **Documented:** `docs/architecture/notifications-final-architecture.md` (canonical in-app notification, external Firebase gate).
+- **Physical QA closure (Samsung, in-app — post-commit, no separate product commit):** inbox RU/KK; read/unread; badge; structured `NEW_REVIEW` navigation (dev fixture); Back navigation; legacy NULL-target rows remain mark-read only; Mark All Read; refresh/pagination; map regression smoke. **Live production push delivery not tested.**
+- **Deferred / debt:** push via best-effort post-commit `setImmediate` (no durable outbox); no push preferences; server-side background push locale TBD; local Prisma migration-history drift around obsolete E.5A migration name — reconcile before `migrate deploy`; Firebase/APNs provider config + live delivery QA = external production gate.
+- **Next:** 6.11F.0 (completed) → 6.11F.1.
 
 ## 2026-09-21 — Stage 6.11E.5 push readiness & device registration
 
+- **Checkpoint:** `c7d2ee37e88a0758e5994961eb0f263424d9eb14`.
 - **Added:** `PushDevice` model; `POST/DELETE /notifications/devices`; FCM delivery abstraction (`PUSH_ENABLED`, Noop vs Firebase Admin); post-commit push dispatch (never inside Prisma transactions).
 - **Added:** Flutter `firebase_core` / `firebase_messaging` foundation, token register/revoke on auth lifecycle, push tap → E.4 navigation whitelist.
 - **Requires external config:** Firebase project (`google-services.json`, `GoogleService-Info.plist`, service account); Apple Push capability / APNs key for iOS live delivery.
@@ -21,24 +55,29 @@
 
 ## 2026-09-21 — Stage 6.11E.4 notification routing & deep links
 
+- **Checkpoint:** `d337b8f8a20742d8d655f420ec12d02823897af4`.
 - **Added:** Central `resolveNotificationDestination` + `navigateNotificationDestination` for typed in-app routes from `type`/`targetType`/`targetId`.
 - **Changed:** Inbox tap marks read (optimistic) then pushes canonical consumer/owner screens; double-tap guard; entity-unavailable snackbar.
 - **Deferred:** push/FCM (E.5); Web deep links.
 
 ## 2026-09-21 — Stage 6.11E.3 notification inbox UX & localization
 
+- **Checkpoint:** `47a3b42b492f91338013223ebd0fc7c7cb81f427`.
 - **Added:** Flutter `NotificationPresentation` layer (type + payload → RU/KK templates); shared paginated inbox (`NotificationsInboxBody`) for consumer and owner.
 - **Changed:** Inbox pagination (20/page, load-more, refresh, empty/error/retry states); unread styling; mark read / mark all with optimistic rollback; badge refresh via `unreadNotificationsProvider`.
 - **Deferred:** notification tap navigation (E.4); push (E.5); Business Web full localized rendering.
 
 ## 2026-09-21 — Stage 6.11E.2 notification domain producers
 
+- **Checkpoint:** `3c5b545866c55961f8eb95061826dfcf0b0210a7`.
 - **Added:** Review alerts to membership-aware recipients; moderation `REVIEW_HIDDEN` / `REVIEW_RESTORED`; explicit application/claim/invitation/ad types.
 - **Changed:** Plan expiry notification guarded by conditional tier transition (`updateMany` count).
 - **Docs:** `docs/architecture/notification-producers.md` producer matrix.
 
 ## 2026-09-21 — Stage 6.11E.1 notifications data & API integrity
 
+- **Checkpoint:** `3e80b0e56ec8cf42b1e36486ea44d4d17cc6a720`.
+- **Note:** No separate **6.11E.0** substage commit or doc in repository; notification series begins at E.1.
 - **Added:** `NotificationTargetType`, optional `targetType` / `targetId` / `payload` on `Notification`; index `(userId, createdAt DESC)`.
 - **Changed:** `GET /notifications` returns paginated `{ items, pagination }` (default limit 20, max 50); stable mark-read DTOs.
 - **Fixed:** Notification creation participates in Prisma transactions for business applications and ownership claims.
@@ -46,16 +85,21 @@
 
 ## 2026-09-21 — Stage 6.11D.5 physical QA hotfix 1 (duplicate report UX)
 
+- **Checkpoint:** `c6eda65aae55efbf38263f9897feb28b1ba83cf9`.
 - **Fixed:** `ProductionExceptionFilter` now preserves `code` on HTTP exception responses so mobile receives `REPORT_ALREADY_SUBMITTED` on 409.
 - **Fixed:** Shared `extractApiErrorCode` for Dio error parsing in review report flow.
 
 ## 2026-09-21 — Stage 6.11D.5 reviews & trust release gate
 
+- **Status:** 6.11D.5 CODE PASS — Reviews & Trust series accepted for 6.11E (automated release gate).
+- **Checkpoint:** `508f294be6f4367c3b795c96c7b5c974efc0ec89` (release blocker fix); hotfix `c6eda65…` (duplicate report UX).
 - **Fixed:** `PATCH /reviews/:id/reply` no longer requires global `BUSINESS` role; USER managers with `REVIEWS_REPLY` reach service membership checks (D.5 release blocker).
 - **Verified:** DB invariants, automated test suites, map non-regression for D.1–D.4 scope.
+- **Physical QA:** Dedicated Samsung closure entry for reviews **not recorded** in repo docs; treat device QA as part of release gate unless a future stage adds explicit sign-off.
 
 ## 2026-09-21 — Stage 6.11D.4 consumer reviews UX & trust polish
 
+- **Checkpoint:** `afb4592b8bd6da9ce4c9ebbbfe3ccef871dc1373`.
 - **Added:** Flutter `/business/:id/reviews` paginated screen; Business Detail “all reviews” entry; shared consumer review card with company reply label.
 - **Added:** Mobile create/edit/delete/report flows wired to D.1–D.3 APIs with RU/KK l10n and error-code mapping.
 - **Changed:** Admin moderation case detail — removed dead manual status PATCH UI; status follows moderation actions.
@@ -63,6 +107,7 @@
 
 ## 2026-09-21 — Stage 6.11D.3 review moderation & reports workflow
 
+- **Checkpoint:** `b30c9dcb63bd82ab9084c6d710d70270f782236d`.
 - **Added:** Enriched `GET /admin/moderation/cases/:id` with linked reports, action history, and live `reviewTarget` state (business, reviewer, lifecycle, public visibility).
 - **Added:** Required moderator `internalNote` for `REVIEW_HIDE` / `REVIEW_RESTORE`; admin case UI wired to record actions with confirmation and loading states.
 - **Changed:** `POST /reports` for `REVIEW` rejects soft-deleted targets; moderation-hidden reviews remain reportable.
@@ -72,6 +117,7 @@
 
 ## 2026-09-20 — Stage 6.11D.2 review lifecycle & abuse protection
 
+- **Checkpoint:** `af052207443453d1428d05100860b9614a405d5b`.
 - **Added:** `Review.deletedAt` soft delete; public predicate includes `deletedAt = null`.
 - **Added:** `PATCH /reviews/:id`, `DELETE /reviews/:id`; POST restores soft-deleted row (same id; preserves `moderationHidden`).
 - **Added:** Self-review block (`REVIEW_SELF_REVIEW_FORBIDDEN`); review mutation rate limits; audit `REVIEW_CREATE/UPDATE/DELETE/RESTORE`.
@@ -80,6 +126,8 @@
 
 ## 2026-09-20 — Stage 6.11D.1 review data & rating integrity
 
+- **Checkpoint:** `9d09c1fc8336e2319a6a7e32f378d21d322e34c1`.
+- **Note:** No separate **6.11D.0** substage in repository.
 - **Added:** `@@unique([userId, businessId])` and PostgreSQL CHECK `rating` 1..5 on `Review`.
 - **Added:** Central public review filter (`moderationHidden = false`) for list, preview, counts, and aggregates.
 - **Added:** `ReviewAggregationService`; business detail exposes authoritative `averageRating` / `reviewCount`.

@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import type { BusinessSummaryDto } from '@/lib/catalog-api';
 import { UI_LABELS, type AppLocale } from '@/lib/locale';
+import { getApiOrigin } from '@/lib/public-config';
 
-const API_ORIGIN =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/v1\/?$/, '') ?? 'http://localhost:3002';
+const API_ORIGIN = getApiOrigin();
 
 function coverSrc(url: string | null | undefined): string | null {
   if (!url) return null;

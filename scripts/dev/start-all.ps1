@@ -26,6 +26,7 @@ Start-DevWindow "QalaGo AI :3004" "$Root" "`$env:QALAGO_INTERNAL_SERVICE_TOKEN='
 Start-Sleep -Seconds 1
 Start-DevWindow "QalaGo Admin :3001" "$Root" "`$env:NEXT_PUBLIC_QALAGO_DEV_LOGIN='true'; npm run dev:admin"
 Start-DevWindow "QalaGo Business :3003" "$Root" "`$env:NEXT_PUBLIC_QALAGO_DEV_LOGIN='true'; npm run dev:business"
+Start-DevWindow "QalaGo Consumer :3005" "$Root" "npm run dev:consumer"
 Start-DevWindow "QalaGo Mobile :8080" "$Root\apps\mobile" "flutter run -d web-server --web-port=8080 --web-hostname=127.0.0.1 --no-web-resources-cdn --dart-define=QALAGO_DEV_LOGIN=true"
 
 Write-Host ""
@@ -33,6 +34,7 @@ Write-Host "Dev stack starting in separate windows:" -ForegroundColor Green
 Write-Host "  API      http://localhost:3002/api/v1/health"
 Write-Host "  Admin    http://localhost:3001"
 Write-Host "  Business http://localhost:3003"
+Write-Host "  Consumer http://localhost:3005"
 Write-Host "  AI       http://localhost:3004/api/v1/health"
 Write-Host "  Mobile   http://localhost:8080"
 Write-Host ""

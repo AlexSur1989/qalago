@@ -1,4 +1,12 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3002/api/v1';
+import {
+  REVALIDATE_BUSINESS_DETAIL_SECONDS,
+  REVALIDATE_BUSINESS_LIST_SECONDS,
+  REVALIDATE_CATEGORIES_SECONDS,
+  REVALIDATE_CITY_SECONDS,
+} from './cache-policy';
+import { DEFAULT_CITY_SLUG, getApiBaseUrl } from './public-config';
+
+const API_BASE = getApiBaseUrl();
 
 export type CityDto = {
   id: string;
@@ -9,7 +17,7 @@ export type CityDto = {
 
 export async function fetchCity(slug: string): Promise<CityDto> {
   const res = await fetch(`${API_BASE}/cities/${encodeURIComponent(slug)}`, {
-    next: { revalidate: 300 },
+    next: { revalidate: REVALIDATE_CITY_SECONDS },
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json() as Promise<CityDto>;
@@ -47,9 +55,9 @@ export type SubcategoryDto = {
   sortOrder: number;
 };
 
-export async function fetchCategories(citySlug = 'uralsk'): Promise<CategoryDto[]> {
+export async function fetchCategories(citySlug = DEFAULT_CITY_SLUG): Promise<CategoryDto[]> {
   const res = await fetch(`${API_BASE}/categories?citySlug=${encodeURIComponent(citySlug)}`, {
-    next: { revalidate: 60 },
+    next: { revalidate: REVALIDATE_CATEGORIES_SECONDS },
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json() as Promise<CategoryDto[]>;
@@ -57,7 +65,7 @@ export async function fetchCategories(citySlug = 'uralsk'): Promise<CategoryDto[
 
 export async function fetchSubcategories(categoryId: string): Promise<SubcategoryDto[]> {
   const res = await fetch(`${API_BASE}/categories/${encodeURIComponent(categoryId)}/subcategories`, {
-    next: { revalidate: 60 },
+    next: { revalidate: REVALIDATE_CATEGORIES_SECONDS },
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json() as Promise<SubcategoryDto[]>;
@@ -77,20 +85,22 @@ export async function fetchBusinesses(params: {
   limit?: number;
 }): Promise<BusinessListResponse> {
   const q = new URLSearchParams({
-    citySlug: params.citySlug ?? 'uralsk',
+    citySlug: params.citySlug ?? DEFAULT_CITY_SLUG,
     categoryId: params.categoryId,
     limit: String(params.limit ?? 50),
     page: '1',
   });
   if (params.subcategoryId) q.set('subcategoryId', params.subcategoryId);
-  const res = await fetch(`${API_BASE}/businesses?${q.toString()}`, { next: { revalidate: 30 } });
+  const res = await fetch(`${API_BASE}/businesses?${q.toString()}`, {
+    next: { revalidate: REVALIDATE_BUSINESS_LIST_SECONDS },
+  });
   if (!res.ok) throw new Error(await res.text());
   return res.json() as Promise<BusinessListResponse>;
 }
 
 export async function fetchBusiness(id: string): Promise<BusinessSummaryDto> {
   const res = await fetch(`${API_BASE}/businesses/${encodeURIComponent(id)}`, {
-    next: { revalidate: 60 },
+    next: { revalidate: REVALIDATE_BUSINESS_DETAIL_SECONDS },
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json() as Promise<BusinessSummaryDto>;

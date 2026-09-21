@@ -1,10 +1,8 @@
-export const dynamic = 'force-dynamic';
-
 import Link from 'next/link';
 import { CategoryIconTile } from '@/components/CategoryIconTile';
 import { BusinessList } from '@/components/BusinessList';
-import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { fetchBusinesses, fetchCategories, fetchSubcategories } from '@/lib/catalog-api';
+import { DEFAULT_CITY_SLUG } from '@/lib/public-config';
 import {
   UI_LABELS,
   categoryDisplayName,
@@ -25,7 +23,7 @@ export default async function CategoryDetailPage({
   const labels = UI_LABELS[locale];
 
   const [categories, subs, businesses] = await Promise.all([
-    fetchCategories('uralsk'),
+    fetchCategories(DEFAULT_CITY_SLUG),
     fetchSubcategories(id),
     fetchBusinesses({ categoryId: id, subcategoryId: subcategoryId || undefined }),
   ]);
@@ -34,11 +32,10 @@ export default async function CategoryDetailPage({
 
   return (
     <main className="page">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-        <Link href="/categories">{labels.back}</Link>
-        <LocaleSwitcher locale={locale} labels={labels} />
-      </div>
-      <h1>{catTitle}</h1>
+      <Link href="/categories" className="page-back">
+        {labels.back}
+      </Link>
+      <h1 className="page-title">{catTitle}</h1>
       {subs.length ? (
         <>
           <p style={{ color: 'var(--muted)' }}>{labels.subcategories}</p>

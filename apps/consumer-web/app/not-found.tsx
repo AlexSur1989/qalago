@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic';
-
 import Link from 'next/link';
 import { UI_LABELS } from '@/lib/locale';
 import { getServerLocale } from '@/lib/locale-server';

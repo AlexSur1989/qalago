@@ -13,7 +13,13 @@ QalaGo — городской маркетплейс/гид. MVP: Уральск
 3. **Код** — минимальный diff, только запрошенный scope.
 4. **Тесты** — для новой логики в services/packages.
 5. **Docs** — обновить связанные md, если поведение изменилось.
-6. **Changelog** — каждое нововведение записать в `docs/changelog.md` (дата, что добавлено, что заложить на будущее).
+6. **Changelog** — каноническая инженерная история: **`docs/changelog.md`** (единственный changelog; не создавать второй). Каждый завершённый stage/substage/hotfix/release gate — запись с **Status**, **Checkpoint (commit SHA)** где был commit, краткий Summary, Deferred, Next. Audit-only stages без commit фиксируются в changelog при следующем implementation stage или docs commit. Physical QA после code commit — в changelog при closure. Changelog включается в **тот же focused stage commit**, что и код (не отдельный «update changelog»). Архитектурные «почему» — в `docs/architecture/*`; roadmap — отдельно; не дублировать final reports в changelog.
+
+### Чеклист stage (START → FINISH)
+
+**START:** `git rev-parse HEAD`, `git status`, прочитать `docs/changelog.md`, определить принятый предыдущий stage.
+
+**FINISH:** обновить changelog → зафиксировать deferred → commit (код + changelog) → сообщить финальный HEAD.
 
 ## Границы ответственности
 

@@ -1,31 +1,26 @@
-export const dynamic = 'force-dynamic';
-
 import Link from 'next/link';
-import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { fetchBusiness } from '@/lib/catalog-api';
+import { getApiOrigin } from '@/lib/public-config';
 import { UI_LABELS } from '@/lib/locale';
 import { getServerLocale } from '@/lib/locale-server';
-
-const API_ORIGIN =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/v1\/?$/, '') ?? 'http://localhost:3002';
 
 export default async function BusinessDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const locale = await getServerLocale();
   const labels = UI_LABELS[locale];
   const business = await fetchBusiness(id);
+  const apiOrigin = getApiOrigin();
   const cover = business.coverImageUrl
     ? business.coverImageUrl.startsWith('http')
       ? business.coverImageUrl
-      : `${API_ORIGIN}${business.coverImageUrl}`
+      : `${apiOrigin}${business.coverImageUrl}`
     : null;
 
   return (
     <main className="page">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Link href="/categories">{labels.allCategories}</Link>
-        <LocaleSwitcher locale={locale} labels={labels} />
-      </div>
+      <Link href="/categories" className="page-back">
+        {labels.allCategories}
+      </Link>
       {cover ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -33,10 +28,12 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
           alt={labels.businessCoverAlt}
           width={320}
           height={180}
-          style={{ borderRadius: 16, objectFit: 'cover' }}
+          style={{ borderRadius: 16, objectFit: 'cover', maxWidth: '100%' }}
         />
       ) : null}
-      <h1 style={{ marginTop: 16 }}>{business.title}</h1>
+      <h1 className="page-title" style={{ marginTop: 16 }}>
+        {business.title}
+      </h1>
       <p style={{ color: 'var(--muted)' }}>{business.address}</p>
       {business.shortDesc ? <p>{business.shortDesc}</p> : null}
     </main>

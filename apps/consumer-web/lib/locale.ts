@@ -50,6 +50,13 @@ export type UiLabels = {
   retry: string;
   businessCoverAlt: string;
   businessCardCoverAlt: string;
+  mainNavAria: string;
+  footerLegalAria: string;
+  footerPrivacy: string;
+  footerTerms: string;
+  footerAccountDeletion: string;
+  footerSupport: string;
+  footerCopyright: string;
 };
 
 export const UI_LABELS: Record<AppLocale, UiLabels> = {
@@ -79,6 +86,13 @@ export const UI_LABELS: Record<AppLocale, UiLabels> = {
     retry: 'Повторить',
     businessCoverAlt: 'Обложка заведения',
     businessCardCoverAlt: 'Фото заведения',
+    mainNavAria: 'Основная навигация',
+    footerLegalAria: 'Правовая информация',
+    footerPrivacy: 'Конфиденциальность',
+    footerTerms: 'Условия',
+    footerAccountDeletion: 'Удаление аккаунта',
+    footerSupport: 'Поддержка',
+    footerCopyright: '© QalaGo',
   },
   kk: {
     siteTitle: 'QalaGo',
@@ -106,6 +120,13 @@ export const UI_LABELS: Record<AppLocale, UiLabels> = {
     retry: 'Қайталау',
     businessCoverAlt: 'Мекеме мұқабасы',
     businessCardCoverAlt: 'Мекеме фотосы',
+    mainNavAria: 'Негізгі навигация',
+    footerLegalAria: 'Құқықтық ақпарат',
+    footerPrivacy: 'Құпиялылық',
+    footerTerms: 'Шарттар',
+    footerAccountDeletion: 'Аккаунтты жою',
+    footerSupport: 'Қолдау',
+    footerCopyright: '© QalaGo',
   },
 };
 

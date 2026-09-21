@@ -1,15 +1,11 @@
-export const dynamic = 'force-dynamic';
-
 import Link from 'next/link';
 import { CategoryIconTile, CategoryMoreTile } from '@/components/CategoryIconTile';
-import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { fetchCategories, fetchCity } from '@/lib/catalog-api';
 import { homeColumns, sliceHomeCategories } from '@/lib/home-categories';
+import { DEFAULT_CITY_SLUG } from '@/lib/public-config';
 import { cityDisplayName, homeTaglineForCity } from '@/lib/localized-content';
 import { UI_LABELS, categoryDisplayName } from '@/lib/locale';
 import { getServerLocale } from '@/lib/locale-server';
-
-const DEFAULT_CITY_SLUG = 'uralsk';
 
 export default async function HomePage() {
   const locale = await getServerLocale();
@@ -26,13 +22,8 @@ export default async function HomePage() {
 
   return (
     <main className="page">
-      <header style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-        <div>
-          <h1 style={{ margin: 0, color: 'var(--blue)' }}>QalaGo</h1>
-          <p style={{ color: 'var(--muted)' }}>{tagline}</p>
-        </div>
-        <LocaleSwitcher locale={locale} labels={labels} />
-      </header>
+      <h1 className="page-title">{labels.navHome}</h1>
+      <p className="page-lead">{tagline}</p>
       <section aria-label={labels.categories}>
         <div className="cat-grid">
           {preview.map((c) => (

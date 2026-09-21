@@ -19,6 +19,7 @@
     "dev:api:sync": "npm run sync:businesses -w @qalago/catalog-api",
     "dev:admin": "npm run dev -w @qalago/admin-web",
     "dev:business": "npm run dev -w @qalago/business-web",
+    "dev:consumer": "npm run dev -w @qalago/consumer-web",
     "dev:ai": "npm run start:dev -w @qalago/ai-orchestrator",
     "dev:all": "powershell -ExecutionPolicy Bypass -File scripts/dev/start-all.ps1",
     "dev:restart": "powershell -ExecutionPolicy Bypass -File scripts/dev/restart-all.ps1",

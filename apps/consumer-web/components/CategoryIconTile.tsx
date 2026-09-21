@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { resolveIconUrl } from '@/lib/home-categories';
 
-const API_ORIGIN =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/v1\/?$/, '') ?? 'http://localhost:3002';
+import { getApiOrigin } from '@/lib/public-config';
+
+const API_ORIGIN = getApiOrigin();
 
 export function CategoryIconTile({
   title,
