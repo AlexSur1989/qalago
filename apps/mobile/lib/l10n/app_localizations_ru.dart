@@ -882,6 +882,195 @@ class AppLocalizationsRu extends AppLocalizations {
       'Пока нет уведомлений. Здесь появятся отзывы, модерация и события по тарифу.';
 
   @override
+  String get notificationsLoadMoreFailed => 'Не удалось загрузить ещё';
+
+  @override
+  String get notificationsLoadingMore => 'Загрузка…';
+
+  @override
+  String get notificationsEndOfList => 'Больше уведомлений нет';
+
+  @override
+  String get notificationNewReviewTitle => 'Новый отзыв';
+
+  @override
+  String get notificationNewReviewBody =>
+      'О вашей компании оставили новый отзыв.';
+
+  @override
+  String notificationNewReviewBodyNamed(String businessName) {
+    return 'О компании «$businessName» оставили новый отзыв.';
+  }
+
+  @override
+  String get notificationReviewReplyTitle => 'Ответ на ваш отзыв';
+
+  @override
+  String get notificationReviewReplyBody => 'Компания ответила на ваш отзыв.';
+
+  @override
+  String notificationReviewReplyBodyNamed(String businessName) {
+    return 'Компания «$businessName» ответила на ваш отзыв.';
+  }
+
+  @override
+  String get notificationReviewHiddenTitle => 'Отзыв скрыт';
+
+  @override
+  String get notificationReviewHiddenBody =>
+      'Ваш отзыв был скрыт после модерации.';
+
+  @override
+  String get notificationReviewRestoredTitle => 'Отзыв восстановлен';
+
+  @override
+  String get notificationReviewRestoredBody =>
+      'Ваш отзыв снова доступен после модерации.';
+
+  @override
+  String get notificationBusinessApprovedTitle => 'Компания одобрена';
+
+  @override
+  String get notificationBusinessApprovedBody =>
+      'Ваша компания прошла проверку.';
+
+  @override
+  String notificationBusinessApprovedBodyNamed(String businessName) {
+    return 'Компания «$businessName» прошла проверку.';
+  }
+
+  @override
+  String get notificationBusinessBlockedTitle => 'Компания заблокирована';
+
+  @override
+  String get notificationBusinessBlockedBody =>
+      'Доступ к компании ограничен. Подробности — в кабинете.';
+
+  @override
+  String notificationBusinessBlockedBodyNamed(String businessName) {
+    return 'Компания «$businessName» заблокирована. Подробности — в кабинете.';
+  }
+
+  @override
+  String get notificationBusinessApplicationApprovedTitle => 'Заявка одобрена';
+
+  @override
+  String get notificationBusinessApplicationApprovedBody =>
+      'Ваша заявка на добавление компании одобрена.';
+
+  @override
+  String get notificationBusinessApplicationRejectedTitle => 'Заявка отклонена';
+
+  @override
+  String get notificationBusinessApplicationRejectedBody =>
+      'Ваша заявка на добавление компании отклонена.';
+
+  @override
+  String notificationBusinessApplicationRejectedBodyReason(String reason) {
+    return 'Заявка отклонена: $reason';
+  }
+
+  @override
+  String get notificationOwnershipClaimApprovedTitle =>
+      'Заявка на владение одобрена';
+
+  @override
+  String get notificationOwnershipClaimApprovedBody =>
+      'Ваша заявка на подтверждение владения одобрена.';
+
+  @override
+  String notificationOwnershipClaimApprovedBodyNamed(String businessName) {
+    return 'Заявка на компанию «$businessName» одобрена.';
+  }
+
+  @override
+  String get notificationOwnershipClaimRejectedTitle =>
+      'Заявка на владение отклонена';
+
+  @override
+  String get notificationOwnershipClaimRejectedBody =>
+      'Ваша заявка на подтверждение владения отклонена.';
+
+  @override
+  String notificationOwnershipClaimRejectedBodyReason(String reason) {
+    return 'Заявка отклонена: $reason';
+  }
+
+  @override
+  String get notificationInvitationReceivedTitle => 'Приглашение в команду';
+
+  @override
+  String get notificationInvitationReceivedBody =>
+      'Вас пригласили управлять компанией.';
+
+  @override
+  String notificationInvitationReceivedBodyNamed(String businessName) {
+    return 'Вас пригласили управлять «$businessName».';
+  }
+
+  @override
+  String get notificationInvitationAcceptedTitle => 'Приглашение принято';
+
+  @override
+  String get notificationInvitationAcceptedBody =>
+      'Пользователь принял приглашение в команду.';
+
+  @override
+  String notificationInvitationAcceptedBodyNamed(String businessName) {
+    return 'Приглашение в «$businessName» принято.';
+  }
+
+  @override
+  String get notificationPlanActivatedTitle => 'Тариф активирован';
+
+  @override
+  String get notificationPlanActivatedBody =>
+      'Новый тариф для компании активен.';
+
+  @override
+  String notificationPlanActivatedBodyTier(String tier) {
+    return 'Активирован тариф «$tier».';
+  }
+
+  @override
+  String get notificationPlanExpiredTitle => 'Тариф завершён';
+
+  @override
+  String get notificationPlanExpiredBody =>
+      'Срок действия тарифа истёк. Вы можете продлить его в кабинете.';
+
+  @override
+  String get notificationNewPromotionTitle => 'Новая акция';
+
+  @override
+  String get notificationNewPromotionBody =>
+      'У компании появилась новая акция.';
+
+  @override
+  String notificationNewPromotionBodyNamed(String businessName) {
+    return 'У «$businessName» новая акция.';
+  }
+
+  @override
+  String get notificationAdCampaignApprovedTitle => 'Реклама одобрена';
+
+  @override
+  String get notificationAdCampaignApprovedBody =>
+      'Ваш рекламный материал прошёл модерацию.';
+
+  @override
+  String get notificationAdCampaignRejectedTitle => 'Реклама отклонена';
+
+  @override
+  String get notificationAdCampaignRejectedBody =>
+      'Рекламный материал не прошёл модерацию.';
+
+  @override
+  String notificationAdCampaignRejectedBodyReason(String reason) {
+    return 'Реклама отклонена: $reason';
+  }
+
+  @override
   String get cityNotFound => 'Города не найдены';
 
   @override

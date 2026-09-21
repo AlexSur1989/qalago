@@ -298,6 +298,115 @@
   "notificationsMarkAllRead": "Барлығын оқу",
   "notificationsEmpty": "Хабарландырулар жоқ",
   "notificationsOwnerEmptyBody": "Әзірге хабарландырулар жоқ. Мұнда пікірлер, модерация және тариф оқиғалары көрінеді.",
+  "notificationsLoadMoreFailed": "Тағы жүктеу сәтсіз аяқталды",
+  "notificationsLoadingMore": "Жүктелуде…",
+  "notificationsEndOfList": "Басқа хабарландырулар жоқ",
+  "notificationNewReviewTitle": "Жаңа пікір",
+  "notificationNewReviewBody": "Компанияңыз туралы жаңа пікір қалдырылды.",
+  "notificationNewReviewBodyNamed": "«{businessName}» компаниясы туралы жаңа пікір қалдырылды.",
+  "@notificationNewReviewBodyNamed": {
+    "placeholders": {
+      "businessName": { "type": "String" }
+    }
+  },
+  "notificationReviewReplyTitle": "Пікіріңізге жауап",
+  "notificationReviewReplyBody": "Компания пікіріңізге жауап берді.",
+  "notificationReviewReplyBodyNamed": "«{businessName}» компаниясы пікіріңізге жауап берді.",
+  "@notificationReviewReplyBodyNamed": {
+    "placeholders": {
+      "businessName": { "type": "String" }
+    }
+  },
+  "notificationReviewHiddenTitle": "Пікір жасырылды",
+  "notificationReviewHiddenBody": "Пікіріңіз модерациядан кейін жасырылды.",
+  "notificationReviewRestoredTitle": "Пікір қалпына келтірілді",
+  "notificationReviewRestoredBody": "Пікіріңіз модерациядан кейін қайта қолжетімді болды.",
+  "notificationBusinessApprovedTitle": "Компания мақұлданды",
+  "notificationBusinessApprovedBody": "Компанияңыз тексеруден өтті.",
+  "notificationBusinessApprovedBodyNamed": "«{businessName}» компаниясы тексеруден өтті.",
+  "@notificationBusinessApprovedBodyNamed": {
+    "placeholders": {
+      "businessName": { "type": "String" }
+    }
+  },
+  "notificationBusinessBlockedTitle": "Компания бұғатталды",
+  "notificationBusinessBlockedBody": "Компанияға қолжетімділік шектелді. Толығырақ — кабинетте.",
+  "notificationBusinessBlockedBodyNamed": "«{businessName}» компаниясы бұғатталды. Толығырақ — кабинетте.",
+  "@notificationBusinessBlockedBodyNamed": {
+    "placeholders": {
+      "businessName": { "type": "String" }
+    }
+  },
+  "notificationBusinessApplicationApprovedTitle": "Өтінім мақұлданды",
+  "notificationBusinessApplicationApprovedBody": "Компанияны қосу туралы өтініміңіз мақұлданды.",
+  "notificationBusinessApplicationRejectedTitle": "Өтінім қабылданбады",
+  "notificationBusinessApplicationRejectedBody": "Компанияны қосу туралы өтініміңіз қабылданбады.",
+  "notificationBusinessApplicationRejectedBodyReason": "Өтінім қабылданбады: {reason}",
+  "@notificationBusinessApplicationRejectedBodyReason": {
+    "placeholders": {
+      "reason": { "type": "String" }
+    }
+  },
+  "notificationOwnershipClaimApprovedTitle": "Иелік өтінімі мақұлданды",
+  "notificationOwnershipClaimApprovedBody": "Иелікті растау өтініміңіз мақұлданды.",
+  "notificationOwnershipClaimApprovedBodyNamed": "«{businessName}» компаниясына иелік өтінімі мақұлданды.",
+  "@notificationOwnershipClaimApprovedBodyNamed": {
+    "placeholders": {
+      "businessName": { "type": "String" }
+    }
+  },
+  "notificationOwnershipClaimRejectedTitle": "Иелік өтінімі қабылданбады",
+  "notificationOwnershipClaimRejectedBody": "Иелікті растау өтініміңіз қабылданбады.",
+  "notificationOwnershipClaimRejectedBodyReason": "Өтінім қабылданбады: {reason}",
+  "@notificationOwnershipClaimRejectedBodyReason": {
+    "placeholders": {
+      "reason": { "type": "String" }
+    }
+  },
+  "notificationInvitationReceivedTitle": "Команданың шақыруы",
+  "notificationInvitationReceivedBody": "Сізді компанияны басқаруға шақырды.",
+  "notificationInvitationReceivedBodyNamed": "Сізді «{businessName}» компаниясын басқаруға шақырды.",
+  "@notificationInvitationReceivedBodyNamed": {
+    "placeholders": {
+      "businessName": { "type": "String" }
+    }
+  },
+  "notificationInvitationAcceptedTitle": "Шақыру қабылданды",
+  "notificationInvitationAcceptedBody": "Пайдаланушы команданың шақыруын қабылдады.",
+  "notificationInvitationAcceptedBodyNamed": "«{businessName}» шақыруы қабылданды.",
+  "@notificationInvitationAcceptedBodyNamed": {
+    "placeholders": {
+      "businessName": { "type": "String" }
+    }
+  },
+  "notificationPlanActivatedTitle": "Тариф белсенді",
+  "notificationPlanActivatedBody": "Компания үшін жаңа тариф белсенді.",
+  "notificationPlanActivatedBodyTier": "«{tier}» тарифі белсендірілді.",
+  "@notificationPlanActivatedBodyTier": {
+    "placeholders": {
+      "tier": { "type": "String" }
+    }
+  },
+  "notificationPlanExpiredTitle": "Тариф аяқталды",
+  "notificationPlanExpiredBody": "Тариф мерзімі аяқталды. Кабинетте ұзартуға болады.",
+  "notificationNewPromotionTitle": "Жаңа акция",
+  "notificationNewPromotionBody": "Компанияда жаңа акция бар.",
+  "notificationNewPromotionBodyNamed": "«{businessName}» компаниясында жаңа акция.",
+  "@notificationNewPromotionBodyNamed": {
+    "placeholders": {
+      "businessName": { "type": "String" }
+    }
+  },
+  "notificationAdCampaignApprovedTitle": "Жарнама мақұлданды",
+  "notificationAdCampaignApprovedBody": "Жарнама материалы модерациядан өтті.",
+  "notificationAdCampaignRejectedTitle": "Жарнама қабылданбады",
+  "notificationAdCampaignRejectedBody": "Жарнама материалы модерациядан өтпеді.",
+  "notificationAdCampaignRejectedBodyReason": "Жарнама қабылданбады: {reason}",
+  "@notificationAdCampaignRejectedBodyReason": {
+    "placeholders": {
+      "reason": { "type": "String" }
+    }
+  },
   "cityNotFound": "Қалалар табылмады",
   "citySelectedSnack": "Қала: {name}",
   "onboardingFindBusinessTitle": "Өз бизнесіңізді табу",

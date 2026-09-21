@@ -21,6 +21,30 @@ class AppNotification {
   final String? targetId;
   final Map<String, dynamic>? payload;
 
+  AppNotification copyWith({
+    String? id,
+    String? type,
+    String? title,
+    String? body,
+    bool? isRead,
+    DateTime? createdAt,
+    String? targetType,
+    String? targetId,
+    Map<String, dynamic>? payload,
+  }) {
+    return AppNotification(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      title: title ?? this.title,
+      body: body ?? this.body,
+      isRead: isRead ?? this.isRead,
+      createdAt: createdAt ?? this.createdAt,
+      targetType: targetType ?? this.targetType,
+      targetId: targetId ?? this.targetId,
+      payload: payload ?? this.payload,
+    );
+  }
+
   factory AppNotification.fromJson(Map<String, dynamic> json) {
     final payloadRaw = json['payload'];
     Map<String, dynamic>? payload;

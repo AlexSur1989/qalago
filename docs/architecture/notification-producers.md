@@ -1,6 +1,14 @@
-# Notification producers (Stage 6.11E.2)
+# Notification producers (Stage 6.11E.2+)
 
 In-app notifications only. Push/FCM deferred.
+
+## Client rendering (Stage 6.11E.3)
+
+- **Primary display:** Flutter `presentAppNotification()` — localized title/body from `NotificationType` + safe `payload` (RU/KK via gen_l10n).
+- **Legacy fallback:** persisted backend `title`/`body` for `GENERAL`, unknown future types, or missing templates.
+- **Do not** runtime-translate stored Russian title/body or user-generated content (review text, replies, business names render as-is from payload).
+- **Tap (E.3):** mark read only; navigation/deep links deferred to E.4.
+- **Business Web:** type chip labels for E.2 enums; list still shows API title/body (full Web RU/KK deferred).
 
 ## Producer matrix
 

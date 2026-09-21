@@ -416,6 +416,115 @@
   "notificationsMarkAllRead": "Прочитать все",
   "notificationsEmpty": "Нет уведомлений",
   "notificationsOwnerEmptyBody": "Пока нет уведомлений. Здесь появятся отзывы, модерация и события по тарифу.",
+  "notificationsLoadMoreFailed": "Не удалось загрузить ещё",
+  "notificationsLoadingMore": "Загрузка…",
+  "notificationsEndOfList": "Больше уведомлений нет",
+  "notificationNewReviewTitle": "Новый отзыв",
+  "notificationNewReviewBody": "О вашей компании оставили новый отзыв.",
+  "notificationNewReviewBodyNamed": "О компании «{businessName}» оставили новый отзыв.",
+  "@notificationNewReviewBodyNamed": {
+    "placeholders": {
+      "businessName": { "type": "String" }
+    }
+  },
+  "notificationReviewReplyTitle": "Ответ на ваш отзыв",
+  "notificationReviewReplyBody": "Компания ответила на ваш отзыв.",
+  "notificationReviewReplyBodyNamed": "Компания «{businessName}» ответила на ваш отзыв.",
+  "@notificationReviewReplyBodyNamed": {
+    "placeholders": {
+      "businessName": { "type": "String" }
+    }
+  },
+  "notificationReviewHiddenTitle": "Отзыв скрыт",
+  "notificationReviewHiddenBody": "Ваш отзыв был скрыт после модерации.",
+  "notificationReviewRestoredTitle": "Отзыв восстановлен",
+  "notificationReviewRestoredBody": "Ваш отзыв снова доступен после модерации.",
+  "notificationBusinessApprovedTitle": "Компания одобрена",
+  "notificationBusinessApprovedBody": "Ваша компания прошла проверку.",
+  "notificationBusinessApprovedBodyNamed": "Компания «{businessName}» прошла проверку.",
+  "@notificationBusinessApprovedBodyNamed": {
+    "placeholders": {
+      "businessName": { "type": "String" }
+    }
+  },
+  "notificationBusinessBlockedTitle": "Компания заблокирована",
+  "notificationBusinessBlockedBody": "Доступ к компании ограничен. Подробности — в кабинете.",
+  "notificationBusinessBlockedBodyNamed": "Компания «{businessName}» заблокирована. Подробности — в кабинете.",
+  "@notificationBusinessBlockedBodyNamed": {
+    "placeholders": {
+      "businessName": { "type": "String" }
+    }
+  },
+  "notificationBusinessApplicationApprovedTitle": "Заявка одобрена",
+  "notificationBusinessApplicationApprovedBody": "Ваша заявка на добавление компании одобрена.",
+  "notificationBusinessApplicationRejectedTitle": "Заявка отклонена",
+  "notificationBusinessApplicationRejectedBody": "Ваша заявка на добавление компании отклонена.",
+  "notificationBusinessApplicationRejectedBodyReason": "Заявка отклонена: {reason}",
+  "@notificationBusinessApplicationRejectedBodyReason": {
+    "placeholders": {
+      "reason": { "type": "String" }
+    }
+  },
+  "notificationOwnershipClaimApprovedTitle": "Заявка на владение одобрена",
+  "notificationOwnershipClaimApprovedBody": "Ваша заявка на подтверждение владения одобрена.",
+  "notificationOwnershipClaimApprovedBodyNamed": "Заявка на компанию «{businessName}» одобрена.",
+  "@notificationOwnershipClaimApprovedBodyNamed": {
+    "placeholders": {
+      "businessName": { "type": "String" }
+    }
+  },
+  "notificationOwnershipClaimRejectedTitle": "Заявка на владение отклонена",
+  "notificationOwnershipClaimRejectedBody": "Ваша заявка на подтверждение владения отклонена.",
+  "notificationOwnershipClaimRejectedBodyReason": "Заявка отклонена: {reason}",
+  "@notificationOwnershipClaimRejectedBodyReason": {
+    "placeholders": {
+      "reason": { "type": "String" }
+    }
+  },
+  "notificationInvitationReceivedTitle": "Приглашение в команду",
+  "notificationInvitationReceivedBody": "Вас пригласили управлять компанией.",
+  "notificationInvitationReceivedBodyNamed": "Вас пригласили управлять «{businessName}».",
+  "@notificationInvitationReceivedBodyNamed": {
+    "placeholders": {
+      "businessName": { "type": "String" }
+    }
+  },
+  "notificationInvitationAcceptedTitle": "Приглашение принято",
+  "notificationInvitationAcceptedBody": "Пользователь принял приглашение в команду.",
+  "notificationInvitationAcceptedBodyNamed": "Приглашение в «{businessName}» принято.",
+  "@notificationInvitationAcceptedBodyNamed": {
+    "placeholders": {
+      "businessName": { "type": "String" }
+    }
+  },
+  "notificationPlanActivatedTitle": "Тариф активирован",
+  "notificationPlanActivatedBody": "Новый тариф для компании активен.",
+  "notificationPlanActivatedBodyTier": "Активирован тариф «{tier}».",
+  "@notificationPlanActivatedBodyTier": {
+    "placeholders": {
+      "tier": { "type": "String" }
+    }
+  },
+  "notificationPlanExpiredTitle": "Тариф завершён",
+  "notificationPlanExpiredBody": "Срок действия тарифа истёк. Вы можете продлить его в кабинете.",
+  "notificationNewPromotionTitle": "Новая акция",
+  "notificationNewPromotionBody": "У компании появилась новая акция.",
+  "notificationNewPromotionBodyNamed": "У «{businessName}» новая акция.",
+  "@notificationNewPromotionBodyNamed": {
+    "placeholders": {
+      "businessName": { "type": "String" }
+    }
+  },
+  "notificationAdCampaignApprovedTitle": "Реклама одобрена",
+  "notificationAdCampaignApprovedBody": "Ваш рекламный материал прошёл модерацию.",
+  "notificationAdCampaignRejectedTitle": "Реклама отклонена",
+  "notificationAdCampaignRejectedBody": "Рекламный материал не прошёл модерацию.",
+  "notificationAdCampaignRejectedBodyReason": "Реклама отклонена: {reason}",
+  "@notificationAdCampaignRejectedBodyReason": {
+    "placeholders": {
+      "reason": { "type": "String" }
+    }
+  },
   "cityNotFound": "Города не найдены",
   "citySelectedSnack": "Город: {name}",
   "@citySelectedSnack": {

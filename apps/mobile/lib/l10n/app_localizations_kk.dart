@@ -881,6 +881,195 @@ class AppLocalizationsKk extends AppLocalizations {
       'Әзірге хабарландырулар жоқ. Мұнда пікірлер, модерация және тариф оқиғалары көрінеді.';
 
   @override
+  String get notificationsLoadMoreFailed => 'Тағы жүктеу сәтсіз аяқталды';
+
+  @override
+  String get notificationsLoadingMore => 'Жүктелуде…';
+
+  @override
+  String get notificationsEndOfList => 'Басқа хабарландырулар жоқ';
+
+  @override
+  String get notificationNewReviewTitle => 'Жаңа пікір';
+
+  @override
+  String get notificationNewReviewBody =>
+      'Компанияңыз туралы жаңа пікір қалдырылды.';
+
+  @override
+  String notificationNewReviewBodyNamed(String businessName) {
+    return '«$businessName» компаниясы туралы жаңа пікір қалдырылды.';
+  }
+
+  @override
+  String get notificationReviewReplyTitle => 'Пікіріңізге жауап';
+
+  @override
+  String get notificationReviewReplyBody => 'Компания пікіріңізге жауап берді.';
+
+  @override
+  String notificationReviewReplyBodyNamed(String businessName) {
+    return '«$businessName» компаниясы пікіріңізге жауап берді.';
+  }
+
+  @override
+  String get notificationReviewHiddenTitle => 'Пікір жасырылды';
+
+  @override
+  String get notificationReviewHiddenBody =>
+      'Пікіріңіз модерациядан кейін жасырылды.';
+
+  @override
+  String get notificationReviewRestoredTitle => 'Пікір қалпына келтірілді';
+
+  @override
+  String get notificationReviewRestoredBody =>
+      'Пікіріңіз модерациядан кейін қайта қолжетімді болды.';
+
+  @override
+  String get notificationBusinessApprovedTitle => 'Компания мақұлданды';
+
+  @override
+  String get notificationBusinessApprovedBody => 'Компанияңыз тексеруден өтті.';
+
+  @override
+  String notificationBusinessApprovedBodyNamed(String businessName) {
+    return '«$businessName» компаниясы тексеруден өтті.';
+  }
+
+  @override
+  String get notificationBusinessBlockedTitle => 'Компания бұғатталды';
+
+  @override
+  String get notificationBusinessBlockedBody =>
+      'Компанияға қолжетімділік шектелді. Толығырақ — кабинетте.';
+
+  @override
+  String notificationBusinessBlockedBodyNamed(String businessName) {
+    return '«$businessName» компаниясы бұғатталды. Толығырақ — кабинетте.';
+  }
+
+  @override
+  String get notificationBusinessApplicationApprovedTitle =>
+      'Өтінім мақұлданды';
+
+  @override
+  String get notificationBusinessApplicationApprovedBody =>
+      'Компанияны қосу туралы өтініміңіз мақұлданды.';
+
+  @override
+  String get notificationBusinessApplicationRejectedTitle =>
+      'Өтінім қабылданбады';
+
+  @override
+  String get notificationBusinessApplicationRejectedBody =>
+      'Компанияны қосу туралы өтініміңіз қабылданбады.';
+
+  @override
+  String notificationBusinessApplicationRejectedBodyReason(String reason) {
+    return 'Өтінім қабылданбады: $reason';
+  }
+
+  @override
+  String get notificationOwnershipClaimApprovedTitle =>
+      'Иелік өтінімі мақұлданды';
+
+  @override
+  String get notificationOwnershipClaimApprovedBody =>
+      'Иелікті растау өтініміңіз мақұлданды.';
+
+  @override
+  String notificationOwnershipClaimApprovedBodyNamed(String businessName) {
+    return '«$businessName» компаниясына иелік өтінімі мақұлданды.';
+  }
+
+  @override
+  String get notificationOwnershipClaimRejectedTitle =>
+      'Иелік өтінімі қабылданбады';
+
+  @override
+  String get notificationOwnershipClaimRejectedBody =>
+      'Иелікті растау өтініміңіз қабылданбады.';
+
+  @override
+  String notificationOwnershipClaimRejectedBodyReason(String reason) {
+    return 'Өтінім қабылданбады: $reason';
+  }
+
+  @override
+  String get notificationInvitationReceivedTitle => 'Команданың шақыруы';
+
+  @override
+  String get notificationInvitationReceivedBody =>
+      'Сізді компанияны басқаруға шақырды.';
+
+  @override
+  String notificationInvitationReceivedBodyNamed(String businessName) {
+    return 'Сізді «$businessName» компаниясын басқаруға шақырды.';
+  }
+
+  @override
+  String get notificationInvitationAcceptedTitle => 'Шақыру қабылданды';
+
+  @override
+  String get notificationInvitationAcceptedBody =>
+      'Пайдаланушы команданың шақыруын қабылдады.';
+
+  @override
+  String notificationInvitationAcceptedBodyNamed(String businessName) {
+    return '«$businessName» шақыруы қабылданды.';
+  }
+
+  @override
+  String get notificationPlanActivatedTitle => 'Тариф белсенді';
+
+  @override
+  String get notificationPlanActivatedBody =>
+      'Компания үшін жаңа тариф белсенді.';
+
+  @override
+  String notificationPlanActivatedBodyTier(String tier) {
+    return '«$tier» тарифі белсендірілді.';
+  }
+
+  @override
+  String get notificationPlanExpiredTitle => 'Тариф аяқталды';
+
+  @override
+  String get notificationPlanExpiredBody =>
+      'Тариф мерзімі аяқталды. Кабинетте ұзартуға болады.';
+
+  @override
+  String get notificationNewPromotionTitle => 'Жаңа акция';
+
+  @override
+  String get notificationNewPromotionBody => 'Компанияда жаңа акция бар.';
+
+  @override
+  String notificationNewPromotionBodyNamed(String businessName) {
+    return '«$businessName» компаниясында жаңа акция.';
+  }
+
+  @override
+  String get notificationAdCampaignApprovedTitle => 'Жарнама мақұлданды';
+
+  @override
+  String get notificationAdCampaignApprovedBody =>
+      'Жарнама материалы модерациядан өтті.';
+
+  @override
+  String get notificationAdCampaignRejectedTitle => 'Жарнама қабылданбады';
+
+  @override
+  String get notificationAdCampaignRejectedBody =>
+      'Жарнама материалы модерациядан өтпеді.';
+
+  @override
+  String notificationAdCampaignRejectedBodyReason(String reason) {
+    return 'Жарнама қабылданбады: $reason';
+  }
+
+  @override
   String get cityNotFound => 'Қалалар табылмады';
 
   @override

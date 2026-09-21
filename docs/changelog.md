@@ -5,6 +5,12 @@
 
 ---
 
+## 2026-09-21 — Stage 6.11E.3 notification inbox UX & localization
+
+- **Added:** Flutter `NotificationPresentation` layer (type + payload → RU/KK templates); shared paginated inbox (`NotificationsInboxBody`) for consumer and owner.
+- **Changed:** Inbox pagination (20/page, load-more, refresh, empty/error/retry states); unread styling; mark read / mark all with optimistic rollback; badge refresh via `unreadNotificationsProvider`.
+- **Deferred:** notification tap navigation (E.4); push (E.5); Business Web full localized rendering.
+
 ## 2026-09-21 — Stage 6.11E.2 notification domain producers
 
 - **Added:** Review alerts to membership-aware recipients; moderation `REVIEW_HIDDEN` / `REVIEW_RESTORED`; explicit application/claim/invitation/ad types.

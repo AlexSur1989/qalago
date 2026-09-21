@@ -1694,6 +1694,300 @@ abstract class AppLocalizations {
   /// **'Пока нет уведомлений. Здесь появятся отзывы, модерация и события по тарифу.'**
   String get notificationsOwnerEmptyBody;
 
+  /// No description provided for @notificationsLoadMoreFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить ещё'**
+  String get notificationsLoadMoreFailed;
+
+  /// No description provided for @notificationsLoadingMore.
+  ///
+  /// In ru, this message translates to:
+  /// **'Загрузка…'**
+  String get notificationsLoadingMore;
+
+  /// No description provided for @notificationsEndOfList.
+  ///
+  /// In ru, this message translates to:
+  /// **'Больше уведомлений нет'**
+  String get notificationsEndOfList;
+
+  /// No description provided for @notificationNewReviewTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новый отзыв'**
+  String get notificationNewReviewTitle;
+
+  /// No description provided for @notificationNewReviewBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'О вашей компании оставили новый отзыв.'**
+  String get notificationNewReviewBody;
+
+  /// No description provided for @notificationNewReviewBodyNamed.
+  ///
+  /// In ru, this message translates to:
+  /// **'О компании «{businessName}» оставили новый отзыв.'**
+  String notificationNewReviewBodyNamed(String businessName);
+
+  /// No description provided for @notificationReviewReplyTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ответ на ваш отзыв'**
+  String get notificationReviewReplyTitle;
+
+  /// No description provided for @notificationReviewReplyBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Компания ответила на ваш отзыв.'**
+  String get notificationReviewReplyBody;
+
+  /// No description provided for @notificationReviewReplyBodyNamed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Компания «{businessName}» ответила на ваш отзыв.'**
+  String notificationReviewReplyBodyNamed(String businessName);
+
+  /// No description provided for @notificationReviewHiddenTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отзыв скрыт'**
+  String get notificationReviewHiddenTitle;
+
+  /// No description provided for @notificationReviewHiddenBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ваш отзыв был скрыт после модерации.'**
+  String get notificationReviewHiddenBody;
+
+  /// No description provided for @notificationReviewRestoredTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отзыв восстановлен'**
+  String get notificationReviewRestoredTitle;
+
+  /// No description provided for @notificationReviewRestoredBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ваш отзыв снова доступен после модерации.'**
+  String get notificationReviewRestoredBody;
+
+  /// No description provided for @notificationBusinessApprovedTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Компания одобрена'**
+  String get notificationBusinessApprovedTitle;
+
+  /// No description provided for @notificationBusinessApprovedBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ваша компания прошла проверку.'**
+  String get notificationBusinessApprovedBody;
+
+  /// No description provided for @notificationBusinessApprovedBodyNamed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Компания «{businessName}» прошла проверку.'**
+  String notificationBusinessApprovedBodyNamed(String businessName);
+
+  /// No description provided for @notificationBusinessBlockedTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Компания заблокирована'**
+  String get notificationBusinessBlockedTitle;
+
+  /// No description provided for @notificationBusinessBlockedBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Доступ к компании ограничен. Подробности — в кабинете.'**
+  String get notificationBusinessBlockedBody;
+
+  /// No description provided for @notificationBusinessBlockedBodyNamed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Компания «{businessName}» заблокирована. Подробности — в кабинете.'**
+  String notificationBusinessBlockedBodyNamed(String businessName);
+
+  /// No description provided for @notificationBusinessApplicationApprovedTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявка одобрена'**
+  String get notificationBusinessApplicationApprovedTitle;
+
+  /// No description provided for @notificationBusinessApplicationApprovedBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ваша заявка на добавление компании одобрена.'**
+  String get notificationBusinessApplicationApprovedBody;
+
+  /// No description provided for @notificationBusinessApplicationRejectedTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявка отклонена'**
+  String get notificationBusinessApplicationRejectedTitle;
+
+  /// No description provided for @notificationBusinessApplicationRejectedBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ваша заявка на добавление компании отклонена.'**
+  String get notificationBusinessApplicationRejectedBody;
+
+  /// No description provided for @notificationBusinessApplicationRejectedBodyReason.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявка отклонена: {reason}'**
+  String notificationBusinessApplicationRejectedBodyReason(String reason);
+
+  /// No description provided for @notificationOwnershipClaimApprovedTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявка на владение одобрена'**
+  String get notificationOwnershipClaimApprovedTitle;
+
+  /// No description provided for @notificationOwnershipClaimApprovedBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ваша заявка на подтверждение владения одобрена.'**
+  String get notificationOwnershipClaimApprovedBody;
+
+  /// No description provided for @notificationOwnershipClaimApprovedBodyNamed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявка на компанию «{businessName}» одобрена.'**
+  String notificationOwnershipClaimApprovedBodyNamed(String businessName);
+
+  /// No description provided for @notificationOwnershipClaimRejectedTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявка на владение отклонена'**
+  String get notificationOwnershipClaimRejectedTitle;
+
+  /// No description provided for @notificationOwnershipClaimRejectedBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ваша заявка на подтверждение владения отклонена.'**
+  String get notificationOwnershipClaimRejectedBody;
+
+  /// No description provided for @notificationOwnershipClaimRejectedBodyReason.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявка отклонена: {reason}'**
+  String notificationOwnershipClaimRejectedBodyReason(String reason);
+
+  /// No description provided for @notificationInvitationReceivedTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Приглашение в команду'**
+  String get notificationInvitationReceivedTitle;
+
+  /// No description provided for @notificationInvitationReceivedBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вас пригласили управлять компанией.'**
+  String get notificationInvitationReceivedBody;
+
+  /// No description provided for @notificationInvitationReceivedBodyNamed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вас пригласили управлять «{businessName}».'**
+  String notificationInvitationReceivedBodyNamed(String businessName);
+
+  /// No description provided for @notificationInvitationAcceptedTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Приглашение принято'**
+  String get notificationInvitationAcceptedTitle;
+
+  /// No description provided for @notificationInvitationAcceptedBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пользователь принял приглашение в команду.'**
+  String get notificationInvitationAcceptedBody;
+
+  /// No description provided for @notificationInvitationAcceptedBodyNamed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Приглашение в «{businessName}» принято.'**
+  String notificationInvitationAcceptedBodyNamed(String businessName);
+
+  /// No description provided for @notificationPlanActivatedTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тариф активирован'**
+  String get notificationPlanActivatedTitle;
+
+  /// No description provided for @notificationPlanActivatedBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новый тариф для компании активен.'**
+  String get notificationPlanActivatedBody;
+
+  /// No description provided for @notificationPlanActivatedBodyTier.
+  ///
+  /// In ru, this message translates to:
+  /// **'Активирован тариф «{tier}».'**
+  String notificationPlanActivatedBodyTier(String tier);
+
+  /// No description provided for @notificationPlanExpiredTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тариф завершён'**
+  String get notificationPlanExpiredTitle;
+
+  /// No description provided for @notificationPlanExpiredBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Срок действия тарифа истёк. Вы можете продлить его в кабинете.'**
+  String get notificationPlanExpiredBody;
+
+  /// No description provided for @notificationNewPromotionTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новая акция'**
+  String get notificationNewPromotionTitle;
+
+  /// No description provided for @notificationNewPromotionBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'У компании появилась новая акция.'**
+  String get notificationNewPromotionBody;
+
+  /// No description provided for @notificationNewPromotionBodyNamed.
+  ///
+  /// In ru, this message translates to:
+  /// **'У «{businessName}» новая акция.'**
+  String notificationNewPromotionBodyNamed(String businessName);
+
+  /// No description provided for @notificationAdCampaignApprovedTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Реклама одобрена'**
+  String get notificationAdCampaignApprovedTitle;
+
+  /// No description provided for @notificationAdCampaignApprovedBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ваш рекламный материал прошёл модерацию.'**
+  String get notificationAdCampaignApprovedBody;
+
+  /// No description provided for @notificationAdCampaignRejectedTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Реклама отклонена'**
+  String get notificationAdCampaignRejectedTitle;
+
+  /// No description provided for @notificationAdCampaignRejectedBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Рекламный материал не прошёл модерацию.'**
+  String get notificationAdCampaignRejectedBody;
+
+  /// No description provided for @notificationAdCampaignRejectedBodyReason.
+  ///
+  /// In ru, this message translates to:
+  /// **'Реклама отклонена: {reason}'**
+  String notificationAdCampaignRejectedBodyReason(String reason);
+
   /// No description provided for @cityNotFound.
   ///
   /// In ru, this message translates to:

@@ -11,6 +11,8 @@ import '../../../shared/models/models.dart';
 import '../../ads/providers/ad_serve_provider.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../../notifications/data/notification_model.dart';
+import '../../notifications/providers/notifications_repository_provider.dart';
+export '../../notifications/providers/notifications_repository_provider.dart';
 import '../../recommendations/data/ai_repository.dart';
 import '../../business_onboarding/providers/onboarding_providers.dart';
 import '../data/apple_sign_in_adapter.dart';
@@ -48,10 +50,6 @@ final favoritesRepositoryProvider = Provider(
 
 final adminRepositoryProvider = Provider(
   (ref) => AdminRepository(ref.watch(dioProvider)),
-);
-
-final notificationsRepositoryProvider = Provider(
-  (ref) => NotificationsRepository(ref.watch(dioProvider)),
 );
 
 void invalidateUserScopedProviders(Ref ref) {
