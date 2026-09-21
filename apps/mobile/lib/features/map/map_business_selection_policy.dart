@@ -11,7 +11,7 @@ abstract final class MapBusinessSelectionPolicy {
     if (!businesses.byLocationId.containsKey(selectedLocationId)) {
       return false;
     }
-    return businesses.items.any(
+    return businesses.mapLayerItems.any(
       (row) => mapPhysicalKey(row) == selectedLocationId,
     );
   }
@@ -25,6 +25,6 @@ abstract final class MapBusinessSelectionPolicy {
       return false;
     }
     return businesses.byLocationId.containsKey(locationId) &&
-        businesses.items.any((row) => mapPhysicalKey(row) == locationId);
+        businesses.mapLayerItems.any((row) => mapPhysicalKey(row) == locationId);
   }
 }

@@ -2,6 +2,8 @@
 library;
 
 import '../../features/ads/utils/ad_url_utils.dart';
+import '../models/business_branch_location.dart';
+import 'json_parse.dart';
 
 /// Kazakhstan business cities use UTC+5 (no DST since 2024).
 const kDefaultBusinessTimezone = 'Asia/Oral';
@@ -53,6 +55,60 @@ String? normalizeInstagramUrl(String? raw) {
   }
   final url = 'https://www.instagram.com/$handle/';
   return isSafeHttpUrl(url) ? url : null;
+}
+
+/// Physical branch context for consumer detail (A.7.4 map → detail handoff).
+class ActiveBusinessPhysicalContext {
+  const ActiveBusinessPhysicalContext({
+    required this.address,
+    required this.latitude,
+    required this.longitude,
+    this.phone,
+    this.whatsapp,
+  });
+
+  final String address;
+  final double? latitude;
+  final double? longitude;
+  final String? phone;
+  final String? whatsapp;
+}
+
+ActiveBusinessPhysicalContext resolveActiveBusinessPhysicalContext({
+  required Map<String, dynamic> businessData,
+  required String businessId,
+  String? selectedLocationId,
+  List<BusinessBranchLocation>? branches,
+}) {
+  final primaryAddress = businessData['address'] as String? ?? '';
+  final primaryLat = parseJsonDouble(businessData['latitude']);
+  final primaryLng = parseJsonDouble(businessData['longitude']);
+  final primaryPhone = businessData['phone'] as String?;
+  final primaryWhatsapp = businessData['whatsapp'] as String?;
+
+  if (selectedLocationId != null &&
+      selectedLocationId.isNotEmpty &&
+      branches != null) {
+    for (final branch in branches) {
+      if (branch.id == selectedLocationId && branch.businessId == businessId) {
+        return ActiveBusinessPhysicalContext(
+          address: branch.address.isNotEmpty ? branch.address : primaryAddress,
+          latitude: branch.latitude ?? primaryLat,
+          longitude: branch.longitude ?? primaryLng,
+          phone: branch.phone ?? primaryPhone,
+          whatsapp: branch.whatsapp ?? primaryWhatsapp,
+        );
+      }
+    }
+  }
+
+  return ActiveBusinessPhysicalContext(
+    address: primaryAddress,
+    latitude: primaryLat,
+    longitude: primaryLng,
+    phone: primaryPhone,
+    whatsapp: primaryWhatsapp,
+  );
 }
 
 String? buildRouteUrl({

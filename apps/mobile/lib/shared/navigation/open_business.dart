@@ -9,10 +9,14 @@ void openBusiness(
   String businessId,
   BusinessTrafficSource source, {
   String? searchQuery,
+  String? selectedLocationId,
 }) {
   final params = <String, String>{
     'source': source.apiValue,
   };
+  if (selectedLocationId != null && selectedLocationId.trim().isNotEmpty) {
+    params['locationId'] = selectedLocationId.trim();
+  }
   if (source == BusinessTrafficSource.search &&
       searchQuery != null &&
       searchQuery.trim().isNotEmpty) {
@@ -29,6 +33,11 @@ BusinessTrafficSource parseBusinessTrafficSourceFromRoute(String? raw) =>
     BusinessTrafficSource.parseOrDirect(raw);
 
 String? parseBusinessSearchQueryFromRoute(String? raw) {
+  if (raw == null || raw.trim().isEmpty) return null;
+  return raw.trim();
+}
+
+String? parseSelectedLocationIdFromRoute(String? raw) {
   if (raw == null || raw.trim().isEmpty) return null;
   return raw.trim();
 }

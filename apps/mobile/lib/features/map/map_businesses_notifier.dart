@@ -56,12 +56,23 @@ class MapBusinessesState {
   int get total => byLocationId.length;
 
   List<BusinessModel> get items {
+    return _filterByBounds(visibleBounds);
+  }
+
+  /// Rows rendered on the map layer (native GeoJSON / overlay pins).
+  ///
+  /// Uses [lastFetchBounds] (padded viewport used for API fetch) so branches
+  /// returned by the server are not hidden by the tighter [visibleBounds].
+  List<BusinessModel> get mapLayerItems {
+    return _filterByBounds(lastFetchBounds ?? visibleBounds);
+  }
+
+  List<BusinessModel> _filterByBounds(QalaGoMapBounds? bounds) {
     final all = businessesWithValidMapCoordinates(byLocationId.values.toList());
-    final viewport = visibleBounds;
-    if (viewport == null) return all;
+    if (bounds == null) return all;
     return all
         .where(
-          (b) => viewport.contains(
+          (b) => bounds.contains(
             QalaGoMapCoordinate(
               latitude: b.latitude!,
               longitude: b.longitude!,

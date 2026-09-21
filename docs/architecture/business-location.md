@@ -78,8 +78,13 @@ Relationship: **Business 1 → N BusinessLocation**.
 - **Physical key:** `mapPhysicalKey(row)` = `locationId ?? id` (legacy fallback when `locationId` absent).
 - **Map state:** `MapBusinessesState.byLocationId` keyed by physical key — multiple branches of one business are distinct entries; pagination merge uses physical key, not business id.
 - **GeoJSON:** `Feature.id` = physical key; `properties.locationId` = physical key; `properties.businessId` = Business.id; dedup by physical key.
-- **Selection / tap:** map selection is **location** identity; preview and directions use the **selected location row** (address, lat/lng); opening full detail still navigates with **Business.id**.
-- **Unchanged:** reviews/favorites/analytics Business-scoped; MapLibre style/basemap; geocoding; category map fetch semantics; cluster styling/thresholds; nearest/radius discovery grain.
+- **Selection / tap:** map selection is **location** identity; preview and directions use the **selected location row** (address, lat/lng); opening full detail uses **Business.id** plus optional **`locationId`** query for branch-aware detail physical fields.
+- **Unchanged:** reviews/favorites/analytics Business-scoped; MapLibre style/basemap; geocoding; cluster styling/thresholds; nearest/radius discovery grain.
+
+## Stage 6.12A.7.4 (physical QA hotfix)
+
+- **Category map:** native GeoJSON uses **`mapLayerItems`** (filtered by padded **`lastFetchBounds`**) so sibling branches fetched for the viewport are not dropped by tighter **`visibleBounds`** alone.
+- **Detail handoff:** optional `locationId` on business detail route; **`resolveActiveBusinessPhysicalContext`** applies selected public branch to address/route/coordinates; reviews/favorites remain **Business.id**.
 
 ## Compatibility strategy (forward)
 

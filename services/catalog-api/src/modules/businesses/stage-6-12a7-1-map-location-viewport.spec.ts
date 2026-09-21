@@ -381,7 +381,10 @@ describe('Stage 6.12A.7.1 — map forMap viewport (BusinessLocation grain)', () 
       ...uralskBbox,
       limit: 100,
     });
-    expect(withCat.items.some((i) => i.id === business.id)).toBe(true);
+    const catRows = withCat.items.filter((i) => i.id === business.id);
+    expect(catRows.length).toBeGreaterThanOrEqual(2);
+    expect(new Set(catRows.map((r) => (r as MapLocationBusinessListItem).locationId)).size)
+      .toBeGreaterThanOrEqual(2);
 
     const withSub = await service.findAll({
       citySlug: 'uralsk',

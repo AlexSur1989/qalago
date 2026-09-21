@@ -287,6 +287,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               searchQuery: parseBusinessSearchQueryFromRoute(
                 state.uri.queryParameters['searchQuery'],
               ),
+              selectedLocationId: parseSelectedLocationIdFromRoute(
+                state.uri.queryParameters['locationId'],
+              ),
             ),
           ),
           GoRoute(

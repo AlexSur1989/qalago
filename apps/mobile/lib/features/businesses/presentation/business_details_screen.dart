@@ -48,11 +48,13 @@ class BusinessDetailsScreen extends ConsumerStatefulWidget {
     required this.id,
     this.trafficSource,
     this.searchQuery,
+    this.selectedLocationId,
   });
 
   final String id;
   final BusinessTrafficSource? trafficSource;
   final String? searchQuery;
+  final String? selectedLocationId;
 
   @override
   ConsumerState<BusinessDetailsScreen> createState() =>
@@ -239,16 +241,22 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
               : l10n.profileAboutMvpCityValue;
           final cityTimezone =
               city?['timezone'] as String? ?? kDefaultBusinessTimezone;
-          final address = data['address'] as String? ?? '';
+          final physical = resolveActiveBusinessPhysicalContext(
+            businessData: data,
+            businessId: widget.id,
+            selectedLocationId: widget.selectedLocationId,
+            branches: branchesAsync.valueOrNull,
+          );
+          final address = physical.address;
           final desc = sanitizeDescription(
             data['description'] as String? ?? data['shortDesc'] as String?,
           );
-          final phone = data['phone'] as String?;
-          final whatsapp = data['whatsapp'] as String?;
+          final phone = physical.phone ?? data['phone'] as String?;
+          final whatsapp = physical.whatsapp ?? data['whatsapp'] as String?;
           final instagramUrl = normalizeInstagramUrl(data['instagram'] as String?);
           final websiteUrl = normalizeWebsiteUrl(data['website'] as String?);
-          final latitude = parseJsonDouble(data['latitude']);
-          final longitude = parseJsonDouble(data['longitude']);
+          final latitude = physical.latitude;
+          final longitude = physical.longitude;
           if (!_viewTracked) {
             unawaited(_trackViewOnce(latitude: latitude, longitude: longitude));
           }
@@ -351,6 +359,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                                 child: BusinessBranchesSection(
                                   branches: branches,
                                   localeCode: localeCode,
+                                  highlightLocationId: widget.selectedLocationId,
                                 ),
                               )
                             : const SizedBox.shrink(),

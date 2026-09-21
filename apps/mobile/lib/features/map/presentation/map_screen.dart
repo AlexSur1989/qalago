@@ -129,7 +129,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     final city = ref.watch(cityProvider);
     final userPosition = ref.watch(userLocationProvider).valueOrNull;
     final mapBusinesses = ref.watch(mapBusinessesProvider);
-    final businesses = mapBusinesses.items;
+    final visibleBusinesses = mapBusinesses.items;
+    final mapLayerBusinesses = mapBusinesses.mapLayerItems;
 
     ref.listen(userLocationProvider, (previous, next) {
       next.whenData((position) => _followUser(city, position));
@@ -140,7 +141,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       _clearSelection();
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        _moveToCity(next, userPosition, businesses);
+        _moveToCity(next, userPosition, mapLayerBusinesses);
       });
     });
 
@@ -162,10 +163,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     final center = resolveMapScreenCenter(
       city: city,
       userPosition: userPosition,
-      businesses: businesses,
+      businesses: mapLayerBusinesses,
     );
     final mapMarkers = buildBusinessMapMarkers(
-      businesses: businesses,
+      businesses: mapLayerBusinesses,
       selectedLocationId: _selectedLocationId,
       onMarkerTap: (business) {
         _selectMapRow(mapBusinesses, business);
@@ -195,7 +196,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       _trackedCitySlug = city.slug;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        _moveToCity(city, userPosition, businesses);
+        _moveToCity(city, userPosition, mapLayerBusinesses);
       });
     }
 
@@ -203,7 +204,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     final nativeBusinessLayer = QalaGoNativeMapBusinessLayerConfig.enabled;
     final businessGeoJson = nativeBusinessLayer
         ? BusinessMapGeoJsonBuilder.buildFeatureCollection(
-            businesses: businesses,
+            businesses: mapLayerBusinesses,
             selectedLocationId: _selectedLocationId,
           )
         : null;
@@ -333,6 +334,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                             context,
                             business.id,
                             BusinessTrafficSource.map,
+                            selectedLocationId: business.locationId,
                           ),
                     ),
                   );
@@ -358,7 +360,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 }
 
                 return _MapCitySheet(
-                  businesses: businesses,
+                  businesses: visibleBusinesses,
                   userLat: userPosition?.latitude,
                   userLng: userPosition?.longitude,
                   onSelect: (business) =>

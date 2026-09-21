@@ -7,10 +7,12 @@ class BusinessBranchesSection extends StatelessWidget {
     super.key,
     required this.branches,
     required this.localeCode,
+    this.highlightLocationId,
   });
 
   final List<BusinessBranchLocation> branches;
   final String localeCode;
+  final String? highlightLocationId;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +40,12 @@ class BusinessBranchesSection extends StatelessWidget {
               decoration: BoxDecoration(
                 color: QalaGoColors.surfaceSubtle,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: QalaGoColors.borderSubtle),
+                border: Border.all(
+                  color: branch.id == highlightLocationId
+                      ? QalaGoColors.primary
+                      : QalaGoColors.borderSubtle,
+                  width: branch.id == highlightLocationId ? 1.5 : 1,
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

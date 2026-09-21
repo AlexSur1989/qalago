@@ -30,6 +30,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | 6.12A.6 | PASS | checkpoint `fc13f679…` — public read + Flutter/Consumer client awareness |
 | 6.12A.7.1 | PASS | checkpoint `0d8a772…` — backend `forMap` viewport → **BusinessLocation** grain + `locationId` |
 | 6.12A.7.2 | PASS | Flutter map **physical key** = `locationId`; detail/reviews/favorites stay **Business.id** |
+| 6.12A.7.4 | HOTFIX | category map `mapLayerItems`; detail optional `locationId` for branch physical UI |
 
 ## Business vs BusinessLocation
 
@@ -42,7 +43,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 ## Frozen / deferred
 
-- **Map (A.7.1–A.7.2):** `forMap`+bbox backend **BusinessLocation** grain + **`locationId`**; Flutter markers/GeoJSON/selection/route use **physical key** (`locationId`); detail/reviews/favorites/analytics remain **Business.id**.
+- **Map (A.7.1–A.7.4):** backend **BusinessLocation** grain + **`locationId`**; Flutter map layer uses **physical key**; category map renders **`mapLayerItems`** (fetch bounds); detail accepts optional **`locationId`** for branch address/route; reviews/favorites/analytics remain **Business.id**.
 - **Nearest/radius/list discovery:** still **Business-grain** (primary geography).
 - **Public discovery:** city/category/search unchanged (primary business city) except map viewport city filter uses branch city.
 - **F.4 / F.5:** final business URLs, branch slugs, hreflang, branch JSON-LD — not A.6.
