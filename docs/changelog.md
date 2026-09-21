@@ -6,6 +6,22 @@
 
 ---
 
+## 2026-09-21 — Stage 6.12A.4 BusinessLocation management API
+
+- **Status:** 6.12A.4 PASS — READY FOR A.5.
+- **Checkpoint:** _(this commit)_.
+- **Summary:**
+  - Authenticated management API: list/get/create/patch locations under `/businesses/:businessId/locations`; **`POST …/set-primary`** for explicit primary switch.
+  - Cross-city secondaries supported; create leaves legacy `Business` unchanged; primary PATCH / set-primary / legacy Business PATCH keep **bidirectional** physical sync (A.3 services extended).
+  - Permissions: existing `BUSINESS_PROFILE_EDIT` / `BUSINESS_HOURS_EDIT`; BusinessMembership remains **Business-scoped** (no branch managers).
+  - **DELETE/archive deferred**; public discovery/map unchanged (primary `Business` fields only).
+  - **No schema migration**; Prisma validate/generate/migrate up to date (41 migrations).
+- **Tests:** catalog-api Jest **1032** / **146** suites (incl. `stage-6-12a4-business-location-crud`); local DB integrity baseline **31/31/31**.
+- **Deferred:** A.5 owner/admin location UX; discovery/map cutover; location DELETE/archive.
+- **Next:** 6.12A.5 location management UX.
+
+---
+
 ## 2026-09-21 — Stage 6.12A.3 primary location compatibility layer
 
 - **Status:** 6.12A.3 PASS — READY FOR A.4.

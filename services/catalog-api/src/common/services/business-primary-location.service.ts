@@ -1,11 +1,15 @@
 import {
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
-import type { BusinessLocation, Prisma } from '@prisma/client';
+import type { Business, BusinessLocation, Prisma } from '@prisma/client';
 import {
   BusinessPhysicalSnapshot,
+  businessUpdateDataFromPhysicalSnapshot,
+  locationPatchTouchesSynchronizedPhysicalFields,
   patchTouchesSynchronizedPhysicalFields,
+  physicalSnapshotFromLocation,
   primaryLocationCreateDataFromBusiness,
   primaryLocationUpdateDataFromBusiness,
 } from '../utils/business-primary-location.util';
@@ -93,5 +97,62 @@ export class BusinessPrimaryLocationService {
 
   shouldSyncAfterPatch(changedKeys: string[]): boolean {
     return patchTouchesSynchronizedPhysicalFields(changedKeys);
+  }
+
+  shouldSyncBusinessAfterLocationPatch(changedKeys: string[]): boolean {
+    return locationPatchTouchesSynchronizedPhysicalFields(changedKeys);
+  }
+
+  /**
+   * Mirrors synchronized physical fields from primary BusinessLocation onto Business.
+   * Must run in the same transaction as the primary location update (no HTTP recursion).
+   */
+  async syncBusinessFromPrimaryLocationRecord(
+    tx: Prisma.TransactionClient,
+    location: Parameters<typeof physicalSnapshotFromLocation>[0],
+  ): Promise<Business> {
+    if (!location.isPrimary) {
+      throw new InternalServerErrorException(
+        'syncBusinessFromPrimaryLocationRecord requires a primary location row',
+      );
+    }
+    const snapshot = physicalSnapshotFromLocation(location);
+    return tx.business.update({
+      where: { id: snapshot.id },
+      data: businessUpdateDataFromPhysicalSnapshot(snapshot),
+    });
+  }
+
+  /**
+   * Promotes a secondary location to primary and syncs legacy Business physical fields.
+   * Unsets the previous primary in the same transaction (partial unique index safe).
+   */
+  async promoteLocationToPrimary(
+    tx: Prisma.TransactionClient,
+    businessId: string,
+    locationId: string,
+  ): Promise<{ business: Business; location: BusinessLocation }> {
+    const target = await tx.businessLocation.findFirst({
+      where: { id: locationId, businessId },
+    });
+    if (!target) {
+      throw new NotFoundException('Location not found');
+    }
+    if (target.isPrimary) {
+      const business = await tx.business.findUniqueOrThrow({ where: { id: businessId } });
+      return { business, location: target };
+    }
+
+    const currentPrimary = await this.getPrimaryLocationOrThrow(tx, businessId);
+    await tx.businessLocation.update({
+      where: { id: currentPrimary.id },
+      data: { isPrimary: false },
+    });
+    const newPrimary = await tx.businessLocation.update({
+      where: { id: locationId },
+      data: { isPrimary: true },
+    });
+    const business = await this.syncBusinessFromPrimaryLocationRecord(tx, newPrimary);
+    return { business, location: newPrimary };
   }
 }

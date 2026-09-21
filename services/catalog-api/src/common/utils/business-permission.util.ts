@@ -44,6 +44,34 @@ export function validatePermissionDependencies(permissions: BusinessPermission[]
   }
 }
 
+const LOCATION_PROFILE_FIELDS = new Set([
+  'cityId',
+  'address',
+  'latitude',
+  'longitude',
+  'locationSource',
+  'phone',
+  'whatsapp',
+  'instagram',
+  'website',
+]);
+
+export function getRequiredPermissionsForLocationPatch(
+  dto: Record<string, unknown>,
+): BusinessPermission[] {
+  const required = new Set<BusinessPermission>();
+  for (const key of Object.keys(dto)) {
+    if (dto[key] === undefined) continue;
+    if (LOCATION_PROFILE_FIELDS.has(key)) {
+      required.add(BusinessPermission.BUSINESS_PROFILE_EDIT);
+    }
+    if (HOURS_FIELDS.has(key)) {
+      required.add(BusinessPermission.BUSINESS_HOURS_EDIT);
+    }
+  }
+  return [...required];
+}
+
 export function getRequiredPermissionsForPatch(dto: UpdateBusinessDto): BusinessPermission[] {
   const required = new Set<BusinessPermission>();
   for (const key of Object.keys(dto) as (keyof UpdateBusinessDto)[]) {

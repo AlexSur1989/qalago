@@ -105,4 +105,28 @@ describe('BusinessPrimaryLocationService (Stage 6.12A.3)', () => {
     expect(service.shouldSyncAfterPatch(['phone'])).toBe(true);
     expect(service.shouldSyncAfterPatch(['title', 'address'])).toBe(true);
   });
+
+  it('promoteLocationToPrimary is idempotent when target is already primary', async () => {
+    const updateImpl = jest.fn();
+    const tx = {
+      businessLocation: {
+        findMany: jest.fn().mockResolvedValue([]),
+        findFirst: jest.fn().mockResolvedValue({
+          id: 'bl-primary',
+          businessId: 'biz-1',
+          isPrimary: true,
+          cityId: 'city-1',
+          address: 'Addr',
+        }),
+        create: jest.fn(),
+        update: updateImpl,
+      },
+      business: {
+        findUniqueOrThrow: jest.fn().mockResolvedValue({ id: 'biz-1', cityId: 'city-1' }),
+      },
+    };
+    const result = await service.promoteLocationToPrimary(tx as never, 'biz-1', 'bl-primary');
+    expect(result.location.isPrimary).toBe(true);
+    expect(updateImpl).not.toHaveBeenCalled();
+  });
 });

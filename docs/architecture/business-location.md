@@ -36,6 +36,17 @@ Relationship: **Business 1 → N BusinessLocation**.
 - **Read layer (A.3):** public list/detail still read top-level **Business** fields while synchronized; optional internal use of primary resolution for A.4.
 - **Map:** unchanged — catalog/map PostGIS still queries **`Business.location`**; triggers keep Business and primary `BusinessLocation` geography aligned on coordinate writes.
 
+## Stage 6.12A.4 (multi-location management API)
+
+- **Endpoints:** `GET/POST/PATCH` under `/businesses/:businessId/locations`, plus `POST …/set-primary` (see [api-contracts.md](./api-contracts.md)).
+- **Business 1 → N locations:** secondary branches may live in **different cities**; `Business.cityId` remains the **primary** city for legacy/discovery compatibility.
+- **Create:** always `isPrimary=false`; does not copy primary contacts/hours unless provided in body.
+- **PATCH secondary:** branch-only — legacy `Business` and primary row unchanged.
+- **PATCH primary / set-primary / legacy PATCH Business:** bidirectional sync of synchronized physical fields (A.3 service layer); single transaction; no HTTP recursion.
+- **Primary switch:** explicit `set-primary` only (generic PATCH cannot toggle `isPrimary`); partial unique index preserved via unset-old-then-set-new in one transaction.
+- **Authorization:** existing **Business-scoped** membership (`OWNER` / `MANAGER` + `BusinessPermission`); **no** branch-level membership.
+- **Deferred:** DELETE/archive lifecycle; public branch discovery; map markers for secondaries; owner/admin UI (A.5).
+
 ## Compatibility strategy (forward)
 
 - Later substages may project legacy DTO fields from primary location before deprecating columns.

@@ -11,6 +11,7 @@ import { BusinessTeamService } from './business-team.service';
 import { BusinessInvitationService } from './business-invitation.service';
 import { InvitationsController } from './invitations.controller';
 import { BusinessPublicContentService } from './business-public-content.service';
+import { BusinessLocationService } from './business-location.service';
 
 @Module({
   imports: [PlansModule, CommonAccessModule, CategoriesModule, NotificationsModule],
@@ -21,6 +22,7 @@ import { BusinessPublicContentService } from './business-public-content.service'
     BusinessTeamService,
     BusinessInvitationService,
     BusinessPublicContentService,
+    BusinessLocationService,
     CityScopeService,
   ],
   exports: [BusinessesService, BusinessPublicContentService, BusinessSubcategoryService],

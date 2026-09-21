@@ -1,5 +1,5 @@
 import { createHash } from 'crypto';
-import { Prisma, type Business } from '@prisma/client';
+import { Prisma, type Business, type BusinessLocation } from '@prisma/client';
 
 /** Physical fields kept in sync between Business and primary BusinessLocation (Stage 6.12A.3). */
 export const SYNCHRONIZED_BUSINESS_PHYSICAL_KEYS = [
@@ -33,6 +33,54 @@ export const BUSINESS_LOCATION_SYNC_PATCH_KEYS = new Set<string>([
 
 export function patchTouchesSynchronizedPhysicalFields(changedKeys: string[]): boolean {
   return changedKeys.some((k) => BUSINESS_LOCATION_SYNC_PATCH_KEYS.has(k));
+}
+
+/** PATCH keys on UpdateBusinessLocationDto that trigger primary ↔ Business sync. */
+export const BUSINESS_LOCATION_API_SYNC_PATCH_KEYS = new Set<string>([
+  'cityId',
+  ...BUSINESS_LOCATION_SYNC_PATCH_KEYS,
+]);
+
+export function locationPatchTouchesSynchronizedPhysicalFields(changedKeys: string[]): boolean {
+  return changedKeys.some((k) => BUSINESS_LOCATION_API_SYNC_PATCH_KEYS.has(k));
+}
+
+export function physicalSnapshotFromLocation(
+  location: Pick<
+    BusinessLocation,
+    SynchronizedBusinessPhysicalKey | 'businessId' | 'isPrimary'
+  >,
+): BusinessPhysicalSnapshot {
+  return {
+    id: location.businessId,
+    cityId: location.cityId,
+    address: location.address,
+    latitude: location.latitude,
+    longitude: location.longitude,
+    locationSource: location.locationSource,
+    workHours: location.workHours,
+    phone: location.phone,
+    whatsapp: location.whatsapp,
+    instagram: location.instagram,
+    website: location.website,
+  };
+}
+
+export function businessUpdateDataFromPhysicalSnapshot(
+  snapshot: BusinessPhysicalSnapshot,
+): Prisma.BusinessUpdateInput {
+  return {
+    city: { connect: { id: snapshot.cityId } },
+    address: snapshot.address,
+    latitude: snapshot.latitude,
+    longitude: snapshot.longitude,
+    locationSource: snapshot.locationSource,
+    workHours: snapshot.workHours === null ? Prisma.JsonNull : snapshot.workHours,
+    phone: snapshot.phone,
+    whatsapp: snapshot.whatsapp,
+    instagram: snapshot.instagram,
+    website: snapshot.website,
+  };
 }
 
 export type BusinessPhysicalSnapshot = Pick<

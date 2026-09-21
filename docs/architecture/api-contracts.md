@@ -302,7 +302,7 @@ Env: `QALAGO_GEOCODING_PROVIDER` = `mock` (default) \| `maptiler`; `MAPTILER_API
 
 ## Businesses
 
-> **Internal (6.12A.3):** `BusinessLocation` rows exist (1:N under `Business`); each production `Business` has exactly one **primary** location kept in sync with legacy physical columns on create and owner PATCH. **Public contracts below are unchanged** — list/detail/map still read physical fields from `Business`; no location CRUD endpoints yet. See [business-location.md](./business-location.md).
+> **Internal (6.12A.4):** `BusinessLocation` management API (authenticated) supports multi-branch CRUD and explicit primary switch. Legacy public list/detail/map still read **primary** fields from top-level `Business`. Discovery/map cutover to all branches deferred. See [business-location.md](./business-location.md).
 
 ### GET /businesses
 
@@ -434,6 +434,24 @@ OWNER `permissions` in response are the full enum (implicit all). MANAGER receiv
 | POST | `/invitations/resolve` | Public — body `{ token }` — minimal preview (business name, masked email, status, expiresAt). Rate limited. |
 | POST | `/invitations/accept` | Auth — body `{ token }` — explicit accept; creates MANAGER membership. Rate limited. |
 | GET | `/businesses/:businessId/team/audit` | **OWNER only** — team-related audit rows; paginated (`page`, `limit` max 100) |
+
+### Business locations (Stage 6.12A.4 — management API)
+
+**Identity:** `businessId` = brand/business; `locationId` = physical branch (`BusinessLocation.id`). Every route validates `BusinessLocation.businessId === :businessId`.
+
+**Auth:** JWT required. Caller must resolve via `BusinessAccessService` (OWNER, MANAGER with permissions, or platform/city admin). Not public.
+
+| Method | Path | Permission / access | Notes |
+|--------|------|---------------------|-------|
+| GET | `/businesses/:businessId/locations` | Active business access (OWNER/MANAGER/ADMIN) | `{ items: BusinessLocation[] }`; order: primary first, then `createdAt`, `id`. |
+| GET | `/businesses/:businessId/locations/:locationId` | Same | 404 if location not under `:businessId`. |
+| POST | `/businesses/:businessId/locations` | `BUSINESS_PROFILE_EDIT` | Body: `cityId`, `address`, optional coordinates/`locationSource`/`workHours`/contacts. Creates **`isPrimary=false`**; does not change legacy `Business` physical fields. Cross-city allowed. |
+| PATCH | `/businesses/:businessId/locations/:locationId` | Field-level: profile fields → `BUSINESS_PROFILE_EDIT`; `workHours` → `BUSINESS_HOURS_EDIT` | Partial PATCH. **`isPrimary` not accepted.** Primary row: updates location + legacy `Business` physical fields atomically. Secondary: updates location only. |
+| POST | `/businesses/:businessId/locations/:locationId/set-primary` | `BUSINESS_PROFILE_EDIT` | Transaction: unset old primary, set new primary, mirror physical fields onto `Business`. Idempotent if already primary. |
+
+**Response DTO (`BusinessLocation`):** `id`, `businessId`, `cityId`, `address`, `latitude`, `longitude`, `locationSource`, `workHours`, `phone`, `whatsapp`, `instagram`, `website`, `isPrimary`, `createdAt`, `updatedAt` (no raw PostGIS geography).
+
+**Temporary product limits:** Public catalog/search/map still use **`Business.cityId` / `Business.location`** (primary only). Secondary branches in other cities are not discovery/map markers until a later substage. **DELETE/archive:** not exposed in A.4.
 
 ### PATCH /businesses/:id
 
