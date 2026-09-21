@@ -9,7 +9,7 @@
 ## 2026-09-22 — Stage 6.12A.7.6 effective physical contract (Business detail)
 
 - **Status:** 6.12A.7.6 IMPLEMENTED — READY FOR PHYSICAL QA.
-- **Checkpoint (implementation):** see git HEAD after stage commit.
+- **Checkpoint (implementation):** `63a0c46de62be31ca00530611ba27cd751e067cf`.
 - **Summary:**
   - **API:** additive `GET /businesses/:id?locationId=`; response **`activeLocationId`** + **`effectivePhysical`** (server resolver; invalid/foreign `locationId` → primary fallback, no cross-business leak).
   - **Flutter detail:** consumes **`effectivePhysical`** for address/route/mini-map/contacts/hours/open status; **`Business.id`** unchanged for favorites/reviews/brand sections.
