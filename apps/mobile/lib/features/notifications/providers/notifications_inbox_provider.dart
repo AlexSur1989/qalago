@@ -4,8 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/providers/auth_provider.dart';
+import '../../catalog/data/catalog_repository.dart';
 import '../data/notification_model.dart';
-import 'notifications_repository_provider.dart';
 
 @immutable
 class NotificationsInboxState {
@@ -45,9 +45,13 @@ class NotificationsInboxState {
     return NotificationsInboxState(
       items: items ?? this.items,
       initialLoading: initialLoading ?? this.initialLoading,
-      initialError: clearInitialError ? null : initialError ?? this.initialError,
+      initialError: clearInitialError
+          ? null
+          : initialError ?? this.initialError,
       loadingMore: loadingMore ?? this.loadingMore,
-      loadMoreError: clearLoadMoreError ? null : loadMoreError ?? this.loadMoreError,
+      loadMoreError: clearLoadMoreError
+          ? null
+          : loadMoreError ?? this.loadMoreError,
       page: page ?? this.page,
       totalPages: totalPages ?? this.totalPages,
     );
@@ -60,11 +64,15 @@ class NotificationsInboxNotifier extends Notifier<NotificationsInboxState> {
   bool _initialInFlight = false;
   bool _moreInFlight = false;
 
-  NotificationsRepository get _repo => ref.read(notificationsRepositoryProvider);
+  NotificationsRepository get _repo =>
+      ref.read(notificationsRepositoryProvider);
 
   @override
   NotificationsInboxState build() {
-    ref.listen<String?>(authProvider.select((a) => a.user?.id), (previous, next) {
+    ref.listen<String?>(authProvider.select((a) => a.user?.id), (
+      previous,
+      next,
+    ) {
       if (previous != next) {
         state = const NotificationsInboxState();
         scheduleMicrotask(loadInitial);
@@ -180,5 +188,5 @@ class NotificationsInboxNotifier extends Notifier<NotificationsInboxState> {
 
 final notificationsInboxProvider =
     NotifierProvider<NotificationsInboxNotifier, NotificationsInboxState>(
-  NotificationsInboxNotifier.new,
-);
+      NotificationsInboxNotifier.new,
+    );

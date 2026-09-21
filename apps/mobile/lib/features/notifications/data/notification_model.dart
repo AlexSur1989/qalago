@@ -90,9 +90,11 @@ class PaginatedNotifications {
     final pagination = json['pagination'] as Map<String, dynamic>? ?? {};
     final items = itemsRaw is List
         ? itemsRaw
-            .whereType<Map>()
-            .map((e) => AppNotification.fromJson(Map<String, dynamic>.from(e)))
-            .toList()
+              .whereType<Map>()
+              .map(
+                (e) => AppNotification.fromJson(Map<String, dynamic>.from(e)),
+              )
+              .toList()
         : <AppNotification>[];
     return PaginatedNotifications(
       items: items,

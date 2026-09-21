@@ -21,11 +21,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: NotificationListTile(
-            notification: n,
-            l10n: l10n,
-            onTap: () {},
-          ),
+          body: NotificationListTile(notification: n, l10n: l10n, onTap: () {}),
         ),
       ),
     );

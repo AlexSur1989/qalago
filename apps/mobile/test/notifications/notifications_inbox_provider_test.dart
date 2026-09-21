@@ -18,7 +18,10 @@ class FakeNotificationsRepository extends NotificationsRepository {
   bool markReadFails = false;
 
   @override
-  Future<PaginatedNotifications> fetchPage({int page = 1, int limit = 20}) async {
+  Future<PaginatedNotifications> fetchPage({
+    int page = 1,
+    int limit = 20,
+  }) async {
     if (fetchOverride != null) {
       return fetchOverride!(page: page, limit: limit);
     }
@@ -68,7 +71,11 @@ AppNotification item(String id, {bool isRead = false}) {
   );
 }
 
-PaginatedNotifications notifPage(int pageNum, List<AppNotification> items, {int totalPages = 1}) {
+PaginatedNotifications notifPage(
+  int pageNum,
+  List<AppNotification> items, {
+  int totalPages = 1,
+}) {
   return PaginatedNotifications(
     items: items,
     page: pageNum,
@@ -110,7 +117,11 @@ void main() {
       ..pages[2] = notifPage(2, [item('a'), item('b')], totalPages: 2);
     final container = await boot(repo);
     await container.read(notificationsInboxProvider.notifier).loadMore();
-    final ids = container.read(notificationsInboxProvider).items.map((e) => e.id).toList();
+    final ids = container
+        .read(notificationsInboxProvider)
+        .items
+        .map((e) => e.id)
+        .toList();
     expect(ids, ['a', 'b']);
   });
 
@@ -130,7 +141,10 @@ void main() {
       ..markReadFails = true;
     final container = await boot(repo);
     await container.read(notificationsInboxProvider.notifier).markRead('a');
-    expect(container.read(notificationsInboxProvider).items.first.isRead, isFalse);
+    expect(
+      container.read(notificationsInboxProvider).items.first.isRead,
+      isFalse,
+    );
     expect(repo.markReadCalls, 1);
   });
 
@@ -139,7 +153,10 @@ void main() {
       ..pages[1] = notifPage(1, [item('a'), item('b')]);
     final container = await boot(repo);
     await container.read(notificationsInboxProvider.notifier).markAllRead();
-    expect(container.read(notificationsInboxProvider).items.every((e) => e.isRead), isTrue);
+    expect(
+      container.read(notificationsInboxProvider).items.every((e) => e.isRead),
+      isTrue,
+    );
     expect(repo.markAllReadCalls, 1);
   });
 
@@ -193,6 +210,9 @@ void main() {
     await container.read(notificationsInboxProvider.notifier).loadMore();
     expect(container.read(notificationsInboxProvider).loadMoreError, isNotNull);
     await container.read(notificationsInboxProvider.notifier).loadMore();
-    expect(container.read(notificationsInboxProvider).items.map((e) => e.id), ['a', 'b']);
+    expect(container.read(notificationsInboxProvider).items.map((e) => e.id), [
+      'a',
+      'b',
+    ]);
   });
 }

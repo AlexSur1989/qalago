@@ -31,9 +31,7 @@ class NotificationListTile extends StatelessWidget {
       label: presentation.title,
       selected: unread,
       child: Card(
-        color: unread
-            ? scheme.primaryContainer.withValues(alpha: 0.28)
-            : null,
+        color: unread ? scheme.primaryContainer.withValues(alpha: 0.28) : null,
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
@@ -58,8 +56,9 @@ class NotificationListTile extends StatelessWidget {
                             child: Text(
                               presentation.title,
                               style: theme.textTheme.titleSmall?.copyWith(
-                                fontWeight:
-                                    unread ? FontWeight.w600 : FontWeight.w500,
+                                fontWeight: unread
+                                    ? FontWeight.w600
+                                    : FontWeight.w500,
                               ),
                             ),
                           ),

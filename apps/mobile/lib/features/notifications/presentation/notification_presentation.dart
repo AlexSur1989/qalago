@@ -75,10 +75,10 @@ NotificationPresentation presentAppNotification(
 
   final businessName = _payloadString(notification.payload, 'businessName');
   final publicReason = _payloadString(notification.payload, 'publicReason');
-  final tierRaw = _payloadString(notification.payload, 'tier') ??
+  final tierRaw =
+      _payloadString(notification.payload, 'tier') ??
       _payloadString(notification.payload, 'planTier');
-  final tierLabel =
-      tierRaw != null ? ownerPlanTierLabel(l10n, tierRaw) : null;
+  final tierLabel = tierRaw != null ? ownerPlanTierLabel(l10n, tierRaw) : null;
 
   switch (type) {
     case 'NEW_REVIEW':
@@ -143,7 +143,9 @@ NotificationPresentation presentAppNotification(
       return NotificationPresentation(
         title: l10n.notificationBusinessApplicationRejectedTitle,
         body: publicReason != null
-            ? l10n.notificationBusinessApplicationRejectedBodyReason(publicReason)
+            ? l10n.notificationBusinessApplicationRejectedBodyReason(
+                publicReason,
+              )
             : l10n.notificationBusinessApplicationRejectedBody,
         category: NotificationVisualCategory.application,
         usedLegacyFallback: false,

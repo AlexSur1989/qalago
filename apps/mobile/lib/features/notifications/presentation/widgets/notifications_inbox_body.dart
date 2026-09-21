@@ -2,17 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/locale/l10n_extension.dart';
+import '../../data/notification_model.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../shared/widgets/error_view.dart';
 import '../../../../shared/widgets/loading_view.dart';
+import '../../navigation/notification_navigator.dart';
 import '../../providers/notifications_inbox_provider.dart';
 import 'notification_list_tile.dart';
 
 class NotificationsInboxBody extends ConsumerStatefulWidget {
-  const NotificationsInboxBody({
-    super.key,
-    required this.emptyMessage,
-  });
+  const NotificationsInboxBody({super.key, required this.emptyMessage});
 
   final String emptyMessage;
 
@@ -21,8 +20,11 @@ class NotificationsInboxBody extends ConsumerStatefulWidget {
       _NotificationsInboxBodyState();
 }
 
-class _NotificationsInboxBodyState extends ConsumerState<NotificationsInboxBody> {
+class _NotificationsInboxBodyState
+    extends ConsumerState<NotificationsInboxBody> {
   final ScrollController _scrollController = ScrollController();
+  String? _navLockNotificationId;
+  DateTime? _navLockUntil;
 
   @override
   void initState() {
@@ -35,6 +37,28 @@ class _NotificationsInboxBodyState extends ConsumerState<NotificationsInboxBody>
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  bool _isNavigationLocked(String notificationId) {
+    if (_navLockNotificationId != notificationId) return false;
+    final until = _navLockUntil;
+    if (until == null) return false;
+    return DateTime.now().isBefore(until);
+  }
+
+  void _onNotificationTap(AppNotification notification) {
+    handleNotificationTap(
+      ref,
+      context,
+      notification,
+      navigationLocked: _isNavigationLocked(notification.id),
+      onNavigationStarted: (id) {
+        setState(() {
+          _navLockNotificationId = id;
+          _navLockUntil = DateTime.now().add(const Duration(milliseconds: 900));
+        });
+      },
+    );
   }
 
   void _onScroll() {
@@ -106,7 +130,7 @@ class _NotificationsInboxBodyState extends ConsumerState<NotificationsInboxBody>
               child: NotificationListTile(
                 notification: n,
                 l10n: l10n,
-                onTap: () => notifier.markRead(n.id),
+                onTap: () => _onNotificationTap(n),
               ),
             );
           }

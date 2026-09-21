@@ -891,6 +891,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get notificationsEndOfList => 'Больше уведомлений нет';
 
   @override
+  String get notificationEntityUnavailable => 'Объект больше недоступен';
+
+  @override
   String get notificationNewReviewTitle => 'Новый отзыв';
 
   @override

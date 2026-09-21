@@ -419,6 +419,7 @@
   "notificationsLoadMoreFailed": "Не удалось загрузить ещё",
   "notificationsLoadingMore": "Загрузка…",
   "notificationsEndOfList": "Больше уведомлений нет",
+  "notificationEntityUnavailable": "Объект больше недоступен",
   "notificationNewReviewTitle": "Новый отзыв",
   "notificationNewReviewBody": "О вашей компании оставили новый отзыв.",
   "notificationNewReviewBodyNamed": "О компании «{businessName}» оставили новый отзыв.",

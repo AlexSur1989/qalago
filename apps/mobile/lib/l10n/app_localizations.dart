@@ -1712,6 +1712,12 @@ abstract class AppLocalizations {
   /// **'Больше уведомлений нет'**
   String get notificationsEndOfList;
 
+  /// No description provided for @notificationEntityUnavailable.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объект больше недоступен'**
+  String get notificationEntityUnavailable;
+
   /// No description provided for @notificationNewReviewTitle.
   ///
   /// In ru, this message translates to:

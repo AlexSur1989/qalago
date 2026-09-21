@@ -61,11 +61,17 @@ void main() {
 
     test('business application approve/reject', () {
       expect(
-        presentAppNotification(ru, _n(type: 'BUSINESS_APPLICATION_APPROVED')).title,
+        presentAppNotification(
+          ru,
+          _n(type: 'BUSINESS_APPLICATION_APPROVED'),
+        ).title,
         ru.notificationBusinessApplicationApprovedTitle,
       );
       expect(
-        presentAppNotification(kk, _n(type: 'BUSINESS_APPLICATION_REJECTED')).title,
+        presentAppNotification(
+          kk,
+          _n(type: 'BUSINESS_APPLICATION_REJECTED'),
+        ).title,
         kk.notificationBusinessApplicationRejectedTitle,
       );
     });
@@ -83,20 +89,23 @@ void main() {
 
     test('invitation received/accepted', () {
       expect(
-        presentAppNotification(ru, _n(type: 'BUSINESS_INVITATION_RECEIVED')).title,
+        presentAppNotification(
+          ru,
+          _n(type: 'BUSINESS_INVITATION_RECEIVED'),
+        ).title,
         ru.notificationInvitationReceivedTitle,
       );
       expect(
-        presentAppNotification(kk, _n(type: 'BUSINESS_INVITATION_ACCEPTED')).title,
+        presentAppNotification(
+          kk,
+          _n(type: 'BUSINESS_INVITATION_ACCEPTED'),
+        ).title,
         kk.notificationInvitationAcceptedTitle,
       );
     });
 
     test('plan activated/expired', () {
-      final withTier = _n(
-        type: 'PLAN_ACTIVATED',
-        payload: {'tier': 'PRO'},
-      );
+      final withTier = _n(type: 'PLAN_ACTIVATED', payload: {'tier': 'PRO'});
       expect(
         presentAppNotification(ru, withTier).body,
         isNot(contains('Legacy')),
@@ -140,7 +149,10 @@ void main() {
   });
 
   test('known type without payload uses generic template', () {
-    final p = presentAppNotification(ru, _n(type: 'NEW_REVIEW', title: 'RU backend'));
+    final p = presentAppNotification(
+      ru,
+      _n(type: 'NEW_REVIEW', title: 'RU backend'),
+    );
     expect(p.title, ru.notificationNewReviewTitle);
     expect(p.body, ru.notificationNewReviewBody);
     expect(p.usedLegacyFallback, isFalse);
@@ -166,10 +178,7 @@ void main() {
   test('businessName in payload is not translated', () {
     final p = presentAppNotification(
       ru,
-      _n(
-        type: 'NEW_REVIEW',
-        payload: {'businessName': 'Cafe Qala'},
-      ),
+      _n(type: 'NEW_REVIEW', payload: {'businessName': 'Cafe Qala'}),
     );
     expect(p.body, contains('Cafe Qala'));
   });

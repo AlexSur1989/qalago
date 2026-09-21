@@ -301,6 +301,7 @@
   "notificationsLoadMoreFailed": "Тағы жүктеу сәтсіз аяқталды",
   "notificationsLoadingMore": "Жүктелуде…",
   "notificationsEndOfList": "Басқа хабарландырулар жоқ",
+  "notificationEntityUnavailable": "Объект енді қолжетімді емес",
   "notificationNewReviewTitle": "Жаңа пікір",
   "notificationNewReviewBody": "Компанияңыз туралы жаңа пікір қалдырылды.",
   "notificationNewReviewBodyNamed": "«{businessName}» компаниясы туралы жаңа пікір қалдырылды.",

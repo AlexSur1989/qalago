@@ -5,6 +5,12 @@
 
 ---
 
+## 2026-09-21 — Stage 6.11E.4 notification routing & deep links
+
+- **Added:** Central `resolveNotificationDestination` + `navigateNotificationDestination` for typed in-app routes from `type`/`targetType`/`targetId`.
+- **Changed:** Inbox tap marks read (optimistic) then pushes canonical consumer/owner screens; double-tap guard; entity-unavailable snackbar.
+- **Deferred:** push/FCM (E.5); Web deep links.
+
 ## 2026-09-21 — Stage 6.11E.3 notification inbox UX & localization
 
 - **Added:** Flutter `NotificationPresentation` layer (type + payload → RU/KK templates); shared paginated inbox (`NotificationsInboxBody`) for consumer and owner.

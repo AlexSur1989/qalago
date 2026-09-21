@@ -890,6 +890,9 @@ class AppLocalizationsKk extends AppLocalizations {
   String get notificationsEndOfList => 'Басқа хабарландырулар жоқ';
 
   @override
+  String get notificationEntityUnavailable => 'Объект енді қолжетімді емес';
+
+  @override
   String get notificationNewReviewTitle => 'Жаңа пікір';
 
   @override

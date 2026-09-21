@@ -7,7 +7,7 @@ In-app notifications only. Push/FCM deferred.
 - **Primary display:** Flutter `presentAppNotification()` — localized title/body from `NotificationType` + safe `payload` (RU/KK via gen_l10n).
 - **Legacy fallback:** persisted backend `title`/`body` for `GENERAL`, unknown future types, or missing templates.
 - **Do not** runtime-translate stored Russian title/body or user-generated content (review text, replies, business names render as-is from payload).
-- **Tap (E.3):** mark read only; navigation/deep links deferred to E.4.
+- **Tap (E.4):** optimistic mark read → `resolveNotificationDestination()` → `context.push` to canonical routes; no payload URLs.
 - **Business Web:** type chip labels for E.2 enums; list still shows API title/body (full Web RU/KK deferred).
 
 ## Producer matrix
@@ -26,6 +26,26 @@ In-app notifications only. Push/FCM deferred.
 | Plan activated | `PLAN_ACTIVATED` | Business owner | `BUSINESS` | business id | After activation |
 | Plan expired (lazy sync) | `PLAN_EXPIRED` | Business owner | `BUSINESS` | business id | After conditional `updateMany` |
 | Ad creative approved/rejected | `AD_CAMPAIGN_*` | Business owner | `AD_CAMPAIGN` | campaign or creative id | After moderation decision |
+
+## Routing matrix (Stage 6.11E.4)
+
+| NotificationType | targetType | Destination (Flutter) | Notes |
+|------------------|------------|----------------------|-------|
+| `GENERAL` / unknown | * | none | mark read only |
+| `NEW_REVIEW` | `REVIEW` | `/owner/reviews/:businessId` | `businessId` from E.2 payload whitelist only |
+| `REVIEW_REPLY` | `REVIEW` | `/business/:businessId/reviews` | payload `businessId` whitelist |
+| `REVIEW_HIDDEN` / `REVIEW_RESTORED` | `REVIEW` | `/profile/reviews` | |
+| `BUSINESS_APPROVED` / `BLOCKED` | `BUSINESS` | `/business/:id` | |
+| `BUSINESS_APPLICATION_*` | `BUSINESS_APPLICATION` | `/business/apply?id=` | |
+| `OWNERSHIP_CLAIM_*` | `OWNERSHIP_CLAIM` | `/business/claims` | list screen |
+| `BUSINESS_INVITATION_*` | `BUSINESS` | `/owner/team` + select business | |
+| `PLAN_*` | `BUSINESS` | `/owner/plan` + select business | |
+| `AD_CAMPAIGN_*` | `AD_CAMPAIGN` | `/owner/monetization/campaigns/:id` | 404 → screen/snackbar UX |
+| `NEW_PROMOTION` | `PROMOTION` | `/promotions` | no producer yet |
+
+Security: never navigate from arbitrary payload paths/URLs; supplementary `businessId` only for `REVIEW` targets per E.2 contract.
+
+Push / FCM: E.5.
 
 ## Deferred (E.3+ / infrastructure)
 
