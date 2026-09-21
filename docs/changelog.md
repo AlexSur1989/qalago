@@ -6,6 +6,31 @@
 
 ---
 
+## 2026-09-21 — Stage 6.12A.1 BusinessLocation database foundation
+
+- **Status:** 6.12A.1 PASS — READY FOR A.2.
+- **Checkpoint:** `e4734968e66056110445f274c71ec0124e22cf65`.
+- **Summary:**
+  - Additive **`BusinessLocation`** model (1:N under `Business`): city, address, coordinates, `locationSource`, `workHours`, contacts, **`isPrimary`** with partial unique index.
+  - PostGIS foundation: geography column, isolated sync trigger, GiST index; **map/catalog still use `Business.location`**.
+  - **No backfill** — table empty until A.2; legacy **`Business` physical fields unchanged**; no public API/DTO/client changes.
+  - Docs: `docs/architecture/business-location.md`; api-contracts internal note.
+  - Local migration history: reconciled orphan E.5 record + applied `20260921160000_stage_6_11e5_push_device` before A.1 migrate.
+- **Tests:** catalog-api Jest **999** (incl. `stage-6-12a1-business-location-foundation`); `prisma validate` OK; migrate status up to date.
+- **Deferred:** A.2 1:1 backfill + primary rows; location APIs; map cutover; F.4 URLs.
+- **Next:** 6.12A.2 backfill + primary location invariants.
+
+---
+
+## 2026-09-21 — Stage 6.12A.0 BusinessLocation architecture audit
+
+- **Status:** 6.12A.0 AUDIT PASS — READY TO DESIGN A.1.
+- **Checkpoint:** none (read-only audit; recorded at A.1 closure).
+- **Summary:** Repository audit — Business = brand + embedded place; 1→N `BusinessLocation` target; reviews/favorites/membership/plans stay on Business for MVP; map cutover isolated; primary-location compat strategy. Full findings in session A.0 report.
+- **Next:** 6.12A.1 additive schema.
+
+---
+
 ## 2026-09-21 — Stage 6.11F.3 SEO infrastructure
 
 - **Status:** 6.11F.3 PASS — READY FOR 6.12A.
