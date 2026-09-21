@@ -418,7 +418,7 @@ Only active items from active sections (or uncategorized). Sort: section `sortOr
 
 ### GET /businesses/:id/photos
 
-Paginated public gallery.
+Paginated public gallery. Stage 6.12A.7.7.2: **`moderationHidden`** rows are **never** returned on public consumer surfaces. Order of limits: **moderation filter → plan photo cap → pagination/preview slice**. Branch-scoped public merge deferred to A.7.7.3 (gallery remains Business-level for now).
 
 Query: `page` (default 1), `limit` (default 24, max 50).
 
@@ -925,24 +925,45 @@ Business attach endpoints additionally verify ownership / CITY_ADMIN city scope 
 
 ### POST /uploads/business/:businessId
 
-Attach uploaded image to business (owner / CITY_ADMIN scoped / ADMIN).
+Attach uploaded image to business (owner / CITY_ADMIN scoped / ADMIN). Stage 6.12A.7.7.2.
 
 Body:
 ```json
-{ "imageUrl": "/uploads/uuid.jpg", "asCover": true }
+{
+  "imageUrl": "/uploads/uuid.jpg",
+  "asCover": true,
+  "locationId": "optional BusinessLocation.id"
+}
 ```
+
+- **`locationId` omitted / null:** shared (brand) **`BusinessImage`**.
+- **`locationId` valid for `:businessId`:** branch-scoped image (composite FK enforced).
+- **Invalid / foreign `locationId`:** `400` — no silent fallback to shared.
+- **`asCover: true`:** allowed **only** when `locationId` is omitted/null (sets **`Business.coverImageUrl`**). Branch images cannot become brand cover (`400`).
+
+Photo plan limits remain **Business-wide** (shared + all branches).
 
 ### GET /uploads/business/:businessId/images
 
-Auth: owner / admin. List gallery images ordered by `sortOrder`.
+Auth: owner / admin. List gallery images ordered by `sortOrder`, `createdAt`. Response rows include **`locationId`** (nullable).
+
+Query (additive, Stage 6.12A.7.7.2):
+
+| Query | Result |
+|-------|--------|
+| *(none)* or `scope=all` | All images for the business |
+| `scope=brand` | Shared images only (`locationId` null) |
+| `locationId=<id>` | One branch’s images (`locationId` must belong to `:businessId`) |
+
+Cannot combine `scope=brand` with `locationId`. Management list includes **moderation-hidden** rows (owner/admin visibility).
 
 ### DELETE /uploads/business/:businessId/images/:imageId
 
-Auth: owner / admin. Removes image; if it was cover, next image becomes cover.
+Auth: owner / admin. Removes image scoped to `:businessId`. If deleted row was brand cover, next cover candidate is the next **shared** image (`locationId` null) only; otherwise **`Business.coverImageUrl`** → `null`.
 
 ### PATCH /uploads/business/:businessId/images/:imageId/cover
 
-Auth: owner / admin. Sets business cover to this image.
+Auth: owner / admin. Sets **`Business.coverImageUrl`** from image URL. **Only shared images** (`locationId` null) eligible; branch image → `400`.
 
 ---
 

@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-09-22 — Stage 6.12A.7.7.2 branch media management + public moderation
+
+- **Status:** 6.12A.7.7.2 IMPLEMENTED — READY FOR A.7.7.3 (public branch gallery).
+- **Checkpoint (implementation):** see git HEAD after stage commit.
+- **Summary:**
+  - **Attach/list:** optional **`locationId`** on `POST /uploads/business/:businessId`; validated same-business; **`asCover`** only for shared (`locationId` null); management list filters `scope=all|brand` or `locationId`.
+  - **Brand cover:** delete repoint and set-cover use **shared images only**; branch rows cannot set **`Business.coverImageUrl`**.
+  - **Public safety:** **`galleryPreview`** and **`GET /businesses/:id/photos`** exclude **`moderationHidden`** before plan cap (owner management list unchanged).
+  - **Plan limits:** remain Business-wide (shared + branches).
+- **Deferred:** **`effectiveMedia`**, branch-aware public gallery merge, branch hero — **A.7.7.3**.
+- **Next:** A.7.7.3 public branch media resolution.
+
+---
+
 ## 2026-09-22 — Stage 6.12A.7.7.1 branch media data foundation
 
 - **Status:** 6.12A.7.7.1 IMPLEMENTED — READY FOR A.7.7.2 (API/read path).

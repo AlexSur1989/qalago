@@ -32,7 +32,8 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | 6.12A.7.2 | PASS | Flutter map **physical key** = `locationId`; detail/reviews/favorites stay **Business.id** |
 | 6.12A.7.4 | FINALIZED | multi-branch map physical QA; public locations Hotfix 2 |
 | 6.12A.7.6 | CLOSED (physical QA PASS) | **`GET /businesses/:id?locationId=`** + **`effectivePhysical`** backend source of truth for detail physical UI |
-| 6.12A.7.7.1 | IMPLEMENTED | **`BusinessImage.locationId`** nullable — shared vs branch scope; composite FK; public media resolution **not** wired yet |
+| 6.12A.7.7.1 | IMPLEMENTED | **`BusinessImage.locationId`** nullable — shared vs branch scope; composite FK |
+| 6.12A.7.7.2 | IMPLEMENTED | Upload attach/list scope + brand-only cover; public gallery excludes **`moderationHidden`**; **`effectiveMedia`** still **A.7.7.3** |
 
 ## Business vs BusinessLocation
 
@@ -41,7 +42,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **Business detail (A.7.6):** optional query **`locationId`** selects active branch; response **`effectivePhysical`** is the server-resolved physical context (contacts/hours: location → business fallback). **`Business.id`** remains canonical for reviews/favorites/analytics.
 - **Primary:** default active context when `locationId` omitted; **`isPrimary` badge ≠ forced active** when user/map selects another branch.
 - **Primary sync:** legacy **Business** physical columns mirror **primary** for backward compatibility; branch photos/catalog/promotions/reviews remain future work (not A.7.6).
-- **Branch media (A.7.7.1):** **`BusinessImage.locationId`** optional — **`null`** = shared/brand gallery row; **non-null** = that **BusinessLocation** only; same-business enforced by composite FK; **`Business.coverImageUrl`** remains brand-level; public merge/filter → **A.7.7.2+**.
+- **Branch media (A.7.7.1–7.7.2):** **`BusinessImage.locationId`** optional — **`null`** = shared/brand; **non-null** = branch scope; attach/list validate same business; **`Business.coverImageUrl`** brand-only (**shared** images); public **`galleryPreview`/`/photos`** filter **`moderationHidden`**; branch public merge → **A.7.7.3**.
 - **Cross-city:** secondary branches may live in other cities; discovery still uses **primary** `Business.cityId` until a later stage.
 - **Public read (A.6):** `GET /businesses/:id/locations/public` (ACTIVE only, guest-safe).
 - **Management (A.4):** authenticated CRUD + `set-primary`; **no DELETE** yet.

@@ -22,6 +22,7 @@ import { ReviewAggregationService } from '../../common/services/review-aggregati
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListBusinessCatalogQueryDto } from './dto/business-catalog.dto';
 import { ListBusinessPhotosQueryDto } from './dto/business-photos.dto';
+import { PUBLIC_BUSINESS_IMAGE_WHERE } from '../uploads/business-image-scope.util';
 
 const catalogItemSelect = {
   id: true,
@@ -69,10 +70,7 @@ export class BusinessPublicContentService {
   async getGalleryPreview(businessId: string) {
     await this.assertActiveBusiness(businessId);
     const ctx = await this.planLimits.getBusinessPlanContext(businessId);
-    const images = await this.prisma.businessImage.findMany({
-      where: { businessId },
-      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
-    });
+    const images = await this.fetchPublicVisibleBusinessImages(businessId);
     const published = this.planLimits.applyPublicPhotoLimit(
       images,
       ctx.limits.maxPhotos,
@@ -81,6 +79,14 @@ export class BusinessPublicContentService {
       items: sliceToPublicLimit(published, PUBLIC_GALLERY_PREVIEW_LIMIT),
       totalCount: published.length,
     };
+  }
+
+  /** Moderation filter → deterministic order → plan cap applied by callers. */
+  async fetchPublicVisibleBusinessImages(businessId: string) {
+    return this.prisma.businessImage.findMany({
+      where: { businessId, ...PUBLIC_BUSINESS_IMAGE_WHERE },
+      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+    });
   }
 
   async getPublishedCatalogItems(businessId: string) {
@@ -185,10 +191,7 @@ export class BusinessPublicContentService {
     const page = query.page ?? 1;
     const limit = Math.min(query.limit ?? PUBLIC_GALLERY_DEFAULT_LIMIT, PUBLIC_GALLERY_MAX_LIMIT);
 
-    const images = await this.prisma.businessImage.findMany({
-      where: { businessId },
-      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
-    });
+    const images = await this.fetchPublicVisibleBusinessImages(businessId);
     const published = this.planLimits.applyPublicPhotoLimit(
       images,
       ctx.limits.maxPhotos,

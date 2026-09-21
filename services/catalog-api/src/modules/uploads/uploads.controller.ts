@@ -17,16 +17,10 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { UploadsService } from './uploads.service';
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
-
-class AttachImageDto {
-  @IsString()
-  imageUrl!: string;
-
-  @IsOptional()
-  @IsBoolean()
-  asCover?: boolean;
-}
+import {
+  AttachBusinessImageDto,
+  ListBusinessImagesQueryDto,
+} from './dto/business-images.dto';
 
 @Controller('uploads')
 export class UploadsController {
@@ -52,22 +46,24 @@ export class UploadsController {
   attach(
     @CurrentUser() user: AuthUser,
     @Param('businessId') businessId: string,
-    @Body() dto: AttachImageDto,
+    @Body() dto: AttachBusinessImageDto,
   ) {
-    return this.uploadsService.attachToBusiness(
-      user,
-      businessId,
-      dto.imageUrl,
-      dto.asCover ?? false,
-    );
+    return this.uploadsService.attachToBusiness(user, businessId, dto.imageUrl, {
+      asCover: dto.asCover ?? false,
+      locationId: dto.locationId,
+    });
   }
 
   @Get('business/:businessId/images')
   listImages(
     @CurrentUser() user: AuthUser,
     @Param('businessId') businessId: string,
+    @Query() query: ListBusinessImagesQueryDto,
   ) {
-    return this.uploadsService.listBusinessImages(user, businessId);
+    return this.uploadsService.listBusinessImages(user, businessId, {
+      scope: query.scope,
+      locationId: query.locationId,
+    });
   }
 
   @Delete('business/:businessId/images/:imageId')

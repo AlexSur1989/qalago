@@ -29,13 +29,14 @@ function makeItems(count: number, prefix = 'item') {
   }));
 }
 
-function makeImages(count: number) {
+function makeImages(count: number, moderationHidden = false) {
   return Array.from({ length: count }, (_, index) => ({
     id: `img-${index + 1}`,
     businessId: 'biz-1',
     imageUrl: `https://cdn.example/${index + 1}.jpg`,
     sortOrder: index,
     createdAt: new Date(),
+    moderationHidden,
   }));
 }
 
@@ -89,6 +90,31 @@ describe('BusinessPublicContentService (Stage 5G)', () => {
     const preview = await service.getGalleryPreview('biz-1');
     expect(preview.items).toHaveLength(PUBLIC_GALLERY_PREVIEW_LIMIT);
     expect(preview.totalCount).toBe(100);
+    expect(prisma.businessImage.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ businessId: 'biz-1', moderationHidden: false }),
+      }),
+    );
+  });
+
+  it('gallery preview excludes moderationHidden before plan cap', async () => {
+    const visible = makeImages(3, false);
+    const hidden = makeImages(2, true).map((row, i) => ({
+      ...row,
+      id: `hidden-${i}`,
+      imageUrl: `https://cdn.example/hidden-${i}.jpg`,
+    }));
+    (prisma.businessImage.findMany as jest.Mock).mockImplementation(({ where }) => {
+      const all = [...visible, ...hidden];
+      if (where?.moderationHidden === false) {
+        return Promise.resolve(all.filter((row) => !row.moderationHidden));
+      }
+      return Promise.resolve(all);
+    });
+
+    const preview = await service.getGalleryPreview('biz-1');
+    expect(preview.totalCount).toBe(3);
+    expect(preview.items.every((row) => !row.moderationHidden)).toBe(true);
   });
 
   it('promotions preview <= 3', async () => {

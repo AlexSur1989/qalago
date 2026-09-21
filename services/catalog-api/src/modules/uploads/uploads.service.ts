@@ -20,6 +20,13 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { RateLimitStoreService } from '../../common/services/rate-limit-store.service';
 import { RateLimitPolicy } from '../../common/services/rate-limit-policy';
+import {
+  assertBrandCoverOnly,
+  assertImageEligibleForBrandCover,
+  buildBusinessImagesListWhere,
+  ListBusinessImagesFilter,
+  resolveAttachLocationId,
+} from './business-image-scope.util';
 
 @Injectable()
 export class UploadsService {
@@ -103,12 +110,29 @@ export class UploadsService {
     }
   }
 
-  async attachToBusiness(user: AuthUser, businessId: string, imageUrl: string, asCover = false) {
+  async attachToBusiness(
+    user: AuthUser,
+    businessId: string,
+    imageUrl: string,
+    options: { asCover?: boolean; locationId?: string | null } = {},
+  ) {
     await this.assertCanManage(user, businessId);
     await this.planLimits.assertCanAddPhoto(businessId);
 
+    const resolvedLocationId = await resolveAttachLocationId(
+      (args) => this.prisma.businessLocation.findFirst(args),
+      businessId,
+      options.locationId,
+    );
+    const asCover = options.asCover ?? false;
+    assertBrandCoverOnly(asCover, resolvedLocationId);
+
     const image = await this.prisma.businessImage.create({
-      data: { businessId, imageUrl },
+      data: {
+        businessId,
+        imageUrl,
+        locationId: resolvedLocationId,
+      },
     });
 
     if (asCover) {
@@ -134,10 +158,22 @@ export class UploadsService {
     return image;
   }
 
-  async listBusinessImages(user: AuthUser, businessId: string) {
+  async listBusinessImages(
+    user: AuthUser,
+    businessId: string,
+    filter: ListBusinessImagesFilter = {},
+  ) {
     await this.assertCanManage(user, businessId);
+    if (filter.locationId?.trim()) {
+      await resolveAttachLocationId(
+        (args) => this.prisma.businessLocation.findFirst(args),
+        businessId,
+        filter.locationId,
+      );
+    }
+    const where = buildBusinessImagesListWhere(businessId, filter);
     return this.prisma.businessImage.findMany({
-      where: { businessId },
+      where,
       orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
     });
   }
@@ -165,7 +201,7 @@ export class UploadsService {
 
     if (business?.coverImageUrl === image.imageUrl) {
       const next = await this.prisma.businessImage.findFirst({
-        where: { businessId },
+        where: { businessId, locationId: null },
         orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
       });
       await this.prisma.business.update({
@@ -183,6 +219,7 @@ export class UploadsService {
       where: { id: imageId, businessId },
     });
     if (!image) throw new NotFoundException('Image not found');
+    assertImageEligibleForBrandCover(image.locationId);
 
     await this.prisma.business.update({
       where: { id: businessId },
