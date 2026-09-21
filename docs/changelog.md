@@ -9,7 +9,7 @@
 ## 2026-09-21 — Stage 6.12A.5 BusinessLocation owner & admin management UX
 
 - **Status:** 6.12A.5 PASS — READY FOR A.6.
-- **Checkpoint:** _(set at commit)_.
+- **Checkpoint:** `d8904a7472d5501e9bb8cf7d272e2aa8f1886b89`.
 - **Summary:**
   - **Business Web:** `/business/[id]/locations` (“Филиалы” nav); list/create/edit/set-primary via A.4 endpoints; cross-city city selector from `listCities()`; reuses `BusinessLocationField`; **`isPrimary`** badge; confirm before set-primary; **`refreshBusinesses`** after primary switch / primary edit; **no DELETE**.
   - **Admin Web:** read-only branch list on approved application detail (`BusinessLocationsReadonly`); staff uses same locations list API; **no admin edit UI**.

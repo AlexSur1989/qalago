@@ -18,7 +18,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | Stage | Status | Notes |
 |-------|--------|--------|
 | 6.12A.4 | PASS | Management API; checkpoint `d5958ba5…` |
-| 6.12A.5 | PASS — see changelog checkpoint | Owner Business Web + minimal Admin read-only |
+| 6.12A.5 | PASS | checkpoint `d8904a7…` — Owner Business Web + Admin read-only |
 | **Next after A.5** | **6.12A.6** | Flutter location consumption (not started in A.5) |
 
 ## Business vs BusinessLocation
