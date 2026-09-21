@@ -9,7 +9,7 @@
 ## 2026-09-22 — Stage 6.12A.7.7.2 branch media management + public moderation
 
 - **Status:** 6.12A.7.7.2 IMPLEMENTED — READY FOR A.7.7.3 (public branch gallery).
-- **Checkpoint (implementation):** see git HEAD after stage commit.
+- **Checkpoint (implementation):** `917b6e62a4d572013215ed4a0fa10f372c7c608d`.
 - **Summary:**
   - **Attach/list:** optional **`locationId`** on `POST /uploads/business/:businessId`; validated same-business; **`asCover`** only for shared (`locationId` null); management list filters `scope=all|brand` or `locationId`.
   - **Brand cover:** delete repoint and set-cover use **shared images only**; branch rows cannot set **`Business.coverImageUrl`**.
