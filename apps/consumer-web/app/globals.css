@@ -43,6 +43,88 @@ body {
   width: 100%;
 }
 
+.public-shell__tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.city-switch {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.city-switch__label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.city-switch__select {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font: inherit;
+  background: var(--surface);
+}
+
+.search-form {
+  margin: 16px 0 8px;
+}
+
+.search-form__label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.search-form__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.search-form__input {
+  flex: 1 1 200px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font: inherit;
+}
+
+.search-form__submit {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--blue);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.search-form__submit:hover {
+  filter: brightness(0.95);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+  font-weight: 600;
+}
+
+.pagination a {
+  color: var(--blue);
+}
+
+.pagination__status {
+  color: var(--muted);
+}
+
 .public-shell__brand {
   flex: 1 1 auto;
   min-width: 120px;

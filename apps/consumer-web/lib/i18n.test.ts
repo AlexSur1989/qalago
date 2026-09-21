@@ -95,7 +95,8 @@ describe('consumer-web i18n stage 6.10B.4', () => {
     expect(siteMetadataForLocale('kk').title).toBe('QalaGo');
   });
 
-  it('promotion/search surfaces N/A — no dedicated routes in consumer-web', () => {
-    expect(UI_LABELS.ru).not.toHaveProperty('searchPlaceholder');
+  it('search labels RU and KK (F.2)', () => {
+    expect(UI_LABELS.ru.searchPlaceholder.length).toBeGreaterThan(0);
+    expect(UI_LABELS.kk.searchSubmit.length).toBeGreaterThan(0);
   });
 });

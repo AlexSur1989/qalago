@@ -6,6 +6,21 @@
 
 ---
 
+## 2026-09-21 — Stage 6.11F.2 City & category discovery
+
+- **Status:** 6.11F.2 PASS — READY FOR F.3.
+- **Summary:**
+  - City-aware routes: `/{citySlug}`, `/{citySlug}/categories`, `/{citySlug}/{categorySlug}`, `/{citySlug}/{categorySlug}/{subcategorySlug}`, `/{citySlug}/search?q=`.
+  - Root `/` permanent redirect → `/uralsk`; legacy `/categories` + `/categories/[id]` → default city slug routes.
+  - Reserved segments (`categories`, `search`, …); category resolution server-side from public city category list; invalid city/category/subcategory → 404.
+  - City switcher from `GET /cities`; search GET form; pagination `?page=`; public business cards → temporary `/businesses/{id}` links.
+  - Search route `force-dynamic`; catalog routes keep F.1 ISR policy.
+- **Tests/build:** consumer-web vitest **40**; `check:ui-strings` OK; `next build` OK.
+- **Deferred:** SEO metadata/robots/canonical (F.3); business slug URLs (6.12A + F.4); locale URL prefixes (F.5).
+- **Next:** 6.11F.3 SEO infrastructure.
+
+---
+
 ## 2026-09-21 — Stage 6.11F.1 Public Web foundation
 
 - **Status:** 6.11F.1 PASS — READY FOR F.2.

@@ -15,10 +15,19 @@ export type CityDto = {
   nameKk?: string | null;
 };
 
-export async function fetchCity(slug: string): Promise<CityDto> {
+export async function fetchCities(): Promise<CityDto[]> {
+  const res = await fetch(`${API_BASE}/cities`, {
+    next: { revalidate: REVALIDATE_CITY_SECONDS },
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json() as Promise<CityDto[]>;
+}
+
+export async function fetchCity(slug: string): Promise<CityDto | null> {
   const res = await fetch(`${API_BASE}/cities/${encodeURIComponent(slug)}`, {
     next: { revalidate: REVALIDATE_CITY_SECONDS },
   });
+  if (res.status === 404) return null;
   if (!res.ok) throw new Error(await res.text());
   return res.json() as Promise<CityDto>;
 }
@@ -42,6 +51,8 @@ export type BusinessSummaryDto = {
   shortDesc?: string | null;
   coverImageUrl?: string | null;
   category?: { id: string; title: string; slug: string } | null;
+  averageRating?: number | null;
+  reviewCount?: number;
 };
 
 export type SubcategoryDto = {
@@ -78,19 +89,27 @@ export type BusinessListResponse = {
   limit: number;
 };
 
-export async function fetchBusinesses(params: {
+export type FetchBusinessesParams = {
   citySlug?: string;
-  categoryId: string;
+  categoryId?: string;
   subcategoryId?: string;
+  search?: string;
+  page?: number;
   limit?: number;
-}): Promise<BusinessListResponse> {
+};
+
+export async function fetchBusinesses(
+  params: FetchBusinessesParams,
+): Promise<BusinessListResponse> {
   const q = new URLSearchParams({
     citySlug: params.citySlug ?? DEFAULT_CITY_SLUG,
-    categoryId: params.categoryId,
-    limit: String(params.limit ?? 50),
-    page: '1',
+    page: String(params.page ?? 1),
+    limit: String(params.limit ?? 20),
   });
+  if (params.categoryId) q.set('categoryId', params.categoryId);
   if (params.subcategoryId) q.set('subcategoryId', params.subcategoryId);
+  if (params.search) q.set('search', params.search);
+
   const res = await fetch(`${API_BASE}/businesses?${q.toString()}`, {
     next: { revalidate: REVALIDATE_BUSINESS_LIST_SECONDS },
   });

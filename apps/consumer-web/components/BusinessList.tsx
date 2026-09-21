@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import type { BusinessSummaryDto } from '@/lib/catalog-api';
+import type { PublicBusinessCard } from '@/lib/public-business';
+import { temporaryBusinessDetailPath } from '@/lib/public-business';
 import { UI_LABELS, type AppLocale } from '@/lib/locale';
 import { getApiOrigin } from '@/lib/public-config';
 
@@ -15,7 +16,7 @@ export function BusinessList({
   items,
   locale,
 }: {
-  items: BusinessSummaryDto[];
+  items: PublicBusinessCard[];
   locale: AppLocale;
 }) {
   const labels = UI_LABELS[locale];
@@ -28,7 +29,7 @@ export function BusinessList({
         const cover = coverSrc(b.coverImageUrl);
         return (
           <li key={b.id}>
-            <Link href={`/businesses/${b.id}`} className="biz-card">
+            <Link href={temporaryBusinessDetailPath(b.id)} className="biz-card">
               <div className="biz-card__media">
                 {cover ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -39,7 +40,15 @@ export function BusinessList({
               </div>
               <div>
                 <strong>{b.title}</strong>
+                {b.categoryLabel ? (
+                  <div style={{ fontSize: 13, color: 'var(--blue)' }}>{b.categoryLabel}</div>
+                ) : null}
                 <div style={{ fontSize: 14, color: 'var(--muted)' }}>{b.address}</div>
+                {b.averageRating != null && b.reviewCount > 0 ? (
+                  <div style={{ fontSize: 13, marginTop: 4 }} aria-label={labels.ratingLabel}>
+                    ★ {b.averageRating.toFixed(1)} ({b.reviewCount})
+                  </div>
+                ) : null}
                 {b.shortDesc ? (
                   <div style={{ fontSize: 13, marginTop: 4, color: 'var(--muted)' }}>{b.shortDesc}</div>
                 ) : null}

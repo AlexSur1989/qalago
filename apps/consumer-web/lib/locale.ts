@@ -57,6 +57,19 @@ export type UiLabels = {
   footerAccountDeletion: string;
   footerSupport: string;
   footerCopyright: string;
+  searchLabel: string;
+  searchPlaceholder: string;
+  searchSubmit: string;
+  searchHeading: string;
+  searchTooShort: string;
+  searchNoQueryHint: string;
+  searchNoResults: string;
+  citySwitcherLabel: string;
+  emptyCategories: string;
+  paginationPrev: string;
+  paginationNext: string;
+  paginationPage: string;
+  ratingLabel: string;
 };
 
 export const UI_LABELS: Record<AppLocale, UiLabels> = {
@@ -93,6 +106,19 @@ export const UI_LABELS: Record<AppLocale, UiLabels> = {
     footerAccountDeletion: 'Удаление аккаунта',
     footerSupport: 'Поддержка',
     footerCopyright: '© QalaGo',
+    searchLabel: 'Поиск заведений',
+    searchPlaceholder: 'Название, адрес или услуга',
+    searchSubmit: 'Найти',
+    searchHeading: 'Поиск',
+    searchTooShort: 'Введите минимум 2 символа.',
+    searchNoQueryHint: 'Укажите запрос, чтобы искать заведения в городе.',
+    searchNoResults: 'По вашему запросу ничего не найдено.',
+    citySwitcherLabel: 'Город',
+    emptyCategories: 'Категории для этого города пока недоступны.',
+    paginationPrev: '← Назад',
+    paginationNext: 'Далее →',
+    paginationPage: 'Страницы результатов',
+    ratingLabel: 'Рейтинг',
   },
   kk: {
     siteTitle: 'QalaGo',
@@ -127,6 +153,19 @@ export const UI_LABELS: Record<AppLocale, UiLabels> = {
     footerAccountDeletion: 'Аккаунтты жою',
     footerSupport: 'Қолдау',
     footerCopyright: '© QalaGo',
+    searchLabel: 'Мекемелерді іздеу',
+    searchPlaceholder: 'Атауы, мекенжайы немесе қызметі',
+    searchSubmit: 'Іздеу',
+    searchHeading: 'Іздеу',
+    searchTooShort: 'Кемінде 2 таңба енгізіңіз.',
+    searchNoQueryHint: 'Қалада іздеу үшін сұрау енгізіңіз.',
+    searchNoResults: 'Сұрауыңыз бойынша ештеңе табылмады.',
+    citySwitcherLabel: 'Қала',
+    emptyCategories: 'Бұл қала үшін санаттар әлі қолжетімсіз.',
+    paginationPrev: '← Артқа',
+    paginationNext: 'Алға →',
+    paginationPage: 'Нәтиже беттері',
+    ratingLabel: 'Рейтинг',
   },
 };
 

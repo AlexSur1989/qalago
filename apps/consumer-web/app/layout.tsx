@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Montserrat } from 'next/font/google';
 import './globals.css';
 import { PublicShell } from '@/components/PublicShell';
+import { fetchCities } from '@/lib/catalog-api';
 import { siteMetadataForLocale } from '@/lib/locale';
 import { getServerLocale } from '@/lib/locale-server';
 
@@ -21,10 +22,13 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getServerLocale();
+  const cities = await fetchCities().catch(() => []);
   return (
     <html lang={locale} className={montserrat.variable}>
       <body className={montserrat.className}>
-        <PublicShell locale={locale}>{children}</PublicShell>
+        <PublicShell locale={locale} cities={cities}>
+          {children}
+        </PublicShell>
       </body>
     </html>
   );
