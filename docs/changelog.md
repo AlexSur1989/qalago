@@ -8,15 +8,17 @@
 
 ## 2026-09-22 — Stage 6.12A.7.6 effective physical contract (Business detail)
 
-- **Status:** 6.12A.7.6 IMPLEMENTED — READY FOR PHYSICAL QA.
+- **Status:** 6.12A.7.6 PHYSICAL QA PASS — STAGE CLOSED, READY FOR A.7.7.
 - **Checkpoint (implementation):** `63a0c46de62be31ca00530611ba27cd751e067cf`.
 - **Summary:**
   - **API:** additive `GET /businesses/:id?locationId=`; response **`activeLocationId`** + **`effectivePhysical`** (server resolver; invalid/foreign `locationId` → primary fallback, no cross-business leak).
   - **Flutter detail:** consumes **`effectivePhysical`** for address/route/mini-map/contacts/hours/open status; **`Business.id`** unchanged for favorites/reviews/brand sections.
   - **Consumer Web:** shared DTO typing extended (additive); F.4 branch SEO pages not started.
-  - **Out of scope:** branch photos/catalog/promotions/reviews/favorites grain, RBAC, map changes.
-- **Deferred:** physical detail QA on Samsung; branch-level media/catalog (A.8+ / F.4).
-- **Next:** physical QA L1/L2 detail contacts/hours; plan A.8+ branch content stages.
+  - **Physical QA (Samsung SM-J610FN / Android 10):** map → Bar Code 51 (`cmpn1wnq1000iult8yj6a06q7`) → L2 (`cmubk34fk0001uls458d1nta9`) → full detail PASS — L2 remained active; top address L2/Абая (not primary L1); schedule/status, phone, route, WhatsApp, website, Instagram actions confirmed. Path: **`locationId` → detail API → `effectivePhysical` → Flutter physical context**.
+  - **Unchanged (by design):** gallery/catalog/promotions/reviews/favorites remain **Business-grain**; branch media/catalog not location-aware.
+  - **QA fixture:** L2 retained for A.7.7+ multi-branch testing (local A.1/A.2 exact-count tests may still fail — not modified).
+- **Deferred:** branch-level media/catalog/promotions/reviews/favorites grain (A.7.7+ / F.4).
+- **Next:** 6.12A.7.7 (per roadmap).
 
 ---
 
