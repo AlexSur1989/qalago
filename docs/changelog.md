@@ -9,7 +9,7 @@
 ## 2026-09-21 — Stage 6.11F.1 Public Web foundation
 
 - **Status:** 6.11F.1 PASS — READY FOR F.2.
-- **Checkpoint:** `acf19dc134a53a355d53a8dc1404452b1d65867a`.
+- **Checkpoint:** `18ff50ce92faf2b44a5f9768d668b513869ba658`.
 - **Summary:**
   - Public **PublicShell** (nav, footer legal links via `NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL`), Montserrat + design tokens (`--blue`, `--accent`).
   - Central **public-config**, **cache-policy** (ISR-friendly fetches; layout `revalidate = 60`; removed page `force-dynamic`).
