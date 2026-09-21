@@ -54,6 +54,10 @@ Existing products include: **HOME_VIP_BANNER**, **CATEGORY_TOP**, **CATEGORY_BOO
 
 Future targeting should support channel/surface concepts such as **ALL**, **APP**, **WEB**, and analytics breakdown such as **APP_ANDROID**, **APP_IOS**, **WEB_MOBILE**, **WEB_DESKTOP**, while keeping aggregate campaign analytics. **BusinessLocation** may later be a campaign target/destination for branch-specific ads.
 
+## Home composition (future Admin/CMS — not A.6/A.7)
+
+Future architecture should allow **backend/admin-central configuration** of consumer Home: **section order**, **enabled/disabled** sections, and appropriate **section content/config**. **Android, iOS, and Consumer Web** consume the **same** backend Home configuration while keeping **platform-specific responsive presentation**. Reordering or toggling Home sections should eventually **not require a new APK** solely for layout changes. **Not implemented** in BusinessLocation stages unless explicitly staged later.
+
 ## Workflow discipline
 
 1. **Task → implementation → final report → audit → next stage** (do not skip audit gate).
