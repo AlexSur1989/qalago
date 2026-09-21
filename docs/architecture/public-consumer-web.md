@@ -101,4 +101,4 @@ Static App Router segments (e.g. `categories/`, `search/`) take precedence over 
 
 ## BusinessLocation (6.12A)
 
-Do not finalize `/{citySlug}/business/{slug}` or branch URLs until **6.12A** and **F.4**.
+Database foundation (A.1): `BusinessLocation` table exists; **no consumer API or URL changes yet**. Temporary **`/businesses/{id}`** (F.3 noindex) remains until **F.4** after location backfill (A.2+). See [business-location.md](./business-location.md).

@@ -302,6 +302,8 @@ Env: `QALAGO_GEOCODING_PROVIDER` = `mock` (default) \| `maptiler`; `MAPTILER_API
 
 ## Businesses
 
+> **Internal (6.12A.1):** `BusinessLocation` exists in the database (1:N under `Business`) for future multi-branch support. **Public contracts below are unchanged** — list/detail/map still read physical fields from `Business` until a later substage. No location endpoints in v1 yet. See [business-location.md](./business-location.md).
+
 ### GET /businesses
 
 Query:

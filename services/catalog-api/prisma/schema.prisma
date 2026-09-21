@@ -310,6 +310,7 @@ model City {
   featureFlagOverrides    CityFeatureFlagOverride[]
   moderationCases         ModerationCase[]
   staffCityScopes         StaffCityScope[]
+  businessLocations       BusinessLocation[]
 }
 
 model AppReleaseSettings {
@@ -732,9 +733,37 @@ model Business {
   approvedFromApplication   BusinessApplication?            @relation("ApprovedBusinessApplication")
   ownershipClaims           BusinessOwnershipClaim[]
   businessSubcategories     BusinessSubcategory[]
+  locations                 BusinessLocation[]
 
   @@index([cityId, status])
   @@index([categoryId])
+}
+
+/// Physical branch / venue (Stage 6.12A.1). Brand identity remains on Business; backfill in A.2.
+model BusinessLocation {
+  id             String                  @id @default(cuid())
+  businessId     String
+  cityId         String
+  address        String
+  latitude       Decimal?                @db.Decimal(10, 7)
+  longitude      Decimal?                @db.Decimal(10, 7)
+  /// Derived PostGIS geography (Point, 4326). Maintained by DB trigger from latitude/longitude.
+  location       Unsupported("geography(Point,4326)")?
+  locationSource BusinessLocationSource?
+  workHours      Json?
+  phone          String?
+  whatsapp       String?
+  instagram      String?
+  website        String?
+  isPrimary      Boolean                 @default(false)
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  business       Business                @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  city           City                    @relation(fields: [cityId], references: [id], onDelete: Restrict)
+
+  @@index([businessId])
+  @@index([cityId])
+  @@index([businessId, cityId])
 }
 
 model BusinessOwnershipClaim {
