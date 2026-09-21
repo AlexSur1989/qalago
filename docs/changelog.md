@@ -9,7 +9,7 @@
 ## 2026-09-22 — Stage 6.12A.7.4 FINALIZED (multi-branch map physical QA)
 
 - **Status:** 6.12A.7.4 FINALIZED — READY FOR A.7.6 EFFECTIVE PHYSICAL CONTRACT.
-- **Checkpoint (implementation/cleanup):** see git HEAD after finalize commit (`docs/changelog.md` + instrumentation removal only).
+- **Checkpoint (implementation/cleanup):** `eb48d4860e77e109a58286f25574a0894ee73625` (changelog + A.7.4 closure; A74MAP never committed, removed from working tree before finalize).
 - **Summary:**
   - **Physical QA (Samsung SM-J610FN):** native MapLibre business layer confirmed; one Business → multiple **BusinessLocation** markers (Bar Code 51 L1+L2); map fetch → parse → state → GeoJSON → source/layers pipeline observed (16 viewport features in instrumented run).
   - **Hotfix 2:** `GET /businesses/:id/locations/public` route shadowing fixed (`cd66f7d8`); unauthenticated public branches list returns L1+L2.
