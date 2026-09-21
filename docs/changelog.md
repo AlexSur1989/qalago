@@ -5,6 +5,13 @@
 
 ---
 
+## 2026-09-21 — Stage 6.11E.6 notifications final QA & release gate
+
+- **Verified:** Single architecture (NotificationsService + post-commit push); 992 backend / 45 Flutter notification tests; Firebase-less debug APK build.
+- **Documented:** `docs/architecture/notifications-final-architecture.md` (canonical in-app notification, setImmediate push debt, external Firebase gate).
+- **Dev-only:** `scripts/dev/seed-notification-navigation-fixture.mjs` for Samsung physical navigation QA.
+- **Physical QA:** E.3/E.4 inbox + navigation on device still required before “finalized” verdict.
+
 ## 2026-09-21 — Stage 6.11E.5 push readiness & device registration
 
 - **Added:** `PushDevice` model; `POST/DELETE /notifications/devices`; FCM delivery abstraction (`PUSH_ENABLED`, Noop vs Firebase Admin); post-commit push dispatch (never inside Prisma transactions).
