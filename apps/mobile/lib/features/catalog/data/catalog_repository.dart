@@ -244,6 +244,7 @@ class CatalogRepository {
     int limit = 20,
     String? sectionId,
     String? search,
+    String? locationId,
   }) async {
     final response = await _dio.get(
       '/businesses/$businessId/catalog',
@@ -252,6 +253,7 @@ class CatalogRepository {
         'limit': limit,
         if (sectionId != null && sectionId.isNotEmpty) 'sectionId': sectionId,
         if (search != null && search.isNotEmpty) 'search': search,
+        if (locationId != null && locationId.isNotEmpty) 'locationId': locationId,
       },
     );
     return response.data as Map<String, dynamic>;

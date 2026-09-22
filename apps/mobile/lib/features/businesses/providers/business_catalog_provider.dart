@@ -8,12 +8,14 @@ class BusinessCatalogQuery {
     this.page = 1,
     this.sectionId,
     this.search,
+    this.locationId,
   });
 
   final String businessId;
   final int page;
   final String? sectionId;
   final String? search;
+  final String? locationId;
 
   @override
   bool operator ==(Object other) =>
@@ -22,10 +24,11 @@ class BusinessCatalogQuery {
           businessId == other.businessId &&
           page == other.page &&
           sectionId == other.sectionId &&
-          search == other.search;
+          search == other.search &&
+          locationId == other.locationId;
 
   @override
-  int get hashCode => Object.hash(businessId, page, sectionId, search);
+  int get hashCode => Object.hash(businessId, page, sectionId, search, locationId);
 }
 
 final businessCatalogPageProvider =
@@ -36,6 +39,7 @@ final businessCatalogPageProvider =
           page: query.page,
           sectionId: query.sectionId,
           search: query.search,
+          locationId: query.locationId,
         );
   },
 );

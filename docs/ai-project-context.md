@@ -44,7 +44,8 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | 6.12A.7.8.2 | **PASS (management API)** | Owner **`branchAvailability`** on ServiceItem/Promotion CRUD; location **DELETE** conflict mapping; **no public filtering** |
 | 6.12A.7.8.3 | **PASS (public contract)** | Detail **`effectiveCatalog`** / **`effectivePromotions`**; **`/catalog?locationId=`**; legacy previews unchanged |
 | 6.12A.7.8.4 | **PASS (Business Web UX)** | Owner menu + promotions **ALL/SELECTED** branch controls; **`listManageServiceItems`** for edit assignments |
-| 6.12A.7.8.5 | **NEXT** | Flutter branch catalog / promotions integration |
+| 6.12A.7.8.5 | **PASS (automated Flutter integration)** | Detail **`effectiveCatalog`** / **`effectivePromotions`**; scoped **`/catalog?locationId=`**; provider scope **`businessId\|locationId`** |
+| 6.12A.7.8.5 QA | **PENDING** | Physical QA on device (catalog/promotions per branch) |
 
 ## Business vs BusinessLocation
 

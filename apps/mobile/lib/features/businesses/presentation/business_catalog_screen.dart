@@ -7,12 +7,18 @@ import '../../../shared/widgets/error_view.dart';
 import '../../../core/locale/l10n_extension.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../analytics/widgets/tracked_catalog_item_card.dart';
+import '../../../shared/utils/business_effective_catalog.dart';
 import '../providers/business_catalog_provider.dart';
 
 class BusinessCatalogScreen extends ConsumerStatefulWidget {
-  const BusinessCatalogScreen({super.key, required this.businessId});
+  const BusinessCatalogScreen({
+    super.key,
+    required this.businessId,
+    this.locationId,
+  });
 
   final String businessId;
+  final String? locationId;
 
   @override
   ConsumerState<BusinessCatalogScreen> createState() =>
@@ -28,6 +34,50 @@ class _BusinessCatalogScreenState extends ConsumerState<BusinessCatalogScreen> {
   Map<String, dynamic>? _pagination;
   List<Map<String, dynamic>> _sections = const [];
   bool _loadingMore = false;
+  late String _scopeKey;
+
+  @override
+  void initState() {
+    super.initState();
+    _scopeKey = businessCatalogScopeKey(
+      businessId: widget.businessId,
+      locationId: widget.locationId,
+    );
+  }
+
+  @override
+  void didUpdateWidget(BusinessCatalogScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final nextScope = businessCatalogScopeKey(
+      businessId: widget.businessId,
+      locationId: widget.locationId,
+    );
+    if (oldWidget.businessId != widget.businessId ||
+        oldWidget.locationId != widget.locationId) {
+      _resetLocalCatalogState();
+      _scopeKey = nextScope;
+      ref.invalidate(businessCatalogPageProvider(_pageOneQuery));
+    }
+  }
+
+  void _resetLocalCatalogState() {
+    _page = 1;
+    _items.clear();
+    _pagination = null;
+    _sections = const [];
+    _loadingMore = false;
+    _sectionId = null;
+    _search = '';
+    _searchController.clear();
+  }
+
+  BusinessCatalogQuery get _pageOneQuery => BusinessCatalogQuery(
+        businessId: widget.businessId,
+        page: 1,
+        sectionId: _sectionId,
+        search: _search.isEmpty ? null : _search,
+        locationId: widget.locationId,
+      );
 
   @override
   void dispose() {
@@ -40,6 +90,7 @@ class _BusinessCatalogScreenState extends ConsumerState<BusinessCatalogScreen> {
         page: _page,
         sectionId: _sectionId,
         search: _search.isEmpty ? null : _search,
+        locationId: widget.locationId,
       );
 
   Future<void> _reload() async {
@@ -48,7 +99,7 @@ class _BusinessCatalogScreenState extends ConsumerState<BusinessCatalogScreen> {
       _items.clear();
       _pagination = null;
     });
-    ref.invalidate(businessCatalogPageProvider(_query));
+    ref.invalidate(businessCatalogPageProvider(_pageOneQuery));
   }
 
   Future<void> _loadMore() async {
@@ -87,6 +138,7 @@ class _BusinessCatalogScreenState extends ConsumerState<BusinessCatalogScreen> {
 
   @override
   Widget build(BuildContext context) {
+    assert(_scopeKey.isNotEmpty);
     final catalogAsync = ref.watch(businessCatalogPageProvider(_query));
     final l10n = context.l10n;
 

@@ -20,6 +20,7 @@ import '../../../shared/navigation/navigation_utils.dart';
 import '../../../shared/utils/audience_distance_bucket.dart';
 import '../../../shared/utils/json_parse.dart';
 import '../../../shared/utils/business_detail_utils.dart';
+import '../../../shared/utils/business_effective_catalog.dart';
 import '../../../shared/utils/business_effective_media.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
@@ -274,24 +275,30 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                 address: address,
               ) !=
               null;
-          final catalogPreview = previewBlock(data, 'catalogPreview');
-          final promotionsPreview = previewBlock(data, 'promotionsPreview');
+          final catalogPreviewResolved = resolveConsumerDetailCatalogPreview(data);
+          final promotionsPreviewResolved =
+              resolveConsumerDetailPromotionsPreview(data);
+          final catalogScopeLocationId = resolveCatalogNavigationLocationId(
+            data: data,
+            catalog: catalogPreviewResolved,
+          );
+          void openFullCatalog() {
+            context.push(
+              businessCatalogRoutePath(
+                businessId: widget.id,
+                locationId: catalogScopeLocationId,
+              ),
+            );
+          }
+
           final reviewsPreview = previewBlock(data, 'reviewsPreview');
 
-          final promotionItems =
-              (promotionsPreview?['items'] as List<dynamic>? ??
-                      data['promotions'] as List<dynamic>? ??
-                      [])
-                  .cast<Map<String, dynamic>>();
-          final promotions = filterActivePromotions(promotionItems);
-          final promotionTotal =
-              promotionsPreview?['totalCount'] as int? ?? promotions.length;
+          final promotions =
+              filterActivePromotions(promotionsPreviewResolved.items);
+          final promotionTotal = promotionsPreviewResolved.totalCount;
 
-          final catalogItems =
-              (catalogPreview?['items'] as List<dynamic>? ?? [])
-                  .cast<Map<String, dynamic>>();
-          final catalogTotal =
-              catalogPreview?['totalCount'] as int? ?? catalogItems.length;
+          final catalogItems = catalogPreviewResolved.items;
+          final catalogTotal = catalogPreviewResolved.totalCount;
 
           final reviewItems =
               (reviewsPreview?['items'] as List<dynamic>? ?? [])
@@ -487,7 +494,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                               ? l10n.businessViewAllCount(catalogTotal)
                               : null,
                           onAction: catalogTotal > catalogItems.length
-                              ? () => context.push('/business/${widget.id}/catalog')
+                              ? openFullCatalog
                               : null,
                           trailing: canManageMenu
                               ? TextButton(
@@ -505,7 +512,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                             item: item,
                             surface: 'BUSINESS_DETAIL_PREVIEW',
                             onTap: catalogTotal > catalogItems.length
-                                ? () => context.push('/business/${widget.id}/catalog')
+                                ? openFullCatalog
                                 : null,
                           ),
                       ],
