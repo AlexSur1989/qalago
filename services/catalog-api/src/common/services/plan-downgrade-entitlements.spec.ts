@@ -380,6 +380,17 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
           coverImageUrl: 'https://cdn.example/cover.jpg',
           galleryPreview: { items: [], totalCount: 0 },
         }),
+        getEffectiveCatalogForDetail: jest.fn().mockResolvedValue({
+          activeLocationId: null,
+          sections: [],
+          items: [],
+          totalCount: 0,
+        }),
+        getEffectivePromotionsForDetail: jest.fn().mockResolvedValue({
+          activeLocationId: null,
+          items: [],
+          totalCount: 0,
+        }),
       };
 
       const subDeps = createMockSubcategoryDeps();

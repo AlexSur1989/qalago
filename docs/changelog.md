@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-09-22 — Stage 6.12A.7.8.3 public effective catalog / promotions
+
+- **Status:** **6.12A.7.8.3 IMPLEMENTED** — public **branch-aware** catalog/promotions on business detail + scoped full catalog; legacy previews unchanged.
+- **Checkpoint (implementation):** _(this commit)_.
+- **Summary:**
+  - **`GET /businesses/:id?locationId=`** adds **`effectiveCatalog`** + **`effectivePromotions`** (`activeLocationId` aligned with **`effectivePhysical`** / **`effectiveMedia`**).
+  - Branch rule: **0** assignments → all branches; **≥1** → active location only; then existing **`isActive`/section/plan cap** pipeline (**branch before cap**).
+  - **`GET /businesses/:id/catalog?locationId=`** branch-effective paginated catalog; **without** `locationId` = legacy business-wide.
+  - Legacy **`catalogPreview`**, **`promotionsPreview`**, **`GET /promotions`**, **`/service-menu`**, **`/service-items`** unchanged.
+- **Deferred:** **A.7.9** discovery/search/home/map feed grain; **A.7.8.4** Business Web branch UX; per-branch price/order; ServiceItem create cap debt.
+- **Next:** **6.12A.7.8.4** — Business Web branch availability UX.
+
+---
+
 ## 2026-09-22 — Stage 6.12A.7.8.2 owner backend branch availability management
 
 - **Status:** **6.12A.7.8.2 IMPLEMENTED** — owner/staff **management contract only** (no public branch filtering).

@@ -957,15 +957,21 @@ export class BusinessesService {
       options?.locationId,
     );
 
-    const effectiveMedia = await this.publicContent.getEffectiveMediaForDetail(
-      id,
-      withPhysical.activeLocationId,
-      business.coverImageUrl,
-    );
+    const [effectiveMedia, effectiveCatalog, effectivePromotions] = await Promise.all([
+      this.publicContent.getEffectiveMediaForDetail(
+        id,
+        withPhysical.activeLocationId,
+        business.coverImageUrl,
+      ),
+      this.publicContent.getEffectiveCatalogForDetail(id, withPhysical.activeLocationId),
+      this.publicContent.getEffectivePromotionsForDetail(id, withPhysical.activeLocationId),
+    ]);
 
     return {
       ...withPhysical,
       effectiveMedia,
+      effectiveCatalog,
+      effectivePromotions,
     };
   }
 

@@ -399,6 +399,29 @@ Add **`activeLocationId`** (nullable), **`effectivePhysical`**, and **`effective
 
 **`effectiveMedia.coverImageUrl` (read-only, does not write `Business.coverImageUrl`):** (1) first visible branch image for active location; (2) else canonical **`Business.coverImageUrl`** if it matches a visible shared image; (3) else first visible shared image; (4) else `null`.
 
+**`effectiveCatalog` / `effectivePromotions` (Stage 6.12A.7.8.3):** same **`activeLocationId`** as **`effectivePhysical`** / **`effectiveMedia`**. Branch eligibility: **zero** assignment rows → all branches; **≥1** rows → only listed **`BusinessLocation`** ids (sibling-only items excluded). Pipeline: base public eligibility (`isActive`, active section) → **branch filter** → plan/tier publication cap → preview slice (catalog/promotions preview limits). **`ServiceMenuGroup`** remains business-wide; **`effectiveCatalog.sections`** lists only sections with ≥1 visible item at the active branch. Promotions: **`moderationHidden`** excluded from **`effectivePromotions`** (legacy **`promotionsPreview`** unchanged).
+
+```json
+"effectiveCatalog": {
+  "activeLocationId": "bl…",
+  "sections": [{ "id", "title", "sortOrder" }],
+  "items": [{ "id", "title", "description", "price", "imageUrl", "sortOrder", "sectionId", "section" }],
+  "totalCount": 12
+},
+"effectivePromotions": {
+  "activeLocationId": "bl…",
+  "items": [{ "id", "title", "description", "imageUrl", "discountText", "startDate", "endDate", "status" }],
+  "totalCount": 4
+}
+```
+
+**Legacy vs branch-aware (detail):**
+
+| Field | Scope |
+|-------|--------|
+| `catalogPreview`, `promotionsPreview` | **Business-wide** (legacy compatibility) |
+| `effectiveCatalog`, `effectivePromotions` | **Branch-aware** at resolved `activeLocationId` |
+
 Legacy block (unchanged fields still present):
 
 ```json
@@ -437,19 +460,27 @@ Public preview limits (fixed, independent of subscription tier): gallery 6, cata
 
 Paginated public catalog for one business.
 
-Query: `page` (default 1), `limit` (default 20, max 50), `sectionId` (optional — business menu group id, or omit for all), `search` (optional, max 100 — public item `title`, `titleKk`, `description`, `descriptionKk`; case-insensitive; UI locale independent).
+Query: `page` (default 1), `limit` (default 20, max 50), `sectionId` (optional — business menu group id, or omit for all), `search` (optional, max 100 — public item `title`, `titleKk`, `description`, `descriptionKk`; case-insensitive; UI locale independent), **`locationId`** (optional — Stage 6.12A.7.8.3).
+
+| `locationId` | Behavior |
+|--------------|----------|
+| **Omitted** | **Legacy business-wide** catalog (unchanged). |
+| **Present** | Branch-effective catalog at resolved active location (same resolver as detail/`/photos`). Response adds **`activeLocationId`**. Sections list only groups with visible items at that branch. |
 
 Response:
 
 ```json
 {
+  "activeLocationId": "bl…",
   "items": [{ "id", "title", "description", "price", "imageUrl", "sectionId", "section": { "id", "title" } }],
-  "sections": [{ "id", "title", "sortOrder", "isActive" }],
-  "pagination": { "page", "limit", "total", "totalPages" }
+  "sections": [{ "id", "title", "sortOrder" }],
+  "pagination": { "page", "limit", "total", "totalPages", "publishedTotal" }
 }
 ```
 
-Only active items from active sections (or uncategorized). Sort: section `sortOrder`, item `sortOrder`, title, `createdAt`.
+`activeLocationId` appears only when `locationId` query is provided. Only active items from active sections (or uncategorized). Sort: section `sortOrder`, item `sortOrder`, title, `createdAt`. Branch filter runs **before** plan publication cap.
+
+**`GET /promotions` city/business feed:** unchanged Business-grain behavior (Stage **6.12A.7.9** for discovery/search/feed branch semantics). Branch-scoped public promotions for consumers: use business detail **`effectivePromotions`** or future dedicated endpoints — not global feed in A.7.8.3.
 
 ### GET /businesses/:id/photos
 

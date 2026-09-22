@@ -37,6 +37,11 @@ export class ListBusinessCatalogQueryDto {
     return normalizeCatalogSearchQuery(value) ?? undefined;
   })
   search?: string;
+
+  /** Optional branch scope (Stage 6.12A.7.8.3). Omitted = legacy business-wide catalog. */
+  @IsOptional()
+  @IsString()
+  locationId?: string;
 }
 
 export const BUSINESS_CATALOG_DEFAULT_LIMIT = PUBLIC_CATALOG_DEFAULT_LIMIT;
