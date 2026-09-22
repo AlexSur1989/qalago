@@ -9,7 +9,7 @@
 ## 2026-09-22 — Stage 6.12A.7.8.3 public effective catalog / promotions
 
 - **Status:** **6.12A.7.8.3 IMPLEMENTED** — public **branch-aware** catalog/promotions on business detail + scoped full catalog; legacy previews unchanged.
-- **Checkpoint (implementation):** _(this commit)_.
+- **Checkpoint (implementation):** `e24fdf1f604be22d9fda0dbadb85c9ef97032aa0`.
 - **Summary:**
   - **`GET /businesses/:id?locationId=`** adds **`effectiveCatalog`** + **`effectivePromotions`** (`activeLocationId` aligned with **`effectivePhysical`** / **`effectiveMedia`**).
   - Branch rule: **0** assignments → all branches; **≥1** → active location only; then existing **`isActive`/section/plan cap** pipeline (**branch before cap**).
