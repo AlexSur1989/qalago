@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-22 — Stage 6.12A.7.7.4 Business Web branch media UX
+
+- **Status:** 6.12A.7.7.4 IMPLEMENTED — READY FOR FLUTTER INTEGRATION (mobile not in this stage).
+- **Checkpoint (implementation):** see git HEAD after stage commit.
+- **Summary:**
+  - **Business Web `/business/[id]/media`:** scope selector — **Общие фото** (brand) vs per-**BusinessLocation**; list uses **`scope=brand`** or **`locationId`** (A.7.7.2 management API).
+  - **Upload/attach:** passes **`locationId`** for branch scope; brand cover action only in shared scope; plan quota uses **`usage.photos`** (Business-wide).
+  - **RU/KK** strings via **`locale.ts`**; no backend/schema changes.
+- **Deferred:** Flutter **`effectiveMedia`** consumption, Admin/Consumer Web, reorder, explicit branch cover UI.
+- **Next:** mobile detail/gallery wiring to **`effectiveMedia`**.
+
+---
+
 ## 2026-09-22 — Stage 6.12A.7.7.3 effective public media contract
 
 - **Status:** 6.12A.7.7.3 IMPLEMENTED — READY FOR OWNER/UI INTEGRATION (Flutter/Business Web not in this stage).

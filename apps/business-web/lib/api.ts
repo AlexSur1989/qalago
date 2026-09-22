@@ -444,6 +444,8 @@ export type BusinessImageRow = {
   businessId: string;
   imageUrl: string;
   sortOrder: number;
+  locationId?: string | null;
+  createdAt?: string;
 };
 
 export type NotificationRow = {
@@ -1040,19 +1042,33 @@ export const ownerApi = {
   uploadImage: (token: string, file: File) =>
     uploadApi<{ url: string }>('/uploads', token, file),
 
-  listBusinessImages: (token: string, businessId: string) =>
-    api<BusinessImageRow[]>(`/uploads/business/${businessId}/images`, { token }),
+  listBusinessImages: (
+    token: string,
+    businessId: string,
+    query?: { scope?: 'all' | 'brand'; locationId?: string },
+  ) => {
+    const params = new URLSearchParams();
+    if (query?.scope) params.set('scope', query.scope);
+    if (query?.locationId) params.set('locationId', query.locationId);
+    const qs = params.toString();
+    const path = `/uploads/business/${encodeURIComponent(businessId)}/images${qs ? `?${qs}` : ''}`;
+    return api<BusinessImageRow[]>(path, { token });
+  },
 
   attachBusinessImage: (
     token: string,
     businessId: string,
     imageUrl: string,
-    asCover = false,
+    options?: { asCover?: boolean; locationId?: string },
   ) =>
     api<BusinessImageRow>(`/uploads/business/${businessId}`, {
       method: 'POST',
       token,
-      body: JSON.stringify({ imageUrl, asCover }),
+      body: JSON.stringify({
+        imageUrl,
+        ...(options?.asCover ? { asCover: true } : {}),
+        ...(options?.locationId ? { locationId: options.locationId } : {}),
+      }),
     }),
 
   deleteBusinessImage: (token: string, businessId: string, imageId: string) =>

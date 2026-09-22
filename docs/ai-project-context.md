@@ -35,6 +35,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | 6.12A.7.7.1 | IMPLEMENTED | **`BusinessImage.locationId`** nullable — shared vs branch scope; composite FK |
 | 6.12A.7.7.2 | IMPLEMENTED | Upload attach/list scope + brand-only cover; public gallery excludes **`moderationHidden`** |
 | 6.12A.7.7.3 | IMPLEMENTED | Public **`effectiveMedia`** + **`/photos?locationId=`** — branch-first + shared; legacy detail gallery unchanged |
+| 6.12A.7.7.4 | IMPLEMENTED | **Business Web** owner media by scope (brand vs branch); Flutter still on legacy/effectiveMedia TBD |
 
 ## Business vs BusinessLocation
 
@@ -43,7 +44,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **Business detail (A.7.6 / A.7.7.3):** optional query **`locationId`** selects active branch; **`effectivePhysical`** = physical context; **`effectiveMedia`** = branch-first gallery + read-only hero for that branch + shared brand images (sibling branches excluded). **`Business.id`** remains canonical for reviews/favorites/analytics. **UI not wired yet** — contract only on API.
 - **Primary:** default active context when `locationId` omitted; **`isPrimary` badge ≠ forced active** when user/map selects another branch.
 - **Primary sync:** legacy **Business** physical columns mirror **primary** for backward compatibility; branch photos/catalog/promotions/reviews remain future work (not A.7.6).
-- **Branch media (A.7.7.1–7.7.3):** **`BusinessImage.locationId`** optional — **`null`** = shared/brand; attach/list validate same business; **`Business.coverImageUrl`** canonical brand cover (DB); public **`effectiveMedia.coverImageUrl`** is read-only branch hero resolver; legacy top-level **`galleryPreview`** / **`/photos`** without query remain Business-wide; **`moderationHidden`** never on public surfaces.
+- **Branch media (A.7.7.1–7.7.4):** **`BusinessImage.locationId`** optional — **`null`** = shared/brand; owner **Business Web** manages explicit scope (not merged effective gallery); **`Business.coverImageUrl`** brand-only in UI; plan photo quota **Business-wide** (`usage.photos`); public **`effectiveMedia`** on API; **Flutter** not wired to **`effectiveMedia`** yet; **`moderationHidden`** never on public surfaces.
 - **Cross-city:** secondary branches may live in other cities; discovery still uses **primary** `Business.cityId` until a later stage.
 - **Public read (A.6):** `GET /businesses/:id/locations/public` (ACTIVE only, guest-safe).
 - **Management (A.4):** authenticated CRUD + `set-primary`; **no DELETE** yet.

@@ -67,6 +67,14 @@ export type UiLabels = {
   ownerPlanQuotaPromotionsLine: string;
   ownerPlanQuotaPhotosLine: string;
   ownerPlanQuotaPhotosOverLimitPrefix: string;
+  mediaScopeBrand: string;
+  mediaScopeBranchesHeading: string;
+  mediaScopePrimarySuffix: string;
+  mediaScopeBranchPhotosHeading: string;
+  mediaEmptyBrand: string;
+  mediaEmptyBranch: string;
+  mediaGallerySectionTitle: string;
+  mediaScopeLoadingLocations: string;
   ownerPromotionsListHeading: string;
   serviceItemEditTitle: string;
   serviceItemEditAction: string;
@@ -1000,6 +1008,16 @@ export type UiLabels = {
     ownerPlanQuotaPhotosLine: 'Тариф «${planName}»: ${used} / ${max} фото',
     ownerPlanQuotaPhotosOverLimitPrefix:
       'На тарифе «${planName}» публикуется до ${max} фото. Остальные',
+    mediaScopeBrand: 'Общие фото',
+    mediaScopeBranchesHeading: 'Филиалы',
+    mediaScopePrimarySuffix: 'основной',
+    mediaScopeBranchPhotosHeading: 'Фото филиала',
+    mediaEmptyBrand:
+      'Общие фото видны во всём бизнесе и дополняют галерею каждого филиала. Загрузите первое изображение.',
+    mediaEmptyBranch:
+      'Фото здесь показываются только для выбранного филиала (перед общими фото). Загрузите первое изображение.',
+    mediaGallerySectionTitle: 'Галерея (${count})',
+    mediaScopeLoadingLocations: 'Загрузка филиалов…',
     ownerPromotionsListHeading: 'Список (${count})',
     serviceItemEditTitle: 'Редактирование позиции',
     serviceItemEditAction: 'Изменить',
@@ -1411,6 +1429,16 @@ export type UiLabels = {
     ownerPlanQuotaPhotosLine: 'Тариф «${planName}»: ${used} / ${max} фото',
     ownerPlanQuotaPhotosOverLimitPrefix:
       '«${planName}» тарифінде ${max} фотоға дейін жарияланады. Қалғандары',
+    mediaScopeBrand: 'Ортақ фото',
+    mediaScopeBranchesHeading: 'Филиалдар',
+    mediaScopePrimarySuffix: 'негізгі филиал',
+    mediaScopeBranchPhotosHeading: 'Филиал фотосы',
+    mediaEmptyBrand:
+      'Ортақ фото бүкіл бизнес үшін көрінеді және әр филиал галереясын толықтырады. Алғашқы суретті жүктеңіз.',
+    mediaEmptyBranch:
+      'Мұндағы фото тек таңдалған филиал үшін көрсетіледі (ортақ фотодан бұрын). Алғашқы суретті жүктеңіз.',
+    mediaGallerySectionTitle: 'Галерея (${count})',
+    mediaScopeLoadingLocations: 'Филиалдар жүктелуде…',
     ownerPromotionsListHeading: 'Тізім (${count})',
     serviceItemEditTitle: 'Позицияны өңдеу',
     serviceItemEditAction: 'Өзгерту',

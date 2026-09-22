@@ -2,10 +2,27 @@
 
 import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
-import { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { BusinessImageRow, BusinessPlanStatus, ownerApi } from '@/lib/api';
+import {
+  BusinessImageRow,
+  BusinessLocationRow,
+  BusinessPlanStatus,
+  CityRow,
+  ownerApi,
+} from '@/lib/api';
 import { mediaUrl } from '@/lib/media';
+import {
+  buildAttachBusinessImageBody,
+  buildGlobalPhotoPublishIndexMap,
+  buildListBusinessImagesQuery,
+  canSetBusinessCover,
+  formatBranchMediaLabel,
+  isBrandMediaScope,
+  MEDIA_SCOPE_BRAND,
+  normalizeMediaScopeAfterLocationsLoad,
+  type MediaScopeSelection,
+} from '@/lib/media-scope';
 import {
   buildFooterNavItems,
   buildMainNavItems,
@@ -28,6 +45,11 @@ export default function BusinessMediaPage() {
   const [images, setImages] = useState<BusinessImageRow[]>([]);
   const [planStatus, setPlanStatus] = useState<BusinessPlanStatus | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [locations, setLocations] = useState<BusinessLocationRow[]>([]);
+  const [cities, setCities] = useState<CityRow[]>([]);
+  const [locationsLoading, setLocationsLoading] = useState(true);
+  const [selectedScope, setSelectedScope] = useState<MediaScopeSelection>(MEDIA_SCOPE_BRAND);
+  const [publishIndexById, setPublishIndexById] = useState<Map<string, number>>(new Map());
 
   const mainNav = useMemo(
     () => filterNavByAccess(buildMainNavItems(locale), access),
@@ -38,24 +60,66 @@ export default function BusinessMediaPage() {
     [access, locale],
   );
 
-  async function load(t: string) {
-    const gallery = await ownerApi.listBusinessImages(t, businessId);
-    setImages(gallery);
-    if (canViewPayments(access)) {
-      setPlanStatus(await ownerApi.getBusinessPlan(t, businessId));
-    } else {
-      setPlanStatus(null);
-    }
-    await reloadBusinesses();
-  }
+  const totalPhotoUsage = planStatus?.usage.photos ?? planStatus?.entitlements?.photos.total;
+
+  const loadScopeImages = useCallback(
+    async (t: string, scope: MediaScopeSelection) => {
+      const query = buildListBusinessImagesQuery(scope);
+      const [scoped, allImages] = await Promise.all([
+        ownerApi.listBusinessImages(t, businessId, query),
+        ownerApi.listBusinessImages(t, businessId, { scope: 'all' }),
+      ]);
+      setImages(scoped);
+      setPublishIndexById(buildGlobalPhotoPublishIndexMap(allImages));
+    },
+    [businessId],
+  );
+
+  const load = useCallback(
+    async (t: string, scope: MediaScopeSelection) => {
+      await loadScopeImages(t, scope);
+      if (canViewPayments(access)) {
+        setPlanStatus(await ownerApi.getBusinessPlan(t, businessId));
+      } else {
+        setPlanStatus(null);
+      }
+      await reloadBusinesses();
+    },
+    [access, businessId, loadScopeImages, reloadBusinesses],
+  );
 
   useEffect(() => {
     if (!token) return;
-    load(token).catch((err) => setError(parseApiError(locale, err)));
-  }, [token, businessId, access]);
+    setLocationsLoading(true);
+    Promise.all([ownerApi.listBusinessLocations(token, businessId), ownerApi.listCities()])
+      .then(([locRes, cityRows]) => {
+        setLocations(locRes.items);
+        setCities(cityRows);
+        setSelectedScope((prev) => normalizeMediaScopeAfterLocationsLoad(prev, locRes.items));
+      })
+      .catch((err) => setError(parseApiError(locale, err)))
+      .finally(() => setLocationsLoading(false));
+  }, [token, businessId, locale, setError]);
+
+  useEffect(() => {
+    if (!token) return;
+    load(token, selectedScope).catch((err) => setError(parseApiError(locale, err)));
+  }, [token, businessId, selectedScope, load, locale, setError]);
 
   const maxPhotos = planStatus?.limits.maxPhotos;
-  const atPhotoLimit = maxPhotos != null && images.length >= maxPhotos;
+  const atPhotoLimit =
+    maxPhotos != null && totalPhotoUsage != null && totalPhotoUsage >= maxPhotos;
+
+  const branchLocations = useMemo(
+    () =>
+      [...locations].sort(
+        (a, b) =>
+          Number(b.isPrimary) - Number(a.isPrimary) ||
+          a.createdAt.localeCompare(b.createdAt) ||
+          a.id.localeCompare(b.id),
+      ),
+    [locations],
+  );
 
   async function onFileSelected(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -67,10 +131,17 @@ export default function BusinessMediaPage() {
     }
     setUploading(true);
     setError(null);
+    const scopeAtUpload = selectedScope;
     try {
       const { url } = await ownerApi.uploadImage(token, file);
-      await ownerApi.attachBusinessImage(token, businessId, url, images.length === 0);
-      await load(token);
+      const asCover =
+        isBrandMediaScope(scopeAtUpload) && images.length === 0 && canSetBusinessCover(scopeAtUpload);
+      const body = buildAttachBusinessImageBody(url, scopeAtUpload, asCover);
+      await ownerApi.attachBusinessImage(token, businessId, body.imageUrl, {
+        asCover: body.asCover,
+        locationId: body.locationId,
+      });
+      await load(token, scopeAtUpload);
       e.target.value = '';
     } catch (err) {
       setError(parseApiError(locale, err));
@@ -78,6 +149,10 @@ export default function BusinessMediaPage() {
       setUploading(false);
     }
   }
+
+  const galleryHeading = ui.mediaGallerySectionTitle.replace('${count}', String(images.length));
+  const emptyCopy = isBrandMediaScope(selectedScope) ? ui.mediaEmptyBrand : ui.mediaEmptyBranch;
+  const showCoverActions = canSetBusinessCover(selectedScope);
 
   if (!ready || !token) return <p className="page-content">{ui.text_89d69a}</p>;
 
@@ -101,12 +176,12 @@ export default function BusinessMediaPage() {
 
       {error && <div className="alert alert-error">{error}</div>}
 
-      {planStatus && (
+      {planStatus && totalPhotoUsage != null && (
         <section className="form-card" style={{ maxWidth: 820, marginBottom: 18 }}>
           <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>
             {ui.ownerPlanQuotaPhotosLine
               .replace('${planName}', planStatus.catalog.nameRu)
-              .replace('${used}', String(images.length))
+              .replace('${used}', String(totalPhotoUsage))
               .replace('${max}', String(maxPhotos ?? '∞'))}
             {planStatus.entitlements?.photos.overLimit &&
               planStatus.entitlements.photos.published != null && (
@@ -130,7 +205,54 @@ export default function BusinessMediaPage() {
       )}
 
       <section className="form-card" style={{ maxWidth: 820, marginBottom: 18 }}>
-        <h2 style={{ marginTop: 0 }}>{ui.__26287a}</h2>
+        <h2 style={{ marginTop: 0 }}>{ui.mediaScopeBrand}</h2>
+        <div style={{ display: 'grid', gap: 10 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+            <input
+              type="radio"
+              name="media-scope"
+              checked={isBrandMediaScope(selectedScope)}
+              onChange={() => setSelectedScope(MEDIA_SCOPE_BRAND)}
+            />
+            <span>{ui.mediaScopeBrand}</span>
+          </label>
+          {locationsLoading ? (
+            <p style={{ color: 'var(--text-muted)', margin: 0 }}>{ui.mediaScopeLoadingLocations}</p>
+          ) : branchLocations.length > 0 ? (
+            <>
+              <p style={{ margin: '4px 0 0', fontWeight: 600 }}>{ui.mediaScopeBranchesHeading}</p>
+              <ul style={{ margin: 0, paddingLeft: 0, listStyle: 'none', display: 'grid', gap: 8 }}>
+                {branchLocations.map((location) => {
+                  const label = formatBranchMediaLabel(
+                    locale,
+                    location,
+                    cities,
+                    ui.mediaScopePrimarySuffix,
+                  );
+                  return (
+                    <li key={location.id}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                        <input
+                          type="radio"
+                          name="media-scope"
+                          checked={selectedScope === location.id}
+                          onChange={() => setSelectedScope(location.id)}
+                        />
+                        <span>{label}</span>
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="form-card" style={{ maxWidth: 820, marginBottom: 18 }}>
+        <h2 style={{ marginTop: 0 }}>
+          {isBrandMediaScope(selectedScope) ? ui.mediaScopeBrand : ui.mediaScopeBranchPhotosHeading}
+        </h2>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{ui.jpg_png__5_f0b0b6}</p>
         <label
           className={`btn btn-primary${atPhotoLimit ? ' btn-ghost' : ''}`}
@@ -148,9 +270,9 @@ export default function BusinessMediaPage() {
       </section>
 
       <section className="form-card" style={{ maxWidth: 820 }}>
-        <h2 style={{ marginTop: 0 }}>Галерея ({images.length})</h2>
+        <h2 style={{ marginTop: 0 }}>{galleryHeading}</h2>
         {images.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)' }}>{ui.___33efa4}</p>
+          <p style={{ color: 'var(--text-muted)' }}>{emptyCopy}</p>
         ) : (
           <div
             style={{
@@ -159,10 +281,11 @@ export default function BusinessMediaPage() {
               gap: 14,
             }}
           >
-            {images.map((image, index) => {
+            {images.map((image) => {
               const src = mediaUrl(image.imageUrl);
               const isCover = business?.coverImageUrl === image.imageUrl;
-              const publishState = photoPublishState(index, planStatus);
+              const globalIndex = publishIndexById.get(image.id) ?? 0;
+              const publishState = photoPublishState(globalIndex, planStatus);
               const publishLabel = photoPublishLabel(locale, publishState);
               return (
                 <article
@@ -181,7 +304,9 @@ export default function BusinessMediaPage() {
                     style={{ width: '100%', height: 140, objectFit: 'cover' }}
                   />
                   <div style={{ padding: 10, display: 'grid', gap: 8 }}>
-                    {isCover && <span className="tag tag-success">{ui.text_7407ba}</span>}
+                    {isCover && showCoverActions && (
+                      <span className="tag tag-success">{ui.text_7407ba}</span>
+                    )}
                     {publishLabel && (
                       <span
                         className={
@@ -192,14 +317,14 @@ export default function BusinessMediaPage() {
                       </span>
                     )}
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                      {!isCover && (
+                      {showCoverActions && !isCover && (
                         <button
                           type="button"
                           className="btn btn-sm"
                           onClick={async () => {
                             if (!token) return;
                             await ownerApi.setBusinessCover(token, businessId, image.id);
-                            await load(token);
+                            await load(token, selectedScope);
                           }}
                         >
                           {ui.text_setAsCover}
@@ -211,7 +336,7 @@ export default function BusinessMediaPage() {
                         onClick={async () => {
                           if (!token) return;
                           await ownerApi.deleteBusinessImage(token, businessId, image.id);
-                          await load(token);
+                          await load(token, selectedScope);
                         }}
                       >{ui.text_ed2bbf}</button>
                     </div>
