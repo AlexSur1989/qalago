@@ -9,7 +9,7 @@
 ## 2026-09-22 — Stage 6.12A.7.8.1 branch availability data foundation
 
 - **Status:** **6.12A.7.8.1 IMPLEMENTED** — branch availability **data foundation** (Prisma/DB only; no API/UI behavior change).
-- **Checkpoint (implementation):** _(this commit)_.
+- **Checkpoint (implementation):** `079ba3eb920eabb2993a504b00d6b96d278bcd53`.
 - **Summary:**
   - **A.7.8.0 audit PASS** — M2M branch availability for **ServiceItem** and **Promotion**; **ServiceMenuGroup** remains business-wide.
   - New tables **`ServiceItemBranchAvailability`**, **`PromotionBranchAvailability`** (availability only; no per-branch price/title overrides).
