@@ -95,3 +95,101 @@ export function isReviewTargetCase(
 ): boolean {
   return targetType === ContentReportTargetType.REVIEW;
 }
+
+export type ModerationMediaTargetState = 'MISSING' | 'ACTIVE' | 'MODERATION_HIDDEN';
+
+export type ModerationMediaBranchDto = {
+  id: string;
+  address: string;
+  isPrimary: boolean;
+  city?: {
+    id: string;
+    slug: string;
+    nameRu: string;
+    nameKk: string | null;
+  } | null;
+};
+
+export type ModerationMediaTargetDto = {
+  available: boolean;
+  state: ModerationMediaTargetState;
+  id?: string;
+  imageUrl?: string;
+  locationId?: string | null;
+  moderationHidden?: boolean;
+  /** True when locationId is set but branch row is missing or not owned by this business. */
+  branchUnavailable?: boolean;
+  business?: {
+    id: string;
+    title: string;
+    city?: { id: string; slug: string; nameRu: string } | null;
+  };
+  branch?: ModerationMediaBranchDto | null;
+};
+
+type MediaImageRow = {
+  id: string;
+  imageUrl: string;
+  locationId: string | null;
+  moderationHidden: boolean;
+  business: {
+    id: string;
+    title: string;
+    city: { id: string; slug: string; nameRu: string } | null;
+  };
+  branchLocation: {
+    id: string;
+    address: string;
+    isPrimary: boolean;
+    city: {
+      id: string;
+      slug: string;
+      nameRu: string;
+      nameKk: string | null;
+    };
+  } | null;
+};
+
+export function isMediaTargetCase(
+  targetType: ContentReportTargetType,
+): boolean {
+  return targetType === ContentReportTargetType.MEDIA;
+}
+
+export function resolveModerationMediaTarget(
+  image: MediaImageRow | null,
+): ModerationMediaTargetDto {
+  if (!image) {
+    return { available: false, state: 'MISSING' };
+  }
+
+  const state: ModerationMediaTargetState = image.moderationHidden
+    ? 'MODERATION_HIDDEN'
+    : 'ACTIVE';
+
+  const branchUnavailable =
+    image.locationId != null && image.branchLocation == null;
+
+  return {
+    available: true,
+    state,
+    id: image.id,
+    imageUrl: image.imageUrl,
+    locationId: image.locationId,
+    moderationHidden: image.moderationHidden,
+    branchUnavailable: branchUnavailable || undefined,
+    business: {
+      id: image.business.id,
+      title: image.business.title,
+      city: image.business.city,
+    },
+    branch: image.branchLocation
+      ? {
+          id: image.branchLocation.id,
+          address: image.branchLocation.address,
+          isPrimary: image.branchLocation.isPrimary,
+          city: image.branchLocation.city,
+        }
+      : null,
+  };
+}

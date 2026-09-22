@@ -45,6 +45,34 @@ export type ModerationActionRow = {
   actorAdmin?: { id: string; name: string | null; role: string } | null;
 };
 
+export type ModerationMediaBranch = {
+  id: string;
+  address: string;
+  isPrimary: boolean;
+  city?: {
+    id: string;
+    slug: string;
+    nameRu: string;
+    nameKk?: string | null;
+  } | null;
+};
+
+export type ModerationMediaTarget = {
+  available: boolean;
+  state: 'MISSING' | 'ACTIVE' | 'MODERATION_HIDDEN';
+  id?: string;
+  imageUrl?: string;
+  locationId?: string | null;
+  moderationHidden?: boolean;
+  branchUnavailable?: boolean;
+  business?: {
+    id: string;
+    title: string;
+    city?: { id: string; slug: string; nameRu: string } | null;
+  };
+  branch?: ModerationMediaBranch | null;
+};
+
 export type ModerationReviewTarget = {
   available: boolean;
   state: 'MISSING' | 'ACTIVE' | 'MODERATION_HIDDEN' | 'USER_SOFT_DELETED';
@@ -71,6 +99,7 @@ export type ModerationCaseDetail = ModerationCaseRow & {
   reports: ContentReportRow[];
   actions: ModerationActionRow[];
   reviewTarget?: ModerationReviewTarget;
+  mediaTarget?: ModerationMediaTarget;
 };
 
 function listQuery(params: Record<string, string | number | undefined>): string {

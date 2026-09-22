@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-09-22 — Stage 6.12A.7.7.6 Admin Web branch media visibility
+
+- **Status:** 6.12A.7.7.6 IMPLEMENTED — ADMIN BRANCH MEDIA VISIBILITY READY.
+- **Checkpoint (implementation):** _(pending commit SHA)_.
+- **Summary:**
+  - **Audit:** Admin Web had no `BusinessImage` gallery; **`MEDIA`** moderation cases were the only staff surface for reported business photos (backend `MEDIA_HIDE`/`MEDIA_RESTORE` existed; UI was review-only).
+  - **API (additive):** `GET /admin/moderation/cases/:id` adds optional **`mediaTarget`** (`locationId`, branch address/city/`isPrimary`, `branchUnavailable`) — no schema/migration changes.
+  - **Admin UI:** moderation case detail shows photo preview + **Общие фото** vs **Филиал: {address}** scope before actions; **`MEDIA_HIDE`/`MEDIA_RESTORE`** wired; RU/KK label helpers.
+  - **Moderation semantics:** actions still target **`BusinessImage.id`** via case `targetId`; no branch-level moderation status.
+- **Deferred:** full Admin gallery manager, upload/reorder, Admin branch cover, Consumer Web F.4, wider A.7.7 admin/consumer closure.
+- **Next:** roadmap A.7.7+ / admin media management if scheduled.
+
+---
+
 ## 2026-09-22 — Stage 6.12A.7.7.5 physical QA closure (Flutter branch media)
 
 - **Status:** **6.12A.7.7.5 PHYSICAL QA PASS** — Flutter consumer branch media closed for this stage.

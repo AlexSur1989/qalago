@@ -6,10 +6,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { SafeReportText } from '@/components/safe-report-text';
 import { useModerationContext } from '@/components/moderation/moderation-layout-client';
 import { moderationApi, type ModerationCaseDetail } from '@/lib/moderation-api';
+import { moderationMediaScopeLabel } from '@/lib/moderation-media-utils';
 import {
   reviewPublicVisibilityLabel,
   reviewTargetStateLabel,
 } from '@/lib/moderation-review-utils';
+import { mediaTargetStateLabel, staffMediaLabel } from '@/lib/staff-media-labels';
 import {
   contentReportReasonLabel,
   mapModerationError,
@@ -31,7 +33,9 @@ export default function ModerationCaseDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [actionNote, setActionNote] = useState('');
-  const [actionBusy, setActionBusy] = useState<'REVIEW_HIDE' | 'REVIEW_RESTORE' | null>(null);
+  const [actionBusy, setActionBusy] = useState<
+    'REVIEW_HIDE' | 'REVIEW_RESTORE' | 'MEDIA_HIDE' | 'MEDIA_RESTORE' | null
+  >(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
   const load = useCallback(() => {
@@ -49,6 +53,29 @@ export default function ModerationCaseDetailPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  async function handleMediaAction(actionType: 'MEDIA_HIDE' | 'MEDIA_RESTORE') {
+    if (!item || !canAct) return;
+    const note = actionNote.trim();
+    const label = actionType === 'MEDIA_HIDE' ? 'скрыть фото' : 'вернуть фото';
+    if (!window.confirm(`Подтвердите действие: ${label}?`)) return;
+
+    setActionBusy(actionType);
+    setActionError(null);
+    try {
+      await moderationApi.recordAction(token, item.id, {
+        actionType,
+        internalNote: note.length >= 3 ? note : undefined,
+      });
+      setToast(actionType === 'MEDIA_HIDE' ? 'Фото скрыто.' : 'Модерационное скрытие снято.');
+      setActionNote('');
+      await load();
+    } catch (err: unknown) {
+      setActionError(mapModerationError(String(err)));
+    } finally {
+      setActionBusy(null);
+    }
+  }
 
   async function handleReviewAction(actionType: 'REVIEW_HIDE' | 'REVIEW_RESTORE') {
     if (!item || !canAct) return;
@@ -134,6 +161,79 @@ export default function ModerationCaseDetailPage() {
           статуса недоступно.
         </p>
       </div>
+
+      {item.targetType === 'MEDIA' && (
+        <div className="card" style={{ marginBottom: '1rem' }}>
+          <h3>{staffMediaLabel('ru', 'photoSection')}</h3>
+          {!item.mediaTarget?.available ? (
+            <p className="muted">{mediaTargetStateLabel(item.mediaTarget?.state, 'ru')}</p>
+          ) : (
+            <>
+              <div className="moderation-meta" style={{ marginTop: 8 }}>
+                <strong>{moderationMediaScopeLabel(item.mediaTarget, 'ru')}</strong>
+              </div>
+              <div className="moderation-meta">
+                {item.mediaTarget.business?.title ?? '—'}
+                {item.mediaTarget.business?.city?.nameRu
+                  ? ` · ${item.mediaTarget.business.city.nameRu}`
+                  : ''}
+              </div>
+              <div className="moderation-meta">
+                {mediaTargetStateLabel(item.mediaTarget.state, 'ru')}
+                {item.mediaTarget.id
+                  ? ` · ID ${item.mediaTarget.id.slice(0, 12)}…`
+                  : ''}
+              </div>
+              {item.mediaTarget.imageUrl && (
+                <div style={{ marginTop: 12 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.mediaTarget.imageUrl}
+                    alt=""
+                    style={{ maxWidth: '100%', maxHeight: 320, borderRadius: 8 }}
+                  />
+                </div>
+              )}
+            </>
+          )}
+
+          {canAct && item.mediaTarget?.available && (
+            <div style={{ marginTop: '1rem' }}>
+              <label>
+                Заметка модератора (необязательно)
+                <textarea
+                  rows={3}
+                  value={actionNote}
+                  onChange={(e) => setActionNote(e.target.value)}
+                  style={{ width: '100%', maxWidth: 520 }}
+                  placeholder="Комментарий для аудита"
+                />
+              </label>
+              <div className="toolbar" style={{ marginTop: 8, flexWrap: 'wrap', gap: 8 }}>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-danger"
+                  disabled={!!actionBusy || item.mediaTarget.moderationHidden === true}
+                  onClick={() => handleMediaAction('MEDIA_HIDE')}
+                >
+                  {actionBusy === 'MEDIA_HIDE' ? 'Скрытие…' : 'Скрыть фото (MEDIA_HIDE)'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  disabled={!!actionBusy || item.mediaTarget.moderationHidden !== true}
+                  onClick={() => handleMediaAction('MEDIA_RESTORE')}
+                >
+                  {actionBusy === 'MEDIA_RESTORE'
+                    ? 'Восстановление…'
+                    : 'Снять скрытие (MEDIA_RESTORE)'}
+                </button>
+              </div>
+              {actionError && <p className="error-text">{actionError}</p>}
+            </div>
+          )}
+        </div>
+      )}
 
       {item.targetType === 'REVIEW' && (
         <div className="card" style={{ marginBottom: '1rem' }}>

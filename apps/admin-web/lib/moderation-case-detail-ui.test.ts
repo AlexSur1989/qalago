@@ -11,4 +11,14 @@ describe('moderation case detail dead PATCH removal', () => {
     expect(src).not.toContain('updateCase');
     expect(src).toContain('recordAction');
   });
+
+  it('exposes MEDIA moderation with branch scope label', () => {
+    const src = readFileSync(
+      join(__dirname, '../app/moderation/cases/[id]/page.tsx'),
+      'utf8',
+    );
+    expect(src).toContain("targetType === 'MEDIA'");
+    expect(src).toContain('moderationMediaScopeLabel');
+    expect(src).toContain('MEDIA_HIDE');
+  });
 });

@@ -31,7 +31,9 @@ import { AuthSessionService } from '../auth/auth-session.service';
 import { SafetyErrorCode } from './safety-errors';
 import { SafetyRateLimitService } from './safety-rate-limit.service';
 import {
+  isMediaTargetCase,
   isReviewTargetCase,
+  resolveModerationMediaTarget,
   resolveModerationReviewTarget,
 } from './moderation-case-detail.util';
 import {
@@ -69,7 +71,7 @@ export class ModerationService {
       StaffPermission.MODERATION_VIEW,
     );
 
-    const [reportLinks, actions, city, reviewRow] = await Promise.all([
+    const [reportLinks, actions, city, reviewRow, mediaRow] = await Promise.all([
       this.prisma.moderationCaseReport.findMany({
         where: { caseId },
         include: {
@@ -117,6 +119,39 @@ export class ModerationService {
             },
           })
         : Promise.resolve(null),
+      isMediaTargetCase(moderationCase.targetType)
+        ? this.prisma.businessImage.findUnique({
+            where: { id: moderationCase.targetId },
+            select: {
+              id: true,
+              imageUrl: true,
+              locationId: true,
+              moderationHidden: true,
+              business: {
+                select: {
+                  id: true,
+                  title: true,
+                  city: { select: { id: true, slug: true, nameRu: true } },
+                },
+              },
+              branchLocation: {
+                select: {
+                  id: true,
+                  address: true,
+                  isPrimary: true,
+                  city: {
+                    select: {
+                      id: true,
+                      slug: true,
+                      nameRu: true,
+                      nameKk: true,
+                    },
+                  },
+                },
+              },
+            },
+          })
+        : Promise.resolve(null),
     ]);
 
     const reports = reportLinks.map((link) => ({
@@ -141,12 +176,17 @@ export class ModerationService {
       ? resolveModerationReviewTarget(reviewRow)
       : undefined;
 
+    const mediaTarget = isMediaTargetCase(moderationCase.targetType)
+      ? resolveModerationMediaTarget(mediaRow)
+      : undefined;
+
     return {
       ...moderationCase,
       city,
       reports,
       actions,
       reviewTarget,
+      mediaTarget,
     };
   }
 
