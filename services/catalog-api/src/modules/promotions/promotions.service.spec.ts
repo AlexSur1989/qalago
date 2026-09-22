@@ -15,7 +15,17 @@ describe('PromotionsService — multilingual PATCH (Stage 6.10B.6)', () => {
   } as AuthUser;
 
   function createService() {
-    const update = jest.fn().mockResolvedValue({});
+    const update = jest.fn().mockResolvedValue({
+      id: 'promo-1',
+      businessId: 'b1',
+      title: 'Primary promo',
+      titleKk: 'KK promo',
+      description: 'Primary desc',
+      descriptionKk: null,
+      status: PromotionStatus.DRAFT,
+      startDate: null,
+      endDate: null,
+    });
     const findUnique = jest.fn().mockResolvedValue({
       id: 'promo-1',
       businessId: 'b1',
@@ -27,8 +37,11 @@ describe('PromotionsService — multilingual PATCH (Stage 6.10B.6)', () => {
       startDate: null,
       endDate: null,
     });
+    const tx = { promotion: { update } };
     const prisma = {
       promotion: { findUnique, update },
+      promotionBranchAvailability: { findMany: jest.fn().mockResolvedValue([]) },
+      $transaction: jest.fn(async (fn: (client: typeof tx) => Promise<unknown>) => fn(tx)),
     } as unknown as PrismaService;
     const planLimits = {
       getBusinessPlanContext: jest.fn().mockResolvedValue({

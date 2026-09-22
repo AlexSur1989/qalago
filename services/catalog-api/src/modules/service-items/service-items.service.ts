@@ -1,8 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { AuditAction, AuditResourceType } from '@prisma/client';
+import { AuditAction, AuditResourceType, ServiceItem } from '@prisma/client';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { sortCatalogItems } from '../../common/utils/catalog-sort.util';
 import { sliceToPublicLimit } from '../../common/utils/plan-entitlements.util';
+import {
+  encodeBranchAvailabilityFromLocationIds,
+  replaceServiceItemBranchAssignments,
+} from '../../common/utils/branch-availability-management.util';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
@@ -14,6 +18,10 @@ import {
 } from './dto/service-item.dto';
 import { normalizeOptionalLocaleText } from '../../common/localized-content';
 import { MenuAccessService } from './menu-access.service';
+
+type ManageServiceItem = ServiceItem & {
+  branchAvailability: ReturnType<typeof encodeBranchAvailabilityFromLocationIds>;
+};
 
 @Injectable()
 export class ServiceItemsService {
@@ -42,10 +50,11 @@ export class ServiceItemsService {
 
   async findForManage(user: AuthUser, businessId: string) {
     await this.menuAccess.assertCanManage(user, businessId);
-    return this.prisma.serviceItem.findMany({
+    const items = await this.prisma.serviceItem.findMany({
       where: { businessId },
       orderBy: [{ sortOrder: 'asc' }, { title: 'asc' }],
     });
+    return this.attachBranchAvailability(items);
   }
 
   async create(user: AuthUser, dto: CreateServiceItemDto) {
@@ -53,26 +62,40 @@ export class ServiceItemsService {
     if (dto.groupId) {
       await this.menuAccess.assertGroupForBusiness(dto.groupId, dto.businessId);
     }
-    const item = await this.prisma.serviceItem.create({
-      data: {
-        businessId: dto.businessId,
-        groupId: dto.groupId,
-        title: dto.title.trim(),
-        titleKk: normalizeOptionalLocaleText(dto.titleKk),
-        description: normalizeOptionalLocaleText(dto.description),
-        descriptionKk: normalizeOptionalLocaleText(dto.descriptionKk),
-        price: dto.price,
-        imageUrl: dto.imageUrl,
-        sortOrder: dto.sortOrder ?? 0,
-      },
+    const { branchAvailability, ...itemFields } = dto;
+
+    const item = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.serviceItem.create({
+        data: {
+          businessId: itemFields.businessId,
+          groupId: itemFields.groupId,
+          title: itemFields.title.trim(),
+          titleKk: normalizeOptionalLocaleText(itemFields.titleKk),
+          description: normalizeOptionalLocaleText(itemFields.description),
+          descriptionKk: normalizeOptionalLocaleText(itemFields.descriptionKk),
+          price: itemFields.price,
+          imageUrl: itemFields.imageUrl,
+          sortOrder: itemFields.sortOrder ?? 0,
+        },
+      });
+      if (branchAvailability) {
+        await replaceServiceItemBranchAssignments(
+          tx,
+          dto.businessId,
+          created.id,
+          branchAvailability,
+        );
+      }
+      return created;
     });
+
     await this.auditLog.recordBusinessAction(user, dto.businessId, {
       action: AuditAction.CATALOG_ITEM_CREATE,
       resourceType: AuditResourceType.SERVICE_ITEM,
       resourceId: item.id,
       metadata: { title: dto.title },
     });
-    return item;
+    return this.attachBranchAvailabilityOne(item);
   }
 
   async update(user: AuthUser, id: string, dto: UpdateServiceItemDto) {
@@ -84,29 +107,43 @@ export class ServiceItemsService {
       await this.menuAccess.assertGroupForBusiness(dto.groupId, item.businessId);
     }
 
-    const { groupId, title, titleKk, description, descriptionKk, ...rest } = dto;
-    const updated = await this.prisma.serviceItem.update({
-      where: { id },
-      data: {
-        ...rest,
-        ...(title !== undefined ? { title: title.trim() } : {}),
-        ...(titleKk !== undefined ? { titleKk: normalizeOptionalLocaleText(titleKk) } : {}),
-        ...(description !== undefined
-          ? { description: normalizeOptionalLocaleText(description) }
-          : {}),
-        ...(descriptionKk !== undefined
-          ? { descriptionKk: normalizeOptionalLocaleText(descriptionKk) }
-          : {}),
-        ...(groupId !== undefined ? { groupId } : {}),
-      },
+    const { groupId, title, titleKk, description, descriptionKk, branchAvailability, ...rest } =
+      dto;
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const row = await tx.serviceItem.update({
+        where: { id },
+        data: {
+          ...rest,
+          ...(title !== undefined ? { title: title.trim() } : {}),
+          ...(titleKk !== undefined ? { titleKk: normalizeOptionalLocaleText(titleKk) } : {}),
+          ...(description !== undefined
+            ? { description: normalizeOptionalLocaleText(description) }
+            : {}),
+          ...(descriptionKk !== undefined
+            ? { descriptionKk: normalizeOptionalLocaleText(descriptionKk) }
+            : {}),
+          ...(groupId !== undefined ? { groupId } : {}),
+        },
+      });
+      if (branchAvailability !== undefined) {
+        await replaceServiceItemBranchAssignments(
+          tx,
+          item.businessId,
+          id,
+          branchAvailability,
+        );
+      }
+      return row;
     });
+
     await this.auditLog.recordBusinessAction(user, item.businessId, {
       action: AuditAction.CATALOG_ITEM_UPDATE,
       resourceType: AuditResourceType.SERVICE_ITEM,
       resourceId: id,
       metadata: { changedFields: changedFieldsFromDto(dto as Record<string, unknown>) },
     });
-    return updated;
+    return this.attachBranchAvailabilityOne(updated);
   }
 
   async remove(user: AuthUser, id: string) {
@@ -120,5 +157,30 @@ export class ServiceItemsService {
       resourceId: id,
     });
     return { success: true };
+  }
+
+  private async attachBranchAvailability(items: ServiceItem[]): Promise<ManageServiceItem[]> {
+    if (items.length === 0) return [];
+    const ids = items.map((i) => i.id);
+    const rows = await this.prisma.serviceItemBranchAvailability.findMany({
+      where: { serviceItemId: { in: ids } },
+      select: { serviceItemId: true, locationId: true },
+      orderBy: [{ serviceItemId: 'asc' }, { locationId: 'asc' }],
+    });
+    const byItem = new Map<string, string[]>();
+    for (const row of rows) {
+      const bucket = byItem.get(row.serviceItemId) ?? [];
+      bucket.push(row.locationId);
+      byItem.set(row.serviceItemId, bucket);
+    }
+    return items.map((item) => ({
+      ...item,
+      branchAvailability: encodeBranchAvailabilityFromLocationIds(byItem.get(item.id) ?? []),
+    }));
+  }
+
+  private async attachBranchAvailabilityOne(item: ServiceItem): Promise<ManageServiceItem> {
+    const [withAvailability] = await this.attachBranchAvailability([item]);
+    return withAvailability!;
   }
 }

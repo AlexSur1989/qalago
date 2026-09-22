@@ -10,7 +10,9 @@ import {
   Length,
   Max,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { BranchAvailabilityDto } from '../../../common/dto/branch-availability.dto';
 
 export class ListPromotionsQueryDto {
   @IsOptional()
@@ -80,6 +82,11 @@ export class CreatePromotionDto {
   @IsOptional()
   @IsEnum(PromotionStatus)
   status?: PromotionStatus;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => BranchAvailabilityDto)
+  branchAvailability?: BranchAvailabilityDto;
 }
 
 export class UpdatePromotionDto {
@@ -116,4 +123,9 @@ export class UpdatePromotionDto {
   @IsOptional()
   @IsEnum(PromotionStatus)
   status?: PromotionStatus;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => BranchAvailabilityDto)
+  branchAvailability?: BranchAvailabilityDto;
 }

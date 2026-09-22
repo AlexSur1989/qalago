@@ -14,7 +14,14 @@ describe('ServiceItemsService — multilingual PATCH (Stage 6.10B.6)', () => {
   } as AuthUser;
 
   function createService() {
-    const update = jest.fn().mockResolvedValue({});
+    const update = jest.fn().mockResolvedValue({
+      id: 'item-1',
+      businessId: 'b1',
+      title: 'Primary title',
+      titleKk: 'KK title',
+      description: 'Primary desc',
+      descriptionKk: null,
+    });
     const findUnique = jest.fn().mockResolvedValue({
       id: 'item-1',
       businessId: 'b1',
@@ -23,8 +30,11 @@ describe('ServiceItemsService — multilingual PATCH (Stage 6.10B.6)', () => {
       description: 'Primary desc',
       descriptionKk: null,
     });
+    const tx = { serviceItem: { update } };
     const prisma = {
       serviceItem: { findUnique, update },
+      serviceItemBranchAvailability: { findMany: jest.fn().mockResolvedValue([]) },
+      $transaction: jest.fn(async (fn: (client: typeof tx) => Promise<unknown>) => fn(tx)),
     } as unknown as PrismaService;
     const menuAccess = {
       assertCanManage: jest.fn().mockResolvedValue(undefined),

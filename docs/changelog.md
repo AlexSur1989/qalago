@@ -6,6 +6,21 @@
 
 ---
 
+## 2026-09-22 — Stage 6.12A.7.8.2 owner backend branch availability management
+
+- **Status:** **6.12A.7.8.2 IMPLEMENTED** — owner/staff **management contract only** (no public branch filtering).
+- **Checkpoint (implementation):** _(this commit)_.
+- **Summary:**
+  - Additive **`branchAvailability`** on ServiceItem/Promotion owner create/update/read: `{ mode: "ALL" | "SELECTED", locationIds: [] }`.
+  - **ALL** → zero DB assignment rows; **SELECTED** → validated same-business `BusinessLocation` ids; omitted on create = ALL; omitted on PATCH = unchanged assignments.
+  - Atomic Prisma transactions for entity + assignment replacement; **CATALOG_EDIT** / **PROMOTIONS_EDIT** unchanged.
+  - **DELETE** `/businesses/:businessId/locations/:locationId` (non-primary): **409** `BUSINESS_LOCATION_DELETE_BLOCKED` when assignments (or other FK refs) block delete — no FK behavior change from A.7.8.1.
+  - Public catalog/promotions/discovery unchanged (**A.7.8.3** next).
+- **Deferred:** Public **effectiveCatalog** / **effectivePromotions**; Flutter/Business Web/Admin/Consumer UI; **ServiceItem create** still does not call `assertCanAddServiceItem` (pre-existing plan cap debt).
+- **Next:** **6.12A.7.8.3** — public effective catalog/promotions contract.
+
+---
+
 ## 2026-09-22 — Stage 6.12A.7.8.1 branch availability data foundation
 
 - **Status:** **6.12A.7.8.1 IMPLEMENTED** — branch availability **data foundation** (Prisma/DB only; no API/UI behavior change).

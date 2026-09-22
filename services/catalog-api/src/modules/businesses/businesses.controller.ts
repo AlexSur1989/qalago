@@ -106,6 +106,15 @@ export class BusinessesController {
     return this.locationService.setPrimaryLocation(user, businessId, locationId);
   }
 
+  @Delete(':businessId/locations/:locationId')
+  deleteLocation(
+    @CurrentUser() user: AuthUser,
+    @Param('businessId') businessId: string,
+    @Param('locationId') locationId: string,
+  ) {
+    return this.locationService.deleteLocation(user, businessId, locationId);
+  }
+
   @Get(':businessId/team/audit')
   listTeamAudit(
     @CurrentUser() user: AuthUser,

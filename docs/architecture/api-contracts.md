@@ -519,10 +519,11 @@ OWNER `permissions` in response are the full enum (implicit all). MANAGER receiv
 | POST | `/businesses/:businessId/locations` | `BUSINESS_PROFILE_EDIT` | Body: `cityId`, `address`, optional coordinates/`locationSource`/`workHours`/contacts. Creates **`isPrimary=false`**; does not change legacy `Business` physical fields. Cross-city allowed. |
 | PATCH | `/businesses/:businessId/locations/:locationId` | Field-level: profile fields → `BUSINESS_PROFILE_EDIT`; `workHours` → `BUSINESS_HOURS_EDIT` | Partial PATCH. **`isPrimary` not accepted.** Primary row: updates location + legacy `Business` physical fields atomically. Secondary: updates location only. |
 | POST | `/businesses/:businessId/locations/:locationId/set-primary` | `BUSINESS_PROFILE_EDIT` | Transaction: unset old primary, set new primary, mirror physical fields onto `Business`. Idempotent if already primary. |
+| DELETE | `/businesses/:businessId/locations/:locationId` | `BUSINESS_PROFILE_EDIT` | **Non-primary only.** **409** `BUSINESS_LOCATION_DELETE_BLOCKED` when branch-scoped references exist (catalog/promotion branch assignments, branch media, etc.). Owner must clear assignments first. |
 
 **Response DTO (`BusinessLocation`):** `id`, `businessId`, `cityId`, `address`, `latitude`, `longitude`, `locationSource`, `workHours`, `phone`, `whatsapp`, `instagram`, `website`, `isPrimary`, `createdAt`, `updatedAt` (no raw PostGIS geography).
 
-**Temporary product limits:** Public catalog/search/map still use **`Business.cityId` / `Business.location`** (primary only). Secondary branches in other cities are not discovery/map markers until a later substage. **DELETE/archive:** not exposed in A.4.
+**Temporary product limits:** Public catalog/search/map still use **`Business.cityId` / `Business.location`** (primary only). Secondary branches in other cities are not discovery/map markers until a later substage.
 
 ### PATCH /businesses/:id
 
@@ -740,11 +741,29 @@ Auth: BUSINESS owner, ADMIN, CITY_ADMIN. All items including hidden.
 
 ### POST /service-items
 
-Body: `{ "businessId", "groupId?", "title", "description?", "price?", "imageUrl?", "sortOrder?" }`
+Body: `{ "businessId", "groupId?", "title", "description?", "price?", "imageUrl?", "sortOrder?", "branchAvailability?" }`
+
+**Owner management — branch availability (Stage 6.12A.7.8.2, not public filtering yet):**
+
+```json
+"branchAvailability": {
+  "mode": "ALL" | "SELECTED",
+  "locationIds": ["<BusinessLocation.id>", "..."]
+}
+```
+
+| Rule | Semantics |
+|------|-----------|
+| Omitted on **create** | **ALL** branches — zero assignment rows in DB |
+| `mode: "ALL"` | `locationIds` must be `[]` — zero assignment rows |
+| `mode: "SELECTED"` | `locationIds` must contain ≥1 unique `BusinessLocation.id` for the same `businessId` |
+| Omitted on **PATCH** | Assignments **unchanged** (title/price/etc. only) |
+
+Management responses (`POST`/`PATCH`/`GET /service-items/manage/:businessId`) include `branchAvailability`. Public `GET /service-items?businessId=` is unchanged (no branch filtering; field not required on public reads).
 
 ### PATCH /service-items/:id
 
-Body may include `groupId` to move item into another group.
+Body may include `groupId` to move item into another group, and optional `branchAvailability` to replace assignment set atomically.
 
 ### DELETE /service-items/:id
 
@@ -765,6 +784,8 @@ Response item includes `{ id, businessId, title, description?, imageUrl?, discou
 - `POST /promotions`
 - `PATCH /promotions/:id`
 - `DELETE /promotions/:id`
+
+**Owner management — branch availability (Stage 6.12A.7.8.2):** same `branchAvailability` object and semantics as service items (ALL = zero rows; SELECTED = explicit branches; omitted on create = ALL; omitted on PATCH = unchanged). Owner-scoped `GET /promotions?businessId=` includes `branchAvailability` on each item. Public city/feed behavior and branch filtering are **unchanged** until Stage 6.12A.7.8.3.
 
 ---
 

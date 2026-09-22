@@ -271,6 +271,9 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
             }),
         },
         ...teamCountMocks,
+        promotionBranchAvailability: {
+          findMany: jest.fn().mockResolvedValue([]),
+        },
       } as unknown as PrismaService;
 
       const cityScope = { resolveCityId: jest.fn() } as unknown as CityScopeService;

@@ -40,8 +40,9 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | 6.12A.7.7.5 | CLOSED (physical QA PASS) | **Flutter** + Hotfix 1; Samsung SM-J610FN L1/L2 verified |
 | 6.12A.7.7.6 | CLOSED | **Admin** **`MEDIA`** **`mediaTarget`** scope visibility |
 | 6.12A.7.8.0 | PASS | Read-only audit — M2M branch availability for ServiceItem/Promotion; ServiceMenuGroup business-wide |
-| 6.12A.7.8.1 | **PASS (data foundation)** | **`ServiceItemBranchAvailability`** + **`PromotionBranchAvailability`**; composite same-business FKs; **no API/UI change** |
-| 6.12A.7.8.2 | **NEXT** | Owner/backend branch assignment management |
+| 6.12A.7.8.1 | PASS (data foundation) | **`ServiceItemBranchAvailability`** + **`PromotionBranchAvailability`**; composite same-business FKs |
+| 6.12A.7.8.2 | **PASS (management API)** | Owner **`branchAvailability`** on ServiceItem/Promotion CRUD; location **DELETE** conflict mapping; **no public filtering** |
+| 6.12A.7.8.3 | **NEXT** | Public **effectiveCatalog** / **effectivePromotions** |
 
 ## Business vs BusinessLocation
 
@@ -49,13 +50,13 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **BusinessLocation:** physical branch identity — city, address, coords, hours, contacts; **Business 1:N BusinessLocation**.
 - **Business detail (A.7.6 / A.7.7):** optional **`locationId`** selects active branch; **`effectivePhysical`** = physical UI; **`effectiveMedia`** = branch-aware public media (hero + preview + scoped **`/photos?locationId=`** on **Flutter**). **`Business.id`** unchanged for reviews/favorites/analytics. **6.12A.7.7 CLOSED** — branch media architecture finalized.
 - **Primary:** default active context when `locationId` omitted; **`isPrimary` badge ≠ forced active** when user/map selects another branch.
-- **Primary sync:** legacy **Business** physical columns mirror **primary** for backward compatibility; branch **catalog/promotions** data foundation in **A.7.8.1** (assignments only; public behavior unchanged until **A.7.8.2+**); branch reviews deferred.
+- **Primary sync:** legacy **Business** physical columns mirror **primary** for backward compatibility; branch **catalog/promotions** assignments managed in **A.7.8.2** (`branchAvailability` ALL/SELECTED); **public** branch filtering still **A.7.8.3**; branch reviews deferred.
 - **Branch catalog/promotion invariants (A.7.8.1):** **ServiceMenuGroup** = business-wide (no branch scope). **ServiceItem** / **Promotion:** **0** assignment rows = all branches; **≥1** = only assigned **`BusinessLocation`** ids. Assignments = **availability only** (no per-branch price/title/inventory yet). Plan slot counts remain **ServiceItem/Promotion row counts**, not assignment counts. **BusinessLocation** delete **RESTRICT** while assignments reference the branch.
 - **Branch media invariants (A.7.7 CLOSED):** shared = **`BusinessImage.locationId` null**; branch = **`locationId` = `BusinessLocation.id`** (same business); public branch view = **active branch media + shared brand** (never sibling branches); **`effectiveMedia`** is branch-aware public truth; legacy **`galleryPreview`** on detail is **compatibility-only** (not branch truth); **`Business.coverImageUrl`** remains **brand-level**; owner **Business Web** + consumer **Flutter** + **Admin MEDIA** moderation aligned; plan quota Business-wide; **`moderationHidden`** never on public surfaces.
 - **Branch media deferred / debt:** legacy business-wide **`galleryPreview`**; full Admin gallery manager; Admin upload/reorder; owner Flutter branch upload; Consumer Web branch media (**F.4**); orphan file GC; reorder API/UX; explicit branch cover column; branch-level moderation status; CDN migration.
 - **Cross-city:** secondary branches may live in other cities; discovery still uses **primary** `Business.cityId` until a later stage.
 - **Public read (A.6):** `GET /businesses/:id/locations/public` (ACTIVE only, guest-safe).
-- **Management (A.4):** authenticated CRUD + `set-primary`; **no DELETE** yet.
+- **Management (A.4):** authenticated CRUD + `set-primary`; **DELETE** non-primary branch (409 when FK references remain, e.g. catalog/promotion assignments).
 
 ## Frozen / deferred
 

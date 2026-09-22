@@ -7,7 +7,9 @@ import {
   IsString,
   Length,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { BranchAvailabilityDto } from '../../../common/dto/branch-availability.dto';
 
 export class ListServiceItemsQueryDto {
   @IsString()
@@ -53,6 +55,11 @@ export class CreateServiceItemDto {
   @IsOptional()
   @IsString()
   groupId?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => BranchAvailabilityDto)
+  branchAvailability?: BranchAvailabilityDto;
 }
 
 export class UpdateServiceItemDto {
@@ -97,4 +104,9 @@ export class UpdateServiceItemDto {
   @IsOptional()
   @IsString()
   groupId?: string | null;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => BranchAvailabilityDto)
+  branchAvailability?: BranchAvailabilityDto;
 }

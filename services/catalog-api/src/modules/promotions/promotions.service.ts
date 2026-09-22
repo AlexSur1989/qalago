@@ -25,6 +25,10 @@ import {
   ListPromotionsQueryDto,
   UpdatePromotionDto,
 } from './dto/promotion.dto';
+import {
+  encodeBranchAvailabilityFromLocationIds,
+  replacePromotionBranchAssignments,
+} from '../../common/utils/branch-availability-management.util';
 
 type FeedPromotion = Prisma.PromotionGetPayload<{
   include: {
@@ -151,7 +155,13 @@ export class PromotionsService {
         this.prisma.promotion.count({ where }),
       ]);
 
-      return { items, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+      const manageItems = ownerView
+        ? await this.attachBranchAvailabilityToPromotions(items)
+        : items;
+      return {
+        items: manageItems,
+        meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      };
     }
 
     const allItems = await this.prisma.promotion.findMany({
@@ -205,18 +215,31 @@ export class PromotionsService {
       dto.endDate,
     );
 
-    const promo = await this.prisma.promotion.create({
-      data: {
-        businessId: dto.businessId,
-        title: dto.title.trim(),
-        titleKk: normalizeOptionalLocaleText(dto.titleKk),
-        description: normalizeOptionalLocaleText(dto.description),
-        descriptionKk: normalizeOptionalLocaleText(dto.descriptionKk),
-        discountText: dto.discountText,
-        startDate: dates.startDate,
-        endDate: dates.endDate,
-        status,
-      },
+    const { branchAvailability, ...promoFields } = dto;
+
+    const promo = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.promotion.create({
+        data: {
+          businessId: promoFields.businessId,
+          title: promoFields.title.trim(),
+          titleKk: normalizeOptionalLocaleText(promoFields.titleKk),
+          description: normalizeOptionalLocaleText(promoFields.description),
+          descriptionKk: normalizeOptionalLocaleText(promoFields.descriptionKk),
+          discountText: promoFields.discountText,
+          startDate: dates.startDate,
+          endDate: dates.endDate,
+          status,
+        },
+      });
+      if (branchAvailability) {
+        await replacePromotionBranchAssignments(
+          tx,
+          dto.businessId,
+          created.id,
+          branchAvailability,
+        );
+      }
+      return created;
     });
 
     await this.auditLog.recordBusinessAction(user, dto.businessId, {
@@ -226,7 +249,7 @@ export class PromotionsService {
       metadata: { title: dto.title },
     });
 
-    return promo;
+    return this.attachBranchAvailabilityOne(promo);
   }
 
   async update(user: AuthUser, id: string, dto: UpdatePromotionDto) {
@@ -248,22 +271,29 @@ export class PromotionsService {
         ? this.planLimits.resolvePromotionDates(ctx.limits, startInput, endInput)
         : null;
 
-    const { title, titleKk, description, descriptionKk, discountText, status } = dto;
-    const updated = await this.prisma.promotion.update({
-      where: { id },
-      data: {
-        ...(title !== undefined ? { title: title.trim() } : {}),
-        ...(titleKk !== undefined ? { titleKk: normalizeOptionalLocaleText(titleKk) } : {}),
-        ...(description !== undefined
-          ? { description: normalizeOptionalLocaleText(description) }
-          : {}),
-        ...(descriptionKk !== undefined
-          ? { descriptionKk: normalizeOptionalLocaleText(descriptionKk) }
-          : {}),
-        ...(discountText !== undefined ? { discountText } : {}),
-        ...(status !== undefined ? { status } : {}),
-        ...(dates ? { startDate: dates.startDate, endDate: dates.endDate } : {}),
-      },
+    const { title, titleKk, description, descriptionKk, discountText, status, branchAvailability } =
+      dto;
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const row = await tx.promotion.update({
+        where: { id },
+        data: {
+          ...(title !== undefined ? { title: title.trim() } : {}),
+          ...(titleKk !== undefined ? { titleKk: normalizeOptionalLocaleText(titleKk) } : {}),
+          ...(description !== undefined
+            ? { description: normalizeOptionalLocaleText(description) }
+            : {}),
+          ...(descriptionKk !== undefined
+            ? { descriptionKk: normalizeOptionalLocaleText(descriptionKk) }
+            : {}),
+          ...(discountText !== undefined ? { discountText } : {}),
+          ...(status !== undefined ? { status } : {}),
+          ...(dates ? { startDate: dates.startDate, endDate: dates.endDate } : {}),
+        },
+      });
+      if (branchAvailability !== undefined) {
+        await replacePromotionBranchAssignments(tx, promo.businessId, id, branchAvailability);
+      }
+      return row;
     });
 
     await this.auditLog.recordBusinessAction(user, promo.businessId, {
@@ -273,7 +303,7 @@ export class PromotionsService {
       metadata: { changedFields: changedFieldsFromDto(dto as Record<string, unknown>) },
     });
 
-    return updated;
+    return this.attachBranchAvailabilityOne(updated);
   }
 
   async remove(user: AuthUser, id: string) {
@@ -335,6 +365,48 @@ export class PromotionsService {
       businessId,
       BusinessPermission.PROMOTIONS_EDIT,
     );
+  }
+
+  private async attachBranchAvailabilityToPromotions<T extends { id: string }>(
+    items: T[],
+  ): Promise<(T & { branchAvailability: ReturnType<typeof encodeBranchAvailabilityFromLocationIds> })[]> {
+    if (items.length === 0) return [];
+    const ids = items.map((p) => p.id);
+    const rows = await this.prisma.promotionBranchAvailability.findMany({
+      where: { promotionId: { in: ids } },
+      select: { promotionId: true, locationId: true },
+      orderBy: [{ promotionId: 'asc' }, { locationId: 'asc' }],
+    });
+    const byPromo = new Map<string, string[]>();
+    for (const row of rows) {
+      const bucket = byPromo.get(row.promotionId) ?? [];
+      bucket.push(row.locationId);
+      byPromo.set(row.promotionId, bucket);
+    }
+    return items.map((item) => ({
+      ...item,
+      branchAvailability: encodeBranchAvailabilityFromLocationIds(byPromo.get(item.id) ?? []),
+    }));
+  }
+
+  private async attachBranchAvailabilityOne(
+    promo: Prisma.PromotionGetPayload<object>,
+  ): Promise<
+    Prisma.PromotionGetPayload<object> & {
+      branchAvailability: ReturnType<typeof encodeBranchAvailabilityFromLocationIds>;
+    }
+  > {
+    const rows = await this.prisma.promotionBranchAvailability.findMany({
+      where: { promotionId: promo.id },
+      select: { locationId: true },
+      orderBy: { locationId: 'asc' },
+    });
+    return {
+      ...promo,
+      branchAvailability: encodeBranchAvailabilityFromLocationIds(
+        rows.map((r) => r.locationId),
+      ),
+    };
   }
 }
 

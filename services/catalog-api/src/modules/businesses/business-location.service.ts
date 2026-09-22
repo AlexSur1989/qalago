@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { rethrowLocationDeleteConflict } from '../../common/utils/branch-availability-management.util';
 import { BusinessPermission, BusinessStatus, Prisma } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { BusinessAccessService } from '../../common/services/business-access.service';
@@ -155,6 +156,24 @@ export class BusinessLocationService {
     });
 
     return toBusinessLocationResponse(updated);
+  }
+
+  async deleteLocation(user: AuthUser, businessId: string, locationId: string) {
+    await this.businessAccess.assertBusinessPermission(
+      user,
+      businessId,
+      BusinessPermission.BUSINESS_PROFILE_EDIT,
+    );
+    const location = await this.findScopedLocation(businessId, locationId);
+    if (location.isPrimary) {
+      throw new BadRequestException('Primary branch cannot be deleted');
+    }
+    try {
+      await this.prisma.businessLocation.delete({ where: { id: locationId } });
+    } catch (error) {
+      rethrowLocationDeleteConflict(error);
+    }
+    return { success: true };
   }
 
   async setPrimaryLocation(user: AuthUser, businessId: string, locationId: string) {
