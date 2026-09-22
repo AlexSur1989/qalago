@@ -9,7 +9,7 @@
 ## 2026-09-22 — Stage 6.12A.7.8.2 owner backend branch availability management
 
 - **Status:** **6.12A.7.8.2 IMPLEMENTED** — owner/staff **management contract only** (no public branch filtering).
-- **Checkpoint (implementation):** _(this commit)_.
+- **Checkpoint (implementation):** `904b9b5fd4145838db213c4f4709781294064a32`.
 - **Summary:**
   - Additive **`branchAvailability`** on ServiceItem/Promotion owner create/update/read: `{ mode: "ALL" | "SELECTED", locationIds: [] }`.
   - **ALL** → zero DB assignment rows; **SELECTED** → validated same-business `BusinessLocation` ids; omitted on create = ALL; omitted on PATCH = unchanged assignments.
