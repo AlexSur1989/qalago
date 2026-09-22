@@ -1,4 +1,5 @@
-import type { ManageMenuItemRow, PromotionRow } from '@/lib/api';
+import type { BranchAvailability, ManageMenuItemRow, PromotionRow } from '@/lib/api';
+import { branchAvailabilityChanged } from '@/lib/branch-availability';
 
 export type ServiceItemEditForm = {
   title: string;
@@ -31,7 +32,10 @@ export function serviceItemEditFormFromRow(item: ManageMenuItemRow): ServiceItem
 }
 
 /** PATCH body for an existing service item (matches owner mobile update semantics). */
-export function buildServiceItemUpdateBody(form: ServiceItemEditForm): Record<string, unknown> {
+export function buildServiceItemUpdateBody(
+  form: ServiceItemEditForm,
+  branchPatch?: { next: BranchAvailability; initial: BranchAvailability },
+): Record<string, unknown> {
   const payload: Record<string, unknown> = {
     title: form.title.trim(),
     titleKk: form.titleKk.trim(),
@@ -43,6 +47,9 @@ export function buildServiceItemUpdateBody(form: ServiceItemEditForm): Record<st
   if (desc) payload.description = desc;
   const price = form.price.trim();
   if (price) payload.price = price;
+  if (branchPatch && branchAvailabilityChanged(branchPatch.initial, branchPatch.next)) {
+    payload.branchAvailability = branchPatch.next;
+  }
   return payload;
 }
 
@@ -57,14 +64,21 @@ export function promotionEditFormFromRow(promo: PromotionRow): PromotionEditForm
 }
 
 /** Organic promotion content edit — does not change status (toggle stays separate). */
-export function buildPromotionUpdateBody(form: PromotionEditForm): Record<string, unknown> {
-  return {
+export function buildPromotionUpdateBody(
+  form: PromotionEditForm,
+  branchPatch?: { next: BranchAvailability; initial: BranchAvailability },
+): Record<string, unknown> {
+  const payload: Record<string, unknown> = {
     title: form.title.trim(),
     titleKk: form.titleKk.trim(),
     description: form.description.trim(),
     descriptionKk: form.descriptionKk.trim(),
     discountText: form.discountText.trim(),
   };
+  if (branchPatch && branchAvailabilityChanged(branchPatch.initial, branchPatch.next)) {
+    payload.branchAvailability = branchPatch.next;
+  }
+  return payload;
 }
 
 export function canEditServiceItem(

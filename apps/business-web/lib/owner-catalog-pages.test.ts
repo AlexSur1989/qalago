@@ -17,6 +17,9 @@ describe('business catalog & promotion edit parity (6.10C.1)', () => {
     expect(src).toContain('serviceItemEditAction');
     expect(src).toContain('deleteMenuItem');
     expect(src).toContain('createMenuItem');
+    expect(src).toContain('BranchAvailabilityField');
+    expect(src).toContain('listManageServiceItems');
+    expect(src).toContain('branchAvailability');
   });
 
   it('profile page uses localized subcategory display helper', () => {
@@ -34,5 +37,7 @@ describe('business catalog & promotion edit parity (6.10C.1)', () => {
     expect(src).toContain('deletePromotion');
     expect(src).not.toMatch(/\/ad-campaigns|AdCampaign/);
     expect(src).toContain('parseApiError');
+    expect(src).toContain('BranchAvailabilityField');
+    expect(src).toContain('branchAvailability');
   });
 });

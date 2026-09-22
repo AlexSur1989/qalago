@@ -5,13 +5,23 @@ import Link from 'next/link';
 import { FormEvent, ReactNode, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import {
+  BusinessLocationRow,
   BusinessPlanStatus,
   BusinessRow,
+  CityRow,
   PromotionRow,
   findMyBusinessItem,
   myBusinessRows,
   ownerApi,
 } from '@/lib/api';
+import { BranchAvailabilityField } from '@/components/branch-availability-field';
+import {
+  branchAvailabilityFromDto,
+  branchAvailabilityToDto,
+  DEFAULT_BRANCH_AVAILABILITY,
+  validateBranchAvailabilitySubmit,
+  type BranchAvailabilityUiState,
+} from '@/lib/branch-availability';
 import { BusinessPermission, canViewPayments, hasPermission } from '@/lib/business-access';
 import { parseApiError } from '@/lib/monetization-utils';
 import { organicPromotionStatusLabel } from '@/lib/presentation';
@@ -45,6 +55,18 @@ export default function BusinessPromotionsPage() {
   const [editingPromo, setEditingPromo] = useState<PromotionRow | null>(null);
   const [editForm, setEditForm] = useState<PromotionEditForm | null>(null);
   const [editSaving, setEditSaving] = useState(false);
+  const [locations, setLocations] = useState<BusinessLocationRow[]>([]);
+  const [cities, setCities] = useState<CityRow[]>([]);
+  const [locationsLoading, setLocationsLoading] = useState(true);
+  const [createBranch, setCreateBranch] = useState<BranchAvailabilityUiState>(() =>
+    branchAvailabilityFromDto(DEFAULT_BRANCH_AVAILABILITY),
+  );
+  const [createBranchError, setCreateBranchError] = useState<string | null>(null);
+  const [editBranch, setEditBranch] = useState<BranchAvailabilityUiState>(() =>
+    branchAvailabilityFromDto(DEFAULT_BRANCH_AVAILABILITY),
+  );
+  const [editBranchInitial, setEditBranchInitial] = useState(DEFAULT_BRANCH_AVAILABILITY);
+  const [editBranchError, setEditBranchError] = useState<string | null>(null);
 
   const canPromotionsEdit = canEditPromotion(
     hasPermission(access, BusinessPermission.PROMOTIONS_EDIT),
@@ -78,10 +100,38 @@ export default function BusinessPromotionsPage() {
     load(token).catch((err) => setError(parseApiError(locale, err)));
   }, [token, businessId, access, locale]);
 
+  useEffect(() => {
+    if (!token) return;
+    setLocationsLoading(true);
+    Promise.all([ownerApi.listBusinessLocations(token, businessId), ownerApi.listCities()])
+      .then(([locRes, cityRows]) => {
+        setLocations(locRes.items);
+        setCities(cityRows);
+      })
+      .catch((err) => setError(parseApiError(locale, err)))
+      .finally(() => setLocationsLoading(false));
+  }, [token, businessId, locale]);
+
+  function branchValidationMessage(
+    result: ReturnType<typeof validateBranchAvailabilitySubmit>,
+  ): string | null {
+    if (result.ok) return null;
+    if (result.reason === 'select_at_least_one') return ui.branchAvailabilitySelectAtLeastOne;
+    if (result.reason === 'missing_unresolved') return ui.branchAvailabilityMissingUnresolved;
+    return ui.branchAvailabilityNoBranches;
+  }
+
   async function create(e: FormEvent) {
     e.preventDefault();
     if (!token || !title.trim()) return;
     setError(null);
+    const branchValidation = validateBranchAvailabilitySubmit(createBranch, locations);
+    const branchMessage = branchValidationMessage(branchValidation);
+    if (branchMessage) {
+      setCreateBranchError(branchMessage);
+      return;
+    }
+    setCreateBranchError(null);
     try {
       await ownerApi.createPromotion(token, {
         businessId,
@@ -91,11 +141,13 @@ export default function BusinessPromotionsPage() {
         description,
         descriptionKk: descriptionKk.trim() || undefined,
         status: 'ACTIVE',
+        branchAvailability: branchAvailabilityToDto(createBranch),
       });
       setTitle('');
       setTitleKk('');
       setDescription('');
       setDescriptionKk('');
+      setCreateBranch(branchAvailabilityFromDto(DEFAULT_BRANCH_AVAILABILITY));
       await load(token);
     } catch (err) {
       setError(parseApiError(locale, err));
@@ -123,6 +175,10 @@ export default function BusinessPromotionsPage() {
   function openEdit(p: PromotionRow) {
     setEditingPromo(p);
     setEditForm(promotionEditFormFromRow(p));
+    const dto = p.branchAvailability ?? DEFAULT_BRANCH_AVAILABILITY;
+    setEditBranchInitial(dto);
+    setEditBranch(branchAvailabilityFromDto(dto));
+    setEditBranchError(null);
     setError(null);
     setSuccessMessage(null);
   }
@@ -131,18 +187,30 @@ export default function BusinessPromotionsPage() {
     if (editSaving) return;
     setEditingPromo(null);
     setEditForm(null);
+    setEditBranchError(null);
   }
 
   async function saveEdit(e: FormEvent) {
     e.preventDefault();
     if (!token || !editingPromo || !editForm || !editForm.title.trim()) return;
+    const branchValidation = validateBranchAvailabilitySubmit(editBranch, locations);
+    const branchMessage = branchValidationMessage(branchValidation);
+    if (branchMessage) {
+      setEditBranchError(branchMessage);
+      return;
+    }
     setEditSaving(true);
     setError(null);
+    setEditBranchError(null);
     try {
+      const nextBranch = branchAvailabilityToDto(editBranch);
       await ownerApi.updatePromotion(
         token,
         editingPromo.id,
-        buildPromotionUpdateBody(editForm),
+        buildPromotionUpdateBody(editForm, {
+          initial: editBranchInitial,
+          next: nextBranch,
+        }),
       );
       setEditingPromo(null);
       setEditForm(null);
@@ -227,6 +295,16 @@ export default function BusinessPromotionsPage() {
           rows={3}
           disabled={atActiveLimit}
         />
+        <BranchAvailabilityField
+          namePrefix="promo-create"
+          locations={locations}
+          cities={cities}
+          locationsLoading={locationsLoading}
+          value={createBranch}
+          onChange={setCreateBranch}
+          disabled={atActiveLimit}
+          validationError={createBranchError}
+        />
         <button type="submit" className="btn btn-primary" disabled={atActiveLimit}>
           {atActiveLimit ? ui.___c45ec6 : ui.__8062f8}
         </button>
@@ -310,6 +388,16 @@ export default function BusinessPromotionsPage() {
               placeholder={ui.contentAuthoredDescriptionKkOptional}
               rows={3}
               disabled={editSaving}
+            />
+            <BranchAvailabilityField
+              namePrefix="promo-edit"
+              locations={locations}
+              cities={cities}
+              locationsLoading={locationsLoading}
+              value={editBranch}
+              onChange={setEditBranch}
+              disabled={editSaving}
+              validationError={editBranchError}
             />
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button type="submit" className="btn btn-primary" disabled={editSaving}>

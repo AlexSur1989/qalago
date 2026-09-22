@@ -54,6 +54,25 @@ describe('owner-content-edit service item', () => {
     });
   });
 
+  it('update can attach branchAvailability when changed', () => {
+    const body = buildServiceItemUpdateBody(
+      {
+        title: 'New title',
+        description: '',
+        titleKk: '',
+        descriptionKk: '',
+        price: '',
+        groupId: '',
+        isActive: true,
+      },
+      {
+        initial: { mode: 'ALL', locationIds: [] },
+        next: { mode: 'SELECTED', locationIds: ['loc-1'] },
+      },
+    );
+    expect(body.branchAvailability).toEqual({ mode: 'SELECTED', locationIds: ['loc-1'] });
+  });
+
   it('permission gating helper', () => {
     expect(canEditServiceItem(true)).toBe(true);
     expect(canEditServiceItem(false)).toBe(false);

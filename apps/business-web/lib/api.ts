@@ -202,6 +202,11 @@ export type BusinessPlanStatus = {
   team?: PlanTeamEntitlements;
 };
 
+export type BranchAvailability = {
+  mode: 'ALL' | 'SELECTED';
+  locationIds: string[];
+};
+
 export type PromotionRow = {
   id: string;
   title: string;
@@ -215,6 +220,11 @@ export type PromotionRow = {
   startDate?: string | null;
   endDate?: string | null;
   createdAt?: string;
+  branchAvailability?: BranchAvailability;
+};
+
+export type ManageServiceItemWithBranch = ServiceMenuItem & {
+  branchAvailability: BranchAvailability;
 };
 
 export type AnalyticsDashboard = {
@@ -867,6 +877,7 @@ export const ownerApi = {
       descriptionKk?: string;
       discountText?: string;
       status?: string;
+      branchAvailability?: BranchAvailability;
     },
   ) =>
     api<PromotionRow>('/promotions', {
@@ -969,6 +980,12 @@ export const ownerApi = {
   getServiceMenu: (token: string, businessId: string) =>
     api<ServiceMenuManage>(`/service-menu/manage/${businessId}`, { token }),
 
+  listManageServiceItems: (token: string, businessId: string) =>
+    api<ManageServiceItemWithBranch[]>(
+      `/service-items/manage/${encodeURIComponent(businessId)}`,
+      { token },
+    ),
+
   listManageMenuItems: (
     token: string,
     businessId: string,
@@ -1021,6 +1038,7 @@ export const ownerApi = {
       description?: string;
       descriptionKk?: string;
       price?: string;
+      branchAvailability?: BranchAvailability;
     },
   ) =>
     api<ServiceMenuItem>('/service-items', {

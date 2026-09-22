@@ -84,6 +84,14 @@ export type UiLabels = {
   promotionEditAction: string;
   promotionEditSave: string;
   promotionEditSaved: string;
+  branchAvailabilityHeading: string;
+  branchAvailabilityModeAll: string;
+  branchAvailabilityModeSelected: string;
+  branchAvailabilityPrimaryBadge: string;
+  branchAvailabilitySelectAtLeastOne: string;
+  branchAvailabilityBranchUnavailable: string;
+  branchAvailabilityNoBranches: string;
+  branchAvailabilityMissingUnresolved: string;
   siteTitle: string;
   siteDescription: string;
   languageSwitcherAria: string;
@@ -1027,6 +1035,16 @@ export type UiLabels = {
     promotionEditAction: 'Изменить',
     promotionEditSave: 'Сохранить',
     promotionEditSaved: 'Акция сохранена',
+    branchAvailabilityHeading: 'Доступность по филиалам',
+    branchAvailabilityModeAll: 'Во всех филиалах',
+    branchAvailabilityModeSelected: 'В выбранных филиалах',
+    branchAvailabilityPrimaryBadge: 'Основной филиал',
+    branchAvailabilitySelectAtLeastOne: 'Выберите хотя бы один филиал',
+    branchAvailabilityBranchUnavailable: 'Филиал недоступен — обновите выбор или верните «Во всех филиалах»',
+    branchAvailabilityNoBranches:
+      'Нет филиалов для выбора. Добавьте адрес в разделе «Филиалы» или оставьте «Во всех филиалах».',
+    branchAvailabilityMissingUnresolved:
+      'Сохранение заблокировано: часть ранее выбранных филиалов недоступна. Измените режим или обновите список филиалов.',
     text_f0e9ac: ' · страница ${pagination.page} / ${pagination.totalPages}',
     text_f154d6: 'Пользователь',
     text_f1a7d3: 'Расширенная',
@@ -1448,6 +1466,17 @@ export type UiLabels = {
     promotionEditAction: 'Өзгерту',
     promotionEditSave: 'Сақтау',
     promotionEditSaved: 'Акция сақталды',
+    branchAvailabilityHeading: 'Филиалдар бойынша қолжетімділік',
+    branchAvailabilityModeAll: 'Барлық филиалдарда',
+    branchAvailabilityModeSelected: 'Таңдалған филиалдарда',
+    branchAvailabilityPrimaryBadge: 'Негізгі филиал',
+    branchAvailabilitySelectAtLeastOne: 'Кем дегенде бір филиал таңдаңыз',
+    branchAvailabilityBranchUnavailable:
+      'Филиал қолжетімсіз — таңдауды жаңартыңыз немесе «Барлық филиалдарда» режиміне оралыңыз',
+    branchAvailabilityNoBranches:
+      'Таңдауға филиал жоқ. «Филиалдар» бөлімінде мекенжай қосыңыз немесе «Барлық филиалдарда» қалдырыңыз.',
+    branchAvailabilityMissingUnresolved:
+      'Сақтау блокталды: бұрын таңдалған филиалдардың бірі қолжетімсіз. Режимді өзгертіңіз немесе филиалдар тізімін жаңартыңыз.',
     text_setAsCover: 'Мұқабаға',
     text_findShort: 'Іздеу',
     text_deleteGroup: 'Топты жою',

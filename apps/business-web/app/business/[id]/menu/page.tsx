@@ -5,12 +5,22 @@ import Link from 'next/link';
 import { FormEvent, ReactNode, useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import {
+  BusinessLocationRow,
   BusinessPlanStatus,
+  CityRow,
   ManageMenuItemRow,
   ManageMenuItemsPage,
   ManageMenuSection,
   ownerApi,
 } from '@/lib/api';
+import { BranchAvailabilityField } from '@/components/branch-availability-field';
+import {
+  branchAvailabilityFromDto,
+  branchAvailabilityToDto,
+  DEFAULT_BRANCH_AVAILABILITY,
+  validateBranchAvailabilitySubmit,
+  type BranchAvailabilityUiState,
+} from '@/lib/branch-availability';
 import { BusinessPermission, canViewPayments, hasPermission } from '@/lib/business-access';
 import { hasMoreMenuPages, menuSectionLabel } from '@/lib/menu-utils';
 import {
@@ -50,6 +60,21 @@ export default function BusinessMenuPage() {
   const [editForm, setEditForm] = useState<ServiceItemEditForm | null>(null);
   const [editSaving, setEditSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [locations, setLocations] = useState<BusinessLocationRow[]>([]);
+  const [cities, setCities] = useState<CityRow[]>([]);
+  const [locationsLoading, setLocationsLoading] = useState(true);
+  const [createBranch, setCreateBranch] = useState<BranchAvailabilityUiState>(() =>
+    branchAvailabilityFromDto(DEFAULT_BRANCH_AVAILABILITY),
+  );
+  const [createBranchError, setCreateBranchError] = useState<string | null>(null);
+  const [editBranch, setEditBranch] = useState<BranchAvailabilityUiState>(() =>
+    branchAvailabilityFromDto(DEFAULT_BRANCH_AVAILABILITY),
+  );
+  const [editBranchInitial, setEditBranchInitial] = useState(DEFAULT_BRANCH_AVAILABILITY);
+  const [editBranchError, setEditBranchError] = useState<string | null>(null);
+  const [branchByItemId, setBranchByItemId] = useState<
+    Map<string, typeof DEFAULT_BRANCH_AVAILABILITY>
+  >(() => new Map());
 
   const canCatalogEdit = canEditServiceItem(
     hasPermission(access, BusinessPermission.CATALOG_EDIT),
@@ -103,34 +128,87 @@ export default function BusinessMenuPage() {
     );
   }, [token, businessId, loadPlan, loadItems, sectionId, search, setError]);
 
+  useEffect(() => {
+    if (!token) return;
+    setLocationsLoading(true);
+    Promise.all([ownerApi.listBusinessLocations(token, businessId), ownerApi.listCities()])
+      .then(([locRes, cityRows]) => {
+        setLocations(locRes.items);
+        setCities(cityRows);
+      })
+      .catch((err) => setError(parseApiError(locale, err)))
+      .finally(() => setLocationsLoading(false));
+  }, [token, businessId, locale, setError]);
+
+  function branchValidationMessage(
+    result: ReturnType<typeof validateBranchAvailabilitySubmit>,
+  ): string | null {
+    if (result.ok) return null;
+    if (result.reason === 'select_at_least_one') return ui.branchAvailabilitySelectAtLeastOne;
+    if (result.reason === 'missing_unresolved') return ui.branchAvailabilityMissingUnresolved;
+    return ui.branchAvailabilityNoBranches;
+  }
+
+  async function ensureItemBranchAvailability(itemId: string) {
+    if (!token) return DEFAULT_BRANCH_AVAILABILITY;
+    if (branchByItemId.has(itemId)) {
+      return branchByItemId.get(itemId)!;
+    }
+    const rows = await ownerApi.listManageServiceItems(token, businessId);
+    const nextMap = new Map(rows.map((row) => [row.id, row.branchAvailability]));
+    setBranchByItemId(nextMap);
+    return nextMap.get(itemId) ?? DEFAULT_BRANCH_AVAILABILITY;
+  }
+
   async function reloadAll() {
     if (!token) return;
     await Promise.all([loadPlan(token), loadItems(token, 1, sectionId, search)]);
   }
 
-  function openEditItem(item: ManageMenuItemRow) {
+  async function openEditItem(item: ManageMenuItemRow) {
     setEditingItem(item);
     setEditForm(serviceItemEditFormFromRow(item));
+    setEditBranchError(null);
     setError(null);
     setSuccessMessage(null);
+    if (!token) return;
+    try {
+      const dto = await ensureItemBranchAvailability(item.id);
+      setEditBranchInitial(dto);
+      setEditBranch(branchAvailabilityFromDto(dto));
+    } catch (err) {
+      setError(parseApiError(locale, err));
+    }
   }
 
   function closeEditItem() {
     if (editSaving) return;
     setEditingItem(null);
     setEditForm(null);
+    setEditBranchError(null);
   }
 
   async function saveEditItem(e: FormEvent) {
     e.preventDefault();
     if (!token || !editingItem || !editForm || !editForm.title.trim()) return;
+    const branchValidation = validateBranchAvailabilitySubmit(editBranch, locations);
+    const branchMessage = branchValidationMessage(branchValidation);
+    if (branchMessage) {
+      setEditBranchError(branchMessage);
+      return;
+    }
     setEditSaving(true);
     setError(null);
+    setEditBranchError(null);
     try {
+      const nextBranch = branchAvailabilityToDto(editBranch);
       await ownerApi.updateMenuItem(
         token,
         editingItem.id,
-        buildServiceItemUpdateBody(editForm),
+        buildServiceItemUpdateBody(editForm, {
+          initial: editBranchInitial,
+          next: nextBranch,
+        }),
       );
       setEditingItem(null);
       setEditForm(null);
@@ -164,6 +242,13 @@ export default function BusinessMenuPage() {
       );
       return;
     }
+    const branchValidation = validateBranchAvailabilitySubmit(createBranch, locations);
+    const branchMessage = branchValidationMessage(branchValidation);
+    if (branchMessage) {
+      setCreateBranchError(branchMessage);
+      return;
+    }
+    setCreateBranchError(null);
     await ownerApi.createMenuItem(token, {
       businessId,
       groupId: itemGroupId || undefined,
@@ -171,11 +256,13 @@ export default function BusinessMenuPage() {
       titleKk: itemTitleKk.trim() || undefined,
       descriptionKk: itemDescriptionKk.trim() || undefined,
       price: itemPrice.trim() || undefined,
+      branchAvailability: branchAvailabilityToDto(createBranch),
     });
     setItemTitle('');
     setItemTitleKk('');
     setItemDescriptionKk('');
     setItemPrice('');
+    setCreateBranch(branchAvailabilityFromDto(DEFAULT_BRANCH_AVAILABILITY));
     await reloadAll();
   }
 
@@ -278,6 +365,15 @@ export default function BusinessMenuPage() {
               </option>
             ))}
           </select>
+          <BranchAvailabilityField
+            namePrefix="menu-create"
+            locations={locations}
+            cities={cities}
+            locationsLoading={locationsLoading}
+            value={createBranch}
+            onChange={setCreateBranch}
+            validationError={createBranchError}
+          />
           <button type="submit" className="btn btn-primary">{ui.__430244}</button>
         </form>
 
@@ -487,6 +583,16 @@ export default function BusinessMenuPage() {
               />
               {ui.text_047e75}
             </label>
+            <BranchAvailabilityField
+              namePrefix="menu-edit"
+              locations={locations}
+              cities={cities}
+              locationsLoading={locationsLoading}
+              value={editBranch}
+              onChange={setEditBranch}
+              disabled={editSaving}
+              validationError={editBranchError}
+            />
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button type="submit" className="btn btn-primary" disabled={editSaving}>
                 {editSaving ? ui.text_89d69a : ui.serviceItemEditSave}

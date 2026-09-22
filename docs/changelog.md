@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-09-22 — Stage 6.12A.7.8.4 Business Web branch availability UX
+
+- **Status:** **6.12A.7.8.4 IMPLEMENTED** — owner **Business Web** catalog + promotions **branch availability** controls (ALL / SELECTED); no backend/public surface changes.
+- **Checkpoint (implementation):** _(pending commit)_.
+- **Summary:**
+  - **Service item** create/edit + **promotion** create/edit submit **`branchAvailability`** per **A.7.8.2**; edit PATCH **omits** unchanged assignments.
+  - Reuses **`listBusinessLocations`** + shared **`formatBranchAvailabilityLabel`**; edit loads assignments via **`GET /service-items/manage/:businessId`** when paginated menu rows omit them.
+  - **Missing branch** safety: blocked submit + localized unavailable state (no silent ALL broadening).
+  - RU/KK copy; focused **Vitest** + existing Business Web regression tests.
+- **Deferred:** **A.7.8.5** Flutter branch catalog/promotions; **A.7.9** discovery grain; ServiceItem create cap debt.
+- **Next:** **6.12A.7.8.5** — Flutter branch catalog / promotions integration.
+
+---
+
 ## 2026-09-22 — Stage 6.12A.7.8.3 public effective catalog / promotions
 
 - **Status:** **6.12A.7.8.3 IMPLEMENTED** — public **branch-aware** catalog/promotions on business detail + scoped full catalog; legacy previews unchanged.
