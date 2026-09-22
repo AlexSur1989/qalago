@@ -9,7 +9,7 @@
 ## 2026-09-22 — Stage 6.12A.7.8.5 Flutter branch catalog / promotions integration
 
 - **Status:** **6.12A.7.8.5 IMPLEMENTED (automated)** — consumer **Flutter** consumes **`effectiveCatalog`** / **`effectivePromotions`** on business detail + scoped full catalog; **physical QA pending**.
-- **Checkpoint (implementation):** _(pending commit)_.
+- **Checkpoint (implementation):** `644809c57566a71d5a8eeb72d53edc8fa37ca2d8`.
 - **Summary:**
   - Detail preview uses **`effectiveCatalog`** / **`effectivePromotions`** when present (empty effective ≠ missing; no merge with legacy previews).
   - Full catalog route passes **`locationId`** from backend-resolved scope; **`BusinessCatalogQuery`** + local pagination keyed by **`businessId|locationId`** (A.7.7.5-style isolation).
