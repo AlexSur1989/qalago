@@ -760,7 +760,9 @@ model BusinessLocation {
   updatedAt      DateTime                @updatedAt
   business       Business                @relation(fields: [businessId], references: [id], onDelete: Cascade)
   city           City                    @relation(fields: [cityId], references: [id], onDelete: Restrict)
-  images         BusinessImage[]
+  images                          BusinessImage[]
+  serviceItemBranchAvailabilities ServiceItemBranchAvailability[]
+  promotionBranchAvailabilities   PromotionBranchAvailability[]
 
   @@unique([businessId, id])
   @@index([businessId])
@@ -916,10 +918,27 @@ model ServiceItem {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   business        Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  group           ServiceMenuGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
-  analyticsEvents AnalyticsEvent[]
+  group                 ServiceMenuGroup?               @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  analyticsEvents       AnalyticsEvent[]
+  branchAvailabilities  ServiceItemBranchAvailability[]
 
+  @@unique([businessId, id])
   @@index([businessId, groupId])
+}
+
+/// Stage 6.12A.7.8.1 — branch availability only (zero rows = all branches).
+model ServiceItemBranchAvailability {
+  id            String           @id @default(cuid())
+  businessId    String
+  serviceItemId String
+  locationId    String
+  createdAt     DateTime         @default(now())
+  serviceItem   ServiceItem      @relation(fields: [businessId, serviceItemId], references: [businessId, id], onDelete: Cascade)
+  branchLocation BusinessLocation @relation(fields: [businessId, locationId], references: [businessId, id], onDelete: Restrict)
+
+  @@unique([serviceItemId, locationId])
+  @@index([businessId])
+  @@index([businessId, serviceItemId])
 }
 
 model Promotion {
@@ -941,6 +960,24 @@ model Promotion {
   analyticsEvents         AnalyticsEvent[]
   adCampaigns             AdCampaign[]
   adInventoryReservations AdInventoryReservation[]
+  branchAvailabilities    PromotionBranchAvailability[]
+
+  @@unique([businessId, id])
+}
+
+/// Stage 6.12A.7.8.1 — branch availability only (zero rows = all branches).
+model PromotionBranchAvailability {
+  id            String           @id @default(cuid())
+  businessId    String
+  promotionId   String
+  locationId    String
+  createdAt     DateTime         @default(now())
+  promotion     Promotion        @relation(fields: [businessId, promotionId], references: [businessId, id], onDelete: Cascade)
+  branchLocation BusinessLocation @relation(fields: [businessId, locationId], references: [businessId, id], onDelete: Restrict)
+
+  @@unique([promotionId, locationId])
+  @@index([businessId])
+  @@index([businessId, promotionId])
 }
 
 model Favorite {

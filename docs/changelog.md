@@ -6,6 +6,21 @@
 
 ---
 
+## 2026-09-22 — Stage 6.12A.7.8.1 branch availability data foundation
+
+- **Status:** **6.12A.7.8.1 IMPLEMENTED** — branch availability **data foundation** (Prisma/DB only; no API/UI behavior change).
+- **Checkpoint (implementation):** _(this commit)_.
+- **Summary:**
+  - **A.7.8.0 audit PASS** — M2M branch availability for **ServiceItem** and **Promotion**; **ServiceMenuGroup** remains business-wide.
+  - New tables **`ServiceItemBranchAvailability`**, **`PromotionBranchAvailability`** (availability only; no per-branch price/title overrides).
+  - **Semantics:** zero assignment rows = available at **all** `BusinessLocation`s; ≥1 row = **only** listed branches. **No backfill** — legacy rows keep business-wide availability.
+  - **DB integrity:** composite FKs `(businessId, serviceItemId|promotionId|locationId)` → **`@@unique([businessId, id])`** on parent entities; duplicate `(entityId, locationId)` prevented; **BusinessLocation** delete **RESTRICT** while assignments exist (avoids silent broadening when last assignment would CASCADE away).
+  - **Runtime DB tests** A–M (same-business assign, cross-business reject, cascade on entity/business delete, location RESTRICT, zero-row contract).
+- **Deferred:** **A.7.8.2** owner/backend assignment management; **effectiveCatalog** / **effectivePromotions** public filtering; Flutter/Business Web/Admin/Consumer UI.
+- **Next:** **6.12A.7.8.2** — owner/backend branch assignment management.
+
+---
+
 ## 2026-09-22 — Stage 6.12A.7.7 CLOSED — branch media architecture finalized
 
 - **Status:** **6.12A.7.7 CLOSED** — BRANCH MEDIA ARCHITECTURE FINALIZED.
