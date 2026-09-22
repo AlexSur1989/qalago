@@ -9,7 +9,7 @@
 ## 2026-09-22 — Stage 6.12A.7.7.6 Admin Web branch media visibility
 
 - **Status:** 6.12A.7.7.6 IMPLEMENTED — ADMIN BRANCH MEDIA VISIBILITY READY.
-- **Checkpoint (implementation):** _(pending commit SHA)_.
+- **Checkpoint (implementation):** `3c61e5d`.
 - **Summary:**
   - **Audit:** Admin Web had no `BusinessImage` gallery; **`MEDIA`** moderation cases were the only staff surface for reported business photos (backend `MEDIA_HIDE`/`MEDIA_RESTORE` existed; UI was review-only).
   - **API (additive):** `GET /admin/moderation/cases/:id` adds optional **`mediaTarget`** (`locationId`, branch address/city/`isPrimary`, `branchUnavailable`) — no schema/migration changes.
