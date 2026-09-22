@@ -36,7 +36,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | 6.12A.7.7.2 | IMPLEMENTED | Upload attach/list scope + brand-only cover; public gallery excludes **`moderationHidden`** |
 | 6.12A.7.7.3 | IMPLEMENTED | Public **`effectiveMedia`** + **`/photos?locationId=`** — branch-first + shared; legacy detail gallery unchanged |
 | 6.12A.7.7.4 | IMPLEMENTED | **Business Web** owner media by scope (brand vs branch) |
-| 6.12A.7.7.5 | IMPLEMENTED | **Flutter** consumer detail + full gallery consume **`effectiveMedia`** / **`photos?locationId`**; physical media QA pending |
+| 6.12A.7.7.5 | HOTFIX 1 | **Flutter** detail + gallery scoped by **`locationId`**; **HOTFIX 1** fixes stale L1 rows in full gallery after branch switch; Samsung retest pending |
 
 ## Business vs BusinessLocation
 

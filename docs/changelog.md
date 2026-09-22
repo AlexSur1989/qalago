@@ -6,9 +6,22 @@
 
 ---
 
+## 2026-09-22 — Hotfix 6.12A.7.7.5.1 Flutter full gallery branch isolation
+
+- **Status:** A.7.7.5 HOTFIX 1 IMPLEMENTED — READY FOR SAMSUNG RETEST (physical QA not closed).
+- **Checkpoint (hotfix):** _(pending commit SHA)_.
+- **Summary:**
+  - **Root cause:** `BusinessPhotosScreen` kept mutable `_items` across visits to the same route (`/business/:id/photos`); seeding ran only when `_page == 1 && _items.isEmpty`, so opening L2 after L1 left stale L1 rows in the grid while detail/hero used fresh `effectiveMedia`.
+  - **Fix:** scope key `businessId|locationId`; router `ValueKey` on gallery screen; page 1 always renders provider rows; pagination accumulation reset on scope change; regression tests L1↔L2.
+  - **Backend:** unchanged (L2 `/photos?locationId=` already correct on server).
+- **Deferred:** Samsung SM-J610FN full-gallery retest on Bar Code 51 L2 fixture.
+- **Next:** physical QA closure for A.7.7.5 after hotfix APK.
+
+---
+
 ## 2026-09-22 — Stage 6.12A.7.7.5 Flutter branch media integration
 
-- **Status:** 6.12A.7.7.5 IMPLEMENTED — READY FOR PHYSICAL QA (Samsung branch media).
+- **Status:** 6.12A.7.7.5 IMPLEMENTED — HOTFIX 1 pending physical retest (Samsung branch media).
 - **Checkpoint (implementation):** `d30e55d5c2acbabb01aa804a8fff6ac6b5979fb9`.
 - **Summary:**
   - **Flutter detail:** consumes backend **`effectiveMedia`** for hero + preview strip when present; legacy **`coverImageUrl`/`galleryPreview`** fallback unchanged.

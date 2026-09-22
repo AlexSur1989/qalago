@@ -8,6 +8,7 @@ import '../../../core/locale/l10n_extension.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../providers/business_catalog_provider.dart';
+import 'business_photos_gallery_state.dart';
 
 class BusinessPhotosScreen extends ConsumerStatefulWidget {
   const BusinessPhotosScreen({
@@ -26,9 +27,10 @@ class BusinessPhotosScreen extends ConsumerStatefulWidget {
 
 class _BusinessPhotosScreenState extends ConsumerState<BusinessPhotosScreen> {
   int _page = 1;
-  final _items = <Map<String, dynamic>>[];
+  final _accumulatedItems = <Map<String, dynamic>>[];
   Map<String, dynamic>? _pagination;
   bool _loadingMore = false;
+  late String _scopeKey;
 
   BusinessPhotosQuery get _query => BusinessPhotosQuery(
         businessId: widget.businessId,
@@ -36,12 +38,45 @@ class _BusinessPhotosScreenState extends ConsumerState<BusinessPhotosScreen> {
         locationId: widget.locationId,
       );
 
+  BusinessPhotosQuery get _pageOneQuery => BusinessPhotosQuery(
+        businessId: widget.businessId,
+        page: 1,
+        locationId: widget.locationId,
+      );
+
+  @override
+  void initState() {
+    super.initState();
+    _scopeKey = businessPhotosScopeKey(
+      businessId: widget.businessId,
+      locationId: widget.locationId,
+    );
+  }
+
+  @override
+  void didUpdateWidget(BusinessPhotosScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final nextScope = businessPhotosScopeKey(
+      businessId: widget.businessId,
+      locationId: widget.locationId,
+    );
+    if (oldWidget.businessId != widget.businessId ||
+        oldWidget.locationId != widget.locationId) {
+      _resetLocalGalleryState();
+      _scopeKey = nextScope;
+      ref.invalidate(businessPhotosPageProvider(_pageOneQuery));
+    }
+  }
+
+  void _resetLocalGalleryState() {
+    _page = 1;
+    _accumulatedItems.clear();
+    _pagination = null;
+    _loadingMore = false;
+  }
+
   Future<void> _reload() async {
-    setState(() {
-      _page = 1;
-      _items.clear();
-      _pagination = null;
-    });
+    _resetLocalGalleryState();
     ref.invalidate(businessPhotosPageProvider(_query));
   }
 
@@ -51,29 +86,55 @@ class _BusinessPhotosScreenState extends ConsumerState<BusinessPhotosScreen> {
     final currentPage = _pagination!['page'] as int? ?? 1;
     if (currentPage >= totalPages) return;
 
+    if (_accumulatedItems.isEmpty) {
+      final pageOne =
+          ref.read(businessPhotosPageProvider(_pageOneQuery)).valueOrNull;
+      if (pageOne != null) {
+        _accumulatedItems.addAll(
+          (pageOne['items'] as List<dynamic>? ?? [])
+              .cast<Map<String, dynamic>>(),
+        );
+      }
+    }
+
+    final nextPage = currentPage + 1;
     setState(() {
       _loadingMore = true;
-      _page = currentPage + 1;
+      _page = nextPage;
     });
 
     try {
-      final data = await ref.read(businessPhotosPageProvider(_query).future);
+      final data = await ref.read(
+        businessPhotosPageProvider(
+          BusinessPhotosQuery(
+            businessId: widget.businessId,
+            page: nextPage,
+            locationId: widget.locationId,
+          ),
+        ).future,
+      );
       if (!mounted) return;
       setState(() {
-        _items.addAll(
+        _accumulatedItems.addAll(
           (data['items'] as List<dynamic>? ?? [])
               .cast<Map<String, dynamic>>(),
         );
         _pagination = data['pagination'] as Map<String, dynamic>?;
         _loadingMore = false;
+        _page = nextPage;
       });
     } catch (_) {
-      if (mounted) setState(() => _loadingMore = false);
+      if (mounted) {
+        setState(() {
+          _loadingMore = false;
+          _page = currentPage;
+        });
+      }
     }
   }
 
-  void _openFullscreen(int index) {
-    final urls = _items
+  void _openFullscreen(List<Map<String, dynamic>> items, int index) {
+    final urls = items
         .map((item) => AppConstants.resolveMediaUrl(item['imageUrl'] as String?))
         .where((url) => url.isNotEmpty)
         .toList();
@@ -103,29 +164,20 @@ class _BusinessPhotosScreenState extends ConsumerState<BusinessPhotosScreen> {
         ),
       ),
       body: photosAsync.when(
-        loading: () => _items.isEmpty ? const LoadingView() : _buildGrid(),
+        loading: () => _page == 1 && _accumulatedItems.isEmpty
+            ? const LoadingView()
+            : _buildGrid(_accumulatedItems),
         error: (e, _) => ErrorView(message: '$e', onRetry: _reload),
         data: (data) {
-          if (_page == 1 && _items.isEmpty) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (!mounted) return;
-              setState(() {
-                _items
-                  ..clear()
-                  ..addAll(
-                    (data['items'] as List<dynamic>? ?? [])
-                        .cast<Map<String, dynamic>>(),
-                  );
-                _pagination = data['pagination'] as Map<String, dynamic>?;
-              });
-            });
-          }
-
-          final displayItems = _items.isEmpty
-              ? (data['items'] as List<dynamic>? ?? [])
-                  .cast<Map<String, dynamic>>()
-              : _items;
-          if (_pagination == null) {
+          final providerItems = (data['items'] as List<dynamic>? ?? [])
+              .cast<Map<String, dynamic>>();
+          final displayItems = resolveBusinessPhotosDisplayItems(
+            page: _page,
+            providerPageItems: providerItems,
+            accumulatedItems: _accumulatedItems,
+          );
+          _pagination ??= data['pagination'] as Map<String, dynamic>?;
+          if (_page == 1) {
             _pagination = data['pagination'] as Map<String, dynamic>?;
           }
 
@@ -133,23 +185,25 @@ class _BusinessPhotosScreenState extends ConsumerState<BusinessPhotosScreen> {
             items: displayItems,
             pagination: _pagination,
             loadingMore: _loadingMore,
+            scopeKey: _scopeKey,
             onReload: _reload,
             onLoadMore: _loadMore,
-            onTap: _openFullscreen,
+            onTap: (index) => _openFullscreen(displayItems, index),
           );
         },
       ),
     );
   }
 
-  Widget _buildGrid() {
+  Widget _buildGrid(List<Map<String, dynamic>> items) {
     return _PhotosGridBody(
-      items: _items,
+      items: items,
       pagination: _pagination,
       loadingMore: _loadingMore,
+      scopeKey: _scopeKey,
       onReload: _reload,
       onLoadMore: _loadMore,
-      onTap: _openFullscreen,
+      onTap: (index) => _openFullscreen(items, index),
     );
   }
 }
@@ -159,6 +213,7 @@ class _PhotosGridBody extends StatelessWidget {
     required this.items,
     required this.pagination,
     required this.loadingMore,
+    required this.scopeKey,
     required this.onReload,
     required this.onLoadMore,
     required this.onTap,
@@ -167,6 +222,7 @@ class _PhotosGridBody extends StatelessWidget {
   final List<Map<String, dynamic>> items;
   final Map<String, dynamic>? pagination;
   final bool loadingMore;
+  final String scopeKey;
   final Future<void> Function() onReload;
   final VoidCallback onLoadMore;
   final ValueChanged<int> onTap;
@@ -210,15 +266,18 @@ class _PhotosGridBody extends StatelessWidget {
               ),
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
+                  final row = items[index];
                   final url = AppConstants.resolveMediaUrl(
-                    items[index]['imageUrl'] as String?,
+                    row['imageUrl'] as String?,
                   );
+                  final rowId = row['id'] as String? ?? url;
                   return GestureDetector(
                     onTap: () => onTap(index),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: Image.network(
                         url,
+                        key: ValueKey('$scopeKey|$rowId'),
                         fit: BoxFit.cover,
                         errorBuilder: (_, _, _) => Container(
                           color: AppTheme.primaryTint,
