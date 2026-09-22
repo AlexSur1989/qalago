@@ -9,7 +9,7 @@
 ## 2026-09-22 — Stage 6.12A.7.7.4 Business Web branch media UX
 
 - **Status:** 6.12A.7.7.4 IMPLEMENTED — READY FOR FLUTTER INTEGRATION (mobile not in this stage).
-- **Checkpoint (implementation):** `a88e31e` (see git `a88e31e…`).
+- **Checkpoint (implementation):** `a88e31e48a9f8e108ac1b8fbf583a92709a9c8fe`.
 - **Summary:**
   - **Business Web `/business/[id]/media`:** scope selector — **Общие фото** (brand) vs per-**BusinessLocation**; list uses **`scope=brand`** or **`locationId`** (A.7.7.2 management API).
   - **Upload/attach:** passes **`locationId`** for branch scope; brand cover action only in shared scope; plan quota uses **`usage.photos`** (Business-wide).
