@@ -9,7 +9,7 @@
 ## 2026-09-22 — Hotfix 6.12A.7.7.5.1 Flutter full gallery branch isolation
 
 - **Status:** A.7.7.5 HOTFIX 1 IMPLEMENTED — READY FOR SAMSUNG RETEST (physical QA not closed).
-- **Checkpoint (hotfix):** _(pending commit SHA)_.
+- **Checkpoint (hotfix):** `d5a498f`.
 - **Summary:**
   - **Root cause:** `BusinessPhotosScreen` kept mutable `_items` across visits to the same route (`/business/:id/photos`); seeding ran only when `_page == 1 && _items.isEmpty`, so opening L2 after L1 left stale L1 rows in the grid while detail/hero used fresh `effectiveMedia`.
   - **Fix:** scope key `businessId|locationId`; router `ValueKey` on gallery screen; page 1 always renders provider rows; pagination accumulation reset on scope change; regression tests L1↔L2.
