@@ -10,9 +10,14 @@ import '../../../shared/widgets/loading_view.dart';
 import '../providers/business_catalog_provider.dart';
 
 class BusinessPhotosScreen extends ConsumerStatefulWidget {
-  const BusinessPhotosScreen({super.key, required this.businessId});
+  const BusinessPhotosScreen({
+    super.key,
+    required this.businessId,
+    this.locationId,
+  });
 
   final String businessId;
+  final String? locationId;
 
   @override
   ConsumerState<BusinessPhotosScreen> createState() =>
@@ -28,6 +33,7 @@ class _BusinessPhotosScreenState extends ConsumerState<BusinessPhotosScreen> {
   BusinessPhotosQuery get _query => BusinessPhotosQuery(
         businessId: widget.businessId,
         page: _page,
+        locationId: widget.locationId,
       );
 
   Future<void> _reload() async {

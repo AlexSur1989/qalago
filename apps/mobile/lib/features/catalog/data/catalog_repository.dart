@@ -261,12 +261,14 @@ class CatalogRepository {
     String businessId, {
     int page = 1,
     int limit = 24,
+    String? locationId,
   }) async {
     final response = await _dio.get(
       '/businesses/$businessId/photos',
       queryParameters: {
         'page': page,
         'limit': limit,
+        if (locationId != null && locationId.isNotEmpty) 'locationId': locationId,
       },
     );
     return response.data as Map<String, dynamic>;

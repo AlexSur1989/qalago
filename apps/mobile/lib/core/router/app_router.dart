@@ -302,6 +302,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: '/business/:id/photos',
             builder: (context, state) => BusinessPhotosScreen(
               businessId: state.pathParameters['id']!,
+              locationId: parseSelectedLocationIdFromRoute(
+                state.uri.queryParameters['locationId'],
+              ),
             ),
           ),
           GoRoute(

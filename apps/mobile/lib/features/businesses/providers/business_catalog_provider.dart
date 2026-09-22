@@ -44,20 +44,23 @@ class BusinessPhotosQuery {
   const BusinessPhotosQuery({
     required this.businessId,
     this.page = 1,
+    this.locationId,
   });
 
   final String businessId;
   final int page;
+  final String? locationId;
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is BusinessPhotosQuery &&
           businessId == other.businessId &&
-          page == other.page;
+          page == other.page &&
+          locationId == other.locationId;
 
   @override
-  int get hashCode => Object.hash(businessId, page);
+  int get hashCode => Object.hash(businessId, page, locationId);
 }
 
 final businessPhotosPageProvider =
@@ -66,6 +69,7 @@ final businessPhotosPageProvider =
     return ref.watch(catalogRepositoryProvider).fetchBusinessPhotos(
           query.businessId,
           page: query.page,
+          locationId: query.locationId,
         );
   },
 );

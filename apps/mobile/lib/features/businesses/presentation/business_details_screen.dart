@@ -20,6 +20,7 @@ import '../../../shared/navigation/navigation_utils.dart';
 import '../../../shared/utils/audience_distance_bucket.dart';
 import '../../../shared/utils/json_parse.dart';
 import '../../../shared/utils/business_detail_utils.dart';
+import '../../../shared/utils/business_effective_media.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../../shared/widgets/qalago_components.dart';
@@ -273,7 +274,6 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                 address: address,
               ) !=
               null;
-          final galleryPreview = previewBlock(data, 'galleryPreview');
           final catalogPreview = previewBlock(data, 'catalogPreview');
           final promotionsPreview = previewBlock(data, 'promotionsPreview');
           final reviewsPreview = previewBlock(data, 'reviewsPreview');
@@ -293,29 +293,22 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
           final catalogTotal =
               catalogPreview?['totalCount'] as int? ?? catalogItems.length;
 
-          final galleryItems =
-              (galleryPreview?['items'] as List<dynamic>? ??
-                      data['images'] as List<dynamic>? ??
-                      [])
-                  .cast<Map<String, dynamic>>();
-          final galleryTotal =
-              galleryPreview?['totalCount'] as int? ?? galleryItems.length;
-
           final reviewItems =
               (reviewsPreview?['items'] as List<dynamic>? ?? [])
                   .cast<Map<String, dynamic>>();
           final reviewTotal =
               reviewsPreview?['totalCount'] as int? ?? reviewItems.length;
 
+          final detailMedia = resolveConsumerDetailMedia(data);
+          final galleryTotal = detailMedia.galleryTotalCount;
+          final photosLocationId = detailMedia.photosLocationId;
           final coverUrl = AppConstants.resolveMediaUrl(
-            data['coverImageUrl'] as String?,
+            detailMedia.coverImageUrlRaw,
           );
-          final galleryUrls = galleryItems
-              .map((image) =>
-                  AppConstants.resolveMediaUrl(image['imageUrl'] as String?))
+          final photoUrls = detailMedia.photoCarouselUrls
+              .map(AppConstants.resolveMediaUrl)
               .where((url) => url.isNotEmpty)
               .toList();
-          final photoUrls = [if (coverUrl.isNotEmpty) coverUrl, ...galleryUrls];
           final openStatus =
               computeOpenStatus(physical.workHours, timezone: cityTimezone);
           final openLabel = openStatusLabel(openStatus);
@@ -573,7 +566,15 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                               ? l10n.businessAllPhotos(galleryTotal)
                               : null,
                           onAction: galleryTotal > photoUrls.length
-                              ? () => context.push('/business/${widget.id}/photos')
+                              ? () {
+                                  final query = photosLocationId != null &&
+                                          photosLocationId.isNotEmpty
+                                      ? '?locationId=${Uri.encodeComponent(photosLocationId)}'
+                                      : '';
+                                  context.push(
+                                    '/business/${widget.id}/photos$query',
+                                  );
+                                }
                               : null,
                         ),
                         const SizedBox(height: 10),
