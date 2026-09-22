@@ -36,13 +36,13 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | 6.12A.7.7.2 | IMPLEMENTED | Upload attach/list scope + brand-only cover; public gallery excludes **`moderationHidden`** |
 | 6.12A.7.7.3 | IMPLEMENTED | Public **`effectiveMedia`** + **`/photos?locationId=`** — branch-first + shared; legacy detail gallery unchanged |
 | 6.12A.7.7.4 | IMPLEMENTED | **Business Web** owner media by scope (brand vs branch) |
-| 6.12A.7.7.5 | HOTFIX 1 | **Flutter** detail + gallery scoped by **`locationId`**; **HOTFIX 1** fixes stale L1 rows in full gallery after branch switch; Samsung retest pending |
+| 6.12A.7.7.5 | **PHYSICAL QA PASS** | **Flutter** detail + full gallery consume **`effectiveMedia`** / **`photos?locationId`**; Hotfix 1 gallery isolation; Samsung SM-J610FN L1/L2 verified |
 
 ## Business vs BusinessLocation
 
 - **Business:** brand identity — membership, reviews, favorites, plans, ads, analytics, gallery/catalog/promotions (Business-scoped).
 - **BusinessLocation:** physical branch identity — city, address, coords, hours, contacts; **Business 1:N BusinessLocation**.
-- **Business detail (A.7.6 / A.7.7.3 / A.7.7.5):** optional **`locationId`** selects active branch; **`effectivePhysical`** = physical UI; **`effectiveMedia`** = hero + preview + scoped **`/photos?locationId`** on **Flutter** (backend ordering authority). **`Business.id`** unchanged for reviews/favorites/analytics. **Samsung branch-media physical QA** still open.
+- **Business detail (A.7.6 / A.7.7.3 / A.7.7.5):** optional **`locationId`** selects active branch; **`effectivePhysical`** = physical UI; **`effectiveMedia`** = hero + preview + scoped **`/photos?locationId`** on **Flutter** (backend ordering authority). **`Business.id`** unchanged for reviews/favorites/analytics. **A.7.7.5 Flutter branch-media physical QA PASS** (Samsung); wider **A.7.7** admin/consumer closure not implied.
 - **Primary:** default active context when `locationId` omitted; **`isPrimary` badge ≠ forced active** when user/map selects another branch.
 - **Primary sync:** legacy **Business** physical columns mirror **primary** for backward compatibility; branch photos/catalog/promotions/reviews remain future work (not A.7.6).
 - **Branch media (A.7.7.1–7.7.5):** owner **Business Web** explicit scope; consumer **Flutter** reads **`effectiveMedia`**; backend remains source of truth for order/scope; plan quota Business-wide; **`moderationHidden`** never on public surfaces.

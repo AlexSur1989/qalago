@@ -6,30 +6,46 @@
 
 ---
 
+## 2026-09-22 — Stage 6.12A.7.7.5 physical QA closure (Flutter branch media)
+
+- **Status:** **6.12A.7.7.5 PHYSICAL QA PASS** — Flutter consumer branch media closed for this stage.
+- **Checkpoint (implementation):** `d30e55d5c2acbabb01aa804a8fff6ac6b5979fb9`.
+- **Checkpoint (hotfix 1):** `d5a498ffa2d655c03afcad00edb7a5160b2513a5`.
+- **Summary (physical):**
+  - **Device:** Samsung **SM-J610FN**, Android 10; fresh Hotfix 1 debug APK (`adb install -r`); catalog API **`http://172.158.10.133:3002/api/v1`**; **`QALAGO_NATIVE_MAP_BUSINESS_LAYER=true`**.
+  - **Bar Code 51** (`cmpn1wnq1000iult8yj6a06q7`): **L1** / **L2** branch media isolation verified both directions — branch hero + full gallery show own branch + shared brand only; **QA L1** / **QA L2** excluded on sibling branch.
+  - **Shared brand** images visible on both branches; **full gallery branch switching** verified after Hotfix 1.
+  - **API alignment:** L2 detail **`effectivePhysical.locationId`** and **`effectiveMedia.activeLocationId`** = L2; L2 **`/photos?locationId=`** excluded sibling branch QA rows (pre-cleanup).
+  - **Local QA fixture** removed post-pass (3 `BusinessImage` rows + `uploads/qa-a775/*.png`); legacy brand images, cover, L1/L2 locations unchanged.
+- **Deferred:** broader **A.7.7** track items outside this stage (e.g. Admin/Consumer Web media, owner Flutter upload scope); **F.4** URL architecture unchanged.
+- **Next:** planned A.7.7+ / admin-media stages per roadmap.
+
+---
+
 ## 2026-09-22 — Hotfix 6.12A.7.7.5.1 Flutter full gallery branch isolation
 
-- **Status:** A.7.7.5 HOTFIX 1 IMPLEMENTED — READY FOR SAMSUNG RETEST (physical QA not closed).
-- **Checkpoint (hotfix):** `d5a498f`.
+- **Status:** A.7.7.5 HOTFIX 1 IMPLEMENTED — **physical retest PASS** (see physical QA closure entry above).
+- **Checkpoint (hotfix):** `d5a498ffa2d655c03afcad00edb7a5160b2513a5`.
 - **Summary:**
   - **Root cause:** `BusinessPhotosScreen` kept mutable `_items` across visits to the same route (`/business/:id/photos`); seeding ran only when `_page == 1 && _items.isEmpty`, so opening L2 after L1 left stale L1 rows in the grid while detail/hero used fresh `effectiveMedia`.
   - **Fix:** scope key `businessId|locationId`; router `ValueKey` on gallery screen; page 1 always renders provider rows; pagination accumulation reset on scope change; regression tests L1↔L2.
   - **Backend:** unchanged (L2 `/photos?locationId=` already correct on server).
-- **Deferred:** Samsung SM-J610FN full-gallery retest on Bar Code 51 L2 fixture.
-- **Next:** physical QA closure for A.7.7.5 after hotfix APK.
+- **Deferred:** _(none — retest completed in physical QA closure)_.
+- **Next:** _(closed with A.7.7.5 physical QA)_.
 
 ---
 
 ## 2026-09-22 — Stage 6.12A.7.7.5 Flutter branch media integration
 
-- **Status:** 6.12A.7.7.5 IMPLEMENTED — HOTFIX 1 pending physical retest (Samsung branch media).
+- **Status:** 6.12A.7.7.5 IMPLEMENTED — **PHYSICAL QA PASS** (Samsung branch media + Hotfix 1 gallery isolation).
 - **Checkpoint (implementation):** `d30e55d5c2acbabb01aa804a8fff6ac6b5979fb9`.
 - **Summary:**
   - **Flutter detail:** consumes backend **`effectiveMedia`** for hero + preview strip when present; legacy **`coverImageUrl`/`galleryPreview`** fallback unchanged.
   - **Full gallery:** **`GET /businesses/:id/photos?locationId=`** carries active branch from detail; router preserves query.
   - **Dedupe:** cover URL not duplicated in carousel when already in preview items.
-  - **Physical QA:** not performed in this stage (emulator/unit only).
-- **Deferred:** Samsung L2 media physical QA; Consumer Web F.4; owner Flutter upload scope.
-- **Next:** physical QA closure for branch media on device.
+  - **Physical QA:** completed in separate closure entry (Samsung SM-J610FN).
+- **Deferred:** Consumer Web F.4; owner Flutter upload scope; Admin/Consumer branch media surfaces (outside A.7.7.5).
+- **Next:** roadmap stages after A.7.7.5 closure.
 
 ---
 
