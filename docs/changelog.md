@@ -9,7 +9,7 @@
 ## 2026-09-22 — Stage 6.12A.7.7.3 effective public media contract
 
 - **Status:** 6.12A.7.7.3 IMPLEMENTED — READY FOR OWNER/UI INTEGRATION (Flutter/Business Web not in this stage).
-- **Checkpoint (implementation):** see git HEAD after stage commit.
+- **Checkpoint (implementation):** `bd3136d8a` (see git `bd3136d…`).
 - **Summary:**
   - **`effectiveMedia`** on **`GET /businesses/:id?locationId=`** — active branch + shared brand images only; branch-first ordering; read-only branch hero **`coverImageUrl`**; uses same active-location resolver as **`effectivePhysical`**.
   - **`GET /businesses/:id/photos?locationId=`** — same resolver/ordering; legacy **`/photos`** without query stays Business-wide.
