@@ -32,21 +32,24 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | 6.12A.7.2 | PASS | Flutter map **physical key** = `locationId`; detail/reviews/favorites stay **Business.id** |
 | 6.12A.7.4 | FINALIZED | multi-branch map physical QA; public locations Hotfix 2 |
 | 6.12A.7.6 | CLOSED (physical QA PASS) | **`GET /businesses/:id?locationId=`** + **`effectivePhysical`** backend source of truth for detail physical UI |
-| 6.12A.7.7.1 | IMPLEMENTED | **`BusinessImage.locationId`** nullable — shared vs branch scope; composite FK |
-| 6.12A.7.7.2 | IMPLEMENTED | Upload attach/list scope + brand-only cover; public gallery excludes **`moderationHidden`** |
-| 6.12A.7.7.3 | IMPLEMENTED | Public **`effectiveMedia`** + **`/photos?locationId=`** — branch-first + shared; legacy detail gallery unchanged |
-| 6.12A.7.7.4 | IMPLEMENTED | **Business Web** owner media by scope (brand vs branch) |
-| 6.12A.7.7.5 | **PHYSICAL QA PASS** | **Flutter** detail + full gallery consume **`effectiveMedia`** / **`photos?locationId`**; Hotfix 1 gallery isolation; Samsung SM-J610FN L1/L2 verified |
-| 6.12A.7.7.6 | IMPLEMENTED | **Admin Web** **`MEDIA`** moderation shows shared vs branch scope on **`mediaTarget`**; full Admin gallery manager still deferred |
+| **6.12A.7.7** | **CLOSED** | **Branch media architecture finalized** — A.7.7.1–7.7.6 complete; closure audit PASS |
+| 6.12A.7.7.1 | CLOSED | **`BusinessImage.locationId`** nullable; same-business DB integrity |
+| 6.12A.7.7.2 | CLOSED | Owner management + public **`moderationHidden`** filter |
+| 6.12A.7.7.3 | CLOSED | **`effectiveMedia`** + scoped **`/photos?locationId=`** |
+| 6.12A.7.7.4 | CLOSED | **Business Web** shared/branch media UX |
+| 6.12A.7.7.5 | CLOSED (physical QA PASS) | **Flutter** + Hotfix 1; Samsung SM-J610FN L1/L2 verified |
+| 6.12A.7.7.6 | CLOSED | **Admin** **`MEDIA`** **`mediaTarget`** scope visibility |
+| 6.12A.7.8 | **NEXT (audit first)** | Catalog / promotions branch scope — **read-only architecture audit before implementation** |
 
 ## Business vs BusinessLocation
 
 - **Business:** brand identity — membership, reviews, favorites, plans, ads, analytics, gallery/catalog/promotions (Business-scoped).
 - **BusinessLocation:** physical branch identity — city, address, coords, hours, contacts; **Business 1:N BusinessLocation**.
-- **Business detail (A.7.6 / A.7.7.3 / A.7.7.5):** optional **`locationId`** selects active branch; **`effectivePhysical`** = physical UI; **`effectiveMedia`** = hero + preview + scoped **`/photos?locationId`** on **Flutter** (backend ordering authority). **`Business.id`** unchanged for reviews/favorites/analytics. **A.7.7.5 Flutter branch-media physical QA PASS** (Samsung); wider **A.7.7** admin/consumer closure not implied.
+- **Business detail (A.7.6 / A.7.7):** optional **`locationId`** selects active branch; **`effectivePhysical`** = physical UI; **`effectiveMedia`** = branch-aware public media (hero + preview + scoped **`/photos?locationId=`** on **Flutter**). **`Business.id`** unchanged for reviews/favorites/analytics. **6.12A.7.7 CLOSED** — branch media architecture finalized.
 - **Primary:** default active context when `locationId` omitted; **`isPrimary` badge ≠ forced active** when user/map selects another branch.
-- **Primary sync:** legacy **Business** physical columns mirror **primary** for backward compatibility; branch photos/catalog/promotions/reviews remain future work (not A.7.6).
-- **Branch media (A.7.7.1–7.7.6):** owner **Business Web** scope; consumer **Flutter** **`effectiveMedia`**; **Admin** moderation **`MEDIA`** cases show branch vs shared label (**`mediaTarget`**); backend source of truth; plan quota Business-wide; **`moderationHidden`** never on public surfaces. Full Admin gallery management **not** shipped.
+- **Primary sync:** legacy **Business** physical columns mirror **primary** for backward compatibility; branch **catalog/promotions** scoped in **A.7.8** (audit-first); branch reviews deferred.
+- **Branch media invariants (A.7.7 CLOSED):** shared = **`BusinessImage.locationId` null**; branch = **`locationId` = `BusinessLocation.id`** (same business); public branch view = **active branch media + shared brand** (never sibling branches); **`effectiveMedia`** is branch-aware public truth; legacy **`galleryPreview`** on detail is **compatibility-only** (not branch truth); **`Business.coverImageUrl`** remains **brand-level**; owner **Business Web** + consumer **Flutter** + **Admin MEDIA** moderation aligned; plan quota Business-wide; **`moderationHidden`** never on public surfaces.
+- **Branch media deferred / debt:** legacy business-wide **`galleryPreview`**; full Admin gallery manager; Admin upload/reorder; owner Flutter branch upload; Consumer Web branch media (**F.4**); orphan file GC; reorder API/UX; explicit branch cover column; branch-level moderation status; CDN migration.
 - **Cross-city:** secondary branches may live in other cities; discovery still uses **primary** `Business.cityId` until a later stage.
 - **Public read (A.6):** `GET /businesses/:id/locations/public` (ACTIVE only, guest-safe).
 - **Management (A.4):** authenticated CRUD + `set-primary`; **no DELETE** yet.

@@ -6,17 +6,35 @@
 
 ---
 
+## 2026-09-22 — Stage 6.12A.7.7 CLOSED — branch media architecture finalized
+
+- **Status:** **6.12A.7.7 CLOSED** — BRANCH MEDIA ARCHITECTURE FINALIZED.
+- **Checkpoint (closure):** `fe03caca4d066f901c6dca9e3c6109243181ff4a` (pre-closure docs); final closure docs commit follows.
+- **Summary (track):**
+  - **A.7.7.1** — **`BusinessImage.locationId`** nullable; shared vs branch; same-business composite FK integrity.
+  - **A.7.7.2** — Owner branch-aware list/attach/delete/cover; **`moderationHidden`** excluded from public reads.
+  - **A.7.7.3** — Public **`effectiveMedia`** + **`GET /photos?locationId=`** (branch-first + shared; sibling exclusion).
+  - **A.7.7.4** — **Business Web** shared/branch media management UX.
+  - **A.7.7.5** — **Flutter** consumer integration; Hotfix 1 full-gallery isolation; **Samsung SM-J610FN physical QA PASS**.
+  - **A.7.7.6** — **Admin Web** **`MEDIA`** moderation **`mediaTarget`** + shared/branch labels; moderation semantics unchanged.
+  - **Final closure audit:** **PASS** — no architecture blockers for track close.
+- **Invariants (retain):** **`Business.id`** = brand identity (reviews/favorites/analytics); **`BusinessLocation.id` / `locationId`** = branch context; shared media **`locationId = null`**; branch media scoped to owning location; public branch view = active branch + shared brand only (no sibling inheritance); **`effectiveMedia`** = branch-aware public source of truth; legacy **`galleryPreview`** compatibility-only (not branch truth); **`Business.coverImageUrl`** brand-level.
+- **Deferred (not blockers):** legacy business-wide **`galleryPreview`**; full Admin gallery manager; Admin upload/reorder; owner Flutter branch upload; Consumer Web branch media (**F.4**); image orphan-file GC; media reorder API/UX; explicit branch cover persistence; branch-level moderation status; CDN/object storage migration.
+- **Next:** **6.12A.7.8** — catalog / promotions branch scope — **start with read-only architecture audit** (ServiceMenuGroup / ServiceItem / Promotion shared-vs-branch scoping before schema changes). **Do not implement in closure task.**
+
+---
+
 ## 2026-09-22 — Stage 6.12A.7.7.6 Admin Web branch media visibility
 
-- **Status:** 6.12A.7.7.6 IMPLEMENTED — ADMIN BRANCH MEDIA VISIBILITY READY.
+- **Status:** 6.12A.7.7.6 IMPLEMENTED — closed under **6.12A.7.7** (see closure entry).
 - **Checkpoint (implementation):** `3c61e5d`.
 - **Summary:**
   - **Audit:** Admin Web had no `BusinessImage` gallery; **`MEDIA`** moderation cases were the only staff surface for reported business photos (backend `MEDIA_HIDE`/`MEDIA_RESTORE` existed; UI was review-only).
   - **API (additive):** `GET /admin/moderation/cases/:id` adds optional **`mediaTarget`** (`locationId`, branch address/city/`isPrimary`, `branchUnavailable`) — no schema/migration changes.
   - **Admin UI:** moderation case detail shows photo preview + **Общие фото** vs **Филиал: {address}** scope before actions; **`MEDIA_HIDE`/`MEDIA_RESTORE`** wired; RU/KK label helpers.
   - **Moderation semantics:** actions still target **`BusinessImage.id`** via case `targetId`; no branch-level moderation status.
-- **Deferred:** full Admin gallery manager, upload/reorder, Admin branch cover, Consumer Web F.4, wider A.7.7 admin/consumer closure.
-- **Next:** roadmap A.7.7+ / admin media management if scheduled.
+- **Deferred:** full Admin gallery manager, upload/reorder (see **6.12A.7.7** closure deferred list).
+- **Next:** _(track closed — A.7.8)_.
 
 ---
 
