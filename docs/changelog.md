@@ -9,7 +9,7 @@
 ## 2026-09-22 — Stage 6.12A.7.7.5 Flutter branch media integration
 
 - **Status:** 6.12A.7.7.5 IMPLEMENTED — READY FOR PHYSICAL QA (Samsung branch media).
-- **Checkpoint (implementation):** see git HEAD after stage commit.
+- **Checkpoint (implementation):** `d30e55d5c2acbabb01aa804a8fff6ac6b5979fb9`.
 - **Summary:**
   - **Flutter detail:** consumes backend **`effectiveMedia`** for hero + preview strip when present; legacy **`coverImageUrl`/`galleryPreview`** fallback unchanged.
   - **Full gallery:** **`GET /businesses/:id/photos?locationId=`** carries active branch from detail; router preserves query.
