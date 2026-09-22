@@ -296,7 +296,7 @@ describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () =>
       expect(preview.totalCount).toBe(2);
 
       const page = await publicContent.findPublicPhotos(business.id, { page: 1, limit: 10 });
-      expect(page.items.every((i) => i.moderationHidden === false)).toBe(true);
+      expect(page.items.map((i) => i.imageUrl)).not.toContain('/uploads/hidden.jpg');
       expect(page.totalCount).toBe(2);
     } finally {
       await prisma.business.delete({ where: { id: business.id } });

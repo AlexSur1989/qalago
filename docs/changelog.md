@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-09-22 — Stage 6.12A.7.7.3 effective public media contract
+
+- **Status:** 6.12A.7.7.3 IMPLEMENTED — READY FOR OWNER/UI INTEGRATION (Flutter/Business Web not in this stage).
+- **Checkpoint (implementation):** see git HEAD after stage commit.
+- **Summary:**
+  - **`effectiveMedia`** on **`GET /businesses/:id?locationId=`** — active branch + shared brand images only; branch-first ordering; read-only branch hero **`coverImageUrl`**; uses same active-location resolver as **`effectivePhysical`**.
+  - **`GET /businesses/:id/photos?locationId=`** — same resolver/ordering; legacy **`/photos`** without query stays Business-wide.
+  - **Single helper:** `business-effective-media.util.ts` shared by detail + photos; moderation → order → plan cap unchanged Business-wide.
+  - **Legacy preserved:** top-level **`coverImageUrl`**, **`galleryPreview`**, **`/photos`** without `locationId`.
+- **Deferred:** Flutter/Business Web/Admin/Consumer UI wiring — **A.7.7.4+**; explicit branch cover column — not this stage.
+- **Next:** client integration against **`effectiveMedia`**.
+
+---
+
 ## 2026-09-22 — Stage 6.12A.7.7.2 branch media management + public moderation
 
 - **Status:** 6.12A.7.7.2 IMPLEMENTED — READY FOR A.7.7.3 (public branch gallery).

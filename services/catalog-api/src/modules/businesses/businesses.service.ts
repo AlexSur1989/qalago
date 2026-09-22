@@ -951,11 +951,22 @@ export class BusinessesService {
       subcategories: subcategories.filter((s) => s.isActive),
     };
 
-    return attachEffectivePhysicalToDetail(
+    const withPhysical = attachEffectivePhysicalToDetail(
       withPreviews,
       locations,
       options?.locationId,
     );
+
+    const effectiveMedia = await this.publicContent.getEffectiveMediaForDetail(
+      id,
+      withPhysical.activeLocationId,
+      business.coverImageUrl,
+    );
+
+    return {
+      ...withPhysical,
+      effectiveMedia,
+    };
   }
 
   async findMy(user: AuthUser) {

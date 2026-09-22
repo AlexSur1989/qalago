@@ -23,6 +23,13 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { ListBusinessCatalogQueryDto } from './dto/business-catalog.dto';
 import { ListBusinessPhotosQueryDto } from './dto/business-photos.dto';
 import { PUBLIC_BUSINESS_IMAGE_WHERE } from '../uploads/business-image-scope.util';
+import {
+  buildEffectiveMediaDto,
+  selectEligibleVisibleImages,
+  toPublicEffectiveMediaItem,
+  type EffectiveMediaDto,
+} from './business-effective-media.util';
+import { resolveActiveBusinessLocationForDetail } from './business-effective-physical.util';
 
 const catalogItemSelect = {
   id: true,
@@ -85,8 +92,35 @@ export class BusinessPublicContentService {
   async fetchPublicVisibleBusinessImages(businessId: string) {
     return this.prisma.businessImage.findMany({
       where: { businessId, ...PUBLIC_BUSINESS_IMAGE_WHERE },
-      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }, { id: 'asc' }],
     });
+  }
+
+  /**
+   * Active-location scoped effective media (detail additive block).
+   * Sequence: active location → branch+brand eligibility → moderation (fetch) → order → plan cap → preview slice.
+   */
+  async getEffectiveMediaForDetail(
+    businessId: string,
+    activeLocationId: string | null,
+    brandCoverImageUrl: string | null,
+  ): Promise<EffectiveMediaDto> {
+    await this.assertActiveBusiness(businessId);
+    const ctx = await this.planLimits.getBusinessPlanContext(businessId);
+    const images = await this.fetchPublicVisibleBusinessImages(businessId);
+    const eligible = selectEligibleVisibleImages(images, activeLocationId, 'active_location');
+    const published = this.planLimits.applyPublicPhotoLimit(
+      eligible,
+      ctx.limits.maxPhotos,
+    );
+    const previewItems = sliceToPublicLimit(published, PUBLIC_GALLERY_PREVIEW_LIMIT);
+    return buildEffectiveMediaDto(
+      eligible,
+      activeLocationId,
+      brandCoverImageUrl,
+      published,
+      previewItems,
+    );
   }
 
   async getPublishedCatalogItems(businessId: string) {
@@ -191,13 +225,34 @@ export class BusinessPublicContentService {
     const page = query.page ?? 1;
     const limit = Math.min(query.limit ?? PUBLIC_GALLERY_DEFAULT_LIMIT, PUBLIC_GALLERY_MAX_LIMIT);
 
+    const trimmedLocationId = query.locationId?.trim();
+    let activeLocationId: string | null = null;
+    let mode: 'business_wide' | 'active_location' = 'business_wide';
+
+    if (trimmedLocationId) {
+      const locations = await this.prisma.businessLocation.findMany({
+        where: { businessId },
+        orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
+      });
+      const { location } = resolveActiveBusinessLocationForDetail(
+        locations,
+        trimmedLocationId,
+      );
+      activeLocationId = location?.id ?? null;
+      mode = 'active_location';
+    }
+
     const images = await this.fetchPublicVisibleBusinessImages(businessId);
+    const eligible = selectEligibleVisibleImages(images, activeLocationId, mode);
     const published = this.planLimits.applyPublicPhotoLimit(
-      images,
+      eligible,
       ctx.limits.maxPhotos,
     );
     const skip = (page - 1) * limit;
-    const items = published.slice(skip, skip + limit);
+    const pageRows = published.slice(skip, skip + limit);
+    const items = pageRows.map((row) =>
+      toPublicEffectiveMediaItem(row, activeLocationId, mode),
+    );
 
     return {
       items,

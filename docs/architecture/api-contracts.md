@@ -364,7 +364,42 @@ Query (Stage 6.12A.7.6, additive): optional **`locationId`** = `BusinessLocation
 
 Response includes optional `subcategories[]` (active public shape) when assigned. Stage 6.8C.1.
 
-Add **`activeLocationId`** (nullable) and **`effectivePhysical`** — server-resolved branch context for detail UI (address/coords/city from active location only; contacts/hours use location → business fallback):
+Add **`activeLocationId`** (nullable), **`effectivePhysical`**, and **`effectiveMedia`** (Stage 6.12A.7.7.3) — server-resolved branch context for detail UI:
+
+- **`effectivePhysical`:** address/coords/city from active location only; contacts/hours use location → business fallback.
+- **`effectiveMedia`:** branch-aware public gallery + hero for the **active** location only (see below). **Legacy** top-level **`coverImageUrl`** and **`galleryPreview`** remain **Business-wide** for old clients.
+
+```json
+"effectiveMedia": {
+  "activeLocationId": "bl…",
+  "coverImageUrl": "https://…",
+  "galleryPreview": {
+    "items": [
+      {
+        "id": "img…",
+        "imageUrl": "https://…",
+        "sortOrder": 0,
+        "locationId": "bl…",
+        "scope": "branch"
+      },
+      {
+        "id": "img…",
+        "imageUrl": "https://…",
+        "sortOrder": 1,
+        "locationId": null,
+        "scope": "brand"
+      }
+    ],
+    "totalCount": 4
+  }
+}
+```
+
+**`effectiveMedia` resolution (same active location as A.7.6):** omitted/invalid/foreign `locationId` → **primary** branch. Eligible images: **`locationId = activeLocationId` OR `locationId IS NULL`** (sibling branches excluded). Order: **branch images first**, then **shared/brand**; within each scope: `sortOrder`, `createdAt`, `id`. **`moderationHidden`** rows never appear. Plan photo cap is **Business-wide**, applied **after** scope + moderation + ordering. Preview slice uses the same fixed gallery preview limit as legacy detail.
+
+**`effectiveMedia.coverImageUrl` (read-only, does not write `Business.coverImageUrl`):** (1) first visible branch image for active location; (2) else canonical **`Business.coverImageUrl`** if it matches a visible shared image; (3) else first visible shared image; (4) else `null`.
+
+Legacy block (unchanged fields still present):
 
 ```json
 {
@@ -418,9 +453,17 @@ Only active items from active sections (or uncategorized). Sort: section `sortOr
 
 ### GET /businesses/:id/photos
 
-Paginated public gallery. Stage 6.12A.7.7.2: **`moderationHidden`** rows are **never** returned on public consumer surfaces. Order of limits: **moderation filter → plan photo cap → pagination/preview slice**. Branch-scoped public merge deferred to A.7.7.3 (gallery remains Business-level for now).
+Paginated public gallery. Stage 6.12A.7.7.2+: **`moderationHidden`** rows are **never** returned on public consumer surfaces.
 
-Query: `page` (default 1), `limit` (default 24, max 50).
+Query:
+
+| Param | Semantics |
+|-------|-----------|
+| `page`, `limit` | Pagination (defaults 1 / 24, max limit 50) |
+| `locationId` (optional, 6.12A.7.7.3) | Same active-location resolution as **`GET /businesses/:id`**. When set: returns **active branch + shared brand** images only (branch first), never sibling branches. Each item includes **`locationId`** and **`scope`** (`brand` \| `branch`). |
+| *(no `locationId`)* | **Backward compatible:** all visible Business images (Business-wide ordering), same as pre-7.7.3 clients. Items still include additive **`locationId`** / **`scope`** when present. |
+
+Order of limits: **resolve active location (if requested) → scope eligibility → moderation filter → deterministic order → plan photo cap → pagination**. Plan cap remains **Business-wide** (not per branch).
 
 Response: `{ "items": [...], "totalCount", "pagination": { ... } }`
 

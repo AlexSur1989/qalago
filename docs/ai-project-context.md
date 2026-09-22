@@ -33,16 +33,17 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | 6.12A.7.4 | FINALIZED | multi-branch map physical QA; public locations Hotfix 2 |
 | 6.12A.7.6 | CLOSED (physical QA PASS) | **`GET /businesses/:id?locationId=`** + **`effectivePhysical`** backend source of truth for detail physical UI |
 | 6.12A.7.7.1 | IMPLEMENTED | **`BusinessImage.locationId`** nullable — shared vs branch scope; composite FK |
-| 6.12A.7.7.2 | IMPLEMENTED | Upload attach/list scope + brand-only cover; public gallery excludes **`moderationHidden`**; **`effectiveMedia`** still **A.7.7.3** |
+| 6.12A.7.7.2 | IMPLEMENTED | Upload attach/list scope + brand-only cover; public gallery excludes **`moderationHidden`** |
+| 6.12A.7.7.3 | IMPLEMENTED | Public **`effectiveMedia`** + **`/photos?locationId=`** — branch-first + shared; legacy detail gallery unchanged |
 
 ## Business vs BusinessLocation
 
 - **Business:** brand identity — membership, reviews, favorites, plans, ads, analytics, gallery/catalog/promotions (Business-scoped).
 - **BusinessLocation:** physical branch identity — city, address, coords, hours, contacts; **Business 1:N BusinessLocation**.
-- **Business detail (A.7.6):** optional query **`locationId`** selects active branch; response **`effectivePhysical`** is the server-resolved physical context (contacts/hours: location → business fallback). **`Business.id`** remains canonical for reviews/favorites/analytics.
+- **Business detail (A.7.6 / A.7.7.3):** optional query **`locationId`** selects active branch; **`effectivePhysical`** = physical context; **`effectiveMedia`** = branch-first gallery + read-only hero for that branch + shared brand images (sibling branches excluded). **`Business.id`** remains canonical for reviews/favorites/analytics. **UI not wired yet** — contract only on API.
 - **Primary:** default active context when `locationId` omitted; **`isPrimary` badge ≠ forced active** when user/map selects another branch.
 - **Primary sync:** legacy **Business** physical columns mirror **primary** for backward compatibility; branch photos/catalog/promotions/reviews remain future work (not A.7.6).
-- **Branch media (A.7.7.1–7.7.2):** **`BusinessImage.locationId`** optional — **`null`** = shared/brand; **non-null** = branch scope; attach/list validate same business; **`Business.coverImageUrl`** brand-only (**shared** images); public **`galleryPreview`/`/photos`** filter **`moderationHidden`**; branch public merge → **A.7.7.3**.
+- **Branch media (A.7.7.1–7.7.3):** **`BusinessImage.locationId`** optional — **`null`** = shared/brand; attach/list validate same business; **`Business.coverImageUrl`** canonical brand cover (DB); public **`effectiveMedia.coverImageUrl`** is read-only branch hero resolver; legacy top-level **`galleryPreview`** / **`/photos`** without query remain Business-wide; **`moderationHidden`** never on public surfaces.
 - **Cross-city:** secondary branches may live in other cities; discovery still uses **primary** `Business.cityId` until a later stage.
 - **Public read (A.6):** `GET /businesses/:id/locations/public` (ACTIVE only, guest-safe).
 - **Management (A.4):** authenticated CRUD + `set-primary`; **no DELETE** yet.
