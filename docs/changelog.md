@@ -9,7 +9,7 @@
 ## 2026-09-22 — Stage 6.12A.7.7 CLOSED — branch media architecture finalized
 
 - **Status:** **6.12A.7.7 CLOSED** — BRANCH MEDIA ARCHITECTURE FINALIZED.
-- **Checkpoint (closure):** `fe03caca4d066f901c6dca9e3c6109243181ff4a` (pre-closure docs); final closure docs commit follows.
+- **Checkpoint (closure):** `dc4bb13b638b07c55c2f7248f11dab8af949d310`.
 - **Summary (track):**
   - **A.7.7.1** — **`BusinessImage.locationId`** nullable; shared vs branch; same-business composite FK integrity.
   - **A.7.7.2** — Owner branch-aware list/attach/delete/cover; **`moderationHidden`** excluded from public reads.
