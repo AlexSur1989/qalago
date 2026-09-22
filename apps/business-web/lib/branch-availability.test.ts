@@ -98,6 +98,12 @@ describe('branch availability UX model (6.12A.7.8.4)', () => {
     });
   });
 
+  it('G1 — unchanged branch with missing id still serializes SELECTED (edit guard is page-level)', () => {
+    const initial: BranchAvailability = { mode: 'SELECTED', locationIds: [MISSING] };
+    const next: BranchAvailability = { mode: 'SELECTED', locationIds: [MISSING] };
+    expect(branchAvailabilityChanged(initial, next)).toBe(false);
+  });
+
   it('G — unrelated edit preserves selection (PATCH omits branchAvailability)', () => {
     const initial: BranchAvailability = { mode: 'SELECTED', locationIds: [L1] };
     const next: BranchAvailability = { mode: 'SELECTED', locationIds: [L1] };

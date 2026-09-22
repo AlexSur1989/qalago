@@ -16,6 +16,7 @@ import {
 } from '@/lib/api';
 import { BranchAvailabilityField } from '@/components/branch-availability-field';
 import {
+  branchAvailabilityChanged,
   branchAvailabilityFromDto,
   branchAvailabilityToDto,
   DEFAULT_BRANCH_AVAILABILITY,
@@ -193,17 +194,20 @@ export default function BusinessPromotionsPage() {
   async function saveEdit(e: FormEvent) {
     e.preventDefault();
     if (!token || !editingPromo || !editForm || !editForm.title.trim()) return;
-    const branchValidation = validateBranchAvailabilitySubmit(editBranch, locations);
-    const branchMessage = branchValidationMessage(branchValidation);
-    if (branchMessage) {
-      setEditBranchError(branchMessage);
-      return;
+    const nextBranch = branchAvailabilityToDto(editBranch);
+    const branchChanged = branchAvailabilityChanged(editBranchInitial, nextBranch);
+    if (branchChanged) {
+      const branchValidation = validateBranchAvailabilitySubmit(editBranch, locations);
+      const branchMessage = branchValidationMessage(branchValidation);
+      if (branchMessage) {
+        setEditBranchError(branchMessage);
+        return;
+      }
     }
     setEditSaving(true);
     setError(null);
     setEditBranchError(null);
     try {
-      const nextBranch = branchAvailabilityToDto(editBranch);
       await ownerApi.updatePromotion(
         token,
         editingPromo.id,
