@@ -9,7 +9,7 @@
 ## 2026-09-22 — Stage 6.12A.7.8.4 Business Web branch availability UX
 
 - **Status:** **6.12A.7.8.4 IMPLEMENTED** — owner **Business Web** catalog + promotions **branch availability** controls (ALL / SELECTED); no backend/public surface changes.
-- **Checkpoint (implementation):** _(pending commit)_.
+- **Checkpoint (implementation):** `d23e1d7fb9a5bd2cc77edcb03f2d495e57c51d96`.
 - **Summary:**
   - **Service item** create/edit + **promotion** create/edit submit **`branchAvailability`** per **A.7.8.2**; edit PATCH **omits** unchanged assignments.
   - Reuses **`listBusinessLocations`** + shared **`formatBranchAvailabilityLabel`**; edit loads assignments via **`GET /service-items/manage/:businessId`** when paginated menu rows omit them.
