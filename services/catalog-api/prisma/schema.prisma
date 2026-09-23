@@ -763,6 +763,9 @@ model BusinessLocation {
   images                          BusinessImage[]
   serviceItemBranchAvailabilities ServiceItemBranchAvailability[]
   promotionBranchAvailabilities   PromotionBranchAvailability[]
+  adCampaignTargetLocations       AdCampaign[]                    @relation("AdCampaignTargetLocation")
+  adCampaignDestinationLocations  AdCampaign[]                    @relation("AdCampaignDestinationLocation")
+  analyticsEvents                 AnalyticsEvent[]                @relation("AnalyticsEventBranchLocation")
 
   @@unique([businessId, id])
   @@index([businessId])
@@ -1039,6 +1042,9 @@ model AnalyticsEvent {
   catalogItem            ServiceItem?               @relation(fields: [catalogItemId], references: [id], onDelete: SetNull)
   campaign               AdCampaign?                @relation(fields: [campaignId], references: [id], onDelete: SetNull)
   placement              AdPlacement?               @relation(fields: [placementId], references: [id], onDelete: SetNull)
+  /// Optional branch context for interaction attribution (not user GPS). Stage 6.12A.8.1.
+  businessLocationId     String?
+  branchLocation         BusinessLocation?          @relation("AnalyticsEventBranchLocation", fields: [businessLocationId], references: [id], onDelete: SetNull)
 
   @@index([businessId, type])
   @@index([businessId, type, trafficSource])
@@ -1049,6 +1055,8 @@ model AnalyticsEvent {
   @@index([promotionId])
   @@index([catalogItemId])
   @@index([campaignId])
+  @@index([campaignId, businessLocationId])
+  @@index([businessLocationId, type, createdAt])
   @@index([placementId])
   @@index([sessionId])
   @@index([visitorHash])
@@ -1358,9 +1366,15 @@ model AdCampaign {
   clickCount           Int                   @default(0)
   lastShownAt          DateTime?
   lastTopPositionAt    DateTime?
+  /// Optional serve eligibility narrowing (null = city/category behavior unchanged). Stage 6.12A.8.1.
+  targetBusinessLocationId      String?
+  /// Optional branch opened after tap/deep-link (null = default destination rules). Stage 6.12A.8.1.
+  destinationBusinessLocationId String?
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   business             Business              @relation(fields: [businessId], references: [id], onDelete: Restrict)
+  targetBusinessLocation      BusinessLocation? @relation("AdCampaignTargetLocation", fields: [businessId, targetBusinessLocationId], references: [businessId, id], onDelete: Restrict)
+  destinationBusinessLocation BusinessLocation? @relation("AdCampaignDestinationLocation", fields: [businessId, destinationBusinessLocationId], references: [businessId, id], onDelete: Restrict)
   orderItem            OrderItem?            @relation(fields: [orderItemId], references: [id], onDelete: SetNull)
   product              MonetizationProduct   @relation(fields: [productId], references: [id], onDelete: Restrict)
   creative             AdCreative?           @relation(fields: [creativeId], references: [id], onDelete: SetNull)
@@ -1378,6 +1392,8 @@ model AdCampaign {
   @@index([startAt])
   @@index([endAt])
   @@index([businessId, status])
+  @@index([targetBusinessLocationId])
+  @@index([destinationBusinessLocationId])
 }
 
 model AdCampaignPlacement {

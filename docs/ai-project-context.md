@@ -55,8 +55,18 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | 6.12A.7.9.5 | **PASS (Flutter automated)** | Discovery cards → detail **`locationId`** from backend **`contextLocationId`**; map keeps marker **`locationId`**; favorites/reviews **Business.id** |
 | **6.12A.7.9.6** | **CLOSED (physical QA PASS)** | Samsung SM-J610FN: discovery **Business-grain** + map **BusinessLocation-grain**; detail branch switch; branch-aware **catalog/promotions** full lists; fixture cleaned (dev); impl checkpoints `4a24b43` / `d7b25ea` |
 | **6.12A.7.QA** | **CLOSED (audit PASS)** | Final read-only BusinessLocation E2E architecture audit — **READY FOR A.8**; no P0/P1; findings **QA-001..QA-008** backlog only |
+| **6.12A.8.0** | **CLOSED (audit PASS)** | Read-only ads/analytics location hooks audit — implementation plan ready |
+| **6.12A.8.1** | **PASS (foundation)** | Nullable schema + API contract hooks: campaign **target** / **destination** branch FKs; `AnalyticsEvent.businessLocationId`; serve DTO fields present but **null** until A.8.3; no serving/nav/client analytics yet |
 
-**Next stage:** **6.12A.8** — Ads / Analytics location hooks.
+**Next stage:** **6.12A.8.2** — campaign location validation / provisioning.
+
+## Ads / Analytics location (A.8)
+
+- **Ownership:** **AdCampaign** remains **Business-grain** (`businessId` required).
+- **Targeting (optional):** `targetBusinessLocationId` — serve eligibility narrowing (`null` = legacy city/category behavior).
+- **Destination (optional):** `destinationBusinessLocationId` — branch opened after tap (`null` until A.8.3 resolution).
+- **Attribution (optional):** `AnalyticsEvent.businessLocationId` — **branch interaction context**, not user GPS; public organic ingestion **A.8.5**; ad events stay server-trusted later.
+- **Deferred:** ALL/APP/WEB campaign channel; WEB_MOBILE/WEB_DESKTOP analytics split; **A8-001/A8-002** behavior fixes through A.8.3–A.8.5.
 
 ## Business vs BusinessLocation
 

@@ -594,6 +594,12 @@ export type MonetizationCampaign = {
   creative?: { id: string; title?: string; moderationStatus: string } | null;
   placements?: Array<{ code: string; name: string; nameRu?: string }>;
   metrics?: { servedCount: number; qualifiedImpressions: number; clickCount: number };
+  cityId?: string | null;
+  categoryId?: string | null;
+  /** Optional serve eligibility branch (A.8.1 foundation). */
+  targetBusinessLocationId?: string | null;
+  /** Optional tap/deep-link branch (A.8.1 foundation). */
+  destinationBusinessLocationId?: string | null;
 };
 
 export type MonetizationCreative = {

@@ -63,6 +63,8 @@ class AdItemModel {
     this.business,
     this.creative,
     this.promotion,
+    this.destinationLocationId,
+    this.contextLocationId,
   });
 
   final String campaignId;
@@ -75,6 +77,8 @@ class AdItemModel {
   final Map<String, dynamic>? business;
   final AdCreativeModel? creative;
   final Map<String, dynamic>? promotion;
+  final String? destinationLocationId;
+  final String? contextLocationId;
 
   factory AdItemModel.fromJson(Map<String, dynamic> json) {
     final creativeJson = json['creative'] as Map<String, dynamic>?;
@@ -91,6 +95,8 @@ class AdItemModel {
       creative:
           creativeJson != null ? AdCreativeModel.fromJson(creativeJson) : null,
       promotion: promotionJson,
+      destinationLocationId: json['destinationLocationId'] as String?,
+      contextLocationId: json['contextLocationId'] as String?,
     );
   }
 

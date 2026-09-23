@@ -281,6 +281,10 @@ export class AdServingService {
       sponsored: true as const,
       displayLabel: SPONSORED_DISPLAY_LABEL,
       productType: campaign.product.type,
+      /** Resolved in A.8.3 — foundation field remains null until serving logic ships. */
+      destinationLocationId: null as string | null,
+      /** Promotion/list context mirror — populated in A.8.3 when applicable. */
+      contextLocationId: null as string | null,
     };
 
     switch (campaign.product.type) {

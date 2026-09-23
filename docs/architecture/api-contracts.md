@@ -937,6 +937,8 @@ Optional Stage 6.5 context fields:
 `clientEventId` (idempotency), `visitorId` (pseudonymized server-side), `sessionId`,
 `discoverySurface`, `promotionId`, `catalogItemId`, `platform`, `position`, `cityId` (for `SEARCH_PERFORMED`).
 
+**Stage 6.12A.8.1:** DB column `AnalyticsEvent.businessLocationId` exists for optional **branch interaction context** (not user GPS). Public request field **`businessLocationId` is not accepted yet** on this endpoint (**A.8.5** validation) to prevent spoofed branch attribution.
+
 Ad events (`AD_*`) remain on `POST /monetization/ads/events` only.
 
 Response `201`:
@@ -1375,11 +1377,35 @@ Domain errors include stable `code` in body:
       "sponsored": true,
       "displayLabel": "Реклама",
       "productType": "FEATURED_BUSINESS",
+      "destinationLocationId": null,
+      "contextLocationId": null,
       "business": { "id": "...", "title": "...", "slug": "...", "...": "..." }
     }
   ]
 }
 ```
+
+**Stage 6.12A.8.1 — optional branch fields (foundation only):**
+
+| Field | Meaning | Populated |
+|-------|---------|-----------|
+| `destinationLocationId` | Branch to open after tap / deep-link | **A.8.3** serving resolution (currently `null`) |
+| `contextLocationId` | Optional promotion/list branch mirror on serve item | **A.8.3** when applicable (currently `null`) |
+
+Campaign ownership remains **`businessId`**. These fields do **not** replace Business-grain identity.
+
+**Owner/admin campaign objects** (`GET /monetization/campaigns`, `GET /monetization/campaigns/:id`, admin list/detail) may include nullable:
+
+| Field | Meaning |
+|-------|---------|
+| `targetBusinessLocationId` | Optional **serve eligibility** narrowing to one branch (`null` = unchanged city/category behavior) |
+| `destinationBusinessLocationId` | Optional **tap destination** branch (`null` = default destination rules in A.8.3+) |
+
+Composite DB FKs on **AdCampaign** enforce `(businessId, locationId)` belongs to the campaign owner; **`ON DELETE RESTRICT`** on branch delete while referenced (clear campaign fields in **A.8.2** lifecycle). **AnalyticsEvent** uses `businessLocationId` → `BusinessLocation.id` with **`ON DELETE SET NULL`**; `businessId` ↔ branch consistency on ingest → **A.8.5**. Provisioning/checkout assignment → **A.8.2**.
+
+**Organic analytics** (`POST /analytics/events`): optional `businessLocationId` for **branch interaction context** (not user GPS) is **schema-ready** but **public DTO acceptance deferred to A.8.5** to avoid spoofed attribution before server validation.
+
+**Ad events** (`POST /monetization/ads/events`): **no client `locationId`** in A.8.1; future branch context on `AD_*` events will be server-derived/validated (A.8.3/A.8.5).
 
 - `POST /monetization/ads/events` — track impression/click/action (rate limit 120/min/IP)
 

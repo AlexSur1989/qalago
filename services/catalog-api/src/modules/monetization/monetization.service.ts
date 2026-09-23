@@ -601,6 +601,8 @@ export class MonetizationService {
     clickCount: number;
     cityId: string;
     categoryId: string | null;
+    targetBusinessLocationId?: string | null;
+    destinationBusinessLocationId?: string | null;
     product: { code: string; name: string; type: MonetizationProductType };
     creative?: {
       id: string;
@@ -660,6 +662,8 @@ export class MonetizationService {
       },
       cityId: campaign.cityId,
       categoryId: campaign.categoryId,
+      targetBusinessLocationId: campaign.targetBusinessLocationId ?? null,
+      destinationBusinessLocationId: campaign.destinationBusinessLocationId ?? null,
     };
   }
 }

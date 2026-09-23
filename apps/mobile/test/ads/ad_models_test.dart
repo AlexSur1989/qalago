@@ -48,6 +48,24 @@ void main() {
       expect(item.campaignId, 'camp-1');
       expect(item.position, 2);
       expect(item.toBusinessModel()?.id, 'biz-1');
+      expect(item.destinationLocationId, isNull);
+      expect(item.contextLocationId, isNull);
+    });
+
+    test('optional serve location fields parse when present', () {
+      final item = AdItemModel.fromJson({
+        'campaignId': 'camp-1',
+        'placementId': 'pl-1',
+        'placementCode': 'HOME_FEATURED',
+        'position': 1,
+        'sponsored': true,
+        'displayLabel': 'Реклама',
+        'destinationLocationId': 'loc-dest',
+        'contextLocationId': 'loc-ctx',
+        'business': {'id': 'biz-1', 'title': 'Cafe', 'slug': 'cafe'},
+      });
+      expect(item.destinationLocationId, 'loc-dest');
+      expect(item.contextLocationId, 'loc-ctx');
     });
 
     test('5. empty ads list', () {

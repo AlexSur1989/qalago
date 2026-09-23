@@ -6,6 +6,31 @@
 
 ---
 
+## 2026-09-24 — Stage 6.12A.8.1 Ads / Analytics location context (schema foundation)
+
+- **Status:** **6.12A.8.1 PASS — LOCATION CONTEXT FOUNDATION IMPLEMENTED** (schema + contracts; **no serving/navigation/analytics client behavior yet**).
+- **Checkpoint (implementation):** _(set at commit)_.
+- **Summary:**
+  - **A.8.0 accepted:** AdCampaign stays **Business-owned**; separate optional **target** (serve narrowing), **destination** (tap branch), **analytics branch context** (interaction attribution, not user GPS).
+  - **Prisma:** nullable `AdCampaign.targetBusinessLocationId`, `AdCampaign.destinationBusinessLocationId`; nullable `AnalyticsEvent.businessLocationId`; **AdCampaign** composite same-business FKs `(businessId, locationId)` → `BusinessLocation` with **`ON DELETE RESTRICT`** (composite `SET NULL` incompatible with required `businessId`); **AnalyticsEvent** single-column FK `businessLocationId` → `BusinessLocation.id` with **`ON DELETE SET NULL`**; indexes on campaign location columns + analytics `(businessLocationId,type,createdAt)` and `(campaignId,businessLocationId)`.
+  - **Migration:** `20260924120000_stage_6_12a8_1_ad_analytics_location_context` + `20260924121500_stage_6_12a8_1_fk_semantics_fix` — additive/nullable; existing rows unchanged (dev snapshot: **20** campaigns, **6132** analytics events, all new location fields **NULL**).
+  - **API contracts:** serve items expose nullable `destinationLocationId` / `contextLocationId` (**null until A.8.3**); campaign list/detail expose nullable target/destination IDs; organic `businessLocationId` on `POST /analytics/events` **deferred to A.8.5**; ad events still **no client location**.
+  - **Flutter:** `AdItemModel` parses optional serve location fields only (no navigation change).
+- **Deferred / not in this stage:** serving resolution, provisioning validation, PBA at serve, Flutter ad tap branch, Business/Admin branch pickers, ALL/APP/WEB channel, WEB_MOBILE/WEB_DESKTOP split, AD_* platform enrichment (**A.8.6**).
+- **Open findings (unchanged):** **A8-001** ad tap loses branch; **A8-002** promotion ad may resolve wrong branch — fix in **A.8.3/A.8.4/A.8.2**.
+- **Next:** **6.12A.8.2** — campaign location validation / provisioning.
+
+---
+
+## 2026-09-24 — Stage 6.12A.8.0 Ads / Analytics location hooks (read-only audit)
+
+- **Status:** **6.12A.8.0 AUDIT PASS — IMPLEMENTATION PLAN READY** (read-only; no code).
+- **Checkpoint:** `743da5dac1995bcc17e573917c12ff9a6228e4b6`.
+- **Summary:** Inventory of ads + analytics domains; confirmed **Business-grain** campaign ownership; no `BusinessLocation` dimension today; recommended nullable target/destination + optional `AnalyticsEvent.businessLocationId`; staged plan **A.8.1–A.8.8**.
+- **Next:** **6.12A.8.1** (this stage).
+
+---
+
 ## 2026-09-24 — Stage 6.12A.7.QA Final BusinessLocation E2E architecture audit
 
 - **Status:** **6.12A.7.QA AUDIT PASS — READY FOR A.8** (read-only audit; **no new physical QA**).
