@@ -17,6 +17,10 @@ import {
   monetizationBadRequest,
   monetizationNotFound,
 } from './errors/monetization.errors';
+import {
+  parseCampaignLocationFieldsFromMeta,
+  validateAndResolveCampaignLocationContext,
+} from './utils/campaign-location-context.util';
 
 type OrderItemMeta = {
   desiredStartAt?: string;
@@ -26,6 +30,8 @@ type OrderItemMeta = {
   durationHours?: number;
   durationDays?: number;
   categoryId?: string;
+  targetBusinessLocationId?: string;
+  destinationBusinessLocationId?: string;
 };
 
 @Injectable()
@@ -286,22 +292,41 @@ export class CampaignProvisioningService {
       );
     }
 
+    const promotionIdForCampaign =
+      ctx.product.type === MonetizationProductType.PROMOTED_PROMOTION
+        ? ctx.promotionId ?? ctx.metadata.promotionId ?? null
+        : null;
+
+    const locationFromMeta = parseCampaignLocationFieldsFromMeta(
+      ctx.metadata as Prisma.JsonValue,
+    );
+    const resolvedLocations = await validateAndResolveCampaignLocationContext(tx, {
+      businessId: ctx.businessId,
+      cityId: ctx.cityId,
+      productType: ctx.product.type,
+      promotionId: promotionIdForCampaign,
+      targetBusinessLocationId:
+        ctx.metadata.targetBusinessLocationId ?? locationFromMeta.targetBusinessLocationId,
+      destinationBusinessLocationId:
+        ctx.metadata.destinationBusinessLocationId ??
+        locationFromMeta.destinationBusinessLocationId,
+    });
+
     const campaign = await tx.adCampaign.create({
       data: {
         businessId: ctx.businessId,
         orderItemId: ctx.orderItemId,
         productId: ctx.product.id,
         creativeId,
-        promotionId:
-          ctx.product.type === MonetizationProductType.PROMOTED_PROMOTION
-            ? ctx.promotionId ?? ctx.metadata.promotionId ?? null
-            : null,
+        promotionId: promotionIdForCampaign,
         cityId: ctx.cityId,
         categoryId:
           ctx.product.type === MonetizationProductType.TOP_CATEGORY ||
           ctx.product.type === MonetizationProductType.BOOST
             ? ctx.categoryId
             : null,
+        targetBusinessLocationId: resolvedLocations.targetBusinessLocationId,
+        destinationBusinessLocationId: resolvedLocations.destinationBusinessLocationId,
         status: schedule.status,
         startAt: schedule.startAt,
         endAt: schedule.endAt,

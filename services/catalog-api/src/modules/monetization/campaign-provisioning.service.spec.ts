@@ -194,7 +194,16 @@ describe('CampaignProvisioningService', () => {
       },
       adCampaign: { create: jest.fn().mockResolvedValue({ id: 'camp' }), count: jest.fn().mockResolvedValue(0) },
       adCampaignPlacement: { create: jest.fn() },
-      promotion: { findFirst: jest.fn().mockResolvedValue({ id: 'promo-1' }) },
+      promotion: {
+        findFirst: jest.fn().mockResolvedValue({
+          id: 'promo-1',
+          branchAvailabilities: [],
+        }),
+      },
+      businessLocation: {
+        findFirst: jest.fn().mockResolvedValue({ id: 'loc-1', businessId: 'biz-1', cityId: 'city-1' }),
+        findMany: jest.fn().mockResolvedValue([{ id: 'loc-1' }]),
+      },
     };
 
     await service.provisionOrderCampaigns(tx as never, 'ord-1', new Date());

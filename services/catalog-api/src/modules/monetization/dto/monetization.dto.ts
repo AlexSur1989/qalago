@@ -113,6 +113,16 @@ export class CreateOrderItemDto {
   @IsString()
   creativeId?: string;
 
+  /** Optional serve-eligibility branch (validated at order + provisioning). Stage 6.12A.8.2. */
+  @IsOptional()
+  @IsString()
+  targetBusinessLocationId?: string;
+
+  /** Optional tap destination branch (validated at order + provisioning). Stage 6.12A.8.2. */
+  @IsOptional()
+  @IsString()
+  destinationBusinessLocationId?: string;
+
   /** Ignored by backend. */
   @IsOptional()
   @Type(() => Number)
@@ -141,6 +151,14 @@ export class CreateOrderDto {
   @IsOptional()
   @IsString()
   promotionId?: string;
+
+  @IsOptional()
+  @IsString()
+  targetBusinessLocationId?: string;
+
+  @IsOptional()
+  @IsString()
+  destinationBusinessLocationId?: string;
 
   @IsOptional()
   @IsArray()

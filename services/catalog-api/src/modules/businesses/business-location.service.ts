@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { rethrowLocationDeleteConflict } from '../../common/utils/branch-availability-management.util';
+import { clearAdCampaignBranchReferencesBeforeDelete } from '../monetization/utils/campaign-location-context.util';
 import { BusinessPermission, BusinessStatus, Prisma } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { BusinessAccessService } from '../../common/services/business-access.service';
@@ -168,11 +169,14 @@ export class BusinessLocationService {
     if (location.isPrimary) {
       throw new BadRequestException('Primary branch cannot be deleted');
     }
-    try {
-      await this.prisma.businessLocation.delete({ where: { id: locationId } });
-    } catch (error) {
-      rethrowLocationDeleteConflict(error);
-    }
+    await this.prisma.$transaction(async (tx) => {
+      await clearAdCampaignBranchReferencesBeforeDelete(tx, businessId, locationId);
+      try {
+        await tx.businessLocation.delete({ where: { id: locationId } });
+      } catch (error) {
+        rethrowLocationDeleteConflict(error);
+      }
+    });
     return { success: true };
   }
 

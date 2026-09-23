@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-09-24 — Stage 6.12A.8.2 Campaign location validation + provisioning
+
+- **Status:** **6.12A.8.2 PASS — CAMPAIGN LOCATION VALIDATION IMPLEMENTED**.
+- **Checkpoint (implementation):** _(set at commit)_.
+- **Summary:**
+  - **`validateAndResolveCampaignLocationContext`** — same-business branch ownership, **campaign.cityId ↔ BusinessLocation.cityId** alignment, **target ≠ destination** rejected when both set, **PROMOTED_PROMOTION** + **PBA** rules (`isPromotionEffectiveAtLocation`), single selected branch auto-destination at provision/order when exactly one eligible branch in city.
+  - **Order + provisioning:** optional `targetBusinessLocationId` / `destinationBusinessLocationId` on `CreateOrderItemDto` / `CreateOrderDto`; validated at order build + `CampaignProvisioningService.createCampaignForProduct`; stored on `AdCampaign` + order item metadata.
+  - **Branch delete:** `clearAdCampaignBranchReferencesBeforeDelete` in transaction before location delete; clears nullable campaign refs when safe; **Conflict** when multi-branch promotion campaign would become ambiguous.
+  - **Legacy:** null location fields unchanged for existing campaigns; **Business.cityId** still drives default `campaign.cityId` when no branch input (A.8.4/A.8.3 serve/nav still open).
+- **Findings:** **A8-002** configuration/PBA protection **partial** (stored campaigns validated; **serve + tap** still A.8.3/A.8.4). **A8-001** **OPEN**. **A8-004** location-aware path fixed; legacy Business.cityId default remains until multi-city purchase UX.
+- **Next:** **6.12A.8.3** — branch-aware ad serving.
+
+---
+
 ## 2026-09-24 — Stage 6.12A.8.1 Ads / Analytics location context (schema foundation)
 
 - **Status:** **6.12A.8.1 PASS — LOCATION CONTEXT FOUNDATION IMPLEMENTED** (schema + contracts; **no serving/navigation/analytics client behavior yet**).

@@ -1401,7 +1401,22 @@ Campaign ownership remains **`businessId`**. These fields do **not** replace Bus
 | `targetBusinessLocationId` | Optional **serve eligibility** narrowing to one branch (`null` = unchanged city/category behavior) |
 | `destinationBusinessLocationId` | Optional **tap destination** branch (`null` = default destination rules in A.8.3+) |
 
-Composite DB FKs on **AdCampaign** enforce `(businessId, locationId)` belongs to the campaign owner; **`ON DELETE RESTRICT`** on branch delete while referenced (clear campaign fields in **A.8.2** lifecycle). **AnalyticsEvent** uses `businessLocationId` → `BusinessLocation.id` with **`ON DELETE SET NULL`**; `businessId` ↔ branch consistency on ingest → **A.8.5**. Provisioning/checkout assignment → **A.8.2**.
+Composite DB FKs on **AdCampaign** enforce `(businessId, locationId)` belongs to the campaign owner; **`ON DELETE RESTRICT`** on branch delete while referenced (clear campaign fields in **A.8.2** lifecycle). **AnalyticsEvent** uses `businessLocationId` → `BusinessLocation.id` with **`ON DELETE SET NULL`**; `businessId` ↔ branch consistency on ingest → **A.8.5**.
+
+**Stage 6.12A.8.2 — campaign branch validation (implemented):**
+
+| Rule | Behavior |
+|------|----------|
+| Ownership | `targetBusinessLocationId` / `destinationBusinessLocationId` must belong to campaign `businessId` (composite FK + service check). |
+| City | When a branch is set, **`BusinessLocation.cityId` must equal `AdCampaign.cityId`** (physical authority; not `Business.cityId`). |
+| Target vs destination | Independent concepts; if **both** are set they **must be the same branch** (v1 — no advertise-L1/open-L2). |
+| Promotion destination | `destinationBusinessLocationId` must satisfy **PBA** for `promotionId` when set. |
+| PROMOTED_PROMOTION + null destination | **ALL branches** (zero PBA rows): destination may stay null until A.8.3. **SELECTED PBA:** exactly **one** eligible branch in campaign city → auto-stored as destination at order/provision; **>1** eligible → **`PROMOTION_DESTINATION_BRANCH_REQUIRED`** until explicit destination. |
+| Checkout input | Optional `targetBusinessLocationId` / `destinationBusinessLocationId` on **`POST /monetization/orders`** line items (and package order body); copied to order item metadata and provisioned onto `AdCampaign`. |
+| Branch delete | Owner **`DELETE`** location: nullable campaign target/destination pointers cleared in one transaction when resulting campaign config remains valid; otherwise **`409`** `BUSINESS_LOCATION_DELETE_BLOCKED` (same family as catalog/promotion assignment conflicts). |
+| Legacy default | No branch fields → **`campaign.cityId` still from `Business.cityId`** at provision (unchanged). |
+
+Serving still does **not** filter/respond by branch (**A.8.3**). Ad tap navigation unchanged (**A.8.4**).
 
 **Organic analytics** (`POST /analytics/events`): optional `businessLocationId` for **branch interaction context** (not user GPS) is **schema-ready** but **public DTO acceptance deferred to A.8.5** to avoid spoofed attribution before server validation.
 

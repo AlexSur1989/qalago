@@ -142,7 +142,7 @@ export function rethrowLocationDeleteConflict(error: unknown): never {
     throw new ConflictException({
       code: BusinessLocationDeleteBlockedCode,
       message:
-        'This branch cannot be deleted while catalog items, promotions, or other branch-scoped data still reference it. Update or remove those references first.',
+        'This branch cannot be deleted while catalog items, promotions, ad campaigns, or other branch-scoped data still reference it. Update or remove those references first.',
     });
   }
   throw error;

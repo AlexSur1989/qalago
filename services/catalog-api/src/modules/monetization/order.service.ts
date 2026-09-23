@@ -42,6 +42,7 @@ import {
 } from './utils/purchase-intent.util';
 import { calcDiscountAmount, sumFinalPrices } from './utils/money.util';
 import { generateUniqueOrderNumber } from './utils/order-number.util';
+import { validateAndResolveCampaignLocationContext } from './utils/campaign-location-context.util';
 
 type PricedOrderLine = {
   productId: string;
@@ -197,12 +198,20 @@ export class OrderService {
         finalPrice,
         durationDays: pkg!.durationDays,
         packageSnapshot: snapshot,
-        metadata: {
-          packageCode: pkg!.code,
-          creativeId: dto.creativeId,
-          desiredStartAt: dto.desiredStartAt,
-          promotionId: dto.promotionId,
-        },
+        metadata: await this.resolvePackageLineMetadata(
+          dto.businessId,
+          business.cityId,
+          pkg!.items.map((i) => i.product.type),
+          dto.promotionId,
+          dto.targetBusinessLocationId,
+          dto.destinationBusinessLocationId,
+          {
+            packageCode: pkg!.code,
+            creativeId: dto.creativeId,
+            desiredStartAt: dto.desiredStartAt,
+            promotionId: dto.promotionId,
+          },
+        ),
       },
     ];
 
@@ -293,6 +302,18 @@ export class OrderService {
         );
       }
 
+      const resolvedLocations = await validateAndResolveCampaignLocationContext(
+        this.prisma,
+        {
+          businessId,
+          cityId: business.cityId,
+          productType: product!.type,
+          promotionId: item.promotionId ?? null,
+          targetBusinessLocationId: item.targetBusinessLocationId,
+          destinationBusinessLocationId: item.destinationBusinessLocationId,
+        },
+      );
+
       lines.push({
         productId: product!.id,
         productCode: product!.code,
@@ -310,6 +331,9 @@ export class OrderService {
           promotionId: item.promotionId,
           creativeId: item.creativeId,
           categoryId,
+          targetBusinessLocationId: resolvedLocations.targetBusinessLocationId,
+          destinationBusinessLocationId:
+            resolvedLocations.destinationBusinessLocationId,
         },
       });
     }
@@ -1152,6 +1176,52 @@ export class OrderService {
         amount: p.amount,
         paidAt: p.paidAt,
       })),
+    };
+  }
+
+  private async resolvePackageLineMetadata(
+    businessId: string,
+    cityId: string,
+    packageProductTypes: MonetizationProductType[],
+    promotionId: string | undefined,
+    targetBusinessLocationId: string | undefined,
+    destinationBusinessLocationId: string | undefined,
+    base: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    const hasLocationInput =
+      (targetBusinessLocationId?.trim().length ?? 0) > 0 ||
+      (destinationBusinessLocationId?.trim().length ?? 0) > 0;
+    const hasAdProduct = packageProductTypes.some(
+      (type) =>
+        type === MonetizationProductType.FEATURED_BUSINESS ||
+        type === MonetizationProductType.PROMOTED_PROMOTION ||
+        type === MonetizationProductType.VIP_BANNER ||
+        type === MonetizationProductType.TOP_CATEGORY ||
+        type === MonetizationProductType.BOOST,
+    );
+    if (!hasAdProduct && !hasLocationInput) {
+      return base;
+    }
+
+    const productType = packageProductTypes.includes(
+      MonetizationProductType.PROMOTED_PROMOTION,
+    )
+      ? MonetizationProductType.PROMOTED_PROMOTION
+      : MonetizationProductType.FEATURED_BUSINESS;
+
+    const resolved = await validateAndResolveCampaignLocationContext(this.prisma, {
+      businessId,
+      cityId,
+      productType,
+      promotionId: promotionId ?? null,
+      targetBusinessLocationId,
+      destinationBusinessLocationId,
+    });
+
+    return {
+      ...base,
+      targetBusinessLocationId: resolved.targetBusinessLocationId,
+      destinationBusinessLocationId: resolved.destinationBusinessLocationId,
     };
   }
 }
