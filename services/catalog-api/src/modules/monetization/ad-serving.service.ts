@@ -166,7 +166,13 @@ export class AdServingService {
         locationCtx,
         promotionPayloadById,
       );
-      await this.recordServe(campaign, placement.id, query.sessionId, now);
+      await this.recordServe(
+        campaign,
+        placement.id,
+        query.sessionId,
+        now,
+        locationCtx.destinationLocationId,
+      );
       items.push(item);
     }
 
@@ -330,6 +336,7 @@ export class AdServingService {
     placementId: string,
     sessionId: string,
     now: Date,
+    businessLocationId: string | null,
   ) {
     await this.prisma.$transaction([
       this.prisma.adCampaign.update({
@@ -346,6 +353,7 @@ export class AdServingService {
           campaignId: campaign.id,
           placementId,
           sessionId,
+          ...(businessLocationId ? { businessLocationId } : {}),
         },
       }),
     ]);

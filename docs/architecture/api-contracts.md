@@ -937,9 +937,9 @@ Optional Stage 6.5 context fields:
 `clientEventId` (idempotency), `visitorId` (pseudonymized server-side), `sessionId`,
 `discoverySurface`, `promotionId`, `catalogItemId`, `platform`, `position`, `cityId` (for `SEARCH_PERFORMED`).
 
-**Stage 6.12A.8.1:** DB column `AnalyticsEvent.businessLocationId` exists for optional **branch interaction context** (not user GPS). Public request field **`businessLocationId` is not accepted yet** on this endpoint (**A.8.5** validation) to prevent spoofed branch attribution.
+**Stage 6.12A.8.5 — `businessLocationId` (optional):** branch **interaction context** for the event (application-selected/effective branch), **not** user GPS. Allowed only on organic types where branch context is valid (`VIEW_BUSINESS`, impressions, contact clicks, `PROMOTION_VIEW`, catalog item impression/view). **Rejected (`400`)** for `SEARCH_PERFORMED`, favorites, reviews, and other disallowed types. When set with `businessId`, server validates `BusinessLocation.id` belongs to that business; cross-business pairs **never persist** (`400` `businessLocationId does not belong to business`). Omitted → stored as null. Business-grain events (favorites, reviews) remain null branch.
 
-Ad events (`AD_*`) remain on `POST /monetization/ads/events` only.
+Ad events (`AD_*`) remain on `POST /monetization/ads/events` only — **clients cannot submit** `businessLocationId`. Server sets branch on `AnalyticsEvent` when provable: **`AD_SERVED`** uses A.8.3 **runtime resolved destination** at serve time; client-reported ad events use **explicit** `AdCampaign.destinationBusinessLocationId` only (runtime PBA/city-context resolution without serve context is **not** attributed on client events — null is preferred over false attribution).
 
 Response `201`:
 ```json
@@ -1422,11 +1422,9 @@ Composite DB FKs on **AdCampaign** enforce `(businessId, locationId)` belongs to
 | Branch delete | Owner **`DELETE`** location: nullable campaign target/destination pointers cleared in one transaction when resulting campaign config remains valid; otherwise **`409`** `BUSINESS_LOCATION_DELETE_BLOCKED` (same family as catalog/promotion assignment conflicts). |
 | Legacy default | No branch fields → **`campaign.cityId` still from `Business.cityId`** at provision (unchanged). |
 
-**Stage 6.12A.8.4 — Flutter consumption (implemented):** ad taps use `destinationLocationId ?? contextLocationId` only (no client branch lookup); promotion ads may fall back to `promotion.contextLocationId` when serve fields are null; **`EXTERNAL_URL` VIP** unchanged. Analytics `businessLocationId` still **A.8.5**.
+**Stage 6.12A.8.4 — Flutter consumption (implemented):** ad taps use `destinationLocationId ?? contextLocationId` only (no client branch lookup); promotion ads may fall back to `promotion.contextLocationId` when serve fields are null; **`EXTERNAL_URL` VIP** unchanged.
 
-**Organic analytics** (`POST /analytics/events`): optional `businessLocationId` for **branch interaction context** (not user GPS) is **schema-ready** but **public DTO acceptance deferred to A.8.5** to avoid spoofed attribution before server validation.
-
-**Ad events** (`POST /monetization/ads/events`): **no client `locationId`** in A.8.1; future branch context on `AD_*` events will be server-derived/validated (A.8.3/A.8.5).
+**Stage 6.12A.8.5 — analytics branch (implemented):** see **POST /analytics/events** and **POST /monetization/ads/events** notes above; owner KPI totals unchanged (branch is optional dimension only).
 
 - `POST /monetization/ads/events` — track impression/click/action (rate limit 120/min/IP)
 

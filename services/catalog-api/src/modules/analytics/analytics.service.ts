@@ -50,6 +50,11 @@ import {
   buildAnalyticsExportFilename,
   buildContentDisposition,
 } from '../../common/utils/csv.util';
+import {
+  ORGANIC_BRANCH_LOCATION_EVENT_TYPES,
+  ORGANIC_BRANCH_LOCATION_FORBIDDEN_EVENT_TYPES,
+  resolveValidatedOrganicBusinessLocationId,
+} from '../../common/utils/analytics-branch-location.util';
 
 const EVENT_TYPES = Object.values(AnalyticsEventType);
 
@@ -139,6 +144,30 @@ export class AnalyticsService {
       }
     }
 
+    let businessLocationId: string | undefined;
+    if (dto.businessLocationId != null && dto.businessLocationId.trim() !== '') {
+      if (ORGANIC_BRANCH_LOCATION_FORBIDDEN_EVENT_TYPES.has(dto.type)) {
+        throw new BadRequestException(
+          'businessLocationId is not allowed for this event type',
+        );
+      }
+      if (!ORGANIC_BRANCH_LOCATION_EVENT_TYPES.has(dto.type)) {
+        throw new BadRequestException(
+          'businessLocationId is not allowed for this event type',
+        );
+      }
+      if (!business) {
+        throw new BadRequestException(
+          'businessId is required when businessLocationId is set',
+        );
+      }
+      businessLocationId = await resolveValidatedOrganicBusinessLocationId(
+        this.prisma,
+        business.id,
+        dto.businessLocationId,
+      );
+    }
+
     let normalizedSearchQuery: string | undefined;
     if (
       (SEARCH_ATTRIBUTION_EVENT_TYPES.has(dto.type) &&
@@ -209,6 +238,7 @@ export class AnalyticsService {
       ...(visitorType ? { visitorType } : {}),
       ...(sessionId ? { sessionId } : {}),
       ...(dto.clientEventId ? { clientEventId: dto.clientEventId.trim() } : {}),
+      ...(businessLocationId ? { businessLocationId } : {}),
     };
 
     try {

@@ -17,10 +17,12 @@ class MapBusinessPreviewImpression extends ConsumerStatefulWidget {
   const MapBusinessPreviewImpression({
     super.key,
     required this.businessId,
+    this.businessLocationId,
     required this.child,
   });
 
   final String businessId;
+  final String? businessLocationId;
   final Widget child;
 
   @override
@@ -54,6 +56,7 @@ class _MapBusinessPreviewImpressionState
               widget.businessId,
               trafficSource: BusinessTrafficSource.map,
               discoverySurface: _surface,
+              businessLocationId: widget.businessLocationId,
               visitorId: visitorId,
               sessionId: sessionId,
             ),

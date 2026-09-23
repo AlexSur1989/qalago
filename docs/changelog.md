@@ -6,6 +6,14 @@
 
 ---
 
+## 2026-09-24 — Stage 6.12A.8.5 Analytics location attribution
+
+- **Status:** **6.12A.8.5 PASS — ANALYTICS LOCATION ATTRIBUTION IMPLEMENTED** (automated; no physical QA).
+- **Summary:** **`AnalyticsEvent.businessLocationId`** = attributable application branch context (not GPS). **Organic** `POST /analytics/events` accepts optional **`businessLocationId`** with same-business validation; Flutter detail/contact/discovery/catalog/promo producers send effective/`contextLocationId` branch. **Ad** events: **`AD_SERVED`** stores A.8.3 resolved destination at serve; client **`AD_*`** events derive branch from explicit campaign **destination** only (no serve-session cache). **No** historical backfill; **no** owner/admin branch UI; **no** Consumer Web analytics; **platform** ad parity deferred **A.8.6**.
+- **Next:** **6.12A.8.6** — analytics platform parity (optional); branch breakdown UI later.
+
+---
+
 ## 2026-09-24 — Stage 6.12A.8.4.PHYSICAL branch-aware ad navigation (Samsung)
 
 - **Status:** **6.12A.8.4.PHYSICAL PASS — BRANCH-AWARE AD NAVIGATION FINALIZED**.

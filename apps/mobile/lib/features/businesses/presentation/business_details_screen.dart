@@ -161,6 +161,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
   Future<void> _trackViewOnce({
     required double? latitude,
     required double? longitude,
+    String? businessLocationId,
   }) async {
     if (_viewTracked || !mounted) return;
     _viewTracked = true;
@@ -189,6 +190,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                 : null,
             audienceDistanceBucket: bucket,
             discoverySurface: source.openDiscoverySurface,
+            businessLocationId: businessLocationId,
             visitorId: visitorId,
             sessionId: sessionId,
           ),
@@ -348,7 +350,13 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
           final latitude = physical.latitude;
           final longitude = physical.longitude;
           if (!_viewTracked) {
-            unawaited(_trackViewOnce(latitude: latitude, longitude: longitude));
+            unawaited(
+              _trackViewOnce(
+                latitude: latitude,
+                longitude: longitude,
+                businessLocationId: activeLocationId,
+              ),
+            );
           }
           final routeAvailable = buildRouteUrl(
                 latitude: latitude,
@@ -466,7 +474,10 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                           unawaited(
                             ref
                                 .read(catalogRepositoryProvider)
-                                .trackCallClick(widget.id),
+                                .trackCallClick(
+                                  widget.id,
+                                  businessLocationId: activeLocationId,
+                                ),
                           );
                           unawaited(_launchPhone(phone));
                         },
@@ -474,7 +485,10 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                           unawaited(
                             ref
                                 .read(catalogRepositoryProvider)
-                                .trackWhatsappClick(widget.id),
+                                .trackWhatsappClick(
+                                  widget.id,
+                                  businessLocationId: activeLocationId,
+                                ),
                           );
                           unawaited(_launchWhatsApp(whatsapp));
                         },
@@ -482,7 +496,10 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                           unawaited(
                             ref
                                 .read(catalogRepositoryProvider)
-                                .trackRouteClick(widget.id),
+                                .trackRouteClick(
+                                  widget.id,
+                                  businessLocationId: activeLocationId,
+                                ),
                           );
                           unawaited(
                             _launchRoute(
@@ -507,7 +524,10 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                                   unawaited(
                                     ref
                                         .read(catalogRepositoryProvider)
-                                        .trackWebsiteClick(widget.id),
+                                        .trackWebsiteClick(
+                                          widget.id,
+                                          businessLocationId: activeLocationId,
+                                        ),
                                   );
                                   unawaited(_launchExternal(websiteUrl));
                                 },
@@ -520,7 +540,10 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                                   unawaited(
                                     ref
                                         .read(catalogRepositoryProvider)
-                                        .trackInstagramClick(widget.id),
+                                        .trackInstagramClick(
+                                          widget.id,
+                                          businessLocationId: activeLocationId,
+                                        ),
                                   );
                                   unawaited(_launchExternal(instagramUrl));
                                 },
@@ -562,6 +585,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                                     .trackPromotionView(
                                       widget.id,
                                       promotionId: promo['id'] as String?,
+                                      businessLocationId: activeLocationId,
                                     ),
                               );
                               openBusinessPromotions();
@@ -590,6 +614,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                             businessId: widget.id,
                             item: item,
                             surface: 'BUSINESS_DETAIL_PREVIEW',
+                            analyticsBranchId: activeLocationId,
                             onTap: openFullCatalog,
                           ),
                       ],
@@ -629,7 +654,10 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                                   unawaited(
                                     ref
                                         .read(catalogRepositoryProvider)
-                                        .trackRouteClick(widget.id),
+                                        .trackRouteClick(
+                                  widget.id,
+                                  businessLocationId: activeLocationId,
+                                ),
                                   );
                                   unawaited(
                                     _launchRoute(

@@ -7,6 +7,7 @@ describe('AdEventsService', () => {
   const prisma = {
     adPlacement: { findUnique: jest.fn() },
     adCampaign: { findUnique: jest.fn(), update: jest.fn() },
+    businessLocation: { findFirst: jest.fn() },
     analyticsEvent: { findFirst: jest.fn(), create: jest.fn() },
     $transaction: jest.fn(),
   } as unknown as PrismaService;
@@ -17,6 +18,7 @@ describe('AdEventsService', () => {
   const campaign = {
     id: 'camp-1',
     businessId: 'biz-1',
+    destinationBusinessLocationId: null,
     campaignPlacements: [{ placementId: 'pl-1' }],
   };
 

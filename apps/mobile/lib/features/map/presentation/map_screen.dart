@@ -323,6 +323,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   final business = selectedBusiness;
                   return MapBusinessPreviewImpression(
                     businessId: business.id,
+                    businessLocationId: business.locationId,
                     child: _MapBusinessPreview(
                       business: businessWithDistance(
                         business,

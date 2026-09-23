@@ -111,6 +111,12 @@ export class CreateAnalyticsEventDto {
   @IsOptional()
   @IsBoolean()
   isInternal?: boolean;
+
+  /** Optional branch interaction context (A.8.5); validated against businessId. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  businessLocationId?: string;
 }
 
 export class AnalyticsWindowQueryDto {

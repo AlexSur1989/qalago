@@ -59,6 +59,7 @@ class _NoopCatalogRepository extends CatalogRepository {
     String? searchQuery,
     AudienceDistanceBucket? audienceDistanceBucket,
     String? discoverySurface,
+    String? businessLocationId,
     String? visitorId,
     String? sessionId,
   }) async {}

@@ -17,12 +17,14 @@ class TrackedCatalogItemCard extends ConsumerWidget {
     required this.businessId,
     required this.item,
     required this.surface,
+    this.analyticsBranchId,
     this.onTap,
   });
 
   final String businessId;
   final Map<String, dynamic> item;
   final String surface;
+  final String? analyticsBranchId;
   final VoidCallback? onTap;
 
   String? get _catalogItemId => item['id'] as String?;
@@ -50,6 +52,7 @@ class TrackedCatalogItemCard extends ConsumerWidget {
                 (visitorId) => repo.trackCatalogItemImpression(
                   businessId,
                   catalogItemId: catalogItemId,
+                  businessLocationId: analyticsBranchId,
                   visitorId: visitorId,
                   sessionId: sessionId,
                 ),
@@ -68,6 +71,7 @@ class TrackedCatalogItemCard extends ConsumerWidget {
                         (visitorId) => repo.trackCatalogItemView(
                           businessId,
                           catalogItemId: catalogItemId,
+                          businessLocationId: analyticsBranchId,
                           visitorId: visitorId,
                           sessionId: sessionId,
                         ),

@@ -13,6 +13,7 @@ import {
   monetizationBadRequest,
   monetizationNotFound,
 } from './errors/monetization.errors';
+import { resolveAdEventBusinessLocationId } from '../../common/utils/analytics-branch-location.util';
 
 const TRACKABLE_TYPES = new Set<string>(AD_ANALYTICS_EVENT_TYPES);
 
@@ -36,7 +37,10 @@ export class AdEventsService {
 
     const campaign = await this.prisma.adCampaign.findUnique({
       where: { id: dto.campaignId },
-      include: {
+      select: {
+        id: true,
+        businessId: true,
+        destinationBusinessLocationId: true,
         campaignPlacements: { where: { placementId: placement.id } },
       },
     });
@@ -54,6 +58,10 @@ export class AdEventsService {
     }
 
     const eventType = dto.type as AnalyticsEventType;
+    const businessLocationId = await resolveAdEventBusinessLocationId(
+      this.prisma,
+      campaign,
+    );
 
     if (dto.type === 'AD_IMPRESSION') {
       return this.trackImpression(
@@ -63,6 +71,7 @@ export class AdEventsService {
         dto.sessionId,
         dto.position,
         eventType,
+        businessLocationId,
       );
     }
 
@@ -73,6 +82,7 @@ export class AdEventsService {
         placement.id,
         dto.sessionId,
         eventType,
+        businessLocationId,
       );
     }
 
@@ -82,6 +92,7 @@ export class AdEventsService {
       placement.id,
       dto.sessionId,
       eventType,
+      businessLocationId,
     );
   }
 
@@ -114,6 +125,7 @@ export class AdEventsService {
     sessionId: string,
     position: number | undefined,
     eventType: AnalyticsEventType,
+    businessLocationId: string | null,
   ) {
     const since = new Date(Date.now() - IMPRESSION_DEDUPE_WINDOW_MS);
     const duplicate = await this.prisma.analyticsEvent.findFirst({
@@ -150,6 +162,7 @@ export class AdEventsService {
           campaignId,
           placementId,
           sessionId,
+          ...(businessLocationId ? { businessLocationId } : {}),
         },
       }),
     ]);
@@ -163,6 +176,7 @@ export class AdEventsService {
     placementId: string,
     sessionId: string,
     eventType: AnalyticsEventType,
+    businessLocationId: string | null,
   ) {
     await this.prisma.$transaction([
       this.prisma.adCampaign.update({
@@ -176,6 +190,7 @@ export class AdEventsService {
           campaignId,
           placementId,
           sessionId,
+          ...(businessLocationId ? { businessLocationId } : {}),
         },
       }),
     ]);
@@ -189,6 +204,7 @@ export class AdEventsService {
     placementId: string,
     sessionId: string,
     eventType: AnalyticsEventType,
+    businessLocationId: string | null,
   ) {
     await this.prisma.analyticsEvent.create({
       data: {
@@ -197,6 +213,7 @@ export class AdEventsService {
         campaignId,
         placementId,
         sessionId,
+        ...(businessLocationId ? { businessLocationId } : {}),
       },
     });
 

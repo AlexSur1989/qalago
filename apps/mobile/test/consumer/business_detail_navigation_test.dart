@@ -139,6 +139,7 @@ class _NavCatalogRepository extends CatalogRepository {
   Future<void> trackPromotionView(
     String businessId, {
     String? promotionId,
+    String? businessLocationId,
     String? sessionId,
     String? visitorId,
   }) async {
@@ -152,6 +153,7 @@ class _NavCatalogRepository extends CatalogRepository {
     String? searchQuery,
     AudienceDistanceBucket? audienceDistanceBucket,
     String? discoverySurface,
+    String? businessLocationId,
     String? visitorId,
     String? sessionId,
   }) async {}

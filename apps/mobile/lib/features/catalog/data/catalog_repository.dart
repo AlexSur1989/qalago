@@ -299,6 +299,7 @@ class CatalogRepository {
     String? searchQuery,
     AudienceDistanceBucket? audienceDistanceBucket,
     String? discoverySurface,
+    String? businessLocationId,
     String? visitorId,
     String? sessionId,
   }) =>
@@ -311,6 +312,7 @@ class CatalogRepository {
             : null,
         audienceDistanceBucket: audienceDistanceBucket?.apiValue,
         discoverySurface: discoverySurface ?? 'BUSINESS_DETAIL',
+        businessLocationId: businessLocationId,
         visitorId: visitorId,
         sessionId: sessionId,
       );
@@ -322,6 +324,7 @@ class CatalogRepository {
     String? searchQuery,
     AudienceDistanceBucket? audienceDistanceBucket,
     int? position,
+    String? businessLocationId,
     String? visitorId,
     String? sessionId,
   }) =>
@@ -337,6 +340,7 @@ class CatalogRepository {
             : null,
         audienceDistanceBucket: audienceDistanceBucket?.apiValue,
         position: position,
+        businessLocationId: businessLocationId,
         visitorId: visitorId,
         sessionId: sessionId,
       );
@@ -355,42 +359,72 @@ class CatalogRepository {
         sessionId: sessionId,
       );
 
-  Future<void> trackCallClick(String businessId, {String? sessionId, String? visitorId}) =>
+  Future<void> trackCallClick(
+    String businessId, {
+    String? businessLocationId,
+    String? sessionId,
+    String? visitorId,
+  }) =>
       _trackAnalyticsEvent(
         businessId: businessId,
         type: 'CALL_CLICK',
+        businessLocationId: businessLocationId,
         sessionId: sessionId,
         visitorId: visitorId,
       );
 
-  Future<void> trackWhatsappClick(String businessId, {String? sessionId, String? visitorId}) =>
+  Future<void> trackWhatsappClick(
+    String businessId, {
+    String? businessLocationId,
+    String? sessionId,
+    String? visitorId,
+  }) =>
       _trackAnalyticsEvent(
         businessId: businessId,
         type: 'WHATSAPP_CLICK',
+        businessLocationId: businessLocationId,
         sessionId: sessionId,
         visitorId: visitorId,
       );
 
-  Future<void> trackRouteClick(String businessId, {String? sessionId, String? visitorId}) =>
+  Future<void> trackRouteClick(
+    String businessId, {
+    String? businessLocationId,
+    String? sessionId,
+    String? visitorId,
+  }) =>
       _trackAnalyticsEvent(
         businessId: businessId,
         type: 'ROUTE_CLICK',
+        businessLocationId: businessLocationId,
         sessionId: sessionId,
         visitorId: visitorId,
       );
 
-  Future<void> trackWebsiteClick(String businessId, {String? sessionId, String? visitorId}) =>
+  Future<void> trackWebsiteClick(
+    String businessId, {
+    String? businessLocationId,
+    String? sessionId,
+    String? visitorId,
+  }) =>
       _trackAnalyticsEvent(
         businessId: businessId,
         type: 'WEBSITE_CLICK',
+        businessLocationId: businessLocationId,
         sessionId: sessionId,
         visitorId: visitorId,
       );
 
-  Future<void> trackInstagramClick(String businessId, {String? sessionId, String? visitorId}) =>
+  Future<void> trackInstagramClick(
+    String businessId, {
+    String? businessLocationId,
+    String? sessionId,
+    String? visitorId,
+  }) =>
       _trackAnalyticsEvent(
         businessId: businessId,
         type: 'INSTAGRAM_CLICK',
+        businessLocationId: businessLocationId,
         sessionId: sessionId,
         visitorId: visitorId,
       );
@@ -414,6 +448,7 @@ class CatalogRepository {
   Future<void> trackPromotionView(
     String businessId, {
     String? promotionId,
+    String? businessLocationId,
     String? sessionId,
     String? visitorId,
   }) =>
@@ -421,6 +456,7 @@ class CatalogRepository {
         businessId: businessId,
         type: 'PROMOTION_VIEW',
         promotionId: promotionId,
+        businessLocationId: businessLocationId,
         sessionId: sessionId,
         visitorId: visitorId,
       );
@@ -444,6 +480,7 @@ class CatalogRepository {
   Future<void> trackCatalogItemView(
     String businessId, {
     required String catalogItemId,
+    String? businessLocationId,
     String? sessionId,
     String? visitorId,
   }) =>
@@ -451,6 +488,7 @@ class CatalogRepository {
         businessId: businessId,
         type: 'CATALOG_ITEM_VIEW',
         catalogItemId: catalogItemId,
+        businessLocationId: businessLocationId,
         sessionId: sessionId,
         visitorId: visitorId,
       );
@@ -458,6 +496,7 @@ class CatalogRepository {
   Future<void> trackCatalogItemImpression(
     String businessId, {
     required String catalogItemId,
+    String? businessLocationId,
     String? sessionId,
     String? visitorId,
   }) =>
@@ -465,6 +504,7 @@ class CatalogRepository {
         businessId: businessId,
         type: 'CATALOG_ITEM_IMPRESSION',
         catalogItemId: catalogItemId,
+        businessLocationId: businessLocationId,
         sessionId: sessionId,
         visitorId: visitorId,
       );
@@ -504,6 +544,7 @@ class CatalogRepository {
     String? promotionId,
     String? catalogItemId,
     int? position,
+    String? businessLocationId,
     String? visitorId,
     String? sessionId,
   }) async {
@@ -516,6 +557,8 @@ class CatalogRepository {
           if (cityId != null) 'cityId': cityId,
           'type': type,
           'clientEventId': clientEventId,
+          if (businessLocationId != null && businessLocationId.isNotEmpty)
+            'businessLocationId': businessLocationId,
           if (trafficSource != null) 'trafficSource': trafficSource,
           if (discoverySurface != null) 'discoverySurface': discoverySurface,
           if (searchQuery != null && searchQuery.trim().isNotEmpty)

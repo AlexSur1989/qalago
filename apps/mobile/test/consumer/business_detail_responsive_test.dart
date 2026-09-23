@@ -70,21 +70,34 @@ class _DetailTestCatalogRepository extends CatalogRepository {
     String? searchQuery,
     AudienceDistanceBucket? audienceDistanceBucket,
     String? discoverySurface,
+    String? businessLocationId,
     String? visitorId,
     String? sessionId,
   }) async {}
 
   @override
-  Future<void> trackCallClick(String businessId,
-          {String? sessionId, String? visitorId}) async {}
+  Future<void> trackCallClick(
+    String businessId, {
+    String? businessLocationId,
+    String? sessionId,
+    String? visitorId,
+  }) async {}
 
   @override
-  Future<void> trackWhatsappClick(String businessId,
-          {String? sessionId, String? visitorId}) async {}
+  Future<void> trackWhatsappClick(
+    String businessId, {
+    String? businessLocationId,
+    String? sessionId,
+    String? visitorId,
+  }) async {}
 
   @override
-  Future<void> trackRouteClick(String businessId,
-          {String? sessionId, String? visitorId}) async {}
+  Future<void> trackRouteClick(
+    String businessId, {
+    String? businessLocationId,
+    String? sessionId,
+    String? visitorId,
+  }) async {}
 }
 
 Future<void> _pumpBusinessDetail(

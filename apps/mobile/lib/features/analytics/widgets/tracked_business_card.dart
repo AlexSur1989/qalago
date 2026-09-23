@@ -9,6 +9,7 @@ import '../../../shared/widgets/business_card.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/analytics_identity_provider.dart';
 import '../services/analytics_impression_controller.dart';
+import '../utils/analytics_branch_context.dart';
 import 'organic_viewability_tracker.dart';
 
 final analyticsImpressionControllerProvider =
@@ -68,6 +69,9 @@ class TrackedBusinessCard extends ConsumerWidget {
                   discoverySurface: surface,
                   searchQuery: searchQuery,
                   position: position,
+                  businessLocationId: analyticsBranchFromBusinessContext(
+                    business.contextLocationId,
+                  ),
                   visitorId: visitorId,
                   sessionId: sessionId,
                 ),
