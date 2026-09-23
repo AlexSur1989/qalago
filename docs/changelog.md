@@ -9,7 +9,7 @@
 ## 2026-09-24 — Stage 6.12A.8.6 Ad analytics platform attribution
 
 - **Status:** **6.12A.8.6 PASS — AD ANALYTICS PLATFORM ATTRIBUTION IMPLEMENTED** (automated; no physical QA).
-- **Checkpoint (commit):** _(set at commit)_.
+- **Checkpoint (commit):** `ae20e929742658c145a2d20286533db87a3dc816`.
 - **Summary:** Reused existing **`AnalyticsPlatform`** (`IOS` | `ANDROID` | `WEB` | `UNKNOWN`) on **`AnalyticsEvent.platform`** for ad parity — **no migration**. Flutter **`qalagoAnalyticsPlatform()`** shared by organic + ad **`sendAdEvent`** + **`serveAds`**. Backend: optional **`platform`** on **`TrackAdEventDto`** and **`ServeAdsQueryDto`**; **`AD_SERVED`** from serve hint; client **`AD_*`** from event body. Omitted → **`null`** (not coerced to UNKNOWN). **A.8.5** `businessLocationId` unchanged. **No** historical backfill; **no** Consumer Web ads; **no** campaign channel targeting; **no** analytics UI.
 - **Deferred:** ALL/APP/WEB campaign channel; WEB_MOBILE/WEB_DESKTOP split; platform breakdown UI; Consumer Web ad implementation.
 - **Next:** follow-on monetization/analytics stages as scheduled (not A.8.7 in this closure).
