@@ -9,7 +9,7 @@
 ## 2026-09-24 — Stage 6.12A.7.QA Final BusinessLocation E2E architecture audit
 
 - **Status:** **6.12A.7.QA AUDIT PASS — READY FOR A.8** (read-only audit; **no new physical QA**).
-- **Checkpoint (docs):** _(this commit SHA)_.
+- **Checkpoint (docs):** `c16d934053dd71e60b6d400d3d5100364339a8ce`.
 - **Summary:**
   - **Verdict:** **Business** = brand identity; **BusinessLocation** = physical branch; normal discovery = **Business-grain** + optional **`contextLocationId`**; **map** = **BusinessLocation-grain**; detail = **`Business.id`** + selected **`locationId`**; physical/contacts/hours/coords = location-effective; **SIBA/PBA** branch catalog/promotions; shared + branch **media** contract valid; **favorites/reviews/membership/plans** remain **Business-grain**.
   - **Security/integrity:** **no P0**; **no confirmed P1**; no cross-business location **IDOR** in static review; composite **`(businessId, locationId)`** FKs on media/SIBA/PBA.
