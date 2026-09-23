@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-09-24 — Stage 6.12A.8.3 Branch-aware ad serving
+
+- **Status:** **6.12A.8.3 PASS — BRANCH-AWARE AD SERVING IMPLEMENTED**.
+- **Checkpoint (implementation):** _(set at commit)_.
+- **Summary:**
+  - **`batchResolveAdServeLocationContexts` / `resolveAdDestinationLocationId`** — shared serving engine: target branch eligibility, deterministic destination (explicit → target → promotion PBA → A.7.9.3A city context), runtime **PBA** re-check for **PROMOTED_PROMOTION**, fail-closed per campaign before rotation.
+  - **Serve DTO:** `destinationLocationId` + `contextLocationId` populated (equal when set); **branch-effective** business card physical fields for non-VIP-minimal payloads; **`business.id` unchanged**.
+  - **Rotation:** invalid branch campaigns filtered pre-rotation; **`recordServe` / `servedCount`** only after successful item build.
+- **Findings:** **A8-002** **server-side CLOSED** (serve excludes invalid promotion/branch); **user tap** still **A.8.4**. **A8-001** **OPEN**. **A8-003** **CLOSED** (serve physical card branch-effective). **A8-004** runtime uses **BusinessLocation.cityId** for branch-aware serve; legacy null/null + provision **Business.cityId** unchanged.
+- **Env debt:** Windows **`prisma generate` EPERM** if DLL locked; dev PostGIS **27-row** geo drift (A.9) unchanged.
+- **Next:** **6.12A.8.4** — Flutter branch-aware ad navigation.
+
+---
+
 ## 2026-09-24 — Stage 6.12A.8.2 Campaign location validation + provisioning
 
 - **Status:** **6.12A.8.2 PASS — CAMPAIGN LOCATION VALIDATION IMPLEMENTED**.

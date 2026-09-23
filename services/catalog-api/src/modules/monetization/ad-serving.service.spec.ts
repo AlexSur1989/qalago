@@ -21,7 +21,8 @@ describe('AdServingService', () => {
     adPlacement: { findUnique: jest.fn() },
     adCampaign: { findMany: jest.fn(), update: jest.fn() },
     analyticsEvent: { create: jest.fn() },
-    promotion: { findFirst: jest.fn() },
+    promotion: { findFirst: jest.fn(), findMany: jest.fn().mockResolvedValue([]) },
+    businessLocation: { findMany: jest.fn().mockResolvedValue([]) },
     $transaction: jest.fn(),
   } as unknown as PrismaService;
 
@@ -37,6 +38,10 @@ describe('AdServingService', () => {
   const activeCampaign = {
     id: 'camp-1',
     businessId: 'biz-1',
+    cityId: 'city-1',
+    promotionId: null,
+    targetBusinessLocationId: null,
+    destinationBusinessLocationId: null,
     qualifiedImpressions: 0,
     weight: 1,
     lastTopPositionAt: null,
@@ -55,6 +60,8 @@ describe('AdServingService', () => {
       title: 'Cafe',
       slug: 'cafe',
       shortDesc: 'Nice',
+      cityId: 'city-1',
+      workHours: null,
       address: 'Street 1',
       latitude: null,
       longitude: null,

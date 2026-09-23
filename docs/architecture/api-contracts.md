@@ -1377,22 +1377,28 @@ Domain errors include stable `code` in body:
       "sponsored": true,
       "displayLabel": "Реклама",
       "productType": "FEATURED_BUSINESS",
-      "destinationLocationId": null,
-      "contextLocationId": null,
+      "destinationLocationId": "cloc_...",
+      "contextLocationId": "cloc_...",
       "business": { "id": "...", "title": "...", "slug": "...", "...": "..." }
     }
   ]
 }
 ```
 
-**Stage 6.12A.8.1 — optional branch fields (foundation only):**
+**Stage 6.12A.8.3 — serve item branch fields (implemented):**
 
-| Field | Meaning | Populated |
-|-------|---------|-----------|
-| `destinationLocationId` | Branch to open after tap / deep-link | **A.8.3** serving resolution (currently `null`) |
-| `contextLocationId` | Optional promotion/list branch mirror on serve item | **A.8.3** when applicable (currently `null`) |
+| Field | Meaning |
+|-------|---------|
+| `destinationLocationId` | Resolved **BusinessLocation.id** to open after ad tap (A.8.4 client nav still pending). |
+| `contextLocationId` | Branch used for **business-card physical context** on this serve item. **A.8.3:** always equal to `destinationLocationId` when set; both `null` only when no safe branch in the resolved serving city (legacy card uses Business physical columns). |
 
-Campaign ownership remains **`businessId`**. These fields do **not** replace Business-grain identity.
+Campaign ownership remains **`businessId`**. **`business.id` is never a branch id.**
+
+**Runtime resolution (all placements share one engine):** precedence — (1) `destinationBusinessLocationId`, (2) `targetBusinessLocationId`, (3) promotion **PBA** branch in serving city (deterministic **A.7.9.4** pick for SELECTED; city context for ALL), (4) **A.7.9.3A** city-context branch for brand-level null/null campaigns. Never pick a branch outside the **resolved serving city**. **Target** set → campaign eligible only when that branch is in serving city and matches campaign city. Invalid/stale branch or promotion → campaign **excluded** (fail-closed), not a partial response error.
+
+**Branch-effective card:** for FEATURED/TOP/BOOST/PROMOTED items, `business.address` / coords / phone (and promotion subset fields) reflect the resolved branch via **`buildEffectivePhysicalDto`** — no sibling branch leakage.
+
+**VIP creative:** `EXTERNAL_URL` keeps URL behavior; branch fields follow campaign targeting/eligibility only.
 
 **Owner/admin campaign objects** (`GET /monetization/campaigns`, `GET /monetization/campaigns/:id`, admin list/detail) may include nullable:
 
@@ -1416,7 +1422,7 @@ Composite DB FKs on **AdCampaign** enforce `(businessId, locationId)` belongs to
 | Branch delete | Owner **`DELETE`** location: nullable campaign target/destination pointers cleared in one transaction when resulting campaign config remains valid; otherwise **`409`** `BUSINESS_LOCATION_DELETE_BLOCKED` (same family as catalog/promotion assignment conflicts). |
 | Legacy default | No branch fields → **`campaign.cityId` still from `Business.cityId`** at provision (unchanged). |
 
-Serving still does **not** filter/respond by branch (**A.8.3**). Ad tap navigation unchanged (**A.8.4**).
+Ad **tap navigation** in Flutter unchanged (**A.8.4** — client must consume `destinationLocationId`).
 
 **Organic analytics** (`POST /analytics/events`): optional `businessLocationId` for **branch interaction context** (not user GPS) is **schema-ready** but **public DTO acceptance deferred to A.8.5** to avoid spoofed attribution before server validation.
 

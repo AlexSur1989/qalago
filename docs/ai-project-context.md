@@ -58,17 +58,19 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | **6.12A.8.0** | **CLOSED (audit PASS)** | Read-only ads/analytics location hooks audit — implementation plan ready |
 | **6.12A.8.1** | **PASS (foundation)** | Nullable schema + API contract hooks: campaign **target** / **destination** branch FKs; `AnalyticsEvent.businessLocationId`; serve DTO fields present but **null** until A.8.3; no serving/nav/client analytics yet |
 | **6.12A.8.2** | **PASS (validation)** | Server validates campaign branch target/destination (ownership, city, PBA, target≠destination); order/provision metadata path; branch delete clears safe campaign refs or conflicts |
+| **6.12A.8.3** | **PASS (serving)** | Ad serve engine resolves branch destination + branch-effective business card; target filters eligibility; promotion **PBA** enforced at serve; rotation pre-filters invalid campaigns |
 
-**Next stage:** **6.12A.8.3** — branch-aware ad serving.
+**Next stage:** **6.12A.8.4** — Flutter branch-aware ad navigation.
 
 ## Ads / Analytics location (A.8)
 
 - **Ownership:** **AdCampaign** remains **Business-grain** (`businessId` required).
 - **Targeting (optional):** `targetBusinessLocationId` — serve eligibility narrowing (`null` = legacy city/category behavior).
-- **Destination (optional):** `destinationBusinessLocationId` — branch opened after tap (`null` until A.8.3 resolution).
+- **Destination (optional):** `destinationBusinessLocationId` — configured tap branch; **serve** returns resolved `destinationLocationId` / `contextLocationId` (A.8.3).
 - **Attribution (optional):** `AnalyticsEvent.businessLocationId` — **branch interaction context**, not user GPS; public organic ingestion **A.8.5**; ad events stay server-trusted later.
 - **A.8.2 rules:** branch ids validated on order + provision; **BusinessLocation.cityId** must match **campaign.cityId** when branch set; **target** and **destination** independent but cannot differ when both set; promotion **PBA** enforced on destination; single selected branch in city may auto-fill destination at provision; branch delete clears nullable campaign refs when safe else **409** `BUSINESS_LOCATION_DELETE_BLOCKED`.
-- **Deferred:** ALL/APP/WEB campaign channel; WEB_MOBILE/WEB_DESKTOP analytics split; **A8-001** ad tap nav (**A.8.4**); **A8-002** serve/tap closure (**A.8.3/A.8.4**).
+- **A.8.3 serving:** single engine for all placements; city authority = **BusinessLocation.cityId**; brand null/null → A.7.9.3A city-context branch when present; fail-closed stale campaigns.
+- **Deferred:** ALL/APP/WEB campaign channel; WEB_MOBILE/WEB_DESKTOP analytics split; **A8-001** ad tap nav (**A.8.4**); **A8-002** server-side serve **closed**, client tap **A.8.4**.
 
 ## Business vs BusinessLocation
 
