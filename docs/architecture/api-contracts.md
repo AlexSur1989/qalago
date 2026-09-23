@@ -495,7 +495,7 @@ Response:
 
 `activeLocationId` appears only when `locationId` query is provided. Only active items from active sections (or uncategorized). Sort: section `sortOrder`, item `sortOrder`, title, `createdAt`. Branch filter runs **before** plan publication cap.
 
-**`GET /promotions` city/business feed:** unchanged Business-grain behavior (Stage **6.12A.7.9** for discovery/search/feed branch semantics). Branch-scoped public promotions for consumers: use business detail **`effectivePromotions`** or future dedicated endpoints — not global feed in A.7.8.3.
+**`GET /promotions` city feed (A.7.9.4):** Promotion-grain with branch city eligibility + **`contextLocationId`**. Detail **`effectivePromotions`** remains branch-scoped for a chosen **`locationId`**.
 
 ### GET /businesses/:id/photos
 
@@ -820,11 +820,18 @@ Body may include `groupId` to move item into another group, and optional `branch
 
 ### GET /promotions
 
-Query: `activeNow`, `page`, `limit`, `citySlug`, `businessId`
+Query: `activeNow`, `page`, `limit`, `citySlug`, `cityId`, `businessId`. **`citySlug` / `cityId` omitted** → default city slug from app config (same as catalog). **`businessId`** scopes to one business (no city branch filter; no `contextLocationId` on owner/management responses).
 
 When `activeNow=true` and no `businessId`, only promotions from businesses on **PRO** or **TOP_CITY** with valid `planExpiresAt` appear in the city feed.
 
-Response item includes `{ id, businessId, title, description?, imageUrl?, discountText?, startDate?, endDate?, status, business }`.
+**City feed physical eligibility (A.7.9.4, IMPLEMENTED):** Promotion-grain — **one card per Promotion**. **`Business.cityId` is not** physical presence. In city **C** (no `businessId`):
+
+- **ALL** (zero `PromotionBranchAvailability` rows): eligible iff parent **Business** is public-eligible **and** **`EXISTS BusinessLocation` with `cityId = C`**.
+- **SELECTED** (≥1 PBA rows): eligible iff **`EXISTS PBA` → `BusinessLocation` in `cityId = C`**.
+
+**`contextLocationId` (additive, public city feed only):** ALL → deterministic branch in **C** (same rule as discovery A.7.9.3A); SELECTED → assigned branch in **C** (primary if assigned, else `createdAt ASC`, `id ASC`). Embedded **`business.address`** remains legacy; navigation uses **`contextLocationId`**, not **`Business.location`**.
+
+Response item includes `{ id, businessId, title, description?, imageUrl?, discountText?, startDate?, endDate?, status, business, contextLocationId? }`.
 
 ### Owner CRUD
 
@@ -832,7 +839,7 @@ Response item includes `{ id, businessId, title, description?, imageUrl?, discou
 - `PATCH /promotions/:id`
 - `DELETE /promotions/:id`
 
-**Owner management — branch availability (Stage 6.12A.7.8.2):** same `branchAvailability` object and semantics as service items (ALL = zero rows; SELECTED = explicit branches; omitted on create = ALL; omitted on PATCH = unchanged). Owner-scoped `GET /promotions?businessId=` includes `branchAvailability` on each item. Public city/feed behavior and branch filtering are **unchanged** until Stage 6.12A.7.8.3.
+**Owner management — branch availability (Stage 6.12A.7.8.2):** same `branchAvailability` object and semantics as service items (ALL = zero rows; SELECTED = explicit branches; omitted on create = ALL; omitted on PATCH = unchanged). Owner-scoped `GET /promotions?businessId=` includes `branchAvailability` on each item. Public city feed branch filtering: **A.7.9.4** above.
 
 ---
 

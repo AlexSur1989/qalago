@@ -29,6 +29,11 @@ import {
   encodeBranchAvailabilityFromLocationIds,
   replacePromotionBranchAssignments,
 } from '../../common/utils/branch-availability-management.util';
+import {
+  attachPromotionFeedContextLocationIds,
+  mergePromotionWhereWithAnd,
+  promotionCityFeedEligibilityWhere,
+} from './promotion-discovery-city.util';
 
 type FeedPromotion = Prisma.PromotionGetPayload<{
   include: {
@@ -67,19 +72,18 @@ export class PromotionsService {
       business: { status: BusinessStatus.ACTIVE },
     };
 
+    let feedCityId: string | undefined;
     if (query.businessId) {
       where.business = {
         ...(where.business as Prisma.BusinessWhereInput),
         id: query.businessId,
       };
     } else {
-      where.business = {
-        ...(where.business as Prisma.BusinessWhereInput),
-        cityId: await this.cityScope.resolveCityId({
-          cityId: query.cityId,
-          citySlug: query.citySlug,
-        }),
-      };
+      feedCityId = await this.cityScope.resolveCityId({
+        cityId: query.cityId,
+        citySlug: query.citySlug,
+      });
+      mergePromotionWhereWithAnd(where, promotionCityFeedEligibilityWhere(feedCityId));
     }
 
     const ownerView =
@@ -92,10 +96,12 @@ export class PromotionsService {
 
     if (query.activeNow) {
       where.status = PromotionStatus.ACTIVE;
-      where.AND = [
-        { OR: [{ startDate: null }, { startDate: { lte: now } }] },
-        { OR: [{ endDate: null }, { endDate: { gte: now } }] },
-      ];
+      mergePromotionWhereWithAnd(where, {
+        AND: [
+          { OR: [{ startDate: null }, { startDate: { lte: now } }] },
+          { OR: [{ endDate: null }, { endDate: { gte: now } }] },
+        ],
+      });
     }
 
     if (query.activeNow && !query.businessId) {
@@ -120,7 +126,15 @@ export class PromotionsService {
       });
 
       const filtered = await this.applyFeedEntitlements(rawItems, now);
-      const items = filtered.slice(skip, skip + limit);
+      const pageRows = filtered.slice(skip, skip + limit);
+      const items =
+        feedCityId != null
+          ? await attachPromotionFeedContextLocationIds(
+              this.prisma,
+              feedCityId,
+              pageRows,
+            )
+          : pageRows;
 
       return {
         items,
@@ -155,11 +169,18 @@ export class PromotionsService {
         this.prisma.promotion.count({ where }),
       ]);
 
-      const manageItems = ownerView
+      let responseItems = ownerView
         ? await this.attachBranchAvailabilityToPromotions(items)
         : items;
+      if (!ownerView && feedCityId != null) {
+        responseItems = await attachPromotionFeedContextLocationIds(
+          this.prisma,
+          feedCityId,
+          responseItems,
+        );
+      }
       return {
-        items: manageItems,
+        items: responseItems,
         meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
       };
     }

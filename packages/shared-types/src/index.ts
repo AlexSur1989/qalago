@@ -134,6 +134,8 @@ export interface Paginated<T> {
 export interface PromotionListItem {
   id: string;
   businessId: string;
+  /** A.7.9.4 — branch navigation hint for city feed (optional). */
+  contextLocationId?: string | null;
   title: string;
   description?: string | null;
   imageUrl?: string | null;
