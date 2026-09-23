@@ -40,6 +40,12 @@ import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { CreateCityDto, UpdateCityDto } from '../cities/dto/city.dto';
 
 import {
+  buildAdminBranchScope,
+  groupAssignmentLocationIds,
+  type AdminBranchLocationRow,
+} from './admin-branch-content-scope.util';
+
+import {
 
   AdminListBusinessesQueryDto,
   AdminListReviewsQueryDto,
@@ -151,7 +157,106 @@ export class AdminService {
 
   }
 
+  /** Stage 6.12A.7.8.6 — staff read-only catalog/promotion branch visibility. */
+  async getBusinessContent(user: AuthUser, businessId: string) {
+    const business = await this.prisma.business.findUnique({
+      where: { id: businessId },
+      select: {
+        id: true,
+        title: true,
+        cityId: true,
+        city: { select: { slug: true, nameRu: true, nameKk: true } },
+      },
+    });
+    if (!business) {
+      throw new NotFoundException('Business not found');
+    }
+    await this.cityScope.assertBusinessInAdminScope(user, business.cityId);
 
+    const [serviceItems, promotions, itemAssignments, promoAssignments] = await Promise.all([
+      this.prisma.serviceItem.findMany({
+        where: { businessId },
+        orderBy: [{ sortOrder: 'asc' }, { title: 'asc' }],
+        include: {
+          group: { select: { id: true, title: true, sortOrder: true } },
+        },
+      }),
+      this.prisma.promotion.findMany({
+        where: { businessId },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.serviceItemBranchAvailability.findMany({
+        where: { businessId },
+        select: { serviceItemId: true, locationId: true },
+      }),
+      this.prisma.promotionBranchAvailability.findMany({
+        where: { businessId },
+        select: { promotionId: true, locationId: true },
+      }),
+    ]);
+
+    const locationIds = new Set<string>();
+    for (const row of itemAssignments) {
+      locationIds.add(row.locationId);
+    }
+    for (const row of promoAssignments) {
+      locationIds.add(row.locationId);
+    }
+
+    const locations =
+      locationIds.size === 0
+        ? []
+        : await this.prisma.businessLocation.findMany({
+            where: { businessId, id: { in: [...locationIds] } },
+            include: { city: { select: { nameRu: true, nameKk: true } } },
+          });
+
+    const locationById = new Map<string, AdminBranchLocationRow>(
+      locations.map((loc) => [loc.id, loc]),
+    );
+
+    const itemLocations = groupAssignmentLocationIds(
+      itemAssignments,
+      (r) => r.serviceItemId,
+      (r) => r.locationId,
+    );
+    const promoLocations = groupAssignmentLocationIds(
+      promoAssignments,
+      (r) => r.promotionId,
+      (r) => r.locationId,
+    );
+
+    return {
+      business: {
+        id: business.id,
+        title: business.title,
+        city: business.city,
+      },
+      serviceItems: serviceItems.map((item) => ({
+        id: item.id,
+        title: item.title,
+        isActive: item.isActive,
+        sortOrder: item.sortOrder,
+        section: item.group
+          ? {
+              id: item.group.id,
+              title: item.group.title,
+              sortOrder: item.group.sortOrder,
+            }
+          : null,
+        branchScope: buildAdminBranchScope(itemLocations.get(item.id) ?? [], locationById),
+      })),
+      promotions: promotions.map((promo) => ({
+        id: promo.id,
+        title: promo.title,
+        status: promo.status,
+        startDate: promo.startDate,
+        endDate: promo.endDate,
+        moderationHidden: promo.moderationHidden,
+        branchScope: buildAdminBranchScope(promoLocations.get(promo.id) ?? [], locationById),
+      })),
+    };
+  }
 
   async updateBusinessStatus(user: AuthUser, id: string, dto: UpdateBusinessStatusDto) {
 

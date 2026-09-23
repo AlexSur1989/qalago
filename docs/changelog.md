@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-09-23 — Stage 6.12A.7.8.6 Admin Web branch catalog / promotion visibility
+
+- **Status:** **6.12A.7.8.6 PASS — ADMIN WEB BRANCH CATALOG / PROMOTION VISIBILITY IMPLEMENTED**.
+- **Checkpoint (implementation):** _(recorded at stage commit SHA)_.
+- **Summary:**
+  - Additive staff read-only **`GET /admin/businesses/:businessId/content`** — **`StaffPermission.BUSINESS_VIEW`** + **`CITY_ADMIN`** city scope; **not** owner **`CATALOG_EDIT` / `PROMOTIONS_EDIT`** gates.
+  - Returns business context, **ServiceItem** + **Promotion** lists with server-resolved **`branchScope`** (`ALL` / `SELECTED`, human-readable branch rows, unavailable branch preserved as **SELECTED**).
+  - **Admin Web** inspection route **`/dashboard/businesses/[id]/content`** (dashboard **«Контент»** link); RU/KK scope labels; **read-only** (no branch editing).
+  - **Unchanged:** 0-row = ALL semantics; no Prisma schema/migration; public effective catalog/promotions; owner Business Web editor; media moderation **A.7.7.6**.
+- **Deferred:** Admin **PROMOTION** moderation structured detail / **`promotionTarget`** enrichment.
+- **Next:** **6.12A.7.9** discovery grain (read-only audit first).
+
+---
+
 ## 2026-09-23 — Stage 6.12A.7.8.5 Flutter branch catalog / promotions — physical closure
 
 - **Status:** **6.12A.7.8.5 PHYSICAL QA PASS — FLUTTER BRANCH CATALOG / PROMOTIONS CLOSED**.

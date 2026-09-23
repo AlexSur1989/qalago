@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -624,6 +625,7 @@ export default function DashboardPage() {
                   <th>Тариф</th>
                   <th>Город</th>
                   <th>VIP</th>
+                  <th>Контент</th>
                   <th></th>
                 </tr>
               </thead>
@@ -664,6 +666,14 @@ export default function DashboardPage() {
                       ) : (
                         <span className="tag tag-muted">—</span>
                       )}
+                    </td>
+                    <td>
+                      <Link
+                        href={`/dashboard/businesses/${b.id}/content`}
+                        className="btn btn-sm"
+                      >
+                        Контент
+                      </Link>
                     </td>
                     <td>
                       {b.status === 'ACTIVE' ? (

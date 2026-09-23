@@ -44,6 +44,15 @@ export class AdminController {
     return this.adminService.listBusinesses(user, query);
   }
 
+  @RequireStaffPermission(StaffPermission.BUSINESS_VIEW)
+  @Get('businesses/:businessId/content')
+  getBusinessContent(
+    @CurrentUser() user: AuthUser,
+    @Param('businessId') businessId: string,
+  ) {
+    return this.adminService.getBusinessContent(user, businessId);
+  }
+
   @RequireStaffPermission(StaffPermission.BUSINESS_EDIT)
   @Patch('businesses/:id/status')
   updateStatus(

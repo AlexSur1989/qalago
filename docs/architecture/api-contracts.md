@@ -569,6 +569,7 @@ Auth user recommendations (rule-based MVP; AI later). Cold start (no favorites):
 ### Admin
 
 - `GET /admin/businesses?status=&citySlug=&page=&limit=` — pagination via `meta`; `CITY_ADMIN` scoped to `managedCityId`.
+- `GET /admin/businesses/:businessId/content` — **Stage 6.12A.7.8.6** staff **read-only** catalog/promotion inspection with server-resolved `branchScope` (`ALL` = zero assignment rows; `SELECTED` = explicit branches with address/city/primary/unavailable). Auth: **`StaffPermission.BUSINESS_VIEW`** + existing city scope; not owner `CATALOG_EDIT` / `PROMOTIONS_EDIT`.
 - `PATCH /admin/businesses/:id/status`
 - `PATCH /admin/businesses/:id/featured` — body: `{ isFeatured, featuredSlot? }`
 - `PATCH /admin/businesses/:id/plan` — body: `{ tier: "BASIC"|"PRO"|"TOP_CITY" }` — назначить тариф без оплаты (30 дней для paid)
