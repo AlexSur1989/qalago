@@ -365,9 +365,9 @@ class CategoryBusinessesScreen extends ConsumerWidget {
           child: TrackedBusinessCard(
             business: business,
             trafficSource: BusinessTrafficSource.category,
-            onTap: () => openBusiness(
+            onTap: () => openBusinessFromDiscovery(
               context,
-              business.id,
+              business,
               BusinessTrafficSource.category,
             ),
           ),

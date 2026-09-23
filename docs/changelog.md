@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-23 — Stage 6.12A.7.9.5 Flutter discovery location context
+
+- **Status:** **6.12A.7.9.5 PASS — FLUTTER DISCOVERY LOCATION CONTEXT IMPLEMENTED** (automated only; physical QA → **A.7.9.6**).
+- **Checkpoint (implementation):** _(commit SHA at finish)_.
+- **Summary:**
+  - Parse **`contextLocationId`** on **`BusinessModel`** + **`PromotionModel`**; **`openBusinessFromDiscovery`** / **`openBusinessFromPromotion`** pass **`locationId`** query to existing detail route.
+  - Wired search, category/subcategory, home nearby/popular/recommended, promotions; **map unchanged** (`locationId` from marker).
+  - **`businessWithDistance`** preserves discovery context; no client branch fallback.
+- **Deferred:** **A.7.9.6** Samsung physical QA (L1/L2 search/category/nearby/promo).
+- **Next:** **6.12A.7.9.6** — physical closure.
+
+---
+
 ## 2026-09-23 — Stage 6.12A.7.9.4 branch-aware promotion discovery
 
 - **Status:** **6.12A.7.9.4 PASS — BRANCH-AWARE PROMOTION DISCOVERY IMPLEMENTED**.

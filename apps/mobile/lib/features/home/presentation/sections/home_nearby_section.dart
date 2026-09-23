@@ -123,7 +123,11 @@ class _NearbyBusinessList extends StatelessWidget {
               business: business,
               layout: BusinessCardLayout.compactHorizontal,
               onTap: () =>
-                  openBusiness(context, business.id, BusinessTrafficSource.home),
+                  openBusinessFromDiscovery(
+                    context,
+                    business,
+                    BusinessTrafficSource.home,
+                  ),
             ),
           ),
           const SizedBox(height: 12),

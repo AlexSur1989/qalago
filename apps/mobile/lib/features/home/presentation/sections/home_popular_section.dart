@@ -86,9 +86,9 @@ class _PopularPlacesStrip extends StatelessWidget {
                 business: entry.business,
                 layout: BusinessCardLayout.compactVertical,
                 subtitle: entry.reason,
-                onTap: () => openBusiness(
+                onTap: () => openBusinessFromDiscovery(
                   context,
-                  entry.business.id,
+                  entry.business,
                   BusinessTrafficSource.home,
                 ),
               ),

@@ -123,9 +123,9 @@ class HomeScreen extends ConsumerWidget {
                                     promotionId: promotion.id,
                                   ),
                             );
-                            openBusiness(
+                            openBusinessFromPromotion(
                               context,
-                              business.id,
+                              promotion,
                               BusinessTrafficSource.promotions,
                             );
                           },

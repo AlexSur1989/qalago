@@ -45,7 +45,11 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
     unawaited(
       ref.read(catalogRepositoryProvider).trackPromotionView(business.id),
     );
-    openBusiness(context, business.id, BusinessTrafficSource.promotions);
+    openBusinessFromPromotion(
+      context,
+      promotion,
+      BusinessTrafficSource.promotions,
+    );
   }
 
   List<PromotionModel> _filtered(List<PromotionModel> items) {

@@ -305,6 +305,8 @@ Env: `QALAGO_GEOCODING_PROVIDER` = `mock` (default) \| `maptiler`; `MAPTILER_API
 > **Map (6.12A.7.1):** `forMap=true` + viewport bbox returns **one row per qualifying `BusinessLocation`** (`locationId` + branch physical fields). **`id` remains the parent Business id.** Ordinary list/search/nearest (without map viewport grain) stays **Business-scoped**. See [business-location.md](./business-location.md).
 >
 > **Discovery context (6.12A.7.9.1+):** Business = discovery/card identity; **BusinessLocation** = physical context when known. Additive **`contextLocationId`** on list items = the branch that gives the card its physical context (clients may open detail with `?locationId=<contextLocationId>`). **Map keeps `locationId`** (unchanged contract). Detail keeps **`activeLocationId`**. Do not infer `contextLocationId` from legacy **`Business.location`** / primary coordinates alone.
+>
+> **Flutter consumption (A.7.9.5, IMPLEMENTED):** Mobile parses **`contextLocationId`** on catalog list/search/nearby/promotion payloads and opens **`GET /businesses/:id?locationId=<contextLocationId>`** via existing detail routing. Map marker taps continue **`locationId`** only (not list **`contextLocationId`**). Favorites/reviews/analytics remain **Business.id**.
 
 ### GET /businesses
 

@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
+import '../models/models.dart';
 import 'business_traffic_source.dart';
 
 /// Opens business detail with explicit traffic-source attribution (Stage 5H/5I).
@@ -27,6 +28,38 @@ void openBusiness(
     queryParameters: params,
   );
   context.push(uri.toString());
+}
+
+/// Discovery list/search/nearby: preserve backend [BusinessModel.contextLocationId].
+void openBusinessFromDiscovery(
+  BuildContext context,
+  BusinessModel business,
+  BusinessTrafficSource source, {
+  String? searchQuery,
+}) {
+  openBusiness(
+    context,
+    business.id,
+    source,
+    searchQuery: searchQuery,
+    selectedLocationId: business.contextLocationId,
+  );
+}
+
+/// City promotion feed: preserve [PromotionModel.contextLocationId].
+void openBusinessFromPromotion(
+  BuildContext context,
+  PromotionModel promotion,
+  BusinessTrafficSource source,
+) {
+  final business = promotion.business;
+  if (business == null) return;
+  openBusiness(
+    context,
+    business.id,
+    source,
+    selectedLocationId: promotion.contextLocationId,
+  );
 }
 
 BusinessTrafficSource parseBusinessTrafficSourceFromRoute(String? raw) =>

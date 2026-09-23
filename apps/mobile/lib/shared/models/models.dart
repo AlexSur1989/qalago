@@ -92,6 +92,7 @@ class BusinessModel {
     required this.slug,
     required this.address,
     this.locationId,
+    this.contextLocationId,
     this.shortDesc,
     this.latitude,
     this.longitude,
@@ -109,6 +110,8 @@ class BusinessModel {
   final String id;
   /// Branch row id on map viewport payloads (Stage 6.12A.7.1+); omitted on ordinary lists.
   final String? locationId;
+  /// Discovery navigation hint (A.7.9.3+); use for detail `locationId`, not [locationId].
+  final String? contextLocationId;
   final String title;
   final String slug;
   final String address;
@@ -128,6 +131,7 @@ class BusinessModel {
   factory BusinessModel.fromJson(Map<String, dynamic> json) => BusinessModel(
     id: json['id'] as String,
     locationId: json['locationId'] as String?,
+    contextLocationId: json['contextLocationId'] as String?,
     title: json['title'] as String,
     slug: json['slug'] as String,
     address: json['address'] as String,
@@ -288,6 +292,7 @@ class PromotionModel {
     this.endDate,
     this.businessId,
     this.business,
+    this.contextLocationId,
   });
 
   final String id;
@@ -302,6 +307,7 @@ class PromotionModel {
   final DateTime? endDate;
   final String? businessId;
   final BusinessModel? business;
+  final String? contextLocationId;
 
   factory PromotionModel.fromJson(Map<String, dynamic> json) {
     final businessJson = json['business'] as Map<String, dynamic>?;
@@ -320,6 +326,7 @@ class PromotionModel {
       business: businessJson != null
           ? BusinessModel.fromJson(businessJson)
           : null,
+      contextLocationId: json['contextLocationId'] as String?,
     );
   }
 }

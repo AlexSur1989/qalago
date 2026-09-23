@@ -154,6 +154,8 @@ BusinessModel businessWithDistance(
   if (meters == null || meters == business.distanceMeters) return business;
   return BusinessModel(
     id: business.id,
+    locationId: business.locationId,
+    contextLocationId: business.contextLocationId,
     title: business.title,
     slug: business.slug,
     address: business.address,

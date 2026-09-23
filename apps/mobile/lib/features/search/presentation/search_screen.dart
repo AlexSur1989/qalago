@@ -965,9 +965,9 @@ class _SearchResultsPane extends StatelessWidget {
                   position: businessIndex,
                   onTap: () {
                     FocusManager.instance.primaryFocus?.unfocus();
-                    openBusiness(
+                    openBusinessFromDiscovery(
                       context,
-                      business.id,
+                      business,
                       BusinessTrafficSource.search,
                       searchQuery: attributionQuery,
                     );

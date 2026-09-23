@@ -80,5 +80,5 @@ class HomeFeaturedAdSlot extends ConsumerWidget {
 void openAdPromotion(BuildContext context, PromotionModel promotion) {
   final business = promotion.business;
   if (business == null) return;
-  openBusiness(context, business.id, BusinessTrafficSource.ad);
+  openBusinessFromPromotion(context, promotion, BusinessTrafficSource.ad);
 }

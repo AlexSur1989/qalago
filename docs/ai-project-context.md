@@ -52,6 +52,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | 6.12A.7.9.3A | **PASS (city membership)** | Discovery city = branch **`cityId`** presence; non-geo **`contextLocationId`**; **`Business.cityId`** not physical presence |
 | 6.12A.7.9.3B | **PASS (branch-aware search)** | Search stays **Business-grain**; branch **address** + **SIBA** honesty; search **`contextLocationId`** precedence (geo **>** SELECTED item **>** address **>** city) |
 | 6.12A.7.9.4 | **PASS (promotion city feed)** | **`GET /promotions`** **ALL/SELECTED PBA** + city **`contextLocationId`**; Promotion-grain |
+| 6.12A.7.9.5 | **PASS (Flutter automated)** | Discovery cards → detail **`locationId`** from backend **`contextLocationId`**; map keeps marker **`locationId`**; favorites/reviews **Business.id** |
 
 ## Business vs BusinessLocation
 
@@ -71,7 +72,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 - **Map (A.7.1–A.7.4):** backend **BusinessLocation** grain + **`locationId`**; Flutter map layer uses **physical key**; category map renders **`mapLayerItems`** (fetch bounds); detail accepts optional **`locationId`** for branch address/route; reviews/favorites/analytics remain **Business.id**.
 - **Nearest/radius/list discovery:** still **Business-grain** (primary geography).
-- **Public discovery:** **A.7.9.3A–3B** catalog/search; **A.7.9.4** city **`GET /promotions`** uses **PBA** + **`contextLocationId`**. Map unchanged. **A.7.9.5** Flutter navigation propagation deferred.
+- **Public discovery:** Backend **A.7.9.3A–3B/4** + Flutter **A.7.9.5** passes **`contextLocationId`** into detail **`locationId`**. Map unchanged (**marker `locationId`**). **A.7.9.6** physical QA deferred.
 - **F.4 / F.5:** final business URLs, branch slugs, hreflang, branch JSON-LD — not A.6.
 - **Branch-level membership, location favorites, branch reviews:** deferred.
 
