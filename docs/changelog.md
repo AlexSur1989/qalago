@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-09-23 — Map viewport refresh hotfix (projection decouple)
+
+- **Status:** **MAP VIEWPORT HOTFIX IMPLEMENTED (automated)** — decouple catalog viewport fetch from Flutter overlay projection on MapLibre camera idle; **physical Samsung QA pending**.
+- **Checkpoint (implementation):** `3107ae6251490991dfd6b7ea494a037e89f7ba41`.
+- **Summary:**
+  - **Root cause (physical MAPDBG):** `_onCameraIdle` awaited `_finalizeMarkerProjection()` (~10.7s on SM-J610FN) before `readVisibleBounds` / `MapBusinessesNotifier.onViewportIdle`.
+  - **Fix:** propagate visible bounds + viewport fetch first; run overlay projection via `_runOverlayProjectionAfterCameraIdle()` without blocking data refresh.
+  - **MAPDBG** tracing retained for post-hotfix device comparison.
+  - Native business GeoJSON layer, hysteresis, padding, and notifier merge unchanged.
+- **Deferred:** **Physical Samsung re-QA** (pan → fetch must start before `projectionFinalize END`); remove MAPDBG after closure.
+- **Next:** Install diagnostic APK; capture MAPDBG; confirm A.7.8.5 map pan QA alongside branch catalog work.
+
+---
+
 ## 2026-09-22 — Stage 6.12A.7.8.5 Flutter branch catalog / promotions integration
 
 - **Status:** **6.12A.7.8.5 IMPLEMENTED (automated)** — consumer **Flutter** consumes **`effectiveCatalog`** / **`effectivePromotions`** on business detail + scoped full catalog; **physical QA pending**.

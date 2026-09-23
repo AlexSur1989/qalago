@@ -22,6 +22,8 @@ import '../qalago_map_basemap_hardening.dart';
 import '../qalago_map_house_numbers.dart';
 import '../qalago_map_light_style.dart';
 import 'qalago_map_business_layer_controller.dart';
+import '../map_viewport_debug_log.dart';
+import '../qalago_map_business_geojson_source.dart';
 
 /// MapLibre-backed [QalaGoMapView] implementation (Stage 6.11C.2).
 class MapLibreQalaGoMapView extends StatefulWidget {
@@ -260,6 +262,9 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
     }
     final geoJson =
         widget.businessGeoJson ?? QalaGoMapBusinessLayerController.emptyFeatureCollection();
+    mapViewportDbg(
+      'MAPDBG geojsonSync featureCount=${QalaGoMapBusinessGeoJsonSource.featureCount(geoJson)}',
+    );
     await _businessLayerController.syncBusinessGeoJson(native, geoJson);
   }
 
@@ -285,6 +290,7 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
   }
 
   void _onCameraMove(CameraPosition position) {
+    mapViewportDbg('MAPDBG cameraMove');
     _projectionSync.bumpGeneration();
     _projectionSync.scheduleFrame(() {
       if (!mounted) return;
@@ -353,14 +359,45 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
   }
 
   Future<void> _onCameraIdle() async {
-    _projectionSync.bumpGeneration();
-    await _finalizeMarkerProjection();
+    mapViewportDbg('MAPDBG cameraIdle START');
     final callback = widget.onCameraIdle;
     final qController = widget.controller;
-    if (callback == null || qController == null) return;
-    final bounds = await qController.readVisibleBounds();
-    if (bounds != null && mounted) {
-      callback(bounds);
+    if (callback != null && qController != null) {
+      final bounds = await qController.readVisibleBounds();
+      mapViewportDbg(
+        'MAPDBG visibleBounds=${mapViewportDbgBounds(bounds)}',
+      );
+      if (bounds != null && mounted) {
+        mapViewportDbg(
+          'MAPDBG cameraIdle bounds=${mapViewportDbgBounds(bounds)}',
+        );
+        callback(bounds);
+      } else {
+        mapViewportDbg('MAPDBG cameraIdle bounds=NULL');
+      }
+    }
+    mapViewportDbg('MAPDBG cameraIdle END');
+    if (!mounted) {
+      return;
+    }
+    unawaited(_runOverlayProjectionAfterCameraIdle());
+  }
+
+  /// Flutter overlay pin projection only; catalog viewport fetch must not wait.
+  Future<void> _runOverlayProjectionAfterCameraIdle() async {
+    if (!mounted) {
+      return;
+    }
+    _projectionSync.bumpGeneration();
+    try {
+      mapViewportDbg('MAPDBG projectionFinalize START');
+      await _finalizeMarkerProjection();
+      if (!mounted) {
+        return;
+      }
+      mapViewportDbg('MAPDBG projectionFinalize END');
+    } catch (e) {
+      mapViewportDbg('MAPDBG projectionFinalize ERROR=$e');
     }
   }
 

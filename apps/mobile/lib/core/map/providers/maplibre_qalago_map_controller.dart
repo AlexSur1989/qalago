@@ -1,5 +1,6 @@
 import 'package:maplibre_gl/maplibre_gl.dart';
 
+import '../map_viewport_debug_log.dart';
 import '../qalago_map_bounds.dart';
 import '../qalago_map_controller.dart';
 import '../qalago_map_coordinate.dart';
@@ -55,10 +56,13 @@ class MapLibreQalaGoMapController implements QalaGoMapController {
   @override
   Future<QalaGoMapBounds?> readVisibleBounds() async {
     final delegate = _delegate;
-    if (delegate == null) return null;
+    if (delegate == null) {
+      mapViewportDbg('MAPDBG visibleBounds=NULL');
+      return null;
+    }
     try {
       final region = await delegate.getVisibleRegion();
-      return QalaGoMapBounds(
+      final bounds = QalaGoMapBounds(
         southwest: QalaGoMapCoordinate(
           latitude: region.southwest.latitude,
           longitude: region.southwest.longitude,
@@ -68,7 +72,12 @@ class MapLibreQalaGoMapController implements QalaGoMapController {
           longitude: region.northeast.longitude,
         ),
       );
-    } catch (_) {
+      mapViewportDbg(
+        'MAPDBG visibleBounds=${mapViewportDbgBounds(bounds)}',
+      );
+      return bounds;
+    } catch (e) {
+      mapViewportDbg('MAPDBG visibleBounds=NULL');
       return null;
     }
   }

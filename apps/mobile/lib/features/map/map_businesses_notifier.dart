@@ -11,6 +11,7 @@ import 'map_bounds_utils.dart';
 import 'map_coordinate_validity.dart';
 import 'map_discovery_scope.dart';
 import 'map_physical_key.dart';
+import '../../core/map/map_viewport_debug_log.dart';
 import '../../shared/models/models.dart';
 
 const kMapBusinessPageSize = 100;
@@ -132,8 +133,24 @@ class MapBusinessesNotifier extends Notifier<MapBusinessesState> {
   }
 
   Future<void> onViewportIdle(QalaGoMapBounds bounds) async {
+    final previousVisibleBounds = state.visibleBounds;
+    mapViewportDbg(
+      'MAPDBG onViewportIdle received=${mapViewportDbgBounds(bounds)}',
+    );
+    mapViewportDbg(
+      'MAPDBG previousVisibleBounds=${mapViewportDbgBounds(previousVisibleBounds)}',
+    );
+    mapViewportDbg(
+      'MAPDBG lastFetchBounds=${mapViewportDbgBounds(state.lastFetchBounds)}',
+    );
     state = state.copyWith(visibleBounds: bounds);
-    if (!mapBoundsFetchNeeded(previous: state.lastFetchBounds, next: bounds)) {
+    final fetchNeeded = mapBoundsFetchNeeded(
+      previous: state.lastFetchBounds,
+      next: bounds,
+    );
+    mapViewportDbg('MAPDBG fetchNeeded=$fetchNeeded');
+    if (!fetchNeeded) {
+      mapViewportDbg('MAPDBG fetchSkipped');
       return;
     }
     await _fetchForBounds(bounds.padded(0.12));
@@ -168,11 +185,16 @@ class MapBusinessesNotifier extends Notifier<MapBusinessesState> {
     var viewportTotal = 0;
     var itemsReceivedFromApi = 0;
 
+    mapViewportDbg('MAPDBG fetch START');
+    mapViewportDbg('MAPDBG fetchBounds=${mapViewportDbgBounds(bounds)}');
+    mapViewportDbg('MAPDBG fetchGeneration=$requestGeneration');
+
     try {
       for (var page = 1; page <= kMapBusinessMaxPagesPerFetch; page++) {
         if (cancelToken.isCancelled ||
             scopeGeneration != state.scopeGeneration ||
             requestGeneration != _requestGeneration) {
+          mapViewportDbg('MAPDBG fetch DROPPED_STALE');
           return;
         }
 
@@ -204,6 +226,7 @@ class MapBusinessesNotifier extends Notifier<MapBusinessesState> {
 
       if (scopeGeneration != state.scopeGeneration ||
           requestGeneration != _requestGeneration) {
+        mapViewportDbg('MAPDBG fetch DROPPED_STALE');
         return;
       }
 
@@ -214,14 +237,33 @@ class MapBusinessesNotifier extends Notifier<MapBusinessesState> {
         lastFetchBounds: bounds,
         clearError: true,
       );
+      final sampleIds = merged.keys.take(5).join(',');
+      mapViewportDbg('MAPDBG fetch SUCCESS count=${merged.length}');
+      mapViewportDbg('MAPDBG fetch returnedLocationIds=$sampleIds');
+      _logMapBusinessStateSnapshot('MAPDBG state');
     } catch (e, _) {
       if (cancelToken.isCancelled ||
           scopeGeneration != state.scopeGeneration ||
           requestGeneration != _requestGeneration) {
+        mapViewportDbg('MAPDBG fetch DROPPED_STALE');
         return;
       }
+      mapViewportDbg('MAPDBG fetch ERROR=$e');
       state = state.copyWith(loading: false, error: e);
     }
+  }
+
+  void _logMapBusinessStateSnapshot(String prefix) {
+    final s = state;
+    mapViewportDbg(
+      '$prefix visibleBounds=${mapViewportDbgBounds(s.visibleBounds)}',
+    );
+    mapViewportDbg(
+      '$prefix lastFetchBounds=${mapViewportDbgBounds(s.lastFetchBounds)}',
+    );
+    mapViewportDbg('$prefix cacheCount=${s.byLocationId.length}');
+    mapViewportDbg('$prefix visibleBusinessCount=${s.items.length}');
+    mapViewportDbg('$prefix mapLayerCount=${s.mapLayerItems.length}');
   }
 }
 
