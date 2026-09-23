@@ -9,7 +9,7 @@
 ## 2026-09-23 — Stage 6.12A.7.9.2 nearby nearest-branch discovery
 
 - **Status:** **6.12A.7.9.2 PASS — NEARBY NEAREST-BRANCH DISCOVERY IMPLEMENTED**.
-- **Checkpoint (implementation):** _(filled at commit)_.
+- **Checkpoint (implementation):** `421e1e244638ac5871ec3b3eeb3d66c4097d7a21`.
 - **Summary:**
   - **`GET /businesses`** nearby paths (`sort=nearest`, explicit **`radiusKm`**, default geo nearest): PostGIS on **`BusinessLocation.location`**; **`DISTINCT ON (businessId)`** nearest branch; business-grain pagination; additive **`contextLocationId`** + aligned **`distanceMeters`**.
   - Legacy **`Business.location`** not used for radius/membership; businesses without geocoded branches excluded (no fake **`contextLocationId`**).
