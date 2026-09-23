@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-09-24 — Stage 6.12A.7.QA Final BusinessLocation E2E architecture audit
+
+- **Status:** **6.12A.7.QA AUDIT PASS — READY FOR A.8** (read-only audit; **no new physical QA**).
+- **Checkpoint (docs):** _(this commit SHA)_.
+- **Summary:**
+  - **Verdict:** **Business** = brand identity; **BusinessLocation** = physical branch; normal discovery = **Business-grain** + optional **`contextLocationId`**; **map** = **BusinessLocation-grain**; detail = **`Business.id`** + selected **`locationId`**; physical/contacts/hours/coords = location-effective; **SIBA/PBA** branch catalog/promotions; shared + branch **media** contract valid; **favorites/reviews/membership/plans** remain **Business-grain**.
+  - **Security/integrity:** **no P0**; **no confirmed P1**; no cross-business location **IDOR** in static review; composite **`(businessId, locationId)`** FKs on media/SIBA/PBA.
+  - **Dev DB snapshot (read-only):** 108 **Business**, 108 **BusinessLocation**; **no multi-location business** after A.7.9.6 fixture cleanup — multi-branch correctness relies on **automated tests** + **previously documented Samsung physical QA**, not re-run in A.7.QA.
+- **Findings (recorded, not implemented):** **QA-001** P2 Consumer Web temp detail uses legacy **`business.address`** → **F.4**; **QA-002** P2 Flutter favorites open without **`contextLocationId`** → small Flutter/discovery remediation; **QA-003** P3 27 BL rows lat/lng without geography → **A.9**/ops backfill; **QA-004** P3 single-primary app-only → **A.9**; **QA-005** P2 promotions invalid-`locationId` doc vs primary-fallback → docs contract fix; **QA-006** DEFERRED ads/analytics no location dimension → **A.8**; **QA-007** DEFERRED Admin no full branch CRUD → ops backlog; **QA-008** DEFERRED legacy **Business** physical columns → **A.9**.
+- **Release gate:** A.7 architecture complete **YES**; P0 **NO**; P1 **NO**; remediation required before A.8 **NO**; ready for A.8 **YES**; legacy Business physical deprecation remains **A.9**.
+- **Next:** **6.12A.8** — Ads / Analytics location hooks.
+
+---
+
 ## 2026-09-24 — Stage 6.12A.7.9.6 Physical discovery QA (closure)
 
 - **Status:** **6.12A.7.9.6 PASS — PHYSICAL DISCOVERY QA FINALIZED**.

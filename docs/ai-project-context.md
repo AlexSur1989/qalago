@@ -54,6 +54,9 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | 6.12A.7.9.4 | **PASS (promotion city feed)** | **`GET /promotions`** **ALL/SELECTED PBA** + city **`contextLocationId`**; Promotion-grain |
 | 6.12A.7.9.5 | **PASS (Flutter automated)** | Discovery cards → detail **`locationId`** from backend **`contextLocationId`**; map keeps marker **`locationId`**; favorites/reviews **Business.id** |
 | **6.12A.7.9.6** | **CLOSED (physical QA PASS)** | Samsung SM-J610FN: discovery **Business-grain** + map **BusinessLocation-grain**; detail branch switch; branch-aware **catalog/promotions** full lists; fixture cleaned (dev); impl checkpoints `4a24b43` / `d7b25ea` |
+| **6.12A.7.QA** | **CLOSED (audit PASS)** | Final read-only BusinessLocation E2E architecture audit — **READY FOR A.8**; no P0/P1; findings **QA-001..QA-008** backlog only |
+
+**Next stage:** **6.12A.8** — Ads / Analytics location hooks.
 
 ## Business vs BusinessLocation
 
@@ -74,9 +77,22 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 - **Map (A.7.1–A.7.4):** backend **BusinessLocation** grain + **`locationId`**; Flutter map layer uses **physical key**; category map renders **`mapLayerItems`** (fetch bounds); detail accepts optional **`locationId`** for branch address/route; reviews/favorites/analytics remain **Business.id**.
 - **Nearest/radius/list discovery:** **Business-grain** card; branch context via **`contextLocationId`** (A.7.9.2+).
-- **Public discovery:** Backend **A.7.9.3A–3B/4** + Flutter **A.7.9.5** passes **`contextLocationId`** into detail **`locationId`**. Map unchanged (**marker `locationId`**). **A.7.9.6:** in-detail branch switch (**`switchBusinessDetailBranch`** / **replace** route) + map/discovery entry; physical QA pending.
+- **Public discovery:** Backend **A.7.9.3A–3B/4** + Flutter **A.7.9.5** passes **`contextLocationId`** into detail **`locationId`**. Map unchanged (**marker `locationId`**). **A.7.9.6 CLOSED** (physical QA PASS). **A.7 BusinessLocation architecture complete** (A.7.QA audit PASS).
 - **F.4 / F.5:** final business URLs, branch slugs, hreflang, branch JSON-LD — not A.6.
 - **Branch-level membership, location favorites, branch reviews:** deferred.
+
+## A.7.QA outstanding debt (not implemented)
+
+| ID | Severity | Summary | Target |
+|----|----------|---------|--------|
+| QA-001 | P2 | Consumer Web temp detail uses legacy **`business.address`** | F.4 |
+| QA-002 | P2 | Flutter favorites open without **`contextLocationId`** | Flutter/discovery fix |
+| QA-003 | P3 | BL rows with lat/lng but null geography (dev snapshot: 27) | A.9 / ops backfill |
+| QA-004 | P3 | Single-primary enforced in app, not DB | A.9 |
+| QA-005 | P2 | Promotions invalid-`locationId` doc vs primary-fallback | api-contracts |
+| QA-006 | DEFERRED | Ads/analytics no **BusinessLocation** dimension | **A.8** |
+| QA-007 | DEFERRED | Admin no full branch CRUD | Admin backlog |
+| QA-008 | DEFERRED | Legacy **Business** physical columns as fallback | A.9 |
 
 ## Advertising (future architecture — not implemented in location stages)
 
