@@ -9,7 +9,7 @@
 ## 2026-09-23 — Stage 6.12A.7.9.3A BusinessLocation city membership + city context
 
 - **Status:** **6.12A.7.9.3A PASS — BUSINESSLOCATION CITY MEMBERSHIP + CITY CONTEXT IMPLEMENTED**.
-- **Checkpoint (implementation):** `49bc9d8d2679860d918ba136df9c03c3b08e4421`.
+- **Checkpoint (implementation):** `5f05d76183534057310ca41a72a07389bee47a9d`.
 - **Summary:**
   - Normal discovery city eligibility: **`BusinessLocation.cityId = C`** (`locations.some` / branch geo SQL); **no** `Business.cityId` OR fallback.
   - Non-geo lists attach **`contextLocationId`** (deterministic branch in city); batch **`businessLocation.findMany`** — no N+1.
