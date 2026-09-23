@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import '../../../core/rbac/business_access.dart';
+import '../../analytics/utils/analytics_platform.dart';
 import '../../../features/ads/data/ad_models.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/models/business_branch_location.dart';
@@ -570,7 +570,7 @@ class CatalogRepository {
           if (position != null) 'position': position,
           if (visitorId != null) 'visitorId': visitorId,
           if (sessionId != null) 'sessionId': sessionId,
-          'platform': _analyticsPlatform(),
+          'platform': qalagoAnalyticsPlatform(),
         },
       );
     } on DioException {
@@ -581,18 +581,6 @@ class CatalogRepository {
   String _newClientEventId() {
     final now = DateTime.now().microsecondsSinceEpoch;
     return '$now-${identityHashCode(this)}';
-  }
-
-  String _analyticsPlatform() {
-    if (kIsWeb) return 'WEB';
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.iOS:
-        return 'IOS';
-      case TargetPlatform.android:
-        return 'ANDROID';
-      default:
-        return 'UNKNOWN';
-    }
   }
 
   Future<List<Map<String, dynamic>>> fetchServiceItems(
@@ -908,6 +896,7 @@ class CatalogRepository {
           'placementCode': placementCode,
           'sessionId': sessionId,
           'citySlug': citySlug,
+          'platform': qalagoAnalyticsPlatform(),
           if (categoryId != null) 'categoryId': categoryId,
         },
       );
@@ -933,6 +922,7 @@ class CatalogRepository {
           'placementCode': placementCode,
           'sessionId': sessionId,
           'type': type,
+          'platform': qalagoAnalyticsPlatform(),
           if (position != null) 'position': position,
         },
       );

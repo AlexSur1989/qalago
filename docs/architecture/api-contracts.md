@@ -1360,7 +1360,9 @@ Domain errors include stable `code` in body:
 
 ### Ad serving (Stage 3A — public)
 
-- `GET /monetization/ads/serve?placementCode&sessionId&citySlug|cityId&categoryId?&limit?`
+- `GET /monetization/ads/serve?placementCode&sessionId&citySlug|cityId&categoryId?&limit?&platform?`
+
+**Stage 6.12A.8.6 — optional `platform` query:** same enum as organic analytics — `IOS` | `ANDROID` | `WEB` | `UNKNOWN`. Identifies the **client runtime** that requested serve (native app vs browser). Stored on server-created **`AD_SERVED`** only when provided. Omitted → `null` (legacy/unattributed). Invalid enum → **400**. **No** User-Agent derivation; **not** inferred from `placementCode`.
 
 **Response `200`:**
 ```json
@@ -1426,6 +1428,8 @@ Composite DB FKs on **AdCampaign** enforce `(businessId, locationId)` belongs to
 
 **Stage 6.12A.8.5 — analytics branch (implemented):** see **POST /analytics/events** and **POST /monetization/ads/events** notes above; owner KPI totals unchanged (branch is optional dimension only).
 
+**Stage 6.12A.8.6 — analytics platform (implemented):** optional **`platform`** on ad track + serve (same **`AnalyticsPlatform`** enum as organic). Meaning: client runtime on which **that** event occurred. Omitted → `null`; **`UNKNOWN`** only when client explicitly sends it. Invalid values rejected. **Consumer Web** may send `WEB` when Web ads ship; Web ads/UI not implemented in A.8.6. Campaign channel targeting (`ALL`/`APP`/`WEB`) remains a separate future dimension.
+
 - `POST /monetization/ads/events` — track impression/click/action (rate limit 120/min/IP)
 
 **Body:**
@@ -1435,7 +1439,8 @@ Composite DB FKs on **AdCampaign** enforce `(businessId, locationId)` belongs to
   "placementCode": "HOME_FEATURED",
   "sessionId": "abc123",
   "type": "AD_IMPRESSION",
-  "position": 1
+  "position": 1,
+  "platform": "ANDROID"
 }
 ```
 

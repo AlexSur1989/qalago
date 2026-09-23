@@ -1,4 +1,8 @@
-import { AdCreativeTargetType, AdCreativeType } from '@prisma/client';
+import {
+  AdCreativeTargetType,
+  AdCreativeType,
+  AnalyticsPlatform,
+} from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
@@ -327,6 +331,10 @@ export class ServeAdsQueryDto extends MonetizationCityQueryDto {
   @IsInt()
   @Min(1)
   limit?: number;
+
+  @IsOptional()
+  @IsEnum(AnalyticsPlatform)
+  platform?: AnalyticsPlatform;
 }
 
 export class TrackAdEventDto {
@@ -348,6 +356,10 @@ export class TrackAdEventDto {
   @IsInt()
   @Min(1)
   position?: number;
+
+  @IsOptional()
+  @IsEnum(AnalyticsPlatform)
+  platform?: AnalyticsPlatform;
 }
 
 export class CampaignAnalyticsQueryDto {

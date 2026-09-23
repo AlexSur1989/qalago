@@ -3,6 +3,7 @@ import {
   AdCampaignStatus,
   AdModerationStatus,
   AnalyticsEventType,
+  AnalyticsPlatform,
   BusinessStatus,
   MonetizationProductType,
   Prisma,
@@ -172,6 +173,7 @@ export class AdServingService {
         query.sessionId,
         now,
         locationCtx.destinationLocationId,
+        query.platform,
       );
       items.push(item);
     }
@@ -337,6 +339,7 @@ export class AdServingService {
     sessionId: string,
     now: Date,
     businessLocationId: string | null,
+    platform: AnalyticsPlatform | undefined,
   ) {
     await this.prisma.$transaction([
       this.prisma.adCampaign.update({
@@ -354,6 +357,7 @@ export class AdServingService {
           placementId,
           sessionId,
           ...(businessLocationId ? { businessLocationId } : {}),
+          ...(platform ? { platform } : {}),
         },
       }),
     ]);

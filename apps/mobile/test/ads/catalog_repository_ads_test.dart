@@ -1,9 +1,15 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qalago_mobile/features/analytics/utils/analytics_platform.dart';
 import 'package:qalago_mobile/features/catalog/data/catalog_repository.dart';
 
 void main() {
+  tearDown(resetAnalyticsPlatformOverrideForTesting);
+
   group('CatalogRepository ads', () {
+    setUp(() {
+      analyticsPlatformOverrideForTesting = 'ANDROID';
+    });
     Dio buildDio(void Function(RequestOptions options, RequestInterceptorHandler handler) onRequest) {
       final dio = Dio();
       dio.interceptors.add(
@@ -39,6 +45,7 @@ void main() {
       expect(params?['sessionId'], 'sess123');
       expect(params?['citySlug'], 'uralsk');
       expect(params?['categoryId'], 'cat-1');
+      expect(params?['platform'], 'ANDROID');
       expect(response, isNotNull);
     });
 
@@ -101,6 +108,7 @@ void main() {
       );
 
       expect(body?['type'], 'AD_IMPRESSION');
+      expect(body?['platform'], 'ANDROID');
       expect(body?['type'], isNot('AD_SERVED'));
     });
   });

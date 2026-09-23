@@ -62,8 +62,9 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | **6.12A.8.4** | **CLOSED (physical QA PASS)** | Branch-aware ad taps on Samsung SM-J610FN; HOME_FEATURED / CATEGORY_TOP / HOME_PROMOTIONS / VIP BUSINESS / VIP PROMOTION + L2→L1 back stack; impl `a7806bb` + hotfix `f1d03c8` |
 | **6.12A.8.4.PHYSICAL** | **CLOSED** | Fixture cleanup + dev baseline restored; changelog closure docs-only after QA |
 | **6.12A.8.5** | **PASS (attribution)** | `AnalyticsEvent.businessLocationId` = interaction branch; organic server-validated; ad server-derived; historical null preserved |
+| **6.12A.8.6** | **PASS (platform)** | Ad + serve record optional `AnalyticsEvent.platform` when client sends enum; organic/ads share Flutter helper; historical ad platform stays null |
 
-**Next stage:** **6.12A.8.6** — ad/platform analytics parity (not started).
+**Next stage:** TBD (not A.8.7 in this closure); branch/platform analytics UI deferred.
 
 ## Ads / Analytics location (A.8)
 
@@ -71,10 +72,11 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **Targeting (optional):** `targetBusinessLocationId` — serve eligibility narrowing (`null` = legacy city/category behavior).
 - **Destination (optional):** `destinationBusinessLocationId` — configured tap branch; **serve** returns resolved `destinationLocationId` / `contextLocationId` (A.8.3).
 - **Attribution (A.8.5):** `AnalyticsEvent.businessLocationId` — **branch interaction context**, not user GPS; organic DTO validated same-business; **`AD_SERVED`** = serve-time resolved destination; client **`AD_*`** = explicit campaign destination only when set.
+- **Platform (A.8.6):** `AnalyticsEvent.platform` — optional client runtime (`IOS`/`ANDROID`/`WEB`/`UNKNOWN`); Flutter canonical helper; serve query + ad event body; omitted legacy → **null**; independent of branch attribution.
 - **A.8.2 rules:** branch ids validated on order + provision; **BusinessLocation.cityId** must match **campaign.cityId** when branch set; **target** and **destination** independent but cannot differ when both set; promotion **PBA** enforced on destination; single selected branch in city may auto-fill destination at provision; branch delete clears nullable campaign refs when safe else **409** `BUSINESS_LOCATION_DELETE_BLOCKED`.
 - **A.8.3 serving:** single engine for all placements; city authority = **BusinessLocation.cityId**; brand null/null → A.7.9.3A city-context branch when present; fail-closed stale campaigns.
 - **A.8.4 Flutter:** `resolvedDestinationLocationId` → business detail `locationId`; promotion-rich ads use `promotion.contextLocationId`; **VIP PROMOTION** may be creative-target-only (no `promotion` payload) — client opens **Business** detail with backend-resolved destination/context branch; VIP external URL unchanged.
-- **Deferred:** ALL/APP/WEB campaign channel; **A.8.6** WEB_MOBILE/WEB_DESKTOP + ad **platform** parity; branch analytics UI.
+- **Deferred:** ALL/APP/WEB campaign channel; WEB_MOBILE/WEB_DESKTOP split; branch/platform analytics UI; Consumer Web ads.
 
 ## Business vs BusinessLocation
 

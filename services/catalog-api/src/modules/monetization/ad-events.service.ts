@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AnalyticsEventType, Prisma } from '@prisma/client';
+import { AnalyticsEventType, AnalyticsPlatform, Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   AD_ANALYTICS_EVENT_TYPES,
@@ -63,6 +63,8 @@ export class AdEventsService {
       campaign,
     );
 
+    const platform = dto.platform;
+
     if (dto.type === 'AD_IMPRESSION') {
       return this.trackImpression(
         campaign.id,
@@ -72,6 +74,7 @@ export class AdEventsService {
         dto.position,
         eventType,
         businessLocationId,
+        platform,
       );
     }
 
@@ -83,6 +86,7 @@ export class AdEventsService {
         dto.sessionId,
         eventType,
         businessLocationId,
+        platform,
       );
     }
 
@@ -93,6 +97,7 @@ export class AdEventsService {
       dto.sessionId,
       eventType,
       businessLocationId,
+      platform,
     );
   }
 
@@ -126,6 +131,7 @@ export class AdEventsService {
     position: number | undefined,
     eventType: AnalyticsEventType,
     businessLocationId: string | null,
+    platform: AnalyticsPlatform | undefined,
   ) {
     const since = new Date(Date.now() - IMPRESSION_DEDUPE_WINDOW_MS);
     const duplicate = await this.prisma.analyticsEvent.findFirst({
@@ -163,6 +169,7 @@ export class AdEventsService {
           placementId,
           sessionId,
           ...(businessLocationId ? { businessLocationId } : {}),
+          ...(platform ? { platform } : {}),
         },
       }),
     ]);
@@ -177,6 +184,7 @@ export class AdEventsService {
     sessionId: string,
     eventType: AnalyticsEventType,
     businessLocationId: string | null,
+    platform: AnalyticsPlatform | undefined,
   ) {
     await this.prisma.$transaction([
       this.prisma.adCampaign.update({
@@ -191,6 +199,7 @@ export class AdEventsService {
           placementId,
           sessionId,
           ...(businessLocationId ? { businessLocationId } : {}),
+          ...(platform ? { platform } : {}),
         },
       }),
     ]);
@@ -205,6 +214,7 @@ export class AdEventsService {
     sessionId: string,
     eventType: AnalyticsEventType,
     businessLocationId: string | null,
+    platform: AnalyticsPlatform | undefined,
   ) {
     await this.prisma.analyticsEvent.create({
       data: {
@@ -214,6 +224,7 @@ export class AdEventsService {
         placementId,
         sessionId,
         ...(businessLocationId ? { businessLocationId } : {}),
+        ...(platform ? { platform } : {}),
       },
     });
 
