@@ -9,7 +9,7 @@
 ## 2026-09-23 — Stage 6.12A.7.9.6 Detail navigation (catalog + promotions hotfix #2)
 
 - **Status:** **6.12A.7.9.6 DETAIL NAVIGATION HOTFIX IMPLEMENTED — WAITING FOR PHYSICAL QA** (stage **not** PASS).
-- **Checkpoint (implementation):** _(this commit SHA)_.
+- **Checkpoint (implementation):** `d7b25ea82a0d3a08359374c2b3be2af44f7db1b9`.
 - **Summary:**
   - **Physical QA finding:** catalog/promotions full-list affordances only when preview overflow; promotions overflow routed to global **`/promotions`** (lost **`Business.id`** + branch); promotion tiles looked tappable but analytics-only.
   - **Flutter:** always-on section navigation for non-empty catalog/promotions; **`BusinessPromotionsScreen`** at **`/business/:id/promotions?locationId=`**; promotion tile opens business promotions list + keeps **`PROMOTION_VIEW`** analytics; catalog item preview taps open full catalog.
