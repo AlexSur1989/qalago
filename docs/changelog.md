@@ -9,7 +9,7 @@
 ## 2026-09-23 — Stage 6.12A.7.9.5 Flutter discovery location context
 
 - **Status:** **6.12A.7.9.5 PASS — FLUTTER DISCOVERY LOCATION CONTEXT IMPLEMENTED** (automated only; physical QA → **A.7.9.6**).
-- **Checkpoint (implementation):** _(commit SHA at finish)_.
+- **Checkpoint (implementation):** `10985a4dfe7b90fc2374a104101c92576bed8594`.
 - **Summary:**
   - Parse **`contextLocationId`** on **`BusinessModel`** + **`PromotionModel`**; **`openBusinessFromDiscovery`** / **`openBusinessFromPromotion`** pass **`locationId`** query to existing detail route.
   - Wired search, category/subcategory, home nearby/popular/recommended, promotions; **map unchanged** (`locationId` from marker).
