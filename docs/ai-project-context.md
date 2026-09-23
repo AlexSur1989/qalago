@@ -44,17 +44,18 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | 6.12A.7.8.2 | **PASS (management API)** | Owner **`branchAvailability`** on ServiceItem/Promotion CRUD; location **DELETE** conflict mapping; **no public filtering** |
 | 6.12A.7.8.3 | **PASS (public contract)** | Detail **`effectiveCatalog`** / **`effectivePromotions`**; **`/catalog?locationId=`**; legacy previews unchanged |
 | 6.12A.7.8.4 | **PASS (Business Web UX)** | Owner menu + promotions **ALL/SELECTED** branch controls; **`listManageServiceItems`** for edit assignments |
-| 6.12A.7.8.5 | **PASS (automated Flutter integration)** | Detail **`effectiveCatalog`** / **`effectivePromotions`**; scoped **`/catalog?locationId=`**; provider scope **`businessId\|locationId`** |
-| 6.12A.7.8.5 QA | **PENDING** | Physical QA on device (catalog/promotions per branch) |
+| 6.12A.7.8.5 | **CLOSED (physical QA PASS)** | Flutter branch-effective catalog/promotions; Samsung SM-J610FN L1/L2 verified; QA785 fixture cleaned (dev) |
+| 6.12A.7.8.6 | **PASS (Admin read-only)** | **`GET /admin/businesses/:businessId/content`** — **`BUSINESS_VIEW`**, ALL/SELECTED branch scope labels; no branch editing |
+| **6.12A.7.8** | **CLOSED** | Branch catalog/promotions architecture finalized (A.7.8.0–A.7.8.6); discovery/global promotions branch grain → **A.7.9** |
 
 ## Business vs BusinessLocation
 
-- **Business:** brand identity — membership, reviews, favorites, plans, ads, analytics, gallery/catalog/promotions (Business-scoped).
+- **Business:** brand identity — membership, reviews, favorites, plans, ads, analytics; **ServiceItem** / **Promotion** are business entities with optional per-branch availability (reviews/favorites/analytics remain **Business.id**-scoped).
 - **BusinessLocation:** physical branch identity — city, address, coords, hours, contacts; **Business 1:N BusinessLocation**.
-- **Business detail (A.7.6 / A.7.7):** optional **`locationId`** selects active branch; **`effectivePhysical`** = physical UI; **`effectiveMedia`** = branch-aware public media (hero + preview + scoped **`/photos?locationId=`** on **Flutter**). **`Business.id`** unchanged for reviews/favorites/analytics. **6.12A.7.7 CLOSED** — branch media architecture finalized.
+- **Business detail (A.7.6 / A.7.7 / A.7.8):** optional **`locationId`** selects active branch; **`effectivePhysical`** = physical UI; **`effectiveMedia`** = branch-aware public media; **`effectiveCatalog`** / **`effectivePromotions`** = branch-aware public catalog/promotions on detail + scoped **`/catalog?locationId=`** (**Flutter** + API). **`Business.id`** unchanged for reviews/favorites/analytics. **6.12A.7.7** + **6.12A.7.8 CLOSED**.
 - **Primary:** default active context when `locationId` omitted; **`isPrimary` badge ≠ forced active** when user/map selects another branch.
 - **Primary sync:** legacy **Business** physical columns mirror **primary** for backward compatibility; branch assignments in **A.7.8.2**; **public branch-effective** catalog/promotions in **A.7.8.3** (`effectiveCatalog` / `effectivePromotions` + `/catalog?locationId=`); legacy **`catalogPreview`** / **`promotionsPreview`** stay business-wide; **A.7.9** defers city/search/map feed grain; branch reviews deferred.
-- **Branch catalog/promotion invariants (A.7.8.1):** **ServiceMenuGroup** = business-wide (no branch scope). **ServiceItem** / **Promotion:** **0** assignment rows = all branches; **≥1** = only assigned **`BusinessLocation`** ids. Assignments = **availability only** (no per-branch price/title/inventory yet). Plan slot counts remain **ServiceItem/Promotion row counts**, not assignment counts. **BusinessLocation** delete **RESTRICT** while assignments reference the branch.
+- **Branch catalog/promotion invariants (A.7.8 CLOSED):** **ServiceMenuGroup** = business-wide. **ServiceItem** / **Promotion:** **0** assignment rows = all branches; **≥1** = only assigned **`BusinessLocation`** ids. Owner edits via **Business Web** (**ALL/SELECTED**); **Admin** read-only content inspection (no branch editing). Public/Flutter use **`effectiveCatalog`** / **`effectivePromotions`**; legacy **`catalogPreview`** / **`promotionsPreview`** + city **`GET /promotions`** remain business-grain until **A.7.9**. Assignments = availability only. **BusinessLocation** delete **RESTRICT** while assignments exist.
 - **Branch media invariants (A.7.7 CLOSED):** shared = **`BusinessImage.locationId` null**; branch = **`locationId` = `BusinessLocation.id`** (same business); public branch view = **active branch media + shared brand** (never sibling branches); **`effectiveMedia`** is branch-aware public truth; legacy **`galleryPreview`** on detail is **compatibility-only** (not branch truth); **`Business.coverImageUrl`** remains **brand-level**; owner **Business Web** + consumer **Flutter** + **Admin MEDIA** moderation aligned; plan quota Business-wide; **`moderationHidden`** never on public surfaces.
 - **Branch media deferred / debt:** legacy business-wide **`galleryPreview`**; full Admin gallery manager; Admin upload/reorder; owner Flutter branch upload; Consumer Web branch media (**F.4**); orphan file GC; reorder API/UX; explicit branch cover column; branch-level moderation status; CDN migration.
 - **Cross-city:** secondary branches may live in other cities; discovery still uses **primary** `Business.cityId` until a later stage.
@@ -65,7 +66,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 - **Map (A.7.1–A.7.4):** backend **BusinessLocation** grain + **`locationId`**; Flutter map layer uses **physical key**; category map renders **`mapLayerItems`** (fetch bounds); detail accepts optional **`locationId`** for branch address/route; reviews/favorites/analytics remain **Business.id**.
 - **Nearest/radius/list discovery:** still **Business-grain** (primary geography).
-- **Public discovery:** city/category/search unchanged (primary business city) except map viewport city filter uses branch city.
+- **Public discovery:** city/category/search unchanged (primary business city) except map viewport city filter uses branch city; **branch-aware catalog/promotion discovery** (global promotions feed, search) deferred **A.7.9**.
 - **F.4 / F.5:** final business URLs, branch slugs, hreflang, branch JSON-LD — not A.6.
 - **Branch-level membership, location favorites, branch reviews:** deferred.
 

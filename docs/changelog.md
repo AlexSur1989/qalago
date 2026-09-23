@@ -6,6 +6,35 @@
 
 ---
 
+## 2026-09-23 — Stage 6.12A.7.8 CLOSED — branch catalog / promotions architecture finalized
+
+- **Status:** **6.12A.7.8 CLOSED — BRANCH CATALOG / PROMOTIONS ARCHITECTURE FINALIZED**.
+- **Checkpoint (final audit):** `19c504ce8e23476562e1b71a92349738ebee233e` (docs lineage only; **does not redefine** substage implementation SHAs).
+- **Substages (implementation checkpoints preserved):**
+  - **A.7.8.0** — architecture audit PASS (recorded under **A.7.8.1** entry).
+  - **A.7.8.1** — `079ba3eb920eabb2993a504b00d6b96d278bcd53`.
+  - **A.7.8.2** — `904b9b5fd4145838db213c4f4709781294064a32`.
+  - **A.7.8.3** — `e24fdf1f604be22d9fda0dbadb85c9ef97032aa0`.
+  - **A.7.8.4** — `d23e1d7fb9a5bd2cc77edcb03f2d495e57c51d96`.
+  - **A.7.8.5** — `644809c57566a71d5a8eeb72d53edc8fa37ca2d8` (physical closure **2026-09-23**).
+  - **A.7.8.6** — `e3c33188298bb64708e784c0d05ef1ac284f7550`.
+- **Architecture (final):**
+  - **ServiceMenuGroup:** business-wide (no branch scope).
+  - **ServiceItem** / **Promotion:** business entities with M2M branch availability (**`ServiceItemBranchAvailability`**, **`PromotionBranchAvailability`**).
+  - **Semantics:** **0** assignment rows = **ALL** branches; **≥1** = **SELECTED** only.
+  - **Integrity:** composite same-business FKs; entity delete **CASCADE**; **`BusinessLocation`** delete **RESTRICT** (no silent SELECTED → ALL broadening).
+- **Owner:** **`CATALOG_EDIT`** / **`PROMOTIONS_EDIT`**; ALL/SELECTED; same-business validation; transactional assignment replacement; PATCH omits unchanged **`branchAvailability`**; **Business Web** owner surface; **Admin is not** a branch-availability editor.
+- **Public:** detail **`effectiveCatalog`** / **`effectivePromotions`** + **`activeLocationId`**; branch filter **before** tier/plan cap and preview/pagination; invalid/foreign **`locationId`** uses existing physical resolver fallback; legacy business-wide previews retained for compatibility.
+- **Flutter:** branch-effective detail + scoped full catalog (**`locationId`** in query/provider identity; state reset on branch change); effective empty arrays authoritative; legacy fallback only when effective block absent. **Samsung SM-J610FN** (Android 10 / API 29) physical QA PASS (L1/L2, sibling exclusion, L1↔L2, no stale mutable catalog state); **Bar Code 51** QA785 fixture cleaned (dev DB). **Full public catalog pagination not physically claimed** (automated coverage only).
+- **Admin:** read-only **`GET /admin/businesses/:businessId/content`** — **`BUSINESS_VIEW`**, city scope, human-readable ALL/SELECTED (unavailable branch stays SELECTED); no owner mutation gates; no branch editing.
+- **Final regression (audit, not full green):** backend **163** suites / **1155** tests — **1153 PASS**, **2 FAIL** (shared dev-DB invariants only: **A.2** location backfill parity; **A.7.8.1** global-empty SIBA/PBA on shared DB — **not** A.7.8 logic regressions). **Admin Web** **70/70** PASS. **Business Web** **183/185** PASS (2 pre-existing reviews-page i18n guard). **Flutter** **893/893** PASS. Builds: **catalog-api**, **admin-web**, **business-web** PASS.
+- **Dev DB hygiene (non-blocking debt):** shared dev DB observed **4** global **SIBA** rows during audit (ownership not proven Bar Code 51); **no cleanup in this closure**. Retain **A.2** backfill parity drift debt.
+- **Map hotfix (separate, closed):** implementation **`936028f6e21890bae29312b6388318e5f0eebca9`**, closure **`ff2e4d9e21c1aabb0f0450df1ce55fcd3f50705d`** — **not** A.7.8 checkpoints; **MAPDBG** retained temporarily.
+- **Deferred (non-blockers):** Admin **PROMOTION** structured moderation / **`promotionTarget`**; global/city **`GET /promotions`** + broader discovery/search branch grain → **A.7.9**; full catalog pagination physical QA; owner **Flutter** branch availability editing; **`assertCanAddServiceItem`** on owner create debt; **MAPDBG** removal; shared dev DB hygiene; Business Web reviews-page i18n guard.
+- **Next:** **6.12A.7.9** — discovery grain (read-only audit first per track discipline).
+
+---
+
 ## 2026-09-23 — Stage 6.12A.7.8.6 Admin Web branch catalog / promotion visibility
 
 - **Status:** **6.12A.7.8.6 PASS — ADMIN WEB BRANCH CATALOG / PROMOTION VISIBILITY IMPLEMENTED**.
