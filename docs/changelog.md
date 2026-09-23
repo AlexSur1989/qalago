@@ -9,7 +9,7 @@
 ## 2026-09-24 — Stage 6.12A.8.4.HOTFIX VIP promotion ad navigation
 
 - **Status:** **6.12A.8.4.HOTFIX READY — VIP PROMOTION PHYSICAL RETEST REQUIRED** (not physical PASS).
-- **Checkpoint (implementation):** _(set at commit)_.
+- **Checkpoint (implementation):** `f1d03c8ded7c316fe111f1904affbee6ab143b4e`.
 - **Summary:** Samsung physical QA found VIP **PROMOTION** taps no-op: VIP serve includes `creative.targetType/targetId` but **no** `promotion` object; A.8.4 `openPromotionFromAdItem` required `toPromotionModel()`. **Fix:** guarded fallback opens **Business** via `item.business.id` + backend `resolvedDestinationLocationId` when VIP promotion creative contract matches; promotion-rich HOME_PROMOTIONS path unchanged.
 - **Next:** Re-run **QA-5 VIP PROMOTION** on device; then decide A.8.4.PHYSICAL closure vs **A.8.5**.
 
