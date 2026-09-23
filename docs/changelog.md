@@ -9,7 +9,7 @@
 ## 2026-09-24 — Stage 6.12A.8.4 Flutter branch-aware ad navigation
 
 - **Status:** **6.12A.8.4 PASS — FLUTTER AD BRANCH NAVIGATION IMPLEMENTED**.
-- **Checkpoint (implementation):** _(set at commit)_.
+- **Checkpoint (implementation):** `a7806bb006c16fcfe6d1c1a12a6a89645b449b34`.
 - **Summary:**
   - **`AdItemModel.resolvedDestinationLocationId`** + **`ad_navigation.dart`** — canonical `destinationLocationId ?? contextLocationId`; no client branch/PBA/city logic.
   - All Business-opening ad placements (HOME_FEATURED, CATEGORY_TOP/BOOST via shared section, HOME_PROMOTIONS, VIP BUSINESS/PROMOTION) pass **`selectedLocationId`** into existing **`openBusiness` / `openBusinessFromPromotion`** AD source; **EXTERNAL_URL** unchanged.
