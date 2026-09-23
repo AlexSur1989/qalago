@@ -63,10 +63,13 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | **6.12A.8.4.PHYSICAL** | **CLOSED** | Fixture cleanup + dev baseline restored; changelog closure docs-only after QA |
 | **6.12A.8.5** | **PASS (attribution)** | `AnalyticsEvent.businessLocationId` = interaction branch; organic server-validated; ad server-derived; historical null preserved |
 | **6.12A.8.6** | **PASS (platform)** | Ad + serve record optional `AnalyticsEvent.platform` when client sends enum; organic/ads share Flutter helper; historical ad platform stays null |
+| **6.12A.8** | **CLOSED / FINALIZED** | **6.12A.8.FINAL** audit PASS; branch-aware campaign/serve/nav/analytics + ad platform hooks complete; **A.8.7 not required**; impl checkpoint **A.8.6** `ae20e92…` |
 
-**Next stage:** TBD (not A.8.7 in this closure); branch/platform analytics UI deferred.
+**Next stage:** **6.12A.9.0** — READ-ONLY audit: legacy **Business** physical fields vs **BusinessLocation** source of truth / safe deprecation (**do not start A.9 implementation**).
 
-## Ads / Analytics location (A.8)
+## Ads / Analytics location (A.8) — CLOSED
+
+**Stage 6.12A.8 is finalized.** Location and platform hooks for ads/analytics are in production architecture; no further A.8 substage unless a new product stage explicitly scopes follow-on work.
 
 - **Ownership:** **AdCampaign** remains **Business-grain** (`businessId` required).
 - **Targeting (optional):** `targetBusinessLocationId` — serve eligibility narrowing (`null` = legacy city/category behavior).
@@ -76,7 +79,8 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **A.8.2 rules:** branch ids validated on order + provision; **BusinessLocation.cityId** must match **campaign.cityId** when branch set; **target** and **destination** independent but cannot differ when both set; promotion **PBA** enforced on destination; single selected branch in city may auto-fill destination at provision; branch delete clears nullable campaign refs when safe else **409** `BUSINESS_LOCATION_DELETE_BLOCKED`.
 - **A.8.3 serving:** single engine for all placements; city authority = **BusinessLocation.cityId**; brand null/null → A.7.9.3A city-context branch when present; fail-closed stale campaigns.
 - **A.8.4 Flutter:** `resolvedDestinationLocationId` → business detail `locationId`; promotion-rich ads use `promotion.contextLocationId`; **VIP PROMOTION** may be creative-target-only (no `promotion` payload) — client opens **Business** detail with backend-resolved destination/context branch; VIP external URL unchanged.
-- **Deferred:** ALL/APP/WEB campaign channel; WEB_MOBILE/WEB_DESKTOP split; branch/platform analytics UI; Consumer Web ads.
+- **Deferred (post–A.8):** Consumer Web ads/analytics producers; campaign channel **ALL | APP | WEB**; **WEB_MOBILE/WEB_DESKTOP**; branch/platform analytics dashboards; creative-level analytics; serve-session bridge for runtime-only client **AD_*** branch; **A85-004** VIEW_BUSINESS branch-switch dedupe semantics.
+- **Test debt:** **A8F-001** — A.8.1 runtime spec expects zero historical `businessLocationId`; stale after A.8.5 (FINAL audit focused regression **73/74**; not a product blocker). Last full Flutter **955/955** at A.8.6 closure.
 
 ## Business vs BusinessLocation
 

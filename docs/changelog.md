@@ -6,6 +6,27 @@
 
 ---
 
+## 2026-09-24 — Stage 6.12A.8 FINAL — Ads / Analytics location & platform hooks
+
+- **Status:** **6.12A.8 CLOSED — ADS / ANALYTICS LOCATION & PLATFORM HOOKS FINALIZED** (docs-only closure; **6.12A.8.FINAL** audit PASS).
+- **Checkpoint (closure commit):** `61dad0b089c3e500a159cde18f81f183c9141ff0`.
+- **Pre-closure docs HEAD:** `4516c523d3382a03d0f32e0dd33161147671b287`. **A.8.6 implementation (unchanged):** `ae20e929742658c145a2d20286533db87a3dc816`.
+- **Summary — final architecture delivered:**
+  - **A.8.1** — Nullable **`AdCampaign.targetBusinessLocationId`** / **`destinationBusinessLocationId`**; **`AnalyticsEvent.businessLocationId`** foundation; composite same-business FKs; analytics branch **`ON DELETE SET NULL`**.
+  - **A.8.2** — Campaign location validation (same-business, city alignment, target/destination rules, PBA); order/provision path; safe branch delete / campaign ref clearing.
+  - **A.8.3** — Shared branch-aware ad serving; runtime destination resolution; branch-effective payloads; five placements (**HOME_VIP_BANNER**, **CATEGORY_TOP**, **CATEGORY_BOOST**, **HOME_FEATURED**, **HOME_PROMOTIONS**).
+  - **A.8.4** — Flutter branch-aware ad navigation; VIP promotion hotfix (`f1d03c8`); **A.8.4.PHYSICAL** Samsung QA PASS; post-QA fixture cleanup.
+  - **A.8.5** — Organic + ad analytics branch attribution; same-business validation; **`AD_SERVED`** runtime branch; client **`AD_*`** explicit destination only; **no** historical branch backfill.
+  - **A.8.6** — **`IOS` | `ANDROID` | `WEB` | `UNKNOWN`** ad platform on serve + client ad events; shared Flutter **`qalagoAnalyticsPlatform()`**; **no** migration; **no** historical platform backfill.
+- **Final stable contract (grain):** **Business** = brand identity; **BusinessLocation** = physical branch; **AdCampaign.businessId** = owner; **target** = eligibility branch; **destination** = configured landing; **runtime destination** = serve engine output; **`AnalyticsEvent.businessLocationId`** = application branch context (**not GPS**); **`AnalyticsEvent.platform`** = optional client runtime enum; discovery cards **Business-grain**; map **Location-grain**; favorites/reviews/membership **Business-grain**.
+- **Final audit:** no **P0/P1** integrity blockers; cross-business campaign/analytics branch mismatches **0** (dev read-only); **A.8.7 NOT required**.
+- **Physical QA:** **A.8.4.PHYSICAL** PASS (HOME_FEATURED, CATEGORY_TOP, HOME_PROMOTIONS, VIP BUSINESS, VIP PROMOTION + hotfix retest). **A.8.5/A.8.6** — automated only (non-visible metadata). No additional physical QA in FINAL audit.
+- **Test debt (not architecture):** **A8F-001** — legacy **A.8.1** runtime spec assumes all historical **`businessLocationId`** null; post–A.8.5 valid branch events exist. Focused A.8 regression at FINAL audit: **73 PASS / 1 FAIL** (stale assertion). Last full Flutter at **A.8.6:** **955/955 PASS**. Full current A.8 backend suite **not claimed green**.
+- **Deferred (not A.8 blockers):** Consumer Web ads/analytics; campaign channel **ALL | APP | WEB**; **WEB_MOBILE/WEB_DESKTOP**; branch/platform analytics dashboards; creative-level analytics; serve-session bridge for runtime-only client **AD_*** branch; **A85-004** VIEW_BUSINESS branch-switch dedupe semantics.
+- **Next:** **6.12A.9.0** — READ-ONLY audit: legacy **Business** physical fields / deprecation (do not start A.9 implementation in this closure).
+
+---
+
 ## 2026-09-24 — Stage 6.12A.8.6 Ad analytics platform attribution
 
 - **Status:** **6.12A.8.6 PASS — AD ANALYTICS PLATFORM ATTRIBUTION IMPLEMENTED** (automated; no physical QA).
