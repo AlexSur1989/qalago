@@ -53,13 +53,14 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | 6.12A.7.9.3B | **PASS (branch-aware search)** | Search stays **Business-grain**; branch **address** + **SIBA** honesty; search **`contextLocationId`** precedence (geo **>** SELECTED item **>** address **>** city) |
 | 6.12A.7.9.4 | **PASS (promotion city feed)** | **`GET /promotions`** **ALL/SELECTED PBA** + city **`contextLocationId`**; Promotion-grain |
 | 6.12A.7.9.5 | **PASS (Flutter automated)** | Discovery cards → detail **`locationId`** from backend **`contextLocationId`**; map keeps marker **`locationId`**; favorites/reviews **Business.id** |
-| 6.12A.7.9.6 | **IN PROGRESS (hotfix implemented)** | Physical QA: multi-branch fixture; **in-detail branch switch** via **«Филиалы»** + **`context.replace`**; physical closure pending |
+| **6.12A.7.9.6** | **CLOSED (physical QA PASS)** | Samsung SM-J610FN: discovery **Business-grain** + map **BusinessLocation-grain**; detail branch switch; branch-aware **catalog/promotions** full lists; fixture cleaned (dev); impl checkpoints `4a24b43` / `d7b25ea` |
 
 ## Business vs BusinessLocation
 
 - **Business:** brand identity — membership, reviews, favorites, plans, ads, analytics; **ServiceItem** / **Promotion** are business entities with optional per-branch availability (reviews/favorites/analytics remain **Business.id**-scoped).
 - **BusinessLocation:** physical branch identity — city, address, coords, hours, contacts; **Business 1:N BusinessLocation**.
-- **Business detail (A.7.6 / A.7.7 / A.7.8 / A.7.9.6 hotfix):** optional **`locationId`** selects active branch; **`effectivePhysical`** = physical UI; **`effectiveMedia`** = branch-aware public media; **`effectiveCatalog`** / **`effectivePromotions`** = branch-aware previews on detail; consumer full lists **`/business/:id/catalog?locationId=`** and **`/business/:id/promotions?locationId=`** backed by **`GET /businesses/:id/catalog`** and **`GET /businesses/:id/promotions`** (not global **`/promotions`**). Detail section headers always navigate when preview non-empty. **`Business.id`** unchanged for reviews/favorites/analytics. **6.12A.7.7** + **6.12A.7.8 CLOSED**; **A.7.9.6** physical QA pending.
+- **Business detail (A.7.6–A.7.9.6 CLOSED):** optional **`locationId`** selects active branch; **`effectivePhysical`** / **`effectiveMedia`** / **`effectiveCatalog`** / **`effectivePromotions`**; consumer **`/business/:id/catalog|promotions?locationId=`**; in-detail **«Филиалы»** switch via **`context.replace`**. Reviews/favorites/analytics stay **`Business.id`**. Branch-specific media physical QA = **A.7.7**, not re-tested in **A.7.9.6**.
+- **Discovery grain (A.7.9 CLOSED via A.7.9.6):** list/search/category/nearby/promotions feed = **Business-grain** card + backend **`contextLocationId`**; **map** = **BusinessLocation-grain** (**`locationId`** per marker).
 - **Primary:** default active context when `locationId` omitted; **`isPrimary` badge ≠ forced active** when user/map selects another branch.
 - **Primary sync:** legacy **Business** physical columns mirror **primary** for backward compatibility; branch assignments in **A.7.8.2**; **public branch-effective** catalog/promotions in **A.7.8.3** (`effectiveCatalog` / `effectivePromotions` + `/catalog?locationId=`); legacy **`catalogPreview`** / **`promotionsPreview`** stay business-wide; **A.7.9** defers city/search/map feed grain; branch reviews deferred.
 - **Branch catalog/promotion invariants (A.7.8 CLOSED):** **ServiceMenuGroup** = business-wide. **ServiceItem** / **Promotion:** **0** assignment rows = all branches; **≥1** = only assigned **`BusinessLocation`** ids. Owner edits via **Business Web** (**ALL/SELECTED**); **Admin** read-only content inspection (no branch editing). Public/Flutter use **`effectiveCatalog`** / **`effectivePromotions`**; legacy **`catalogPreview`** / **`promotionsPreview`** + city **`GET /promotions`** remain business-grain until **A.7.9**. Assignments = availability only. **BusinessLocation** delete **RESTRICT** while assignments exist.
@@ -72,7 +73,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 ## Frozen / deferred
 
 - **Map (A.7.1–A.7.4):** backend **BusinessLocation** grain + **`locationId`**; Flutter map layer uses **physical key**; category map renders **`mapLayerItems`** (fetch bounds); detail accepts optional **`locationId`** for branch address/route; reviews/favorites/analytics remain **Business.id**.
-- **Nearest/radius/list discovery:** still **Business-grain** (primary geography).
+- **Nearest/radius/list discovery:** **Business-grain** card; branch context via **`contextLocationId`** (A.7.9.2+).
 - **Public discovery:** Backend **A.7.9.3A–3B/4** + Flutter **A.7.9.5** passes **`contextLocationId`** into detail **`locationId`**. Map unchanged (**marker `locationId`**). **A.7.9.6:** in-detail branch switch (**`switchBusinessDetailBranch`** / **replace** route) + map/discovery entry; physical QA pending.
 - **F.4 / F.5:** final business URLs, branch slugs, hreflang, branch JSON-LD — not A.6.
 - **Branch-level membership, location favorites, branch reviews:** deferred.

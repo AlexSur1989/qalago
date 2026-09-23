@@ -6,6 +6,22 @@
 
 ---
 
+## 2026-09-24 — Stage 6.12A.7.9.6 Physical discovery QA (closure)
+
+- **Status:** **6.12A.7.9.6 PASS — PHYSICAL DISCOVERY QA FINALIZED**.
+- **Checkpoint (implementation, unchanged):** branch switch `4a24b43c008b78c1e14979dbf8c18d1f44c4ae8a`; detail navigation `d7b25ea82a0d3a08359374c2b3be2af44f7db1b9`.
+- **Summary:**
+  - **Fixture:** controlled two-branch **Bar Code 51** dev fixture (`cmpn1wnq1000iult8yj6a06q7`, L1 `bl7085ee9a617ae8b64026db`, temp L2 `cmue301ys0001ulx8t3dkoyey`) used for Samsung **SM-J610FN** physical QA; **no branch-specific media fixture** (A.7.7 architecture only; shared brand media unchanged).
+  - **Physical QA PASS (Samsung):** in-detail **L1↔L2** branch switching; map **Location-grain** (two markers during fixture); discovery **Business-grain** identity/context; **full catalog** L1/L2 isolation; **full business promotions** L1/L2 isolation + **Happy Hour** ALL-branches; favorites/reviews **Business-grain** across branches; back-stack/context preserved; **no stale L2 physical leak** after return to L1.
+  - **Gaps found in physical QA (fixed before closure):** (1) no in-detail branch switch — hotfix `4a24b43`; (2) catalog/promotions navigation overflow-only + global promotions route — hotfix `d7b25ea`.
+  - **Cleanup:** `infra/local-backups/a796-physical-qa-fixture-cleanup.mjs` — removed QA catalog/promo rows, temp L2; **baseline restored** (1 location, 2 service items, 1 promotion, 4 shared `BusinessImage` rows).
+  - **Post-cleanup verify:** DB baseline + **`GET /businesses/:id/locations/public`** (1× L1); catalog **2** items; promotions **Happy Hour** only; discovery **1** Bar Code 51 card; map geo **1** geocoded location row for business.
+- **Tests (regression, post-cleanup):** catalog-api Jest **111/111 PASS** (A.7.6–A.7.9 + effective-* pattern); map viewport **10/10 PASS**; Flutter focused **38/38 PASS** (branch switch, navigation, effective catalog/physical).
+- **Deferred:** none for **A.7.9.6**; branch-specific **media** physical QA remains covered by **A.7.7** closure, not re-tested here.
+- **Next:** **A.7.QA** / **A.8** per roadmap (not started in this task).
+
+---
+
 ## 2026-09-23 — Stage 6.12A.7.9.6 Detail navigation (catalog + promotions hotfix #2)
 
 - **Status:** **6.12A.7.9.6 DETAIL NAVIGATION HOTFIX IMPLEMENTED — WAITING FOR PHYSICAL QA** (stage **not** PASS).
