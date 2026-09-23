@@ -497,6 +497,29 @@ Response:
 
 `activeLocationId` appears only when `locationId` query is provided. Only active items from active sections (or uncategorized). Sort: section `sortOrder`, item `sortOrder`, title, `createdAt`. Branch filter runs **before** plan publication cap.
 
+### GET /businesses/:id/promotions
+
+Paginated public promotions for one business (consumer full list — not the city feed).
+
+Query: `page` (default 1), `limit` (default 20, max 50), **`locationId`** (optional — Stage 6.12A.7.9.6).
+
+| `locationId` | Behavior |
+|--------------|----------|
+| **Omitted** | **Legacy business-wide** published promotions (same eligibility stack as owner public list, without branch filter). |
+| **Present** | Branch-effective promotions at resolved active location (same PBA / zero-rows=ALL semantics as **`effectivePromotions`**). Response adds **`activeLocationId`**. **`moderationHidden`** excluded. |
+
+Response:
+
+```json
+{
+  "activeLocationId": "bl…",
+  "items": [{ "id", "title", "titleKk", "description", "descriptionKk", "discountText", "imageUrl", "startDate", "endDate", "status" }],
+  "pagination": { "page", "limit", "total", "totalPages", "publishedTotal" }
+}
+```
+
+Invalid or foreign **`locationId`** for the business → **404** (same resolver as catalog/photos). Business must be public **ACTIVE**.
+
 **`GET /promotions` city feed (A.7.9.4):** Promotion-grain with branch city eligibility + **`contextLocationId`**. Detail **`effectivePromotions`** remains branch-scoped for a chosen **`locationId`**.
 
 ### GET /businesses/:id/photos

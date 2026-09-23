@@ -2630,6 +2630,18 @@ abstract class AppLocalizations {
   /// **'Акции'**
   String get businessPromotions;
 
+  /// No description provided for @businessPromotionsOfBusiness.
+  ///
+  /// In ru, this message translates to:
+  /// **'Акции этого бизнеса'**
+  String get businessPromotionsOfBusiness;
+
+  /// No description provided for @businessPromotionsEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сейчас нет активных акций для выбранного филиала'**
+  String get businessPromotionsEmpty;
+
   /// No description provided for @businessInstagram.
   ///
   /// In ru, this message translates to:

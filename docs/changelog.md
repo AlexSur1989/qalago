@@ -6,6 +6,22 @@
 
 ---
 
+## 2026-09-23 — Stage 6.12A.7.9.6 Detail navigation (catalog + promotions hotfix #2)
+
+- **Status:** **6.12A.7.9.6 DETAIL NAVIGATION HOTFIX IMPLEMENTED — WAITING FOR PHYSICAL QA** (stage **not** PASS).
+- **Checkpoint (implementation):** _(this commit SHA)_.
+- **Summary:**
+  - **Physical QA finding:** catalog/promotions full-list affordances only when preview overflow; promotions overflow routed to global **`/promotions`** (lost **`Business.id`** + branch); promotion tiles looked tappable but analytics-only.
+  - **Flutter:** always-on section navigation for non-empty catalog/promotions; **`BusinessPromotionsScreen`** at **`/business/:id/promotions?locationId=`**; promotion tile opens business promotions list + keeps **`PROMOTION_VIEW`** analytics; catalog item preview taps open full catalog.
+  - **Backend:** **`GET /businesses/:id/promotions`** reuses A.7.8 branch eligibility + public promotion rules (no schema change); **`api-contracts.md`** updated.
+  - **Unchanged:** map, reviews/favorites grain, A.7.9.6 dev DB fixture (not cleaned), global city **`/promotions`** feed purpose.
+- **Tests:** backend Jest **7/7 PASS** on **`stage-6-12a7-8-3-effective-catalog-promotions`**; Flutter **914 PASS** (incl. **`business_detail_navigation_test.dart`**); **`flutter analyze`** — pre-existing warnings/infos only (no new errors from this hotfix).
+- **APK:** debug with **`QALAGO_DEV_HOST=192.168.8.101`**, **`QALAGO_DEV_LOGIN=true`**, **`QALAGO_NATIVE_MAP_BUSINESS_LAYER=true`**.
+- **Deferred:** Samsung physical re-QA (L1/L2 catalog + promotions navigation, Happy Hour ALL branches).
+- **Next:** Physical closure of **6.12A.7.9.6**.
+
+---
+
 ## 2026-09-23 — Stage 6.12A.7.9.6 Business Detail branch switching (hotfix)
 
 - **Status:** **6.12A.7.9.6 BRANCH SWITCH HOTFIX IMPLEMENTED — WAITING FOR PHYSICAL QA** (stage **not** PASS).

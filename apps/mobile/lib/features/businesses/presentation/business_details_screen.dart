@@ -363,11 +363,23 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
             data: data,
             catalog: catalogPreviewResolved,
           );
+          final promotionsScopeLocationId = resolvePromotionsNavigationLocationId(
+            data: data,
+            promotions: promotionsPreviewResolved,
+          );
           void openFullCatalog() {
             context.push(
               businessCatalogRoutePath(
                 businessId: widget.id,
                 locationId: catalogScopeLocationId,
+              ),
+            );
+          }
+          void openBusinessPromotions() {
+            context.push(
+              businessPromotionsRoutePath(
+                businessId: widget.id,
+                locationId: promotionsScopeLocationId,
               ),
             );
           }
@@ -533,12 +545,8 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                         const SizedBox(height: 24),
                         _SectionHeaderRow(
                           title: l10n.businessPromotions,
-                          actionLabel: promotionTotal > promotions.length
-                              ? l10n.businessAllPromotions(promotionTotal)
-                              : null,
-                          onAction: promotionTotal > promotions.length
-                              ? () => context.push('/promotions')
-                              : null,
+                          actionLabel: l10n.businessAllPromotions(promotionTotal),
+                          onAction: openBusinessPromotions,
                         ),
                         const SizedBox(height: 10),
                         ...promotions.map(
@@ -556,6 +564,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                                       promotionId: promo['id'] as String?,
                                     ),
                               );
+                              openBusinessPromotions();
                             },
                           ),
                         ),
@@ -564,12 +573,8 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                         const SizedBox(height: 24),
                         _SectionHeaderRow(
                           title: l10n.businessProductsServices,
-                          actionLabel: catalogTotal > catalogItems.length
-                              ? l10n.businessViewAllCount(catalogTotal)
-                              : null,
-                          onAction: catalogTotal > catalogItems.length
-                              ? openFullCatalog
-                              : null,
+                          actionLabel: l10n.businessViewAllCount(catalogTotal),
+                          onAction: openFullCatalog,
                           trailing: canManageMenu
                               ? TextButton(
                                   onPressed: () => context.push(
@@ -585,9 +590,7 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                             businessId: widget.id,
                             item: item,
                             surface: 'BUSINESS_DETAIL_PREVIEW',
-                            onTap: catalogTotal > catalogItems.length
-                                ? openFullCatalog
-                                : null,
+                            onTap: openFullCatalog,
                           ),
                       ],
                       if (hasHours) ...[
@@ -785,13 +788,31 @@ class _SectionHeaderRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final navigate = onAction;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Expanded(child: _SectionTitle(title: title)),
+        Expanded(
+          child: navigate == null
+              ? _SectionTitle(title: title)
+              : InkWell(
+                  onTap: navigate,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Row(
+                    children: [
+                      Expanded(child: _SectionTitle(title: title)),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: AppTheme.kzBlue,
+                        size: 26,
+                      ),
+                    ],
+                  ),
+                ),
+        ),
         if (trailing != null) trailing!,
-        if (actionLabel != null && onAction != null)
-          TextButton(onPressed: onAction, child: Text(actionLabel!)),
+        if (actionLabel != null && navigate != null)
+          TextButton(onPressed: navigate, child: Text(actionLabel!)),
       ],
     );
   }
@@ -1493,10 +1514,11 @@ class _PromotionTile extends StatelessWidget {
               ),
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.only(right: 8),
-            child: Icon(Icons.chevron_right_rounded, color: AppTheme.kzBlue),
-          ),
+          if (onTap != null)
+            const Padding(
+              padding: EdgeInsets.only(right: 8),
+              child: Icon(Icons.chevron_right_rounded, color: AppTheme.kzBlue),
+            ),
         ],
       ),
       ),

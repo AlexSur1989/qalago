@@ -12,6 +12,10 @@ export const PUBLIC_GALLERY_MAX_LIMIT = 50;
 export const PUBLIC_CATALOG_DEFAULT_LIMIT = 20;
 export const PUBLIC_CATALOG_MAX_LIMIT = 50;
 
+/** Full business promotions page defaults (Stage 6.12A.7.9.6). */
+export const PUBLIC_PROMOTIONS_DEFAULT_LIMIT = 20;
+export const PUBLIC_PROMOTIONS_MAX_LIMIT = 50;
+
 /** Owner manage list page defaults. */
 export const OWNER_CATALOG_DEFAULT_LIMIT = 20;
 export const OWNER_CATALOG_MAX_LIMIT = 50;

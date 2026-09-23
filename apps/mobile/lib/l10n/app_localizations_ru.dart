@@ -1427,6 +1427,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get businessPromotions => 'Акции';
 
   @override
+  String get businessPromotionsOfBusiness => 'Акции этого бизнеса';
+
+  @override
+  String get businessPromotionsEmpty =>
+      'Сейчас нет активных акций для выбранного филиала';
+
+  @override
   String get businessInstagram => 'Instagram';
 
   @override

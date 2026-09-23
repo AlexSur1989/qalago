@@ -9,6 +9,7 @@ import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/businesses/presentation/business_details_screen.dart';
 import '../../features/businesses/presentation/business_catalog_screen.dart';
+import '../../features/businesses/presentation/business_promotions_screen.dart';
 import '../../features/businesses/presentation/business_photos_screen.dart';
 import '../../features/categories/presentation/categories_screen.dart';
 import '../../features/categories/presentation/category_businesses_screen.dart';
@@ -306,6 +307,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               );
               return BusinessCatalogScreen(
                 key: ValueKey('$businessId|${locationId ?? ''}'),
+                businessId: businessId,
+                locationId: locationId,
+              );
+            },
+          ),
+          GoRoute(
+            path: '/business/:id/promotions',
+            builder: (context, state) {
+              final businessId = state.pathParameters['id']!;
+              final locationId = parseSelectedLocationIdFromRoute(
+                state.uri.queryParameters['locationId'],
+              );
+              return BusinessPromotionsScreen(
+                key: ValueKey('$businessId|promotions|${locationId ?? ''}'),
                 businessId: businessId,
                 locationId: locationId,
               );

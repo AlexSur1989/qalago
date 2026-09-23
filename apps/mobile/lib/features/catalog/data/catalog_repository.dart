@@ -238,6 +238,23 @@ class CatalogRepository {
     return items.map(BusinessBranchLocation.fromJson).toList();
   }
 
+  Future<Map<String, dynamic>> fetchBusinessPublicPromotions(
+    String businessId, {
+    int page = 1,
+    int limit = 20,
+    String? locationId,
+  }) async {
+    final response = await _dio.get(
+      '/businesses/$businessId/promotions',
+      queryParameters: {
+        'page': page,
+        'limit': limit,
+        if (locationId != null && locationId.isNotEmpty) 'locationId': locationId,
+      },
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> fetchBusinessCatalog(
     String businessId, {
     int page = 1,

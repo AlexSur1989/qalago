@@ -702,6 +702,8 @@
   "businessClosed": "Закрыто",
   "businessToday": "Сегодня",
   "businessPromotions": "Акции",
+  "businessPromotionsOfBusiness": "Акции этого бизнеса",
+  "businessPromotionsEmpty": "Сейчас нет активных акций для выбранного филиала",
   "businessInstagram": "Instagram",
   "businessAddress": "Адрес",
   "catalogNotFound": "Ничего не найдено",

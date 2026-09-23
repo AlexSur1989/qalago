@@ -521,6 +521,8 @@
   "businessClosed": "Жабық",
   "businessToday": "Бүгін",
   "businessPromotions": "Акциялар",
+  "businessPromotionsOfBusiness": "Бизнес акциялары",
+  "businessPromotionsEmpty": "Таңдалған филиал үшін белсенді акциялар жоқ",
   "businessInstagram": "Instagram",
   "businessAddress": "Мекенжай",
   "catalogNotFound": "Ештеңе табылмады",

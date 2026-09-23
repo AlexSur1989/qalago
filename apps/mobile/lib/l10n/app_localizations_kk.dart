@@ -1426,6 +1426,13 @@ class AppLocalizationsKk extends AppLocalizations {
   String get businessPromotions => 'Акциялар';
 
   @override
+  String get businessPromotionsOfBusiness => 'Бизнес акциялары';
+
+  @override
+  String get businessPromotionsEmpty =>
+      'Таңдалған филиал үшін белсенді акциялар жоқ';
+
+  @override
   String get businessInstagram => 'Instagram';
 
   @override

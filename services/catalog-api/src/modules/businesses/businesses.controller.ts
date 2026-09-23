@@ -19,6 +19,7 @@ import {
 import { InviteTeamMemberDto, UpdateTeamMemberDto } from './dto/team.dto';
 import { ListBusinessCatalogQueryDto } from './dto/business-catalog.dto';
 import { ListBusinessPhotosQueryDto } from './dto/business-photos.dto';
+import { ListBusinessPromotionsQueryDto } from './dto/business-promotions.dto';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { ListTeamAuditQueryDto } from '../audit-log/dto/audit-log.dto';
 
@@ -161,6 +162,12 @@ export class BusinessesController {
   @Get(':id/catalog')
   findCatalog(@Param('id') id: string, @Query() query: ListBusinessCatalogQueryDto) {
     return this.publicContent.findPublicCatalog(id, query);
+  }
+
+  @Public()
+  @Get(':id/promotions')
+  findPromotions(@Param('id') id: string, @Query() query: ListBusinessPromotionsQueryDto) {
+    return this.publicContent.findPublicPromotions(id, query);
   }
 
   @Public()

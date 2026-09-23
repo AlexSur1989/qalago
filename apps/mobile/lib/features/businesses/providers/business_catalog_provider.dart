@@ -77,3 +77,37 @@ final businessPhotosPageProvider =
         );
   },
 );
+
+class BusinessPromotionsQuery {
+  const BusinessPromotionsQuery({
+    required this.businessId,
+    this.page = 1,
+    this.locationId,
+  });
+
+  final String businessId;
+  final int page;
+  final String? locationId;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BusinessPromotionsQuery &&
+          businessId == other.businessId &&
+          page == other.page &&
+          locationId == other.locationId;
+
+  @override
+  int get hashCode => Object.hash(businessId, page, locationId);
+}
+
+final businessPromotionsPageProvider =
+    FutureProvider.family<Map<String, dynamic>, BusinessPromotionsQuery>(
+  (ref, query) async {
+    return ref.watch(catalogRepositoryProvider).fetchBusinessPublicPromotions(
+          query.businessId,
+          page: query.page,
+          locationId: query.locationId,
+        );
+  },
+);

@@ -243,5 +243,33 @@ void main() {
       expect(uri.queryParameters['locationId'], l2);
       expect(uri.pathSegments.last, businessId);
     });
+
+    test('R — full promotions route encodes locationId=L2', () {
+      expect(
+        businessPromotionsRoutePath(businessId: businessId, locationId: l2),
+        '/business/$businessId/promotions?locationId=$l2',
+      );
+    });
+
+    test('S — resolvePromotionsNavigationLocationId trusts top-level activeLocationId', () {
+      final promotions = const ConsumerDetailPromotionsPreview(
+        items: [],
+        totalCount: 0,
+        activeLocationId: l1,
+        usedEffectiveSource: true,
+      );
+      final data = detailWith(activeLocationId: l2);
+      expect(
+        resolvePromotionsNavigationLocationId(data: data, promotions: promotions),
+        l2,
+      );
+    });
+
+    test('T — promotions scope keys differ for L1 vs L2', () {
+      expect(
+        businessPromotionsScopeKey(businessId: businessId, locationId: l1),
+        isNot(businessPromotionsScopeKey(businessId: businessId, locationId: l2)),
+      );
+    });
   });
 }

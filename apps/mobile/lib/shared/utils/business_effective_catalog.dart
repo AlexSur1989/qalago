@@ -138,3 +138,38 @@ String businessCatalogRoutePath({
     queryParameters: params.isEmpty ? null : params,
   ).toString();
 }
+
+String? resolvePromotionsNavigationLocationId({
+  required Map<String, dynamic> data,
+  required ConsumerDetailPromotionsPreview promotions,
+}) {
+  if (promotions.usedEffectiveSource) {
+    return resolveEffectiveScopeLocationId(
+      data: data,
+      effectiveActiveLocationId: promotions.activeLocationId,
+    );
+  }
+  return resolveDetailActiveLocationId(data);
+}
+
+String businessPromotionsScopeKey({
+  required String businessId,
+  String? locationId,
+}) {
+  return '$businessId|promotions|${locationId ?? ''}';
+}
+
+String businessPromotionsRoutePath({
+  required String businessId,
+  String? locationId,
+}) {
+  final trimmed = locationId?.trim();
+  final params = <String, String>{};
+  if (trimmed != null && trimmed.isNotEmpty) {
+    params['locationId'] = trimmed;
+  }
+  return Uri(
+    path: '/business/$businessId/promotions',
+    queryParameters: params.isEmpty ? null : params,
+  ).toString();
+}

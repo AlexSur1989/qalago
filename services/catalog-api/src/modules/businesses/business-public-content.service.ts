@@ -7,6 +7,8 @@ import {
   PUBLIC_GALLERY_DEFAULT_LIMIT,
   PUBLIC_GALLERY_MAX_LIMIT,
   PUBLIC_GALLERY_PREVIEW_LIMIT,
+  PUBLIC_PROMOTIONS_DEFAULT_LIMIT,
+  PUBLIC_PROMOTIONS_MAX_LIMIT,
   PUBLIC_PROMOTIONS_PREVIEW_LIMIT,
   PUBLIC_REVIEWS_PREVIEW_LIMIT,
 } from '../../common/constants/public-preview.constants';
@@ -22,6 +24,7 @@ import { ReviewAggregationService } from '../../common/services/review-aggregati
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListBusinessCatalogQueryDto } from './dto/business-catalog.dto';
 import { ListBusinessPhotosQueryDto } from './dto/business-photos.dto';
+import { ListBusinessPromotionsQueryDto } from './dto/business-promotions.dto';
 import { PUBLIC_BUSINESS_IMAGE_WHERE } from '../uploads/business-image-scope.util';
 import {
   buildEffectiveMediaDto,
@@ -37,6 +40,7 @@ import {
 import {
   buildEffectivePromotionsDto,
   filterPromotionsByBranchEligibility,
+  serializeEffectivePromotionItem,
   type PromotionBranchRow,
 } from './business-effective-promotions.util';
 
@@ -185,14 +189,36 @@ export class BusinessPublicContentService {
     );
   }
 
-  async getEffectivePromotionsForDetail(businessId: string, activeLocationId: string | null) {
-    await this.assertActiveBusiness(businessId);
+  async getPublishedPromotionsItems(businessId: string) {
+    const ctx = await this.planLimits.getBusinessPlanContext(businessId);
+    const promotions = await this.fetchPromotionBranchRows(businessId);
+    const published = this.planLimits.applyPublicPromotionLimit(
+      promotions,
+      ctx.limits.maxActivePromotions,
+    );
+    return { items: published, totalCount: published.length };
+  }
+
+  /** Branch-aware published promotions: ACTIVE + public rules → branch filter → plan cap. */
+  async getBranchAwarePublishedPromotions(
+    businessId: string,
+    activeLocationId: string | null,
+  ) {
     const ctx = await this.planLimits.getBusinessPlanContext(businessId);
     const promotions = await this.fetchPromotionBranchRows(businessId);
     const branchEligible = filterPromotionsByBranchEligibility(promotions, activeLocationId);
     const published = this.planLimits.applyPublicPromotionLimit(
       branchEligible,
       ctx.limits.maxActivePromotions,
+    );
+    return { items: published, totalCount: published.length };
+  }
+
+  async getEffectivePromotionsForDetail(businessId: string, activeLocationId: string | null) {
+    await this.assertActiveBusiness(businessId);
+    const { items: published } = await this.getBranchAwarePublishedPromotions(
+      businessId,
+      activeLocationId,
     );
     return buildEffectivePromotionsDto(activeLocationId, published);
   }
@@ -236,6 +262,39 @@ export class BusinessPublicContentService {
       this.reviewAggregation.aggregateForBusiness(businessId),
     ]);
     return { items, totalCount: metrics.reviewCount };
+  }
+
+  async findPublicPromotions(businessId: string, query: ListBusinessPromotionsQueryDto) {
+    await this.assertActiveBusiness(businessId);
+    const page = query.page ?? 1;
+    const limit = Math.min(
+      query.limit ?? PUBLIC_PROMOTIONS_DEFAULT_LIMIT,
+      PUBLIC_PROMOTIONS_MAX_LIMIT,
+    );
+
+    const branchScoped = Boolean(query.locationId?.trim());
+    const activeLocationId = branchScoped
+      ? await this.resolveDetailAlignedActiveLocationId(businessId, query.locationId)
+      : null;
+
+    const { items: published, totalCount } = branchScoped
+      ? await this.getBranchAwarePublishedPromotions(businessId, activeLocationId)
+      : await this.getPublishedPromotionsItems(businessId);
+
+    const skip = (page - 1) * limit;
+    const pageItems = published.slice(skip, skip + limit);
+
+    return {
+      ...(branchScoped ? { activeLocationId } : {}),
+      items: pageItems.map(serializeEffectivePromotionItem),
+      pagination: {
+        page,
+        limit,
+        total: published.length,
+        totalPages: Math.ceil(published.length / limit) || 0,
+        publishedTotal: totalCount,
+      },
+    };
   }
 
   async findPublicCatalog(businessId: string, query: ListBusinessCatalogQueryDto) {

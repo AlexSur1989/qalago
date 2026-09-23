@@ -239,6 +239,34 @@ describe('Stage 6.12A.7.8.3 — effective catalog / promotions', () => {
     }
   });
 
+  it('/promotions without locationId stays business-wide; with locationId is branch-effective', async () => {
+    if (skip) return;
+    const slug = `a796prom-${randomBytes(5).toString('hex')}`;
+    const { business, l1, l2 } = await seedCatalogMatrix(slug);
+    const service = buildPublicContent();
+    try {
+      const legacy = await service.findPublicPromotions(business.id, { page: 1, limit: 50 });
+      expect(legacy).not.toHaveProperty('activeLocationId');
+      expect(legacy.items.map((i) => i.title).sort()).toEqual([
+        'P_L1',
+        'P_L1_L3',
+        'P_L2',
+        'P_SHARED',
+      ]);
+      expect(legacy.pagination.total).toBe(4);
+
+      const scoped = await service.findPublicPromotions(business.id, {
+        page: 1,
+        limit: 50,
+        locationId: l2.id,
+      });
+      expect(scoped.activeLocationId).toBe(l2.id);
+      expect(scoped.items.map((i) => i.title).sort()).toEqual(['P_L2', 'P_SHARED']);
+    } finally {
+      await prisma.business.deleteMany({ where: { slug } });
+    }
+  });
+
   it('detail effective* activeLocationId aligns with effectivePhysical', async () => {
     if (skip) return;
     const slug = `a783align-${randomBytes(5).toString('hex')}`;
