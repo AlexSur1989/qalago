@@ -9,7 +9,7 @@
 ## 2026-09-24 — Stage 6.12A.8.3 Branch-aware ad serving
 
 - **Status:** **6.12A.8.3 PASS — BRANCH-AWARE AD SERVING IMPLEMENTED**.
-- **Checkpoint (implementation):** _(set at commit)_.
+- **Checkpoint (implementation):** `c6728dc1d48f0d81a2c23641624dcaa3b8ae3f7c`.
 - **Summary:**
   - **`batchResolveAdServeLocationContexts` / `resolveAdDestinationLocationId`** — shared serving engine: target branch eligibility, deterministic destination (explicit → target → promotion PBA → A.7.9.3A city context), runtime **PBA** re-check for **PROMOTED_PROMOTION**, fail-closed per campaign before rotation.
   - **Serve DTO:** `destinationLocationId` + `contextLocationId` populated (equal when set); **branch-effective** business card physical fields for non-VIP-minimal payloads; **`business.id` unchanged**.
