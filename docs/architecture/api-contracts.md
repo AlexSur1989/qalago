@@ -347,12 +347,17 @@ See [catalog-geo-query.md](./catalog-geo-query.md) for modes A/B/C and C.5 perfo
 
 List items may include `planTier`, `planExpiresAt`, `featuredSlot`, `isFeatured` for display; these fields are deprecated for catalog ranking. Query param `featured` is ignored on public catalog.
 
-**Search semantics (Stage 6.11B.1):** `search` is **city-scoped** (requires resolved `citySlug` / `cityId` like other list queries) and combined with `status` (default `ACTIVE`), optional `categoryId`, and optional `subcategoryId` using **AND**. Text matching uses a single **OR** group across:
+**Search semantics (Stage 6.11B.1 + A.7.9.3B, IMPLEMENTED):** `search` is **city-scoped** (requires resolved `citySlug` / `cityId` like other list queries) and combined with **`BusinessLocation` city membership (A.7.9.3A)**, `status` (default `ACTIVE`), optional `categoryId`, and optional `subcategoryId` using **AND**. Text matching uses a single **OR** group across:
 
-- Business `title`, `shortDesc`, `address`
+- Business `title`, `shortDesc`, `address` (legacy parent address — does **not** set search **`contextLocationId`**)
+- **`BusinessLocation.address`** in requested city **C** only (A.7.9.3B)
 - Associated Category `title`, `nameRu`, `nameKk`
 - Associated Subcategory `nameRu`, `nameKk` (via business assignment)
-- **Public** ServiceItem `title`, `titleKk`, `description`, `descriptionKk` — only items that are **consumer-visible** on the business catalog (active item, active/ungrouped section, then plan-tier publish cap using the same deterministic sort + limit as `GET /businesses/:id/catalog`; Stage 6.11B.2)
+- **Public** ServiceItem `title`, `titleKk`, `description`, `descriptionKk` — only items that are **consumer-visible** on the business catalog (active item, active/ungrouped section, plan-tier publish cap as **6.11B.2**), then **branch availability (A.7.9.3B):** **0** `ServiceItemBranchAvailability` rows = **ALL** branches (item may match in **C** iff business has a branch in **C**); **≥1** rows = **SELECTED** only (item may match in **C** iff an assignment points to a **`BusinessLocation` in C**)
+
+**Search result grain:** one **Business** card per brand; branch matches use **`EXISTS` / `id IN (...)`** — not location-grain pagination.
+
+**Search `contextLocationId` precedence (non-geo, A.7.9.3B):** geo/nearby nearest branch (A.7.9.2) **>** **SELECTED** ServiceItem assigned branch in **C** **>** branch **address** match in **C** **>** generic city context (A.7.9.3A). **ALL**-mode ServiceItem matches use generic city context.
 
 **Not** matched: Promotion titles/descriptions, paid plan/ad fields, runtime translation, transliteration, or fuzzy/typo tolerance. RU and KK stored fields are searched together; **UI locale is not required** for cross-language query matching. Organic sort/ranking remains plan-neutral (Stage 4C.1 / 6.7D). Pagination may still load matching rows in memory for certain sort modes (see service implementation).
 

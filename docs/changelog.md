@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-09-23 — Stage 6.12A.7.9.3B branch-aware search
+
+- **Status:** **6.12A.7.9.3B PASS — BRANCH-AWARE SEARCH IMPLEMENTED**.
+- **Checkpoint (implementation):** _(commit SHA at finish)_.
+- **Summary:**
+  - **`BusinessLocation.address`** ILIKE in requested city; business-grain **`EXISTS`** / Prisma `locations.some`.
+  - **ServiceItem** search: **ALL** (0 SIBA) vs **SELECTED** (≥1 SIBA) city honesty; plan/visibility rules unchanged.
+  - Search **`contextLocationId`**: geo **>** SELECTED item branch **>** branch address **>** generic city (A.7.9.3A).
+  - **A.7.9.3A** city membership unchanged; ranking not redesigned; map/promotions/Flutter untouched.
+- **Deferred:** **A.7.9.4** promotions branch city; **A.7.9.5** Flutter navigation; pg_trgm / search perf if profiling warrants.
+- **Next:** **6.12A.7.9.4** — promotions discovery grain.
+
+---
+
 ## 2026-09-23 — Stage 6.12A.7.9.3A BusinessLocation city membership + city context
 
 - **Status:** **6.12A.7.9.3A PASS — BUSINESSLOCATION CITY MEMBERSHIP + CITY CONTEXT IMPLEMENTED**.

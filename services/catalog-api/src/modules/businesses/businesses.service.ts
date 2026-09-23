@@ -240,6 +240,7 @@ export class BusinessesService {
       items as ReadonlyArray<{ id: string }>,
       cityId,
       query,
+      searchContext,
     )) as typeof items;
 
     return {
@@ -256,6 +257,7 @@ export class BusinessesService {
     items: readonly T[],
     cityId: string,
     query: ListBusinessesQueryDto,
+    searchContext: BusinessCatalogSearchContext | null = null,
   ): Promise<T[]> {
     if (items.length === 0 || query.forMap === true) {
       return [...items];
@@ -272,15 +274,24 @@ export class BusinessesService {
       return [...items];
     }
 
+    const searchContextByBusinessId = searchContext?.searchContextLocationIdByBusinessId;
+
+    const needsGenericCityContext = missingContext.filter(
+      (item) => !searchContextByBusinessId?.has(item.id),
+    );
     const contextByBusinessId = await resolveCityContextLocationIds(
       this.prisma,
       cityId,
-      missingContext.map((item) => item.id),
+      needsGenericCityContext.map((item) => item.id),
     );
 
     return items.map((item) => {
       if ('contextLocationId' in item && item.contextLocationId != null) {
         return item;
+      }
+      const searchLocationId = searchContextByBusinessId?.get(item.id);
+      if (searchLocationId) {
+        return attachContextLocationIdForBranch(item, searchLocationId);
       }
       const locationId = contextByBusinessId.get(item.id);
       if (!locationId) {
@@ -644,6 +655,7 @@ export class BusinessesService {
       businessSubcategories: item.businessSubcategories,
       serviceMatchKind:
         searchContext.serviceMatchKindByBusinessId.get(item.id) ?? null,
+      branchAddressMatch: searchContext.branchAddressMatchBusinessIds.has(item.id),
     });
     return [...allItems]
       .sort((a, b) =>
@@ -893,6 +905,7 @@ export class BusinessesService {
       businessSubcategories: item.businessSubcategories,
       serviceMatchKind:
         searchContext.serviceMatchKindByBusinessId.get(item.id) ?? null,
+      branchAddressMatch: searchContext.branchAddressMatchBusinessIds.has(item.id),
     });
 
     const sorted = [...allItems].sort((a, b) =>

@@ -24,6 +24,7 @@ export type BusinessSearchRelevanceRow = {
   } | null;
   businessSubcategories?: { subcategory: { nameRu: string; nameKk: string } }[];
   serviceMatchKind?: ServiceSearchMatchKind | null;
+  branchAddressMatch?: boolean;
 };
 
 function fieldContains(value: string | null | undefined, needle: string): boolean {
@@ -79,7 +80,8 @@ export function computeBusinessSearchRelevanceTier(
 
   if (
     fieldContains(business.shortDesc, needle) ||
-    fieldContains(business.address, needle)
+    fieldContains(business.address, needle) ||
+    business.branchAddressMatch
   ) {
     return BusinessCatalogSearchRelevanceTier.DESCRIPTION;
   }

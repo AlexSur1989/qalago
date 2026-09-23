@@ -52,6 +52,17 @@ type CatalogBusinessJoinFilterParams = Pick<
   'cityId' | 'status' | 'categoryId' | 'subcategoryId' | 'searchPattern' | 'serviceSearchBusinessIds'
 >;
 
+/** City-scoped branch address text match (A.7.9.3B); business-grain EXISTS. */
+function catalogBranchAddressSearchExistsSql(cityId: string, pattern: string): Prisma.Sql {
+  const like = `%${pattern}%`;
+  return Prisma.sql`EXISTS (
+    SELECT 1 FROM "BusinessLocation" bl_addr
+    WHERE bl_addr."businessId" = b.id
+      AND bl_addr."cityId" = ${cityId}
+      AND bl_addr.address ILIKE ${like}
+  )`;
+}
+
 /** Business join filters for legacy Business.location map viewport (unchanged — A.7.9.3A). */
 function buildCatalogBusinessJoinFilterSql(params: CatalogBusinessJoinFilterParams): Prisma.Sql[] {
   const parts: Prisma.Sql[] = [
@@ -91,6 +102,7 @@ function buildCatalogBusinessJoinFilterSql(params: CatalogBusinessJoinFilterPara
         WHERE bs."businessId" = b.id
           AND (s."nameRu" ILIKE ${pattern} OR s."nameKk" ILIKE ${pattern})
       )`,
+      catalogBranchAddressSearchExistsSql(params.cityId, params.searchPattern),
     ];
     const serviceIds = params.serviceSearchBusinessIds ?? [];
     if (serviceIds.length > 0) {
@@ -143,6 +155,7 @@ function buildCatalogBranchGeoJoinFilterSql(params: CatalogBusinessJoinFilterPar
         WHERE bs."businessId" = b.id
           AND (s."nameRu" ILIKE ${pattern} OR s."nameKk" ILIKE ${pattern})
       )`,
+      catalogBranchAddressSearchExistsSql(params.cityId, params.searchPattern),
     ];
     const serviceIds = params.serviceSearchBusinessIds ?? [];
     if (serviceIds.length > 0) {
