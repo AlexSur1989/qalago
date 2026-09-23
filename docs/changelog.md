@@ -9,7 +9,7 @@
 ## 2026-09-24 — Stage 6.12A.8.2 Campaign location validation + provisioning
 
 - **Status:** **6.12A.8.2 PASS — CAMPAIGN LOCATION VALIDATION IMPLEMENTED**.
-- **Checkpoint (implementation):** _(set at commit)_.
+- **Checkpoint (implementation):** `d10447a52cede7ffafaf6542887cd30bdf592570`.
 - **Summary:**
   - **`validateAndResolveCampaignLocationContext`** — same-business branch ownership, **campaign.cityId ↔ BusinessLocation.cityId** alignment, **target ≠ destination** rejected when both set, **PROMOTED_PROMOTION** + **PBA** rules (`isPromotionEffectiveAtLocation`), single selected branch auto-destination at provision/order when exactly one eligible branch in city.
   - **Order + provisioning:** optional `targetBusinessLocationId` / `destinationBusinessLocationId` on `CreateOrderItemDto` / `CreateOrderDto`; validated at order build + `CampaignProvisioningService.createCampaignForProduct`; stored on `AdCampaign` + order item metadata.
