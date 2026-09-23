@@ -60,6 +60,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | **6.12A.8.2** | **PASS (validation)** | Server validates campaign branch target/destination (ownership, city, PBA, target≠destination); order/provision metadata path; branch delete clears safe campaign refs or conflicts |
 | **6.12A.8.3** | **PASS (serving)** | Ad serve engine resolves branch destination + branch-effective business card; target filters eligibility; promotion **PBA** enforced at serve; rotation pre-filters invalid campaigns |
 | **6.12A.8.4** | **PASS (Flutter nav)** | Ad taps preserve backend `destinationLocationId` via `openBusiness`/`locationId`; no client branch selection |
+| **6.12A.8.4.HOTFIX** | **READY (retest)** | VIP PROMOTION without serve `promotion` object → Business open with backend branch; physical QA-5 pending |
 
 **Next stage:** **6.12A.8.5** — analytics branch attribution.
 

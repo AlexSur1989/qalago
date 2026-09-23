@@ -154,7 +154,7 @@ class VipBannerAd extends ConsumerWidget {
     switch (creative.targetType) {
       case 'PROMOTION':
         if (creative.targetId != null) {
-          openPromotionFromAdItem(context, item);
+          openPromotionFromAdItem(context, item, creative: creative);
         }
         break;
       case 'EXTERNAL_URL':

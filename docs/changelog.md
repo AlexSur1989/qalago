@@ -6,6 +6,15 @@
 
 ---
 
+## 2026-09-24 — Stage 6.12A.8.4.HOTFIX VIP promotion ad navigation
+
+- **Status:** **6.12A.8.4.HOTFIX READY — VIP PROMOTION PHYSICAL RETEST REQUIRED** (not physical PASS).
+- **Checkpoint (implementation):** _(set at commit)_.
+- **Summary:** Samsung physical QA found VIP **PROMOTION** taps no-op: VIP serve includes `creative.targetType/targetId` but **no** `promotion` object; A.8.4 `openPromotionFromAdItem` required `toPromotionModel()`. **Fix:** guarded fallback opens **Business** via `item.business.id` + backend `resolvedDestinationLocationId` when VIP promotion creative contract matches; promotion-rich HOME_PROMOTIONS path unchanged.
+- **Next:** Re-run **QA-5 VIP PROMOTION** on device; then decide A.8.4.PHYSICAL closure vs **A.8.5**.
+
+---
+
 ## 2026-09-24 — Stage 6.12A.8.4 Flutter branch-aware ad navigation
 
 - **Status:** **6.12A.8.4 PASS — FLUTTER AD BRANCH NAVIGATION IMPLEMENTED**.

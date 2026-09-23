@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:qalago_mobile/features/ads/data/ad_models.dart';
 import 'package:qalago_mobile/features/ads/utils/ad_navigation.dart';
 import 'package:qalago_mobile/shared/models/models.dart';
@@ -181,6 +183,223 @@ void main() {
         selectedLocationId: 'explicit-l2',
       );
       expect(uri.queryParameters['locationId'], 'explicit-l2');
+    });
+  });
+
+  group('VIP PROMOTION serve shape (no promotion object)', () {
+    const businessId = 'cmpn-biz';
+    const promotionTargetId = 'cmpn-promo';
+    const l2 = 'loc-l2';
+
+    AdItemModel vipItemFromServeJson({
+      String? destinationLocationId,
+      String? contextLocationId,
+    }) {
+      return AdItemModel.fromJson({
+        'campaignId': 'camp-vip',
+        'placementCode': 'HOME_VIP_BANNER',
+        'placementId': 'pl-vip',
+        'position': 1,
+        'sponsored': true,
+        'displayLabel': 'Реклама',
+        'productType': 'VIP_BANNER',
+        'destinationLocationId': destinationLocationId,
+        'contextLocationId': contextLocationId,
+        'creative': {
+          'id': 'cr-1',
+          'title': 'VIP Promo',
+          'targetType': 'PROMOTION',
+          'targetId': promotionTargetId,
+        },
+        'business': {'id': businessId, 'slug': 'biz'},
+      });
+    }
+
+    AdCreativeModel creative(AdItemModel item) => item.creative!;
+
+    testWidgets('2 VIP PROMOTION without promotion payload + L2 → B/L2', (tester) async {
+      final item = vipItemFromServeJson(
+        destinationLocationId: l2,
+        contextLocationId: l2,
+      );
+      expect(item.promotion, isNull);
+
+      String? uri;
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (c, s) => ElevatedButton(
+              onPressed: () =>
+                  openPromotionFromAdItem(c, item, creative: creative(item)),
+              child: const Text('nav'),
+            ),
+          ),
+          GoRoute(
+            path: '/business/:id',
+            builder: (c, s) {
+              uri = s.uri.toString();
+              return const SizedBox();
+            },
+          ),
+        ],
+      );
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.tap(find.text('nav'));
+      await tester.pumpAndSettle();
+
+      expect(uri, contains('/business/$businessId'));
+      expect(uri, isNot(contains('/business/$promotionTargetId')));
+      expect(uri, contains('locationId=$l2'));
+      expect(uri, contains('source=AD'));
+    });
+
+    testWidgets('3 context L2 only → B/L2', (tester) async {
+      final item = vipItemFromServeJson(contextLocationId: l2);
+      String? uri;
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (c, s) => ElevatedButton(
+              onPressed: () =>
+                  openPromotionFromAdItem(c, item, creative: creative(item)),
+              child: const Text('nav'),
+            ),
+          ),
+          GoRoute(
+            path: '/business/:id',
+            builder: (c, s) {
+              uri = s.uri.toString();
+              return const SizedBox();
+            },
+          ),
+        ],
+      );
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.tap(find.text('nav'));
+      await tester.pumpAndSettle();
+      expect(uri, contains('locationId=$l2'));
+    });
+
+    testWidgets('4 null location → Business without locationId', (tester) async {
+      final item = vipItemFromServeJson();
+      String? uri;
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (c, s) => ElevatedButton(
+              onPressed: () =>
+                  openPromotionFromAdItem(c, item, creative: creative(item)),
+              child: const Text('nav'),
+            ),
+          ),
+          GoRoute(
+            path: '/business/:id',
+            builder: (c, s) {
+              uri = s.uri.toString();
+              return const SizedBox();
+            },
+          ),
+        ],
+      );
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.tap(find.text('nav'));
+      await tester.pumpAndSettle();
+      expect(uri, contains('/business/$businessId'));
+      expect(uri, isNot(contains('locationId=')));
+    });
+
+    testWidgets('7 malformed: no business → no navigation', (tester) async {
+      final item = AdItemModel.fromJson({
+        'campaignId': 'c',
+        'placementCode': 'HOME_VIP_BANNER',
+        'placementId': 'p',
+        'position': 1,
+        'sponsored': true,
+        'displayLabel': 'Реклама',
+        'creative': {
+          'id': 'cr',
+          'title': 'T',
+          'targetType': 'PROMOTION',
+          'targetId': promotionTargetId,
+        },
+      });
+      var navigated = false;
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (c, s) => ElevatedButton(
+              onPressed: () =>
+                  openPromotionFromAdItem(c, item, creative: item.creative),
+              child: const Text('nav'),
+            ),
+          ),
+          GoRoute(
+            path: '/business/:id',
+            builder: (c, s) {
+              navigated = true;
+              return const SizedBox();
+            },
+          ),
+        ],
+      );
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.tap(find.text('nav'));
+      await tester.pumpAndSettle();
+      expect(navigated, isFalse);
+    });
+
+    testWidgets('5 promotion-rich HOME_PROMOTIONS path unchanged', (tester) async {
+      final item = AdItemModel.fromJson({
+        'campaignId': 'c',
+        'placementCode': 'HOME_PROMOTIONS',
+        'placementId': 'p',
+        'position': 1,
+        'sponsored': true,
+        'displayLabel': 'Реклама',
+        'destinationLocationId': l2,
+        'promotion': {
+          'id': promotionTargetId,
+          'title': 'Promo',
+          'businessId': businessId,
+          'business': {
+            'id': businessId,
+            'title': 'B',
+            'slug': 'b',
+            'address': 'a',
+          },
+        },
+        'business': {'id': businessId, 'slug': 'b', 'title': 'B'},
+      });
+      expect(item.toPromotionModel(), isNotNull);
+
+      String? uri;
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (c, s) => ElevatedButton(
+              onPressed: () => openPromotionFromAdItem(c, item),
+              child: const Text('nav'),
+            ),
+          ),
+          GoRoute(
+            path: '/business/:id',
+            builder: (c, s) {
+              uri = s.uri.toString();
+              return const SizedBox();
+            },
+          ),
+        ],
+      );
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.tap(find.text('nav'));
+      await tester.pumpAndSettle();
+      expect(uri, contains('/business/$businessId'));
+      expect(uri, contains('locationId=$l2'));
     });
   });
 }

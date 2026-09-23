@@ -35,13 +35,44 @@ void openBusinessFromAdItem(
 }
 
 /// HOME_PROMOTIONS / VIP promotion target — preserves backend ad destination.
-void openPromotionFromAdItem(BuildContext context, AdItemModel item) {
+///
+/// Promotion-rich items (HOME_PROMOTIONS) use [openBusinessFromPromotion].
+/// VIP creatives with `targetType == PROMOTION` and no `promotion` payload open
+/// Business detail using [item.business.id] + backend [resolvedDestinationLocationId].
+void openPromotionFromAdItem(
+  BuildContext context,
+  AdItemModel item, {
+  AdCreativeModel? creative,
+}) {
   final promotion = item.toPromotionModel();
-  if (promotion == null) return;
-  openBusinessFromPromotion(
-    context,
-    promotion,
-    BusinessTrafficSource.ad,
-    selectedLocationId: adNavigationLocationId(item, promotion: promotion),
-  );
+  if (promotion != null) {
+    openBusinessFromPromotion(
+      context,
+      promotion,
+      BusinessTrafficSource.ad,
+      selectedLocationId: adNavigationLocationId(item, promotion: promotion),
+    );
+    return;
+  }
+
+  if (!_isVipPromotionCreativeWithoutPayload(item, creative)) {
+    return;
+  }
+
+  openBusinessFromAdItem(context, item, BusinessTrafficSource.ad);
+}
+
+bool _isVipPromotionCreativeWithoutPayload(
+  AdItemModel item,
+  AdCreativeModel? creative,
+) {
+  if (item.promotion != null) return false;
+  if (creative == null) return false;
+  if (creative.targetType != 'PROMOTION') return false;
+  final targetId = creative.targetId?.trim();
+  if (targetId == null || targetId.isEmpty) return false;
+  final businessId = item.business?['id'] as String?;
+  if (businessId == null || businessId.trim().isEmpty) return false;
+  if (businessId == targetId) return false;
+  return true;
 }
