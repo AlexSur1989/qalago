@@ -6,12 +6,25 @@
 
 ---
 
+## 2026-09-24 — Stage 6.12A.8.4.PHYSICAL branch-aware ad navigation (Samsung)
+
+- **Status:** **6.12A.8.4.PHYSICAL PASS — BRANCH-AWARE AD NAVIGATION FINALIZED**.
+- **Checkpoint (implementation, unchanged):** `f1d03c8ded7c316fe111f1904affbee6ab143b4e` (VIP PROMOTION hotfix); A.8.4 nav `a7806bb006c16fcfe6d1c1a12a6a89645b449b34`.
+- **Physical device:** Samsung **SM-J610FN**, Android 10 / API 29, serial **651368a1**.
+- **QA matrix:** **QA-1** HOME_FEATURED → L2 **PASS**; **QA-2** CATEGORY_TOP → L2 **PASS**; **QA-3** HOME_PROMOTIONS → L2 **PASS**; **QA-4** VIP BUSINESS → L2 **PASS**; **QA-5** VIP PROMOTION — initial **FAIL** (banner visible, tap no navigation); hotfix APK retest → Bar Code 51 L2 **PASS**; **QA-6** L2 detail → switch L1 (effective address) → back once → Home **PASS** (no stale branch in tested flow).
+- **QA-5 root cause:** VIP serve **`creative.targetType=PROMOTION`** + **`targetId`** without embedded **`promotion`** object; A.8.4 **`openPromotionFromAdItem`** returned when **`toPromotionModel()`** null.
+- **Fixture:** Dev DB A.8.4 physical fixture inserted for Bar Code 51 (`cmpn1wnq1000iult8yj6a06q7`, L1 `bl7085ee9a617ae8b64026db`, temp L2 `cmuekpm660001ulzouphv3fdk`); **`a84-physical-ad-qa-fixture-cleanup.mjs`** run post-QA — temp L2 removed, QA campaigns/creatives/promotion/PBA removed, legacy VIP statuses restored; baseline verify: **1** Bar Code location (L1), **qaPromotions 0**, **qaCreatives 0**, **barCodeCampaignsWithBranch 0**, legacy VIP **ACTIVE**, **adCampaignTotal 20**, **activeCampaignCount 2**.
+- **Automated regression (post-cleanup):** catalog-api A.8.1–A.8.3 / ad-serving specs **44/44**; Flutter **`test/ads`** **42/42**.
+- **Next:** **6.12A.8.5** analytics branch attribution (**not started** in this closure).
+
+---
+
 ## 2026-09-24 — Stage 6.12A.8.4.HOTFIX VIP promotion ad navigation
 
-- **Status:** **6.12A.8.4.HOTFIX READY — VIP PROMOTION PHYSICAL RETEST REQUIRED** (not physical PASS).
+- **Status:** **CLOSED** — physical retest PASS; see **6.12A.8.4.PHYSICAL**.
 - **Checkpoint (implementation):** `f1d03c8ded7c316fe111f1904affbee6ab143b4e`.
 - **Summary:** Samsung physical QA found VIP **PROMOTION** taps no-op: VIP serve includes `creative.targetType/targetId` but **no** `promotion` object; A.8.4 `openPromotionFromAdItem` required `toPromotionModel()`. **Fix:** guarded fallback opens **Business** via `item.business.id` + backend `resolvedDestinationLocationId` when VIP promotion creative contract matches; promotion-rich HOME_PROMOTIONS path unchanged.
-- **Next:** Re-run **QA-5 VIP PROMOTION** on device; then decide A.8.4.PHYSICAL closure vs **A.8.5**.
+- **Next:** **6.12A.8.4.PHYSICAL** (completed).
 
 ---
 
