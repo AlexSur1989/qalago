@@ -9,7 +9,7 @@
 ## 2026-09-23 — Stage 6.12A.7.9.4 branch-aware promotion discovery
 
 - **Status:** **6.12A.7.9.4 PASS — BRANCH-AWARE PROMOTION DISCOVERY IMPLEMENTED**.
-- **Checkpoint (implementation):** _(commit SHA at finish)_.
+- **Checkpoint (implementation):** `005735a17a0423fa71414588d61553b19e450ec3`.
 - **Summary:**
   - **`GET /promotions`** city feed: **ALL/SELECTED PBA** city eligibility; **`Business.cityId`** removed as physical rule; Promotion-grain pagination unchanged.
   - Additive **`contextLocationId`** (batch PBA + reuse A.7.9.3A city context for ALL).
