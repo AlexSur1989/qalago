@@ -6,6 +6,21 @@
 
 ---
 
+## 2026-09-23 — Stage 6.12A.7.9.1 discovery location context foundation
+
+- **Status:** **6.12A.7.9.1 PASS — DISCOVERY LOCATION CONTEXT FOUNDATION IMPLEMENTED**.
+- **Checkpoint (implementation):** `451eaf6a45854fd66d4c007b8195555309bab8d4`.
+- **Summary:**
+  - Additive public discovery field **`contextLocationId`** on **`GET /businesses`** map rows (real **BusinessLocation** only); **`locationId`** map contract unchanged.
+  - Normal business-grain list/search/category/nearest **unchanged** — **`contextLocationId` omitted** (legacy **`distanceMeters`** without branch context remains valid until **A.7.9.2**).
+  - Internal helpers: **`BusinessDiscoveryContext`**, distance/branch invariant checks; **city membership policy** helpers (**legacy `Business.cityId`** vs **physical `BusinessLocation.cityId` presence**) — **not** wired into production filters yet.
+  - **`docs/architecture/api-contracts.md`** updated (current vs **A.7.9.2+** planned invariant). **`packages/shared-types`** **`BusinessListItem`** extended additively.
+  - **No** Prisma/migration; **no** Flutter/search/category/nearby/promotions/map query changes.
+- **Deferred:** **A.7.9.2** nearest-per-business PostGIS; **A.7.9.3** city cutover; **A.7.9.4** promotions eligibility; **A.7.9.5** Flutter navigation propagation.
+- **Next:** **6.12A.7.9.2** — nearby nearest-location-per-Business.
+
+---
+
 ## 2026-09-23 — Stage 6.12A.7.8 CLOSED — branch catalog / promotions architecture finalized
 
 - **Status:** **6.12A.7.8 CLOSED — BRANCH CATALOG / PROMOTIONS ARCHITECTURE FINALIZED**.

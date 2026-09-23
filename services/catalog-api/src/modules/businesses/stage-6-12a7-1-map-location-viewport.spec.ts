@@ -167,6 +167,7 @@ describe('Stage 6.12A.7.1 — map forMap viewport (BusinessLocation grain)', () 
     );
     expect(rows.length).toBeGreaterThanOrEqual(1);
     expect(rows[0]?.locationId).toBeDefined();
+    expect(rows[0]?.contextLocationId).toBe(rows[0]?.locationId);
     expect(rows[0]?.address).toBe('Primary Uralsk addr');
   });
 

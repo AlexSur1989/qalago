@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client';
 import type { CatalogMapLocationViewportRow } from './business-catalog-postgis-geo.query';
+import { attachMapDiscoveryContext } from './business-discovery-context.util';
 
 export const businessLocationMapPhysicalSelect = {
   id: true,
@@ -62,6 +63,8 @@ export type MapLocationBusinessListItem = Omit<
   website: string | null;
   workHours: BusinessLocationMapPhysicalRow['workHours'];
   distanceMeters?: number;
+  /** Discovery navigation hint — same branch as `locationId` on map rows (A.7.9.1). */
+  contextLocationId?: string;
   averageRating?: number | null;
   reviewCount?: number;
 };
@@ -82,13 +85,16 @@ export function assembleMapLocationBusinessListItems(
   const locationById = new Map(locations.map((l) => [l.id, l]));
 
   const items: MapLocationBusinessListItem[] = [];
-  for (const row of spatialRows) {
-    const business = businessById.get(row.businessId);
-    const location = locationById.get(row.locationId);
+  for (const spatialRow of spatialRows) {
+    const business = businessById.get(spatialRow.businessId);
+    const location = locationById.get(spatialRow.locationId);
     if (!business || !location) continue;
 
     const rating = extras?.ratingsByBusinessId?.get(business.id);
-    items.push({
+    const distanceMeters = extras?.distanceMetersByLocationId?.has(location.id)
+      ? extras.distanceMetersByLocationId.get(location.id)
+      : undefined;
+    const listItem = {
       id: business.id,
       locationId: location.id,
       categoryId: business.categoryId,
@@ -112,16 +118,19 @@ export function assembleMapLocationBusinessListItems(
       featuredSlot: business.featuredSlot,
       createdAt: business.createdAt,
       category: business.category,
-      ...(extras?.distanceMetersByLocationId?.has(location.id)
-        ? { distanceMeters: extras.distanceMetersByLocationId.get(location.id) }
-        : {}),
+      ...(distanceMeters != null ? { distanceMeters } : {}),
       ...(rating
         ? {
             averageRating: rating.averageRating,
             reviewCount: rating.reviewCount,
           }
         : {}),
-    });
+    };
+    items.push(
+      attachMapDiscoveryContext(listItem, {
+        distanceMeters: distanceMeters ?? null,
+      }),
+    );
   }
   return items;
 }

@@ -303,6 +303,8 @@ Env: `QALAGO_GEOCODING_PROVIDER` = `mock` (default) \| `maptiler`; `MAPTILER_API
 ## Businesses
 
 > **Map (6.12A.7.1):** `forMap=true` + viewport bbox returns **one row per qualifying `BusinessLocation`** (`locationId` + branch physical fields). **`id` remains the parent Business id.** Ordinary list/search/nearest (without map viewport grain) stays **Business-scoped**. See [business-location.md](./business-location.md).
+>
+> **Discovery context (6.12A.7.9.1+):** Business = discovery/card identity; **BusinessLocation** = physical context when known. Additive **`contextLocationId`** on list items = the branch that gives the card its physical context (clients may open detail with `?locationId=<contextLocationId>`). **Map keeps `locationId`** (unchanged contract). Detail keeps **`activeLocationId`**. Do not infer `contextLocationId` from legacy **`Business.location`** / primary coordinates alone.
 
 ### GET /businesses
 
@@ -325,7 +327,11 @@ Query:
 
 When `latitude` and `longitude` are provided, each item may include `distanceMeters` (integer, straight-line/geodesic meters — not road distance). Businesses without coordinates are listed after geo-sorted items when `sort=nearest`.
 
-**Map list item fields (forMap + bbox, 6.12A.7.1):** additive `locationId`; branch `cityId`, `address`, `latitude`, `longitude`, `phone`, `whatsapp`, `instagram`, `website`, `workHours` from **BusinessLocation**; brand fields (`title`, `slug`, `category`, cover, plan display fields, `status`, etc.) from **Business**. No raw PostGIS geography or internal timestamps.
+**Map list item fields (forMap + bbox, 6.12A.7.1):** additive `locationId`; branch `cityId`, `address`, `latitude`, `longitude`, `phone`, `whatsapp`, `instagram`, `website`, `workHours` from **BusinessLocation**; brand fields (`title`, `slug`, `category`, cover, plan display fields, `status`, etc.) from **Business**. **A.7.9.1+:** additive **`contextLocationId`** on map rows — same branch as `locationId` (discovery navigation hint; map field name unchanged). No raw PostGIS geography or internal timestamps.
+
+**Ordinary business-grain list items (A.7.9.1):** **`contextLocationId` omitted** until later substages populate branch context (e.g. **A.7.9.2** nearest-per-business). **`distanceMeters`** may still appear on legacy nearest/radius paths (distance to **`Business.location`** / primary point) **without** `contextLocationId` — not a branch distance until **A.7.9.2**.
+
+**Planned invariant (A.7.9.2+):** when both **`contextLocationId`** and **`distanceMeters`** are present, distance refers to that **BusinessLocation**.
 
 **Geo validation (Stage 6.11C.5A):** user `latitude`/`longitude` must be supplied as a **pair** (finite, in range; **0,0 allowed** for user position). `radiusKm` without a coordinate pair → **400**. Map mode excludes null/invalid stored coordinates (including **0,0** sentinel). **`sort=nearest` / `radiusKm` discovery** still uses **Business.location** (primary point) — not location-grain duplicates (6.12A.7.1).
 

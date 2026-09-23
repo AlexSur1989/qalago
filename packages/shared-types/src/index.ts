@@ -99,6 +99,12 @@ export interface BusinessListItem {
   id: string;
   /** Present on forMap viewport rows (Stage 6.12A.7.1+). Omitted on ordinary business-grain lists. */
   locationId?: string;
+  /**
+   * Discovery navigation hint — BusinessLocation that gives this card physical context (A.7.9.1+).
+   * Populated when a real branch context is known (e.g. map rows). Omitted on legacy business-grain lists until A.7.9.2+.
+   */
+  contextLocationId?: string;
+  distanceMeters?: number;
   cityId: string;
   categoryId: string;
   title: string;

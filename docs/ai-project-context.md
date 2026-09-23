@@ -47,6 +47,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | 6.12A.7.8.5 | **CLOSED (physical QA PASS)** | Flutter branch-effective catalog/promotions; Samsung SM-J610FN L1/L2 verified; QA785 fixture cleaned (dev) |
 | 6.12A.7.8.6 | **PASS (Admin read-only)** | **`GET /admin/businesses/:businessId/content`** — **`BUSINESS_VIEW`**, ALL/SELECTED branch scope labels; no branch editing |
 | **6.12A.7.8** | **CLOSED** | Branch catalog/promotions architecture finalized (A.7.8.0–A.7.8.6); discovery/global promotions branch grain → **A.7.9** |
+| 6.12A.7.9.1 | **PASS (contract foundation)** | Discovery **`contextLocationId`** on list cards when branch known; **map keeps `locationId`**; detail **`activeLocationId`**; queries unchanged until **A.7.9.2+** |
 
 ## Business vs BusinessLocation
 
@@ -66,7 +67,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 - **Map (A.7.1–A.7.4):** backend **BusinessLocation** grain + **`locationId`**; Flutter map layer uses **physical key**; category map renders **`mapLayerItems`** (fetch bounds); detail accepts optional **`locationId`** for branch address/route; reviews/favorites/analytics remain **Business.id**.
 - **Nearest/radius/list discovery:** still **Business-grain** (primary geography).
-- **Public discovery:** city/category/search unchanged (primary business city) except map viewport city filter uses branch city; **branch-aware catalog/promotion discovery** (global promotions feed, search) deferred **A.7.9**.
+- **Public discovery:** city/category/search unchanged (primary business city) except map viewport city filter uses branch city; **branch-aware catalog/promotion discovery** (global promotions feed, search) deferred **A.7.9**. **Discovery identity:** **Business** = card; **BusinessLocation** = physical context; additive **`contextLocationId`** (navigation hint) on map list rows only in **A.7.9.1** — nearest/search/category propagation **A.7.9.2+**.
 - **F.4 / F.5:** final business URLs, branch slugs, hreflang, branch JSON-LD — not A.6.
 - **Branch-level membership, location favorites, branch reviews:** deferred.
 
