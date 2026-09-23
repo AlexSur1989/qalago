@@ -12,6 +12,9 @@ import {
   queryCatalogMapLocationViewportPage,
 } from './business-catalog-postgis-geo.query';
 import type { MapLocationBusinessListItem } from './business-map-location-list.presenter';
+import type { BusinessDiscoveryContext } from './business-discovery-context.util';
+
+type GeoListItem = { id: string } & BusinessDiscoveryContext;
 
 describe('Stage 6.12A.7.1 — map forMap viewport (BusinessLocation grain)', () => {
   jest.setTimeout(45_000);
@@ -414,8 +417,10 @@ describe('Stage 6.12A.7.1 — map forMap viewport (BusinessLocation grain)', () 
       sort: 'nearest' as never,
       limit: 100,
     });
-    const nearestRows = result.items.filter((i) => i.id === business.id);
+    const nearestRows = result.items.filter((i) => i.id === business.id) as GeoListItem[];
     expect(nearestRows).toHaveLength(1);
     expect(nearestRows[0] != null && 'locationId' in nearestRows[0]).toBe(false);
+    expect(nearestRows[0]?.contextLocationId).toBeDefined();
+    expect(nearestRows[0]?.distanceMeters).toBeDefined();
   });
 });

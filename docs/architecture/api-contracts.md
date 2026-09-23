@@ -329,11 +329,11 @@ When `latitude` and `longitude` are provided, each item may include `distanceMet
 
 **Map list item fields (forMap + bbox, 6.12A.7.1):** additive `locationId`; branch `cityId`, `address`, `latitude`, `longitude`, `phone`, `whatsapp`, `instagram`, `website`, `workHours` from **BusinessLocation**; brand fields (`title`, `slug`, `category`, cover, plan display fields, `status`, etc.) from **Business**. **A.7.9.1+:** additive **`contextLocationId`** on map rows — same branch as `locationId` (discovery navigation hint; map field name unchanged). No raw PostGIS geography or internal timestamps.
 
-**Ordinary business-grain list items (A.7.9.1):** **`contextLocationId` omitted** until later substages populate branch context (e.g. **A.7.9.2** nearest-per-business). **`distanceMeters`** may still appear on legacy nearest/radius paths (distance to **`Business.location`** / primary point) **without** `contextLocationId` — not a branch distance until **A.7.9.2**.
+**Ordinary business-grain list items — nearby (A.7.9.2, IMPLEMENTED):** when `latitude`/`longitude` drive discovery (`sort=nearest` and/or explicit `radiusKm`), spatial membership and distance use **`BusinessLocation.location`** (PostGIS). **One card per Business** — nearest qualifying branch within radius. Additive **`contextLocationId`** = that branch id; **`distanceMeters`** = geodesic distance to **the same** branch. Dedup per business occurs in SQL **before** `LIMIT`/`OFFSET`. City eligibility for this stage remains legacy **`Business.cityId`** (branch city cutover **A.7.9.3**). Businesses with **no** geocoded **BusinessLocation** are **excluded** from nearby/radius (no silent legacy **`Business.location`** fallback). Non-geo lists omit **`contextLocationId`**.
 
-**Planned invariant (A.7.9.2+):** when both **`contextLocationId`** and **`distanceMeters`** are present, distance refers to that **BusinessLocation**.
+**Invariant:** when both **`contextLocationId`** and **`distanceMeters`** are present, distance refers to that **BusinessLocation** only.
 
-**Geo validation (Stage 6.11C.5A):** user `latitude`/`longitude` must be supplied as a **pair** (finite, in range; **0,0 allowed** for user position). `radiusKm` without a coordinate pair → **400**. Map mode excludes null/invalid stored coordinates (including **0,0** sentinel). **`sort=nearest` / `radiusKm` discovery** still uses **Business.location** (primary point) — not location-grain duplicates (6.12A.7.1).
+**Geo validation (Stage 6.11C.5A):** user `latitude`/`longitude` must be supplied as a **pair** (finite, in range; **0,0 allowed** for user position). `radiusKm` without a coordinate pair → **400**. Map mode excludes null/invalid stored coordinates (including **0,0** sentinel). **`forMap=true`** viewport remains **location-grain** (unchanged); ordinary nearby stays **business-grain** with branch context fields above.
 
 See [catalog-geo-query.md](./catalog-geo-query.md) for modes A/B/C and C.5 performance notes.
 

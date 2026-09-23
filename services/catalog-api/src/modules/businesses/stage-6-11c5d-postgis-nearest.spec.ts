@@ -161,12 +161,14 @@ describe('Stage 6.11C.5D — PostGIS nearest (runtime DB)', () => {
         const hit = await tx.business.findFirst({ where: { slug } });
         expect(hit).toBeTruthy();
         const listed = await tx.$queryRaw<Array<{ id: string }>>`
-          SELECT b.id FROM "Business" b
+          SELECT b.id
+          FROM "Business" b
+          INNER JOIN "BusinessLocation" bl ON bl."businessId" = b.id
           WHERE b.slug = ${slug}
             AND b."cityId" = ${cityId}
-            AND b.location IS NOT NULL
+            AND bl.location IS NOT NULL
             AND ST_DWithin(
-              b.location,
+              bl.location,
               ST_SetSRID(ST_MakePoint(${uralskCenterLng}, ${uralskCenterLat}), 4326)::geography,
               ${100_000}
             )

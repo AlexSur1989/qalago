@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { BusinessStatus } from '@prisma/client';
 import {
+  buildCatalogNearestBranchWhereSql,
   buildCatalogNearestWhereSql,
   resolveNearestRadiusMeters,
 } from './business-catalog-postgis-geo.query';
@@ -30,5 +31,23 @@ describe('business-catalog-postgis-geo.query', () => {
     expect(sql).toContain('ILIKE');
     expect(sql).not.toContain('DROP TABLE');
     expect(values.some((v) => String(v).includes('DROP TABLE'))).toBe(true);
+  });
+
+  it('buildCatalogNearestBranchWhereSql uses BusinessLocation.location (A.7.9.2)', () => {
+    const point = Prisma.sql`ST_SetSRID(ST_MakePoint(${51.38}, ${51.23}), 4326)::geography`;
+    const where = buildCatalogNearestBranchWhereSql(
+      {
+        cityId: 'city-1',
+        status: BusinessStatus.ACTIVE,
+        latitude: 51.23,
+        longitude: 51.38,
+        radiusMeters: 3000,
+      },
+      point,
+    );
+    expect(where.sql).toContain('bl.location IS NOT NULL');
+    expect(where.sql).toContain('ST_DWithin(bl.location');
+    expect(where.sql).toContain('b."cityId"');
+    expect(where.sql).not.toContain('b.location IS NOT NULL');
   });
 });

@@ -47,17 +47,16 @@ export function mapViewportEnvelopeGeography(bbox: NormalizedMapBbox): Prisma.Sq
   )::geography`;
 }
 
-/** Business-grain filters (nearest/radius + legacy business viewport): primary city + Business.location. */
-function buildCatalogBusinessCatalogFilterSql(
-  params: Pick<
-    CatalogPostgisGeoFilterParams,
-    'cityId' | 'status' | 'categoryId' | 'subcategoryId' | 'searchPattern' | 'serviceSearchBusinessIds'
-  >,
-): Prisma.Sql[] {
+type CatalogBusinessJoinFilterParams = Pick<
+  CatalogPostgisGeoFilterParams,
+  'cityId' | 'status' | 'categoryId' | 'subcategoryId' | 'searchPattern' | 'serviceSearchBusinessIds'
+>;
+
+/** Business join filters for catalog geo (legacy Business.cityId scope — A.7.9.3 cutover deferred). */
+function buildCatalogBusinessJoinFilterSql(params: CatalogBusinessJoinFilterParams): Prisma.Sql[] {
   const parts: Prisma.Sql[] = [
     Prisma.sql`b."cityId" = ${params.cityId}`,
     Prisma.sql`b.status = ${params.status}::"BusinessStatus"`,
-    Prisma.sql`b.location IS NOT NULL`,
   ];
 
   if (params.categoryId) {
@@ -103,6 +102,11 @@ function buildCatalogBusinessCatalogFilterSql(
   }
 
   return parts;
+}
+
+/** Business-grain filters (legacy business viewport on Business.location). */
+function buildCatalogBusinessCatalogFilterSql(params: CatalogBusinessJoinFilterParams): Prisma.Sql[] {
+  return [...buildCatalogBusinessJoinFilterSql(params), Prisma.sql`b.location IS NOT NULL`];
 }
 
 type CatalogMapLocationCatalogFilterParams = Pick<
@@ -319,39 +323,68 @@ export function buildCatalogNearestWhereSql(
   return Prisma.join(parts, ' AND ');
 }
 
+/**
+ * Stage 6.12A.7.9.2 — nearest/radius on BusinessLocation.location;
+ * business eligibility still uses legacy b.cityId (not bl.cityId cutover).
+ */
+export function buildCatalogNearestBranchWhereSql(
+  params: CatalogPostgisGeoFilterParams,
+  queryPoint: Prisma.Sql,
+): Prisma.Sql {
+  const parts = buildCatalogBusinessJoinFilterSql(params);
+  parts.push(Prisma.sql`bl.location IS NOT NULL`);
+  parts.push(Prisma.sql`ST_DWithin(bl.location, ${queryPoint}, ${params.radiusMeters})`);
+
+  const bbox = params.mapBbox;
+  if (bbox != null) {
+    const viewport = mapViewportEnvelopeGeography(bbox);
+    parts.push(Prisma.sql`ST_Intersects(bl.location, ${viewport})`);
+  }
+
+  return Prisma.join(parts, ' AND ');
+}
+
 export type CatalogPostgisNearestRow = {
   id: string;
   distanceMeters: number;
+  contextLocationId: string;
 };
 
 export type CatalogPostgisRadiusFilterParams = CatalogPostgisGeoFilterParams;
 
-/** All businesses within explicit radius (ST_DWithin), with distances — for non-nearest sorts. */
+function mapNearestBranchRows(
+  rows: Array<{ business_id: string; location_id: string; distance_meters: number }>,
+): CatalogPostgisNearestRow[] {
+  return rows.map((row) => ({
+    id: row.business_id,
+    contextLocationId: row.location_id,
+    distanceMeters: row.distance_meters,
+  }));
+}
+
+/** All businesses within explicit radius — nearest qualifying branch per business. */
 export async function queryCatalogRadiusMembers(
   prisma: Pick<PrismaClient, '$queryRaw'>,
   params: CatalogPostgisRadiusFilterParams,
 ): Promise<{ rows: CatalogPostgisNearestRow[]; total: number }> {
   const queryPoint = queryGeographyPoint(params.latitude, params.longitude);
-  const whereSql = buildCatalogNearestWhereSql(params, queryPoint);
+  const whereSql = buildCatalogNearestBranchWhereSql(params, queryPoint);
 
   const rows = await prisma.$queryRaw<
-    Array<{ id: string; distance_meters: number }>
+    Array<{ business_id: string; location_id: string; distance_meters: number }>
   >`
-    SELECT
-      b.id,
-      ROUND(ST_Distance(b.location, ${queryPoint}))::int AS distance_meters
-    FROM "Business" b
+    SELECT DISTINCT ON (b.id)
+      b.id AS business_id,
+      bl.id AS location_id,
+      ROUND(ST_Distance(bl.location, ${queryPoint}))::int AS distance_meters
+    FROM "BusinessLocation" bl
+    INNER JOIN "Business" b ON b.id = bl."businessId"
     WHERE ${whereSql}
-    ORDER BY b.id ASC
+    ORDER BY b.id, distance_meters ASC, bl.id ASC
   `;
 
-  return {
-    rows: rows.map((row) => ({
-      id: row.id,
-      distanceMeters: row.distance_meters,
-    })),
-    total: rows.length,
-  };
+  const mapped = mapNearestBranchRows(rows);
+  return { rows: mapped, total: mapped.length };
 }
 
 export async function queryCatalogNearestPage(
@@ -359,31 +392,41 @@ export async function queryCatalogNearestPage(
   params: CatalogPostgisNearestParams,
 ): Promise<{ rows: CatalogPostgisNearestRow[]; total: number }> {
   const queryPoint = queryGeographyPoint(params.latitude, params.longitude);
-  const whereSql = buildCatalogNearestWhereSql(params, queryPoint);
+  const whereSql = buildCatalogNearestBranchWhereSql(params, queryPoint);
 
   const rows = await prisma.$queryRaw<
-    Array<{ id: string; distance_meters: number }>
+    Array<{ business_id: string; location_id: string; distance_meters: number }>
   >`
-    SELECT
-      b.id,
-      ROUND(ST_Distance(b.location, ${queryPoint}))::int AS distance_meters
-    FROM "Business" b
-    WHERE ${whereSql}
-    ORDER BY distance_meters ASC, b.title ASC, b.id ASC
+    WITH nearest_branch AS (
+      SELECT DISTINCT ON (b.id)
+        b.id AS business_id,
+        bl.id AS location_id,
+        ROUND(ST_Distance(bl.location, ${queryPoint}))::int AS distance_meters
+      FROM "BusinessLocation" bl
+      INNER JOIN "Business" b ON b.id = bl."businessId"
+      WHERE ${whereSql}
+      ORDER BY b.id, distance_meters ASC, bl.id ASC
+    )
+    SELECT nb.business_id, nb.location_id, nb.distance_meters
+    FROM nearest_branch nb
+    INNER JOIN "Business" b ON b.id = nb.business_id
+    ORDER BY nb.distance_meters ASC, b.title ASC, nb.business_id ASC
     LIMIT ${params.limit} OFFSET ${params.skip}
   `;
 
   const countRows = await prisma.$queryRaw<Array<{ count: bigint }>>`
     SELECT COUNT(*)::bigint AS count
-    FROM "Business" b
-    WHERE ${whereSql}
+    FROM (
+      SELECT DISTINCT ON (b.id) b.id
+      FROM "BusinessLocation" bl
+      INNER JOIN "Business" b ON b.id = bl."businessId"
+      WHERE ${whereSql}
+      ORDER BY b.id
+    ) AS nearest_businesses
   `;
 
   return {
-    rows: rows.map((row) => ({
-      id: row.id,
-      distanceMeters: row.distance_meters,
-    })),
+    rows: mapNearestBranchRows(rows),
     total: Number(countRows[0]?.count ?? 0n),
   };
 }

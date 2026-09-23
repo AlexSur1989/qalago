@@ -45,17 +45,22 @@ describe('Stage 6.11C.5D — radius filter independent of sort (runtime DB)', ()
     if (connected) await prisma.$disconnect();
   });
 
-  async function assertAllWithinKm(radiusKm: number, ids: string[]) {
+  async function assertAllWithinKm(
+    radiusKm: number,
+    members: Array<{ id: string; contextLocationId: string; distanceMeters: number }>,
+  ) {
     const maxM = radiusKm * 1000;
-    for (const id of ids) {
+    for (const member of members) {
+      expect(member.distanceMeters).toBeLessThanOrEqual(maxM);
       const rows = await prisma.$queryRaw<Array<{ distance_m: number }>>`
         SELECT ROUND(ST_Distance(
-          b.location,
+          bl.location,
           ST_SetSRID(ST_MakePoint(${userLng}, ${userLat}), 4326)::geography
         ))::int AS distance_m
-        FROM "Business" b
-        WHERE b.id = ${id}
+        FROM "BusinessLocation" bl
+        WHERE bl.id = ${member.contextLocationId}
       `;
+      expect(rows[0]?.distance_m).toBe(member.distanceMeters);
       expect(rows[0]?.distance_m).toBeLessThanOrEqual(maxM);
     }
   }
@@ -74,7 +79,7 @@ describe('Stage 6.11C.5D — radius filter independent of sort (runtime DB)', ()
     if (skip) return;
     const { rows } = await membersForKm(3);
     expect(rows.length).toBeGreaterThan(0);
-    await assertAllWithinKm(3, rows.map((r) => r.id));
+    await assertAllWithinKm(3, rows);
   });
 
   it('radius tiers monotonic: 0.5 <= 3 <= 5 <= 15 <= 100', async () => {
@@ -98,12 +103,17 @@ describe('Stage 6.11C.5D — radius filter independent of sort (runtime DB)', ()
     if (outside3.length === 0) return;
     for (const id of outside3) {
       const rows = await prisma.$queryRaw<Array<{ within: boolean }>>`
-        SELECT ST_DWithin(
-          b.location,
-          ST_SetSRID(ST_MakePoint(${userLng}, ${userLat}), 4326)::geography,
-          ${3000}
+        SELECT EXISTS (
+          SELECT 1
+          FROM "BusinessLocation" bl
+          WHERE bl."businessId" = ${id}
+            AND bl.location IS NOT NULL
+            AND ST_DWithin(
+              bl.location,
+              ST_SetSRID(ST_MakePoint(${userLng}, ${userLat}), 4326)::geography,
+              ${3000}
+            )
         ) AS within
-        FROM "Business" b WHERE b.id = ${id}
       `;
       expect(rows[0]?.within).toBe(false);
     }

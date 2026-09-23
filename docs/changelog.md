@@ -6,10 +6,24 @@
 
 ---
 
+## 2026-09-23 — Stage 6.12A.7.9.2 nearby nearest-branch discovery
+
+- **Status:** **6.12A.7.9.2 PASS — NEARBY NEAREST-BRANCH DISCOVERY IMPLEMENTED**.
+- **Checkpoint (implementation):** _(filled at commit)_.
+- **Summary:**
+  - **`GET /businesses`** nearby paths (`sort=nearest`, explicit **`radiusKm`**, default geo nearest): PostGIS on **`BusinessLocation.location`**; **`DISTINCT ON (businessId)`** nearest branch; business-grain pagination; additive **`contextLocationId`** + aligned **`distanceMeters`**.
+  - Legacy **`Business.location`** not used for radius/membership; businesses without geocoded branches excluded (no fake **`contextLocationId`**).
+  - City filter unchanged (**`Business.cityId`**); map **`forMap`**, search/category city, promotions untouched.
+  - Tests: **`stage-6-12a7-9-2-nearby-branch-discovery.spec.ts`**, radius/nearest PostGIS specs updated; **`api-contracts.md`**, **`ai-project-context.md`**.
+- **Deferred:** **A.7.9.3** city membership cutover; **A.7.9.4** promotions; **A.7.9.5** Flutter propagation.
+- **Next:** **6.12A.7.9.3** — BusinessLocation-aware city membership.
+
+---
+
 ## 2026-09-23 — Stage 6.12A.7.9.1 discovery location context foundation
 
 - **Status:** **6.12A.7.9.1 PASS — DISCOVERY LOCATION CONTEXT FOUNDATION IMPLEMENTED**.
-- **Checkpoint (implementation):** `451eaf6a45854fd66d4c007b8195555309bab8d4`.
+- **Checkpoint (implementation):** `1111948f71b776832d8c3b29473d003d429cdabb`.
 - **Summary:**
   - Additive public discovery field **`contextLocationId`** on **`GET /businesses`** map rows (real **BusinessLocation** only); **`locationId`** map contract unchanged.
   - Normal business-grain list/search/category/nearest **unchanged** — **`contextLocationId` omitted** (legacy **`distanceMeters`** without branch context remains valid until **A.7.9.2**).

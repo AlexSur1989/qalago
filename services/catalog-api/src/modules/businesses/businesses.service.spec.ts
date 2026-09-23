@@ -112,8 +112,16 @@ describe('BusinessesService.findAll', () => {
     prisma.$queryRaw = jest
       .fn()
       .mockResolvedValueOnce([
-        { id: 'near-free', distance_meters: 100 },
-        { id: 'far-premium', distance_meters: 2000 },
+        {
+          business_id: 'near-free',
+          location_id: 'loc-near-free',
+          distance_meters: 100,
+        },
+        {
+          business_id: 'far-premium',
+          location_id: 'loc-far-premium',
+          distance_meters: 2000,
+        },
       ])
       .mockResolvedValueOnce([{ count: 2n }]);
     prisma.business.findMany = jest.fn().mockResolvedValue([
@@ -167,8 +175,8 @@ describe('BusinessesService.findAll', () => {
     prisma.$queryRaw = jest
       .fn()
       .mockResolvedValueOnce([
-        { id: 'near', distance_meters: 100 },
-        { id: 'far', distance_meters: 2000 },
+        { business_id: 'near', location_id: 'loc-near', distance_meters: 100 },
+        { business_id: 'far', location_id: 'loc-far', distance_meters: 2000 },
       ])
       .mockResolvedValueOnce([{ count: 2n }]);
     prisma.business.findMany = jest.fn().mockResolvedValue([
@@ -223,9 +231,13 @@ describe('BusinessesService.findAll', () => {
   });
 
   it('applies explicit radiusKm with sort=recommended via PostGIS membership', async () => {
-    prisma.$queryRaw = jest
-      .fn()
-      .mockResolvedValueOnce([{ id: 'near-free', distance_meters: 500 }]);
+    prisma.$queryRaw = jest.fn().mockResolvedValueOnce([
+      {
+        business_id: 'near-free',
+        location_id: 'loc-near-free',
+        distance_meters: 500,
+      },
+    ]);
     prisma.business.count = jest.fn().mockResolvedValue(1);
     prisma.business.findMany = jest.fn().mockResolvedValue([
       {

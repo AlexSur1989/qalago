@@ -65,6 +65,8 @@ import { BusinessSubcategoryService } from './business-subcategory.service';
 import { SubcategoriesService } from '../categories/subcategories.service';
 import { randomBytes } from 'crypto';
 import { attachEffectivePhysicalToDetail } from './business-effective-physical.util';
+import { attachContextLocationIdForBranch } from './business-discovery-context.util';
+import type { CatalogPostgisNearestRow } from './business-catalog-postgis-geo.query';
 
 const businessListSelect = {
   id: true,
@@ -655,20 +657,7 @@ export class BusinessesService {
       return [[], total] as const;
     }
 
-    const hydrated = await this.prisma.business.findMany({
-      where: { id: { in: rows.map((row) => row.id) } },
-      select: businessListSelect,
-    });
-    const byId = new Map(hydrated.map((item) => [item.id, item]));
-
-    const items = rows
-      .map((row) => {
-        const item = byId.get(row.id);
-        if (!item) return null;
-        return { ...item, distanceMeters: row.distanceMeters };
-      })
-      .filter((item): item is NonNullable<typeof item> => item != null);
-
+    const items = await this.hydrateGeoDiscoveryListItems(rows);
     return [items, total] as const;
   }
 
@@ -694,6 +683,10 @@ export class BusinessesService {
       radiusMeters: resolveExplicitRadiusMeters(query.radiusKm!),
       categoryId: query.categoryId,
       subcategoryId: query.subcategoryId,
+      searchPattern: searchContext?.normalized ?? null,
+      serviceSearchBusinessIds: searchContext
+        ? [...searchContext.serviceMatchKindByBusinessId.keys()]
+        : undefined,
       mapBbox: normalizedBbox,
     });
 
@@ -701,16 +694,11 @@ export class BusinessesService {
       return [[], 0] as const;
     }
 
-    const distanceById = new Map(
-      radiusMembers.map((row) => [row.id, row.distanceMeters]),
-    );
+    const geoByBusinessId = new Map(radiusMembers.map((row) => [row.id, row]));
     mergeWhereWithAnd(where, { id: { in: radiusMembers.map((row) => row.id) } });
 
-    const attachDistance = <T extends { id: string }>(items: T[]): T[] =>
-      items.map((item) => ({
-        ...item,
-        distanceMeters: distanceById.get(item.id)!,
-      }));
+    const attachGeoDiscovery = <T extends { id: string }>(items: T[]) =>
+      this.attachGeoDiscoveryFields(items, geoByBusinessId);
 
     if (effectiveSort === BusinessCatalogSort.RECOMMENDED && !searchContext) {
       const [items, total] = await this.findPagedItemsRecommendedAtDatabase(
@@ -718,7 +706,7 @@ export class BusinessesService {
         skip,
         limit,
       );
-      return [attachDistance(items), total] as const;
+      return [attachGeoDiscovery(items), total] as const;
     }
 
     if (effectiveSort === BusinessCatalogSort.RECOMMENDED && searchContext) {
@@ -728,7 +716,7 @@ export class BusinessesService {
         skip,
         limit,
       );
-      return [attachDistance(items), total] as const;
+      return [attachGeoDiscovery(items), total] as const;
     }
 
     const allItems = await this.prisma.business.findMany({
@@ -746,19 +734,19 @@ export class BusinessesService {
       compareBusinessBySort(
         this.toSortRow(
           a,
-          distanceById.get(a.id) ?? null,
+          geoByBusinessId.get(a.id)?.distanceMeters ?? null,
           metrics,
         ),
         this.toSortRow(
           b,
-          distanceById.get(b.id) ?? null,
+          geoByBusinessId.get(b.id)?.distanceMeters ?? null,
           metrics,
         ),
         effectiveSort,
       ),
     );
 
-    const items = attachDistance(sorted.slice(skip, skip + limit).map((item) => ({
+    const items = attachGeoDiscovery(sorted.slice(skip, skip + limit).map((item) => ({
       ...item,
       ...(metrics?.ratings.get(item.id)
         ? {
@@ -769,6 +757,42 @@ export class BusinessesService {
     })));
 
     return [items, sorted.length] as const;
+  }
+
+  private attachGeoDiscoveryFields<T extends { id: string }>(
+    items: T[],
+    geoByBusinessId: ReadonlyMap<string, CatalogPostgisNearestRow>,
+  ) {
+    return items.map((item) => {
+      const geo = geoByBusinessId.get(item.id);
+      if (!geo) return item;
+      return attachContextLocationIdForBranch(
+        { ...item, distanceMeters: geo.distanceMeters },
+        geo.contextLocationId,
+        { distanceMeters: geo.distanceMeters },
+      );
+    });
+  }
+
+  private async hydrateGeoDiscoveryListItems(rows: CatalogPostgisNearestRow[]) {
+    const hydrated = await this.prisma.business.findMany({
+      where: { id: { in: rows.map((row) => row.id) } },
+      select: businessListSelect,
+    });
+    const byId = new Map(hydrated.map((item) => [item.id, item]));
+    const geoById = new Map(rows.map((row) => [row.id, row]));
+
+    return rows
+      .map((row) => {
+        const item = byId.get(row.id);
+        if (!item) return null;
+        return attachContextLocationIdForBranch(
+          { ...item, distanceMeters: row.distanceMeters },
+          row.contextLocationId,
+          { distanceMeters: row.distanceMeters },
+        );
+      })
+      .filter((item): item is NonNullable<typeof item> => item != null);
   }
 
   /** Organic discovery (no text query): ORDER BY + SKIP/TAKE in PostgreSQL. */
