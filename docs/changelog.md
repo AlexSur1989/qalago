@@ -9,7 +9,7 @@
 ## 2026-09-23 — Stage 6.12A.7.8.6 Admin Web branch catalog / promotion visibility
 
 - **Status:** **6.12A.7.8.6 PASS — ADMIN WEB BRANCH CATALOG / PROMOTION VISIBILITY IMPLEMENTED**.
-- **Checkpoint (implementation):** _(recorded at stage commit SHA)_.
+- **Checkpoint (implementation):** `e3c33188298bb64708e784c0d05ef1ac284f7550`.
 - **Summary:**
   - Additive staff read-only **`GET /admin/businesses/:businessId/content`** — **`StaffPermission.BUSINESS_VIEW`** + **`CITY_ADMIN`** city scope; **not** owner **`CATALOG_EDIT` / `PROMOTIONS_EDIT`** gates.
   - Returns business context, **ServiceItem** + **Promotion** lists with server-resolved **`branchScope`** (`ALL` / `SELECTED`, human-readable branch rows, unavailable branch preserved as **SELECTED**).
