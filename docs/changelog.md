@@ -9,7 +9,7 @@
 ## 2026-09-24 — Stage 6.12A.8.1 Ads / Analytics location context (schema foundation)
 
 - **Status:** **6.12A.8.1 PASS — LOCATION CONTEXT FOUNDATION IMPLEMENTED** (schema + contracts; **no serving/navigation/analytics client behavior yet**).
-- **Checkpoint (implementation):** `028aa96a` (see follow-up docs commit if amended).
+- **Checkpoint (implementation):** `028aa96bfc58bd27dde8e70558dda9ce528c2ff5`.
 - **Summary:**
   - **A.8.0 accepted:** AdCampaign stays **Business-owned**; separate optional **target** (serve narrowing), **destination** (tap branch), **analytics branch context** (interaction attribution, not user GPS).
   - **Prisma:** nullable `AdCampaign.targetBusinessLocationId`, `AdCampaign.destinationBusinessLocationId`; nullable `AnalyticsEvent.businessLocationId`; **AdCampaign** composite same-business FKs `(businessId, locationId)` → `BusinessLocation` with **`ON DELETE RESTRICT`** (composite `SET NULL` incompatible with required `businessId`); **AnalyticsEvent** single-column FK `businessLocationId` → `BusinessLocation.id` with **`ON DELETE SET NULL`**; indexes on campaign location columns + analytics `(businessLocationId,type,createdAt)` and `(campaignId,businessLocationId)`.
