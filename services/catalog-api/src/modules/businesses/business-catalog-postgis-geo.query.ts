@@ -52,10 +52,62 @@ type CatalogBusinessJoinFilterParams = Pick<
   'cityId' | 'status' | 'categoryId' | 'subcategoryId' | 'searchPattern' | 'serviceSearchBusinessIds'
 >;
 
-/** Business join filters for catalog geo (legacy Business.cityId scope — A.7.9.3 cutover deferred). */
+/** Business join filters for legacy Business.location map viewport (unchanged — A.7.9.3A). */
 function buildCatalogBusinessJoinFilterSql(params: CatalogBusinessJoinFilterParams): Prisma.Sql[] {
   const parts: Prisma.Sql[] = [
     Prisma.sql`b."cityId" = ${params.cityId}`,
+    Prisma.sql`b.status = ${params.status}::"BusinessStatus"`,
+  ];
+
+  if (params.categoryId) {
+    parts.push(Prisma.sql`b."categoryId" = ${params.categoryId}`);
+  }
+
+  if (params.subcategoryId) {
+    parts.push(Prisma.sql`EXISTS (
+      SELECT 1 FROM "BusinessSubcategory" bs
+      WHERE bs."businessId" = b.id AND bs."subcategoryId" = ${params.subcategoryId}
+    )`);
+  }
+
+  if (params.searchPattern) {
+    const pattern = `%${params.searchPattern}%`;
+    const searchOr: Prisma.Sql[] = [
+      Prisma.sql`b.title ILIKE ${pattern}`,
+      Prisma.sql`b."shortDesc" ILIKE ${pattern}`,
+      Prisma.sql`b.address ILIKE ${pattern}`,
+      Prisma.sql`EXISTS (
+        SELECT 1 FROM "Category" c
+        WHERE c.id = b."categoryId"
+          AND (
+            c.title ILIKE ${pattern}
+            OR c."nameRu" ILIKE ${pattern}
+            OR c."nameKk" ILIKE ${pattern}
+          )
+      )`,
+      Prisma.sql`EXISTS (
+        SELECT 1 FROM "BusinessSubcategory" bs
+        INNER JOIN "Subcategory" s ON s.id = bs."subcategoryId"
+        WHERE bs."businessId" = b.id
+          AND (s."nameRu" ILIKE ${pattern} OR s."nameKk" ILIKE ${pattern})
+      )`,
+    ];
+    const serviceIds = params.serviceSearchBusinessIds ?? [];
+    if (serviceIds.length > 0) {
+      searchOr.push(
+        Prisma.sql`b.id IN (${Prisma.join(serviceIds.map((id) => Prisma.sql`${id}`))})`,
+      );
+    }
+    parts.push(Prisma.sql`(${Prisma.join(searchOr, ' OR ')})`);
+  }
+
+  return parts;
+}
+
+/** Branch-geo join filters: qualifying BusinessLocation must be in requested city (A.7.9.3A). */
+function buildCatalogBranchGeoJoinFilterSql(params: CatalogBusinessJoinFilterParams): Prisma.Sql[] {
+  const parts: Prisma.Sql[] = [
+    Prisma.sql`bl."cityId" = ${params.cityId}`,
     Prisma.sql`b.status = ${params.status}::"BusinessStatus"`,
   ];
 
@@ -324,14 +376,14 @@ export function buildCatalogNearestWhereSql(
 }
 
 /**
- * Stage 6.12A.7.9.2 — nearest/radius on BusinessLocation.location;
- * business eligibility still uses legacy b.cityId (not bl.cityId cutover).
+ * Stage 6.12A.7.9.2 + A.7.9.3A — nearest/radius on BusinessLocation.location;
+ * branch city must match requested city (not Business.cityId alone).
  */
 export function buildCatalogNearestBranchWhereSql(
   params: CatalogPostgisGeoFilterParams,
   queryPoint: Prisma.Sql,
 ): Prisma.Sql {
-  const parts = buildCatalogBusinessJoinFilterSql(params);
+  const parts = buildCatalogBranchGeoJoinFilterSql(params);
   parts.push(Prisma.sql`bl.location IS NOT NULL`);
   parts.push(Prisma.sql`ST_DWithin(bl.location, ${queryPoint}, ${params.radiusMeters})`);
 

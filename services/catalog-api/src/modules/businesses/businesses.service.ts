@@ -66,6 +66,8 @@ import { SubcategoriesService } from '../categories/subcategories.service';
 import { randomBytes } from 'crypto';
 import { attachEffectivePhysicalToDetail } from './business-effective-physical.util';
 import { attachContextLocationIdForBranch } from './business-discovery-context.util';
+import { businessCatalogDiscoveryCityScope } from './business-discovery-city-membership.util';
+import { resolveCityContextLocationIds } from './business-discovery-city-context.util';
 import type { CatalogPostgisNearestRow } from './business-catalog-postgis-geo.query';
 
 const businessListSelect = {
@@ -190,7 +192,7 @@ export class BusinessesService {
     const skip = (page - 1) * limit;
 
     const where: Prisma.BusinessWhereInput = {
-      cityId,
+      ...businessCatalogDiscoveryCityScope(cityId),
       status: query.status ?? BusinessStatus.ACTIVE,
     };
 
@@ -234,10 +236,58 @@ export class BusinessesService {
       cityId,
     );
 
+    const enrichedItems = (await this.attachCityDiscoveryContextForPage(
+      items as ReadonlyArray<{ id: string }>,
+      cityId,
+      query,
+    )) as typeof items;
+
     return {
-      items,
+      items: enrichedItems,
       meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
     };
+  }
+
+  /**
+   * Non-geo / non-map rows: deterministic branch in requested city.
+   * Skips rows that already have geo/map context (A.7.9.2 nearest, forMap locationId).
+   */
+  private async attachCityDiscoveryContextForPage<T extends { id: string }>(
+    items: readonly T[],
+    cityId: string,
+    query: ListBusinessesQueryDto,
+  ): Promise<T[]> {
+    if (items.length === 0 || query.forMap === true) {
+      return [...items];
+    }
+
+    if (typeof this.prisma.businessLocation?.findMany !== 'function') {
+      return [...items];
+    }
+
+    const missingContext = items.filter(
+      (item) => !('contextLocationId' in item && item.contextLocationId != null),
+    );
+    if (missingContext.length === 0) {
+      return [...items];
+    }
+
+    const contextByBusinessId = await resolveCityContextLocationIds(
+      this.prisma,
+      cityId,
+      missingContext.map((item) => item.id),
+    );
+
+    return items.map((item) => {
+      if ('contextLocationId' in item && item.contextLocationId != null) {
+        return item;
+      }
+      const locationId = contextByBusinessId.get(item.id);
+      if (!locationId) {
+        return item;
+      }
+      return attachContextLocationIdForBranch(item, locationId);
+    });
   }
 
   private async findPagedItems(
@@ -1063,8 +1113,9 @@ export class BusinessesService {
 
   async recommended(user: AuthUser, citySlug?: string) {
     const cityId = await this.cityScope.resolveCityId({ citySlug });
+    const cityScope = businessCatalogDiscoveryCityScope(cityId);
     const favoriteCategories = await this.prisma.favorite.findMany({
-      where: { userId: user.id, business: { cityId } },
+      where: { userId: user.id, business: cityScope },
       select: { business: { select: { categoryId: true } } },
       take: 20,
     });
@@ -1073,20 +1124,22 @@ export class BusinessesService {
     ];
 
     const where: Prisma.BusinessWhereInput = {
-      cityId,
+      ...cityScope,
       status: BusinessStatus.ACTIVE,
     };
     if (categoryIds.length) {
       where.categoryId = { in: categoryIds };
     }
 
-    return this.prisma.business
-      .findMany({
-        where,
-        select: businessListSelect,
-        take: 50,
-      })
-      .then((items) => [...items].sort(compareBusinessCatalogRank).slice(0, 10));
+    const items = await this.prisma.business.findMany({
+      where,
+      select: businessListSelect,
+      take: 50,
+    });
+    const ranked = [...items].sort(compareBusinessCatalogRank).slice(0, 10);
+    return this.attachCityDiscoveryContextForPage(ranked, cityId, {
+      limit: 10,
+    } as ListBusinessesQueryDto);
   }
 
   async update(id: string, user: AuthUser, dto: UpdateBusinessDto) {

@@ -47,7 +47,8 @@ describe('business-catalog-postgis-geo.query', () => {
     );
     expect(where.sql).toContain('bl.location IS NOT NULL');
     expect(where.sql).toContain('ST_DWithin(bl.location');
-    expect(where.sql).toContain('b."cityId"');
+    expect(where.sql).toContain('bl."cityId"');
+    expect(where.sql).not.toContain('b."cityId"');
     expect(where.sql).not.toContain('b.location IS NOT NULL');
   });
 });

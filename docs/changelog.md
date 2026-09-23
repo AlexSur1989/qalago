@@ -6,6 +6,21 @@
 
 ---
 
+## 2026-09-23 — Stage 6.12A.7.9.3A BusinessLocation city membership + city context
+
+- **Status:** **6.12A.7.9.3A PASS — BUSINESSLOCATION CITY MEMBERSHIP + CITY CONTEXT IMPLEMENTED**.
+- **Checkpoint (implementation):** `49bc9d8d2679860d918ba136df9c03c3b08e4421`.
+- **Summary:**
+  - Normal discovery city eligibility: **`BusinessLocation.cityId = C`** (`locations.some` / branch geo SQL); **no** `Business.cityId` OR fallback.
+  - Non-geo lists attach **`contextLocationId`** (deterministic branch in city); batch **`businessLocation.findMany`** — no N+1.
+  - Nearby/radius: **`bl.cityId`** on PostGIS nearest (A.7.9.2 invariants preserved).
+  - **`recommended/me`**, search service scope, rating/popular/recommended paths migrated atomically.
+  - **No** branch-address search, SIBA search honesty, promotions, map, Flutter (→ **A.7.9.3B+**).
+- **Deferred:** **A.7.9.3B** search branch address + ServiceItem branch honesty; **A.7.9.4** promotions; **A.7.9.5** Flutter; prod/staging parity gate before production cutover.
+- **Next:** **6.12A.7.9.3B** — search depth.
+
+---
+
 ## 2026-09-23 — Stage 6.12A.7.9.2 nearby nearest-branch discovery
 
 - **Status:** **6.12A.7.9.2 PASS — NEARBY NEAREST-BRANCH DISCOVERY IMPLEMENTED**.

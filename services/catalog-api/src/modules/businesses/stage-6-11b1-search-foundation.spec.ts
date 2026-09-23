@@ -167,7 +167,7 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
     it('N: city isolation stays AND-scoped', async () => {
       await service.findAll({ citySlug: 'uralsk', search: 'детская одежда' });
       const where = lastWhere(prisma);
-      expect(where.cityId).toBe('city-uralsk');
+      expect(where.locations).toEqual({ some: { cityId: 'city-uralsk' } });
       expect(where.OR!.length).toBeGreaterThanOrEqual(5);
     });
 
@@ -312,7 +312,7 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
       } as unknown as PrismaService;
       const service = buildService(prisma);
       await service.findAll({ citySlug: 'uralsk', search: 'aktobe-only-item' });
-      expect(lastWhere(prisma).cityId).toBe('city-uralsk');
+      expect(lastWhere(prisma).locations).toEqual({ some: { cityId: 'city-uralsk' } });
     });
 
     it('TEST 2: category filter AND text search', async () => {

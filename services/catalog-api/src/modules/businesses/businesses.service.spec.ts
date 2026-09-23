@@ -18,7 +18,7 @@ describe('BusinessesService.findAll', () => {
       findMany: jest.fn(),
       count: jest.fn(),
     },
-    $queryRaw: jest.fn(),
+    $queryRaw: jest.fn().mockResolvedValue([]),
   } as unknown as PrismaService;
 
   const serviceMenuService = {} as BusinessPublicContentService;
@@ -283,6 +283,7 @@ describe('BusinessesService.recommended', () => {
   const prisma = {
     favorite: { findMany: jest.fn() },
     business: { findMany: jest.fn(), count: jest.fn().mockResolvedValue(0) },
+    $queryRaw: jest.fn().mockResolvedValue([]),
   } as unknown as PrismaService;
 
   const subDeps2 = createMockSubcategoryDeps();
@@ -334,6 +335,7 @@ describe('BusinessesService.recommended', () => {
     const findMany = prisma.business.findMany as jest.Mock;
     const where = findMany.mock.calls[0][0].where;
     expect(where.isFeatured).toBeUndefined();
+    expect(where.locations).toEqual({ some: { cityId: 'city-uralsk' } });
   });
 
   it('cold start order does not depend on planTier or isFeatured', async () => {

@@ -1,18 +1,13 @@
-import type { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 /**
- * Stage 6.12A.7.9.1 — city membership policy foundation (documentation + reuse only).
+ * Stage 6.12A.7.9.3A — BusinessLocation.cityId is authoritative for public discovery city C.
+ * Business.cityId remains legacy/parent metadata (onboarding, admin) — not physical presence.
  *
- * Production list/search/category/nearest/promotions filters are unchanged in A.7.9.1.
- *
- * Long-term: BusinessLocation.cityId is authoritative for physical presence in a city.
- * Business.cityId remains a legacy/parent compatibility field during migration.
- *
- * A.7.9.3 must decide safe cutover/fallback — do not permanently encode
- * `Business.cityId = C OR branch.cityId = C` as the final architecture here.
+ * Do not encode `Business.cityId = C OR branch.cityId = C` as the production predicate.
  */
 
-/** Current production catalog city scope (legacy parent city on Business). */
+/** @deprecated Pre-A.7.9.3A parent-city filter; tests/docs only. */
 export function legacyBusinessCatalogCityScope(cityId: string): Prisma.BusinessWhereInput {
   return { cityId };
 }
@@ -26,4 +21,24 @@ export function businessPhysicalPresenceInCityScope(
       some: { cityId },
     },
   };
+}
+
+/** Canonical public catalog city membership (A.7.9.3A+). */
+export function businessCatalogDiscoveryCityScope(
+  cityId: string,
+): Prisma.BusinessWhereInput {
+  return businessPhysicalPresenceInCityScope(cityId);
+}
+
+/** EXISTS branch-in-city for raw SQL on Business alias `b`. */
+export function catalogBusinessPhysicalPresenceInCityExistsSql(
+  cityId: string,
+  businessRef: Prisma.Sql = Prisma.sql`b.id`,
+): Prisma.Sql {
+  return Prisma.sql`EXISTS (
+    SELECT 1
+    FROM "BusinessLocation" bl_city
+    WHERE bl_city."businessId" = ${businessRef}
+      AND bl_city."cityId" = ${cityId}
+  )`;
 }

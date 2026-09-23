@@ -92,7 +92,7 @@ export async function findVisibleServiceItemSearchMatches(
 ): Promise<VisibleServiceItemSearchMatches> {
   const contains = insensitiveContains(search);
   const businessScope: Prisma.BusinessWhereInput = {
-    cityId: scope.cityId,
+    locations: { some: { cityId: scope.cityId } },
     status: scope.status,
     ...(scope.categoryId ? { categoryId: scope.categoryId } : {}),
     ...(scope.subcategoryId
