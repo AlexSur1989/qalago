@@ -9,7 +9,7 @@
 ## 2026-09-23 — Stage 6.12A.7.9.3B branch-aware search
 
 - **Status:** **6.12A.7.9.3B PASS — BRANCH-AWARE SEARCH IMPLEMENTED**.
-- **Checkpoint (implementation):** _(commit SHA at finish)_.
+- **Checkpoint (implementation):** `5841f557337d22c438a36feac09bb792d07314e5`.
 - **Summary:**
   - **`BusinessLocation.address`** ILIKE in requested city; business-grain **`EXISTS`** / Prisma `locations.some`.
   - **ServiceItem** search: **ALL** (0 SIBA) vs **SELECTED** (≥1 SIBA) city honesty; plan/visibility rules unchanged.
