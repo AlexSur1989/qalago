@@ -6,6 +6,21 @@
 
 ---
 
+## 2026-09-23 — Stage 6.12A.7.9.6 Business Detail branch switching (hotfix)
+
+- **Status:** **6.12A.7.9.6 BRANCH SWITCH HOTFIX IMPLEMENTED — WAITING FOR PHYSICAL QA** (stage **not** PASS).
+- **Checkpoint (implementation):** _(record after commit)_.
+- **Summary:**
+  - **Physical QA finding:** Bar Code 51 two-branch fixture worked via map/L2 detail, but **no in-detail L1↔L2 switch**; read-only audit: A.6 **«Филиалы»** section was **display-only** (no tap), branch list could stay stale/hidden.
+  - **Flutter:** interactive branch cards in **`BusinessBranchesSection`**; **`switchBusinessDetailBranch`** uses **`context.replace`** on same `/business/:id` route (preserves **`source`** / **`searchQuery`**); detail route **`ValueKey(businessId|locationId)`** for clean recompute; one-time per-session refresh of **`businessPublicBranchesProvider`** on first detail open; minimal loading/retry for branch list failures (detail still usable).
+  - **Unchanged:** backend contracts, map, reviews/favorites **Business.id** grain, A.7.9.6 dev DB fixture (not cleaned).
+- **Tests:** Flutter **907** PASS (incl. **`business_detail_branch_switch_test.dart`**); **`flutter analyze`** — see implementation report.
+- **APK:** debug build with `QALAGO_DEV_HOST=172.158.10.133`, `QALAGO_DEV_LOGIN=true`, `QALAGO_NATIVE_MAP_BUSINESS_LAYER=true`.
+- **Deferred:** Samsung physical re-QA (L1↔L2 from detail, stale-state, branch list visibility); fixture cleanup after acceptance.
+- **Next:** Physical closure of **6.12A.7.9.6**.
+
+---
+
 ## 2026-09-23 — Stage 6.12A.7.9.5 Flutter discovery location context
 
 - **Status:** **6.12A.7.9.5 PASS — FLUTTER DISCOVERY LOCATION CONTEXT IMPLEMENTED** (automated only; physical QA → **A.7.9.6**).

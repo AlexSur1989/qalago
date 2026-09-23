@@ -671,6 +671,9 @@ class AppLocalizationsKk extends AppLocalizations {
   String get businessBranchesTitle => 'Филиалдар';
 
   @override
+  String get businessBranchesLoadFailed => 'Филиалдарды жүктеу сәтсіз аяқталды';
+
+  @override
   String get businessPrimaryBranchBadge => 'Негізгі филиал';
 
   @override

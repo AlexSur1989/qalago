@@ -106,6 +106,7 @@ Future<void> _pumpBusinessDetail(
           (ref) => _DetailTestCatalogRepository(),
         ),
         businessDetailsProvider.overrideWith((ref, request) async => data),
+        businessPublicBranchesProvider.overrideWith((ref, id) async => const []),
         businessFavoriteProvider.overrideWith((ref, id) async => false),
         myBusinessesProvider.overrideWith((ref) async => const []),
         userLocationProvider.overrideWith((ref) => Stream.value(null)),

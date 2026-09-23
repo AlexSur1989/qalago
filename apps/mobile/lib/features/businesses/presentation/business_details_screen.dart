@@ -17,6 +17,7 @@ import '../../../core/location/passive_user_position.dart';
 import '../../../core/location/user_location_provider.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/navigation/navigation_utils.dart';
+import '../../../shared/navigation/open_business.dart';
 import '../../../shared/utils/audience_distance_bucket.dart';
 import '../../../shared/utils/json_parse.dart';
 import '../../../shared/utils/business_detail_utils.dart';
@@ -39,6 +40,7 @@ import '../../reviews/data/review_error_utils.dart';
 import '../../reviews/presentation/consumer_review_card.dart';
 import '../../reviews/presentation/review_actions.dart';
 import '../../reviews/utils/review_date_format.dart';
+import '../../../shared/models/business_branch_location.dart';
 import '../../../shared/models/models.dart';
 import '../../business_onboarding/presentation/business_claim_cta.dart';
 import '../../recommendations/data/ai_repository.dart';
@@ -64,6 +66,8 @@ class BusinessDetailsScreen extends ConsumerStatefulWidget {
 }
 
 class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
+  static final Set<String> _sessionBranchesBootstrap = {};
+
   int _rating = 5;
   bool _viewTracked = false;
 
@@ -75,6 +79,83 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (_sessionBranchesBootstrap.contains(widget.id)) return;
+      _sessionBranchesBootstrap.add(widget.id);
+      ref.invalidate(businessPublicBranchesProvider(widget.id));
+    });
+  }
+
+  void _switchBranch(String locationId) {
+    if (locationId == widget.selectedLocationId) return;
+    switchBusinessDetailBranch(
+      context,
+      widget.id,
+      widget.trafficSource ?? BusinessTrafficSource.direct,
+      searchQuery: widget.searchQuery,
+      selectedLocationId: locationId,
+    );
+  }
+
+  Widget _buildBranchesPanel({
+    required AsyncValue<List<BusinessBranchLocation>> branchesAsync,
+    required String localeCode,
+    required String? activeLocationId,
+    required AppLocalizations l10n,
+  }) {
+    return branchesAsync.when(
+      loading: () => Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: SizedBox(
+          height: 48,
+          child: Center(
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: QalaGoColors.primary.withValues(alpha: 0.85),
+              ),
+            ),
+          ),
+        ),
+      ),
+      error: (_, __) => Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Text(
+                l10n.businessBranchesLoadFailed,
+                style: const TextStyle(
+                  color: AppTheme.textMuted,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () =>
+                  ref.invalidate(businessPublicBranchesProvider(widget.id)),
+              child: Text(l10n.commonRetry),
+            ),
+          ],
+        ),
+      ),
+      data: (branches) {
+        if (branches.length <= 1) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 20),
+          child: BusinessBranchesSection(
+            branches: branches,
+            localeCode: localeCode,
+            highlightLocationId: activeLocationId,
+            onBranchSelected: _switchBranch,
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _trackViewOnce({
@@ -359,18 +440,11 @@ class _BusinessDetailsScreenState extends ConsumerState<BusinessDetailsScreen> {
                         openStatus: openStatus,
                       ),
                       const SizedBox(height: 20),
-                      branchesAsync.maybeWhen(
-                        data: (branches) => branches.length > 1
-                            ? Padding(
-                                padding: const EdgeInsets.only(bottom: 20),
-                                child: BusinessBranchesSection(
-                                  branches: branches,
-                                  localeCode: localeCode,
-                                  highlightLocationId: activeLocationId,
-                                ),
-                              )
-                            : const SizedBox.shrink(),
-                        orElse: () => const SizedBox.shrink(),
+                      _buildBranchesPanel(
+                        branchesAsync: branchesAsync,
+                        localeCode: localeCode,
+                        activeLocationId: activeLocationId,
+                        l10n: l10n,
                       ),
                       _PrimaryActionsRow(
                         phone: phone,

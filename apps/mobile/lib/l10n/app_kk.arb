@@ -225,6 +225,7 @@
   "businessReviewSent": "Пікір жіберілді",
   "businessAbout": "Мекеме туралы",
   "businessBranchesTitle": "Филиалдар",
+  "businessBranchesLoadFailed": "Филиалдарды жүктеу сәтсіз аяқталды",
   "businessPrimaryBranchBadge": "Негізгі филиал",
   "businessAllPromotions": "Барлық акциялар ({count})",
   "businessProductsServices": "Тауарлар мен қызметтер",

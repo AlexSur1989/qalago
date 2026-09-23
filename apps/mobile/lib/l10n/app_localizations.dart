@@ -1322,6 +1322,12 @@ abstract class AppLocalizations {
   /// **'Филиалы'**
   String get businessBranchesTitle;
 
+  /// No description provided for @businessBranchesLoadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить филиалы'**
+  String get businessBranchesLoadFailed;
+
   /// No description provided for @businessPrimaryBranchBadge.
   ///
   /// In ru, this message translates to:

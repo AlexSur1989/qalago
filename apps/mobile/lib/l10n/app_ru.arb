@@ -301,6 +301,7 @@
   "businessReviewSent": "Отзыв отправлен",
   "businessAbout": "О заведении",
   "businessBranchesTitle": "Филиалы",
+  "businessBranchesLoadFailed": "Не удалось загрузить филиалы",
   "businessPrimaryBranchBadge": "Основной филиал",
   "businessAllPromotions": "Все акции ({count})",
   "@businessAllPromotions": {

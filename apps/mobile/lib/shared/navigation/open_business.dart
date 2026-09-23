@@ -4,9 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../models/models.dart';
 import 'business_traffic_source.dart';
 
-/// Opens business detail with explicit traffic-source attribution (Stage 5H/5I).
-void openBusiness(
-  BuildContext context,
+/// Canonical business detail route (Stage 5H / A.7.6 / A.7.9.6).
+Uri businessDetailRouteUri(
   String businessId,
   BusinessTrafficSource source, {
   String? searchQuery,
@@ -23,11 +22,46 @@ void openBusiness(
       searchQuery.trim().isNotEmpty) {
     params['searchQuery'] = searchQuery.trim();
   }
-  final uri = Uri(
+  return Uri(
     path: '/business/$businessId',
     queryParameters: params,
   );
-  context.push(uri.toString());
+}
+
+/// Opens business detail with explicit traffic-source attribution (Stage 5H/5I).
+void openBusiness(
+  BuildContext context,
+  String businessId,
+  BusinessTrafficSource source, {
+  String? searchQuery,
+  String? selectedLocationId,
+}) {
+  context.push(
+    businessDetailRouteUri(
+      businessId,
+      source,
+      searchQuery: searchQuery,
+      selectedLocationId: selectedLocationId,
+    ).toString(),
+  );
+}
+
+/// In-detail branch switch: same business, new [selectedLocationId], no stack growth.
+void switchBusinessDetailBranch(
+  BuildContext context,
+  String businessId,
+  BusinessTrafficSource source, {
+  String? searchQuery,
+  required String selectedLocationId,
+}) {
+  context.replace(
+    businessDetailRouteUri(
+      businessId,
+      source,
+      searchQuery: searchQuery,
+      selectedLocationId: selectedLocationId,
+    ).toString(),
+  );
 }
 
 /// Discovery list/search/nearby: preserve backend [BusinessModel.contextLocationId].

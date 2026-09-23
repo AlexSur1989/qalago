@@ -670,6 +670,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get businessBranchesTitle => 'Филиалы';
 
   @override
+  String get businessBranchesLoadFailed => 'Не удалось загрузить филиалы';
+
+  @override
   String get businessPrimaryBranchBadge => 'Основной филиал';
 
   @override

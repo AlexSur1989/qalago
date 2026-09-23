@@ -279,18 +279,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/business/:id',
-            builder: (context, state) => BusinessDetailsScreen(
-              id: state.pathParameters['id']!,
-              trafficSource: parseBusinessTrafficSourceFromRoute(
-                state.uri.queryParameters['source'],
-              ),
-              searchQuery: parseBusinessSearchQueryFromRoute(
-                state.uri.queryParameters['searchQuery'],
-              ),
-              selectedLocationId: parseSelectedLocationIdFromRoute(
+            builder: (context, state) {
+              final businessId = state.pathParameters['id']!;
+              final locationId = parseSelectedLocationIdFromRoute(
                 state.uri.queryParameters['locationId'],
-              ),
-            ),
+              );
+              return BusinessDetailsScreen(
+                key: ValueKey('$businessId|${locationId ?? ''}'),
+                id: businessId,
+                trafficSource: parseBusinessTrafficSourceFromRoute(
+                  state.uri.queryParameters['source'],
+                ),
+                searchQuery: parseBusinessSearchQueryFromRoute(
+                  state.uri.queryParameters['searchQuery'],
+                ),
+                selectedLocationId: locationId,
+              );
+            },
           ),
           GoRoute(
             path: '/business/:id/catalog',
