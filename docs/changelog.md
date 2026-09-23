@@ -8,15 +8,16 @@
 
 ## 2026-09-23 — Map viewport refresh hotfix (projection decouple)
 
-- **Status:** **MAP VIEWPORT HOTFIX IMPLEMENTED (automated)** — decouple catalog viewport fetch from Flutter overlay projection on MapLibre camera idle; **physical Samsung QA pending**.
-- **Checkpoint (implementation):** `3107ae6251490991dfd6b7ea494a037e89f7ba41`.
+- **Status:** **MAP VIEWPORT REFRESH HOTFIX — PHYSICAL QA PASS — CLOSED**.
+- **Checkpoint (implementation):** `936028f6e21890bae29312b6388318e5f0eebca9`.
 - **Summary:**
   - **Root cause (physical MAPDBG):** `_onCameraIdle` awaited `_finalizeMarkerProjection()` (~10.7s on SM-J610FN) before `readVisibleBounds` / `MapBusinessesNotifier.onViewportIdle`.
   - **Fix:** propagate visible bounds + viewport fetch first; run overlay projection via `_runOverlayProjectionAfterCameraIdle()` without blocking data refresh.
-  - **MAPDBG** tracing retained for post-hotfix device comparison.
-  - Native business GeoJSON layer, hysteresis, padding, and notifier merge unchanged.
-- **Deferred:** **Physical Samsung re-QA** (pan → fetch must start before `projectionFinalize END`); remove MAPDBG after closure.
-- **Next:** Install diagnostic APK; capture MAPDBG; confirm A.7.8.5 map pan QA alongside branch catalog work.
+  - **Physical QA (Samsung SM-J610FN, Android 10 / API 29):** diagnostic APK; initial map load PASS; pan PASS — MAPDBG order `cameraIdle START` → `visibleBounds` → `onViewportIdle` → `fetch START` → `cameraIdle END` → `projectionFinalize START/END` (fetch no longer blocked by projection); empty viewport PASS (`visibleBusinessCount=0`, `geojsonSync featureCount=0`, old markers removed); return to populated viewport PASS (populated → empty → populated, no stale markers).
+  - **Unchanged:** backend; **BusinessLocation** map grain; hysteresis / bbox padding (0.12) / notifier cache merge; **A.7.8.5** QA fixture retained.
+  - **MAPDBG** retained temporarily for ongoing **A.7.8.5** QA (not removed in this closure).
+- **Deferred:** remove MAPDBG after broader map/A.7.8.5 QA closure.
+- **Next:** continue **A.7.8.5** physical catalog/promotions QA on device.
 
 ---
 
