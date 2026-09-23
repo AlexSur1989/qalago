@@ -84,15 +84,19 @@ void openBusinessFromDiscovery(
 void openBusinessFromPromotion(
   BuildContext context,
   PromotionModel promotion,
-  BusinessTrafficSource source,
-) {
+  BusinessTrafficSource source, {
+  String? selectedLocationId,
+}) {
   final business = promotion.business;
   if (business == null) return;
+  final location = selectedLocationId?.trim();
   openBusiness(
     context,
     business.id,
     source,
-    selectedLocationId: promotion.contextLocationId,
+    selectedLocationId: (location != null && location.isNotEmpty)
+        ? location
+        : promotion.contextLocationId,
   );
 }
 

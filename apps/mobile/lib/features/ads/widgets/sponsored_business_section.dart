@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
-import '../../../shared/navigation/open_business.dart';
+import '../utils/ad_navigation.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/locale/app_locale_provider.dart';
@@ -72,7 +72,7 @@ class SponsoredBusinessSection extends ConsumerWidget {
                 item.toContext(sessionId),
                 AdEventTypes.cardOpen,
               );
-              openBusiness(context, business.id, BusinessTrafficSource.ad);
+              openBusinessFromAdItem(context, item, BusinessTrafficSource.ad);
             },
           ),
           const SizedBox(height: 12),
@@ -119,11 +119,11 @@ class SponsoredPromotionStrip extends ConsumerWidget {
   const SponsoredPromotionStrip({
     super.key,
     required this.items,
-    required this.onTap,
+    required this.onItemTap,
   });
 
   final List<AdItemModel> items;
-  final ValueChanged<PromotionModel> onTap;
+  final ValueChanged<AdItemModel> onItemTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -188,7 +188,7 @@ class SponsoredPromotionStrip extends ConsumerWidget {
                       item.toContext(sessionId),
                       AdEventTypes.promotionOpen,
                     );
-                    onTap(promotion);
+                    onItemTap(item);
                   },
                 ),
               );

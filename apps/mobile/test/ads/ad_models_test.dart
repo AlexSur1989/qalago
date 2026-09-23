@@ -52,6 +52,21 @@ void main() {
       expect(item.contextLocationId, isNull);
     });
 
+    test('resolvedDestinationLocationId prefers destination over context', () {
+      final item = AdItemModel.fromJson({
+        'campaignId': 'camp-1',
+        'placementId': 'pl-1',
+        'placementCode': 'HOME_FEATURED',
+        'position': 1,
+        'sponsored': true,
+        'displayLabel': 'Реклама',
+        'destinationLocationId': 'loc-dest',
+        'contextLocationId': 'loc-ctx',
+        'business': {'id': 'biz-1', 'title': 'Cafe', 'slug': 'cafe'},
+      });
+      expect(item.resolvedDestinationLocationId, 'loc-dest');
+    });
+
     test('optional serve location fields parse when present', () {
       final item = AdItemModel.fromJson({
         'campaignId': 'camp-1',

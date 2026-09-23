@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/navigation/open_business.dart';
+import '../utils/ad_navigation.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/locale/l10n_extension.dart';
@@ -149,14 +150,11 @@ class VipBannerAd extends ConsumerWidget {
   }
 
   void _navigateTarget(BuildContext context, AdCreativeModel creative) {
+    final adLocation = item.resolvedDestinationLocationId;
     switch (creative.targetType) {
       case 'PROMOTION':
         if (creative.targetId != null) {
-          openBusiness(
-            context,
-            item.business!['id'] as String,
-            BusinessTrafficSource.ad,
-          );
+          openPromotionFromAdItem(context, item);
         }
         break;
       case 'EXTERNAL_URL':
@@ -167,7 +165,12 @@ class VipBannerAd extends ConsumerWidget {
         final businessId =
             creative.targetId ?? item.business?['id'] as String?;
         if (businessId != null) {
-          openBusiness(context, businessId, BusinessTrafficSource.ad);
+          openBusiness(
+            context,
+            businessId,
+            BusinessTrafficSource.ad,
+            selectedLocationId: adLocation,
+          );
         }
     }
   }

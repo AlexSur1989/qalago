@@ -15,6 +15,7 @@ import '../../../../shared/models/models.dart';
 import '../../../../shared/widgets/error_view.dart';
 import '../../../../shared/widgets/loading_view.dart';
 import '../../../../shared/widgets/qalago_components.dart';
+import '../../../ads/data/ad_models.dart';
 import '../../../ads/providers/ad_serve_provider.dart';
 import '../../../ads/widgets/home_ad_slots.dart';
 import '../../../auth/providers/auth_provider.dart';
@@ -27,7 +28,7 @@ class HomePromotionsSection extends ConsumerWidget {
   });
 
   final ValueChanged<PromotionModel> onOrganicPromotionTap;
-  final ValueChanged<PromotionModel> onPaidPromotionTap;
+  final ValueChanged<AdItemModel> onPaidPromotionTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -93,7 +94,7 @@ class HomePromotionsSection extends ConsumerWidget {
             );
           },
         ),
-        HomePromotionsAdSlot(onPromotionTap: onPaidPromotionTap),
+        HomePromotionsAdSlot(onAdItemTap: onPaidPromotionTap),
       ],
     );
   }

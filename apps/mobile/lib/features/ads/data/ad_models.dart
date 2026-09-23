@@ -117,6 +117,15 @@ class AdItemModel {
     }
   }
 
+  /// Backend-resolved branch for ad navigation (destination → context only).
+  String? get resolvedDestinationLocationId {
+    final dest = destinationLocationId?.trim();
+    if (dest != null && dest.isNotEmpty) return dest;
+    final ctx = contextLocationId?.trim();
+    if (ctx != null && ctx.isNotEmpty) return ctx;
+    return null;
+  }
+
   PromotionModel? toPromotionModel() {
     if (promotion == null) return null;
     final promo = Map<String, dynamic>.from(promotion!);

@@ -1389,7 +1389,7 @@ Domain errors include stable `code` in body:
 
 | Field | Meaning |
 |-------|---------|
-| `destinationLocationId` | Resolved **BusinessLocation.id** to open after ad tap (A.8.4 client nav still pending). |
+| `destinationLocationId` | Resolved **BusinessLocation.id** to open after ad tap (**A.8.4:** Flutter passes as `locationId` on business detail; authoritative over client branch selection). |
 | `contextLocationId` | Branch used for **business-card physical context** on this serve item. **A.8.3:** always equal to `destinationLocationId` when set; both `null` only when no safe branch in the resolved serving city (legacy card uses Business physical columns). |
 
 Campaign ownership remains **`businessId`**. **`business.id` is never a branch id.**
@@ -1422,7 +1422,7 @@ Composite DB FKs on **AdCampaign** enforce `(businessId, locationId)` belongs to
 | Branch delete | Owner **`DELETE`** location: nullable campaign target/destination pointers cleared in one transaction when resulting campaign config remains valid; otherwise **`409`** `BUSINESS_LOCATION_DELETE_BLOCKED` (same family as catalog/promotion assignment conflicts). |
 | Legacy default | No branch fields → **`campaign.cityId` still from `Business.cityId`** at provision (unchanged). |
 
-Ad **tap navigation** in Flutter unchanged (**A.8.4** — client must consume `destinationLocationId`).
+**Stage 6.12A.8.4 — Flutter consumption (implemented):** ad taps use `destinationLocationId ?? contextLocationId` only (no client branch lookup); promotion ads may fall back to `promotion.contextLocationId` when serve fields are null; **`EXTERNAL_URL` VIP** unchanged. Analytics `businessLocationId` still **A.8.5**.
 
 **Organic analytics** (`POST /analytics/events`): optional `businessLocationId` for **branch interaction context** (not user GPS) is **schema-ready** but **public DTO acceptance deferred to A.8.5** to avoid spoofed attribution before server validation.
 

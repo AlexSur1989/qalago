@@ -129,8 +129,8 @@ class HomeScreen extends ConsumerWidget {
                               BusinessTrafficSource.promotions,
                             );
                           },
-                          onPaidPromotionTap: (promotion) {
-                            openAdPromotion(context, promotion);
+                          onPaidPromotionTap: (item) {
+                            openAdPromotion(context, item);
                           },
                         ),
                         const SizedBox(height: HomeLayout.sectionGap),

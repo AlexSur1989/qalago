@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import '../../../shared/navigation/business_traffic_source.dart';
-import '../../../shared/navigation/open_business.dart';
+import '../data/ad_models.dart';
+import '../utils/ad_navigation.dart';
 
 import '../../../core/locale/l10n_extension.dart';
-import '../../../shared/models/models.dart';
 import '../providers/ad_serve_provider.dart';
 import 'sponsored_business_section.dart';
 import 'vip_banner_ad.dart';
@@ -34,10 +32,10 @@ class HomeVipBannerSlot extends ConsumerWidget {
 class HomePromotionsAdSlot extends ConsumerWidget {
   const HomePromotionsAdSlot({
     super.key,
-    required this.onPromotionTap,
+    required this.onAdItemTap,
   });
 
-  final ValueChanged<PromotionModel> onPromotionTap;
+  final ValueChanged<AdItemModel> onAdItemTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -47,7 +45,7 @@ class HomePromotionsAdSlot extends ConsumerWidget {
         if (items.isEmpty) return const SizedBox.shrink();
         return SponsoredPromotionStrip(
           items: items,
-          onTap: onPromotionTap,
+          onItemTap: onAdItemTap,
         );
       },
       loading: () => const SizedBox.shrink(),
@@ -77,8 +75,6 @@ class HomeFeaturedAdSlot extends ConsumerWidget {
   }
 }
 
-void openAdPromotion(BuildContext context, PromotionModel promotion) {
-  final business = promotion.business;
-  if (business == null) return;
-  openBusinessFromPromotion(context, promotion, BusinessTrafficSource.ad);
+void openAdPromotion(BuildContext context, AdItemModel item) {
+  openPromotionFromAdItem(context, item);
 }

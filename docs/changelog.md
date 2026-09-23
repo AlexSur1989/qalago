@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-24 — Stage 6.12A.8.4 Flutter branch-aware ad navigation
+
+- **Status:** **6.12A.8.4 PASS — FLUTTER AD BRANCH NAVIGATION IMPLEMENTED**.
+- **Checkpoint (implementation):** _(set at commit)_.
+- **Summary:**
+  - **`AdItemModel.resolvedDestinationLocationId`** + **`ad_navigation.dart`** — canonical `destinationLocationId ?? contextLocationId`; no client branch/PBA/city logic.
+  - All Business-opening ad placements (HOME_FEATURED, CATEGORY_TOP/BOOST via shared section, HOME_PROMOTIONS, VIP BUSINESS/PROMOTION) pass **`selectedLocationId`** into existing **`openBusiness` / `openBusinessFromPromotion`** AD source; **EXTERNAL_URL** unchanged.
+  - **`openBusinessFromPromotion`** accepts optional explicit `selectedLocationId` (organic promotion cards unchanged).
+- **Findings:** **A8-001 CLOSED**. **A8-002 FULLY CLOSED** (server + client branch preservation). **A8-003** remains closed. No analytics branch attribution (**A.8.5**). No physical Samsung QA in this stage.
+- **Next:** **6.12A.8.5** — analytics branch attribution.
+
+---
+
 ## 2026-09-24 — Stage 6.12A.8.3 Branch-aware ad serving
 
 - **Status:** **6.12A.8.3 PASS — BRANCH-AWARE AD SERVING IMPLEMENTED**.
