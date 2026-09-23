@@ -6,6 +6,21 @@
 
 ---
 
+## 2026-09-23 — Stage 6.12A.7.8.5 Flutter branch catalog / promotions — physical closure
+
+- **Status:** **6.12A.7.8.5 PHYSICAL QA PASS — FLUTTER BRANCH CATALOG / PROMOTIONS CLOSED**.
+- **Checkpoint (implementation):** `644809c57566a71d5a8eeb72d53edc8fa37ca2d8` (unchanged; docs/changelog lineage also includes `6aeac309461e0bc6bde9db24a78e98198d39060e`).
+- **Summary:**
+  - **Automated (at implementation checkpoint):** effective **`effectiveCatalog`** / **`effectivePromotions`** on business detail; detail route preserves **`businessId` + `locationId`**; full catalog route preserves **`locationId`**; **`BusinessCatalogQuery`** identity includes **`locationId`**; mutable catalog pagination/search/section state resets on branch scope change; effective block with empty items is authoritative; legacy fallback only when effective block absent; no sibling merge; reviews/favorites/analytics remain **Business**-scoped; global promotions list remains business-grain — **891** Flutter tests PASS at **`644809c`** (do not conflate with later map hotfix regression count).
+  - **Physical QA (Samsung SM-J610FN, Android 10 / API 29):** dev **Bar Code 51** temporary L1/L2 **QA785** fixture — **L2** detail showed QA785 L2 ONLY PROMO, L1 L2 ITEM, L2 ONLY ITEM, SHARED ITEM; excluded L1 ONLY ITEM. **L1** detail showed QA785 L1 ONLY PROMO, L1 L2 ITEM, L1 ONLY ITEM, SHARED ITEM; excluded L2 ONLY ITEM. Repeated **L1 → L2** and **L2 → L1** PASS; no sibling branch leakage; no stale mutable catalog state. Owner **«Редактировать»** opened business-wide management catalog (expected; not a public effective-catalog leak). **Full public catalog route pagination not physically demonstrated** (automated-test covered only).
+  - **Separate map viewport hotfix:** discovered during device QA; implemented **`936028f6e21890bae29312b6388318e5f0eebca9`**, physically closed **`ff2e4d9e21c1aabb0f0450df1ce55fcd3f50705d`** — does **not** redefine **A.7.8.5** implementation checkpoint; later Flutter suite **893** PASS at map hotfix (regression only).
+  - **QA fixture cleanup (dev DB only):** PASS — removed 4 QA785 **ServiceItem**, 4 **ServiceItemBranchAvailability**, 2 QA promotions, 2 **PromotionBranchAvailability**, temporary L2; permanent **Bar Code 51** restored (1 primary L1, 2 catalog items, 0 assignments, Happy Hour only, 4 brand **BusinessImage**); API sanity PASS; no QA785 / temporary L2 leakage; **12** pre-existing **AnalyticsEvent** rows preserved (**11** `catalogItemId` + **1** `promotionId` nulled via **ON DELETE SET NULL**; business analytics total **264** unchanged). No production data implication.
+  - **MAPDBG** retained temporarily (not removed in this closure).
+- **Deferred:** remove MAPDBG after broader map QA; **A.7.9** discovery grain; branch-aware business promotion list endpoint.
+- **Next:** **6.12A.7.9** discovery/search/home/map feed grain (read-only audit first per track discipline).
+
+---
+
 ## 2026-09-23 — Map viewport refresh hotfix (projection decouple)
 
 - **Status:** **MAP VIEWPORT REFRESH HOTFIX — PHYSICAL QA PASS — CLOSED**.
@@ -14,24 +29,24 @@
   - **Root cause (physical MAPDBG):** `_onCameraIdle` awaited `_finalizeMarkerProjection()` (~10.7s on SM-J610FN) before `readVisibleBounds` / `MapBusinessesNotifier.onViewportIdle`.
   - **Fix:** propagate visible bounds + viewport fetch first; run overlay projection via `_runOverlayProjectionAfterCameraIdle()` without blocking data refresh.
   - **Physical QA (Samsung SM-J610FN, Android 10 / API 29):** diagnostic APK; initial map load PASS; pan PASS — MAPDBG order `cameraIdle START` → `visibleBounds` → `onViewportIdle` → `fetch START` → `cameraIdle END` → `projectionFinalize START/END` (fetch no longer blocked by projection); empty viewport PASS (`visibleBusinessCount=0`, `geojsonSync featureCount=0`, old markers removed); return to populated viewport PASS (populated → empty → populated, no stale markers).
-  - **Unchanged:** backend; **BusinessLocation** map grain; hysteresis / bbox padding (0.12) / notifier cache merge; **A.7.8.5** QA fixture retained.
-  - **MAPDBG** retained temporarily for ongoing **A.7.8.5** QA (not removed in this closure).
-- **Deferred:** remove MAPDBG after broader map/A.7.8.5 QA closure.
-- **Next:** continue **A.7.8.5** physical catalog/promotions QA on device.
+  - **Unchanged:** backend; **BusinessLocation** map grain; hysteresis / bbox padding (0.12) / notifier cache merge.
+  - **MAPDBG** retained temporarily (not removed in hotfix closure).
+- **Deferred:** remove MAPDBG after broader map QA.
+- **Next:** closed under separate hotfix; **6.12A.7.8.5** physical catalog/promotions closure recorded separately (does not merge checkpoints).
 
 ---
 
 ## 2026-09-22 — Stage 6.12A.7.8.5 Flutter branch catalog / promotions integration
 
-- **Status:** **6.12A.7.8.5 IMPLEMENTED (automated)** — consumer **Flutter** consumes **`effectiveCatalog`** / **`effectivePromotions`** on business detail + scoped full catalog; **physical QA pending**.
+- **Status:** **6.12A.7.8.5 IMPLEMENTED (automated)** — consumer **Flutter** consumes **`effectiveCatalog`** / **`effectivePromotions`** on business detail + scoped full catalog; **physical closure:** see **2026-09-23** entry above.
 - **Checkpoint (implementation):** `644809c57566a71d5a8eeb72d53edc8fa37ca2d8`.
 - **Summary:**
   - Detail preview uses **`effectiveCatalog`** / **`effectivePromotions`** when present (empty effective ≠ missing; no merge with legacy previews).
   - Full catalog route passes **`locationId`** from backend-resolved scope; **`BusinessCatalogQuery`** + local pagination keyed by **`businessId|locationId`** (A.7.7.5-style isolation).
   - **`GET /businesses/:id/catalog?locationId=`** on paginated loads; legacy catalog without branch context unchanged.
   - Map → detail **`locationId`** flow unchanged; global **`/promotions`** feed unchanged.
-- **Deferred:** **A.7.8.5 physical QA**; **A.7.9** discovery grain; branch-aware business promotion list endpoint.
-- **Next:** **6.12A.7.8.5 physical QA** on device.
+- **Deferred:** **A.7.9** discovery grain; branch-aware business promotion list endpoint (physical QA closed **2026-09-23**).
+- **Next:** superseded by **2026-09-23** physical closure entry.
 
 ---
 
