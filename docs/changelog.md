@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-24 — 6.12A.9.1 Single-primary service / integrity hardening
+
+- **Status:** **6.12A.9.1 PASS — SINGLE-PRIMARY SERVICE/INTEGRITY HARDENING FINALIZED**.
+- **Checkpoint (implementation):** documentation commit after tests (see git history for SHA).
+- **Scope:** **No migration**, **no** new DB trigger/constraint, **no** production service behavior changes.
+- **DB (unchanged):** partial unique index `BusinessLocation_businessId_isPrimary_key` guarantees **at most one** primary per `businessId`; **does not** guarantee at-least-one primary when locations exist.
+- **Added:** integration tests — primary delete rejection; concurrent `set-primary` final state (exactly one primary + Business sync); zero-primary bypass fixture detected by auditor; aggregate PASS on `qalago_dev`.
+- **Added:** read-only script `services/catalog-api/scripts/dev/audit-primary-integrity.mjs` (+ shared util) — exit **0** PASS / **1** FAIL; **no** `--fix`.
+- **Deferred:** DB at-least-one-primary trigger; `Business.primaryBusinessLocationId`; optional stress concurrency harness.
+- **Next:** **6.12A.9.3** — legacy physical-field consumer migration audit (**do not start in this closure**).
+
+---
+
 ## 2026-09-24 — 6.12A.9.2B Local coordinate hygiene repair (qalago_dev)
 
 - **Status:** **6.12A.9.2B PASS — LOCAL COORDINATE HYGIENE NORMALIZED** (database repair on **local `qalago_dev` only**; **not** production).

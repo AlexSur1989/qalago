@@ -12,7 +12,7 @@ Relationship: **Business 1 → N BusinessLocation**.
 ## Stage 6.12A.1 (database foundation)
 
 - **`BusinessLocation` table** added with physical fields mirroring `Business` (address, lat/lng, `location` geography, `locationSource`, `workHours`, contacts).
-- **`isPrimary`** with partial unique index: at most one primary row per `businessId` (no rows until A.2 backfill).
+- **`isPrimary`** with partial unique index: **at most one** primary row per `businessId` (DB-enforced). Supported production onboarding/branch APIs maintain **exactly one** primary for branch-bearing businesses; direct SQL/Prisma bypass can yield zero-primary multi-location state — detect via read-only `scripts/dev/audit-primary-integrity.mjs` (A.9.1).
 - **PostGIS:** isolated trigger `business_location_derive_location_from_coordinates` + GiST index on `BusinessLocation.location`.
 - **Legacy `Business` physical columns unchanged** and remain authoritative for all APIs and map queries until later substages.
 - **No data backfill** in A.1; **no public API** for locations yet.
