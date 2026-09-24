@@ -3,9 +3,16 @@
 import { useLocale, useUi } from '@/components/locale-provider';
 import { subcategoryDisplayName } from '@/lib/localized-content';
 import Link from 'next/link';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { BusinessRow, myBusinessRows, ownerApi, SubcategoryRow } from '@/lib/api';
+import {
+  BusinessRow,
+  findMyBusinessItem,
+  MyBusinessItem,
+  myBusinessRows,
+  ownerApi,
+  SubcategoryRow,
+} from '@/lib/api';
 import { useAuth } from '@/lib/use-auth';
 import { BusinessShell } from '@/components/business-shell';
 import { parseApiError } from '@/lib/monetization-utils';
@@ -13,7 +20,11 @@ import {
   BusinessLocationField,
   type BusinessLocationState,
 } from '@/components/business-location/business-location-field';
-import { navLabelForId } from '@/lib/presentation';
+import { navLabelForId, ownerProfilePrimaryBranchCopy } from '@/lib/presentation';
+import {
+  buildProfileUpdatePayload,
+  resolveProfileEditPermissions,
+} from '@/lib/owner-profile-edit';
 
 function parseHours(raw: BusinessRow['workHours']) {
   const weekdays = raw?.mon ?? raw?.tue ?? '09:00-22:00';
@@ -27,11 +38,12 @@ function parseHours(raw: BusinessRow['workHours']) {
 export default function BusinessEditPage() {
   const locale = useLocale();
   const ui = useUi();
+  const primaryCopy = ownerProfilePrimaryBranchCopy(locale);
 
   const params = useParams<{ id: string }>();
   const id = params.id;
   const { token, user, ready, logout } = useAuth();
-  const [businesses, setBusinesses] = useState<BusinessRow[]>([]);
+  const [myItems, setMyItems] = useState<MyBusinessItem[]>([]);
   const [location, setLocation] = useState<BusinessLocationState>({ address: '' });
   const [form, setForm] = useState({
     title: '',
@@ -45,21 +57,28 @@ export default function BusinessEditPage() {
     saturday: '09:00-22:00',
     sunday: '09:00-22:00',
   });
-  const [saved, setSaved] = useState(false);
+  const [profileSaved, setProfileSaved] = useState(false);
+  const [hoursSaved, setHoursSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [subcategories, setSubcategories] = useState<SubcategoryRow[]>([]);
   const [selectedSubcategoryIds, setSelectedSubcategoryIds] = useState<string[]>([]);
   const [taxonomySaved, setTaxonomySaved] = useState(false);
 
+  const businesses = myBusinessRows(myItems);
   const business = businesses.find((b) => b.id === id) ?? null;
+  const access = findMyBusinessItem(myItems, id)?.access ?? null;
+  const permissions = useMemo(() => resolveProfileEditPermissions(access), [access]);
+
+  async function refreshMyBusinesses() {
+    if (!token) return;
+    const res = await ownerApi.listMyBusinesses(token);
+    setMyItems(res.items);
+  }
 
   useEffect(() => {
     if (!token) return;
-    ownerApi
-      .listMyBusinesses(token)
-      .then((res) => setBusinesses(myBusinessRows(res.items)))
-      .catch((err) => setError(parseApiError(locale, err)));
-  }, [token]);
+    refreshMyBusinesses().catch((err) => setError(parseApiError(locale, err)));
+  }, [token, locale]);
 
   useEffect(() => {
     if (!token || !id) return;
@@ -100,6 +119,7 @@ export default function BusinessEditPage() {
   }, [token, id, locale]);
 
   function toggleSubcategory(subId: string) {
+    if (!permissions.canEditProfile) return;
     setSelectedSubcategoryIds((prev) =>
       prev.includes(subId) ? prev.filter((x) => x !== subId) : [...prev, subId],
     );
@@ -107,7 +127,7 @@ export default function BusinessEditPage() {
   }
 
   async function saveSubcategories() {
-    if (!token) return;
+    if (!token || !permissions.canEditProfile) return;
     setError(null);
     setTaxonomySaved(false);
     try {
@@ -120,47 +140,54 @@ export default function BusinessEditPage() {
     }
   }
 
-  async function onSubmit(e: FormEvent) {
+  async function saveProfileSection(e: FormEvent) {
     e.preventDefault();
-    if (!token) return;
+    if (!token || !permissions.canEditProfile) return;
     setError(null);
-    setSaved(false);
+    setProfileSaved(false);
     try {
-      await ownerApi.updateBusiness(token, id, {
-        title: form.title,
-        shortDesc: form.shortDesc,
-        description: form.description,
-        address: location.address,
-        ...(location.latitude != null && location.longitude != null
-          ? {
-              latitude: location.latitude,
-              longitude: location.longitude,
-              locationSource: location.locationSource ?? 'GEOCODED',
-            }
-          : {}),
-        phone: form.phone,
-        whatsapp: form.whatsapp,
-        instagram: form.instagram,
-        website: form.website,
-        workHours: {
-          mon: form.weekdays,
-          tue: form.weekdays,
-          wed: form.weekdays,
-          thu: form.weekdays,
-          fri: form.weekdays,
-          sat: form.saturday,
-          sun: form.sunday,
-        },
+      const payload = buildProfileUpdatePayload({
+        permissions,
+        form,
+        location,
+        includeProfile: true,
+        includeHours: false,
       });
-      setSaved(true);
-      const res = await ownerApi.listMyBusinesses(token);
-      setBusinesses(myBusinessRows(res.items));
+      if (Object.keys(payload).length === 0) return;
+      await ownerApi.updateBusiness(token, id, payload);
+      setProfileSaved(true);
+      await refreshMyBusinesses();
+    } catch (err) {
+      setError(parseApiError(locale, err));
+    }
+  }
+
+  async function saveHoursSection(e: FormEvent) {
+    e.preventDefault();
+    if (!token || !permissions.canEditHours) return;
+    setError(null);
+    setHoursSaved(false);
+    try {
+      const payload = buildProfileUpdatePayload({
+        permissions,
+        form,
+        location,
+        includeProfile: false,
+        includeHours: true,
+      });
+      if (Object.keys(payload).length === 0) return;
+      await ownerApi.updateBusiness(token, id, payload);
+      setHoursSaved(true);
+      await refreshMyBusinesses();
     } catch (err) {
       setError(parseApiError(locale, err));
     }
   }
 
   if (!ready || !token) return <p className="page-content">{ui.text_89d69a}</p>;
+
+  const readOnlyProfile = !permissions.canEditProfile;
+  const readOnlyHours = !permissions.canEditHours;
 
   return (
     <BusinessShell
@@ -191,7 +218,7 @@ export default function BusinessEditPage() {
         </div>
       </section>
 
-      {subcategories.length > 0 && (
+      {subcategories.length > 0 && permissions.canEditProfile && (
         <section className="form-card form-grid" style={{ maxWidth: 720, marginBottom: 16 }}>
           <h3 className="form-section-title">{ui.text_125cda}</h3>
           <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: 14 }}>{ui.____2082c9}</p>
@@ -217,50 +244,112 @@ export default function BusinessEditPage() {
         </section>
       )}
 
-      <form onSubmit={onSubmit} className="form-card form-grid" style={{ maxWidth: 720 }}>
-        {field(ui.text_602680, form.title, (v) => setForm({ ...form, title: v }))}
-        {field(ui.__62b685, form.shortDesc, (v) => setForm({ ...form, shortDesc: v }))}
-        {area(ui.text_38ca0a, form.description, (v) => setForm({ ...form, description: v }))}
-        {token && (
-          <BusinessLocationField
-            locale={locale}
-            token={token}
-            citySlug={business?.city?.slug ?? 'uralsk'}
-            value={location}
-            onChange={setLocation}
-            addressLabel={ui.text_80148f}
-          />
-        )}
-        {field(ui.text_2928e1, form.phone, (v) => setForm({ ...form, phone: v }))}
-        {field('WhatsApp', form.whatsapp, (v) => setForm({ ...form, whatsapp: v }))}
-        {field('Instagram', form.instagram, (v) => setForm({ ...form, instagram: v }))}
-        {field(ui.text_61dee7, form.website, (v) => setForm({ ...form, website: v }))}
-        <h3 className="form-section-title">{ui.__5e77e4}</h3>
-        {field(ui.__255eae, form.weekdays, (v) => setForm({ ...form, weekdays: v }))}
-        {field(ui.text_cee58b, form.saturday, (v) => setForm({ ...form, saturday: v }))}
-        {field(ui.text_aa48fa, form.sunday, (v) => setForm({ ...form, sunday: v }))}
-        <button type="submit" className="btn btn-primary">{ui.text_74ea58}</button>
-        {saved && <div className="alert alert-success">{ui.text_54a59b}</div>}
-        {error && <div className="alert alert-error">{error}</div>}
-      </form>
+      {(permissions.canEditProfile || permissions.canEditHours) && (
+        <form
+          onSubmit={saveProfileSection}
+          className="form-card form-grid"
+          style={{ maxWidth: 720, marginBottom: 16 }}
+        >
+          {field(ui.text_602680, form.title, (v) => setForm({ ...form, title: v }), readOnlyProfile)}
+          {field(ui.__62b685, form.shortDesc, (v) => setForm({ ...form, shortDesc: v }), readOnlyProfile)}
+          {area(ui.text_38ca0a, form.description, (v) => setForm({ ...form, description: v }), readOnlyProfile)}
+
+          <div className="form-section-title stack" style={{ gap: 8 }}>
+            <h3 style={{ margin: 0 }}>{primaryCopy.sectionTitle}</h3>
+            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: 14 }}>
+              {primaryCopy.sectionIntro}
+            </p>
+            <Link href={`/business/${id}/locations`} className="btn btn-sm">
+              {primaryCopy.manageBranchesLink}
+            </Link>
+          </div>
+
+          {token && (
+            <BusinessLocationField
+              locale={locale}
+              token={token}
+              citySlug={business?.city?.slug ?? 'uralsk'}
+              value={location}
+              onChange={setLocation}
+              readOnly={readOnlyProfile}
+              addressLabel={ui.text_80148f}
+            />
+          )}
+          {field(ui.text_2928e1, form.phone, (v) => setForm({ ...form, phone: v }), readOnlyProfile)}
+          {field('WhatsApp', form.whatsapp, (v) => setForm({ ...form, whatsapp: v }), readOnlyProfile)}
+          {field('Instagram', form.instagram, (v) => setForm({ ...form, instagram: v }), readOnlyProfile)}
+          {field(ui.text_61dee7, form.website, (v) => setForm({ ...form, website: v }), readOnlyProfile)}
+
+          {permissions.canEditProfile && (
+            <button type="submit" className="btn btn-primary">{ui.text_74ea58}</button>
+          )}
+          {profileSaved && <div className="alert alert-success">{ui.text_54a59b}</div>}
+        </form>
+      )}
+
+      {(permissions.canEditProfile || permissions.canEditHours) && (
+        <form onSubmit={saveHoursSection} className="form-card form-grid" style={{ maxWidth: 720 }}>
+          <h3 className="form-section-title">{ui.__5e77e4}</h3>
+          {field(ui.__255eae, form.weekdays, (v) => setForm({ ...form, weekdays: v }), readOnlyHours)}
+          {field(ui.text_cee58b, form.saturday, (v) => setForm({ ...form, saturday: v }), readOnlyHours)}
+          {field(ui.text_aa48fa, form.sunday, (v) => setForm({ ...form, sunday: v }), readOnlyHours)}
+          {permissions.canEditHours && (
+            <button type="submit" className="btn btn-primary">{ui.text_74ea58}</button>
+          )}
+          {hoursSaved && <div className="alert alert-success">{ui.text_54a59b}</div>}
+        </form>
+      )}
+
+      {!permissions.canEditProfile && !permissions.canEditHours && (
+        <p className="muted" style={{ maxWidth: 720 }}>
+          {primaryCopy.sectionIntro}
+        </p>
+      )}
+
+      {error && (
+        <div className="alert alert-error" style={{ maxWidth: 720 }}>
+          {error}
+        </div>
+      )}
     </BusinessShell>
   );
 }
 
-function field(label: string, value: string, onChange: (v: string) => void) {
+function field(
+  label: string,
+  value: string,
+  onChange: (v: string) => void,
+  readOnly = false,
+) {
   return (
     <label>
       <span>{label}</span>
-      <input value={value} onChange={(e) => onChange(e.target.value)} />
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        readOnly={readOnly}
+        disabled={readOnly}
+      />
     </label>
   );
 }
 
-function area(label: string, value: string, onChange: (v: string) => void) {
+function area(
+  label: string,
+  value: string,
+  onChange: (v: string) => void,
+  readOnly = false,
+) {
   return (
     <label>
       <span>{label}</span>
-      <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={4} />
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={4}
+        readOnly={readOnly}
+        disabled={readOnly}
+      />
     </label>
   );
 }

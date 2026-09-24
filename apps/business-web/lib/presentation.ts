@@ -799,6 +799,21 @@ export function navLabelForId(locale: AppLocale, id: string): string {
   return pick(locale, map[id] ?? { ru: id, kk: id });
 }
 
+/** Owner profile — primary branch physical block (A.9.3.5). */
+export function ownerProfilePrimaryBranchCopy(locale: AppLocale) {
+  return {
+    sectionTitle: pick(locale, { ru: 'Основной филиал', kk: 'Негізгі филиал' }),
+    sectionIntro: pick(locale, {
+      ru: 'Адрес и координаты здесь относятся к основному филиалу и синхронизируются с ним. Дополнительные филиалы управляются отдельно.',
+      kk: 'Мұндағы мекенжай мен координаттар негізгі филиалға жатады және онымен синхрондалады. Қосымша филиалдар бөлек басқарылады.',
+    }),
+    manageBranchesLink: pick(locale, {
+      ru: 'Управление всеми филиалами',
+      kk: 'Барлық филиалдарды басқару',
+    }),
+  };
+}
+
 export function branchManagementCopy(locale: AppLocale) {
   return {
     pageTitle: pick(locale, { ru: 'Филиалы', kk: 'Филиалдар' }),

@@ -9,10 +9,10 @@
 | Field | Value |
 |-------|--------|
 | **Repo HEAD (current)** | `git rev-parse HEAD` on master after **A.9.3.4** physical QA docs closure |
-| **Last completed stage** | **6.12A.9.3.4 PASS** — Consumer Web physical-context (impl **`b13bfa4…`** + physical browser QA finalized) |
-| **Prior** | **A.9.3.3** `6277e64…`; backend **A.9.3.2b** `c53af3c2…` |
-| **Physical QA pending** | — (A.9.3.4 browser QA **PASS**) |
-| **Next agreed development action** | Roadmap **A.9.3.5+** / **F.4** — **do not auto-start**; agree explicit stage before implementation |
+| **Last completed implementation** | **6.12A.9.3.5** — Business Web owner physical-context (impl on master) |
+| **Prior** | **A.9.3.4 PASS** (Consumer Web finalized); **A.9.3.3** `6277e64…` |
+| **Physical QA pending** | **A.9.3.5** Business Web browser QA |
+| **Next agreed development action** | **A.9.3.5 PHYSICAL BROWSER QA** — then **F.4** / **A.9.4+** (not auto-started) |
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 
@@ -55,7 +55,8 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 ## Consumer Web stage
 
 - **6.11F.3 PASS** — public SEO infrastructure (sitemap, robots, temporary business detail **noindex**, etc.).
-- **6.12A.9.3.4 PASS (physical QA finalized)** — discovery **`contextLocationId` → detail `?locationId=`**; branch switch; primary default; back/reopen without stale primary; mobile smoke PASS; **QA-001 CLOSED**.
+- **6.12A.9.3.4 PASS (physical QA finalized)** — Consumer Web discovery/detail physical context; **QA-001 CLOSED**.
+- **6.12A.9.3.5 IMPLEMENTATION PASS** — Business Web permission-safe profile PATCH; primary-branch UX; closes **`A.9.3.4+`** owner slice; physical QA pending.
 - **F.4 deferred** — final public business/branch URL architecture until explicitly staged (not A.9.3.4).
 
 ## BusinessLocation track
@@ -109,7 +110,9 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 **6.12A.9.3.3 PASS (Flutter closure)** — **`openBusinessFromFavorite`**; **QA-002 CLOSED / OBSOLETE**.
 
-**6.12A.9.3.4 PASS (Consumer Web closure)** — **`contextLocationId` → detail `?locationId=`**; branch-aware fetch/cache/display; **physical browser QA PASS**; dev fixture cleaned; **QA-001 CLOSED**.
+**6.12A.9.3.4 PASS (Consumer Web closure)** — **`contextLocationId` → detail `?locationId=`**; physical browser QA PASS; **QA-001 CLOSED**.
+
+**6.12A.9.3.5 IMPLEMENTATION PASS (Business Web owner)** — permission-split profile/hours PATCH; primary-branch labeling + locations link; backend sync unchanged (**A.3/A.4/A.5**).
 
 ### Flutter detail navigation (canonical)
 
@@ -193,7 +196,7 @@ Future architecture should allow **backend/admin-central configuration** of cons
 ## A.9 deferred (naming from changelog/roadmap)
 
 - **P2:** `mergeSearchResultPages` dedupes by **`Business.id`** only (valid while discovery is Business-grain).
-- **A.9.3.4+** — Consumer Web / Business Web physical-context UX (exact substages per future stage commits).
+- **A.9.3.4+ owner slice** — **closed in A.9.3.5** (Business Web); Consumer Web closed in **A.9.3.4**.
 - **A.9.4+** — **`Business.cityId`** / legacy column retirement (not started).
 - Post **6.12A:** User contour audit, Business Web owner contour, Admin Web contour, Admin Catalog/CMS, centralized Home config, Catalog Import, QalaGo AI, remaining Consumer Web, production monetization, analytics UX, role-based E2E, security/legal/release — **not** current track unless explicitly staged.
 

@@ -14,7 +14,7 @@ Relationship: **Business 1 → N BusinessLocation**.
 - **`BusinessLocation` table** added with physical fields mirroring `Business` (address, lat/lng, `location` geography, `locationSource`, `workHours`, contacts).
 - **`isPrimary`** with partial unique index: **at most one** primary row per `businessId` (DB-enforced). Supported production onboarding/branch APIs maintain **exactly one** primary for branch-bearing businesses; direct SQL/Prisma bypass can yield zero-primary multi-location state — detect via read-only `scripts/dev/audit-primary-integrity.mjs` (A.9.1).
 - **PostGIS:** isolated trigger `business_location_derive_location_from_coordinates` + GiST index on `BusinessLocation.location`.
-- **Legacy `Business` physical columns unchanged** and remain authoritative for all APIs and map queries until later substages.
+- **Legacy `Business` physical columns unchanged** on schema; public read authority moved to **BusinessLocation** projection in **A.9.3.1+**; writes keep primary mirror in **A.3**.
 - **No data backfill** in A.1; **no public API** for locations yet.
 
 ## Stage 6.12A.2 (1:1 backfill)
@@ -81,6 +81,13 @@ Relationship: **Business 1 → N BusinessLocation**.
 - **GeoJSON:** `Feature.id` = physical key; `properties.locationId` = physical key; `properties.businessId` = Business.id; dedup by physical key.
 - **Selection / tap:** map selection is **location** identity; preview and directions use the **selected location row** (address, lat/lng); opening full detail uses **Business.id** plus optional **`locationId`** query for branch-aware detail physical fields.
 - **Unchanged:** reviews/favorites/analytics Business-scoped; MapLibre style/basemap; geocoding; cluster styling/thresholds; nearest/radius discovery grain.
+
+## Stage 6.12A.9.3.5 (Business Web owner physical-context closure)
+
+- **Profile (`/business/[id]`):** permission-safe **`PATCH /businesses/:id`** — managers submit only fields allowed by **`BUSINESS_PROFILE_EDIT`** / **`BUSINESS_HOURS_EDIT`** (separate profile vs hours save); OWNER unchanged.
+- **Primary branch UX:** physical block labeled **primary branch** (RU/KK via `presentation.ts`); link to **`/business/[id]/locations`** for all branches.
+- **Semantics unchanged:** profile remains **compatibility edit surface** for **primary** branch (backend **A.3** sync); secondary branches edited only on locations page (**A.4/A.5**).
+- **Deferred:** branch DELETE UI; zero-primary repair UX; **`Business.cityId`** retirement (**A.9.4+**).
 
 ## Stage 6.12A.9.3.4 (Consumer Web physical-context closure)
 
