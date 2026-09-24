@@ -9,7 +9,7 @@
 ## 2026-09-25 — 6.12A.9.3.5 Business Web physical browser QA closure
 
 - **Status:** **6.12A.9.3.5 PASS — BUSINESS WEB OWNER PHYSICAL CONTEXT FINALIZED**.
-- **Checkpoint (physical QA / docs):** see commit **`docs(qa): finalize A.9.3.5 physical browser QA`** (`git log -1 --oneline` after closure).
+- **Checkpoint (physical QA / docs):** `6ee6ec8ece6f676a25841916f3738204ef298792`.
 - **Implementation checkpoint (unchanged):** `9e00ef25afdd4974bcc084f0a4e5685040178dcd`.
 - **Scope:** docs closure only; dev **`qalago_dev`** fixture **`QA A935 OWNER PHYSICAL`** verified/cleaned (untracked helpers under **`infra/local-backups/`** — not committed).
 - **Physical QA (browser, user-confirmed):** OWNER primary-branch labeling + **«Управление всеми филиалами»**; L1/L2 list; secondary edit isolation; profile compatibility write → primary only; sibling unchanged; **set-primary** L2 → profile follows new primary; cross-session consistency; hours-only MANAGER (**`BUSINESS_HOURS_EDIT`**, no **`BUSINESS_PROFILE_EDIT`**) — profile fields read-only, hours PATCH/save without 403, F5 persistence, no branch create/edit/promote; OWNER re-login sees manager hours + primary context.

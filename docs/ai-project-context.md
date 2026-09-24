@@ -8,7 +8,7 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `git rev-parse HEAD` on master after **A.9.3.5** physical QA docs closure |
+| **Repo HEAD (current)** | `6ee6ec8ece6f676a25841916f3738204ef298792` — **A.9.3.5** physical QA docs closure |
 | **Last completed stage** | **6.12A.9.3.5 PASS** — Business Web owner physical-context finalized (impl + physical QA) |
 | **Implementation checkpoint** | **A.9.3.5** `9e00ef25afdd4974bcc084f0a4e5685040178dcd` |
 | **Prior** | **A.9.3.4 PASS** (Consumer Web); **A.9.3.3** `6277e64…` |
