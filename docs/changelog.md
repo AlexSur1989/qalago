@@ -9,7 +9,7 @@
 ## 2026-09-25 — 6.12A.9.3.5 Business Web owner physical-context closure
 
 - **Status:** **6.12A.9.3.5 IMPLEMENTATION PASS — PHYSICAL QA REQUIRED**.
-- **Checkpoint (implementation):** see commit **`feat(business-web): align owner physical context`** (`git log -1 --oneline`).
+- **Checkpoint (implementation):** `9e00ef25afdd4974bcc084f0a4e5685040178dcd`.
 - **Scope:** **`apps/business-web`** only — permission-safe profile PATCH payloads, primary-branch UX copy/navigation, vitest; docs.
 - **Summary:** Closes documented **`A.9.3.4+`** owner/web slice — hours-only managers no longer submit profile/physical fields; profile-only omit **`workHours`**; primary branch section + branches link; backend **A.3/A.4** sync unchanged.
 - **Deferred:** physical browser QA; branch DELETE UI; zero-primary repair; **A.9.4+** legacy column retirement; **F.4**.
