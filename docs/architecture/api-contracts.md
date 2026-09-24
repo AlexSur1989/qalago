@@ -333,7 +333,9 @@ When `latitude` and `longitude` are provided, each item may include `distanceMet
 
 **Map list item fields (forMap + bbox, 6.12A.7.1):** additive `locationId`; branch `cityId`, `address`, `latitude`, `longitude`, `phone`, `whatsapp`, `instagram`, `website`, `workHours` from **BusinessLocation**; brand fields (`title`, `slug`, `category`, cover, plan display fields, `status`, etc.) from **Business**. **A.7.9.1+:** additive **`contextLocationId`** on map rows — same branch as `locationId` (discovery navigation hint; map field name unchanged). No raw PostGIS geography or internal timestamps.
 
-**City membership (A.7.9.3A, IMPLEMENTED):** public **`GET /businesses`** discovery in city **C** (plain list, category, subcategory, search base scope, rating, popular, recommended, **`recommended/me`**, geo radius/nearest) includes a Business iff **`status`** satisfies the public filter **and** **`EXISTS BusinessLocation` with `cityId = C`**. **`Business.cityId` alone does not grant presence** (legacy parent/default field only). **One Business card** per brand; membership uses **`locations.some(cityId)`** / SQL **`EXISTS`** — not branch joins that multiply rows.
+**City membership (A.7.9.3A, IMPLEMENTED):** public **`GET /businesses`** discovery in city **C** (plain list, category, subcategory, search base scope, rating, popular, recommended, **`recommended/me`**, geo radius/nearest) includes a Business iff **`status`** satisfies the public filter **and** **`EXISTS BusinessLocation` with `cityId = C`**. **`Business.cityId` alone does not grant presence** (legacy parent/home/compatibility field only — see **A.9.4.0**). **One Business card** per brand; membership uses **`locations.some(cityId)`** / SQL **`EXISTS`** — not branch joins that multiply rows.
+
+**Public list `cityId` projection (A.9.4.0 policy — implementation proposed A.9.4.1):** when **`contextLocationId`** is present, top-level compatibility **`cityId`** should match that branch’s **`BusinessLocation.cityId`** (today implementation may still expose parent **`Business.cityId`** — treat as known drift until **A.9.4.1**). Detail uses **`effectivePhysical.cityId`** for active branch context.
 
 **Non-geo city context (A.7.9.3A):** list items include additive **`contextLocationId`** = deterministic branch in **C** (`primary` in **C** if any, else `isPrimary DESC`, `createdAt ASC`, `id ASC`). Coordinates **not** required for city membership. **Nearby (A.7.9.2)** keeps geo **`contextLocationId`** (nearest branch in **C** with geography); geo context is **not** overwritten by city context.
 
@@ -353,8 +355,8 @@ List items may include `planTier`, `planExpiresAt`, `featuredSlot`, `isFeatured`
 
 **Search semantics (Stage 6.11B.1 + A.7.9.3B, IMPLEMENTED):** `search` is **city-scoped** (requires resolved `citySlug` / `cityId` like other list queries) and combined with **`BusinessLocation` city membership (A.7.9.3A)**, `status` (default `ACTIVE`), optional `categoryId`, and optional `subcategoryId` using **AND**. Text matching uses a single **OR** group across:
 
-- Business `title`, `shortDesc`, `address` (legacy parent address — does **not** set search **`contextLocationId`**)
-- **`BusinessLocation.address`** in requested city **C** only (A.7.9.3B)
+- Business `title`, `shortDesc` (parent brand text — **not** physical authority)
+- **`BusinessLocation.address`** in requested city **C** only (A.7.9.3B) — branch address match; stale parent **`Business.address`** alone does **not** qualify discovery search or address relevance tier
 - Associated Category `title`, `nameRu`, `nameKk`
 - Associated Subcategory `nameRu`, `nameKk` (via business assignment)
 - **Public** ServiceItem `title`, `titleKk`, `description`, `descriptionKk` — only items that are **consumer-visible** on the business catalog (active item, active/ungrouped section, plan-tier publish cap as **6.11B.2**), then **branch availability (A.7.9.3B):** **0** `ServiceItemBranchAvailability` rows = **ALL** branches (item may match in **C** iff business has a branch in **C**); **≥1** rows = **SELECTED** only (item may match in **C** iff an assignment points to a **`BusinessLocation` in C**)
@@ -596,7 +598,7 @@ OWNER `permissions` in response are the full enum (implicit all). MANAGER receiv
 
 **Response DTO (`BusinessLocation`):** `id`, `businessId`, `cityId`, `address`, `latitude`, `longitude`, `locationSource`, `workHours`, `phone`, `whatsapp`, `instagram`, `website`, `isPrimary`, `createdAt`, `updatedAt` (no raw PostGIS geography).
 
-**Temporary product limits:** Public catalog/search/map still use **`Business.cityId` / `Business.location`** (primary only). Secondary branches in other cities are not discovery/map markers until a later substage.
+**Current-state (A.7.9.3A + A.9.3.x):** Public catalog/search/nearby city membership and geo use **`BusinessLocation`** (presence, **`bl.cityId = C`**, PostGIS on **`BusinessLocation.location`**) — **not** **`Business.cityId` / `Business.location`** as authority. Map viewport (**`forMap` + bbox**) returns **location-grain** rows for qualifying branches (including secondaries in **C**). List/detail top-level physical fields are **compatibility projections** from effective branch context (**A.9.3.1**). Legacy **`Business`** physical columns remain in DB as primary mirror / fallback only. Retirement policy: **`docs/architecture/business-location.md`** § **6.12A.9.4.0**.
 
 ### PATCH /businesses/:id
 
@@ -1424,7 +1426,7 @@ Composite DB FKs on **AdCampaign** enforce `(businessId, locationId)` belongs to
 | PROMOTED_PROMOTION + null destination | **ALL branches** (zero PBA rows): destination may stay null until A.8.3. **SELECTED PBA:** exactly **one** eligible branch in campaign city → auto-stored as destination at order/provision; **>1** eligible → **`PROMOTION_DESTINATION_BRANCH_REQUIRED`** until explicit destination. |
 | Checkout input | Optional `targetBusinessLocationId` / `destinationBusinessLocationId` on **`POST /monetization/orders`** line items (and package order body); copied to order item metadata and provisioned onto `AdCampaign`. |
 | Branch delete | Owner **`DELETE`** location: nullable campaign target/destination pointers cleared in one transaction when resulting campaign config remains valid; otherwise **`409`** `BUSINESS_LOCATION_DELETE_BLOCKED` (same family as catalog/promotion assignment conflicts). |
-| Legacy default | No branch fields → **`campaign.cityId` still from `Business.cityId`** at provision (unchanged). |
+| Legacy default | No branch fields → today **`campaign.cityId` from `Business.cityId`** at provision (**compatibility**). **A.9.4.0 policy:** long-term default → **primary `BusinessLocation.cityId`**; **`Business.cityId` must not remain permanent campaign-city source** (implementation **A.9.4.1** proposed). |
 
 **Stage 6.12A.8.4 — Flutter consumption (implemented):** ad taps use `destinationLocationId ?? contextLocationId` only (no client branch lookup); promotion ads may fall back to `promotion.contextLocationId` when serve fields are null; **`EXTERNAL_URL` VIP** unchanged.
 

@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-09-25 — 6.12A.9.4.0 Legacy physical retirement policy gate
+
+- **Status:** **6.12A.9.4.0 PASS — RETIREMENT POLICY GATE FINALIZED**.
+- **Checkpoint (docs):** see commit **`docs(architecture): define A.9.4 retirement policy gate`** (`git log -1 --oneline` after closure).
+- **Scope:** docs-only — **`docs/architecture/business-location.md`**, **`docs/architecture/api-contracts.md`**, **`docs/ai-project-context.md`**, **`docs/changelog.md`**; no product/schema/DB changes.
+- **Summary:** Formalizes **A.9.4** boundary (retire physical-authority **`Business`** columns in staged migration; **KEEP** phone/whatsapp/website/instagram/workHours as domain/default); transitional **home/parent `Business.cityId`**; admin visibility vs mutation scope; monetization **`AdCampaign.cityId`**; analytics event city; onboarding/dedupe/invariant/cross-city/API compatibility/**`cityId`** projection policies; **PROPOSED** substages **A.9.4.1–A.9.4.5**; **F.4** independent of column drop.
+- **Prior audit (read-only):** **6.12A.9.4 AUDIT PASS — PREREQUISITE HARDENING REQUIRED** (not an implementation checkpoint).
+- **Deferred:** all **A.9.4.1+** implementation; **F.4**.
+- **Next:** **6.12A.9.4.1 READ-ONLY implementation-scope audit** (recommended) — or explicit roadmap choice of **F.4** read-only audit first; not auto-started.
+
+---
+
 ## 2026-09-25 — 6.12A.9.3.5 Business Web physical browser QA closure
 
 - **Status:** **6.12A.9.3.5 PASS — BUSINESS WEB OWNER PHYSICAL CONTEXT FINALIZED**.

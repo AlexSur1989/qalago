@@ -39,7 +39,7 @@ Relationship: **Business 1 → N BusinessLocation**.
 ## Stage 6.12A.4 (multi-location management API)
 
 - **Endpoints:** `GET/POST/PATCH` under `/businesses/:businessId/locations`, plus `POST …/set-primary` (see [api-contracts.md](./api-contracts.md)).
-- **Business 1 → N locations:** secondary branches may live in **different cities**; `Business.cityId` remains the **primary** city for legacy/discovery compatibility.
+- **Business 1 → N locations:** secondary branches may live in **different cities**; **`Business.cityId`** is **home/parent/compatibility city** (mirrors primary when synced) — **not** public discovery city membership (**A.7.9.3A+** uses **`BusinessLocation.cityId`**).
 - **Create:** always `isPrimary=false`; does not copy primary contacts/hours unless provided in body.
 - **PATCH secondary:** branch-only — legacy `Business` and primary row unchanged.
 - **PATCH primary / set-primary / legacy PATCH Business:** bidirectional sync of synchronized physical fields (A.3 service layer); single transaction; no HTTP recursion.
@@ -89,7 +89,115 @@ Relationship: **Business 1 → N BusinessLocation**.
 - **Primary branch UX:** physical block labeled **primary branch** (RU/KK via `presentation.ts`); link to **`/business/[id]/locations`** for all branches.
 - **Semantics unchanged:** profile remains **compatibility edit surface** for **primary** branch (backend **A.3** sync); secondary branches edited only on locations page (**A.4/A.5**); **set-primary** and cross-session consistency verified in browser.
 - **Hours-only MANAGER:** profile/address/phone/title read-only; hours edit/save without forbidden profile payload (**audit P1 closed**).
-- **Deferred:** branch DELETE UI; zero-primary repair UX; **`Business.cityId`** retirement (**A.9.4+**).
+- **Deferred:** branch DELETE UI; zero-primary repair UX; legacy physical column retirement (**A.9.4.1+** implementation — policy frozen in **A.9.4.0**).
+
+## Stage 6.12A.9.4.0 (legacy physical retirement — policy & invariant gate)
+
+- **Status:** **6.12A.9.4.0 PASS — RETIREMENT POLICY GATE FINALIZED** (docs-only; follows read-only **A.9.4** audit **PREREQUISITE HARDENING REQUIRED**).
+- **Purpose:** freeze semantic decisions **before** any legacy **`Business`** physical-authority column retirement. **Not** a column-drop stage.
+
+### A.9.4 boundary (what retires vs what stays)
+
+**Target retirement family (staged DB migration — not immediate):** `Business.cityId`, `Business.address`, `Business.latitude`, `Business.longitude`, `Business.location` (geography), `Business.locationSource` as **physical-authority / compatibility storage**.
+
+**KEEP as legitimate Business domain / default fields (not scheduled for legacy deletion):** `phone`, `whatsapp`, `website`, `instagram`, `workHours` — **BusinessLocation** may override per branch; Business retains brand/default/fallback semantics (**A.3** / **`buildEffectivePhysicalDto`**).
+
+### Transitional `Business.cityId` semantics
+
+- **Role during transition:** **HOME / PARENT / COMPATIBILITY CITY** — normally mirrors **primary** `BusinessLocation.cityId` when a primary exists.
+- **NOT authoritative for:** public city presence, discovery, search/category membership, map presence, nearby, branch physical city (**`BusinessLocation.cityId`** is authoritative for presence).
+- **Multi-city brands:** `Business.cityId` = primary/home city; additional cities exist via other **`BusinessLocation`** rows — code must **not** infer “no presence in city C” from `Business.cityId ≠ C`.
+- **Long-term:** parent/home city may later be **derived** or column retired (**A.9.4.5** proposed) after blockers cleared.
+
+### Admin policies (future implementation)
+
+- **City scope (visibility):** `CITY_ADMIN` / city-scoped staff business lists must use **physical presence** — `EXISTS BusinessLocation WHERE businessId AND cityId IN staff scope` — not **`Business.cityId` alone**. A business with branches in multiple cities may appear in **multiple** city admin scopes.
+- **City scope (mutation):** visibility ≠ authority over out-of-scope branches; branch mutation remains permission-safe per existing Business Web / API rules.
+- **Address display:** prefer **BusinessLocation** — city-scoped context → effective branch in that city; explicit location → that row; business-global → **primary**; legacy **`Business.address`** only as temporary compatibility fallback until invariant migration completes.
+
+### Monetization / campaign city (future implementation)
+
+- **`AdCampaign.cityId`** remains **first-class** explicit campaign targeting context — **not** permanently inferred from **`Business.cityId`**.
+- **Provisioning rules (target):** branch-targeted campaign → **`BusinessLocation.cityId`**; explicit selected city → validated against eligible business presence; legacy flow with no explicit target → **primary** `BusinessLocation.cityId` as **compatibility default** during migration (replacing long-term reliance on **`Business.cityId`**). **A.8** branch/platform attribution unchanged.
+
+### Analytics city (future implementation)
+
+- **`AnalyticsEvent.cityId`** = **event context**, not Business parent identity.
+- **Preferred source priority:** (1) explicit request/discovery city, (2) **`businessLocationId`** branch city, (3) campaign city for campaign-context events, (4) primary **`BusinessLocation.cityId`** for legacy business-scoped events without better context; **`Business.cityId`** temporary compatibility fallback only. Historical rows **not** rewritten by A.9.4 unless a later explicit migration.
+
+### Application / onboarding
+
+- Approval / create → **Business + initial PRIMARY BusinessLocation** atomically; application city/address/coords describe that primary location.
+- **Must not** approve/create an **ACTIVE** business without an initial **BusinessLocation** (compatibility dual-write on Business columns may continue during transition). Long-term authority: **BusinessLocation**.
+
+### Dedupe (future focused implementation)
+
+- Physical duplicate detection should compare application location against **`BusinessLocation`** data (city, normalized address, coordinates when available, title signals) — not only **`Business.cityId` + Business.address`**. Exact fuzzy algorithm = separate stage with tests.
+
+### Location & primary invariants (target state)
+
+| Invariant | Target | Notes |
+|-----------|--------|--------|
+| **≥1 location** | Every **Business** has **≥1** `BusinessLocation` | Zero-location = **invalid**; legacy read fallback to Business physical columns is **temporary** only |
+| **Exactly one primary** | Every **Business** has **exactly one** `isPrimary=true` | DB enforces **at most one** today; **at least one** = service/repair/audit before mirror column drop — not unsafe cross-row CHECK in v1 |
+| **Zero-primary reads** | Oldest-location fallback | **Temporary compatibility** until enforcement + repair complete |
+
+Existing invalid rows must be **repaired** before enforcing; production writers must guarantee invariants before removing Business physical fallback.
+
+### Cross-city business rule
+
+- **Business** = brand identity; **city membership** = **`BusinessLocation` presence**, not **`Business.cityId` equality**.
+- **Set-primary** across cities may update temporary **`Business.cityId`** home mirror; must **not** remove discovery/admin visibility in cities that still have other branches.
+
+### Public API compatibility (during/after DB retirement)
+
+- **No immediate removal** of top-level JSON fields used by shipped clients (`cityId`, `address`, lat/lng, contacts, hours, etc.).
+- Fields may remain **derived** from context **`BusinessLocation`**, primary **`BusinessLocation`**, or Business default/fallback per **A.9.3** semantics — **no major-version breaking removal** in A.9.4 unless separately agreed.
+
+### Public `cityId` projection rule (future — **A.9.4.1** area)
+
+- When **`contextLocationId`** present → top-level compatibility **`cityId`** = that branch’s **`cityId`**.
+- When explicit selected **`locationId`** context → **`cityId`** = selected branch.
+- Business-grain response with no branch context → **`cityId`** = **primary** branch.
+- This is **API projection**, not Business identity semantics (today list items may still expose parent **`Business.cityId`** — latent mismatch documented in **A.9.4** audit).
+
+### Owner / Business Web transition (long-term)
+
+- **A.9.3.5 CLOSED** — do not undo UX.
+- Direction: physical edits eventually write **primary BusinessLocation** directly; stop using Business compatibility columns as write intermediate before DB removal; brand/default fields stay on Business.
+
+### Import (6.12B requirement)
+
+- New imported businesses: **≥1 BusinessLocation**; physical city/address/coordinates belong to **BusinessLocation** authority; dual-write may continue during compatibility; **must not** introduce Business-only physical records.
+
+### Field retirement matrix (canonical)
+
+| Field | Classification |
+|-------|----------------|
+| `Business.cityId` | KEEP TEMPORARILY — home/compatibility city; **active blockers** before retirement |
+| `Business.address` | KEEP TEMPORARILY — primary compatibility mirror |
+| `Business.latitude` / `longitude` | KEEP TEMPORARILY — primary compatibility mirror |
+| `Business.location` | RETIRE with coordinate bundle after readers/writers move |
+| `Business.locationSource` | KEEP TEMPORARILY — primary compatibility mirror |
+| `Business.phone` / `whatsapp` | KEEP — domain/default |
+| `Business.website` / `instagram` | KEEP — brand/default |
+| `Business.workHours` | KEEP — default/fallback (current product semantics) |
+
+### Proposed follow-up stages (**PROPOSED — NOT IMPLEMENTED**)
+
+| ID | Scope |
+|----|--------|
+| **A.9.4.1** | Non-discovery city authority hardening — admin scope/display, monetization campaign city default, analytics fallback, dedupe direction, public **`cityId`** projection |
+| **A.9.4.2** | Location/primary invariant hardening — ≥1 location, exactly one primary, repair/audit, create/delete/promote guarantees |
+| **A.9.4.3** | API/writer migration — derive compatibility DTO physical fields from BL; move physical writes toward BL; preserve client JSON |
+| **A.9.4.4** | Legacy Business geo storage retirement — triggers/indexes, `location`, lat/lng, `locationSource`, `address` when blockers cleared |
+| **A.9.4.5** | **`Business.cityId`** final retirement/derivation — only after admin, monetization, analytics, onboarding, dedupe, imports, API compatibility no longer require stored parent city |
+
+### F.4 gate
+
+- **F.4 does not depend** on physical DB column removal.
+- **F.4 may proceed** after this policy gate because **A.9.3.x** already provides stable **`contextLocationId`**, **`locationId`**, **`effectivePhysical`**, branch-aware public reads.
+- **F.4 not started** here; roadmap sequencing is a separate explicit decision.
 
 ## Stage 6.12A.9.3.4 (Consumer Web physical-context closure)
 

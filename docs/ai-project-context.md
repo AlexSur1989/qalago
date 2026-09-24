@@ -8,12 +8,13 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `6ee6ec8ece6f676a25841916f3738204ef298792` — **A.9.3.5** physical QA docs closure |
-| **Last completed stage** | **6.12A.9.3.5 PASS** — Business Web owner physical-context finalized (impl + physical QA) |
-| **Implementation checkpoint** | **A.9.3.5** `9e00ef25afdd4974bcc084f0a4e5685040178dcd` |
+| **Repo HEAD (current)** | `git rev-parse HEAD` after **A.9.4.0** policy gate docs closure |
+| **Last completed stage** | **6.12A.9.4.0 PASS** — legacy Business physical retirement **policy & invariant gate** (docs-only) |
+| **Last product implementation** | **6.12A.9.3.5 PASS** — Business Web owner physical-context (`9e00ef25…`) |
 | **Prior** | **A.9.3.4 PASS** (Consumer Web); **A.9.3.3** `6277e64…` |
-| **Physical QA pending** | — ( **A.9.3.5** Business Web browser QA **PASS** ) |
-| **Next agreed development action** | **F.4** / **A.9.4+** per roadmap (not auto-started — agree stage before implementation) |
+| **A.9.4 audit** | **READ-ONLY PASS — PREREQUISITE HARDENING REQUIRED** (no implementation commit) |
+| **Physical QA pending** | — |
+| **Next agreed development action** | **A.9.4.1** read-only implementation-scope audit **recommended** — or **F.4** read-only audit per explicit roadmap choice (not auto-started) |
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 
@@ -58,6 +59,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **6.11F.3 PASS** — public SEO infrastructure (sitemap, robots, temporary business detail **noindex**, etc.).
 - **6.12A.9.3.4 PASS (physical QA finalized)** — Consumer Web discovery/detail physical context; **QA-001 CLOSED**.
 - **6.12A.9.3.5 PASS (physical QA finalized)** — Business Web permission-safe profile PATCH; primary-branch UX; hours-only MANAGER scope verified; closes **`A.9.3.4+`** owner slice; central audit **P1 CLOSED**.
+- **6.12A.9.4.0 PASS (policy gate)** — legacy physical retirement policies & invariants frozen; **`docs/architecture/business-location.md`** § **9.4.0**; **F.4** not blocked on column drop.
 - **F.4 deferred** — final public business/branch URL architecture until explicitly staged (not A.9.3.4).
 
 ## BusinessLocation track
@@ -198,7 +200,8 @@ Future architecture should allow **backend/admin-central configuration** of cons
 
 - **P2:** `mergeSearchResultPages` dedupes by **`Business.id`** only (valid while discovery is Business-grain).
 - **A.9.3.4+ owner slice** — **closed in A.9.3.5** (Business Web); Consumer Web closed in **A.9.3.4**.
-- **A.9.4+** — **`Business.cityId`** / legacy column retirement (not started).
+- **A.9.4.0** — retirement **policy gate finalized** (docs); staged column retirement **A.9.4.1–A.9.4.5 PROPOSED — NOT IMPLEMENTED**.
+- **F.4** — Consumer Web business/branch URLs & SEO; **does not require** A.9.4 DB column removal (**A.9.4.0** gate); not started.
 - Post **6.12A:** User contour audit, Business Web owner contour, Admin Web contour, Admin Catalog/CMS, centralized Home config, Catalog Import, QalaGo AI, remaining Consumer Web, production monetization, analytics UX, role-based E2E, security/legal/release — **not** current track unless explicitly staged.
 
 ## Context maintenance
