@@ -17,6 +17,12 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 **PostgreSQL + Catalog API** are the canonical source for catalog, business, category, and location data. **Flutter (Android/iOS) and Consumer Web consume the same backend** — do not maintain separate hardcoded production catalogs per channel. Taxonomy and business/location changes propagate via API consumption.
 
+## Public business visibility (MAP-SEC.C1)
+
+- **Public catalog/discovery/map** (`GET /businesses`, `@Public`) exposes **ACTIVE** businesses only.
+- Clients **cannot** widen visibility with **`?status=PENDING`** or **`?status=BLOCKED`** (→ **400**). Omit **`status`** or use **`status=ACTIVE`**.
+- **Administrative** status filtering remains on protected **`GET /admin/businesses`** (staff auth).
+
 ## Consumer Web stage
 
 - **6.11F.3 PASS** — public SEO infrastructure (sitemap, robots, temporary business detail **noindex**, etc.).

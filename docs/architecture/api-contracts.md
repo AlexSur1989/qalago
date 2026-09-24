@@ -319,7 +319,7 @@ Query:
 | subcategoryId | string (optional) — filter businesses assigned to subcategory; if `categoryId` also set, sub must belong to category (400 otherwise) |
 | search | string (optional, max **100** chars after trim; whitespace collapsed). Case-insensitive `contains` match against approved stored fields only — see **Search semantics (Stage 6.11B.1)** below. |
 | featured | boolean |
-| status | ACTIVE (public default) |
+| status | Optional. **Public catalog (MAP-SEC.C1):** omitted → **ACTIVE** only; **`status=ACTIVE`** accepted; **`status=PENDING`** or **`status=BLOCKED`** → **400**. Non-ACTIVE administrative filtering uses protected **`GET /admin/businesses`**, not this endpoint. |
 | citySlug / cityId | string |
 | latitude, longitude | number — user position; required for `sort=nearest` |
 | radiusKm | number (default 15) — max distance in km when geo params set |

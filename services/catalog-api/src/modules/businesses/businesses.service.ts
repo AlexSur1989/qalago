@@ -67,6 +67,7 @@ import { randomBytes } from 'crypto';
 import { attachEffectivePhysicalToDetail } from './business-effective-physical.util';
 import { attachContextLocationIdForBranch } from './business-discovery-context.util';
 import { businessCatalogDiscoveryCityScope } from './business-discovery-city-membership.util';
+import { assertPublicCatalogBusinessStatus } from '../../common/utils/public-catalog-business-status.util';
 import { resolveCityContextLocationIds } from './business-discovery-city-context.util';
 import type { CatalogPostgisNearestRow } from './business-catalog-postgis-geo.query';
 
@@ -180,6 +181,7 @@ export class BusinessesService {
   }
 
   async findAll(query: ListBusinessesQueryDto) {
+    const catalogStatus = assertPublicCatalogBusinessStatus(query.status);
     const normalizedBbox = assertCatalogGeoQuery(query);
 
     const cityId = await this.cityScope.resolveCityId({
@@ -193,7 +195,7 @@ export class BusinessesService {
 
     const where: Prisma.BusinessWhereInput = {
       ...businessCatalogDiscoveryCityScope(cityId),
-      status: query.status ?? BusinessStatus.ACTIVE,
+      status: catalogStatus,
     };
 
     if (query.categoryId) {
@@ -210,7 +212,7 @@ export class BusinessesService {
     }
     const searchContext = await appendBusinessCatalogTextSearch(this.prisma, where, query.search, {
       cityId,
-      status: (query.status ?? BusinessStatus.ACTIVE) as BusinessStatus,
+      status: catalogStatus,
       categoryId: query.categoryId,
       subcategoryId: query.subcategoryId,
     });
@@ -439,7 +441,7 @@ export class BusinessesService {
 
     const viewportParams = {
       cityId,
-      status: query.status ?? BusinessStatus.ACTIVE,
+      status: BusinessStatus.ACTIVE,
       mapBbox,
       categoryId: query.categoryId,
       subcategoryId: query.subcategoryId,
@@ -540,7 +542,7 @@ export class BusinessesService {
   ) {
     const viewportParams = {
       cityId,
-      status: query.status ?? BusinessStatus.ACTIVE,
+      status: BusinessStatus.ACTIVE,
       mapBbox,
       categoryId: query.categoryId,
       subcategoryId: query.subcategoryId,
@@ -702,7 +704,7 @@ export class BusinessesService {
 
     const { rows, total } = await queryCatalogNearestPage(this.prisma, {
       cityId,
-      status: query.status ?? BusinessStatus.ACTIVE,
+      status: BusinessStatus.ACTIVE,
       latitude: query.latitude!,
       longitude: query.longitude!,
       radiusMeters: resolveNearestRadiusMeters(query.radiusKm),
@@ -739,7 +741,7 @@ export class BusinessesService {
   ) {
     const { rows: radiusMembers } = await queryCatalogRadiusMembers(this.prisma, {
       cityId,
-      status: query.status ?? BusinessStatus.ACTIVE,
+      status: BusinessStatus.ACTIVE,
       latitude: query.latitude!,
       longitude: query.longitude!,
       radiusMeters: resolveExplicitRadiusMeters(query.radiusKm!),

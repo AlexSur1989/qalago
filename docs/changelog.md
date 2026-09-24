@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-09-24 — MAP-SEC.C1 Public business visibility (security hotfix)
+
+- **Status:** **MAP-SEC.C1 PASS — PUBLIC BUSINESS VISIBILITY SECURED** (runtime-verified).
+- **Checkpoint (implementation):** _(set at commit)_.
+- **Summary:** Runtime audit confirmed anonymous **`GET /api/v1/businesses`** could return **PENDING** businesses (incl. **`forMap=true`**) via **`?status=PENDING`**. **Fix:** public **`ListBusinessesQueryDto`** rejects non-ACTIVE **`status`** with **400**; **`BusinessesService.findAll`** asserts **ACTIVE-only** and hard-codes catalog/map/geo queries to **ACTIVE**. **`GET /businesses/:id`** and public content routes were already **ACTIVE-only** (404 for PENDING). **Admin** **`GET /admin/businesses`** unchanged (protected status filter).
+- **Runtime retest (anonymous):** list/map **PENDING/BLOCKED** → **400**; default and **`status=ACTIVE`** → **200 ACTIVE only**.
+- **Next:** MAP-SEC.C2/C3 remain separate; **6.12A.9.0** unchanged.
+
+---
+
 ## 2026-09-24 — Stage 6.12A.8 FINAL — Ads / Analytics location & platform hooks
 
 - **Status:** **6.12A.8 CLOSED — ADS / ANALYTICS LOCATION & PLATFORM HOOKS FINALIZED** (docs-only closure; **6.12A.8.FINAL** audit PASS).

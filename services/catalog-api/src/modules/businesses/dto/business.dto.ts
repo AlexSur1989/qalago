@@ -16,6 +16,7 @@ import {
 } from 'class-validator';
 import { BusinessCoordinatePairConstraint } from '../../../common/validators/business-coordinate-pair.validator';
 import { CatalogListGeoQueryConstraint } from '../../../common/validators/catalog-list-geo-query.validator';
+import { PublicCatalogBusinessStatusConstraint } from '../../../common/validators/public-catalog-business-status.validator';
 import { BusinessLocationSource, BusinessStatus } from '@prisma/client';
 import { BusinessCatalogSort } from '../../../common/utils/business-catalog-sort.util';
 import {
@@ -93,6 +94,7 @@ export class ListBusinessesQueryDto {
 
   @IsOptional()
   @IsEnum(BusinessStatus)
+  @Validate(PublicCatalogBusinessStatusConstraint)
   status?: BusinessStatus;
 
   /** User latitude — enables distance sort when paired with longitude. */
