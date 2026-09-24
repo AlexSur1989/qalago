@@ -8,7 +8,7 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `38d2a83b1a71fe4eaec23fec2a04467964b7cbed` — **1B** impl (+ docs follow-up pending) |
+| **Repo HEAD (current)** | `7c4d666adafbe2ae8baa6792b1bf404225ed737e` — **A.9.4.1** docs closure |
 | **A.9.4.1B implementation SHA** | `38d2a83b1a71fe4eaec23fec2a04467964b7cbed` |
 | **A.9.4.1A implementation SHA** | `955f9d86c660d1019158236c4417cf337b13ae9d` |
 | **Last completed stage** | **6.12A.9.4.1 PASS** — non-discovery city authority hardened (1A admin + 1B campaign/analytics/dedupe/public `cityId`) |
