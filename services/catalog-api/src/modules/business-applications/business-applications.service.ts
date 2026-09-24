@@ -25,7 +25,7 @@ import { BusinessPrimaryLocationService } from '../../common/services/business-p
 import { OnboardingRateLimitService } from '../../common/services/onboarding-rate-limit.service';
 import {
   buildApplicationDedupeKey,
-  businessMatchesApplicationDedupe,
+  businessLocationMatchesApplicationDedupe,
 } from '../../common/utils/business-application-dedupe.util';
 import { assertBusinessCoordinatesWithinCity } from '../../common/utils/city-geocoding-persistence.util';
 import {
@@ -703,13 +703,23 @@ export class BusinessApplicationsService {
     tx?: Prisma.TransactionClient,
   ) {
     const client = tx ?? this.prisma;
-    const candidates = await client.business.findMany({
+    const branches = await client.businessLocation.findMany({
       where: { cityId },
-      select: { id: true, cityId: true, title: true, address: true },
+      select: {
+        cityId: true,
+        address: true,
+        business: { select: { id: true, title: true } },
+      },
     });
-    const duplicate = candidates.find((b) =>
-      businessMatchesApplicationDedupe(b, cityId, title, address),
-    );
+    const duplicate = branches.find((row) =>
+      businessLocationMatchesApplicationDedupe(
+        row,
+        row.business.title,
+        cityId,
+        title,
+        address,
+      ),
+    )?.business;
     if (duplicate) {
       throw new ConflictException('A business with the same name and address already exists');
     }

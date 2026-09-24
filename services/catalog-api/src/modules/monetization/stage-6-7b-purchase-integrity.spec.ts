@@ -235,6 +235,7 @@ describe('Stage 6.7B — purchase integrity core', () => {
       createMockPackageSnapshotService(),
       createMockInventoryReservationService(),
       createMockStaffPolicyService() as never,
+      { buildAdminBusinessScopeWhere: jest.fn() } as never,
     );
 
     const user = { id: 'user-1', role: UserRole.BUSINESS, phone: '+7700', sub: 'user-1' };

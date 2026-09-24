@@ -201,6 +201,21 @@ describe('Stage 4B.1 — package VIP creative activation', () => {
           moderationStatus: AdModerationStatus.DRAFT,
         }),
       },
+      business: {
+        findUnique: jest.fn().mockResolvedValue({ cityId: 'city-1' }),
+      },
+      businessLocation: {
+        findFirst: jest.fn(),
+        findMany: jest.fn().mockResolvedValue([
+          {
+            id: 'loc-1',
+            businessId: 'biz-1',
+            cityId: 'city-1',
+            isPrimary: true,
+            createdAt: new Date(),
+          },
+        ]),
+      },
     };
     return { tx, paidAt };
   }

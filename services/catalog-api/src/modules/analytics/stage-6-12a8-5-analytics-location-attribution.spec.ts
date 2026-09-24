@@ -16,7 +16,10 @@ describe('Stage 6.12A.8.5 — analytics location attribution', () => {
       city: { findFirst: jest.fn() },
       promotion: { findFirst: jest.fn() },
       serviceItem: { findFirst: jest.fn() },
-      businessLocation: { findFirst: jest.fn() },
+      businessLocation: {
+        findFirst: jest.fn(),
+        findMany: jest.fn().mockResolvedValue([]),
+      },
       analyticsEvent: {
         create: jest.fn(),
         findUnique: jest.fn(),
@@ -48,7 +51,14 @@ describe('Stage 6.12A.8.5 — analytics location attribution', () => {
   it('1 — organic B + valid L(B) stored', async () => {
     const { prisma, service } = createOrganicService();
     prisma.business.findFirst.mockResolvedValue({ id: 'biz-b', cityId: 'city-1' });
-    prisma.businessLocation.findFirst.mockResolvedValue({ id: 'loc-l2' });
+    prisma.businessLocation.findFirst.mockImplementation(
+      async (args: { select?: { cityId?: boolean; id?: boolean } }) => {
+        if (args.select?.cityId) {
+          return { cityId: 'city-b' };
+        }
+        return { id: 'loc-l2' };
+      },
+    );
     prisma.analyticsEvent.findUnique.mockResolvedValue(null);
     prisma.analyticsEvent.create.mockResolvedValue({ id: 'e1' });
 
@@ -68,6 +78,7 @@ describe('Stage 6.12A.8.5 — analytics location attribution', () => {
         data: expect.objectContaining({
           businessId: 'biz-b',
           businessLocationId: 'loc-l2',
+          cityId: 'city-b',
         }),
       }),
     );

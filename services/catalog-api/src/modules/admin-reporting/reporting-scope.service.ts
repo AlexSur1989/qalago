@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -76,10 +76,11 @@ export class ReportingScopeService {
     return { cityIds: null };
   }
 
-  businessCityWhere(scope: ReportScope): { cityId?: { in: string[] }; id?: string } {
-    const where: { cityId?: { in: string[] }; id?: string } = {};
+  /** Admin business visibility — BusinessLocation presence (A.9.4.1A), not parent cityId alone. */
+  businessCityWhere(scope: ReportScope): Prisma.BusinessWhereInput {
+    const where: Prisma.BusinessWhereInput = {};
     if (scope.cityIds?.length) {
-      where.cityId = { in: scope.cityIds };
+      where.locations = { some: { cityId: { in: scope.cityIds } } };
     }
     if (scope.businessId) {
       where.id = scope.businessId;
@@ -87,7 +88,7 @@ export class ReportingScopeService {
     return where;
   }
 
-  orderCityWhere(scope: ReportScope): { business?: { cityId?: { in: string[] }; id?: string } } {
+  orderCityWhere(scope: ReportScope): { business?: Prisma.BusinessWhereInput } {
     const business = this.businessCityWhere(scope);
     if (!Object.keys(business).length) {
       return {};

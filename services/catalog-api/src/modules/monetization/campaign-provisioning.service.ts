@@ -21,6 +21,10 @@ import {
   parseCampaignLocationFieldsFromMeta,
   validateAndResolveCampaignLocationContext,
 } from './utils/campaign-location-context.util';
+import {
+  readCampaignCityIdFromMetadata,
+  resolveCampaignMarketCityId,
+} from './utils/campaign-market-city.util';
 
 type OrderItemMeta = {
   desiredStartAt?: string;
@@ -226,6 +230,19 @@ export class CampaignProvisioningService {
       promotionId?: string | null;
     },
   ) {
+    const parentBusiness = await tx.business.findUnique({
+      where: { id: ctx.businessId },
+      select: { cityId: true },
+    });
+    const campaignCityId =
+      readCampaignCityIdFromMetadata(ctx.metadata as Record<string, unknown>) ??
+      (await resolveCampaignMarketCityId(tx, {
+        businessId: ctx.businessId,
+        parentBusinessCityId: parentBusiness!.cityId,
+        targetBusinessLocationId: ctx.metadata.targetBusinessLocationId,
+        destinationBusinessLocationId: ctx.metadata.destinationBusinessLocationId,
+      }));
+
     const placementCode = PRODUCT_PLACEMENT_MAP[ctx.product.type];
     if (!placementCode) return;
 
@@ -247,7 +264,7 @@ export class CampaignProvisioningService {
     await this.purchaseIntegrity.resolveProductSchedule(tx, {
       productType: ctx.product.type,
       businessId: ctx.businessId,
-      cityId: ctx.cityId,
+      cityId: campaignCityId,
       categoryId: ctx.categoryId,
       promotionId: ctx.promotionId ?? ctx.metadata.promotionId,
       desiredStartAt,
@@ -302,7 +319,7 @@ export class CampaignProvisioningService {
     );
     const resolvedLocations = await validateAndResolveCampaignLocationContext(tx, {
       businessId: ctx.businessId,
-      cityId: ctx.cityId,
+      cityId: campaignCityId,
       productType: ctx.product.type,
       promotionId: promotionIdForCampaign,
       targetBusinessLocationId:
@@ -319,7 +336,7 @@ export class CampaignProvisioningService {
         productId: ctx.product.id,
         creativeId,
         promotionId: promotionIdForCampaign,
-        cityId: ctx.cityId,
+        cityId: campaignCityId,
         categoryId:
           ctx.product.type === MonetizationProductType.TOP_CATEGORY ||
           ctx.product.type === MonetizationProductType.BOOST

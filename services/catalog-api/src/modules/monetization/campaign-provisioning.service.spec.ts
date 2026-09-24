@@ -61,6 +61,26 @@ describe('CampaignProvisioningService', () => {
 
   beforeEach(() => jest.clearAllMocks());
 
+  function campaignTxExtras(cityId = 'city-1') {
+    return {
+      business: {
+        findUnique: jest.fn().mockResolvedValue({ cityId }),
+      },
+      businessLocation: {
+        findFirst: jest.fn(),
+        findMany: jest.fn().mockResolvedValue([
+          {
+            id: 'loc-1',
+            businessId: 'biz-1',
+            cityId,
+            isPrimary: true,
+            createdAt: new Date(),
+          },
+        ]),
+      },
+    };
+  }
+
   const placement = (code: string) => ({
     id: `pl-${code}`,
     code,
@@ -95,6 +115,7 @@ describe('CampaignProvisioningService', () => {
       },
       adCampaignPlacement: { create: jest.fn() },
       promotion: { findFirst: jest.fn() },
+      ...campaignTxExtras(),
     };
 
     await service.provisionOrderCampaigns(tx as never, 'ord-1', new Date());
@@ -200,10 +221,7 @@ describe('CampaignProvisioningService', () => {
           branchAvailabilities: [],
         }),
       },
-      businessLocation: {
-        findFirst: jest.fn().mockResolvedValue({ id: 'loc-1', businessId: 'biz-1', cityId: 'city-1' }),
-        findMany: jest.fn().mockResolvedValue([{ id: 'loc-1' }]),
-      },
+      ...campaignTxExtras(),
     };
 
     await service.provisionOrderCampaigns(tx as never, 'ord-1', new Date());

@@ -9,7 +9,15 @@ import {
 /** Top-level public fields normalized from effective BusinessLocation context (A.9.3.1). */
 export type PublicPhysicalReadProjection = Pick<
   EffectivePhysicalDto,
-  'address' | 'latitude' | 'longitude' | 'phone' | 'whatsapp' | 'instagram' | 'website' | 'workHours'
+  | 'cityId'
+  | 'address'
+  | 'latitude'
+  | 'longitude'
+  | 'phone'
+  | 'whatsapp'
+  | 'instagram'
+  | 'website'
+  | 'workHours'
 >;
 
 export type PublicPhysicalReadBusinessSource = Pick<
@@ -46,6 +54,7 @@ export function effectivePhysicalToPublicProjection(
   effective: EffectivePhysicalDto,
 ): PublicPhysicalReadProjection {
   return {
+    cityId: effective.cityId,
     address: effective.address,
     latitude: effective.latitude,
     longitude: effective.longitude,
@@ -84,6 +93,9 @@ export function applyPublicPhysicalReadProjection<T extends Record<string, unkno
   const projection = projectPublicPhysicalReadFields(business, locations, contextLocationId);
   const next: Record<string, unknown> = { ...target };
 
+  if ('cityId' in target) {
+    next.cityId = projection.cityId;
+  }
   next.address = projection.address;
   if ('latitude' in target) {
     next.latitude = projection.latitude;
@@ -117,6 +129,7 @@ export function applyPublicPhysicalReadFromEffectivePhysical<
   const projection = effectivePhysicalToPublicProjection(row.effectivePhysical);
   return {
     ...row,
+    cityId: row.effectivePhysical.cityId as T['cityId'],
     address: projection.address,
     latitude: projection.latitude as T['latitude'],
     longitude: projection.longitude as T['longitude'],

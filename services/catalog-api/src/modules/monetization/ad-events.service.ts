@@ -40,6 +40,7 @@ export class AdEventsService {
       select: {
         id: true,
         businessId: true,
+        cityId: true,
         destinationBusinessLocationId: true,
         campaignPlacements: { where: { placementId: placement.id } },
       },
@@ -69,6 +70,7 @@ export class AdEventsService {
       return this.trackImpression(
         campaign.id,
         campaign.businessId,
+        campaign.cityId,
         placement.id,
         dto.sessionId,
         dto.position,
@@ -82,6 +84,7 @@ export class AdEventsService {
       return this.trackClick(
         campaign.id,
         campaign.businessId,
+        campaign.cityId,
         placement.id,
         dto.sessionId,
         eventType,
@@ -93,6 +96,7 @@ export class AdEventsService {
     return this.trackActionEvent(
       campaign.id,
       campaign.businessId,
+      campaign.cityId,
       placement.id,
       dto.sessionId,
       eventType,
@@ -126,6 +130,7 @@ export class AdEventsService {
   private async trackImpression(
     campaignId: string,
     businessId: string,
+    campaignCityId: string,
     placementId: string,
     sessionId: string,
     position: number | undefined,
@@ -164,6 +169,7 @@ export class AdEventsService {
       this.prisma.analyticsEvent.create({
         data: {
           businessId,
+          cityId: campaignCityId,
           type: eventType,
           campaignId,
           placementId,
@@ -180,6 +186,7 @@ export class AdEventsService {
   private async trackClick(
     campaignId: string,
     businessId: string,
+    campaignCityId: string,
     placementId: string,
     sessionId: string,
     eventType: AnalyticsEventType,
@@ -194,6 +201,7 @@ export class AdEventsService {
       this.prisma.analyticsEvent.create({
         data: {
           businessId,
+          cityId: campaignCityId,
           type: eventType,
           campaignId,
           placementId,
@@ -210,6 +218,7 @@ export class AdEventsService {
   private async trackActionEvent(
     campaignId: string,
     businessId: string,
+    campaignCityId: string,
     placementId: string,
     sessionId: string,
     eventType: AnalyticsEventType,
@@ -219,6 +228,7 @@ export class AdEventsService {
     await this.prisma.analyticsEvent.create({
       data: {
         businessId,
+        cityId: campaignCityId,
         type: eventType,
         campaignId,
         placementId,

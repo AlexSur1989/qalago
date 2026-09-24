@@ -123,6 +123,9 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
           status: BusinessStatus.ACTIVE,
         }),
       },
+      businessLocation: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
       $transaction: jest.fn(async (fn: (tx: typeof prisma) => unknown) => fn(prisma)),
     };
 
@@ -215,8 +218,12 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
       category: null,
       approvedBusiness: null,
     });
-    prisma.business.findMany = jest.fn().mockResolvedValue([
-      { id: 'b1', cityId: 'city-uralsk', title: 'Cafe Sultan', address: 'Abay 10' },
+    prisma.businessLocation.findMany = jest.fn().mockResolvedValue([
+      {
+        cityId: 'city-uralsk',
+        address: 'Abay 10',
+        business: { id: 'b1', title: 'Cafe Sultan' },
+      },
     ]);
 
     await expect(service.submit(user, 'app-1')).rejects.toBeInstanceOf(ConflictException);

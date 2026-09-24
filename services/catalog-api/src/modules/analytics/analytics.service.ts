@@ -55,6 +55,8 @@ import {
   ORGANIC_BRANCH_LOCATION_FORBIDDEN_EVENT_TYPES,
   resolveValidatedOrganicBusinessLocationId,
 } from '../../common/utils/analytics-branch-location.util';
+import { resolveAnalyticsEventCityId } from '../../common/utils/analytics-event-city.util';
+import { findPrimaryBusinessLocationCityId } from '../../common/utils/primary-business-location.util';
 
 const EVENT_TYPES = Object.values(AnalyticsEventType);
 
@@ -145,6 +147,7 @@ export class AnalyticsService {
     }
 
     let businessLocationId: string | undefined;
+    let businessLocationCityId: string | undefined;
     if (dto.businessLocationId != null && dto.businessLocationId.trim() !== '') {
       if (ORGANIC_BRANCH_LOCATION_FORBIDDEN_EVENT_TYPES.has(dto.type)) {
         throw new BadRequestException(
@@ -166,6 +169,17 @@ export class AnalyticsService {
         business.id,
         dto.businessLocationId,
       );
+      const branch = await this.prisma.businessLocation.findFirst({
+        where: { id: businessLocationId, businessId: business.id },
+        select: { cityId: true },
+      });
+      businessLocationCityId = branch?.cityId;
+    }
+
+    let primaryBusinessLocationCityId: string | undefined;
+    if (business && !businessLocationCityId && !isSearchPerformed) {
+      primaryBusinessLocationCityId =
+        (await findPrimaryBusinessLocationCityId(this.prisma, business.id)) ?? undefined;
     }
 
     let normalizedSearchQuery: string | undefined;
@@ -214,7 +228,12 @@ export class AnalyticsService {
       type: dto.type,
       isInternal,
       businessId: business?.id,
-      cityId: business?.cityId ?? (isSearchPerformed ? dto.cityId : undefined),
+      cityId: resolveAnalyticsEventCityId({
+        explicitCityId: isSearchPerformed ? dto.cityId : dto.cityId,
+        businessLocationCityId,
+        primaryBusinessLocationCityId,
+        parentBusinessCityId: business?.cityId,
+      }),
       ...(ATTRIBUTION_EVENT_TYPES.has(dto.type) && dto.trafficSource
         ? { trafficSource: dto.trafficSource }
         : {}),

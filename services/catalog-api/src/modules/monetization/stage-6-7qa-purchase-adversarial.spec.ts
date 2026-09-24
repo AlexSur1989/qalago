@@ -170,6 +170,7 @@ describe('Stage 6.7QA — purchase adversarial', () => {
         createMockPackageSnapshotService(),
         createMockInventoryReservationService(),
         createMockStaffPolicyService() as never,
+        { buildAdminBusinessScopeWhere: jest.fn() } as never,
       );
 
       const replayOrder = {

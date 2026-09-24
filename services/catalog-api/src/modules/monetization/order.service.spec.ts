@@ -30,6 +30,12 @@ describe('OrderService', () => {
     adCreative: { findFirst: jest.fn() },
     order: { findMany: jest.fn(), findUnique: jest.fn(), findUniqueOrThrow: jest.fn() },
     payment: { findUnique: jest.fn(), findUniqueOrThrow: jest.fn(), create: jest.fn() },
+    businessLocation: {
+      findFirst: jest.fn().mockResolvedValue(null),
+      findMany: jest.fn().mockResolvedValue([
+        { id: 'loc-1', cityId: 'city-1', isPrimary: true, createdAt: new Date('2020-01-01') },
+      ]),
+    },
   } as unknown as PrismaService;
 
   const access = {
@@ -93,6 +99,12 @@ describe('OrderService', () => {
     assertPermission: jest.fn(),
   };
 
+  const cityScope = {
+    buildAdminBusinessScopeWhere: jest.fn((cityId: string) => ({
+      locations: { some: { cityId } },
+    })),
+  };
+
   const service = new OrderService(
     prisma,
     access,
@@ -104,6 +116,7 @@ describe('OrderService', () => {
     packageSnapshot,
     inventoryReservation,
     staffPolicy as never,
+    cityScope as never,
   );
 
   const user = { id: 'user-1', role: UserRole.BUSINESS, phone: '+7700', sub: 'user-1' };

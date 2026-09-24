@@ -23,6 +23,7 @@ import { MonetizationAccessService } from './monetization-access.service';
 import { PricingService } from './pricing.service';
 import { PurchaseIntegrityService } from './purchase-integrity.service';
 import { PackageSnapshotService } from './package-snapshot.service';
+import { resolveCampaignMarketCityId } from './utils/campaign-market-city.util';
 
 @Injectable()
 export class MonetizationService {
@@ -195,9 +196,15 @@ export class MonetizationService {
       );
     }
 
+    const marketCityId = await resolveCampaignMarketCityId(this.prisma, {
+      businessId: dto.businessId,
+      parentBusinessCityId: business.cityId,
+      explicitCityId: dto.cityId,
+    });
+
     const priced = await this.pricing.priceProductLine(dto.businessId, {
       productId: product!.id,
-      cityId: business.cityId,
+      cityId: marketCityId,
       categoryId,
       durationHours: dto.durationHours ?? null,
       durationDays: dto.durationDays ?? null,
@@ -214,7 +221,7 @@ export class MonetizationService {
 
     const availability = await this.availability.checkAvailability({
       productType: product!.type,
-      cityId: business.cityId,
+      cityId: marketCityId,
       categoryId,
       desiredStartAt: requestedStartAt,
       desiredEndAt: calculatedEndAt,
@@ -225,7 +232,7 @@ export class MonetizationService {
       {
         productType: product!.type,
         businessId: dto.businessId,
-        cityId: business.cityId,
+        cityId: marketCityId,
         categoryId,
         desiredStartAt: requestedStartAt,
         durationHours: dto.durationHours ?? null,
@@ -275,6 +282,12 @@ export class MonetizationService {
       where: { id: dto.businessId },
     });
 
+    const marketCityId = await resolveCampaignMarketCityId(this.prisma, {
+      businessId: dto.businessId,
+      parentBusinessCityId: business.cityId,
+      explicitCityId: dto.cityId,
+    });
+
     const discountPercent = this.pricing.packageDiscountPercent();
     const priced = this.pricing.applyDiscount(pkg!.price!, discountPercent, pkg!.currency);
 
@@ -292,7 +305,7 @@ export class MonetizationService {
         productCode: item.product.code,
         availability: await this.availability.checkAvailability({
           productType: item.product.type,
-          cityId: business.cityId,
+          cityId: marketCityId,
           categoryId: business.categoryId,
           desiredStartAt,
           desiredEndAt: calculatedEndAt,
@@ -310,7 +323,7 @@ export class MonetizationService {
       {
         pkg: pkg!,
         businessId: dto.businessId,
-        cityId: business.cityId,
+        cityId: marketCityId,
         categoryId: dto.categoryId ?? business.categoryId,
         desiredStartAt,
         currency: pkg!.currency,
