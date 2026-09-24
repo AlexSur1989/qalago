@@ -2,6 +2,22 @@
 
 **Purpose:** concise handoff for ChatGPT/Cursor sessions. **History:** `docs/changelog.md`. **Rules:** `AGENTS.md`.
 
+**Mandatory read before work:** `AGENTS.md` → this file → relevant `docs/architecture/*` → recent `docs/changelog.md` → `git rev-parse HEAD` + `git status`.
+
+## Current stage (handoff snapshot)
+
+| Field | Value |
+|-------|--------|
+| **Repo HEAD (current)** | `017750c342501c6c714012ae50552231ab8eb511` (docs context sync) |
+| **Last completed implementation** | **6.12A.9.3.2b** — impl `c53af3c2d17b6922bbd10cb909006752463829e5`; pre-sync docs `3330492ede154c6875d496c672a6e53fc760916e` |
+| **Latest accepted read-only audit** | **6.12A.9.3.3** Flutter physical-context — **AUDIT PASS** (Favorites **QA-002** obsolete; minor Flutter closure only). **Not committed**; evidence in session audit report. **Not implementation PASS.** |
+| **Current operational task** | Context/documentation sync only (this checkpoint) |
+| **Next agreed development action** | **6.12A.9.3.3 implementation** — `openBusinessFromFavorite`, favorites screen wiring, regression tests, **QA-002** doc closure; **do not** start **A.9.3.4+** until A.9.3.3 closes |
+
+**Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
+
+**Protected local dirt (do not stage/restore/clean):** mobile branding/login/logo, generated Flutter registrants, `services/catalog-api/src/main.ts`, notification seed script, untracked `infra/local-backups/`, local dev audit scripts — use `git status` as authority.
+
 ## Product
 
 QalaGo — городской маркетплейс/гид (MVP city: Uralsk; multi-city via `cityId`/`citySlug`, not hardcoded city names in domain logic).
@@ -88,7 +104,18 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 **6.12A.9.3.2 PASS** — discovery SQL: **BL-authoritative** address search + bbox; legacy bbox without **`forMap`** = **Business-grain** + in-bbox **`contextLocationId`**; promotions nested business physical aligned to branch context.
 
-**6.12A.9.3.2b PASS** — no active **`GET /businesses`** physical geo on **`Business.latitude/longitude`**; bbox → BL PostGIS; **`forMap` without bbox** → BL map-ready guard in city; nearest/radius unchanged (BL PostGIS). **Next:** **6.12A.9.3.3** Flutter discovery/favorites context migration.
+**6.12A.9.3.2b PASS (implementation)** — no active **`GET /businesses`** physical geo on **`Business.latitude/longitude`**; bbox → BL PostGIS; **`forMap` without bbox** → BL map-ready guard in city; nearest/radius unchanged (BL PostGIS). Checkpoints: **A.9.3.1** `f4154d9a…`, **A.9.3.2** `f2bbc9c8…`, **A.9.3.2b** `c53af3c2…`.
+
+**6.12A.9.3.3 (audited, not implemented)** — Flutter discovery/favorites physical-context: discovery **`openBusinessFromDiscovery`** + **`contextLocationId` → route `locationId`**; map **`locationId`**; promotions **`openBusinessFromPromotion`**; favorites **Business-level** — tap **`openBusiness` without `locationId`** → detail **`primary_default`** (matches **A.9.3.1** favorites primary projection). Pending impl: canonical **`openBusinessFromFavorite`**, tests, **QA-002** closure in docs.
+
+### Flutter detail navigation (canonical)
+
+- **File:** `apps/mobile/lib/shared/navigation/open_business.dart`
+- Discovery: **`contextLocationId` → `locationId` query**
+- Map: row **`locationId` → `locationId` query**
+- Promotions: **`promotion.contextLocationId`** (ALL / null → primary)
+- Favorites: **omit `locationId`** intentionally (not branch bookmarks)
+- Notifications / profile review links: business-level route → primary (**by design**)
 
 ## Ads / Analytics location (A.8) — CLOSED
 
@@ -133,11 +160,11 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | ID | Severity | Summary | Target |
 |----|----------|---------|--------|
 | QA-001 | P2 | Consumer Web temp detail uses legacy **`business.address`** | F.4 |
-| QA-002 | P2 | Flutter favorites open without **`contextLocationId`** | Flutter/discovery fix |
+| QA-002 | P2 (**closure in A.9.3.3 impl**) | Audit **A.9.3.3:** favorites must stay **Business-grain**; omit route **`locationId`** + primary API projection is **correct** — not “pass discovery `contextLocationId`” | Close in **A.9.3.3** (helper + tests + doc) |
 | QA-003 | P3 | BL rows with lat/lng but null geography (dev snapshot: 27) | A.9 / ops backfill |
 | QA-004 | P3 | Single-primary enforced in app, not DB | A.9 |
 | QA-005 | P2 | Promotions invalid-`locationId` doc vs primary-fallback | api-contracts |
-| QA-006 | DEFERRED | Ads/analytics no **BusinessLocation** dimension | **A.8** |
+| QA-006 | CLOSED (A.8) | Branch dimension in ads/analytics — **6.12A.8 CLOSED** | — |
 | QA-007 | DEFERRED | Admin no full branch CRUD | Admin backlog |
 | QA-008 | DEFERRED | Legacy **Business** physical columns as fallback | A.9 |
 
@@ -160,9 +187,23 @@ Future architecture should allow **backend/admin-central configuration** of cons
 3. **Git safety:** no `reset --hard`, `clean`, `stash`, mass restore; do not stage protected local dirt (mobile generated registrants, local DB dumps, `.next` caches).
 4. **Prisma on Windows:** stop `catalog-api` dev processes before `prisma generate` if EPERM on `query_engine-windows.dll.node`.
 
+## A.9 deferred (after A.9.3.3 impl — naming from changelog/roadmap)
+
+- **A.9.3.4+** — Consumer Web / Business Web physical-context UX (exact substages per future stage commits).
+- **A.9.4+** — **`Business.cityId`** / legacy column retirement (not started).
+- Post **6.12A:** User contour audit, Business Web owner contour, Admin Web contour, Admin Catalog/CMS, centralized Home config, Catalog Import, QalaGo AI, remaining Consumer Web, production monetization, analytics UX, role-based E2E, security/legal/release — **not** current track unless explicitly staged.
+
 ## Context maintenance
 
-- **`docs/changelog.md`** = historical timeline.
-- **`docs/ai-project-context.md`** = **current-state** snapshot only.
-- Update context when a **major stage** or **material architecture decision** completes; **trivial changes** do not need noisy edits.
+- **`docs/changelog.md`** = historical timeline (**Implemented** / **Verified** checkpoints).
+- **`docs/ai-project-context.md`** = **current-state** snapshot only (**Agreed** next, audited-vs-implemented).
+- **`AGENTS.md`** = mandatory START/FINISH protocol; **no** parallel memory files.
+- Update after **major stage**, **audit gate**, or **material architecture decision**; trivial edits skip noisy updates.
 - **Do not create duplicate** AI/project-context documents.
+
+## Files to attach in a new ChatGPT/Cursor chat
+
+1. `AGENTS.md`
+2. `docs/ai-project-context.md`
+3. `docs/changelog.md` (top ~60 lines minimum)
+4. As needed: `docs/architecture/business-location.md`, `docs/architecture/catalog-geo-query.md`, `docs/architecture/api-contracts.md`

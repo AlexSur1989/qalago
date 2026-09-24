@@ -34,7 +34,7 @@ Relationship: **Business 1 → N BusinessLocation**.
 - **Owner PATCH:** `PATCH /businesses/:id` — when the DTO touches any synchronized physical field, update Business + primary location in one transaction; brand-only patches skip location writes; partial PATCH semantics unchanged (omitted fields not cleared).
 - **Primary resolution errors:** missing or multiple primary rows → controlled internal error on sync paths (no silent repair during ordinary PATCH).
 - **Read layer (A.3):** writes keep primary in sync; **A.9.3.1** public list/detail/favorites **project** top-level physical fields from effective **BusinessLocation** context (primary or `contextLocationId`); **A.9.3.2** discovery SQL (search address predicates, bbox membership, search relevance address tier) uses **BusinessLocation** only; **A.9.3.2b** removed **`Business.latitude/longitude`** from **`GET /businesses`** Prisma geo filters — complete bbox and map readiness use **BL PostGIS / branch coordinate guards**; legacy **Business** columns remain in schema as compatibility storage, not blind read authority for discovery geo/search.
-- **Map:** unchanged — catalog/map PostGIS still queries **`Business.location`**; triggers keep Business and primary `BusinessLocation` geography aligned on coordinate writes.
+- **Map / discovery geo (A.7.1+ / A.9.3.2b):** public list/map viewport membership uses **`BusinessLocation.location`** (PostGIS) and branch coordinate guards — **not** legacy **`Business.location`** / **`Business.latitude/longitude`** as filter authority. Write-path triggers still keep primary **`Business`** mirror and primary **`BusinessLocation`** geography aligned on coordinate updates.
 
 ## Stage 6.12A.4 (multi-location management API)
 

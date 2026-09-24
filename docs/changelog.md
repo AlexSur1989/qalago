@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-09-25 — Project context / AI handoff documentation sync
+
+- **Status:** **CONTEXT SYNC — NO PRODUCT STAGE ADVANCED**.
+- **Checkpoint (docs):** `017750c342501c6c714012ae50552231ab8eb511`.
+- **Scope:** **`AGENTS.md`**, **`docs/ai-project-context.md`**, **`docs/changelog.md`**, minor **`docs/architecture/business-location.md`** drift fix only.
+- **Summary:** Reconciled current-state handoff for new AI sessions: last **implementation** remains **6.12A.9.3.2b** (`c53af3c2d17b6922bbd10cb909006752463829e5`); **6.12A.9.3.3** recorded as **read-only audit PASS** (pending Flutter implementation — **not** implementation PASS); mandatory START/FINISH context protocol in **`AGENTS.md`**; **QA-002** reframed per audit (favorites Business-grain + omit `locationId`).
+- **Product code / tests / DB:** unchanged.
+- **Deferred:** unchanged from **A.9.3.2b** closure.
+- **Next:** **6.12A.9.3.3 implementation** (Flutter — do not start in this docs-only closure).
+
+---
+
 ## 2026-09-24 — 6.12A.9.3.2b Legacy Prisma geo filter cleanup
 
 - **Status:** **6.12A.9.3.2b PASS — LEGACY PRISMA GEO FILTER REMOVED**.

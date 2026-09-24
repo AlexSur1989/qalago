@@ -17,11 +17,29 @@ QalaGo — городской маркетплейс/гид. MVP: Уральск
 
 ### Чеклист stage (START → FINISH)
 
-**START:** `git rev-parse HEAD`, `git status`, прочитать `docs/changelog.md`, определить принятый предыдущий stage.
+**START (обязательно перед материальной работой):**
 
-**FINISH:** обновить changelog → зафиксировать deferred → commit (код + changelog) → сообщить финальный HEAD.
+1. Прочитать **`AGENTS.md`** (этот файл).
+2. Прочитать **`docs/ai-project-context.md`** (текущий этап, next, debt).
+3. Прочитать релевантные **`docs/architecture/*`** для затронутой зоны.
+4. Просмотреть последние записи **`docs/changelog.md`** (активный трек, checkpoints).
+5. **`git rev-parse HEAD`** и **`git status`** — preflight; не трогать protected/local dirt.
+6. Явно определить **текущий stage и scope** до правок; **не** начинать следующий stage без согласования.
 
-**Current-state snapshot:** после завершённых stage или существенных архитектурных решений обновлять **`docs/ai-project-context.md`** (краткий handoff для AI); **`docs/changelog.md`** остаётся исторической лентой. Тривиальные правки не требуют правок context; второй context-документ не создавать. Рабочий цикл stage: задача → реализация → отчёт → audit gate → следующий stage.
+**FINISH (после завершённого материального stage):**
+
+1. Обновить **`docs/changelog.md`** фактически (Status, Checkpoint SHA, Summary, Deferred, Next).
+2. Обновить **`docs/ai-project-context.md`**, если изменилось текущее состояние проекта.
+3. Обновить **`docs/architecture/*`**, если изменился архитектурный контракт.
+4. Зафиксировать **implementation checkpoint** точным SHA; audit-only без product-кода — не выдавать за implementation PASS.
+5. Сохранить deferred; указать **согласованный next**; **не** молча стартовать следующий stage.
+6. Commit: код + changelog в одном focused commit (когда пользователь просит commit); docs-only checkpoint — отдельный docs commit допустим.
+
+**Current-state snapshot:** после завершённых stage, **read-only audit gate** или существенных архитектурных решений обновлять **`docs/ai-project-context.md`**; **`docs/changelog.md`** — историческая лента. Тривиальные правки не требуют правок context. **Read-only audit** в context помечать как **audited / pending implementation**, не как implementation complete. **Не создавать** `MEMORY.md`, `HANDOFF.md`, `PROJECT_STATE.md` и другие параллельные context-файлы — только **`AGENTS.md`**, **`docs/ai-project-context.md`**, **`docs/changelog.md`**, **`docs/architecture/*`**.
+
+**Статусы в отчётах:** **Proposed** → **Agreed** → **Implemented** (diff/commit) → **Verified** (tests, physical QA, read-only audit). Не смешивать audited и implemented.
+
+**Рискованные изменения:** read-only audit → review/approval → отдельная implementation → tests → physical QA при необходимости → changelog/context closure. Cursor **не** автоматически начинает следующий stage.
 
 ## Границы ответственности
 
