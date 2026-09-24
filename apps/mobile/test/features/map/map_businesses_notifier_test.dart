@@ -128,8 +128,8 @@ void main() {
 
       await notifier.onViewportIdle(
         const QalaGoMapBounds(
-          southwest: QalaGoMapCoordinate(latitude: 51, longitude: 51.3),
-          northeast: QalaGoMapCoordinate(latitude: 52, longitude: 52),
+          southwest: QalaGoMapCoordinate(latitude: 48, longitude: 48),
+          northeast: QalaGoMapCoordinate(latitude: 49, longitude: 49),
         ),
       );
       await Future<void>.delayed(Duration.zero);
@@ -185,6 +185,378 @@ void main() {
       expect(state.byLocationId['loc-b']?.address, 'Addr loc-b');
     });
 
+    test('B — second identical viewport idle does not refetch (C2)', () async {
+      var fetchCalls = 0;
+      final container = ProviderContainer(
+        overrides: [
+          cityProvider.overrideWith(() => _FixedCityNotifier()),
+          subcategoriesEnabledProvider.overrideWithValue(false),
+          mapDiscoveryScopeProvider.overrideWith((ref) => null),
+          catalogRepositoryProvider.overrideWith(
+            (ref) => _MapPagingCatalogRepository(
+              onFetch: ({required page, required limit}) async {
+                fetchCalls++;
+                return PaginatedBusinesses(
+                  items: [business(1)],
+                  total: 1,
+                );
+              },
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      const visible = QalaGoMapBounds(
+        southwest: QalaGoMapCoordinate(latitude: 51.10, longitude: 51.20),
+        northeast: QalaGoMapCoordinate(latitude: 51.30, longitude: 51.50),
+      );
+
+      final notifier = container.read(mapBusinessesNotifierProvider.notifier);
+      await notifier.onViewportIdle(visible);
+      await Future<void>.delayed(Duration.zero);
+      expect(fetchCalls, 1);
+      expect(
+        container.read(mapBusinessesNotifierProvider).lastFetchBounds,
+        visible.padded(0.12),
+      );
+
+      await notifier.onViewportIdle(visible);
+      await Future<void>.delayed(Duration.zero);
+      expect(fetchCalls, 1);
+    });
+
+    test('C — small pan inside padded coverage does not refetch', () async {
+      var fetchCalls = 0;
+      final container = ProviderContainer(
+        overrides: [
+          cityProvider.overrideWith(() => _FixedCityNotifier()),
+          subcategoriesEnabledProvider.overrideWithValue(false),
+          mapDiscoveryScopeProvider.overrideWith((ref) => null),
+          catalogRepositoryProvider.overrideWith(
+            (ref) => _MapPagingCatalogRepository(
+              onFetch: ({required page, required limit}) async {
+                fetchCalls++;
+                return PaginatedBusinesses(items: [business(1)], total: 1);
+              },
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      const visible = QalaGoMapBounds(
+        southwest: QalaGoMapCoordinate(latitude: 51.10, longitude: 51.20),
+        northeast: QalaGoMapCoordinate(latitude: 51.30, longitude: 51.50),
+      );
+      const panned = QalaGoMapBounds(
+        southwest: QalaGoMapCoordinate(latitude: 51.105, longitude: 51.21),
+        northeast: QalaGoMapCoordinate(latitude: 51.305, longitude: 51.51),
+      );
+
+      final notifier = container.read(mapBusinessesNotifierProvider.notifier);
+      await notifier.onViewportIdle(visible);
+      await Future<void>.delayed(Duration.zero);
+      await notifier.onViewportIdle(panned);
+      await Future<void>.delayed(Duration.zero);
+      expect(fetchCalls, 1);
+    });
+
+    test('D — pan outside fetched coverage triggers new fetch', () async {
+      var fetchCalls = 0;
+      final container = ProviderContainer(
+        overrides: [
+          cityProvider.overrideWith(() => _FixedCityNotifier()),
+          subcategoriesEnabledProvider.overrideWithValue(false),
+          mapDiscoveryScopeProvider.overrideWith((ref) => null),
+          catalogRepositoryProvider.overrideWith(
+            (ref) => _MapPagingCatalogRepository(
+              onFetch: ({required page, required limit}) async {
+                fetchCalls++;
+                return PaginatedBusinesses(items: [business(fetchCalls)], total: 1);
+              },
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      const visible = QalaGoMapBounds(
+        southwest: QalaGoMapCoordinate(latitude: 51.10, longitude: 51.20),
+        northeast: QalaGoMapCoordinate(latitude: 51.30, longitude: 51.50),
+      );
+      final outside = visible.padded(0.12);
+      final exitsNorth = QalaGoMapBounds(
+        southwest: QalaGoMapCoordinate(
+          latitude: 51.10,
+          longitude: 51.20,
+        ),
+        northeast: QalaGoMapCoordinate(
+          latitude: outside.maxLat + 0.01,
+          longitude: 51.50,
+        ),
+      );
+
+      final notifier = container.read(mapBusinessesNotifierProvider.notifier);
+      await notifier.onViewportIdle(visible);
+      await Future<void>.delayed(Duration.zero);
+      await notifier.onViewportIdle(exitsNorth);
+      await Future<void>.delayed(Duration.zero);
+      expect(fetchCalls, 2);
+    });
+
+    test('E — zoom in within coverage does not refetch', () async {
+      var fetchCalls = 0;
+      final container = ProviderContainer(
+        overrides: [
+          cityProvider.overrideWith(() => _FixedCityNotifier()),
+          subcategoriesEnabledProvider.overrideWithValue(false),
+          mapDiscoveryScopeProvider.overrideWith((ref) => null),
+          catalogRepositoryProvider.overrideWith(
+            (ref) => _MapPagingCatalogRepository(
+              onFetch: ({required page, required limit}) async {
+                fetchCalls++;
+                return PaginatedBusinesses(items: [business(1)], total: 1);
+              },
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      const visible = QalaGoMapBounds(
+        southwest: QalaGoMapCoordinate(latitude: 51.10, longitude: 51.20),
+        northeast: QalaGoMapCoordinate(latitude: 51.30, longitude: 51.50),
+      );
+      const zoomIn = QalaGoMapBounds(
+        southwest: QalaGoMapCoordinate(latitude: 51.15, longitude: 51.25),
+        northeast: QalaGoMapCoordinate(latitude: 51.25, longitude: 51.45),
+      );
+
+      final notifier = container.read(mapBusinessesNotifierProvider.notifier);
+      await notifier.onViewportIdle(visible);
+      await Future<void>.delayed(Duration.zero);
+      await notifier.onViewportIdle(zoomIn);
+      await Future<void>.delayed(Duration.zero);
+      expect(fetchCalls, 1);
+    });
+
+    test('F — zoom out beyond coverage refetches', () async {
+      var fetchCalls = 0;
+      final container = ProviderContainer(
+        overrides: [
+          cityProvider.overrideWith(() => _FixedCityNotifier()),
+          subcategoriesEnabledProvider.overrideWithValue(false),
+          mapDiscoveryScopeProvider.overrideWith((ref) => null),
+          catalogRepositoryProvider.overrideWith(
+            (ref) => _MapPagingCatalogRepository(
+              onFetch: ({required page, required limit}) async {
+                fetchCalls++;
+                return PaginatedBusinesses(items: [business(1)], total: 1);
+              },
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      const zoomIn = QalaGoMapBounds(
+        southwest: QalaGoMapCoordinate(latitude: 51.15, longitude: 51.25),
+        northeast: QalaGoMapCoordinate(latitude: 51.25, longitude: 51.45),
+      );
+      final coverage = zoomIn.padded(0.12);
+      final zoomOut = QalaGoMapBounds(
+        southwest: QalaGoMapCoordinate(
+          latitude: coverage.minLat - 0.01,
+          longitude: coverage.minLng - 0.01,
+        ),
+        northeast: QalaGoMapCoordinate(
+          latitude: coverage.maxLat + 0.01,
+          longitude: coverage.maxLng + 0.01,
+        ),
+      );
+
+      final notifier = container.read(mapBusinessesNotifierProvider.notifier);
+      await notifier.onViewportIdle(zoomIn);
+      await Future<void>.delayed(Duration.zero);
+      await notifier.onViewportIdle(zoomOut);
+      await Future<void>.delayed(Duration.zero);
+      expect(fetchCalls, 2);
+    });
+
+    test('G — scope reset clears coverage and next idle fetches', () async {
+      var fetchCalls = 0;
+      final container = ProviderContainer(
+        overrides: [
+          cityProvider.overrideWith(() => _FixedCityNotifier()),
+          subcategoriesEnabledProvider.overrideWithValue(false),
+          mapDiscoveryScopeProvider.overrideWith((ref) => null),
+          catalogRepositoryProvider.overrideWith(
+            (ref) => _MapPagingCatalogRepository(
+              onFetch: ({required page, required limit}) async {
+                fetchCalls++;
+                return PaginatedBusinesses(items: [business(1)], total: 1);
+              },
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      const visible = QalaGoMapBounds(
+        southwest: QalaGoMapCoordinate(latitude: 51.10, longitude: 51.20),
+        northeast: QalaGoMapCoordinate(latitude: 51.30, longitude: 51.50),
+      );
+
+      final notifier = container.read(mapBusinessesNotifierProvider.notifier);
+      await notifier.onViewportIdle(visible);
+      await Future<void>.delayed(Duration.zero);
+      notifier.resetForScopeChange();
+      await notifier.onViewportIdle(visible);
+      await Future<void>.delayed(Duration.zero);
+      expect(fetchCalls, 2);
+      expect(
+        container.read(mapBusinessesNotifierProvider).lastFetchBounds,
+        visible.padded(0.12),
+      );
+    });
+
+    test('H — failed fetch leaves viewport eligible for retry', () async {
+      var fetchCalls = 0;
+      final container = ProviderContainer(
+        overrides: [
+          cityProvider.overrideWith(() => _FixedCityNotifier()),
+          subcategoriesEnabledProvider.overrideWithValue(false),
+          mapDiscoveryScopeProvider.overrideWith((ref) => null),
+          catalogRepositoryProvider.overrideWith(
+            (ref) => _CountingThrowingCatalogRepository(
+              onFetch: ({required page, required limit}) async {
+                fetchCalls++;
+                if (fetchCalls == 1) {
+                  throw DioException(requestOptions: RequestOptions(path: '/'));
+                }
+                return PaginatedBusinesses(items: [business(1)], total: 1);
+              },
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      const visible = QalaGoMapBounds(
+        southwest: QalaGoMapCoordinate(latitude: 51.10, longitude: 51.20),
+        northeast: QalaGoMapCoordinate(latitude: 51.30, longitude: 51.50),
+      );
+
+      final notifier = container.read(mapBusinessesNotifierProvider.notifier);
+      await notifier.onViewportIdle(visible);
+      await Future<void>.delayed(Duration.zero);
+      expect(
+        container.read(mapBusinessesNotifierProvider).lastFetchBounds,
+        isNull,
+      );
+
+      await notifier.retry();
+      await Future<void>.delayed(Duration.zero);
+      expect(fetchCalls, 2);
+      expect(container.read(mapBusinessesNotifierProvider).byLocationId.length, 1);
+    });
+
+    test('I — stale fetch does not establish coverage', () async {
+      final firstWave = Completer<PaginatedBusinesses>();
+      final secondWave = Completer<PaginatedBusinesses>();
+      var wave = 0;
+      final container = ProviderContainer(
+        overrides: [
+          cityProvider.overrideWith(() => _FixedCityNotifier()),
+          subcategoriesEnabledProvider.overrideWithValue(false),
+          mapDiscoveryScopeProvider.overrideWith((ref) => null),
+          catalogRepositoryProvider.overrideWith(
+            (ref) => _MapPagingCatalogRepository(
+              onFetch: ({required page, required limit}) async {
+                wave++;
+                if (wave == 1) return firstWave.future;
+                return secondWave.future;
+              },
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      const visible = QalaGoMapBounds(
+        southwest: QalaGoMapCoordinate(latitude: 51.10, longitude: 51.20),
+        northeast: QalaGoMapCoordinate(latitude: 51.30, longitude: 51.50),
+      );
+      final outside = visible.padded(0.12);
+      final exitsNorth = QalaGoMapBounds(
+        southwest: const QalaGoMapCoordinate(latitude: 51.10, longitude: 51.20),
+        northeast: QalaGoMapCoordinate(
+          latitude: outside.maxLat + 0.01,
+          longitude: 51.50,
+        ),
+      );
+
+      final notifier = container.read(mapBusinessesNotifierProvider.notifier);
+      final pendingFirst = notifier.onViewportIdle(visible);
+      final pendingSecond = notifier.onViewportIdle(exitsNorth);
+
+      firstWave.complete(
+        PaginatedBusinesses(items: [business(99)], total: 1),
+      );
+      await pendingFirst;
+      await Future<void>.delayed(Duration.zero);
+      expect(
+        container.read(mapBusinessesNotifierProvider).lastFetchBounds,
+        isNull,
+      );
+
+      secondWave.complete(
+        PaginatedBusinesses(items: [business(1)], total: 1),
+      );
+      await pendingSecond;
+      await Future<void>.delayed(Duration.zero);
+      expect(
+        container.read(mapBusinessesNotifierProvider).lastFetchBounds,
+        exitsNorth.padded(0.12),
+      );
+    });
+
+    test('J — max-page incomplete fetch does not establish coverage', () async {
+      final container = ProviderContainer(
+        overrides: [
+          cityProvider.overrideWith(() => _FixedCityNotifier()),
+          subcategoriesEnabledProvider.overrideWithValue(false),
+          mapDiscoveryScopeProvider.overrideWith((ref) => null),
+          catalogRepositoryProvider.overrideWith(
+            (ref) => _MapPagingCatalogRepository(
+              onFetch: ({required page, required limit}) async {
+                final p = page;
+                return PaginatedBusinesses(
+                  items: List.generate(100, (i) => business(p * 1000 + i)),
+                  total: 5000,
+                );
+              },
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      const visible = QalaGoMapBounds(
+        southwest: QalaGoMapCoordinate(latitude: 51.10, longitude: 51.20),
+        northeast: QalaGoMapCoordinate(latitude: 51.30, longitude: 51.50),
+      );
+
+      final notifier = container.read(mapBusinessesNotifierProvider.notifier);
+      await notifier.onViewportIdle(visible);
+      await Future<void>.delayed(Duration.zero);
+
+      final state = container.read(mapBusinessesNotifierProvider);
+      expect(state.byLocationId.length, 3000);
+      expect(state.lastFetchBounds, isNull);
+    });
+
     test('resetForScopeChange clears data and ignores stale responses', () async {
       final completer = Completer<PaginatedBusinesses>();
       final container = ProviderContainer(
@@ -215,6 +587,39 @@ void main() {
       expect(state.byLocationId, isEmpty);
     });
   });
+}
+
+class _CountingThrowingCatalogRepository extends CatalogRepository {
+  _CountingThrowingCatalogRepository({required this.onFetch}) : super(Dio());
+
+  final Future<PaginatedBusinesses> Function({
+    required int page,
+    required int limit,
+  }) onFetch;
+
+  @override
+  Future<PaginatedBusinesses> fetchBusinesses({
+    required String citySlug,
+    String? search,
+    String? categoryId,
+    String? subcategoryId,
+    bool? featured,
+    bool? forMap,
+    double? minLat,
+    double? maxLat,
+    double? minLng,
+    double? maxLng,
+    double? latitude,
+    double? longitude,
+    double? radiusKm,
+    int? limit,
+    int? page,
+    String? sort,
+    CancelToken? cancelToken,
+  }) async {
+    expect(forMap, isTrue);
+    return onFetch(page: page ?? 1, limit: limit ?? 100);
+  }
 }
 
 class _MapPagingCatalogRepository extends CatalogRepository {

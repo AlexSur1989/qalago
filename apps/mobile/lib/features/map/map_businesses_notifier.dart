@@ -91,6 +91,7 @@ class MapBusinessesState {
     bool clearError = false,
     int? scopeGeneration,
     QalaGoMapBounds? lastFetchBounds,
+    bool clearLastFetchBounds = false,
     QalaGoMapBounds? visibleBounds,
   }) {
     return MapBusinessesState(
@@ -99,7 +100,9 @@ class MapBusinessesState {
       loading: loading ?? this.loading,
       error: clearError ? null : (error ?? this.error),
       scopeGeneration: scopeGeneration ?? this.scopeGeneration,
-      lastFetchBounds: lastFetchBounds ?? this.lastFetchBounds,
+      lastFetchBounds: clearLastFetchBounds
+          ? null
+          : (lastFetchBounds ?? this.lastFetchBounds),
       visibleBounds: visibleBounds ?? this.visibleBounds,
     );
   }
@@ -144,10 +147,11 @@ class MapBusinessesNotifier extends Notifier<MapBusinessesState> {
       'MAPDBG lastFetchBounds=${mapViewportDbgBounds(state.lastFetchBounds)}',
     );
     state = state.copyWith(visibleBounds: bounds);
-    final fetchNeeded = mapBoundsFetchNeeded(
-      previous: state.lastFetchBounds,
-      next: bounds,
+    final fetchSuppressed = mapViewportFetchSuppressed(
+      fetchedCoverage: state.lastFetchBounds,
+      visible: bounds,
     );
+    final fetchNeeded = !fetchSuppressed;
     mapViewportDbg('MAPDBG fetchNeeded=$fetchNeeded');
     if (!fetchNeeded) {
       mapViewportDbg('MAPDBG fetchSkipped');
@@ -157,9 +161,14 @@ class MapBusinessesNotifier extends Notifier<MapBusinessesState> {
   }
 
   Future<void> retry() async {
-    final bounds = state.visibleBounds ?? state.lastFetchBounds;
-    if (bounds == null) return;
-    await _fetchForBounds(bounds.padded(0.12));
+    final visible = state.visibleBounds;
+    if (visible != null) {
+      await _fetchForBounds(visible.padded(0.12));
+      return;
+    }
+    final fetchedCoverage = state.lastFetchBounds;
+    if (fetchedCoverage == null) return;
+    await _fetchForBounds(fetchedCoverage);
   }
 
   Future<void> _fetchForBounds(QalaGoMapBounds bounds) async {
@@ -189,6 +198,7 @@ class MapBusinessesNotifier extends Notifier<MapBusinessesState> {
     mapViewportDbg('MAPDBG fetchBounds=${mapViewportDbgBounds(bounds)}');
     mapViewportDbg('MAPDBG fetchGeneration=$requestGeneration');
 
+    var fetchComplete = false;
     try {
       for (var page = 1; page <= kMapBusinessMaxPagesPerFetch; page++) {
         if (cancelToken.isCancelled ||
@@ -220,7 +230,11 @@ class MapBusinessesNotifier extends Notifier<MapBusinessesState> {
 
         if (pageResult.items.isEmpty ||
             itemsReceivedFromApi >= pageResult.total) {
+          fetchComplete = true;
           break;
+        }
+        if (page == kMapBusinessMaxPagesPerFetch) {
+          fetchComplete = itemsReceivedFromApi >= pageResult.total;
         }
       }
 
@@ -234,9 +248,13 @@ class MapBusinessesNotifier extends Notifier<MapBusinessesState> {
         byLocationId: merged,
         viewportTotal: viewportTotal,
         loading: false,
-        lastFetchBounds: bounds,
+        lastFetchBounds: fetchComplete ? bounds : null,
+        clearLastFetchBounds: !fetchComplete,
         clearError: true,
       );
+      if (!fetchComplete) {
+        mapViewportDbg('MAPDBG fetch INCOMPLETE_COVERAGE not establishing lastFetchBounds');
+      }
       final sampleIds = merged.keys.take(5).join(',');
       mapViewportDbg('MAPDBG fetch SUCCESS count=${merged.length}');
       mapViewportDbg('MAPDBG fetch returnedLocationIds=$sampleIds');

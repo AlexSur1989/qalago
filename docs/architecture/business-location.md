@@ -77,6 +77,7 @@ Relationship: **Business 1 → N BusinessLocation**.
 - **Identity:** **`BusinessModel.id`** = **Business.id** (detail, reviews, favorites, analytics). **`locationId`** (optional on non-map payloads) = **BusinessLocation.id** for map rows.
 - **Physical key:** `mapPhysicalKey(row)` = `locationId ?? id` (legacy fallback when `locationId` absent).
 - **Map state:** `MapBusinessesState.byLocationId` keyed by physical key — multiple branches of one business are distinct entries; pagination merge uses physical key, not business id.
+- **Viewport fetch (MAP-PERF.C2):** camera idle sends **visible** bounds; API request uses **visible.padded(0.12)**. **`lastFetchBounds`** stores that padded coverage after a **complete** successful fetch. Further idles **suppress** fetch while **visible ⊆ lastFetchBounds** (containment, not padded-vs-visible edge deltas). City/category scope reset clears **`lastFetchBounds`**.
 - **GeoJSON:** `Feature.id` = physical key; `properties.locationId` = physical key; `properties.businessId` = Business.id; dedup by physical key.
 - **Selection / tap:** map selection is **location** identity; preview and directions use the **selected location row** (address, lat/lng); opening full detail uses **Business.id** plus optional **`locationId`** query for branch-aware detail physical fields.
 - **Unchanged:** reviews/favorites/analytics Business-scoped; MapLibre style/basemap; geocoding; cluster styling/thresholds; nearest/radius discovery grain.

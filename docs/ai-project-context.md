@@ -23,6 +23,13 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - Clients **cannot** widen visibility with **`?status=PENDING`** or **`?status=BLOCKED`** (→ **400**). Omit **`status`** or use **`status=ACTIVE`**.
 - **Administrative** status filtering remains on protected **`GET /admin/businesses`** (staff auth).
 
+## Map viewport fetch hysteresis (MAP-PERF.C2)
+
+- **`lastFetchBounds`** = padded bbox (**12%**) successfully fetched from **`GET /businesses?forMap=true`** (ACTIVE-only public catalog; no status override).
+- **Suppress** new viewport fetch while current **visible** bounds are **contained in** **`lastFetchBounds`** (not edge-delta equality between padded vs visible).
+- **City** / **mapDiscoveryScope** change → **`resetForScopeChange`** clears coverage → next idle **must** fetch.
+- Failed, cancelled, stale, or **incomplete pagination** (30 pages without exhausting API total) **do not** establish coverage.
+
 ## Consumer Web stage
 
 - **6.11F.3 PASS** — public SEO infrastructure (sitemap, robots, temporary business detail **noindex**, etc.).

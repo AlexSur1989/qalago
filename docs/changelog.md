@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-09-24 — MAP-PERF.C2 Viewport fetch hysteresis (hotfix)
+
+- **Status:** **MAP-PERF.C2.HOTFIX PASS — CONTAINMENT-BASED VIEWPORT HYSTERESIS IMPLEMENTED** (automated tests).
+- **Checkpoint (implementation):** _(set at commit)_.
+- **Summary:** **C2.0** confirmed **`mapBoundsFetchNeeded`** compared **padded `lastFetchBounds`** to **visible** viewport via edge deltas → identical idle re-fetched (up to **30×100** HTTP). **Fix:** **`mapViewportFetchSuppressed`** / **`mapBoundsVisibleWithinFetchedCoverage`** — suppress fetch while **visible ⊆ fetched padded coverage** (ε = **`1e-7`**). **12%** padding unchanged; city/scope reset clears coverage; failed/cancelled/stale fetches do not establish coverage; **30-page cap** without exhausting API **total** does not mark coverage complete. **C3** / map renderer / backend untouched.
+- **Physical QA:** deferred (Samsung) — MAPDBG retained.
+- **Next:** MAP-PERF.C3 clustering (separate); **6.12A.9.0** unchanged.
+
+---
+
 ## 2026-09-24 — MAP-SEC.C1 Public business visibility (security hotfix)
 
 - **Status:** **MAP-SEC.C1 PASS — PUBLIC BUSINESS VISIBILITY SECURED** (runtime-verified).
