@@ -34,7 +34,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 - **Invariant:** visible viewport **⊆** fetched padded coverage (**`lastFetchBounds`**, **12%** pad) → **suppress** fetch; viewport **exits** coverage → **fetch** new padded coverage. Error / cancel / stale / incomplete wave (**30-page** cap without API total exhausted) → **must not** establish valid coverage.
 - **Physical Samsung SM-J610FN:** small pan inside coverage → **`fetchNeeded=false`** / **`fetchSkipped`**; larger pan outside → **`fetchNeeded=true`** / successful refetch — **PASS**. Details: `docs/changelog.md` MAP-PERF.C2 physical QA entry. Implementation: **`3c86164ffcd9eafdf42536642de08635c30490ed`**.
-- **Open (not C2):** **MAP-PERF.C3** — duplicate native **`qalago-business-*`** layer adds; **`QALAGO_NATIVE_MAP_BUSINESS_LAYER=true`** remains debug APK config only (not production-default here).
+- **MAP-PERF.C3.1 (lifecycle):** native business GeoJSON controller uses **serialized install**, **style epoch**, and **getLayerIds/getSourceIds** reconcile (maplibre_gl **0.27.1**); duplicate-layer idempotency hardening — **physical QA pending**; **`QALAGO_NATIVE_MAP_BUSINESS_LAYER=true`** still debug-only (default **false**). **C3.2** perf dedup not done; **C3** not closed.
 
 ## Consumer Web stage
 

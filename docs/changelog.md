@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-09-24 — MAP-PERF.C3.1 Native business layer lifecycle (hotfix)
+
+- **Status:** **MAP-PERF.C3.1 AUTOMATED PASS — PHYSICAL/LOAD QA STILL REQUIRED**.
+- **Checkpoint (implementation):** `68cca9f8` (full SHA in docs commit).
+- **Summary:** **C3 audit:** duplicate **`CannotAddLayerException`** on **`qalago-business-*`** layers — Dart install flags, concurrent **`ensureLayers`/`syncBusinessGeoJson`/`onStyleLoaded`**, and tearDown/remove failures desynced from native style. **Fix:** serialized lifecycle queue + **style epoch**; **`getLayerIds`/`getSourceIds`** reconcile (maplibre_gl **0.27.1**); safe **already-exists** handling; partial-layer retry without re-adding successful layers; latest GeoJSON replay on style reload. **`QALAGO_NATIVE_MAP_BUSINESS_LAYER`** default **still false**. **C3.2** fingerprint/perf not in scope. **Automated:** Flutter **1011/1011 PASS**.
+- **Physical QA:** pending (Samsung native-business APK).
+- **Next:** **C3.4** physical QA; **C3.2** GeoJSON dedup optional; production-default decision **C3.5** separate.
+
+---
+
 ## 2026-09-24 — MAP-PERF.C2 Physical QA (Samsung)
 
 - **Status:** **MAP-PERF.C2 PASS — VIEWPORT HYSTERESIS FINALIZED**.
