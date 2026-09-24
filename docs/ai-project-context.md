@@ -23,11 +23,12 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - Clients **cannot** widen visibility with **`?status=PENDING`** or **`?status=BLOCKED`** (→ **400**). Omit **`status`** or use **`status=ACTIVE`**.
 - **Administrative** status filtering remains on protected **`GET /admin/businesses`** (staff auth).
 
-## Map user location rendering (MAP-LOCATION.1 / MAP-LOCATION.2)
+## Map user location (MAP-LOCATION.2 CLOSED / PHYSICAL PASS)
 
-- **MapLibre:** passive GPS → **`userLocationProvider`** (**last-known bootstrap** → bounded fresh current → live stream) → native GeoJSON **`qalago-user-location`** + **CircleLayer** (not **`myLocationEnabled`**, not Flutter overlay projection). Style ready **replays `widget.userLocation`**.
-- **Physical APK** (`QALAGO_NATIVE_MAP_BUSINESS_LAYER=true`): overlay markers exclude **`__user_location__`**; businesses stay native GeoJSON.
+- **Pipeline:** Geolocator → passive **last-known / bounded current bootstrap** → continuous stream → **`userLocationProvider`** → **MapScreen** → **`QalaGoMapView.userLocation`** → native MapLibre GeoJSON **`qalago-user-location`** + **CircleLayer** (not **`myLocationEnabled`**).
+- **Physical Samsung SM-J610FN (Android 10):** automatic initial dot; pan/zoom/fast-pan geographic attachment; map tab re-entry replay — **PASS** (debug APK **`QALAGO_DEV_HOST=172.158.10.133`**, native business layer on). Details: `docs/changelog.md` MAP-LOCATION.2 physical QA entry.
 - **flutter_map fallback:** user location remains Flutter overlay markers.
+- **Still open (not MAP-LOCATION):** duplicate native **`qalago-business-*`** layer add errors (**C3** track).
 
 ## Map viewport fetch hysteresis (MAP-PERF.C2)
 

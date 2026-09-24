@@ -6,13 +6,30 @@
 
 ---
 
+## 2026-09-24 — MAP-LOCATION.2 Physical QA (Samsung)
+
+- **Status:** **MAP-LOCATION.2 PASS — USER LOCATION FINALIZED**.
+- **Checkpoint (implementation):** `113a2b02b31b2e2d40dce3b4d23e62c69ebbebf1`.
+- **Device:** Samsung **SM-J610FN**, Android **10** / API **29**.
+- **APK (debug):** **`QALAGO_DEV_HOST=172.158.10.133`**, **`QALAGO_DEV_LOGIN=true`**, **`QALAGO_NATIVE_MAP_BUSINESS_LAYER=true`**.
+- **Physical QA (post hotfix):**
+  - **Initial location:** blue user-location dot on map open **without** ~75 m movement — **PASS**.
+  - **Slow pan:** dot geographically attached (not screen-fixed) — **PASS**.
+  - **Zoom:** correct geographic anchor, no drift/jump — **PASS**.
+  - **Fast pan:** after idle, dot still attached; no stale screen position — **PASS**.
+  - **Map re-entry:** leave Map tab → return; dot restored automatically — **PASS**.
+- **Out of scope (not tested / not closed here):** **C3** native business clustering; **`CannotAddLayerException`** duplicate **`qalago-business-*`** layers (separate stage).
+- **Next:** **MAP-PERF.C3** / business-layer lifecycle audit; **MAP-PERF.C2** final closure remains separate.
+
+---
+
 ## 2026-09-24 — MAP-LOCATION.2 User location bootstrap + native replay (hotfix)
 
-- **Status:** **MAP-LOCATION.2 HOTFIX AUTOMATED PASS — PHYSICAL SAMSUNG QA REQUIRED**.
+- **Status:** **MAP-LOCATION.2 HOTFIX AUTOMATED PASS** (physical QA → closure entry above).
 - **Checkpoint (implementation):** `113a2b02b31b2e2d40dce3b4d23e62c69ebbebf1`.
 - **Summary:** MAP-LOCATION.2 audit: Samsung had permissions + fused last-known but native user layer only **cleared/initialized** (no **updated**). **Fix:** passive **`userLocationStream()`** bootstraps **`getLastKnownPosition()`**, bounded **`getCurrentPosition`** (**12s**), deduped emissions, then **`distanceFilter: 75`** stream; debug **`[UserLocation]`** bootstrap events. **MapLibre:** **`onStyleLoaded`** syncs **`widget.userLocation`** (not stale controller cache only); style reload replays current widget coordinate. **Automated:** Flutter **999/999 PASS**. **C2** / **C3** / business layers unchanged.
-- **Physical QA:** pending (Samsung blue dot).
-- **Next:** MAP-LOCATION physical closure; duplicate business-layer add errors separate stage.
+- **Physical QA:** **PASS** (Samsung SM-J610FN — see physical QA entry above).
+- **Next:** **C3** duplicate business-layer errors; **C2** formal closure separate.
 
 ---
 
