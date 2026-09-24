@@ -6,10 +6,24 @@
 
 ---
 
+## 2026-09-24 — MAP-PERF.C3 CLOSED (native business layer + Android release path)
+
+- **Status:** **MAP-PERF.C3 CLOSED — NATIVE BUSINESS LAYER AND ANDROID RELEASE PATH FINALIZED**.
+- **Checkpoint (C3.5 wiring):** `4e96109e61abc284ff21a40066261ecd5dfa303a`.
+- **Checkpoint (closure):** docs-only commit (see git history for SHA).
+- **Track summary:** **C3.1** lifecycle/idempotency — automated + Android physical **PASS**. **C3.2** semantic GeoJSON dedup — automated + Android physical **PASS**. **C3.3** synthetic load QA **100–3000** features — automated **PASS** (not physical 3000 on device). **C3.4** Samsung debug APK physical **PASS**. **C3.5** Android release `--dart-define=QALAGO_NATIVE_MAP_BUSINESS_LAYER=true` documented (`4e96109…`). **C3.5R** Android **`flutter build apk --release`** Samsung smoke **PASS** (see below).
+- **C3.5R physical (PASS):** Samsung **SM-J610FN**, Android **10** / API **29**; release APK with **`QALAGO_API_BASE_URL=http://192.168.8.101:3002/api/v1`** (local LAN QA only) + **`QALAGO_NATIVE_MAP_BUSINESS_LAYER=true`**. Launch, home/catalog load, map open, native business markers, pan, zoom, cluster, business tap + preview, Map→Home→Map, user-location dot coexistence — **PASS**; no freeze/disappearance observed.
+- **Production API observation (out of C3 scope):** release APK with **`QALAGO_API_BASE_URL=https://api.qalago.kz/api/v1`** + native define **launched** but **data did not load**; **`curl https://api.qalago.kz/api/v1/health`** → host not resolved — **DNS/API deployment not present**; separate infrastructure work, **not** a MAP-PERF.C3 defect. **Authoritative Android store API URL in docs remains `https://api.qalago.kz/api/v1`.**
+- **Production policy:** Android release/store → explicit **`QALAGO_NATIVE_MAP_BUSINESS_LAYER=true`**; iOS release → **omit** native define until dedicated iOS physical QA; **code default remains `false`**; omitted define → legacy Flutter business overlay; **no** automatic native→overlay runtime fallback (optional hardening debt).
+- **Deferred (separate tracks):** iOS native business-layer physical QA; production **`api.qalago.kz`** DNS/API deployment; optional native→Flutter overlay fallback; optional user-location visual puck enhancement.
+- **Next:** none for MAP-PERF.C3 track.
+
+---
+
 ## 2026-09-24 — MAP-PERF.C3.5 Android production release wiring
 
-- **Status:** **MAP-PERF.C3.5 RELEASE WIRING IMPLEMENTED — PHYSICAL RELEASE SMOKE PENDING**.
-- **Checkpoint (implementation):** docs-only release-wiring commit (see git history for SHA).
+- **Status:** **MAP-PERF.C3.5 RELEASE WIRING IMPLEMENTED** (closure → **C3.5R** + track **CLOSED** above).
+- **Checkpoint (implementation):** `4e96109e61abc284ff21a40066261ecd5dfa303a`.
 - **Summary:** **Read-only audit:** global code default **`false`** retained; iOS physical QA required before global enable. **Implemented:** authoritative **Android** store/release commands now require explicit **`--dart-define=QALAGO_NATIVE_MAP_BUSINESS_LAYER=true`** alongside production API URL in **`docs/deploy.md`**, **`docs/mobile/ANDROID_BUILD.md`**, **`apps/mobile/README.md`**. **iOS policy documented:** **omit** native business define on release until dedicated iOS QA (**`docs/mobile/IOS_BUILD_CHECKLIST.md`**). **No** Dart/map/controller changes; **no** runtime Platform gating; **no** native→overlay fallback added. Fail-safe: missing define → legacy Flutter business markers.
 - **Physical QA:** **C3.5R** pending — Android **release** artifact build + Samsung smoke (not run in this stage).
 - **Next:** **MAP-PERF.C3.5R** — Android release artifact + Samsung smoke; then C3.5 closure entry if PASS.
