@@ -1,17 +1,22 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import {
+  loadBusinessLocationsGroupedByBusinessId,
+  normalizeFavoriteBusinessPhysical,
+} from '../businesses/business-physical-read-normalization.util';
 
 @Injectable()
 export class FavoritesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll(userId: string) {
-    return this.prisma.favorite.findMany({
+  async findAll(userId: string) {
+    const rows = await this.prisma.favorite.findMany({
       where: { userId },
       include: {
         business: {
           select: {
             id: true,
+            cityId: true,
             title: true,
             slug: true,
             address: true,
@@ -19,6 +24,11 @@ export class FavoritesService {
             coverImageUrl: true,
             latitude: true,
             longitude: true,
+            phone: true,
+            whatsapp: true,
+            instagram: true,
+            website: true,
+            workHours: true,
             category: { select: { title: true, icon: true } },
             city: { select: { slug: true, nameRu: true } },
           },
@@ -26,6 +36,24 @@ export class FavoritesService {
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    if (rows.length === 0) {
+      return rows;
+    }
+
+    const businessIds = rows.map((row) => row.business.id);
+    const locationsByBusinessId = await loadBusinessLocationsGroupedByBusinessId(
+      this.prisma,
+      businessIds,
+    );
+
+    return rows.map((row) => ({
+      ...row,
+      business: normalizeFavoriteBusinessPhysical(
+        row.business,
+        locationsByBusinessId.get(row.business.id) ?? [],
+      ),
+    }));
   }
 
   async check(userId: string, businessId: string) {

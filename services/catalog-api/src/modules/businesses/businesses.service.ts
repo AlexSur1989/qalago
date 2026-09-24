@@ -65,6 +65,11 @@ import { BusinessSubcategoryService } from './business-subcategory.service';
 import { SubcategoriesService } from '../categories/subcategories.service';
 import { randomBytes } from 'crypto';
 import { attachEffectivePhysicalToDetail } from './business-effective-physical.util';
+import {
+  applyPublicPhysicalReadFromEffectivePhysical,
+  loadBusinessLocationsGroupedByBusinessId,
+  normalizePublicBusinessListItems,
+} from './business-physical-read-normalization.util';
 import { attachContextLocationIdForBranch } from './business-discovery-context.util';
 import { businessCatalogDiscoveryCityScope } from './business-discovery-city-membership.util';
 import { assertPublicCatalogBusinessStatus } from '../../common/utils/public-catalog-business-status.util';
@@ -245,10 +250,39 @@ export class BusinessesService {
       searchContext,
     )) as typeof items;
 
+    const normalizedItems = await this.normalizePublicCatalogListPhysicalFields(
+      enrichedItems as Array<{ id: string; cityId: string; address: string } & (typeof enrichedItems)[number]>,
+      query,
+    );
+
     return {
-      items: enrichedItems,
+      items: normalizedItems,
       meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
     };
+  }
+
+  /**
+   * A.9.3.1 — top-level list physical fields = effective branch context (primary or contextLocationId).
+   * Skips forMap=true rows (already BusinessLocation-grain from map presenter).
+   */
+  private async normalizePublicCatalogListPhysicalFields<
+    T extends { id: string; cityId: string; address: string },
+  >(items: readonly T[], query: ListBusinessesQueryDto): Promise<T[]> {
+    if (items.length === 0 || query.forMap === true) {
+      return [...items];
+    }
+
+    if (typeof this.prisma.businessLocation?.findMany !== 'function') {
+      return [...items];
+    }
+
+    const businessIds = items.map((item) => item.id);
+    const locationsByBusinessId = await loadBusinessLocationsGroupedByBusinessId(
+      this.prisma,
+      businessIds,
+    );
+
+    return normalizePublicBusinessListItems(items, locationsByBusinessId);
   }
 
   /**
@@ -1046,18 +1080,23 @@ export class BusinessesService {
       options?.locationId,
     );
 
+    const withNormalizedTopLevel = applyPublicPhysicalReadFromEffectivePhysical(withPhysical);
+
     const [effectiveMedia, effectiveCatalog, effectivePromotions] = await Promise.all([
       this.publicContent.getEffectiveMediaForDetail(
         id,
-        withPhysical.activeLocationId,
+        withNormalizedTopLevel.activeLocationId,
         business.coverImageUrl,
       ),
-      this.publicContent.getEffectiveCatalogForDetail(id, withPhysical.activeLocationId),
-      this.publicContent.getEffectivePromotionsForDetail(id, withPhysical.activeLocationId),
+      this.publicContent.getEffectiveCatalogForDetail(id, withNormalizedTopLevel.activeLocationId),
+      this.publicContent.getEffectivePromotionsForDetail(
+        id,
+        withNormalizedTopLevel.activeLocationId,
+      ),
     ]);
 
     return {
-      ...withPhysical,
+      ...withNormalizedTopLevel,
       effectiveMedia,
       effectiveCatalog,
       effectivePromotions,

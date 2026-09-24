@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-24 — 6.12A.9.3.1 Public API physical read normalization
+
+- **Status:** **6.12A.9.3.1 PASS — PUBLIC PHYSICAL READS NORMALIZED** (pending checkpoint commit).
+- **Scope:** **catalog-api read projection only** — no schema/migration, no write-path/SQL ranking changes, no Flutter/Consumer/Business/Admin edits.
+- **Summary:** Shared **`business-physical-read-normalization.util`** projects top-level **`address` / coordinates / contacts / hours** from effective **BusinessLocation** (primary or **`contextLocationId`**) with brand-default fallback for contacts; **`GET /businesses`** (non-`forMap`), **`GET /businesses/:id`**, **`GET /favorites`** normalized; **`forMap=true`** unchanged (branch-grain presenter).
+- **Performance:** one batched **`BusinessLocation.findMany`** per list/favorites page (no per-row location queries).
+- **Deferred:** **A.9.3.2** SQL legacy reads; **A.9.3.3** Flutter favorites navigation (QA-002); **A.9.3.4+** web/owner UX; **A.9.4+** `cityId`/column retirement.
+- **Next:** **6.12A.9.3.2** — discovery SQL legacy physical-read cleanup.
+
+---
+
 ## 2026-09-24 — 6.12A.9.1 Single-primary service / integrity hardening
 
 - **Status:** **6.12A.9.1 PASS — SINGLE-PRIMARY SERVICE/INTEGRITY HARDENING FINALIZED**.
