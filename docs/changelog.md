@@ -6,6 +6,21 @@
 
 ---
 
+## 2026-09-24 — 6.12A.9.2B Local coordinate hygiene repair (qalago_dev)
+
+- **Status:** **6.12A.9.2B PASS — LOCAL COORDINATE HYGIENE NORMALIZED** (database repair on **local `qalago_dev` only**; **not** production).
+- **Checkpoint (docs):** documentation commit after repair (see git history for SHA).
+- **Preflight (A.9.2A baseline):** 108 `BusinessLocation` rows — **VALID 37**, **MISSING_BOTH 26**, **OUT_OF_WORLD_RANGE 18**, **PARTIAL_LAT_ONLY 9**, **PARTIAL_LNG_ONLY 9**, **ZERO_ZERO 9**; safe repair set **45** (all **PENDING**, **0 ACTIVE** in target set).
+- **Repair:** **45** invalid/partial/sentinel PENDING branch rows normalized to **`latitude = NULL`, `longitude = NULL`**; corresponding **primary `Business`** legacy coordinates synchronized in the **same transaction**; PostGIS triggers derived **`location = NULL`** on both tables; **no** valid coordinates destroyed (**37 VALID** unchanged); **no** geocoding or invented coordinates.
+- **Intentionally unchanged:** **17 ACTIVE** primary locations remain **MISSING_BOTH** (QA/dev fixtures — separate fixture lifecycle / real-coordinate decision).
+- **Post-repair classification:** **VALID 37**, **MISSING_BOTH 71**; invalid/partial/sentinel classes **0**; PostGIS mismatch **0**; primary integrity **108/108** exactly one primary; repair candidates **0** (idempotent).
+- **Rollback artifact (local, untracked):** `infra/local-backups/a92b-coordinate-hygiene-before.json` (45-row snapshot; **not committed**).
+- **Production:** requires its **own read-only A.9.2A-style classification** before any repair.
+- **Deferred:** **6.12A.9.1** single-primary invariant hardening; ACTIVE QA fixture coordinates; production DB hygiene.
+- **Next:** **6.12A.9.1** — single-primary invariant hardening audit/implementation planning (**do not implement in this closure**).
+
+---
+
 ## 2026-09-24 — MAP-PERF.C3 CLOSED (native business layer + Android release path)
 
 - **Status:** **MAP-PERF.C3 CLOSED — NATIVE BUSINESS LAYER AND ANDROID RELEASE PATH FINALIZED**.

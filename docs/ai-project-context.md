@@ -84,7 +84,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | **6.12A.8.6** | **PASS (platform)** | Ad + serve record optional `AnalyticsEvent.platform` when client sends enum; organic/ads share Flutter helper; historical ad platform stays null |
 | **6.12A.8** | **CLOSED / FINALIZED** | **6.12A.8.FINAL** audit PASS; branch-aware campaign/serve/nav/analytics + ad platform hooks complete; **A.8.7 not required**; impl checkpoint **A.8.6** `ae20e92…` |
 
-**Next stage:** **6.12A.9.0** — READ-ONLY audit: legacy **Business** physical fields vs **BusinessLocation** source of truth / safe deprecation (**do not start A.9 implementation**).
+**Next stage:** **6.12A.9.1** — single-primary invariant hardening audit/implementation planning (**A.9.0 audit PASS**; **A.9.2B local `qalago_dev` coordinate hygiene PASS** — 45 PENDING invalid pairs normalized; **17 ACTIVE MISSING_BOTH QA fixtures untouched**; production needs its own classification before repair).
 
 ## Ads / Analytics location (A.8) — CLOSED
 
