@@ -87,7 +87,7 @@ Relationship: **Business 1 → N BusinessLocation**.
 - **Discovery:** list/search/category cards preserve API **`contextLocationId`**; **`BusinessList`** links **`/businesses/{id}?locationId=`** when present (Business-grain card unchanged).
 - **Detail:** reads optional **`locationId`** query; **`fetchBusiness(id, locationId)`**; React **`cache`** keyed by **`(id, locationId)`**; hero physical from **`effectivePhysical`** (fallback top-level); minimal branch links in **`BusinessBranchesSection`**.
 - **SEO:** temporary **`/businesses/[id]`** stays **noindex**; branch query not indexable (**F.4** deferred).
-- **QA-001:** physical-context mismatch (L2 card → L1 detail) **closed** at navigation/fetch layer; full Business Pages still **F.4**.
+- **QA-001:** physical-context mismatch (L2 card → L1 detail) **closed** (impl + **physical browser QA PASS**); full Business Pages still **F.4**.
 
 ## Stage 6.12A.9.3.3 (Flutter favorites physical-context closure)
 

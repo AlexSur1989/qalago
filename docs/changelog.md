@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-25 — 6.12A.9.3.4 Consumer Web physical browser QA closure
+
+- **Status:** **6.12A.9.3.4 PASS — CONSUMER WEB PHYSICAL CONTEXT FINALIZED**.
+- **Checkpoint (physical QA / docs):** see commit **`docs(qa): finalize A.9.3.4 physical browser QA`** (`git log -1 --oneline`).
+- **Implementation checkpoint (unchanged):** `b13bfa4b7b1a1507d5779d11c065e94c284a7fc4`.
+- **Scope:** docs closure only; dev **`qalago_dev`** temporary multi-branch fixture inserted/verified/cleaned (untracked helpers under **`infra/local-backups/`**).
+- **Physical QA (browser, user-confirmed):** Uralsk search **`L2 Secondary`** → L2 card address; card → detail **`?locationId=L2`** → L2 hero; branch switch L2→L1; direct detail without query → L1 primary; Back to search; reopen detail → L2 (no stale primary/cache); mobile ~390×844 smoke PASS.
+- **QA-001:** **CLOSED** — Consumer Web physical-context mismatch (L2 discovery → L1 detail) resolved end-to-end.
+- **Deferred:** F.4 full Business Pages / branch SEO; Consumer Web promotions/favorites/map; production QA.
+- **Next:** roadmap **A.9.3.5+** / **F.4** (not auto-started — agree stage before implementation).
+
+---
+
 ## 2026-09-25 — 6.12A.9.3.4 Consumer Web physical-context closure
 
 - **Status:** **6.12A.9.3.4 IMPLEMENTATION PASS — PHYSICAL BROWSER QA REQUIRED**.

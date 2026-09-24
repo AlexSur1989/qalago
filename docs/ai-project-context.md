@@ -8,11 +8,11 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `git rev-parse HEAD` on master — context sync commit message **`docs(context): synchronize QalaGo AI handoff state`** |
-| **Last completed implementation** | **6.12A.9.3.4** — Consumer Web physical-context (impl commit on master) |
+| **Repo HEAD (current)** | `git rev-parse HEAD` on master after **A.9.3.4** physical QA docs closure |
+| **Last completed stage** | **6.12A.9.3.4 PASS** — Consumer Web physical-context (impl **`b13bfa4…`** + physical browser QA finalized) |
 | **Prior** | **A.9.3.3** `6277e64…`; backend **A.9.3.2b** `c53af3c2…` |
-| **Physical QA pending** | **A.9.3.4** browser QA (navigation behavior changed) |
-| **Next agreed development action** | **A.9.3.4 PHYSICAL BROWSER QA** — then roadmap (**A.9.3.5+** / **F.4**, not auto-started) |
+| **Physical QA pending** | — (A.9.3.4 browser QA **PASS**) |
+| **Next agreed development action** | Roadmap **A.9.3.5+** / **F.4** — **do not auto-start**; agree explicit stage before implementation |
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 
@@ -55,7 +55,8 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 ## Consumer Web stage
 
 - **6.11F.3 PASS** — public SEO infrastructure (sitemap, robots, temporary business detail **noindex**, etc.).
-- **F.4 deferred** — final public business/branch URL architecture until BusinessLocation sequence permits (after map cutover stages as planned).
+- **6.12A.9.3.4 PASS (physical QA finalized)** — discovery **`contextLocationId` → detail `?locationId=`**; branch switch; primary default; back/reopen without stale primary; mobile smoke PASS; **QA-001 CLOSED**.
+- **F.4 deferred** — final public business/branch URL architecture until explicitly staged (not A.9.3.4).
 
 ## BusinessLocation track
 
@@ -108,7 +109,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 **6.12A.9.3.3 PASS (Flutter closure)** — **`openBusinessFromFavorite`**; **QA-002 CLOSED / OBSOLETE**.
 
-**6.12A.9.3.4 IMPLEMENTATION PASS (Consumer Web)** — **`contextLocationId` → detail `?locationId=`**; branch-aware fetch/cache/display; **QA-001 CLOSED** (context mismatch); **physical browser QA pending**.
+**6.12A.9.3.4 PASS (Consumer Web closure)** — **`contextLocationId` → detail `?locationId=`**; branch-aware fetch/cache/display; **physical browser QA PASS**; dev fixture cleaned; **QA-001 CLOSED**.
 
 ### Flutter detail navigation (canonical)
 
@@ -161,7 +162,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 | ID | Severity | Summary | Target |
 |----|----------|---------|--------|
-| QA-001 | **CLOSED (A.9.3.4 impl)** | L2 discovery → detail context preserved via **`locationId`** query + **`effectivePhysical`**; temp detail still **noindex** — full pages **F.4** | Physical browser QA |
+| QA-001 | **CLOSED (A.9.3.4 physical QA PASS)** | L2 discovery → detail context preserved via **`locationId`** + **`effectivePhysical`**; back/reopen without stale primary; temp detail still **noindex** — full pages **F.4** | — |
 | QA-002 | **CLOSED / OBSOLETE** (A.9.3.3) | Favorites are **Business-grain**; **`openBusinessFromFavorite`** omits route **`locationId`**; **A.9.3.1** primary projection + detail **`primary_default`** | — |
 | QA-003 | P3 | BL rows with lat/lng but null geography (dev snapshot: 27) | A.9 / ops backfill |
 | QA-004 | P3 | Single-primary enforced in app, not DB | A.9 |
