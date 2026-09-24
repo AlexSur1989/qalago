@@ -8,7 +8,8 @@
 
 ## 2026-09-24 — 6.12A.9.3.2 Discovery SQL legacy physical-read cleanup
 
-- **Status:** **6.12A.9.3.2 PASS — DISCOVERY SQL PHYSICAL READS NORMALIZED** (pending implementation checkpoint SHA in FINISH commit).
+- **Status:** **6.12A.9.3.2 PASS — DISCOVERY SQL PHYSICAL READS NORMALIZED**.
+- **Checkpoint (implementation):** `f2bbc9c8ca7ee40c89c99cff1740f81e286850f1`.
 - **Scope:** **catalog-api runtime read/query only** — no schema/migration, no Flutter/map client changes, nearby/radius SQL shape preserved (BL-grain).
 - **Summary:** Physical **address search** and **bbox membership** are **BusinessLocation-authoritative**; stale **`Business.address`** no longer creates text-search or SQL address predicates; legacy **bbox without `forMap=true`** remains **Business-grain** (one card max) but picks deterministic in-bbox branch (**primary first**, else stable branch order) and attaches **`contextLocationId`**; **`forMap=true` + bbox** unchanged (**Location-grain**, N rows); search relevance uses **`branchAddressMatch`** only for address tier; **`GET /promotions`** nested **`business`** physical fields follow promotion **`contextLocationId`** (A.9.3.1 projection reuse).
 - **Compatibility:** bbox requests with **`forMap` omitted/false** still accepted (not 400); external unknown callers preserved at Business-grain.
