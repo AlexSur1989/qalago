@@ -8,7 +8,8 @@
 
 ## 2026-09-24 — 6.12A.9.3.1 Public API physical read normalization
 
-- **Status:** **6.12A.9.3.1 PASS — PUBLIC PHYSICAL READS NORMALIZED** (pending checkpoint commit).
+- **Status:** **6.12A.9.3.1 PASS — PUBLIC PHYSICAL READS NORMALIZED**.
+- **Checkpoint (implementation):** `f4154d9a06ae279e6a45f10eedee113de8660ac8`.
 - **Scope:** **catalog-api read projection only** — no schema/migration, no write-path/SQL ranking changes, no Flutter/Consumer/Business/Admin edits.
 - **Summary:** Shared **`business-physical-read-normalization.util`** projects top-level **`address` / coordinates / contacts / hours** from effective **BusinessLocation** (primary or **`contextLocationId`**) with brand-default fallback for contacts; **`GET /businesses`** (non-`forMap`), **`GET /businesses/:id`**, **`GET /favorites`** normalized; **`forMap=true`** unchanged (branch-grain presenter).
 - **Performance:** one batched **`BusinessLocation.findMany`** per list/favorites page (no per-row location queries).
