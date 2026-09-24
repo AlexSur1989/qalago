@@ -221,6 +221,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             controller: _mapController,
             initialCamera: QalaGoMapCamera(center: center, zoom: _cityZoom),
             markers: overlayMarkers,
+            userLocation: userPosition == null
+                ? null
+                : QalaGoMapCoordinate(
+                    latitude: userPosition.latitude,
+                    longitude: userPosition.longitude,
+                  ),
             businessGeoJson: businessGeoJson,
             onBusinessFeatureTap: nativeBusinessLayer
                 ? (locationId) => _selectMapLocation(mapBusinesses, locationId)

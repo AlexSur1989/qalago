@@ -5,6 +5,7 @@ import 'providers/maplibre_qalago_map_view.dart';
 import 'qalago_map_bounds.dart';
 import 'qalago_map_camera.dart';
 import 'qalago_map_controller.dart';
+import 'qalago_map_coordinate.dart';
 import 'qalago_map_marker.dart';
 import 'qalago_map_renderer.dart';
 
@@ -25,11 +26,15 @@ class QalaGoMapView extends StatelessWidget {
     this.onClusterFeatureTap,
     this.interactionEnabled = true,
     this.onCameraIdle,
+    this.userLocation,
   });
 
   final QalaGoMapCamera initialCamera;
   final QalaGoMapController? controller;
   final List<QalaGoMapMarker> markers;
+
+  /// Passive GPS for MapLibre native user-location layer (MAP-LOCATION.1).
+  final QalaGoMapCoordinate? userLocation;
 
   /// Experimental native layer payload (MapLibre only); ignored when flag is off.
   final Map<String, dynamic>? businessGeoJson;
@@ -58,6 +63,7 @@ class QalaGoMapView extends StatelessWidget {
           onClusterFeatureTap: onClusterFeatureTap,
           interactionEnabled: interactionEnabled,
           onCameraIdle: onCameraIdle,
+          userLocation: userLocation,
         );
       case QalaGoMapRenderer.flutterMap:
         return FlutterMapQalaGoMapView(

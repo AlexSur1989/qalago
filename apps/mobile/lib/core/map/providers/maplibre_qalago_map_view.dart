@@ -6,6 +6,7 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 
 import '../qalago_map_camera.dart';
 import '../qalago_map_controller.dart';
+import '../qalago_map_coordinate.dart';
 import '../qalago_map_marker.dart';
 import '../qalago_map_renderer.dart';
 import '../qalago_map_bounds.dart';
@@ -22,6 +23,7 @@ import '../qalago_map_basemap_hardening.dart';
 import '../qalago_map_house_numbers.dart';
 import '../qalago_map_light_style.dart';
 import 'qalago_map_business_layer_controller.dart';
+import 'qalago_map_user_location_layer_controller.dart';
 import '../map_viewport_debug_log.dart';
 import '../qalago_map_business_geojson_source.dart';
 
@@ -37,11 +39,13 @@ class MapLibreQalaGoMapView extends StatefulWidget {
     this.onClusterFeatureTap,
     this.interactionEnabled = true,
     this.onCameraIdle,
+    this.userLocation,
   });
 
   final QalaGoMapCamera initialCamera;
   final QalaGoMapController? controller;
   final List<QalaGoMapMarker> markers;
+  final QalaGoMapCoordinate? userLocation;
   final Map<String, dynamic>? businessGeoJson;
   final void Function(String businessId)? onBusinessFeatureTap;
   final VoidCallback? onClusterFeatureTap;
@@ -59,6 +63,8 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
       MapLibreOverlayProjectionSync();
   final QalaGoMapBusinessLayerController _businessLayerController =
       QalaGoMapBusinessLayerController();
+  final QalaGoMapUserLocationLayerController _userLocationLayerController =
+      QalaGoMapUserLocationLayerController();
   final QalaGoMapBasemapHardening _basemapHardening =
       QalaGoMapBasemapHardening();
   final QalaGoMapLightStyle _lightStyle = QalaGoMapLightStyle();
@@ -285,8 +291,20 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
         await _syncNativeBusinessLayer();
         _attachBusinessFeatureTapListener(native);
       }
+      await _userLocationLayerController.onStyleLoaded(native);
     }
     await _onCameraIdle();
+  }
+
+  Future<void> _syncUserLocationLayer() async {
+    final native = _nativeController;
+    if (native == null || !mounted) {
+      return;
+    }
+    await _userLocationLayerController.syncUserLocation(
+      native,
+      widget.userLocation,
+    );
   }
 
   void _onCameraMove(CameraPosition position) {
@@ -419,6 +437,9 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
     }
     if (oldWidget.businessGeoJson != widget.businessGeoJson) {
       unawaited(_syncNativeBusinessLayer());
+    }
+    if (oldWidget.userLocation != widget.userLocation) {
+      unawaited(_syncUserLocationLayer());
     }
   }
 

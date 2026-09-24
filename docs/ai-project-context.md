@@ -23,6 +23,12 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - Clients **cannot** widen visibility with **`?status=PENDING`** or **`?status=BLOCKED`** (→ **400**). Omit **`status`** or use **`status=ACTIVE`**.
 - **Administrative** status filtering remains on protected **`GET /admin/businesses`** (staff auth).
 
+## Map user location rendering (MAP-LOCATION.1)
+
+- **MapLibre:** passive GPS → **`userLocationProvider`** → native GeoJSON source **`qalago-user-location`** + **CircleLayer** (not **`myLocationEnabled`**, not Flutter overlay projection).
+- **Physical APK** (`QALAGO_NATIVE_MAP_BUSINESS_LAYER=true`): overlay markers exclude **`__user_location__`**; businesses stay native GeoJSON.
+- **flutter_map fallback:** user location remains Flutter overlay markers.
+
 ## Map viewport fetch hysteresis (MAP-PERF.C2)
 
 - **`lastFetchBounds`** = padded bbox (**12%**) successfully fetched from **`GET /businesses?forMap=true`** (ACTIVE-only public catalog; no status override).
