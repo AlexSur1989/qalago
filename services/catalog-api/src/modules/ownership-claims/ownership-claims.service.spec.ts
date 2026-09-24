@@ -56,6 +56,9 @@ describe('OwnershipClaimsService (Stage 5N.2)', () => {
   const cityScope = {
     resolveAdminCityId: jest.fn().mockResolvedValue('city-uralsk'),
     assertBusinessInAdminScope: jest.fn().mockResolvedValue(undefined),
+    buildAdminBusinessScopeWhere: jest.fn((cityId: string) => ({
+      locations: { some: { cityId } },
+    })),
     resolveCityId: jest.fn().mockResolvedValue('city-uralsk'),
   };
   const membership = {
@@ -437,7 +440,9 @@ describe('OwnershipClaimsService (Stage 5N.2)', () => {
     await service.adminList(cityAdmin, {});
     expect(prisma.businessOwnershipClaim.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({ business: { cityId: 'city-uralsk' } }),
+        where: expect.objectContaining({
+          business: { locations: { some: { cityId: 'city-uralsk' } } },
+        }),
       }),
     );
   });

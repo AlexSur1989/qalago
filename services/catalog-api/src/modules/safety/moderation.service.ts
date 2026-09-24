@@ -590,7 +590,7 @@ export class ModerationService {
       if (!cityId) {
         throw new ForbiddenException('Case outside city scope');
       }
-      await this.cityScope.assertBusinessInAdminScope(user, cityId);
+      await this.cityScope.assertCityInAdminScope(user, cityId);
     }
   }
 }

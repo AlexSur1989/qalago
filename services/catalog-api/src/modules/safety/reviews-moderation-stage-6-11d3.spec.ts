@@ -145,13 +145,13 @@ describe('Stage 6.11D.3 review moderation', () => {
 
   describe('ModerationService case detail & actions', () => {
     let prisma: Record<string, unknown>;
-    let cityScope: { assertBusinessInAdminScope: jest.Mock };
+    let cityScope: { assertCityInAdminScope: jest.Mock };
     let auditLog: { record: jest.Mock };
     let service: ModerationService;
 
     beforeEach(() => {
       auditLog = { record: jest.fn() };
-      cityScope = { assertBusinessInAdminScope: jest.fn() };
+      cityScope = { assertCityInAdminScope: jest.fn() };
       prisma = {
         moderationCase: { findUnique: jest.fn() },
         moderationCaseReport: { findMany: jest.fn().mockResolvedValue([]) },
@@ -230,7 +230,7 @@ describe('Stage 6.11D.3 review moderation', () => {
           targetType: ContentReportTargetType.REVIEW,
           targetId: 'rev-1',
         });
-      cityScope.assertBusinessInAdminScope = jest
+      cityScope.assertCityInAdminScope = jest
         .fn()
         .mockRejectedValue(new ForbiddenException('out of scope'));
       await expect(

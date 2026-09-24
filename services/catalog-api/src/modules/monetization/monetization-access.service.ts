@@ -109,7 +109,7 @@ export class MonetizationAccessService {
     }
 
     if (user.role === UserRole.CITY_ADMIN) {
-      await this.cityScope.assertBusinessInAdminScope(user, order.business.cityId);
+      await this.cityScope.assertBusinessInAdminScope(user, order.business.id);
       return order;
     }
 
@@ -140,7 +140,7 @@ export class MonetizationAccessService {
     }
 
     if (user.role === UserRole.CITY_ADMIN) {
-      await this.cityScope.assertBusinessInAdminScope(user, campaign.business.cityId);
+      await this.cityScope.assertBusinessInAdminScope(user, campaign.business.id);
       return campaign;
     }
 
@@ -174,10 +174,7 @@ export class MonetizationAccessService {
 
     if (isGlobalAdmin(user) || user.role === UserRole.CITY_ADMIN) {
       if (user.role === UserRole.CITY_ADMIN) {
-        await this.cityScope.assertBusinessInAdminScope(
-          user,
-          creative.business.cityId,
-        );
+        await this.cityScope.assertBusinessInAdminScope(user, creative.business.id);
       }
       return creative;
     }
@@ -228,10 +225,7 @@ export class MonetizationAccessService {
     }
 
     if (user.role === UserRole.CITY_ADMIN) {
-      await this.cityScope.assertBusinessInAdminScope(
-        user,
-        payment.order.business.cityId,
-      );
+      await this.cityScope.assertBusinessInAdminScope(user, payment.order.businessId);
     }
 
     return payment;

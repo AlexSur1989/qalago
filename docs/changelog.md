@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-09-25 — 6.12A.9.4.1A Admin city visibility & authorization hardening
+
+- **Status:** **6.12A.9.4.1A PASS — ADMIN CITY AUTHORITY HARDENED** (pending implementation checkpoint commit).
+- **Checkpoint (implementation):** _(record SHA at commit)_.
+- **Baseline:** `dc6cc5622d431496ed010fb0dc79ae53d0dd65f6` (**A.9.4.0** policy gate).
+- **Scope:** **`services/catalog-api`** — `CityScopeService`, Admin list/mutations, ownership claims, monetization Admin access asserts, moderation **`assertCityInAdminScope`**, application approval city gate; tests; architecture docs. No schema/migration/Flutter/Web.
+- **Summary:** Admin **visibility** and staff **assertBusinessInAdminScope** now use **`businessId` + BusinessLocation presence** (`buildAdminBusinessScopeWhere`, indexed `locations.some`). **`BusinessAccessService.resolveAccess`** for **`CITY_ADMIN`** keeps **parent `Business.cityId`** via **`assertBusinessParentCityInAdminScope`** — secondary branch must **not** widen owner-route access (regression test). Application approval still **`application.cityId`**. Business-wide Admin mutations unchanged in semantics when BL-visible.
+- **Deferred:** **A.9.4.1B** (campaign city, analytics filters, dedupe, public `cityId`, reporting `businessCityWhere`); full **A.9.4.1** closure; **A.9.4.2+**; **F.4**.
+- **Next:** **6.12A.9.4.1B** implementation-scope confirmation / implementation (not auto-started).
+
+---
+
 ## 2026-09-25 — 6.12A.9.4.0 Legacy physical retirement policy gate
 
 - **Status:** **6.12A.9.4.0 PASS — RETIREMENT POLICY GATE FINALIZED**.

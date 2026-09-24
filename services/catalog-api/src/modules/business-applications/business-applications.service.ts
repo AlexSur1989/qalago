@@ -488,7 +488,7 @@ export class BusinessApplicationsService {
   }
 
   private async assertModeratorCityScope(user: AuthUser, cityId: string) {
-    await this.cityScope.assertBusinessInAdminScope(user, cityId);
+    await this.cityScope.assertCityInAdminScope(user, cityId);
   }
 
   private async resolveAdminCityFilter(

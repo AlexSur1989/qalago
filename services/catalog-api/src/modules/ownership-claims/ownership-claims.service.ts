@@ -192,7 +192,7 @@ export class OwnershipClaimsService {
 
     const scopedCityId = await this.resolveAdminCityFilter(user, query);
     if (scopedCityId) {
-      where.business = { cityId: scopedCityId };
+      where.business = this.cityScope.buildAdminBusinessScopeWhere(scopedCityId);
     }
 
     const [items, total] = await Promise.all([
@@ -218,7 +218,7 @@ export class OwnershipClaimsService {
     if (!claim) {
       throw new NotFoundException('Claim not found');
     }
-    await this.cityScope.assertBusinessInAdminScope(user, claim.business.cityId);
+    await this.cityScope.assertBusinessInAdminScope(user, claim.businessId);
     return claim;
   }
 

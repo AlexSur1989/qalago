@@ -34,12 +34,9 @@ export class ReportingScopeService {
       if (!business) {
         throw new NotFoundException('Business not found');
       }
-      await this.cityScope.assertBusinessInAdminScope(user, business.cityId);
+      await this.cityScope.assertBusinessInAdminScope(user, business.id);
       if (user.role === UserRole.CITY_ADMIN) {
         const cityIds = await this.cityScope.getCityAdminScopeCityIds(user.id);
-        if (!cityIds.includes(business.cityId)) {
-          throw new ForbiddenException('Not allowed to access resources in this city');
-        }
         return { cityIds, businessId };
       }
       return { cityIds: filters.cityId ? [business.cityId] : null, businessId };

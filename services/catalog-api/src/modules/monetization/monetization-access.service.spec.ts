@@ -47,7 +47,7 @@ describe('MonetizationAccessService RBAC', () => {
     ).rejects.toBeDefined();
     expect(cityScope.assertBusinessInAdminScope).toHaveBeenCalledWith(
       expect.anything(),
-      'city-other',
+      'biz-1',
     );
   });
 

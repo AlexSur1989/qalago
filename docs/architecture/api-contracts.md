@@ -612,8 +612,8 @@ Auth user recommendations (rule-based MVP; AI later). Cold start (no favorites):
 
 ### Admin
 
-- `GET /admin/businesses?status=&citySlug=&page=&limit=` — pagination via `meta`; `CITY_ADMIN` scoped to `managedCityId`.
-- `GET /admin/businesses/:businessId/content` — **Stage 6.12A.7.8.6** staff **read-only** catalog/promotion inspection with server-resolved `branchScope` (`ALL` = zero assignment rows; `SELECTED` = explicit branches with address/city/primary/unavailable). Auth: **`StaffPermission.BUSINESS_VIEW`** + existing city scope; not owner `CATALOG_EDIT` / `PROMOTIONS_EDIT`.
+- `GET /admin/businesses?status=&citySlug=&page=&limit=` — pagination via `meta`; **`CITY_ADMIN`** filtered by **`EXISTS BusinessLocation` in managed city** (not parent **`Business.cityId` alone** — **A.9.4.1A**). Global staff unchanged.
+- `GET /admin/businesses/:businessId/content` — **Stage 6.12A.7.8.6** staff **read-only** catalog/promotion inspection with server-resolved `branchScope` (`ALL` = zero assignment rows; `SELECTED` = explicit branches with address/city/primary/unavailable). Auth: **`StaffPermission.BUSINESS_VIEW`** + **`assertBusinessInAdminScope(businessId)`** (BL presence); not owner `CATALOG_EDIT` / `PROMOTIONS_EDIT`.
 - `PATCH /admin/businesses/:id/status`
 - `PATCH /admin/businesses/:id/featured` — body: `{ isFeatured, featuredSlot? }`
 - `PATCH /admin/businesses/:id/plan` — body: `{ tier: "BASIC"|"PRO"|"TOP_CITY" }` — назначить тариф без оплаты (30 дней для paid)
@@ -622,8 +622,8 @@ Auth user recommendations (rule-based MVP; AI later). Cold start (no favorites):
 - `GET /admin/users` — ADMIN only
 - `PATCH /admin/users/:id/role` — ADMIN only; body: `{ role, managedCityId? }` (required when role is CITY_ADMIN)
 - `GET /admin/audit-logs` — **ADMIN** global; **CITY_ADMIN** scoped to `managedCityId`. Query: `page`, `limit` (default 50, max 100), `action`, `resourceType`, `businessId`, `cityId`, `actorUserId`, `dateFrom`, `dateTo`. Append-only; no PATCH/DELETE. Reading audit logs does not create audit rows.
-- `GET /admin/reviews?citySlug=&limit=` — reviews scoped by admin city; includes user + business
-- `DELETE /admin/reviews/:id` — remove review (city-scoped for CITY_ADMIN)
+- `GET /admin/reviews?citySlug=&limit=` — reviews for businesses with a **branch in** admin city (**A.9.4.1A**); includes user + business
+- `DELETE /admin/reviews/:id` — remove review; **`assertBusinessInAdminScope(review.businessId)`** for CITY_ADMIN
 
 ### POST /businesses (privileged import only)
 

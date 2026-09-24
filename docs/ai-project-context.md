@@ -8,13 +8,13 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `c69104a2e8bec634eba13fbb60b4bce306792297` — **A.9.4.0** policy gate |
-| **Last completed stage** | **6.12A.9.4.0 PASS** — legacy Business physical retirement **policy & invariant gate** (docs-only) |
-| **Last product implementation** | **6.12A.9.3.5 PASS** — Business Web owner physical-context (`9e00ef25…`) |
-| **Prior** | **A.9.3.4 PASS** (Consumer Web); **A.9.3.3** `6277e64…` |
-| **A.9.4 audit** | **READ-ONLY PASS — PREREQUISITE HARDENING REQUIRED** (no implementation commit) |
+| **Repo HEAD (current)** | _(update at commit)_ — **A.9.4.1A** admin BL city scope |
+| **Last completed stage** | **6.12A.9.4.1A PASS** — Admin city visibility & authorization hardening (catalog-api) |
+| **Last product implementation** | **6.12A.9.4.1A** — branch-aware Admin scope + owner-route escalation guard |
+| **Prior** | **6.12A.9.4.0 PASS** (`dc6cc56…` policy gate); **6.12A.9.3.5** Business Web physical QA |
+| **A.9.4.1 audit** | **READ-ONLY PASS — SPLIT IMPLEMENTATION REQUIRED** (1A admin auth **implemented**; **1B** monetization/analytics/dedupe/public `cityId` **pending**) |
 | **Physical QA pending** | — |
-| **Next agreed development action** | **A.9.4.1** read-only implementation-scope audit **recommended** — or **F.4** read-only audit per explicit roadmap choice (not auto-started) |
+| **Next agreed development action** | **6.12A.9.4.1B** implementation-scope confirmation / implementation (not auto-started) |
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 
@@ -200,7 +200,9 @@ Future architecture should allow **backend/admin-central configuration** of cons
 
 - **P2:** `mergeSearchResultPages` dedupes by **`Business.id`** only (valid while discovery is Business-grain).
 - **A.9.3.4+ owner slice** — **closed in A.9.3.5** (Business Web); Consumer Web closed in **A.9.3.4**.
-- **A.9.4.0** — retirement **policy gate finalized** (docs); staged column retirement **A.9.4.1–A.9.4.5 PROPOSED — NOT IMPLEMENTED**.
+- **A.9.4.0** — retirement **policy gate finalized** (docs).
+- **A.9.4.1A** — Admin BL-presence visibility + **`assertBusinessParentCityInAdminScope`** owner-route guard **IMPLEMENTED** (catalog-api).
+- **A.9.4.1B+** — campaign/analytics/dedupe/public `cityId`, remaining **A.9.4.1–A.9.4.5** column retirement **NOT IMPLEMENTED**.
 - **F.4** — Consumer Web business/branch URLs & SEO; **does not require** A.9.4 DB column removal (**A.9.4.0** gate); not started.
 - Post **6.12A:** User contour audit, Business Web owner contour, Admin Web contour, Admin Catalog/CMS, centralized Home config, Catalog Import, QalaGo AI, remaining Consumer Web, production monetization, analytics UX, role-based E2E, security/legal/release — **not** current track unless explicitly staged.
 

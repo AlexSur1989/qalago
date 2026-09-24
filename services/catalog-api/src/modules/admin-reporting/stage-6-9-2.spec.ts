@@ -184,7 +184,7 @@ describe('Stage 6.9.2 Admin reporting foundation', () => {
       ).rejects.toBeInstanceOf(ForbiddenException);
     });
 
-    it('14b. businessId in city B rejected', async () => {
+    it('14b. businessId with no branch in city A rejected', async () => {
       const prisma = {
         staffCityScope: {
           findMany: jest.fn().mockResolvedValue([{ cityId: 'city-a' }]),
@@ -194,6 +194,7 @@ describe('Stage 6.9.2 Admin reporting foundation', () => {
         business: {
           findUnique: jest.fn().mockResolvedValue({ id: 'biz-b', cityId: 'city-b' }),
         },
+        businessLocation: { findFirst: jest.fn().mockResolvedValue(null) },
       };
       const cityScope = new CityScopeService(prisma as never, { get: () => 'uralsk' } as never);
       const reportingScope = new ReportingScopeService(prisma as never, cityScope);

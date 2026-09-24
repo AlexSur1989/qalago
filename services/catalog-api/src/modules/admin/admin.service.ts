@@ -116,9 +116,7 @@ export class AdminService {
     const scopedCityId = await this.cityScope.resolveAdminCityId(user, query.citySlug);
 
     if (scopedCityId) {
-
-      where.cityId = scopedCityId;
-
+      Object.assign(where, this.cityScope.buildAdminBusinessScopeWhere(scopedCityId));
     }
 
 
@@ -171,7 +169,7 @@ export class AdminService {
     if (!business) {
       throw new NotFoundException('Business not found');
     }
-    await this.cityScope.assertBusinessInAdminScope(user, business.cityId);
+    await this.cityScope.assertBusinessInAdminScope(user, business.id);
 
     const [serviceItems, promotions, itemAssignments, promoAssignments] = await Promise.all([
       this.prisma.serviceItem.findMany({
@@ -262,7 +260,7 @@ export class AdminService {
 
     const business = await this.ensureBusiness(id);
 
-    await this.cityScope.assertBusinessInAdminScope(user, business.cityId);
+    await this.cityScope.assertBusinessInAdminScope(user, business.id);
 
 
 
@@ -326,7 +324,7 @@ export class AdminService {
 
     const business = await this.ensureBusiness(id);
 
-    await this.cityScope.assertBusinessInAdminScope(user, business.cityId);
+    await this.cityScope.assertBusinessInAdminScope(user, business.id);
 
 
 
@@ -352,7 +350,7 @@ export class AdminService {
 
     const business = await this.ensureBusiness(id);
 
-    await this.cityScope.assertBusinessInAdminScope(user, business.cityId);
+    await this.cityScope.assertBusinessInAdminScope(user, business.id);
 
     return this.plans.adminSetTier(user, id, dto.tier);
 
@@ -469,7 +467,7 @@ export class AdminService {
 
     if (scopedCityId) {
 
-      where.business = { cityId: scopedCityId };
+      where.business = this.cityScope.buildAdminBusinessScopeWhere(scopedCityId);
 
     }
 
@@ -513,7 +511,7 @@ export class AdminService {
 
     if (!review) throw new NotFoundException('Review not found');
 
-    await this.cityScope.assertBusinessInAdminScope(user, review.business.cityId);
+    await this.cityScope.assertBusinessInAdminScope(user, review.businessId);
 
     await this.auditLog.record({
       actor: user,

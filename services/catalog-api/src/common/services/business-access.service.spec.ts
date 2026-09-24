@@ -46,11 +46,13 @@ describe('BusinessAccessService (Stage 5M.2)', () => {
       businessMembership: { findFirst: jest.fn(), findUnique: jest.fn().mockResolvedValue(null) },
     };
     cityScope = new CityScopeService(prisma as never, {} as never);
-    jest.spyOn(cityScope, 'assertBusinessInAdminScope').mockImplementation(async (_user, cityId) => {
-      if (cityId === aktobeCityId) {
-        throw new ForbiddenException('Not allowed to manage businesses in this city');
-      }
-    });
+    jest
+      .spyOn(cityScope, 'assertBusinessParentCityInAdminScope')
+      .mockImplementation(async (_user, cityId) => {
+        if (cityId === aktobeCityId) {
+          throw new ForbiddenException('Not allowed to manage businesses in this city');
+        }
+      });
     membership = new BusinessMembershipService(
       prisma as never,
       asAuditLogService(createMockAuditLog()),

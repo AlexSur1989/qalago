@@ -109,10 +109,13 @@ Relationship: **Business 1 → N BusinessLocation**.
 - **Multi-city brands:** `Business.cityId` = primary/home city; additional cities exist via other **`BusinessLocation`** rows — code must **not** infer “no presence in city C” from `Business.cityId ≠ C`.
 - **Long-term:** parent/home city may later be **derived** or column retired (**A.9.4.5** proposed) after blockers cleared.
 
-### Admin policies (future implementation)
+### Admin policies (**A.9.4.1A IMPLEMENTED** — catalog-api)
 
-- **City scope (visibility):** `CITY_ADMIN` / city-scoped staff business lists must use **physical presence** — `EXISTS BusinessLocation WHERE businessId AND cityId IN staff scope` — not **`Business.cityId` alone**. A business with branches in multiple cities may appear in **multiple** city admin scopes.
-- **City scope (mutation):** visibility ≠ authority over out-of-scope branches; branch mutation remains permission-safe per existing Business Web / API rules.
+- **City scope (visibility):** `CITY_ADMIN` / city-scoped staff **Admin routes** use **physical presence** — `Business.locations.some(cityId IN staff scope)` / `assertBusinessInAdminScope(user, businessId)` — not **`Business.cityId` alone**. Multi-city brands may appear in **multiple** city admin scopes (primary in A, secondary in B → visible to both).
+- **Owner routes (Business Web / `BusinessAccessService`):** `CITY_ADMIN` **does not** gain owner-equivalent access from secondary-branch presence alone — **`assertBusinessParentCityInAdminScope`** keeps parent **`Business.cityId`** gate on `resolveAccess` (P0 anti-escalation).
+- **Applications:** approval scope remains **`application.cityId`** via **`assertCityInAdminScope`** (not BL visibility for approve gate).
+- **City scope (mutation):** business-wide Admin actions (status, featured, plan) remain **business-wide** when BL visibility passes; branch-level staff RBAC deferred. Moderation cases keep explicit **case `cityId`** where present.
+- **Deferred (A.9.4.1B):** campaign city sourcing, analytics city filters, dedupe, public **`cityId`** projection, admin reporting **`businessCityWhere`** analytics filters.
 - **Address display:** prefer **BusinessLocation** — city-scoped context → effective branch in that city; explicit location → that row; business-global → **primary**; legacy **`Business.address`** only as temporary compatibility fallback until invariant migration completes.
 
 ### Monetization / campaign city (future implementation)

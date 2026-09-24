@@ -105,19 +105,36 @@ describe('Stage 6.9.1 Staff RBAC', () => {
   });
 
   describe('CityScopeService CITY_ADMIN IDOR', () => {
-    it('5. CITY_ADMIN cannot access city B business', async () => {
+    it('5. CITY_ADMIN cannot access city B business (admin BL scope)', async () => {
       const prisma = {
         staffCityScope: {
           findMany: jest.fn().mockResolvedValue([{ cityId: 'city-a' }]),
         },
         user: { findUnique: jest.fn() },
         city: { findFirst: jest.fn() },
+        businessLocation: { findFirst: jest.fn().mockResolvedValue(null) },
       };
       const scope = new CityScopeService(prisma as never, { get: () => 'uralsk' } as never);
       const admin = user('ca', UserRole.CITY_ADMIN);
-      await expect(scope.assertBusinessInAdminScope(admin, 'city-b')).rejects.toBeInstanceOf(
+      await expect(scope.assertBusinessInAdminScope(admin, 'biz-b')).rejects.toBeInstanceOf(
         ForbiddenException,
       );
+    });
+
+    it('5b. CITY_ADMIN parent-city gate rejects foreign home city', async () => {
+      const prisma = {
+        staffCityScope: {
+          findMany: jest.fn().mockResolvedValue([{ cityId: 'city-a' }]),
+        },
+        user: { findUnique: jest.fn() },
+        city: { findFirst: jest.fn() },
+        businessLocation: { findFirst: jest.fn() },
+      };
+      const scope = new CityScopeService(prisma as never, { get: () => 'uralsk' } as never);
+      const admin = user('ca', UserRole.CITY_ADMIN);
+      await expect(
+        scope.assertBusinessParentCityInAdminScope(admin, 'city-b'),
+      ).rejects.toBeInstanceOf(ForbiddenException);
     });
   });
 

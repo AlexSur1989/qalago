@@ -75,7 +75,7 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
   const cityScope = {
     resolveCityId: jest.fn().mockResolvedValue('city-uralsk'),
     resolveAdminCityId: jest.fn().mockResolvedValue('city-uralsk'),
-    assertBusinessInAdminScope: jest.fn().mockResolvedValue(undefined),
+    assertCityInAdminScope: jest.fn().mockResolvedValue(undefined),
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
