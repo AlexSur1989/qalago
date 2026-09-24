@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-09-24 — 6.12A.9.3.2b Legacy Prisma geo filter cleanup
+
+- **Status:** **6.12A.9.3.2b PASS — LEGACY PRISMA GEO FILTER REMOVED** (pending implementation checkpoint SHA).
+- **Scope:** **catalog-api** `GET /businesses` routing only — no schema/clients/map.
+- **Summary:** Removed **`appendMapCatalogFilters`** / parent **`Business.latitude/longitude`** from active discovery geo; **complete bbox** always uses **BL PostGIS** membership (including with accompanying lat/lng unless **nearest** or **explicit radius** owns geo); **`forMap=true` without bbox** uses **`businessMapReadyBranchInCityScope`** (valid branch coords in city); **`validStoredBusinessCoordinateWhere`** deprecated (tests only).
+- **Deferred:** **A.9.3.3** Flutter discovery/favorites; **A.9.4** `Business.cityId` retirement.
+- **Next:** **6.12A.9.3.3** — Flutter discovery/favorites physical-context migration.
+
+---
+
 ## 2026-09-24 — 6.12A.9.3.2 Discovery SQL legacy physical-read cleanup
 
 - **Status:** **6.12A.9.3.2 PASS — DISCOVERY SQL PHYSICAL READS NORMALIZED**.

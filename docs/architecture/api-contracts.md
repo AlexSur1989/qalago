@@ -324,8 +324,8 @@ Query:
 | latitude, longitude | number — user position; required for `sort=nearest` |
 | radiusKm | number (default 15) — max distance in km when geo params set |
 | sort | `recommended` \| `nearest` \| `rating` \| `popular` — organic catalog sort (Stage 6.7D) |
-| forMap | boolean (optional) — with viewport bbox: **location-grain** map mode (Stage 6.12A.7.1): each item is a qualifying **branch** with `locationId`; parent **`id` = Business id**. Without bbox: excludes businesses/locations without valid stored coordinates. Does not change ordinary discovery when omitted. |
-| minLat, maxLat, minLng, maxLng | number (optional) — map viewport bbox; **all four required together** or 400. With `forMap=true`, PostGIS intersects **`BusinessLocation.location`** and filters by **`BusinessLocation.cityId`**. Max span: **1.2° latitude**, **1.8° longitude** (Stage 6.11C.5A). |
+| forMap | boolean (optional) — with viewport bbox: **location-grain** map mode (Stage 6.12A.7.1): each item is a qualifying **branch** with `locationId`; parent **`id` = Business id**. **Without bbox:** **business-grain** list excluding brands with no **map-ready branch** in the requested city (valid **BusinessLocation** coordinates in **C**, not parent Business mirror). Does not change ordinary discovery when omitted. |
+| minLat, maxLat, minLng, maxLng | number (optional) — map viewport bbox; **all four required together** or 400. PostGIS intersects **`BusinessLocation.location`** and **`BusinessLocation.cityId = C`** whenever bbox is complete — **including** if user geo/radius params are also present (A.9.3.2b). With `forMap=true`, response is **location-grain**; without `forMap`, **business-grain** (max one row per Business). Max span: **1.2° latitude**, **1.8° longitude** (Stage 6.11C.5A). |
 
 When `latitude` and `longitude` are provided, each item may include `distanceMeters` (integer, straight-line/geodesic meters — not road distance). Businesses without coordinates are listed after geo-sorted items when `sort=nearest`.
 
@@ -339,7 +339,7 @@ When `latitude` and `longitude` are provided, each item may include `distanceMet
 
 **Invariant:** when both **`contextLocationId`** and **`distanceMeters`** are present, distance refers to that **BusinessLocation** only.
 
-**Geo validation (Stage 6.11C.5A):** user `latitude`/`longitude` must be supplied as a **pair** (finite, in range; **0,0 allowed** for user position). `radiusKm` without a coordinate pair → **400**. Map mode excludes null/invalid stored coordinates (including **0,0** sentinel). **`forMap=true`** viewport remains **location-grain** (unchanged); ordinary nearby stays **business-grain** with branch context fields above.
+**Geo validation (Stage 6.11C.5A + A.9.3.2b):** user `latitude`/`longitude` must be supplied as a **pair** (finite, in range; **0,0 allowed** for user position). `radiusKm` without a coordinate pair → **400**. Map readiness uses **branch** coordinate validity in city **C** (null/0,0/out-of-range excluded) — not legacy **Business** mirror fields. **`forMap=true` + bbox** remains **location-grain**; ordinary nearby/radius stays **business-grain** with branch **`contextLocationId`**.
 
 See [catalog-geo-query.md](./catalog-geo-query.md) for modes A/B/C and C.5 performance notes.
 

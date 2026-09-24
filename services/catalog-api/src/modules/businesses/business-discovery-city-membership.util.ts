@@ -12,6 +12,21 @@ export function legacyBusinessCatalogCityScope(cityId: string): Prisma.BusinessW
   return { cityId };
 }
 
+const WGS84_LAT = { gte: -90, lte: 90 } as const;
+const WGS84_LNG = { gte: -180, lte: 180 } as const;
+
+/**
+ * Branch stored coordinates suitable for map display (matches legacy Business guard + PostGIS readiness).
+ * Geography `location` is DB-trigger-derived from valid lat/lng pairs.
+ */
+export const businessLocationMapReadyCoordinateWhere: Prisma.BusinessLocationWhereInput = {
+  latitude: { not: null, ...WGS84_LAT },
+  longitude: { not: null, ...WGS84_LNG },
+  NOT: {
+    AND: [{ latitude: 0 }, { longitude: 0 }],
+  },
+};
+
 /** Physical presence: at least one BusinessLocation in the requested city. */
 export function businessPhysicalPresenceInCityScope(
   cityId: string,
@@ -19,6 +34,18 @@ export function businessPhysicalPresenceInCityScope(
   return {
     locations: {
       some: { cityId },
+    },
+  };
+}
+
+/** forMap without bbox: at least one map-ready branch in city C (A.9.3.2b). */
+export function businessMapReadyBranchInCityScope(cityId: string): Prisma.BusinessWhereInput {
+  return {
+    locations: {
+      some: {
+        cityId,
+        ...businessLocationMapReadyCoordinateWhere,
+      },
     },
   };
 }

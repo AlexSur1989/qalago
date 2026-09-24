@@ -1,9 +1,4 @@
 import { BadRequestException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import {
-  mergeWhereWithAnd,
-  validStoredBusinessCoordinateWhere,
-} from '../../common/utils/catalog-geo-query.util';
 import { ListBusinessesQueryDto } from './dto/business.dto';
 
 export type NormalizedMapBbox = {
@@ -31,33 +26,4 @@ export function parseMapBboxQuery(query: ListBusinessesQueryDto): NormalizedMapB
   const east = Math.max(minLng!, maxLng!);
 
   return { minLat: south, maxLat: north, minLng: west, maxLng: east };
-}
-
-export function appendMapCatalogFilters(
-  where: Prisma.BusinessWhereInput,
-  query: ListBusinessesQueryDto,
-  normalizedBbox: NormalizedMapBbox | null = null,
-): void {
-  const bbox = normalizedBbox ?? parseMapBboxQuery(query);
-
-  if (query.forMap || bbox != null) {
-    mergeWhereWithAnd(where, validStoredBusinessCoordinateWhere());
-  }
-
-  if (bbox == null) return;
-
-  const latFilter =
-    where.latitude && typeof where.latitude === 'object'
-      ? where.latitude
-      : {};
-  where.latitude = {
-    ...latFilter,
-    gte: bbox.minLat,
-    lte: bbox.maxLat,
-  };
-
-  where.longitude = {
-    gte: bbox.minLng,
-    lte: bbox.maxLng,
-  };
 }

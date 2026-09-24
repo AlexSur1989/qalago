@@ -1,8 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import {
-  appendMapCatalogFilters,
-  parseMapBboxQuery,
-} from './business-map-query.util';
+import { parseMapBboxQuery } from './business-map-query.util';
 import { ListBusinessesQueryDto } from './dto/business.dto';
 
 describe('business-map-query.util', () => {
@@ -25,18 +22,5 @@ describe('business-map-query.util', () => {
     expect(() =>
       parseMapBboxQuery({ minLat: 1 } as ListBusinessesQueryDto),
     ).toThrow(BadRequestException);
-  });
-
-  it('appendMapCatalogFilters adds valid stored coordinate clause for forMap', () => {
-    const where: Record<string, unknown> = {};
-    appendMapCatalogFilters(where, { forMap: true } as ListBusinessesQueryDto);
-    expect(where.AND).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          latitude: expect.objectContaining({ not: null }),
-          NOT: { AND: [{ latitude: 0 }, { longitude: 0 }] },
-        }),
-      ]),
-    );
   });
 });

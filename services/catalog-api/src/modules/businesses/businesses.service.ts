@@ -53,7 +53,7 @@ import { isGlobalAdmin } from '../../common/utils/system-access.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { changedFieldsFromDto, toMembershipRole } from '../audit-log/audit-log.util';
-import { appendMapCatalogFilters } from './business-map-query.util';
+import { catalogUsesBlViewportPostgisPaging } from './catalog-bbox-routing.util';
 import { assertCatalogGeoQuery } from '../../common/utils/catalog-geo-query.util';
 import { CreateBusinessDto, ListBusinessesQueryDto, UpdateBusinessDto } from './dto/business.dto';
 import {
@@ -72,7 +72,10 @@ import {
   normalizePublicBusinessListItems,
 } from './business-physical-read-normalization.util';
 import { attachContextLocationIdForBranch } from './business-discovery-context.util';
-import { businessCatalogDiscoveryCityScope } from './business-discovery-city-membership.util';
+import {
+  businessCatalogDiscoveryCityScope,
+  businessMapReadyBranchInCityScope,
+} from './business-discovery-city-membership.util';
 import { assertPublicCatalogBusinessStatus } from '../../common/utils/public-catalog-business-status.util';
 import { resolveCityContextLocationIds } from './business-discovery-city-context.util';
 import type { CatalogPostgisNearestRow } from './business-catalog-postgis-geo.query';
@@ -223,14 +226,8 @@ export class BusinessesService {
       subcategoryId: query.subcategoryId,
     });
 
-    const useMapViewportPostgis =
-      normalizedBbox != null &&
-      query.latitude == null &&
-      query.longitude == null &&
-      query.radiusKm == null;
-
-    if (!useMapViewportPostgis) {
-      appendMapCatalogFilters(where, query, normalizedBbox);
+    if (query.forMap === true && normalizedBbox == null) {
+      mergeWhereWithAnd(where, businessMapReadyBranchInCityScope(cityId));
     }
 
     const [items, total] = await this.findPagedItems(
@@ -350,8 +347,7 @@ export class BusinessesService {
   ) {
     const hasGeo = query.latitude != null && query.longitude != null;
     const hasExplicitRadius = hasGeo && query.radiusKm != null;
-    const useMapViewportPostgis =
-      normalizedBbox != null && !hasGeo && !hasExplicitRadius;
+    const useMapViewportPostgis = catalogUsesBlViewportPostgisPaging(query, normalizedBbox);
     const sort =
       query.sort ??
       (hasGeo ? BusinessCatalogSort.NEAREST : BusinessCatalogSort.RECOMMENDED);

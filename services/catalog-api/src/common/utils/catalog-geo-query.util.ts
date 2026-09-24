@@ -75,7 +75,10 @@ export function assertMapBboxSpanWithinLimits(bbox: NormalizedMapBbox): void {
   }
 }
 
-/** Prisma filter: stored business coordinates suitable for map display (excludes null and 0,0). */
+/**
+ * Prisma filter on legacy Business mirror coordinates.
+ * @deprecated A.9.3.2b — public discovery/map must not use parent lat/lng; tests/docs only.
+ */
 export function validStoredBusinessCoordinateWhere(): Prisma.BusinessWhereInput {
   return {
     latitude: { not: null, gte: LAT_MIN, lte: LAT_MAX },
