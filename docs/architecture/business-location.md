@@ -84,9 +84,11 @@ Relationship: **Business 1 → N BusinessLocation**.
 
 ## Stage 6.12A.9.3.5 (Business Web owner physical-context closure)
 
+- **Status:** **PASS** — implementation **`9e00ef25…`** + physical browser QA finalized (dev fixture **`QA A935 OWNER PHYSICAL`**); not full Business Web production QA or full role matrix.
 - **Profile (`/business/[id]`):** permission-safe **`PATCH /businesses/:id`** — managers submit only fields allowed by **`BUSINESS_PROFILE_EDIT`** / **`BUSINESS_HOURS_EDIT`** (separate profile vs hours save); OWNER unchanged.
 - **Primary branch UX:** physical block labeled **primary branch** (RU/KK via `presentation.ts`); link to **`/business/[id]/locations`** for all branches.
-- **Semantics unchanged:** profile remains **compatibility edit surface** for **primary** branch (backend **A.3** sync); secondary branches edited only on locations page (**A.4/A.5**).
+- **Semantics unchanged:** profile remains **compatibility edit surface** for **primary** branch (backend **A.3** sync); secondary branches edited only on locations page (**A.4/A.5**); **set-primary** and cross-session consistency verified in browser.
+- **Hours-only MANAGER:** profile/address/phone/title read-only; hours edit/save without forbidden profile payload (**audit P1 closed**).
 - **Deferred:** branch DELETE UI; zero-primary repair UX; **`Business.cityId`** retirement (**A.9.4+**).
 
 ## Stage 6.12A.9.3.4 (Consumer Web physical-context closure)

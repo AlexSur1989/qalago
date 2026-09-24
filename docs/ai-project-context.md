@@ -8,11 +8,12 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `git rev-parse HEAD` on master after **A.9.3.4** physical QA docs closure |
-| **Last completed implementation** | **6.12A.9.3.5** — Business Web owner physical-context (impl on master) |
-| **Prior** | **A.9.3.4 PASS** (Consumer Web finalized); **A.9.3.3** `6277e64…` |
-| **Physical QA pending** | **A.9.3.5** Business Web browser QA |
-| **Next agreed development action** | **A.9.3.5 PHYSICAL BROWSER QA** — then **F.4** / **A.9.4+** (not auto-started) |
+| **Repo HEAD (current)** | `git rev-parse HEAD` on master after **A.9.3.5** physical QA docs closure |
+| **Last completed stage** | **6.12A.9.3.5 PASS** — Business Web owner physical-context finalized (impl + physical QA) |
+| **Implementation checkpoint** | **A.9.3.5** `9e00ef25afdd4974bcc084f0a4e5685040178dcd` |
+| **Prior** | **A.9.3.4 PASS** (Consumer Web); **A.9.3.3** `6277e64…` |
+| **Physical QA pending** | — ( **A.9.3.5** Business Web browser QA **PASS** ) |
+| **Next agreed development action** | **F.4** / **A.9.4+** per roadmap (not auto-started — agree stage before implementation) |
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 
@@ -56,7 +57,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 - **6.11F.3 PASS** — public SEO infrastructure (sitemap, robots, temporary business detail **noindex**, etc.).
 - **6.12A.9.3.4 PASS (physical QA finalized)** — Consumer Web discovery/detail physical context; **QA-001 CLOSED**.
-- **6.12A.9.3.5 IMPLEMENTATION PASS** — Business Web permission-safe profile PATCH; primary-branch UX; closes **`A.9.3.4+`** owner slice; physical QA pending.
+- **6.12A.9.3.5 PASS (physical QA finalized)** — Business Web permission-safe profile PATCH; primary-branch UX; hours-only MANAGER scope verified; closes **`A.9.3.4+`** owner slice; central audit **P1 CLOSED**.
 - **F.4 deferred** — final public business/branch URL architecture until explicitly staged (not A.9.3.4).
 
 ## BusinessLocation track
@@ -112,7 +113,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 **6.12A.9.3.4 PASS (Consumer Web closure)** — **`contextLocationId` → detail `?locationId=`**; physical browser QA PASS; **QA-001 CLOSED**.
 
-**6.12A.9.3.5 IMPLEMENTATION PASS (Business Web owner)** — permission-split profile/hours PATCH; primary-branch labeling + locations link; backend sync unchanged (**A.3/A.4/A.5**).
+**6.12A.9.3.5 PASS (Business Web owner closure)** — permission-split profile/hours PATCH; primary-branch labeling + locations link; physical browser QA PASS; fixture **`QA A935 OWNER PHYSICAL`** cleaned (dev); impl **`9e00ef25…`**; backend sync unchanged (**A.3/A.4/A.5**).
 
 ### Flutter detail navigation (canonical)
 
