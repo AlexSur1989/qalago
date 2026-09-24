@@ -12,6 +12,7 @@ import '../qalago_map_business_layer_ids.dart';
 import '../qalago_map_business_layer_platform_errors.dart';
 import '../qalago_map_business_layer_sink.dart';
 import '../qalago_map_business_layer_style.dart';
+import '../qalago_map_business_geojson_fingerprint.dart';
 import '../qalago_native_map_business_layer_config.dart';
 
 /// MapLibre GeoJSON source + layers for catalog businesses (C.6B–C.6D).
@@ -41,6 +42,9 @@ class QalaGoMapBusinessLayerController {
   bool _selectedInstalled = false;
   bool? _installedClusterMode;
   Map<String, dynamic>? _latestFeatureCollection;
+  String? _latestContentFingerprint;
+  String? _appliedGeoJsonFingerprint;
+  int _appliedGeoJsonEpoch = -1;
 
   bool get sourceInstalled => _sourceInstalled;
 
@@ -52,6 +56,12 @@ class QalaGoMapBusinessLayerController {
 
   @visibleForTesting
   Map<String, dynamic>? get latestFeatureCollection => _latestFeatureCollection;
+
+  @visibleForTesting
+  String? get appliedGeoJsonFingerprint => _appliedGeoJsonFingerprint;
+
+  @visibleForTesting
+  int get appliedGeoJsonEpoch => _appliedGeoJsonEpoch;
 
   QalaGoMapBusinessLayerSink _sink(MapLibreMapController map) {
     return _testSink ?? MapLibreQalaGoMapBusinessLayerSink(map);
@@ -74,7 +84,14 @@ class QalaGoMapBusinessLayerController {
       await _reconcileInstallFlagsFromNative(map, epoch);
       final pending =
           _latestFeatureCollection ?? emptyFeatureCollection();
-      await _installSourceAndLayersIfReady(map, pending, epoch);
+      final fingerprint =
+          _latestContentFingerprint ?? _fingerprintForCollection(pending);
+      await _installSourceAndLayersIfReady(
+        map,
+        pending,
+        epoch,
+        contentFingerprint: fingerprint,
+      );
       if (_isEpochActive(epoch)) {
         mapViewportDbg('MAPDBG businessLayer styleEpoch=$epoch ready');
       }
@@ -83,15 +100,22 @@ class QalaGoMapBusinessLayerController {
 
   Future<void> syncBusinessGeoJson(
     MapLibreMapController map,
-    Map<String, dynamic> featureCollection,
-  ) {
+    Map<String, dynamic> featureCollection, {
+    required String contentFingerprint,
+  }) {
     if (!_nativeLayerEnabled || _disposed) {
       return Future<void>.value();
     }
     _latestFeatureCollection = featureCollection;
+    _latestContentFingerprint = contentFingerprint;
     return _enqueue(() async {
       final epoch = _styleEpoch;
-      await _syncBusinessGeoJsonForEpoch(map, featureCollection, epoch);
+      await _syncBusinessGeoJsonForEpoch(
+        map,
+        featureCollection,
+        epoch,
+        contentFingerprint: contentFingerprint,
+      );
     });
   }
 
@@ -125,13 +149,21 @@ class QalaGoMapBusinessLayerController {
     _unclusteredInstalled = false;
     _selectedInstalled = false;
     _installedClusterMode = null;
+    _appliedGeoJsonFingerprint = null;
+    _appliedGeoJsonEpoch = -1;
+  }
+
+  String _fingerprintForCollection(Map<String, dynamic> featureCollection) {
+    return _latestContentFingerprint ??
+        QalaGoMapBusinessGeoJsonFingerprint.fromFeatureCollection(featureCollection);
   }
 
   Future<void> _syncBusinessGeoJsonForEpoch(
     MapLibreMapController map,
     Map<String, dynamic> featureCollection,
-    int epoch,
-  ) async {
+    int epoch, {
+    required String contentFingerprint,
+  }) async {
     if (!_isEpochActive(epoch)) {
       mapViewportDbg('MAPDBG businessLayer sync ignored stale epoch=$epoch');
       return;
@@ -152,11 +184,21 @@ class QalaGoMapBusinessLayerController {
     }
 
     if (!_sourceInstalled) {
-      await _installSourceAndLayersIfReady(map, featureCollection, epoch);
+      await _installSourceAndLayersIfReady(
+        map,
+        featureCollection,
+        epoch,
+        contentFingerprint: contentFingerprint,
+      );
       return;
     }
 
-    await _applyGeoJsonIfNeeded(map, featureCollection, epoch);
+    await _applyGeoJsonIfNeeded(
+      map,
+      featureCollection,
+      epoch,
+      contentFingerprint: contentFingerprint,
+    );
     if (!_isEpochActive(epoch)) {
       return;
     }
@@ -262,8 +304,9 @@ class QalaGoMapBusinessLayerController {
   Future<void> _installSourceAndLayersIfReady(
     MapLibreMapController map,
     Map<String, dynamic> featureCollection,
-    int epoch,
-  ) async {
+    int epoch, {
+    required String contentFingerprint,
+  }) async {
     if (!_isEpochActive(epoch)) {
       return;
     }
@@ -288,7 +331,12 @@ class QalaGoMapBusinessLayerController {
       return;
     }
     if (_sourceInstalled) {
-      await _applyGeoJsonIfNeeded(map, featureCollection, epoch);
+      await _applyGeoJsonIfNeeded(
+        map,
+        featureCollection,
+        epoch,
+        contentFingerprint: contentFingerprint,
+      );
     }
   }
 
@@ -363,9 +411,19 @@ class QalaGoMapBusinessLayerController {
   Future<void> _applyGeoJsonIfNeeded(
     MapLibreMapController map,
     Map<String, dynamic> featureCollection,
-    int epoch,
-  ) async {
+    int epoch, {
+    required String contentFingerprint,
+    bool forceApply = false,
+  }) async {
     if (!_isEpochActive(epoch) || !_sourceInstalled) {
+      return;
+    }
+    if (!forceApply &&
+        _appliedGeoJsonEpoch == epoch &&
+        _appliedGeoJsonFingerprint == contentFingerprint) {
+      mapViewportDbg(
+        'MAPDBG businessLayer geojson skipped unchanged epoch=$epoch',
+      );
       return;
     }
     final sink = _sink(map);
@@ -375,8 +433,10 @@ class QalaGoMapBusinessLayerController {
         featureCollection,
       );
       if (_isEpochActive(epoch)) {
+        _appliedGeoJsonFingerprint = contentFingerprint;
+        _appliedGeoJsonEpoch = epoch;
         mapViewportDbg(
-          'MAPDBG businessLayer geojson applied features=${QalaGoMapBusinessGeoJsonSource.featureCount(featureCollection)}',
+          'MAPDBG businessLayer geojson applied epoch=$epoch features=${QalaGoMapBusinessGeoJsonSource.featureCount(featureCollection)}',
         );
       }
     } on PlatformException catch (e, st) {
@@ -603,6 +663,9 @@ class QalaGoMapBusinessLayerController {
     _styleEpoch++;
     _resetInstallFlags();
     _latestFeatureCollection = null;
+    _latestContentFingerprint = null;
+    _appliedGeoJsonFingerprint = null;
+    _appliedGeoJsonEpoch = -1;
   }
 
   static Map<String, dynamic> emptyFeatureCollection() => {

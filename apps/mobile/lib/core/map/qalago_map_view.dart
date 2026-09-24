@@ -22,6 +22,7 @@ class QalaGoMapView extends StatelessWidget {
     this.controller,
     this.markers = const [],
     this.businessGeoJson,
+    this.businessGeoJsonFingerprint,
     this.onBusinessFeatureTap,
     this.onClusterFeatureTap,
     this.interactionEnabled = true,
@@ -38,6 +39,9 @@ class QalaGoMapView extends StatelessWidget {
 
   /// Experimental native layer payload (MapLibre only); ignored when flag is off.
   final Map<String, dynamic>? businessGeoJson;
+
+  /// Semantic fingerprint for [businessGeoJson] (MapLibre native sync dedup).
+  final String? businessGeoJsonFingerprint;
 
   /// MapLibre native business point tap (businessId); ignored when flag is off.
   /// Physical marker key ([BusinessLocation.id] when present).
@@ -59,6 +63,7 @@ class QalaGoMapView extends StatelessWidget {
           controller: controller,
           markers: markers,
           businessGeoJson: businessGeoJson,
+          businessGeoJsonFingerprint: businessGeoJsonFingerprint,
           onBusinessFeatureTap: onBusinessFeatureTap,
           onClusterFeatureTap: onClusterFeatureTap,
           interactionEnabled: interactionEnabled,

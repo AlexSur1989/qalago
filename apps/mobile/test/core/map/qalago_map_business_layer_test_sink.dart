@@ -1,7 +1,26 @@
 import 'package:flutter/services.dart';
+import 'dart:async';
+
 import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:qalago_mobile/core/map/providers/qalago_map_business_layer_controller.dart';
+import 'package:qalago_mobile/core/map/qalago_map_business_geojson_fingerprint.dart';
 import 'package:qalago_mobile/core/map/qalago_map_business_layer_ids.dart';
 import 'package:qalago_mobile/core/map/qalago_map_business_layer_sink.dart';
+
+Future<void> syncBusinessGeoJsonForTest(
+  QalaGoMapBusinessLayerController controller,
+  MapLibreMapController map,
+  Map<String, dynamic> featureCollection,
+) {
+  return controller.syncBusinessGeoJson(
+    map,
+    featureCollection,
+    contentFingerprint:
+        QalaGoMapBusinessGeoJsonFingerprint.fromFeatureCollection(
+      featureCollection,
+    ),
+  );
+}
 
 /// Stateful sink that rejects duplicate native adds like MapLibre.
 class QalaGoMapBusinessLayerTestSink implements QalaGoMapBusinessLayerSink {
@@ -18,7 +37,11 @@ class QalaGoMapBusinessLayerTestSink implements QalaGoMapBusinessLayerSink {
   var failSymbolLayer = false;
   var failRemoveLayer = false;
   var failRemoveSource = false;
+  var failSetGeoJson = false;
   var duplicateAddThrows = true;
+
+  /// When set, [setGeoJsonSource] waits until completed (stale-epoch tests).
+  Completer<void>? holdSetGeoJsonUntil;
 
   final _sources = <String>{};
   final _layers = <String>{};
@@ -47,9 +70,15 @@ class QalaGoMapBusinessLayerTestSink implements QalaGoMapBusinessLayerSink {
   Future<void> setGeoJsonSource(
     String sourceId,
     Map<String, dynamic> featureCollection,
-  ) {
+  ) async {
+    if (failSetGeoJson) {
+      throw PlatformException(code: 'SET_GEOJSON', message: 'test fail');
+    }
+    final hold = holdSetGeoJsonUntil;
+    if (hold != null) {
+      await hold.future;
+    }
     setGeoJsonCalls.add(featureCollection);
-    return Future.value();
   }
 
   @override

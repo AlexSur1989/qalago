@@ -25,6 +25,7 @@ import '../qalago_map_light_style.dart';
 import 'qalago_map_business_layer_controller.dart';
 import 'qalago_map_user_location_layer_controller.dart';
 import '../map_viewport_debug_log.dart';
+import '../qalago_map_business_geojson_fingerprint.dart';
 import '../qalago_map_business_geojson_source.dart';
 
 /// MapLibre-backed [QalaGoMapView] implementation (Stage 6.11C.2).
@@ -35,6 +36,7 @@ class MapLibreQalaGoMapView extends StatefulWidget {
     this.controller,
     this.markers = const [],
     this.businessGeoJson,
+    this.businessGeoJsonFingerprint,
     this.onBusinessFeatureTap,
     this.onClusterFeatureTap,
     this.interactionEnabled = true,
@@ -47,6 +49,7 @@ class MapLibreQalaGoMapView extends StatefulWidget {
   final List<QalaGoMapMarker> markers;
   final QalaGoMapCoordinate? userLocation;
   final Map<String, dynamic>? businessGeoJson;
+  final String? businessGeoJsonFingerprint;
   final void Function(String businessId)? onBusinessFeatureTap;
   final VoidCallback? onClusterFeatureTap;
   final bool interactionEnabled;
@@ -268,10 +271,16 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
     }
     final geoJson =
         widget.businessGeoJson ?? QalaGoMapBusinessLayerController.emptyFeatureCollection();
+    final fingerprint = widget.businessGeoJsonFingerprint ??
+        QalaGoMapBusinessGeoJsonFingerprint.fromFeatureCollection(geoJson);
     mapViewportDbg(
-      'MAPDBG geojsonSync featureCount=${QalaGoMapBusinessGeoJsonSource.featureCount(geoJson)}',
+      'MAPDBG geojsonSync requested features=${QalaGoMapBusinessGeoJsonSource.featureCount(geoJson)}',
     );
-    await _businessLayerController.syncBusinessGeoJson(native, geoJson);
+    await _businessLayerController.syncBusinessGeoJson(
+      native,
+      geoJson,
+      contentFingerprint: fingerprint,
+    );
   }
 
   Future<void> _onStyleLoaded() async {
@@ -438,7 +447,7 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
       _projectionSync.bumpGeneration();
       unawaited(_runMarkerProjection());
     }
-    if (oldWidget.businessGeoJson != widget.businessGeoJson) {
+    if (oldWidget.businessGeoJsonFingerprint != widget.businessGeoJsonFingerprint) {
       unawaited(_syncNativeBusinessLayer());
     }
     if (oldWidget.userLocation != widget.userLocation) {

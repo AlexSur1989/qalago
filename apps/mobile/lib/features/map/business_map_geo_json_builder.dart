@@ -1,12 +1,25 @@
 import '../../shared/models/models.dart';
+import '../../core/map/qalago_map_business_geojson_fingerprint.dart';
 import 'map_coordinate_validity.dart';
 import 'business_map_category_key.dart';
 import 'map_physical_key.dart';
+import 'native_business_map_geo_json_payload.dart';
 
 /// Builds MapLibre-ready GeoJSON for catalog map rows (Stage 6.11C.6B / A.7.2).
 abstract final class BusinessMapGeoJsonBuilder {
   /// When [businesses] contains duplicate physical keys, the **first** wins.
   static Map<String, dynamic> buildFeatureCollection({
+    required Iterable<BusinessModel> businesses,
+    String? selectedLocationId,
+  }) {
+    return buildPayload(
+      businesses: businesses,
+      selectedLocationId: selectedLocationId,
+    ).featureCollection;
+  }
+
+  /// GeoJSON + deterministic semantic fingerprint for native sync dedup (C3.2).
+  static NativeBusinessMapGeoJsonPayload buildPayload({
     required Iterable<BusinessModel> businesses,
     String? selectedLocationId,
   }) {
@@ -27,10 +40,13 @@ abstract final class BusinessMapGeoJsonBuilder {
       features.add(_feature(business, physicalKey: physicalKey, selected: selected));
     }
 
-    return {
-      'type': 'FeatureCollection',
-      'features': features,
-    };
+    return NativeBusinessMapGeoJsonPayload(
+      featureCollection: {
+        'type': 'FeatureCollection',
+        'features': features,
+      },
+      contentFingerprint: QalaGoMapBusinessGeoJsonFingerprint.fromFeatureMaps(features),
+    );
   }
 
   static Map<String, dynamic> emptyFeatureCollection() => {

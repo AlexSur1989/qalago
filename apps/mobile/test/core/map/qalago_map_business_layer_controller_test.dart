@@ -56,19 +56,25 @@ void main() {
                 'type': 'Point',
                 'coordinates': [51.4 + i * 0.001, 51.22],
               },
-              'properties': {'businessId': 'b$i', 'selected': 0},
+              'properties': {
+                'businessId': 'b$i',
+                'locationId': 'loc$i',
+                'categoryKey': 'other',
+                'selected': 0,
+              },
+              'id': 'loc$i',
             },
           ),
         };
 
     test('empty sync defers clustered source install', () async {
-      await controller.syncBusinessGeoJson(_FakeMap(), fc(0));
+      await syncBusinessGeoJsonForTest(controller, _FakeMap(), fc(0));
       expect(sink.addSourceCalls, isEmpty);
       expect(controller.sourceInstalled, isFalse);
     });
 
     test('non-empty sync installs source then layers', () async {
-      await controller.syncBusinessGeoJson(_FakeMap(), fc(2));
+      await syncBusinessGeoJsonForTest(controller, _FakeMap(), fc(2));
       expect(sink.addSourceCalls, hasLength(1));
       expect(sink.addSourceCalls.first.cluster, isTrue);
       expect(controller.sourceInstalled, isTrue);
@@ -79,33 +85,33 @@ void main() {
 
     test('addSource failure does not mark source installed', () async {
       sink.failNextAddSource = true;
-      await controller.syncBusinessGeoJson(_FakeMap(), fc(1));
+      await syncBusinessGeoJsonForTest(controller, _FakeMap(), fc(1));
       expect(controller.sourceInstalled, isFalse);
       expect(controller.layersInstalled, isFalse);
     });
 
     test('retry after addSource failure succeeds', () async {
       sink.failNextAddSource = true;
-      await controller.syncBusinessGeoJson(_FakeMap(), fc(1));
+      await syncBusinessGeoJsonForTest(controller, _FakeMap(), fc(1));
       sink.failNextAddSource = false;
-      await controller.syncBusinessGeoJson(_FakeMap(), fc(1));
+      await syncBusinessGeoJsonForTest(controller, _FakeMap(), fc(1));
       expect(controller.sourceInstalled, isTrue);
       expect(controller.layersInstalled, isTrue);
     });
 
     test('symbol layer failure still installs circle layers', () async {
       sink.failSymbolLayer = true;
-      await controller.syncBusinessGeoJson(_FakeMap(), fc(2));
+      await syncBusinessGeoJsonForTest(controller, _FakeMap(), fc(2));
       expect(sink.circleLayerIds, contains('qalago-business-clusters'));
       expect(sink.circleLayerIds, contains('qalago-business-unclustered'));
       expect(controller.layersInstalled, isFalse);
       sink.failSymbolLayer = false;
-      await controller.syncBusinessGeoJson(_FakeMap(), fc(2));
+      await syncBusinessGeoJsonForTest(controller, _FakeMap(), fc(2));
       expect(controller.layersInstalled, isTrue);
     });
 
     test('style reload with successful tearDown reinstalls layers once per epoch', () async {
-      await controller.syncBusinessGeoJson(_FakeMap(), fc(3));
+      await syncBusinessGeoJsonForTest(controller, _FakeMap(), fc(3));
       await controller.onStyleLoaded(_FakeMap());
       expect(
         QalaGoMapBusinessGeoJsonSource.featureCount(
@@ -120,7 +126,7 @@ void main() {
     });
 
     test('style reload with failed tearDown reconciles without duplicate adds', () async {
-      await controller.syncBusinessGeoJson(_FakeMap(), fc(3));
+      await syncBusinessGeoJsonForTest(controller, _FakeMap(), fc(3));
       sink.failRemoveLayer = true;
       sink.failRemoveSource = true;
       await controller.onStyleLoaded(_FakeMap());
@@ -132,8 +138,8 @@ void main() {
     });
 
     test('setGeoJsonSource updates after initial install', () async {
-      await controller.syncBusinessGeoJson(_FakeMap(), fc(1));
-      await controller.syncBusinessGeoJson(_FakeMap(), fc(4));
+      await syncBusinessGeoJsonForTest(controller, _FakeMap(), fc(1));
+      await syncBusinessGeoJsonForTest(controller, _FakeMap(), fc(4));
       expect(sink.setGeoJsonCalls, hasLength(2));
       expect(
         QalaGoMapBusinessGeoJsonSource.featureCount(sink.setGeoJsonCalls.last),

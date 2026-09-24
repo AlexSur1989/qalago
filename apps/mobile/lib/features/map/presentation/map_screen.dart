@@ -202,8 +202,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
     final l10n = context.l10n;
     final nativeBusinessLayer = QalaGoNativeMapBusinessLayerConfig.enabled;
-    final businessGeoJson = nativeBusinessLayer
-        ? BusinessMapGeoJsonBuilder.buildFeatureCollection(
+    final nativeBusinessPayload = nativeBusinessLayer
+        ? BusinessMapGeoJsonBuilder.buildPayload(
             businesses: mapLayerBusinesses,
             selectedLocationId: _selectedLocationId,
           )
@@ -227,7 +227,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                     latitude: userPosition.latitude,
                     longitude: userPosition.longitude,
                   ),
-            businessGeoJson: businessGeoJson,
+            businessGeoJson: nativeBusinessPayload?.featureCollection,
+            businessGeoJsonFingerprint:
+                nativeBusinessPayload?.contentFingerprint,
             onBusinessFeatureTap: nativeBusinessLayer
                 ? (locationId) => _selectMapLocation(mapBusinesses, locationId)
                 : null,

@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-09-24 — MAP-PERF.C3.2 Native business GeoJSON semantic dedup
+
+- **Status:** **MAP-PERF.C3.2 AUTOMATED PASS — C3.3 LOAD/REGRESSION QA REQUIRED**.
+- **Checkpoint (implementation):** _(pending commit)_.
+- **Summary:** **Root cause:** `MapScreen.build` produced a new business FeatureCollection `Map` each rebuild; `MapLibreQalaGoMapView.didUpdateWidget` compared **reference** inequality → redundant `setGeoJsonSource` on unrelated rebuilds (e.g. user location) even when C2 suppressed fetches. **Fix:** deterministic **`QalaGoMapBusinessGeoJsonFingerprint`** (sorted segments: `locationId`, `businessId`, lng/lat, `categoryId`, `categoryKey`, `selected`); `BusinessMapGeoJsonBuilder.buildPayload()` + `NativeBusinessMapGeoJsonPayload`; widget passes **`businessGeoJsonFingerprint`**; controller **`syncBusinessGeoJson(..., contentFingerprint)`** skips native apply when fingerprint matches **current style epoch**; applied fingerprint recorded **only after successful** `setGeoJsonSource`; **style epoch reset** clears dedup so C3.1 style replay still pushes identical payload to new style. **`QALAGO_NATIVE_MAP_BUSINESS_LAYER`** default **still false**. **Automated:** Flutter **1027/1027 PASS** (focused C3.1/C3.2/map GeoJSON **45/45 PASS**).
+- **Deferred:** MapScreen may still rebuild GeoJSON on unrelated rebuilds (Dart-side cost); selection still full-collection resync; **C3.3** load QA; **C3.4** Samsung physical QA; **C3.5** production-default decision.
+- **Next:** **C3.3** load/regression QA; **C3.4** physical QA.
+
+---
+
 ## 2026-09-24 — MAP-PERF.C3.1 Native business layer lifecycle (hotfix)
 
 - **Status:** **MAP-PERF.C3.1 AUTOMATED PASS — PHYSICAL/LOAD QA STILL REQUIRED**.
