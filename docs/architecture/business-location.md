@@ -115,27 +115,27 @@ Relationship: **Business 1 → N BusinessLocation**.
 - **Owner routes (Business Web / `BusinessAccessService`):** `CITY_ADMIN` **does not** gain owner-equivalent access from secondary-branch presence alone — **`assertBusinessParentCityInAdminScope`** keeps parent **`Business.cityId`** gate on `resolveAccess` (P0 anti-escalation).
 - **Applications:** approval scope remains **`application.cityId`** via **`assertCityInAdminScope`** (not BL visibility for approve gate).
 - **City scope (mutation):** business-wide Admin actions (status, featured, plan) remain **business-wide** when BL visibility passes; branch-level staff RBAC deferred. Moderation cases keep explicit **case `cityId`** where present.
-- **Deferred (A.9.4.1B):** campaign city sourcing, analytics city filters, dedupe, public **`cityId`** projection, admin reporting **`businessCityWhere`** analytics filters.
+- **A.9.4.1B (IMPLEMENTED — catalog-api):** campaign/order market city via **`resolveCampaignMarketCityId`**; new analytics events via **`resolveAnalyticsEventCityId`**; application dedupe against **`BusinessLocation`** in application city; public list/detail top-level **`cityId`** from effective physical branch context; admin reporting **`businessCityWhere`** = BL presence (not parent **`Business.cityId`** alone). Historical analytics rows not rewritten; admin analytics rollups remain business-grain visibility — not per-event **`AnalyticsEvent.cityId`** filters.
 - **Address display:** prefer **BusinessLocation** — city-scoped context → effective branch in that city; explicit location → that row; business-global → **primary**; legacy **`Business.address`** only as temporary compatibility fallback until invariant migration completes.
 
-### Monetization / campaign city (future implementation)
+### Monetization / campaign city (**A.9.4.1B IMPLEMENTED** — catalog-api)
 
-- **`AdCampaign.cityId`** remains **first-class** explicit campaign targeting context — **not** permanently inferred from **`Business.cityId`**.
-- **Provisioning rules (target):** branch-targeted campaign → **`BusinessLocation.cityId`**; explicit selected city → validated against eligible business presence; legacy flow with no explicit target → **primary** `BusinessLocation.cityId` as **compatibility default** during migration (replacing long-term reliance on **`Business.cityId`**). **A.8** branch/platform attribution unchanged.
+- **`AdCampaign.cityId`** remains **first-class** explicit campaign targeting context.
+- **Resolution priority (`resolveCampaignMarketCityId`):** (1) **`targetBusinessLocationId` / `destinationBusinessLocationId`** → that BL’s **`cityId`**; (2) explicit quote/order **`cityId`** → validate business has a branch in that city; (3) no explicit target → **primary** **`BusinessLocation.cityId`**; (4) **`Business.cityId`** only when BL resolution unavailable (compatibility). Order lines store resolved city in metadata for inventory/scheduling consistency. **A.8** serving unchanged.
 
-### Analytics city (future implementation)
+### Analytics city (**A.9.4.1B IMPLEMENTED** — catalog-api)
 
 - **`AnalyticsEvent.cityId`** = **event context**, not Business parent identity.
-- **Preferred source priority:** (1) explicit request/discovery city, (2) **`businessLocationId`** branch city, (3) campaign city for campaign-context events, (4) primary **`BusinessLocation.cityId`** for legacy business-scoped events without better context; **`Business.cityId`** temporary compatibility fallback only. Historical rows **not** rewritten by A.9.4 unless a later explicit migration.
+- **New events (`resolveAnalyticsEventCityId`):** (1) explicit request/discovery city, (2) **`businessLocationId`** branch city, (3) campaign city, (4) primary BL city, (5) parent **`Business.cityId`** fallback. Historical rows **not** rewritten. **A.8** ad **`businessLocationId`** / platform attribution unchanged.
 
 ### Application / onboarding
 
 - Approval / create → **Business + initial PRIMARY BusinessLocation** atomically; application city/address/coords describe that primary location.
 - **Must not** approve/create an **ACTIVE** business without an initial **BusinessLocation** (compatibility dual-write on Business columns may continue during transition). Long-term authority: **BusinessLocation**.
 
-### Dedupe (future focused implementation)
+### Dedupe (**A.9.4.1B IMPLEMENTED** — catalog-api)
 
-- Physical duplicate detection should compare application location against **`BusinessLocation`** data (city, normalized address, coordinates when available, title signals) — not only **`Business.cityId` + Business.address`**. Exact fuzzy algorithm = separate stage with tests.
+- Physical duplicate detection compares normalized application title + address against **`BusinessLocation`** rows in **`application.cityId`** (primary or secondary branch in that city). Same brand in another city without a matching branch → **not** duplicate via parent **`Business.cityId`** alone. Approval path unchanged (**Business + initial PRIMARY BL**).
 
 ### Location & primary invariants (target state)
 

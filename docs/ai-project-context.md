@@ -8,14 +8,15 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `096ec28e6f493ab885ef55faa7816c54fc2bc79c` — **A.9.4.1A** (+ SHA follow-up docs) |
+| **Repo HEAD (current)** | `38d2a83b1a71fe4eaec23fec2a04467964b7cbed` — **1B** impl (+ docs follow-up pending) |
+| **A.9.4.1B implementation SHA** | `38d2a83b1a71fe4eaec23fec2a04467964b7cbed` |
 | **A.9.4.1A implementation SHA** | `955f9d86c660d1019158236c4417cf337b13ae9d` |
-| **Last completed stage** | **6.12A.9.4.1A PASS** — Admin city visibility & authorization hardening (catalog-api) |
-| **Last product implementation** | **6.12A.9.4.1A** — branch-aware Admin scope + owner-route escalation guard |
-| **Prior** | **6.12A.9.4.0 PASS** (`dc6cc56…` policy gate); **6.12A.9.3.5** Business Web physical QA |
-| **A.9.4.1 audit** | **READ-ONLY PASS — SPLIT IMPLEMENTATION REQUIRED** (1A admin auth **implemented**; **1B** monetization/analytics/dedupe/public `cityId` **pending**) |
+| **Last completed stage** | **6.12A.9.4.1 PASS** — non-discovery city authority hardened (1A admin + 1B campaign/analytics/dedupe/public `cityId`) |
+| **Last product implementation** | **6.12A.9.4.1B** — branch-aware campaign city, analytics attribution, BL dedupe, public `cityId` projection |
+| **Prior** | **6.12A.9.4.1A** Admin BL scope; **6.12A.9.4.0** policy gate |
+| **A.9.4.1 audit** | **CLOSED** — split **1A+1B** implemented |
 | **Physical QA pending** | — |
-| **Next agreed development action** | **6.12A.9.4.1B** implementation-scope confirmation / implementation (not auto-started) |
+| **Next agreed development action** | **A.9.4.2 READ-ONLY invariant-hardening audit** (not auto-started) |
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 
@@ -203,7 +204,8 @@ Future architecture should allow **backend/admin-central configuration** of cons
 - **A.9.3.4+ owner slice** — **closed in A.9.3.5** (Business Web); Consumer Web closed in **A.9.3.4**.
 - **A.9.4.0** — retirement **policy gate finalized** (docs).
 - **A.9.4.1A** — Admin BL-presence visibility + **`assertBusinessParentCityInAdminScope`** owner-route guard **IMPLEMENTED** (catalog-api).
-- **A.9.4.1B+** — campaign/analytics/dedupe/public `cityId`, remaining **A.9.4.1–A.9.4.5** column retirement **NOT IMPLEMENTED**.
+- **A.9.4.1B** — campaign city, analytics attribution, BL dedupe, public **`cityId`** projection **IMPLEMENTED** (catalog-api).
+- **A.9.4.2+** / **A.9.4.3–A.9.4.5** — invariants, writer migration, column retirement **NOT IMPLEMENTED**.
 - **F.4** — Consumer Web business/branch URLs & SEO; **does not require** A.9.4 DB column removal (**A.9.4.0** gate); not started.
 - Post **6.12A:** User contour audit, Business Web owner contour, Admin Web contour, Admin Catalog/CMS, centralized Home config, Catalog Import, QalaGo AI, remaining Consumer Web, production monetization, analytics UX, role-based E2E, security/legal/release — **not** current track unless explicitly staged.
 

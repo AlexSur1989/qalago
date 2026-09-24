@@ -6,9 +6,22 @@
 
 ---
 
+## 2026-09-25 — 6.12A.9.4.1 City context hardening (1A + 1B)
+
+- **Status:** **6.12A.9.4.1 PASS — NON-DISCOVERY CITY AUTHORITY HARDENED**.
+- **Checkpoint (1B implementation):** `38d2a83b1a71fe4eaec23fec2a04467964b7cbed`.
+- **Checkpoint (1A implementation):** `955f9d86c660d1019158236c4417cf337b13ae9d`.
+- **Baseline (1B start):** `e0ed3dc45d261d0ca27f0e0d9eec2886263f1e2f` (**1A** docs follow-up).
+- **Scope (1B):** **`services/catalog-api`** — campaign/order market city resolver, analytics event city attribution, BL-aware application dedupe, public top-level **`cityId`** physical projection, admin reporting business visibility via BL presence; focused tests. No schema/migration/client changes; **1A** auth semantics unchanged.
+- **Summary (1B):** **`resolveCampaignMarketCityId`** (target/dest BL → explicit city + branch presence → primary BL → parent **`Business.cityId`** fallback); order/provisioning/quote/inventory aligned to resolved city; new organic events use **`resolveAnalyticsEventCityId`**; dedupe matches **`BusinessLocation`** in application city; **`projectPublicPhysicalReadFields`** includes branch-context **`cityId`**; **`reporting-scope.businessCityWhere`** uses **`locations.some(cityId)`** for admin business visibility (event-level analytics filters unchanged — business-grain rollups).
+- **Deferred:** **A.9.4.2+** invariant audit; **A.9.4.3** application writer migration; **F.4**; schema/column retirement; **`product-purchase-state`** schedule preview may still read parent **`Business.cityId`** (debt).
+- **Next:** **A.9.4.2 READ-ONLY invariant-hardening audit** (not auto-started).
+
+---
+
 ## 2026-09-25 — 6.12A.9.4.1A Admin city visibility & authorization hardening
 
-- **Status:** **6.12A.9.4.1A PASS — ADMIN CITY AUTHORITY HARDENED** (pending implementation checkpoint commit).
+- **Status:** **6.12A.9.4.1A PASS — ADMIN CITY AUTHORITY HARDENED**.
 - **Checkpoint (implementation):** `955f9d86c660d1019158236c4417cf337b13ae9d`.
 - **Baseline:** `dc6cc5622d431496ed010fb0dc79ae53d0dd65f6` (**A.9.4.0** policy gate).
 - **Scope:** **`services/catalog-api`** — `CityScopeService`, Admin list/mutations, ownership claims, monetization Admin access asserts, moderation **`assertCityInAdminScope`**, application approval city gate; tests; architecture docs. No schema/migration/Flutter/Web.
