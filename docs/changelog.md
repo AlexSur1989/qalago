@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-09-24 — MAP-LOCATION.2 User location bootstrap + native replay (hotfix)
+
+- **Status:** **MAP-LOCATION.2 HOTFIX AUTOMATED PASS — PHYSICAL SAMSUNG QA REQUIRED**.
+- **Checkpoint (implementation):** `113a2b02b31b2e2d40dce3b4d23e62c69ebbebf1`.
+- **Summary:** MAP-LOCATION.2 audit: Samsung had permissions + fused last-known but native user layer only **cleared/initialized** (no **updated**). **Fix:** passive **`userLocationStream()`** bootstraps **`getLastKnownPosition()`**, bounded **`getCurrentPosition`** (**12s**), deduped emissions, then **`distanceFilter: 75`** stream; debug **`[UserLocation]`** bootstrap events. **MapLibre:** **`onStyleLoaded`** syncs **`widget.userLocation`** (not stale controller cache only); style reload replays current widget coordinate. **Automated:** Flutter **999/999 PASS**. **C2** / **C3** / business layers unchanged.
+- **Physical QA:** pending (Samsung blue dot).
+- **Next:** MAP-LOCATION physical closure; duplicate business-layer add errors separate stage.
+
+---
+
 ## 2026-09-24 — MAP-LOCATION.1 Native user location layer (hotfix)
 
 - **Status:** **MAP-LOCATION.1 AUTOMATED PASS — NATIVE USER LOCATION LAYER IMPLEMENTED — PHYSICAL QA PENDING**.
