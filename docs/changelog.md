@@ -9,7 +9,7 @@
 ## 2026-09-24 — MAP-LOCATION.1 Native user location layer (hotfix)
 
 - **Status:** **MAP-LOCATION.1 AUTOMATED PASS — NATIVE USER LOCATION LAYER IMPLEMENTED — PHYSICAL QA PENDING**.
-- **Checkpoint (implementation):** _(set at commit)_.
+- **Checkpoint (implementation):** `d71151bc902c1156e4e7909572bdc9d9c090b938`.
 - **Summary:** Physical SM-J610FN desync: user dot was Flutter **`Positioned`** overlay + **`toScreenLocationBatch`** while businesses use native GeoJSON under **`QALAGO_NATIVE_MAP_BUSINESS_LAYER=true`**. **Fix:** MapLibre dedicated **`qalago-user-location`** GeoJSON + **CircleLayer** (center-anchored, brand blue); **`myLocationEnabled`** stays **false**; **`userLocationProvider`** unchanged. **`resolveMapOverlayMarkers`** excludes **`__user_location__`** on MapLibre. **C2** / **C3** unchanged.
 - **Physical QA:** pending (Samsung).
 - **Next:** MAP-LOCATION physical closure; C3 clustering separate.
