@@ -6,6 +6,23 @@
 
 ---
 
+## 2026-09-24 — MAP-PERF.C2 Physical QA (Samsung)
+
+- **Status:** **MAP-PERF.C2 PASS — VIEWPORT HYSTERESIS FINALIZED**.
+- **Checkpoint (implementation):** `3c86164ffcd9eafdf42536642de08635c30490ed` (docs follow-up **`93f8a04a2db5d864861358e306289417cb6e5de4`**).
+- **Device:** Samsung **SM-J610FN**, Android **10** / API **29** (native-business-layer debug APK; **`QALAGO_NATIVE_MAP_BUSINESS_LAYER=true`** — not a production-default decision).
+- **Defect (C2.0):** **`lastFetchBounds`** stored **padded** fetched coverage, but fetch logic compared it to the **visible** viewport via absolute edge-delta thresholds → tiny/unchanged pans looked “outside” padded coverage and re-triggered pagination/network fetches.
+- **Solution (implemented):** containment-based hysteresis — suppress fetch while **visible viewport ⊆ fetched padded coverage** (ε **`1e-7`**); fetch when viewport exits coverage; no coverage on error/cancel/stale/incomplete wave; incomplete **30-page** cap remains fetch-eligible; retry does not double-pad; scope reset preserved.
+- **Automated:** focused C2/bounds tests **27/27 PASS** (not re-run for this closure).
+- **Physical MAPDBG:**
+  - **Small pan / inside coverage:** visible bounds inside **`lastFetchBounds`** → **`fetchNeeded=false`**, **`fetchSkipped`** — **PASS**.
+  - **Larger pan / outside coverage:** viewport exited coverage → **`fetchNeeded=true`**, new padded bounds, fetch completed, **`lastFetchBounds`** updated — **PASS**.
+  - **Interaction (incidental):** during MAP-LOCATION.2 QA, pan/zoom/re-entry showed no obvious map freeze — supplementary only, not exhaustive C2 matrix.
+- **Out of scope / still open:** **MAP-PERF.C3** native business-layer hardening; **`CannotAddLayerException`** duplicate **`qalago-business-*`** layers (C3 audit).
+- **Next:** **MAP-PERF.C3** read-only audit / hardening stage.
+
+---
+
 ## 2026-09-24 — MAP-LOCATION.2 Physical QA (Samsung)
 
 - **Status:** **MAP-LOCATION.2 PASS — USER LOCATION FINALIZED**.
@@ -45,11 +62,11 @@
 
 ## 2026-09-24 — MAP-PERF.C2 Viewport fetch hysteresis (hotfix)
 
-- **Status:** **MAP-PERF.C2.HOTFIX PASS — CONTAINMENT-BASED VIEWPORT HYSTERESIS IMPLEMENTED** (automated tests).
+- **Status:** **MAP-PERF.C2 HOTFIX AUTOMATED PASS** (physical QA → closure entry above).
 - **Checkpoint (implementation):** `3c86164ffcd9eafdf42536642de08635c30490ed`.
 - **Summary:** **C2.0** confirmed **`mapBoundsFetchNeeded`** compared **padded `lastFetchBounds`** to **visible** viewport via edge deltas → identical idle re-fetched (up to **30×100** HTTP). **Fix:** **`mapViewportFetchSuppressed`** / **`mapBoundsVisibleWithinFetchedCoverage`** — suppress fetch while **visible ⊆ fetched padded coverage** (ε = **`1e-7`**). **12%** padding unchanged; city/scope reset clears coverage; failed/cancelled/stale fetches do not establish coverage; **30-page cap** without exhausting API **total** does not mark coverage complete. **C3** / map renderer / backend untouched.
-- **Physical QA:** deferred (Samsung) — MAPDBG retained.
-- **Next:** MAP-PERF.C3 clustering (separate); **6.12A.9.0** unchanged.
+- **Physical QA:** **PASS** (Samsung SM-J610FN — see physical QA entry above).
+- **Next:** **MAP-PERF.C3** (separate); **6.12A.9.0** unchanged.
 
 ---
 

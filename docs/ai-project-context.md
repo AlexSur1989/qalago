@@ -30,12 +30,11 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **flutter_map fallback:** user location remains Flutter overlay markers.
 - **Still open (not MAP-LOCATION):** duplicate native **`qalago-business-*`** layer add errors (**C3** track).
 
-## Map viewport fetch hysteresis (MAP-PERF.C2)
+## Map viewport fetch hysteresis (MAP-PERF.C2 CLOSED / PHYSICAL PASS)
 
-- **`lastFetchBounds`** = padded bbox (**12%**) successfully fetched from **`GET /businesses?forMap=true`** (ACTIVE-only public catalog; no status override).
-- **Suppress** new viewport fetch while current **visible** bounds are **contained in** **`lastFetchBounds`** (not edge-delta equality between padded vs visible).
-- **City** / **mapDiscoveryScope** change → **`resetForScopeChange`** clears coverage → next idle **must** fetch.
-- Failed, cancelled, stale, or **incomplete pagination** (30 pages without exhausting API total) **do not** establish coverage.
+- **Invariant:** visible viewport **⊆** fetched padded coverage (**`lastFetchBounds`**, **12%** pad) → **suppress** fetch; viewport **exits** coverage → **fetch** new padded coverage. Error / cancel / stale / incomplete wave (**30-page** cap without API total exhausted) → **must not** establish valid coverage.
+- **Physical Samsung SM-J610FN:** small pan inside coverage → **`fetchNeeded=false`** / **`fetchSkipped`**; larger pan outside → **`fetchNeeded=true`** / successful refetch — **PASS**. Details: `docs/changelog.md` MAP-PERF.C2 physical QA entry. Implementation: **`3c86164ffcd9eafdf42536642de08635c30490ed`**.
+- **Open (not C2):** **MAP-PERF.C3** — duplicate native **`qalago-business-*`** layer adds; **`QALAGO_NATIVE_MAP_BUSINESS_LAYER=true`** remains debug APK config only (not production-default here).
 
 ## Consumer Web stage
 
