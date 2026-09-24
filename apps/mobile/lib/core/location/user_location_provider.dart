@@ -1,7 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import '../providers/city_provider.dart';
+
+/// Upper bound for passive fresh-position bootstrap (does not block live stream).
+@visibleForTesting
+const userLocationCurrentPositionTimeout = Duration(seconds: 12);
 
 /// Injectable geolocator surface for tests (passive vs explicit permission).
 @visibleForTesting
@@ -18,11 +24,17 @@ class UserLocationGeolocatorBridge {
   Future<LocationPermission> requestPermission() =>
       Geolocator.requestPermission();
 
+  Future<Position?> getLastKnownPosition() => Geolocator.getLastKnownPosition();
+
   Future<Position> getCurrentPosition() => Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.medium,
         ),
       );
+
+  Future<Position> getCurrentPositionWithTimeout(Duration timeout) {
+    return getCurrentPosition().timeout(timeout);
+  }
 
   Stream<Position> positionStream() => Geolocator.getPositionStream(
         locationSettings: const LocationSettings(
@@ -61,22 +73,56 @@ Stream<UserPosition?> userLocationStream({
     return;
   }
 
-  try {
-    final current = await bridge.getCurrentPosition();
-    yield UserPosition(
-      latitude: current.latitude,
-      longitude: current.longitude,
-    ).snapped;
-  } catch (_) {
-    // Stream may still deliver positions.
+  UserPosition? lastEmitted;
+
+  UserPosition _snapped(Position position) => UserPosition(
+        latitude: position.latitude,
+        longitude: position.longitude,
+      ).snapped;
+
+  void _dbg(String event) {
+    if (kDebugMode) {
+      debugPrint('[UserLocation] $event');
+    }
   }
 
-  yield* bridge.positionStream().map(
-        (position) => UserPosition(
-          latitude: position.latitude,
-          longitude: position.longitude,
-        ).snapped,
-      );
+  try {
+    final lastKnown = await bridge.getLastKnownPosition();
+    if (lastKnown != null) {
+      final snapped = _snapped(lastKnown);
+      lastEmitted = snapped;
+      _dbg('bootstrap lastKnown');
+      yield snapped;
+    }
+  } catch (e) {
+    _dbg('bootstrap lastKnown failed: $e');
+  }
+
+  try {
+    final current = await bridge.getCurrentPositionWithTimeout(
+      userLocationCurrentPositionTimeout,
+    );
+    final snapped = _snapped(current);
+    if (snapped != lastEmitted) {
+      lastEmitted = snapped;
+      _dbg('bootstrap current');
+      yield snapped;
+    }
+  } on TimeoutException {
+    _dbg('bootstrap current timeout');
+  } catch (e) {
+    _dbg('bootstrap current failed: $e');
+  }
+
+  await for (final position in bridge.positionStream()) {
+    final snapped = _snapped(position);
+    if (snapped == lastEmitted) {
+      continue;
+    }
+    lastEmitted = snapped;
+    _dbg('stream');
+    yield snapped;
+  }
 }
 
 /// Explicit user-intent permission request (map/nearby actions — not Home render).

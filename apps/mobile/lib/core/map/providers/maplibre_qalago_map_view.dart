@@ -291,7 +291,10 @@ class _MapLibreQalaGoMapViewState extends State<MapLibreQalaGoMapView> {
         await _syncNativeBusinessLayer();
         _attachBusinessFeatureTapListener(native);
       }
-      await _userLocationLayerController.onStyleLoaded(native);
+      await _userLocationLayerController.onStyleLoaded(
+        native,
+        userLocation: widget.userLocation,
+      );
     }
     await _onCameraIdle();
   }

@@ -481,7 +481,10 @@ class _FakeGeolocator extends UserLocationGeolocatorBridge {
   Future<LocationPermission> requestPermission() => onRequest();
 
   @override
-  Future<Position> getCurrentPosition() async {
+  Future<Position?> getLastKnownPosition() async => null;
+
+  @override
+  Future<Position> getCurrentPositionWithTimeout(Duration timeout) async {
     throw UnsupportedError('not expected');
   }
 

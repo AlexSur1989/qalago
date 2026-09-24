@@ -39,6 +39,7 @@ class QalaGoMapUserLocationLayerController {
 
   Future<void> onStyleLoaded(
     MapLibreMapController map, {
+    QalaGoMapCoordinate? userLocation,
     QalaGoMapRenderer renderer = QalaGoMapRenderer.mapLibre,
   }) async {
     if (!_enabled(renderer)) {
@@ -46,7 +47,10 @@ class QalaGoMapUserLocationLayerController {
     }
     await _tearDown(map);
     await _installSourceAndLayer(map);
-    await syncUserLocation(map, _latestPosition, renderer: renderer);
+    mapViewportDbg(
+      'MAPDBG userLocationLayer styleReady hasLocation=${userLocation != null}',
+    );
+    await syncUserLocation(map, userLocation, renderer: renderer);
     mapViewportDbg('MAPDBG userLocationLayer initialized');
   }
 
