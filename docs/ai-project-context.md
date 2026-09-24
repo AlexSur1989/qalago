@@ -8,7 +8,8 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `955f9d86c660d1019158236c4417cf337b13ae9d` — **A.9.4.1A** admin BL city scope |
+| **Repo HEAD (current)** | `096ec28e6f493ab885ef55faa7816c54fc2bc79c` — **A.9.4.1A** (+ SHA follow-up docs) |
+| **A.9.4.1A implementation SHA** | `955f9d86c660d1019158236c4417cf337b13ae9d` |
 | **Last completed stage** | **6.12A.9.4.1A PASS** — Admin city visibility & authorization hardening (catalog-api) |
 | **Last product implementation** | **6.12A.9.4.1A** — branch-aware Admin scope + owner-route escalation guard |
 | **Prior** | **6.12A.9.4.0 PASS** (`dc6cc56…` policy gate); **6.12A.9.3.5** Business Web physical QA |
