@@ -6,6 +6,31 @@
 
 ---
 
+## 2026-09-24 — MAP-PERF.C3.4 Physical Samsung QA (native business layer)
+
+- **Status:** **MAP-PERF.C3.4 PASS — PHYSICAL SAMSUNG QA FINALIZED**.
+- **Checkpoint (APK / code under test):** `b350166824cbaa5efc7db852150046416587d0e9` (native business **C3.1** `68cca9fdb2a630bc242b6f4daba9213da9135352`, **C3.2** `b750fee7dec26d9a00e945b36ebc847424145a53`, load QA **C3.3** `a0ca0ce250bc6609db27ea0fe934221408728d2b`).
+- **Checkpoint (documentation closure):** docs-only finalization commit (see git history for SHA).
+- **Device:** Samsung **SM-J610FN**, Android **10** / API **29**.
+- **APK (debug):** fresh build from HEAD above; **`QALAGO_DEV_HOST=172.158.10.133`**, **`QALAGO_DEV_LOGIN=true`**, **`QALAGO_NATIVE_MAP_BUSINESS_LAYER=true`** (debug enable — **not** production-default).
+- **Physical QA (PASS):**
+  - Map open with native business layer enabled — **PASS**.
+  - Initial **`geojsonSync requested features=0`** before catalog fetch completed (expected deferral / empty viewport); after fetch **`fetch SUCCESS count=15`** → **`geojsonSync features=15`**, **`businessLayer geojson applied epoch=1 features=15`** — **PASS** (not a C3 install defect).
+  - Source/layers: **`qalago-businesses`**, **`qalago-business-clusters`**, **`qalago-business-cluster-count`**, **`qalago-business-unclustered`**, **`qalago-business-selected`** — **PASS**.
+  - No **`CannotAddLayerException`**, duplicate **`qalago-business-*`**, or already-exists business-layer failure observed — **PASS** (**C3.1** lifecycle/idempotency on device).
+  - Pan: markers geographically attached — **PASS**.
+  - Zoom/cluster: correct render, no freeze/disappearance — **PASS**.
+  - Unclustered tap: correct business selection / preview — **PASS**.
+  - Cluster tap: expand/zoom, no crash — **PASS**.
+  - Map → Home → Map re-entry: markers restored; new map instance installed source/layers; no duplicate-layer exception — **PASS**.
+  - User location + business coexistence; re-entry **`userLocationLayer`** ready/updated — **PASS** (business GeoJSON not conflated with user layer).
+  - Runtime payload updates (**15 → 10 → 14** features) without duplicate-layer failures — **PASS** (**C3.2** semantic sync on device).
+- **Out of scope / not claimed:** **3000-feature** physical load (synthetic **C3.3** only); iOS physical validation; production default flip.
+- **Production default:** **`QALAGO_NATIVE_MAP_BUSINESS_LAYER`** remains **`false`** pending **C3.5**.
+- **Next:** **MAP-PERF.C3.5 — PRODUCTION DEFAULT / RELEASE WIRING DECISION**.
+
+---
+
 ## 2026-09-24 — MAP-PERF.C3.3 Native business layer load / regression QA
 
 - **Status:** **MAP-PERF.C3.3 AUTOMATED LOAD QA PASS — READY FOR C3.4 PHYSICAL QA**.

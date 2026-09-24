@@ -34,7 +34,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 - **Invariant:** visible viewport **⊆** fetched padded coverage (**`lastFetchBounds`**, **12%** pad) → **suppress** fetch; viewport **exits** coverage → **fetch** new padded coverage. Error / cancel / stale / incomplete wave (**30-page** cap without API total exhausted) → **must not** establish valid coverage.
 - **Physical Samsung SM-J610FN:** small pan inside coverage → **`fetchNeeded=false`** / **`fetchSkipped`**; larger pan outside → **`fetchNeeded=true`** / successful refetch — **PASS**. Details: `docs/changelog.md` MAP-PERF.C2 physical QA entry. Implementation: **`3c86164ffcd9eafdf42536642de08635c30490ed`**.
-- **MAP-PERF.C3.1 (lifecycle):** serialized install + **style epoch** + native reconcile. **C3.2 (dedup):** **`businessGeoJsonFingerprint`** per epoch. **C3.3 (load QA):** automated pass at **100–3000** BusinessLocation features (dedup, selection, style reload, concurrency, failure recovery) — **1049/1049** Flutter; **Samsung C3.4 physical QA pending**; native business layer default **false**. **C3** not closed (**C3.4+**).
+- **MAP-PERF.C3 (native business layer):** **C3.1** lifecycle/idempotency + **C3.2** semantic GeoJSON dedup + **C3.3** synthetic load QA (**100–3000**, **1049/1049** Flutter) + **C3.4** Samsung **SM-J610FN** physical QA **PASS** (debug APK **`QALAGO_NATIVE_MAP_BUSINESS_LAYER=true`**, ~15-feature Uralsk catalog on device — not 3000 physical). No duplicate **`qalago-business-*`** on pan/zoom/tap/re-entry; user-location layer coexists. **Production default still `false`** — **C3.5** release wiring decision next; full **C3** not closed until **C3.5**.
 
 ## Consumer Web stage
 
