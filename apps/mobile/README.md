@@ -18,11 +18,22 @@ Android emulator (host machine from emulator):
 flutter run --dart-define=QALAGO_DEV_HOST=10.0.2.2
 ```
 
-Production-like build:
+Production-like web compile check:
 
 ```powershell
 flutter build web --dart-define=QALAGO_API_BASE_URL=https://api.qalago.kz/api/v1 --dart-define=QALAGO_AI_BASE_URL=https://ai.qalago.kz/api/v1
 ```
+
+Android Play / release (native business layer — C3.4 Samsung-qualified; **not** a code default flip):
+
+```powershell
+cd apps/mobile
+flutter build appbundle --release `
+  --dart-define=QALAGO_API_BASE_URL=https://api.qalago.kz/api/v1 `
+  --dart-define=QALAGO_NATIVE_MAP_BUSINESS_LAYER=true
+```
+
+iOS release: **omit** `QALAGO_NATIVE_MAP_BUSINESS_LAYER=true` until iOS physical QA passes.
 
 Optional overrides:
 
@@ -33,13 +44,13 @@ Optional overrides:
 | `QALAGO_DEV_HOST` | Dev host for catalog/media/AI when overrides empty (default `127.0.0.1`, web uses `localhost`) |
 | `QALAGO_MAP_STYLE_URL` | MapLibre style JSON URL (default: OpenFreeMap Liberty — DEV/QA only) |
 | `QALAGO_MAP_RENDERER` | `maplibre` (device default) or `flutter_map` (widget tests / override) |
-| `QALAGO_NATIVE_MAP_BUSINESS_LAYER` | `true` enables native MapLibre circle layers + taps (default off; legacy Flutter overlay pins). flutter_map tests ignore this flag. |
+| `QALAGO_NATIVE_MAP_BUSINESS_LAYER` | Compile-time **`defaultValue: false`**. `true` enables native MapLibre GeoJSON business layers + taps (hides Flutter business overlay on MapLibre). **Android release:** pass `true` explicitly (see above). **iOS release:** do **not** pass `true` until iOS physical QA. Omitted define → legacy overlay (fail-safe). No automatic native→overlay runtime fallback if native install fails. flutter_map tests ignore this flag. |
 
 ### Map basemap (DEV/QA)
 
 Default MapLibre style is [OpenFreeMap Liberty](https://tiles.openfreemap.org/styles/liberty) (validated on physical Android QA). Override with `--dart-define=QALAGO_MAP_STYLE_URL=...`. This is **not** approved production map infrastructure.
 
-MapLibre business markers use Flutter overlays projected during camera movement (bridge until C.6 native symbol layers / clustering).
+When the native business flag is **off** (default), MapLibre uses Flutter-projected business overlay pins. When **on**, businesses render via native GeoJSON (C3.1–C3.4 on Android).
 
 ## Tests
 

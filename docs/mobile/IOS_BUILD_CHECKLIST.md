@@ -106,6 +106,8 @@ flutter build ios --debug --no-codesign   # compile check without signing
 flutter build ios --release                 # requires signing
 ```
 
+**Native MapLibre business layer (MAP-PERF.C3):** shared Flutter implementation exists, but **iOS has not passed dedicated physical QA**. **Do not** pass `--dart-define=QALAGO_NATIVE_MAP_BUSINESS_LAYER=true` on iOS release/TestFlight builds until that QA stage closes. Code default remains **`false`** (legacy Flutter business overlay on MapLibre). Android Play release policy: `docs/deploy.md` §5 and `docs/mobile/ANDROID_BUILD.md`.
+
 Archive for TestFlight:
 
 1. Xcode → Product → Archive

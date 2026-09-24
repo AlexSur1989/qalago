@@ -91,11 +91,29 @@ Features: list owned businesses, edit profile, manage promotions, view analytics
 
 ## 5. Mobile
 
-Point `AppConstants.baseUrl` / build flavors to production API URL:
+Point `AppConstants.baseUrl` / build flavors to production API URL.
 
-```bash
-flutter build apk --dart-define=QALAGO_API_BASE_URL=https://api.qalago.kz/api/v1
+**Android store/release** (Play AAB — preferred for Play Console):
+
+```powershell
+cd apps/mobile
+flutter build appbundle --release `
+  --dart-define=QALAGO_API_BASE_URL=https://api.qalago.kz/api/v1 `
+  --dart-define=QALAGO_NATIVE_MAP_BUSINESS_LAYER=true
 ```
+
+**Android store/release** (APK alternative):
+
+```powershell
+cd apps/mobile
+flutter build apk --release `
+  --dart-define=QALAGO_API_BASE_URL=https://api.qalago.kz/api/v1 `
+  --dart-define=QALAGO_NATIVE_MAP_BUSINESS_LAYER=true
+```
+
+**iOS store/release:** use production API defines as needed, but **do not** pass
+`QALAGO_NATIVE_MAP_BUSINESS_LAYER=true` until dedicated iOS physical QA passes
+(see `docs/mobile/IOS_BUILD_CHECKLIST.md`). Code default for the flag remains **`false`**.
 
 Do **not** pass `QALAGO_DEV_LOGIN=true` or `QALAGO_MOCK_PLAN_CHECKOUT=true` in store/release builds.
 

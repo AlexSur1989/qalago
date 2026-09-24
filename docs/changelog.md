@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-09-24 — MAP-PERF.C3.5 Android production release wiring
+
+- **Status:** **MAP-PERF.C3.5 RELEASE WIRING IMPLEMENTED — PHYSICAL RELEASE SMOKE PENDING**.
+- **Checkpoint (implementation):** docs-only release-wiring commit (see git history for SHA).
+- **Summary:** **Read-only audit:** global code default **`false`** retained; iOS physical QA required before global enable. **Implemented:** authoritative **Android** store/release commands now require explicit **`--dart-define=QALAGO_NATIVE_MAP_BUSINESS_LAYER=true`** alongside production API URL in **`docs/deploy.md`**, **`docs/mobile/ANDROID_BUILD.md`**, **`apps/mobile/README.md`**. **iOS policy documented:** **omit** native business define on release until dedicated iOS QA (**`docs/mobile/IOS_BUILD_CHECKLIST.md`**). **No** Dart/map/controller changes; **no** runtime Platform gating; **no** native→overlay fallback added. Fail-safe: missing define → legacy Flutter business markers.
+- **Physical QA:** **C3.5R** pending — Android **release** artifact build + Samsung smoke (not run in this stage).
+- **Next:** **MAP-PERF.C3.5R** — Android release artifact + Samsung smoke; then C3.5 closure entry if PASS.
+
+---
+
 ## 2026-09-24 — MAP-PERF.C3.4 Physical Samsung QA (native business layer)
 
 - **Status:** **MAP-PERF.C3.4 PASS — PHYSICAL SAMSUNG QA FINALIZED**.

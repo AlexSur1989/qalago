@@ -82,14 +82,36 @@ Physical Android QA default MapLibre style: **OpenFreeMap Liberty** (`https://ti
 
 Override: `--dart-define=QALAGO_MAP_STYLE_URL=<style.json URL>`. **Not** production basemap approval — public OpenFreeMap has no SLA.
 
-Example physical debug APK (replace LAN IP):
+Example physical debug APK (replace LAN IP; native business layer optional for C3 QA):
 
 ```powershell
 cd apps/mobile
 flutter build apk --debug `
   --dart-define=QALAGO_DEV_HOST=<PC-LAN-IPv4> `
-  --dart-define=QALAGO_DEV_LOGIN=true
+  --dart-define=QALAGO_DEV_LOGIN=true `
+  --dart-define=QALAGO_NATIVE_MAP_BUSINESS_LAYER=true
 ```
+
+## Production / Play release (Android)
+
+Source default for `QALAGO_NATIVE_MAP_BUSINESS_LAYER` is **`false`** (compile-time). **Play/store Android builds must pass the define explicitly** so the C3.4-qualified native MapLibre business layer is enabled. Omitting the define keeps the legacy Flutter-projected business overlay (fail-safe).
+
+```powershell
+cd apps/mobile
+flutter build appbundle --release `
+  --dart-define=QALAGO_API_BASE_URL=https://api.qalago.kz/api/v1 `
+  --dart-define=QALAGO_NATIVE_MAP_BUSINESS_LAYER=true
+```
+
+APK release variant (same defines):
+
+```powershell
+flutter build apk --release `
+  --dart-define=QALAGO_API_BASE_URL=https://api.qalago.kz/api/v1 `
+  --dart-define=QALAGO_NATIVE_MAP_BUSINESS_LAYER=true
+```
+
+**iOS:** do **not** add `QALAGO_NATIVE_MAP_BUSINESS_LAYER=true` to release builds until iOS physical QA is complete (`docs/mobile/IOS_BUILD_CHECKLIST.md`).
 
 Demo ad campaigns (DEV only):
 
