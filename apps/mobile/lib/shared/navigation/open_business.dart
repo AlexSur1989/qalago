@@ -80,6 +80,19 @@ void openBusinessFromDiscovery(
   );
 }
 
+/// Favorites list: Business-grain only — omit branch [locationId] so detail
+/// resolves the current canonical primary/effective branch (A.9.3.3).
+void openBusinessFromFavorite(
+  BuildContext context,
+  BusinessModel business,
+) {
+  openBusiness(
+    context,
+    business.id,
+    BusinessTrafficSource.favorites,
+  );
+}
+
 /// City promotion feed: preserve [PromotionModel.contextLocationId].
 void openBusinessFromPromotion(
   BuildContext context,

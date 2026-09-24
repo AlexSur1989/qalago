@@ -82,6 +82,12 @@ Relationship: **Business 1 → N BusinessLocation**.
 - **Selection / tap:** map selection is **location** identity; preview and directions use the **selected location row** (address, lat/lng); opening full detail uses **Business.id** plus optional **`locationId`** query for branch-aware detail physical fields.
 - **Unchanged:** reviews/favorites/analytics Business-scoped; MapLibre style/basemap; geocoding; cluster styling/thresholds; nearest/radius discovery grain.
 
+## Stage 6.12A.9.3.3 (Flutter favorites physical-context closure)
+
+- **Favorites:** **Business-grain** bookmarks only (`Favorite.businessId`); **no** branch id persisted. **`GET /favorites`** nested business physical fields = **primary/effective branch** projection (**A.9.3.1**).
+- **Flutter navigation:** **`openBusinessFromFavorite`** opens detail **without** route **`locationId`** even if list JSON contained map/discovery branch fields — detail **`primary_default`** matches favorites card. **Not** “pass `contextLocationId` from favorites” (**QA-002 CLOSED / OBSOLETE**).
+- **Discovery / map / promotions:** unchanged — **`contextLocationId`** or map **`locationId`** still passed where applicable (**A.7.9.5+**).
+
 ## Stage 6.12A.7.4 (physical QA hotfix)
 
 - **Category map:** native GeoJSON uses **`mapLayerItems`** (filtered by padded **`lastFetchBounds`**) so sibling branches fetched for the viewport are not dropped by tighter **`visibleBounds`** alone.

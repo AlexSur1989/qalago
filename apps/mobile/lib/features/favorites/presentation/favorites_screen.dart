@@ -194,10 +194,9 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
                             TrackedBusinessCard(
                               business: business,
                               trafficSource: BusinessTrafficSource.favorites,
-                              onTap: () => openBusiness(
+                              onTap: () => openBusinessFromFavorite(
                                 context,
-                                business.id,
-                                BusinessTrafficSource.favorites,
+                                business,
                               ),
                             ),
                             Positioned(
