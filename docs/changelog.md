@@ -9,7 +9,7 @@
 ## 2026-09-25 — 6.12A.9.3.4 Consumer Web physical-context closure
 
 - **Status:** **6.12A.9.3.4 IMPLEMENTATION PASS — PHYSICAL BROWSER QA REQUIRED**.
-- **Checkpoint (implementation):** see commit **`feat(consumer-web): A.9.3.4 physical context navigation`** (`git log -1 --oneline`).
+- **Checkpoint (implementation):** `b13bfa4b7b1a1507d5779d11c065e94c284a7fc4`.
 - **Scope:** **`apps/consumer-web`** only — DTO, detail fetch/cache, discovery links, temporary detail **`locationId`** query, branch switcher links, vitest; docs.
 - **Summary:** Discovery **`contextLocationId` → `/businesses/{id}?locationId=` → `GET /businesses/:id?locationId=`**; **`effectivePhysical`** hero; cache **`(businessId, locationId)`**; **QA-001 CLOSED** (L2 card/context mismatch at Web navigation layer). F.3 **noindex** unchanged; F.4 deferred.
 - **Deferred:** physical browser QA; Consumer Web promotions/favorites/map; full catalog/gallery on detail; F.4 slug SEO.
