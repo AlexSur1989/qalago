@@ -18,6 +18,16 @@ void main() {
     expect(source, isNot(contains('oldWidget.businessGeoJson != widget.businessGeoJson')));
   });
 
+  test('camera idle/move paths do not sync native business GeoJSON', () {
+    final source = File(
+      'lib/core/map/providers/maplibre_qalago_map_view.dart',
+    ).readAsStringSync();
+    final cameraIdle = source.split('Future<void> _onCameraIdle()')[1].split('Future<void> _runOverlayProjectionAfterCameraIdle')[0];
+    expect(cameraIdle, isNot(contains('_syncNativeBusinessLayer')));
+    final cameraMove = source.split('void _onCameraMove(')[1].split('Future<void> _runMarkerProjection')[0];
+    expect(cameraMove, isNot(contains('_syncNativeBusinessLayer')));
+  });
+
   test('userLocation didUpdateWidget does not reference businessGeoJson', () {
     final source = File(
       'lib/core/map/providers/maplibre_qalago_map_view.dart',

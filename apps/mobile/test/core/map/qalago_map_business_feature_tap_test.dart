@@ -87,6 +87,28 @@ void main() {
       );
     });
 
+    test('multi-branch same businessId distinct locationIds', () {
+      final tapA = QalaGoMapBusinessFeatureTap.parseTapTarget(
+        featureId: 'loc-parent-0-branch-0',
+        layerId: QalaGoMapBusinessLayerIds.unclustered,
+        properties: {
+          'businessId': 'parent-0',
+          'locationId': 'loc-parent-0-branch-0',
+        },
+      );
+      final tapB = QalaGoMapBusinessFeatureTap.parseTapTarget(
+        featureId: 'loc-parent-0-branch-1',
+        layerId: QalaGoMapBusinessLayerIds.selected,
+        properties: {
+          'businessId': 'parent-0',
+          'locationId': 'loc-parent-0-branch-1',
+        },
+      );
+      expect(tapA?.businessId, 'parent-0');
+      expect(tapB?.businessId, 'parent-0');
+      expect(tapA?.locationId, isNot(tapB?.locationId));
+    });
+
     test('malformed properties ignored safely', () {
       expect(
         QalaGoMapBusinessFeatureTap.parseBusinessId(

@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-09-24 — MAP-PERF.C3.3 Native business layer load / regression QA
+
+- **Status:** **MAP-PERF.C3.3 AUTOMATED LOAD QA PASS — READY FOR C3.4 PHYSICAL QA**.
+- **Checkpoint (implementation):** _(pending commit)_.
+- **Summary:** Automated qualification at **100 / 500 / 1000 / 3000** BusinessLocation-grain synthetic fixtures (incl. **5×3 multi-branch** parents). **Correctness:** semantic dedup (20× same-semantic clone → **1** `setGeoJsonSource` per epoch), single-field content change (+1 then dedup), selection stress (**1000/3000** — **6** native applies for initial + 5 transitions), **10** style-epoch replays at **3000**, concurrent style/sync convergence, partial failure recovery (addSource/symbol/remove/setGeoJson), user-location isolation (**20** updates → business count unchanged), cluster **55/14** unchanged, tap multi-branch contract. **Dev-machine observations (not Samsung):** buildPayload median ~**1.2ms/3.9ms/3.0ms/14.5ms**; fingerprint median ~**0.3ms/1.4ms/1.3ms/5.0ms**; UTF-8 payload ~**23KB/112KB/224KB/677KB** at 100→3000. **Automated:** focused C3/regression **105/105 PASS**; full Flutter **1049/1049 PASS**. **`QALAGO_NATIVE_MAP_BUSINESS_LAYER`** default **still false**. **Production code:** unchanged (tests/helpers only).
+- **Physical QA:** Samsung **C3.4** pending.
+- **Next:** **C3.4** physical QA; **C3.5** production-default decision.
+
+---
+
 ## 2026-09-24 — MAP-PERF.C3.2 Native business GeoJSON semantic dedup
 
 - **Status:** **MAP-PERF.C3.2 AUTOMATED PASS — C3.3 LOAD/REGRESSION QA REQUIRED**.
