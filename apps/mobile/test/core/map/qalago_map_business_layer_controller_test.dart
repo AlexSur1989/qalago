@@ -2,8 +2,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:qalago_mobile/core/map/qalago_map_business_geojson_source.dart';
-import 'package:qalago_mobile/core/map/qalago_map_business_layer_sink.dart';
+import 'package:qalago_mobile/core/map/qalago_map_business_layer_ids.dart';
 import 'package:qalago_mobile/core/map/providers/qalago_map_business_layer_controller.dart';
+import 'qalago_map_business_layer_test_sink.dart';
 
 void main() {
   group('QalaGoMapBusinessGeoJsonSource', () {
@@ -36,11 +37,11 @@ void main() {
   });
 
   group('QalaGoMapBusinessLayerController lifecycle', () {
-    late _RecordingSink sink;
+    late QalaGoMapBusinessLayerTestSink sink;
     late QalaGoMapBusinessLayerController controller;
 
     setUp(() {
-      sink = _RecordingSink();
+      sink = QalaGoMapBusinessLayerTestSink();
       controller = QalaGoMapBusinessLayerController(sinkForTesting: sink)
         ..debugForceNativeLayerEnabled = true;
     });
@@ -103,16 +104,31 @@ void main() {
       expect(controller.layersInstalled, isTrue);
     });
 
-    test('style reload applies latest pending GeoJSON', () async {
+    test('style reload with successful tearDown reinstalls layers once per epoch', () async {
       await controller.syncBusinessGeoJson(_FakeMap(), fc(3));
       await controller.onStyleLoaded(_FakeMap());
-      expect(sink.addSourceCalls.length, greaterThanOrEqualTo(2));
       expect(
         QalaGoMapBusinessGeoJsonSource.featureCount(
           controller.latestFeatureCollection!,
         ),
         3,
       );
+      expect(
+        sink.countLayerAdds(QalaGoMapBusinessLayerIds.clusterCircles),
+        2,
+      );
+    });
+
+    test('style reload with failed tearDown reconciles without duplicate adds', () async {
+      await controller.syncBusinessGeoJson(_FakeMap(), fc(3));
+      sink.failRemoveLayer = true;
+      sink.failRemoveSource = true;
+      await controller.onStyleLoaded(_FakeMap());
+      expect(
+        sink.countLayerAdds(QalaGoMapBusinessLayerIds.clusterCircles),
+        1,
+      );
+      expect(controller.layersInstalled, isTrue);
     });
 
     test('setGeoJsonSource updates after initial install', () async {
@@ -143,61 +159,3 @@ void main() {
 }
 
 class _FakeMap extends Fake implements MapLibreMapController {}
-
-class _RecordingSink implements QalaGoMapBusinessLayerSink {
-  final addSourceCalls = <GeojsonSourceProperties>[];
-  final setGeoJsonCalls = <Map<String, dynamic>>[];
-  final circleLayerIds = <String>[];
-  final symbolLayerIds = <String>[];
-  var failNextAddSource = false;
-  var failSymbolLayer = false;
-
-  @override
-  Future<void> addSource(String sourceId, GeojsonSourceProperties properties) {
-    if (failNextAddSource) {
-      throw PlatformException(code: 'STYLE_NOT_READY', message: 'test');
-    }
-    addSourceCalls.add(properties);
-    return Future.value();
-  }
-
-  @override
-  Future<void> setGeoJsonSource(
-    String sourceId,
-    Map<String, dynamic> featureCollection,
-  ) {
-    setGeoJsonCalls.add(featureCollection);
-    return Future.value();
-  }
-
-  @override
-  Future<void> addCircleLayer(
-    String sourceId,
-    String layerId,
-    CircleLayerProperties properties, {
-    List<Object>? filter,
-  }) {
-    circleLayerIds.add(layerId);
-    return Future.value();
-  }
-
-  @override
-  Future<void> addSymbolLayer(
-    String sourceId,
-    String layerId,
-    SymbolLayerProperties properties, {
-    List<Object>? filter,
-  }) {
-    if (failSymbolLayer) {
-      throw PlatformException(code: 'LAYER', message: 'symbol fail');
-    }
-    symbolLayerIds.add(layerId);
-    return Future.value();
-  }
-
-  @override
-  Future<void> removeLayer(String layerId) => Future.value();
-
-  @override
-  Future<void> removeSource(String sourceId) => Future.value();
-}

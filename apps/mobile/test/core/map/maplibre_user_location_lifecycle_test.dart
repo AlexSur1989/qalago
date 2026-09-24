@@ -122,4 +122,11 @@ class _RecordingSink implements QalaGoMapBusinessLayerSink {
 
   @override
   Future<void> removeSource(String sourceId) async {}
+
+  @override
+  Future<List<String>> getLayerIds() async => circleLayerIds;
+
+  @override
+  Future<List<String>> getSourceIds() async =>
+      addSourceCalls.isEmpty ? [] : ['test-source'];
 }

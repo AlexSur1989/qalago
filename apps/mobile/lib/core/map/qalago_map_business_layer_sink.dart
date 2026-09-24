@@ -26,6 +26,12 @@ abstract class QalaGoMapBusinessLayerSink {
   Future<void> removeLayer(String layerId);
 
   Future<void> removeSource(String sourceId);
+
+  /// Current style layer ids (maplibre_gl 0.27.1+).
+  Future<List<String>> getLayerIds();
+
+  /// Current style source ids (maplibre_gl 0.27.1+).
+  Future<List<String>> getSourceIds();
 }
 
 class MapLibreQalaGoMapBusinessLayerSink implements QalaGoMapBusinessLayerSink {
@@ -84,5 +90,16 @@ class MapLibreQalaGoMapBusinessLayerSink implements QalaGoMapBusinessLayerSink {
   @override
   Future<void> removeSource(String sourceId) {
     return _map.removeSource(sourceId);
+  }
+
+  @override
+  Future<List<String>> getLayerIds() async {
+    final ids = await _map.getLayerIds();
+    return ids.map((id) => id.toString()).toList(growable: false);
+  }
+
+  @override
+  Future<List<String>> getSourceIds() async {
+    return _map.getSourceIds();
   }
 }

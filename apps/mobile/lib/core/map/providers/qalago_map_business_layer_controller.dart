@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 import '../business_map_category_colors.dart';
+import '../map_viewport_debug_log.dart';
 import '../qalago_map_business_cluster_config.dart';
 import '../qalago_map_business_geojson_source.dart';
 import '../qalago_map_business_layer_ids.dart';
+import '../qalago_map_business_layer_platform_errors.dart';
 import '../qalago_map_business_layer_sink.dart';
 import '../qalago_map_business_layer_style.dart';
 import '../qalago_native_map_business_layer_config.dart';
@@ -25,6 +29,10 @@ class QalaGoMapBusinessLayerController {
       debugForceNativeLayerEnabled ||
       QalaGoNativeMapBusinessLayerConfig.enabled;
 
+  bool _disposed = false;
+  int _styleEpoch = 0;
+  Future<void> _operationChain = Future<void>.value();
+
   bool _sourceInstalled = false;
   bool _layersInstalled = false;
   bool _clusterCirclesInstalled = false;
@@ -40,23 +48,131 @@ class QalaGoMapBusinessLayerController {
   bool get layersInstalled => _layersInstalled;
 
   @visibleForTesting
+  int get styleEpoch => _styleEpoch;
+
+  @visibleForTesting
   Map<String, dynamic>? get latestFeatureCollection => _latestFeatureCollection;
 
   QalaGoMapBusinessLayerSink _sink(MapLibreMapController map) {
     return _testSink ?? MapLibreQalaGoMapBusinessLayerSink(map);
   }
 
-  Future<void> onStyleLoaded(MapLibreMapController map) async {
-    if (!_nativeLayerEnabled) {
-      return;
+  Future<void> onStyleLoaded(MapLibreMapController map) {
+    if (!_nativeLayerEnabled || _disposed) {
+      return Future<void>.value();
     }
-    await _tearDownSourceAndLayers(map);
-    final pending =
-        _latestFeatureCollection ?? emptyFeatureCollection();
-    await _installSourceAndLayersIfReady(map, pending);
+    return _enqueue(() async {
+      _styleEpoch++;
+      final epoch = _styleEpoch;
+      mapViewportDbg('MAPDBG businessLayer styleEpoch=$epoch start');
+      _resetInstallFlags();
+      await _tearDownSourceAndLayers(map, epoch);
+      if (!_isEpochActive(epoch)) {
+        mapViewportDbg('MAPDBG businessLayer styleEpoch=$epoch stale after tearDown');
+        return;
+      }
+      await _reconcileInstallFlagsFromNative(map, epoch);
+      final pending =
+          _latestFeatureCollection ?? emptyFeatureCollection();
+      await _installSourceAndLayersIfReady(map, pending, epoch);
+      if (_isEpochActive(epoch)) {
+        mapViewportDbg('MAPDBG businessLayer styleEpoch=$epoch ready');
+      }
+    });
   }
 
-  Future<void> _tearDownSourceAndLayers(MapLibreMapController map) async {
+  Future<void> syncBusinessGeoJson(
+    MapLibreMapController map,
+    Map<String, dynamic> featureCollection,
+  ) {
+    if (!_nativeLayerEnabled || _disposed) {
+      return Future<void>.value();
+    }
+    _latestFeatureCollection = featureCollection;
+    return _enqueue(() async {
+      final epoch = _styleEpoch;
+      await _syncBusinessGeoJsonForEpoch(map, featureCollection, epoch);
+    });
+  }
+
+  Future<void> ensureLayers(MapLibreMapController map) {
+    if (!_nativeLayerEnabled || _disposed) {
+      return Future<void>.value();
+    }
+    return _enqueue(() async {
+      await _ensureLayersForEpoch(map, _styleEpoch);
+    });
+  }
+
+  Future<void> _enqueue(Future<void> Function() action) {
+    final run = _operationChain.then((_) async {
+      if (_disposed) {
+        return;
+      }
+      await action();
+    });
+    _operationChain = run.catchError((Object _, StackTrace __) {});
+    return run;
+  }
+
+  bool _isEpochActive(int epoch) => !_disposed && epoch == _styleEpoch;
+
+  void _resetInstallFlags() {
+    _sourceInstalled = false;
+    _layersInstalled = false;
+    _clusterCirclesInstalled = false;
+    _clusterCountInstalled = false;
+    _unclusteredInstalled = false;
+    _selectedInstalled = false;
+    _installedClusterMode = null;
+  }
+
+  Future<void> _syncBusinessGeoJsonForEpoch(
+    MapLibreMapController map,
+    Map<String, dynamic> featureCollection,
+    int epoch,
+  ) async {
+    if (!_isEpochActive(epoch)) {
+      mapViewportDbg('MAPDBG businessLayer sync ignored stale epoch=$epoch');
+      return;
+    }
+
+    if (QalaGoMapBusinessGeoJsonSource.shouldDeferSourceInstall(
+      clusterEnabled: QalaGoMapBusinessClusterConfig.enabledOnSource,
+      featureCount: QalaGoMapBusinessGeoJsonSource.featureCount(featureCollection),
+    )) {
+      if (!_sourceInstalled) {
+        return;
+      }
+    }
+
+    await _ensureClusterMode(map, epoch);
+    if (!_isEpochActive(epoch)) {
+      return;
+    }
+
+    if (!_sourceInstalled) {
+      await _installSourceAndLayersIfReady(map, featureCollection, epoch);
+      return;
+    }
+
+    await _applyGeoJsonIfNeeded(map, featureCollection, epoch);
+    if (!_isEpochActive(epoch)) {
+      return;
+    }
+
+    if (!_layersInstalled) {
+      await _ensureLayersForEpoch(map, epoch);
+    }
+  }
+
+  Future<void> _tearDownSourceAndLayers(
+    MapLibreMapController map,
+    int epoch,
+  ) async {
+    if (!_isEpochActive(epoch)) {
+      return;
+    }
     final sink = _sink(map);
     for (final layerId in QalaGoMapBusinessLayerStyle.allManagedLayerIds()) {
       try {
@@ -78,13 +194,50 @@ class QalaGoMapBusinessLayerController {
         );
       }
     } catch (_) {}
-    _sourceInstalled = false;
-    _layersInstalled = false;
-    _clusterCirclesInstalled = false;
-    _clusterCountInstalled = false;
-    _unclusteredInstalled = false;
-    _selectedInstalled = false;
-    _installedClusterMode = null;
+  }
+
+  Future<void> _reconcileInstallFlagsFromNative(
+    MapLibreMapController map,
+    int epoch,
+  ) async {
+    if (!_isEpochActive(epoch)) {
+      return;
+    }
+    final sink = _sink(map);
+    List<String> layerIds;
+    List<String> sourceIds;
+    try {
+      layerIds = await sink.getLayerIds();
+      sourceIds = await sink.getSourceIds();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[QalaGoMapBusinessLayer] reconcile query failed: $e');
+      }
+      return;
+    }
+    if (!_isEpochActive(epoch)) {
+      return;
+    }
+
+    final layerSet = layerIds.toSet();
+    if (sourceIds.contains(QalaGoMapBusinessLayerIds.source)) {
+      _sourceInstalled = true;
+      _installedClusterMode = QalaGoMapBusinessClusterConfig.enabledOnSource;
+      mapViewportDbg('MAPDBG businessLayer reconcile source=present');
+    }
+    if (layerSet.contains(QalaGoMapBusinessLayerIds.clusterCircles)) {
+      _clusterCirclesInstalled = true;
+    }
+    if (layerSet.contains(QalaGoMapBusinessLayerIds.clusterCount)) {
+      _clusterCountInstalled = true;
+    }
+    if (layerSet.contains(QalaGoMapBusinessLayerIds.unclustered)) {
+      _unclusteredInstalled = true;
+    }
+    if (layerSet.contains(QalaGoMapBusinessLayerIds.selected)) {
+      _selectedInstalled = true;
+    }
+    _recomputeLayersInstalled();
   }
 
   void _recomputeLayersInstalled() {
@@ -97,53 +250,96 @@ class QalaGoMapBusinessLayerController {
     );
   }
 
-  Future<void> _ensureClusterMode(MapLibreMapController map) async {
+  Future<void> _ensureClusterMode(MapLibreMapController map, int epoch) async {
     final wantCluster = QalaGoMapBusinessClusterConfig.enabledOnSource;
     if (_sourceInstalled && _installedClusterMode != wantCluster) {
-      await _tearDownSourceAndLayers(map);
+      _resetInstallFlags();
+      await _tearDownSourceAndLayers(map, epoch);
+      await _reconcileInstallFlagsFromNative(map, epoch);
     }
   }
 
   Future<void> _installSourceAndLayersIfReady(
     MapLibreMapController map,
     Map<String, dynamic> featureCollection,
+    int epoch,
   ) async {
+    if (!_isEpochActive(epoch)) {
+      return;
+    }
     if (QalaGoMapBusinessGeoJsonSource.shouldDeferSourceInstall(
       clusterEnabled: QalaGoMapBusinessClusterConfig.enabledOnSource,
       featureCount: QalaGoMapBusinessGeoJsonSource.featureCount(featureCollection),
     )) {
       return;
     }
-    await _ensureClusterMode(map);
+    await _ensureClusterMode(map, epoch);
+    if (!_isEpochActive(epoch)) {
+      return;
+    }
     if (!_sourceInstalled) {
-      final added = await _addSource(map, featureCollection);
-      if (!added) {
+      final added = await _addSource(map, featureCollection, epoch);
+      if (!added || !_isEpochActive(epoch)) {
         return;
       }
     }
-    await ensureLayers(map);
+    await _ensureLayersForEpoch(map, epoch);
+    if (!_isEpochActive(epoch)) {
+      return;
+    }
     if (_sourceInstalled) {
-      await _applyGeoJsonIfNeeded(map, featureCollection);
+      await _applyGeoJsonIfNeeded(map, featureCollection, epoch);
     }
   }
 
   Future<bool> _addSource(
     MapLibreMapController map,
     Map<String, dynamic> featureCollection,
+    int epoch,
   ) async {
+    if (!_isEpochActive(epoch)) {
+      return false;
+    }
     if (_sourceInstalled) {
       return true;
     }
     final sink = _sink(map);
     try {
+      final sourceIds = await sink.getSourceIds();
+      if (!_isEpochActive(epoch)) {
+        return false;
+      }
+      if (sourceIds.contains(QalaGoMapBusinessLayerIds.source)) {
+        _sourceInstalled = true;
+        _installedClusterMode = QalaGoMapBusinessClusterConfig.enabledOnSource;
+        mapViewportDbg('MAPDBG businessLayer reconcile source=skipAdd');
+        return true;
+      }
+    } catch (_) {
+      // Proceed with add attempt.
+    }
+
+    try {
       await sink.addSource(
         QalaGoMapBusinessLayerIds.source,
         QalaGoMapBusinessGeoJsonSource.propertiesFor(featureCollection),
       );
+      if (!_isEpochActive(epoch)) {
+        return false;
+      }
       _sourceInstalled = true;
       _installedClusterMode = QalaGoMapBusinessClusterConfig.enabledOnSource;
+      mapViewportDbg('MAPDBG businessLayer source installed');
       return true;
     } on PlatformException catch (e, st) {
+      if (QalaGoMapBusinessLayerPlatformErrors.isAlreadyExists(e)) {
+        if (_isEpochActive(epoch)) {
+          _sourceInstalled = true;
+          _installedClusterMode = QalaGoMapBusinessClusterConfig.enabledOnSource;
+          mapViewportDbg('MAPDBG businessLayer source reconciled alreadyExists');
+        }
+        return _isEpochActive(epoch);
+      }
       if (kDebugMode) {
         debugPrint(
           '[QalaGoMapBusinessLayer] addSource failed: ${e.code} ${e.message}',
@@ -167,8 +363,9 @@ class QalaGoMapBusinessLayerController {
   Future<void> _applyGeoJsonIfNeeded(
     MapLibreMapController map,
     Map<String, dynamic> featureCollection,
+    int epoch,
   ) async {
-    if (!_sourceInstalled) {
+    if (!_isEpochActive(epoch) || !_sourceInstalled) {
       return;
     }
     final sink = _sink(map);
@@ -177,6 +374,11 @@ class QalaGoMapBusinessLayerController {
         QalaGoMapBusinessLayerIds.source,
         featureCollection,
       );
+      if (_isEpochActive(epoch)) {
+        mapViewportDbg(
+          'MAPDBG businessLayer geojson applied features=${QalaGoMapBusinessGeoJsonSource.featureCount(featureCollection)}',
+        );
+      }
     } on PlatformException catch (e, st) {
       if (kDebugMode) {
         debugPrint(
@@ -188,11 +390,8 @@ class QalaGoMapBusinessLayerController {
     }
   }
 
-  Future<void> ensureLayers(MapLibreMapController map) async {
-    if (!_nativeLayerEnabled) {
-      return;
-    }
-    if (!_sourceInstalled) {
+  Future<void> _ensureLayersForEpoch(MapLibreMapController map, int epoch) async {
+    if (!_isEpochActive(epoch) || !_sourceInstalled) {
       return;
     }
     if (_layersInstalled) {
@@ -200,76 +399,63 @@ class QalaGoMapBusinessLayerController {
     }
 
     final sink = _sink(map);
+    Set<String> nativeLayers = {};
+    try {
+      nativeLayers = (await sink.getLayerIds()).toSet();
+    } catch (_) {}
 
     if (QalaGoMapBusinessClusterConfig.enabledOnSource &&
         !_clusterCirclesInstalled) {
-      try {
-        await sink.addCircleLayer(
-          QalaGoMapBusinessLayerIds.source,
-          QalaGoMapBusinessLayerIds.clusterCircles,
-          CircleLayerProperties(
-            circleColor: QalaGoMapBusinessLayerStyle.clusterFillColor,
-            circleOpacity: QalaGoMapBusinessLayerStyle.fix1ClusterCircleOpacity,
-            circleStrokeWidth: QalaGoMapBusinessLayerStyle.fix1ClusterStrokeWidth,
-            circleStrokeColor: QalaGoMapBusinessLayerStyle.clusterStrokeColor,
-            circleRadius: QalaGoMapBusinessLayerStyle.fix1ClusterCircleRadius,
-          ),
-          filter: QalaGoMapBusinessLayerStyle.clusterFeatureFilter(),
-        );
-        _clusterCirclesInstalled = true;
-      } on PlatformException catch (e, st) {
-        if (kDebugMode) {
-          debugPrint(
-            '[QalaGoMapBusinessLayer] cluster circles: ${e.code}',
-          );
-          debugPrintStack(stackTrace: st);
-        }
-      } catch (e, st) {
-        if (kDebugMode) {
-          debugPrint('[QalaGoMapBusinessLayer] cluster circles: $e');
-          debugPrintStack(stackTrace: st);
-        }
-      }
+      await _addCircleLayerTracked(
+        map: map,
+        epoch: epoch,
+        sink: sink,
+        nativeLayers: nativeLayers,
+        layerId: QalaGoMapBusinessLayerIds.clusterCircles,
+        onInstalled: () => _clusterCirclesInstalled = true,
+        properties: CircleLayerProperties(
+          circleColor: QalaGoMapBusinessLayerStyle.clusterFillColor,
+          circleOpacity: QalaGoMapBusinessLayerStyle.fix1ClusterCircleOpacity,
+          circleStrokeWidth: QalaGoMapBusinessLayerStyle.fix1ClusterStrokeWidth,
+          circleStrokeColor: QalaGoMapBusinessLayerStyle.clusterStrokeColor,
+          circleRadius: QalaGoMapBusinessLayerStyle.fix1ClusterCircleRadius,
+        ),
+        filter: QalaGoMapBusinessLayerStyle.clusterFeatureFilter(),
+        logLabel: 'cluster circles',
+      );
     }
 
     if (QalaGoMapBusinessClusterConfig.enabledOnSource &&
         !_clusterCountInstalled) {
-      try {
-        await sink.addSymbolLayer(
-          QalaGoMapBusinessLayerIds.source,
-          QalaGoMapBusinessLayerIds.clusterCount,
-          SymbolLayerProperties(
-            textField: QalaGoMapBusinessLayerStyle.fix1ClusterCountTextField(),
-            textFont: QalaGoMapBusinessLayerStyle.fix1ClusterCountTextFont(),
-            textSize: 13,
-            textColor: '#FFFFFF',
-            textAllowOverlap: true,
-            textIgnorePlacement: true,
-          ),
-          filter: QalaGoMapBusinessLayerStyle.clusterFeatureFilter(),
-        );
-        _clusterCountInstalled = true;
-      } on PlatformException catch (e, st) {
-        if (kDebugMode) {
-          debugPrint(
-            '[QalaGoMapBusinessLayer] cluster count: ${e.code}',
-          );
-          debugPrintStack(stackTrace: st);
-        }
-      } catch (e, st) {
-        if (kDebugMode) {
-          debugPrint('[QalaGoMapBusinessLayer] cluster count: $e');
-          debugPrintStack(stackTrace: st);
-        }
-      }
+      await _addSymbolLayerTracked(
+        map: map,
+        epoch: epoch,
+        sink: sink,
+        nativeLayers: nativeLayers,
+        layerId: QalaGoMapBusinessLayerIds.clusterCount,
+        onInstalled: () => _clusterCountInstalled = true,
+        properties: SymbolLayerProperties(
+          textField: QalaGoMapBusinessLayerStyle.fix1ClusterCountTextField(),
+          textFont: QalaGoMapBusinessLayerStyle.fix1ClusterCountTextFont(),
+          textSize: 13,
+          textColor: '#FFFFFF',
+          textAllowOverlap: true,
+          textIgnorePlacement: true,
+        ),
+        filter: QalaGoMapBusinessLayerStyle.clusterFeatureFilter(),
+        logLabel: 'cluster count',
+      );
     }
 
     if (!_unclusteredInstalled) {
-      try {
-      await sink.addCircleLayer(
-        QalaGoMapBusinessLayerIds.source,
-        QalaGoMapBusinessLayerIds.unclustered,
-        CircleLayerProperties(
+      await _addCircleLayerTracked(
+        map: map,
+        epoch: epoch,
+        sink: sink,
+        nativeLayers: nativeLayers,
+        layerId: QalaGoMapBusinessLayerIds.unclustered,
+        onInstalled: () => _unclusteredInstalled = true,
+        properties: CircleLayerProperties(
           circleRadius: QalaGoMapBusinessLayerStyle.normalCircleRadius,
           circleColor: BusinessMapCategoryColors.circleColorExpression(),
           circleOpacity: 0.92,
@@ -278,27 +464,19 @@ class QalaGoMapBusinessLayerController {
           circleStrokeOpacity: 0.9,
         ),
         filter: QalaGoMapBusinessLayerStyle.normalBusinessFilter(),
+        logLabel: 'unclustered',
       );
-      _unclusteredInstalled = true;
-    } on PlatformException catch (e, st) {
-      if (kDebugMode) {
-        debugPrint('[QalaGoMapBusinessLayer] unclustered: ${e.code}');
-        debugPrintStack(stackTrace: st);
-      }
-    } catch (e, st) {
-      if (kDebugMode) {
-        debugPrint('[QalaGoMapBusinessLayer] unclustered: $e');
-        debugPrintStack(stackTrace: st);
-      }
-    }
     }
 
     if (!_selectedInstalled) {
-      try {
-      await sink.addCircleLayer(
-        QalaGoMapBusinessLayerIds.source,
-        QalaGoMapBusinessLayerIds.selected,
-        CircleLayerProperties(
+      await _addCircleLayerTracked(
+        map: map,
+        epoch: epoch,
+        sink: sink,
+        nativeLayers: nativeLayers,
+        layerId: QalaGoMapBusinessLayerIds.selected,
+        onInstalled: () => _selectedInstalled = true,
+        properties: CircleLayerProperties(
           circleRadius: QalaGoMapBusinessLayerStyle.selectedCircleRadius,
           circleColor: BusinessMapCategoryColors.circleColorExpression(),
           circleOpacity: 1,
@@ -307,64 +485,123 @@ class QalaGoMapBusinessLayerController {
           circleStrokeOpacity: 1,
         ),
         filter: QalaGoMapBusinessLayerStyle.selectedBusinessFilter(),
+        logLabel: 'selected',
       );
-      _selectedInstalled = true;
+    }
+
+    if (_isEpochActive(epoch)) {
+      _recomputeLayersInstalled();
+    }
+  }
+
+  Future<void> _addCircleLayerTracked({
+    required MapLibreMapController map,
+    required int epoch,
+    required QalaGoMapBusinessLayerSink sink,
+    required Set<String> nativeLayers,
+    required String layerId,
+    required void Function() onInstalled,
+    required CircleLayerProperties properties,
+    required List<Object> filter,
+    required String logLabel,
+  }) async {
+    if (!_isEpochActive(epoch)) {
+      return;
+    }
+    if (nativeLayers.contains(layerId)) {
+      onInstalled();
+      mapViewportDbg('MAPDBG businessLayer reconcile layer=$layerId present');
+      return;
+    }
+    try {
+      await sink.addCircleLayer(
+        QalaGoMapBusinessLayerIds.source,
+        layerId,
+        properties,
+        filter: filter,
+      );
+      if (_isEpochActive(epoch)) {
+        onInstalled();
+        mapViewportDbg('MAPDBG businessLayer layer=$layerId installed');
+      }
     } on PlatformException catch (e, st) {
+      if (QalaGoMapBusinessLayerPlatformErrors.isAlreadyExists(e)) {
+        if (_isEpochActive(epoch)) {
+          onInstalled();
+          mapViewportDbg(
+            'MAPDBG businessLayer layer=$layerId reconciled alreadyExists',
+          );
+        }
+        return;
+      }
       if (kDebugMode) {
-        debugPrint('[QalaGoMapBusinessLayer] selected: ${e.code}');
+        debugPrint('[QalaGoMapBusinessLayer] $logLabel: ${e.code}');
         debugPrintStack(stackTrace: st);
       }
     } catch (e, st) {
       if (kDebugMode) {
-        debugPrint('[QalaGoMapBusinessLayer] selected: $e');
+        debugPrint('[QalaGoMapBusinessLayer] $logLabel: $e');
         debugPrintStack(stackTrace: st);
       }
     }
-    }
-
-    _recomputeLayersInstalled();
   }
 
-  Future<void> syncBusinessGeoJson(
-    MapLibreMapController map,
-    Map<String, dynamic> featureCollection,
-  ) async {
-    if (!_nativeLayerEnabled) {
+  Future<void> _addSymbolLayerTracked({
+    required MapLibreMapController map,
+    required int epoch,
+    required QalaGoMapBusinessLayerSink sink,
+    required Set<String> nativeLayers,
+    required String layerId,
+    required void Function() onInstalled,
+    required SymbolLayerProperties properties,
+    required List<Object> filter,
+    required String logLabel,
+  }) async {
+    if (!_isEpochActive(epoch)) {
       return;
     }
-    _latestFeatureCollection = featureCollection;
-
-    if (QalaGoMapBusinessGeoJsonSource.shouldDeferSourceInstall(
-      clusterEnabled: QalaGoMapBusinessClusterConfig.enabledOnSource,
-      featureCount: QalaGoMapBusinessGeoJsonSource.featureCount(featureCollection),
-    )) {
-      if (!_sourceInstalled) {
+    if (nativeLayers.contains(layerId)) {
+      onInstalled();
+      mapViewportDbg('MAPDBG businessLayer reconcile layer=$layerId present');
+      return;
+    }
+    try {
+      await sink.addSymbolLayer(
+        QalaGoMapBusinessLayerIds.source,
+        layerId,
+        properties,
+        filter: filter,
+      );
+      if (_isEpochActive(epoch)) {
+        onInstalled();
+        mapViewportDbg('MAPDBG businessLayer layer=$layerId installed');
+      }
+    } on PlatformException catch (e, st) {
+      if (QalaGoMapBusinessLayerPlatformErrors.isAlreadyExists(e)) {
+        if (_isEpochActive(epoch)) {
+          onInstalled();
+          mapViewportDbg(
+            'MAPDBG businessLayer layer=$layerId reconciled alreadyExists',
+          );
+        }
         return;
       }
-    }
-
-    await _ensureClusterMode(map);
-
-    if (!_sourceInstalled) {
-      await _installSourceAndLayersIfReady(map, featureCollection);
-      return;
-    }
-
-    await _applyGeoJsonIfNeeded(map, featureCollection);
-
-    if (!_layersInstalled) {
-      await ensureLayers(map);
+      if (kDebugMode) {
+        debugPrint('[QalaGoMapBusinessLayer] $logLabel: ${e.code}');
+        debugPrintStack(stackTrace: st);
+      }
+    } catch (e, st) {
+      if (kDebugMode) {
+        debugPrint('[QalaGoMapBusinessLayer] $logLabel: $e');
+        debugPrintStack(stackTrace: st);
+      }
     }
   }
 
   void dispose() {
-    _sourceInstalled = false;
-    _layersInstalled = false;
-    _clusterCirclesInstalled = false;
-    _clusterCountInstalled = false;
-    _unclusteredInstalled = false;
-    _selectedInstalled = false;
-    _installedClusterMode = null;
+    _disposed = true;
+    _styleEpoch++;
+    _resetInstallFlags();
     _latestFeatureCollection = null;
   }
 
