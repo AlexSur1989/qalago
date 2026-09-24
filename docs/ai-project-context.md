@@ -8,7 +8,7 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `git rev-parse HEAD` after **A.9.4.0** policy gate docs closure |
+| **Repo HEAD (current)** | `c69104a2e8bec634eba13fbb60b4bce306792297` — **A.9.4.0** policy gate |
 | **Last completed stage** | **6.12A.9.4.0 PASS** — legacy Business physical retirement **policy & invariant gate** (docs-only) |
 | **Last product implementation** | **6.12A.9.3.5 PASS** — Business Web owner physical-context (`9e00ef25…`) |
 | **Prior** | **A.9.3.4 PASS** (Consumer Web); **A.9.3.3** `6277e64…` |
