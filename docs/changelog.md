@@ -9,7 +9,7 @@
 ## 2026-09-25 — 6.12A.9.3.3 Flutter physical-context closure
 
 - **Status:** **6.12A.9.3.3 PASS — FLUTTER PHYSICAL CONTEXT FINALIZED**.
-- **Checkpoint (implementation):** `910e91b07a0e7f86c1fbf6ed2840bf0fddcc076e`.
+- **Checkpoint (implementation):** `6277e64fb4a1f1e4d82f39c1502eb26238c88508`.
 - **Scope:** **`apps/mobile`** navigation + tests + docs only — no backend/schema/web changes.
 - **Summary:** Canonical **`openBusinessFromFavorite`** encodes Business-grain favorites (omit route **`locationId`**); favorites screen uses helper; regression tests for favorites vs discovery/promotion URI rules; **QA-002 CLOSED / OBSOLETE** (favorites intentionally open canonical primary/effective branch — not branch bookmarks). Runtime branch behavior unchanged from pre-audit; physical QA not required.
 - **Deferred:** **A.9.3.4+** Consumer Web physical-context; search merge dedupe-by-`business.id` (P2); notification producer branch context; F.6 deep links.
