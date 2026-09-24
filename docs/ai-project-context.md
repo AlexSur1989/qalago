@@ -84,7 +84,9 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | **6.12A.8.6** | **PASS (platform)** | Ad + serve record optional `AnalyticsEvent.platform` when client sends enum; organic/ads share Flutter helper; historical ad platform stays null |
 | **6.12A.8** | **CLOSED / FINALIZED** | **6.12A.8.FINAL** audit PASS; branch-aware campaign/serve/nav/analytics + ad platform hooks complete; **A.8.7 not required**; impl checkpoint **A.8.6** `ae20e92…` |
 
-**6.12A.9.3.1 PASS** — public API **read normalization**: top-level Business physical fields on list/detail/favorites are **compatibility projections** from effective **BusinessLocation** (primary or `contextLocationId`); legacy columns remain; **`forMap=true`** still branch-grain; favorites stay **Business-grain** (primary physical only). **Next:** **6.12A.9.3.2** discovery SQL legacy physical-read cleanup.
+**6.12A.9.3.1 PASS** — public API **read normalization**: top-level Business physical fields on list/detail/favorites are **compatibility projections** from effective **BusinessLocation** (primary or `contextLocationId`); legacy columns remain; **`forMap=true`** still branch-grain; favorites stay **Business-grain** (primary physical only).
+
+**6.12A.9.3.2 PASS** — discovery SQL: **BL-authoritative** address search + bbox; stale **`Business.address`** / **`Business.location`** / **`Business.cityId`** not used for normal discovery bbox/search SQL; legacy bbox without **`forMap`** = **Business-grain** + deterministic in-bbox **`contextLocationId`**; promotions nested business physical aligned to branch context. **Remaining:** Prisma **`appendMapCatalogFilters`** lat/lng bbox when viewport PostGIS bypassed. **Next:** **6.12A.9.3.3** Flutter discovery/favorites context migration.
 
 ## Ads / Analytics location (A.8) — CLOSED
 

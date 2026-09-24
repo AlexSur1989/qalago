@@ -22,8 +22,9 @@ import { mergeWhereWithAnd } from '../../common/utils/catalog-geo-query.util';
 import {
   queryCatalogMapLocationViewportMemberRows,
   queryCatalogMapLocationViewportPage,
-  queryCatalogMapViewportMemberIds,
+  queryCatalogMapViewportMemberRows,
   queryCatalogMapViewportPage,
+  type CatalogMapBusinessGrainViewportRow,
   queryCatalogNearestPage,
   queryCatalogRadiusMembers,
   resolveExplicitRadiusMeters,
@@ -449,7 +450,7 @@ export class BusinessesService {
     return [items, sorted.length] as const;
   }
 
-  /** Map viewport: Business.location (legacy) or BusinessLocation.location when forMap=true. */
+  /** Map viewport: Business-grain bbox compat (BL) or BusinessLocation-grain when forMap=true. */
   private async findPagedItemsMapViewportPostgis(
     where: Prisma.BusinessWhereInput,
     query: ListBusinessesQueryDto,
@@ -479,40 +480,65 @@ export class BusinessesService {
       mapBbox,
       categoryId: query.categoryId,
       subcategoryId: query.subcategoryId,
+      searchPattern: searchContext?.normalized ?? null,
+      serviceSearchBusinessIds: searchContext
+        ? [...searchContext.serviceMatchKindByBusinessId.keys()]
+        : undefined,
     };
+
+    const attachViewportBranchContext = <T extends { id: string }>(
+      items: T[],
+      contextByBusinessId: ReadonlyMap<string, string>,
+    ) =>
+      items.map((item) => {
+        const locationId = contextByBusinessId.get(item.id);
+        if (!locationId) return item;
+        return attachContextLocationIdForBranch(item, locationId);
+      });
 
     if (
       effectiveSort === BusinessCatalogSort.RECOMMENDED &&
       searchContext
     ) {
-      const memberIds = await queryCatalogMapViewportMemberIds(
+      const memberRows = await queryCatalogMapViewportMemberRows(
         this.prisma,
         viewportParams,
       );
-      if (memberIds.length === 0) {
+      if (memberRows.length === 0) {
         return [[], 0] as const;
       }
-      mergeWhereWithAnd(where, { id: { in: memberIds } });
-      return this.findPagedItemsSearchRelevanceInMemory(
+      const contextByBusinessId = new Map(
+        memberRows.map((row) => [row.businessId, row.contextLocationId]),
+      );
+      mergeWhereWithAnd(where, {
+        id: { in: memberRows.map((row) => row.businessId) },
+      });
+      const [items, total] = await this.findPagedItemsSearchRelevanceInMemory(
         where,
         searchContext,
         skip,
         limit,
       );
+      return [attachViewportBranchContext(items, contextByBusinessId), total] as const;
     }
 
     if (
       effectiveSort !== BusinessCatalogSort.RECOMMENDED &&
       effectiveSort !== BusinessCatalogSort.NEAREST
     ) {
-      const memberIds = await queryCatalogMapViewportMemberIds(
+      const memberRows = await queryCatalogMapViewportMemberRows(
         this.prisma,
         viewportParams,
       );
-      if (memberIds.length === 0) {
+      if (memberRows.length === 0) {
         return [[], 0] as const;
       }
-      mergeWhereWithAnd(where, { id: { in: memberIds } });
+      const contextByBusinessId = new Map(
+        memberRows.map((row) => [row.businessId, row.contextLocationId]),
+      );
+      mergeWhereWithAnd(where, {
+        id: { in: memberRows.map((row) => row.businessId) },
+      });
       const allItems = await this.prisma.business.findMany({
         where,
         select: businessListSelect,
@@ -529,38 +555,52 @@ export class BusinessesService {
           effectiveSort,
         ),
       );
-      const items = sorted.slice(skip, skip + limit).map((item) => ({
-        ...item,
-        ...(metrics?.ratings.get(item.id)
-          ? {
-              averageRating: metrics.ratings.get(item.id)!.averageRating,
-              reviewCount: metrics.ratings.get(item.id)!.reviewCount,
-            }
-          : {}),
-      }));
+      const items = attachViewportBranchContext(
+        sorted.slice(skip, skip + limit).map((item) => ({
+          ...item,
+          ...(metrics?.ratings.get(item.id)
+            ? {
+                averageRating: metrics.ratings.get(item.id)!.averageRating,
+                reviewCount: metrics.ratings.get(item.id)!.reviewCount,
+              }
+            : {}),
+        })),
+        contextByBusinessId,
+      );
       return [items, sorted.length] as const;
     }
 
-    const { ids, total } = await queryCatalogMapViewportPage(this.prisma, {
+    const { rows, total } = await queryCatalogMapViewportPage(this.prisma, {
       ...viewportParams,
       skip,
       limit,
     });
 
-    if (ids.length === 0) {
+    if (rows.length === 0) {
       return [[], total] as const;
     }
 
+    const items = await this.hydrateBusinessGrainViewportRows(rows);
+    return [items, total] as const;
+  }
+
+  private async hydrateBusinessGrainViewportRows(
+    spatialRows: CatalogMapBusinessGrainViewportRow[],
+  ) {
+    if (spatialRows.length === 0) return [];
+    const businessIds = spatialRows.map((row) => row.businessId);
     const hydrated = await this.prisma.business.findMany({
-      where: { id: { in: ids } },
+      where: { id: { in: businessIds } },
       select: businessListSelect,
     });
     const byId = new Map(hydrated.map((item) => [item.id, item]));
-    const items = ids
-      .map((id) => byId.get(id))
+    return spatialRows
+      .map((row) => {
+        const item = byId.get(row.businessId);
+        if (!item) return null;
+        return attachContextLocationIdForBranch(item, row.contextLocationId);
+      })
       .filter((item): item is NonNullable<typeof item> => item != null);
-
-    return [items, total] as const;
   }
 
   /** forMap viewport: one row per BusinessLocation; id remains Business.id + locationId. */

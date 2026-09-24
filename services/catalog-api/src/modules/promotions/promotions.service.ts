@@ -34,20 +34,34 @@ import {
   mergePromotionWhereWithAnd,
   promotionCityFeedEligibilityWhere,
 } from './promotion-discovery-city.util';
+import {
+  applyPublicPhysicalReadProjection,
+  loadBusinessLocationsGroupedByBusinessId,
+} from '../businesses/business-physical-read-normalization.util';
+
+const promotionFeedBusinessSelect = {
+  id: true,
+  title: true,
+  slug: true,
+  cityId: true,
+  address: true,
+  latitude: true,
+  longitude: true,
+  phone: true,
+  whatsapp: true,
+  instagram: true,
+  website: true,
+  workHours: true,
+  coverImageUrl: true,
+  planTier: true,
+  planExpiresAt: true,
+  featuredSlot: true,
+} as const;
 
 type FeedPromotion = Prisma.PromotionGetPayload<{
   include: {
     business: {
-      select: {
-        id: true;
-        title: true;
-        slug: true;
-        address: true;
-        coverImageUrl: true;
-        planTier: true;
-        planExpiresAt: true;
-        featuredSlot: true;
-      };
+      select: typeof promotionFeedBusinessSelect;
     };
   };
 }>;
@@ -109,16 +123,7 @@ export class PromotionsService {
         where,
         include: {
           business: {
-            select: {
-              id: true,
-              title: true,
-              slug: true,
-              address: true,
-              coverImageUrl: true,
-              planTier: true,
-              planExpiresAt: true,
-              featuredSlot: true,
-            },
+            select: promotionFeedBusinessSelect,
           },
         },
         orderBy: { createdAt: 'desc' },
@@ -127,7 +132,7 @@ export class PromotionsService {
 
       const filtered = await this.applyFeedEntitlements(rawItems, now);
       const pageRows = filtered.slice(skip, skip + limit);
-      const items =
+      let items =
         feedCityId != null
           ? await attachPromotionFeedContextLocationIds(
               this.prisma,
@@ -135,6 +140,9 @@ export class PromotionsService {
               pageRows,
             )
           : pageRows;
+      if (feedCityId != null) {
+        items = await this.normalizePromotionFeedNestedBusinessPhysical(items);
+      }
 
       return {
         items,
@@ -148,18 +156,20 @@ export class PromotionsService {
     }
 
     if (ownerView || !query.businessId) {
+      const publicFeedBusinessSelect =
+        !ownerView && feedCityId != null ? promotionFeedBusinessSelect : {
+          id: true,
+          title: true,
+          slug: true,
+          address: true,
+          coverImageUrl: true,
+        };
       const [items, total] = await Promise.all([
         this.prisma.promotion.findMany({
           where,
           include: {
             business: {
-              select: {
-                id: true,
-                title: true,
-                slug: true,
-                address: true,
-                coverImageUrl: true,
-              },
+              select: publicFeedBusinessSelect,
             },
           },
           skip,
@@ -178,6 +188,14 @@ export class PromotionsService {
           feedCityId,
           responseItems,
         );
+        responseItems = (await this.normalizePromotionFeedNestedBusinessPhysical(
+          responseItems as Array<
+            (typeof responseItems)[number] & {
+              business: FeedPromotion['business'];
+              contextLocationId?: string;
+            }
+          >,
+        )) as typeof responseItems;
       }
       return {
         items: responseItems,
@@ -338,6 +356,40 @@ export class PromotionsService {
       resourceId: id,
     });
     return { success: true };
+  }
+
+  /** A.9.3.2 — nested business physical fields follow promotion contextLocationId. */
+  private async normalizePromotionFeedNestedBusinessPhysical<
+    T extends { business: FeedPromotion['business']; contextLocationId?: string },
+  >(items: T[]): Promise<T[]> {
+    if (items.length === 0) {
+      return items;
+    }
+    const withContext = items.filter((item) => item.contextLocationId);
+    if (withContext.length === 0) {
+      return items;
+    }
+    const businessIds = [...new Set(withContext.map((item) => item.business.id))];
+    const locationsByBusinessId = await loadBusinessLocationsGroupedByBusinessId(
+      this.prisma,
+      businessIds,
+    );
+    return items.map((item) => {
+      const contextLocationId = item.contextLocationId;
+      if (!contextLocationId) {
+        return item;
+      }
+      const locations = locationsByBusinessId.get(item.business.id) ?? [];
+      return {
+        ...item,
+        business: applyPublicPhysicalReadProjection(
+          item.business,
+          item.business,
+          locations,
+          contextLocationId,
+        ),
+      };
+    });
   }
 
   /** City promotion feed: cap visible promotions per business plan entitlement. */

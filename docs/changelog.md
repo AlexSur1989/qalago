@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-09-24 — 6.12A.9.3.2 Discovery SQL legacy physical-read cleanup
+
+- **Status:** **6.12A.9.3.2 PASS — DISCOVERY SQL PHYSICAL READS NORMALIZED** (pending implementation checkpoint SHA in FINISH commit).
+- **Scope:** **catalog-api runtime read/query only** — no schema/migration, no Flutter/map client changes, nearby/radius SQL shape preserved (BL-grain).
+- **Summary:** Physical **address search** and **bbox membership** are **BusinessLocation-authoritative**; stale **`Business.address`** no longer creates text-search or SQL address predicates; legacy **bbox without `forMap=true`** remains **Business-grain** (one card max) but picks deterministic in-bbox branch (**primary first**, else stable branch order) and attaches **`contextLocationId`**; **`forMap=true` + bbox** unchanged (**Location-grain**, N rows); search relevance uses **`branchAddressMatch`** only for address tier; **`GET /promotions`** nested **`business`** physical fields follow promotion **`contextLocationId`** (A.9.3.1 projection reuse).
+- **Compatibility:** bbox requests with **`forMap` omitted/false** still accepted (not 400); external unknown callers preserved at Business-grain.
+- **Remaining legacy (explicit):** **`appendMapCatalogFilters`** + **`validStoredBusinessCoordinateWhere`** still gate some **bbox + lat/lng/radiusKm** Prisma paths on **`Business.latitude/longitude`** when PostGIS viewport path is bypassed — **A.9.3.2b** if full removal needed; **`Business.cityId`** column/global usage **not** retired (**A.9.4**).
+- **Deferred:** **6.12A.9.3.3** Flutter discovery/favorites physical-context migration; **A.9.3.2b** Prisma lat/lng bbox fallback; **A.9.4** `Business.cityId` retirement.
+- **Next:** **6.12A.9.3.3** — Flutter discovery/favorites physical-context migration (**do not start in this closure**).
+
+---
+
 ## 2026-09-24 — 6.12A.9.3.1 Public API physical read normalization
 
 - **Status:** **6.12A.9.3.1 PASS — PUBLIC PHYSICAL READS NORMALIZED**.

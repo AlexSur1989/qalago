@@ -78,11 +78,7 @@ export function computeBusinessSearchRelevanceTier(
     return BusinessCatalogSearchRelevanceTier.DESCRIPTION;
   }
 
-  if (
-    fieldContains(business.shortDesc, needle) ||
-    fieldContains(business.address, needle) ||
-    business.branchAddressMatch
-  ) {
+  if (fieldContains(business.shortDesc, needle) || business.branchAddressMatch) {
     return BusinessCatalogSearchRelevanceTier.DESCRIPTION;
   }
 

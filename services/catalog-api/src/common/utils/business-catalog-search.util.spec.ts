@@ -9,11 +9,11 @@ import {
 describe('business-catalog-search.util (6.11B.1 / 6.11B.2)', () => {
   it('builds text OR branches without raw service-item relation leak', () => {
     const or = buildBusinessCatalogTextSearchOr('караоке');
-    expect(or).toHaveLength(5);
+    expect(or).toHaveLength(4);
     expect(or[0]).toEqual({
       title: { contains: 'караоке', mode: 'insensitive' },
     });
-    expect(or[4]).toEqual(
+    expect(or[3]).toEqual(
       expect.objectContaining({
         businessSubcategories: expect.any(Object),
       }),
@@ -38,7 +38,7 @@ describe('business-catalog-search.util (6.11B.1 / 6.11B.2)', () => {
     });
     expect(where.cityId).toBe('city-uralsk');
     expect(where.categoryId).toBe('cat-beauty');
-    expect(where.OR).toHaveLength(6);
+    expect(where.OR).toHaveLength(5);
     expect(where.OR![0]).toEqual(
       expect.objectContaining({ title: { contains: 'nails', mode: 'insensitive' } }),
     );

@@ -50,6 +50,20 @@ describe('business-catalog-search-relevance.util (6.11B.5)', () => {
     expect(compareBusinessBySearchRelevance(service, desc, 'маникюр')).toBeLessThan(0);
   });
 
+  it('stale business.address does not rank as address match without branchAddressMatch', () => {
+    expect(
+      computeBusinessSearchRelevanceTier(
+        {
+          id: 'a',
+          title: 'Cafe',
+          address: 'OLD LEGACY STREET',
+          branchAddressMatch: false,
+        },
+        'OLD LEGACY STREET',
+      ),
+    ).toBe(BusinessCatalogSearchRelevanceTier.DESCRIPTION);
+  });
+
   it('taxonomy match ranks above description-only', () => {
     const taxonomy = {
       id: 'a',

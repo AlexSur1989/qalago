@@ -96,13 +96,20 @@ describe('Stage 6.11B.1 — search backend foundation', () => {
       );
     });
 
-    it('C/D: shortDesc and address branches present', async () => {
+    it('C/D: shortDesc and branch address (BL) branches present', async () => {
       await service.findAll({ citySlug: 'uralsk', search: 'main' });
       const or = lastWhere(prisma).OR!;
       expect(or).toEqual(
         expect.arrayContaining([
           { shortDesc: { contains: 'main', mode: 'insensitive' } },
-          { address: { contains: 'main', mode: 'insensitive' } },
+          {
+            locations: {
+              some: {
+                cityId: 'city-uralsk',
+                address: { contains: 'main', mode: 'insensitive' },
+              },
+            },
+          },
         ]),
       );
     });

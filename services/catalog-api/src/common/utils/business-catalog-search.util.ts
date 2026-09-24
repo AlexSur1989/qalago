@@ -33,7 +33,6 @@ export function buildBusinessCatalogTextSearchOr(search: string): Prisma.Busines
   return [
     { title: contains },
     { shortDesc: contains },
-    { address: contains },
     {
       category: {
         OR: [{ title: contains }, { nameRu: contains }, { nameKk: contains }],
