@@ -70,8 +70,22 @@ export type BusinessSummaryDto = {
   reviewCount?: number;
   /** Stage 6.12A.7.6 — optional branch context (additive). */
   activeLocationId?: string | null;
+  /** Discovery navigation hint (A.7.9.1+) — open detail with ?locationId=. */
+  contextLocationId?: string | null;
   effectivePhysical?: EffectivePhysicalDto;
 };
+
+/** Relative API path for detail fetch (tests + fetchBusiness). */
+export function buildBusinessDetailRequestPath(
+  id: string,
+  locationId?: string | null,
+): string {
+  const path = `/businesses/${encodeURIComponent(id)}`;
+  const trimmed = locationId?.trim();
+  if (!trimmed) return path;
+  const q = new URLSearchParams({ locationId: trimmed });
+  return `${path}?${q.toString()}`;
+}
 
 export type SubcategoryDto = {
   id: string;
@@ -135,8 +149,11 @@ export async function fetchBusinesses(
   return res.json() as Promise<BusinessListResponse>;
 }
 
-export async function fetchBusiness(id: string): Promise<BusinessSummaryDto | null> {
-  const res = await fetch(`${API_BASE}/businesses/${encodeURIComponent(id)}`, {
+export async function fetchBusiness(
+  id: string,
+  locationId?: string | null,
+): Promise<BusinessSummaryDto | null> {
+  const res = await fetch(`${API_BASE}${buildBusinessDetailRequestPath(id, locationId)}`, {
     next: { revalidate: REVALIDATE_BUSINESS_DETAIL_SECONDS },
   });
   if (res.status === 404) return null;

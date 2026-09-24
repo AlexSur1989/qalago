@@ -82,6 +82,13 @@ Relationship: **Business 1 → N BusinessLocation**.
 - **Selection / tap:** map selection is **location** identity; preview and directions use the **selected location row** (address, lat/lng); opening full detail uses **Business.id** plus optional **`locationId`** query for branch-aware detail physical fields.
 - **Unchanged:** reviews/favorites/analytics Business-scoped; MapLibre style/basemap; geocoding; cluster styling/thresholds; nearest/radius discovery grain.
 
+## Stage 6.12A.9.3.4 (Consumer Web physical-context closure)
+
+- **Discovery:** list/search/category cards preserve API **`contextLocationId`**; **`BusinessList`** links **`/businesses/{id}?locationId=`** when present (Business-grain card unchanged).
+- **Detail:** reads optional **`locationId`** query; **`fetchBusiness(id, locationId)`**; React **`cache`** keyed by **`(id, locationId)`**; hero physical from **`effectivePhysical`** (fallback top-level); minimal branch links in **`BusinessBranchesSection`**.
+- **SEO:** temporary **`/businesses/[id]`** stays **noindex**; branch query not indexable (**F.4** deferred).
+- **QA-001:** physical-context mismatch (L2 card → L1 detail) **closed** at navigation/fetch layer; full Business Pages still **F.4**.
+
 ## Stage 6.12A.9.3.3 (Flutter favorites physical-context closure)
 
 - **Favorites:** **Business-grain** bookmarks only (`Favorite.businessId`); **no** branch id persisted. **`GET /favorites`** nested business physical fields = **primary/effective branch** projection (**A.9.3.1**).

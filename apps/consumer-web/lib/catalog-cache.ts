@@ -15,5 +15,8 @@ export const cachedFetchCategories = cache((citySlug: string) => fetchCategories
 export const cachedFetchSubcategories = cache((categoryId: string) =>
   fetchSubcategories(categoryId),
 );
-export const cachedFetchBusiness = cache(fetchBusiness);
+/** Cache key is (businessId, locationId|null) — distinct branches must not share entries. */
+export const cachedFetchBusiness = cache((id: string, locationId?: string | null) =>
+  fetchBusiness(id, locationId),
+);
 export const cachedFetchPublicBusinessLocations = cache(fetchPublicBusinessLocations);

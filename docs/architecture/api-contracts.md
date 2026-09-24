@@ -307,6 +307,8 @@ Env: `QALAGO_GEOCODING_PROVIDER` = `mock` (default) \| `maptiler`; `MAPTILER_API
 > **Discovery context (6.12A.7.9.1+):** Business = discovery/card identity; **BusinessLocation** = physical context when known. Additive **`contextLocationId`** on list items = the branch that gives the card its physical context (clients may open detail with `?locationId=<contextLocationId>`). **Map keeps `locationId`** (unchanged contract). Detail keeps **`activeLocationId`**. Do not infer `contextLocationId` from legacy **`Business.location`** / primary coordinates alone.
 >
 > **Flutter consumption (A.7.9.5, IMPLEMENTED):** Mobile parses **`contextLocationId`** on catalog list/search/nearby/promotion payloads and opens **`GET /businesses/:id?locationId=<contextLocationId>`** via existing detail routing. Map marker taps continue **`locationId`** only (not list **`contextLocationId`**). Favorites/reviews/analytics remain **Business.id**.
+>
+> **Consumer Web consumption (A.9.3.4, IMPLEMENTED):** **`apps/consumer-web`** parses list **`contextLocationId`**, links temporary detail **`/businesses/{id}?locationId=`**, and fetches **`GET /businesses/:id?locationId=`** (server-side). No context → primary/effective branch. Detail remains **noindex** (F.3); slug/branch SEO deferred **F.4**. No Web map/promotions/favorites yet.
 
 ### GET /businesses
 

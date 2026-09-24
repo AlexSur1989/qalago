@@ -9,11 +9,10 @@
 | Field | Value |
 |-------|--------|
 | **Repo HEAD (current)** | `git rev-parse HEAD` on master — context sync commit message **`docs(context): synchronize QalaGo AI handoff state`** |
-| **Last completed implementation** | **6.12A.9.3.3** — `6277e64fb4a1f1e4d82f39c1502eb26238c88508` |
-| **Prior backend baseline** | **A.9.3.2b** `c53af3c2d17b6922bbd10cb909006752463829e5` |
-| **Latest read-only audit** | **A.9.3.3** (same scope — audit informed impl; no separate product defect) |
-| **Current operational task** | — (stage closed) |
-| **Next agreed development action** | **6.12A.9.3.4** — Consumer Web physical-context migration (**not started**) |
+| **Last completed implementation** | **6.12A.9.3.4** — Consumer Web physical-context (impl commit on master) |
+| **Prior** | **A.9.3.3** `6277e64…`; backend **A.9.3.2b** `c53af3c2…` |
+| **Physical QA pending** | **A.9.3.4** browser QA (navigation behavior changed) |
+| **Next agreed development action** | **A.9.3.4 PHYSICAL BROWSER QA** — then roadmap (**A.9.3.5+** / **F.4**, not auto-started) |
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 
@@ -107,7 +106,9 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 **6.12A.9.3.2b PASS (implementation)** — no active **`GET /businesses`** physical geo on **`Business.latitude/longitude`**; bbox → BL PostGIS; **`forMap` without bbox** → BL map-ready guard in city; nearest/radius unchanged (BL PostGIS). Checkpoints: **A.9.3.1** `f4154d9a…`, **A.9.3.2** `f2bbc9c8…`, **A.9.3.2b** `c53af3c2…`.
 
-**6.12A.9.3.3 PASS (Flutter closure)** — **`openBusinessFromFavorite`**; favorites screen wired; discovery/map/promotions unchanged; **QA-002 CLOSED / OBSOLETE**. Physical QA skipped (behavior unchanged; automated tests only).
+**6.12A.9.3.3 PASS (Flutter closure)** — **`openBusinessFromFavorite`**; **QA-002 CLOSED / OBSOLETE**.
+
+**6.12A.9.3.4 IMPLEMENTATION PASS (Consumer Web)** — **`contextLocationId` → detail `?locationId=`**; branch-aware fetch/cache/display; **QA-001 CLOSED** (context mismatch); **physical browser QA pending**.
 
 ### Flutter detail navigation (canonical)
 
@@ -160,7 +161,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 | ID | Severity | Summary | Target |
 |----|----------|---------|--------|
-| QA-001 | P2 | Consumer Web temp detail uses legacy **`business.address`** | F.4 |
+| QA-001 | **CLOSED (A.9.3.4 impl)** | L2 discovery → detail context preserved via **`locationId`** query + **`effectivePhysical`**; temp detail still **noindex** — full pages **F.4** | Physical browser QA |
 | QA-002 | **CLOSED / OBSOLETE** (A.9.3.3) | Favorites are **Business-grain**; **`openBusinessFromFavorite`** omits route **`locationId`**; **A.9.3.1** primary projection + detail **`primary_default`** | — |
 | QA-003 | P3 | BL rows with lat/lng but null geography (dev snapshot: 27) | A.9 / ops backfill |
 | QA-004 | P3 | Single-primary enforced in app, not DB | A.9 |

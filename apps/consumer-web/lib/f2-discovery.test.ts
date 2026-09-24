@@ -105,10 +105,15 @@ describe('F.2 discovery', () => {
       address: 'Addr',
       averageRating: 4.5,
       reviewCount: 3,
+      contextLocationId: 'loc-l2',
     });
     expect(card.title).toBe('AutoDrive Service');
     expect(card.reviewCount).toBe(3);
+    expect(card.contextLocationId).toBe('loc-l2');
     expect(temporaryBusinessDetailPath('b1')).toBe('/businesses/b1');
+    expect(temporaryBusinessDetailPath('b1', 'loc-l2')).toBe(
+      '/businesses/b1?locationId=loc-l2',
+    );
   });
 
   it('public card omits internal fields', () => {
@@ -123,6 +128,7 @@ describe('F.2 discovery', () => {
     } as never);
     expect(Object.keys(card)).not.toContain('ownerId');
     expect(Object.keys(card)).not.toContain('planTier');
+    expect(card.contextLocationId).toBeNull();
   });
 
   it('locale packs define search and city switcher labels', () => {

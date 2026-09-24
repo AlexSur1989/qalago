@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { PublicBusinessCard } from '@/lib/public-business';
-import { temporaryBusinessDetailPath } from '@/lib/public-business';
+import { discoveryBusinessDetailHref } from '@/lib/public-business';
 import { UI_LABELS, type AppLocale } from '@/lib/locale';
 import { getApiOrigin } from '@/lib/public-config';
 
@@ -29,7 +29,7 @@ export function BusinessList({
         const cover = coverSrc(b.coverImageUrl);
         return (
           <li key={b.id}>
-            <Link href={temporaryBusinessDetailPath(b.id)} className="biz-card">
+            <Link href={discoveryBusinessDetailHref(b)} className="biz-card">
               <div className="biz-card__media">
                 {cover ? (
                   // eslint-disable-next-line @next/next/no-img-element

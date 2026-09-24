@@ -47,7 +47,7 @@ Static App Router segments (e.g. `categories/`, `search/`) take precedence over 
 
 ### Business links (temporary)
 
-- Cards link to **`/businesses/{businessId}`** until **6.12A** + **F.4** define branch-aware slug URLs.
+- Cards link to **`/businesses/{businessId}`**; when the API supplies **`contextLocationId`**, href adds **`?locationId=<contextLocationId>`** (A.9.3.4). Detail fetch uses the same query param. Slug/SEO branch URLs remain **F.4**.
 
 ### Cache / rendering
 
