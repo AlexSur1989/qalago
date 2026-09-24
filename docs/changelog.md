@@ -9,7 +9,7 @@
 ## 2026-09-25 — Project context / AI handoff documentation sync
 
 - **Status:** **CONTEXT SYNC — NO PRODUCT STAGE ADVANCED**.
-- **Checkpoint (docs):** `017750c342501c6c714012ae50552231ab8eb511`.
+- **Checkpoint (docs):** commit **`docs(context): synchronize QalaGo AI handoff state`** (see `git log -1 --oneline`).
 - **Scope:** **`AGENTS.md`**, **`docs/ai-project-context.md`**, **`docs/changelog.md`**, minor **`docs/architecture/business-location.md`** drift fix only.
 - **Summary:** Reconciled current-state handoff for new AI sessions: last **implementation** remains **6.12A.9.3.2b** (`c53af3c2d17b6922bbd10cb909006752463829e5`); **6.12A.9.3.3** recorded as **read-only audit PASS** (pending Flutter implementation — **not** implementation PASS); mandatory START/FINISH context protocol in **`AGENTS.md`**; **QA-002** reframed per audit (favorites Business-grain + omit `locationId`).
 - **Product code / tests / DB:** unchanged.
