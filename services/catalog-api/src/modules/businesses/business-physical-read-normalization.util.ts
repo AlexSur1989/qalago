@@ -1,7 +1,7 @@
 import type { BusinessLocation, Prisma, PrismaClient } from '@prisma/client';
 import {
   buildEffectivePhysicalDto,
-  type BusinessPhysicalFallback,
+  type BusinessContactDefaults,
   type EffectivePhysicalDto,
   resolveActiveBusinessLocationForDetail,
 } from './business-effective-physical.util';
@@ -20,34 +20,32 @@ export type PublicPhysicalReadProjection = Pick<
   | 'workHours'
 >;
 
-export type PublicPhysicalReadBusinessSource = Pick<
-  BusinessPhysicalFallback,
-  'cityId' | 'address'
-> & {
-  latitude?: BusinessPhysicalFallback['latitude'] | number | null;
-  longitude?: BusinessPhysicalFallback['longitude'] | number | null;
-  phone?: BusinessPhysicalFallback['phone'];
-  whatsapp?: BusinessPhysicalFallback['whatsapp'];
-  instagram?: BusinessPhysicalFallback['instagram'];
-  website?: BusinessPhysicalFallback['website'];
-  workHours?: BusinessPhysicalFallback['workHours'];
+export type PublicPhysicalReadBusinessSource = BusinessContactDefaults & {
   contextLocationId?: string | null;
 };
 
-export function businessRowToPhysicalFallback(
+/** Runtime list/favorite rows after BL physical projection (A.9.4.4B). */
+export type WithPublicPhysicalGeoFields<T> = T &
+  Pick<PublicPhysicalReadProjection, 'address' | 'latitude' | 'longitude'>;
+
+export function businessRowToContactDefaults(
   business: PublicPhysicalReadBusinessSource,
-): BusinessPhysicalFallback {
+): BusinessContactDefaults {
   return {
     cityId: business.cityId,
-    address: business.address,
-    latitude: (business.latitude ?? null) as BusinessPhysicalFallback['latitude'],
-    longitude: (business.longitude ?? null) as BusinessPhysicalFallback['longitude'],
     phone: business.phone ?? null,
     whatsapp: business.whatsapp ?? null,
     instagram: business.instagram ?? null,
     website: business.website ?? null,
     workHours: business.workHours ?? null,
   };
+}
+
+/** @deprecated Use businessRowToContactDefaults — runtime must not read Business geo columns (A.9.4.4B). */
+export function businessRowToPhysicalFallback(
+  business: PublicPhysicalReadBusinessSource,
+): BusinessContactDefaults {
+  return businessRowToContactDefaults(business);
 }
 
 export function effectivePhysicalToPublicProjection(
@@ -79,17 +77,19 @@ export function projectPublicPhysicalReadFields(
     locations,
     contextLocationId ?? undefined,
   );
-  const effective = buildEffectivePhysicalDto(businessRowToPhysicalFallback(business), location);
+  const effective = buildEffectivePhysicalDto(businessRowToContactDefaults(business), location);
   return effectivePhysicalToPublicProjection(effective);
 }
 
 /** Applies projection onto a list/detail row (new object). Optional keys only overwritten when present on `target`. */
-export function applyPublicPhysicalReadProjection<T extends Record<string, unknown>>(
+export function applyPublicPhysicalReadProjection<
+  T extends Record<string, unknown> & PublicPhysicalReadBusinessSource,
+>(
   target: T,
   business: PublicPhysicalReadBusinessSource,
   locations: BusinessLocation[],
   contextLocationId?: string | null,
-): T {
+): WithPublicPhysicalGeoFields<T> {
   const projection = projectPublicPhysicalReadFields(business, locations, contextLocationId);
   const next: Record<string, unknown> = { ...target };
 
@@ -97,12 +97,8 @@ export function applyPublicPhysicalReadProjection<T extends Record<string, unkno
     next.cityId = projection.cityId;
   }
   next.address = projection.address;
-  if ('latitude' in target) {
-    next.latitude = projection.latitude;
-  }
-  if ('longitude' in target) {
-    next.longitude = projection.longitude;
-  }
+  next.latitude = projection.latitude;
+  next.longitude = projection.longitude;
   if ('phone' in target) {
     next.phone = projection.phone;
   }
@@ -119,26 +115,26 @@ export function applyPublicPhysicalReadProjection<T extends Record<string, unkno
     next.workHours = projection.workHours;
   }
 
-  return next as T;
+  return next as WithPublicPhysicalGeoFields<T>;
 }
 
 /** Detail: top-level physical fields must match `effectivePhysical` (same resolution). */
 export function applyPublicPhysicalReadFromEffectivePhysical<
-  T extends BusinessPhysicalFallback & { effectivePhysical: EffectivePhysicalDto },
->(row: T): T {
+  T extends BusinessContactDefaults & { effectivePhysical: EffectivePhysicalDto },
+>(row: T): T & Pick<PublicPhysicalReadProjection, 'address' | 'latitude' | 'longitude'> {
   const projection = effectivePhysicalToPublicProjection(row.effectivePhysical);
   return {
     ...row,
     cityId: row.effectivePhysical.cityId as T['cityId'],
     address: projection.address,
-    latitude: projection.latitude as T['latitude'],
-    longitude: projection.longitude as T['longitude'],
+    latitude: projection.latitude,
+    longitude: projection.longitude,
     phone: projection.phone,
     whatsapp: projection.whatsapp,
     instagram: projection.instagram,
     website: projection.website,
     workHours: projection.workHours as T['workHours'],
-  };
+  } as T & Pick<PublicPhysicalReadProjection, 'address' | 'latitude' | 'longitude'>;
 }
 
 export function readContextLocationIdFromListItem(
@@ -154,6 +150,10 @@ export async function loadBusinessLocationsGroupedByBusinessId(
 ): Promise<Map<string, BusinessLocation[]>> {
   const uniqueIds = [...new Set(businessIds.filter(Boolean))];
   if (uniqueIds.length === 0) {
+    return new Map();
+  }
+
+  if (typeof prisma.businessLocation?.findMany !== 'function') {
     return new Map();
   }
 
@@ -173,18 +173,21 @@ export async function loadBusinessLocationsGroupedByBusinessId(
 
 export function normalizePublicBusinessListItems<
   T extends { id: string } & PublicPhysicalReadBusinessSource,
->(items: readonly T[], locationsByBusinessId: ReadonlyMap<string, BusinessLocation[]>): T[] {
+>(
+  items: readonly T[],
+  locationsByBusinessId: ReadonlyMap<string, BusinessLocation[]>,
+): WithPublicPhysicalGeoFields<T>[] {
   return items.map((item) => {
     const locations = locationsByBusinessId.get(item.id) ?? [];
     const contextLocationId = readContextLocationIdFromListItem(item);
     return applyPublicPhysicalReadProjection(item, item, locations, contextLocationId);
-  });
+  }) as WithPublicPhysicalGeoFields<T>[];
 }
 
 /** Favorites / nested business: primary branch only (Business-grain). */
 export function normalizeFavoriteBusinessPhysical<
   T extends { id: string } & PublicPhysicalReadBusinessSource,
->(business: T, locations: BusinessLocation[]): T {
+>(business: T, locations: BusinessLocation[]): WithPublicPhysicalGeoFields<T> {
   return applyPublicPhysicalReadProjection(business, business, locations, undefined);
 }
 

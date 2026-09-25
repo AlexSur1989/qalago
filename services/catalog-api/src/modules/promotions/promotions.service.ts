@@ -44,9 +44,6 @@ const promotionFeedBusinessSelect = {
   title: true,
   slug: true,
   cityId: true,
-  address: true,
-  latitude: true,
-  longitude: true,
   phone: true,
   whatsapp: true,
   instagram: true,
@@ -161,7 +158,7 @@ export class PromotionsService {
           id: true,
           title: true,
           slug: true,
-          address: true,
+          cityId: true,
           coverImageUrl: true,
         };
       const [items, total] = await Promise.all([
@@ -211,7 +208,7 @@ export class PromotionsService {
             id: true,
             title: true,
             slug: true,
-            address: true,
+            cityId: true,
             coverImageUrl: true,
           },
         },
@@ -365,20 +362,12 @@ export class PromotionsService {
     if (items.length === 0) {
       return items;
     }
-    const withContext = items.filter((item) => item.contextLocationId);
-    if (withContext.length === 0) {
-      return items;
-    }
-    const businessIds = [...new Set(withContext.map((item) => item.business.id))];
+    const businessIds = [...new Set(items.map((item) => item.business.id))];
     const locationsByBusinessId = await loadBusinessLocationsGroupedByBusinessId(
       this.prisma,
       businessIds,
     );
     return items.map((item) => {
-      const contextLocationId = item.contextLocationId;
-      if (!contextLocationId) {
-        return item;
-      }
       const locations = locationsByBusinessId.get(item.business.id) ?? [];
       return {
         ...item,
@@ -386,7 +375,7 @@ export class PromotionsService {
           item.business,
           item.business,
           locations,
-          contextLocationId,
+          item.contextLocationId,
         ),
       };
     });

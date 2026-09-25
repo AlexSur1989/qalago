@@ -28,7 +28,7 @@ export type AdServeLocationContext = {
   excluded: false;
   destinationLocationId: string | null;
   contextLocationId: string | null;
-  /** Branch used for business-card physical fields; null → legacy Business fields. */
+  /** Branch used for business-card physical fields; null → fail-closed empty geo (A.9.4.4B). */
   cardLocation: Prisma.BusinessLocationGetPayload<{
     select: typeof adServeLocationSelect;
   }> | null;
@@ -363,10 +363,14 @@ export function overlayBusinessCardWithLocation<
     categoryId?: string | null;
     category?: unknown;
   },
->(business: T, cardLocation: LocationRow | null): T {
-  if (!cardLocation) {
-    return business;
-  }
+>(
+  business: T,
+  cardLocation: LocationRow | null,
+): T & {
+  address: string;
+  latitude: number | null;
+  longitude: number | null;
+} {
   const physical = buildEffectivePhysicalDto(
     business,
     cardLocation as Parameters<typeof buildEffectivePhysicalDto>[1],
@@ -374,12 +378,16 @@ export function overlayBusinessCardWithLocation<
   return {
     ...business,
     address: physical.address,
-    latitude: physical.latitude as T['latitude'],
-    longitude: physical.longitude as T['longitude'],
+    latitude: physical.latitude,
+    longitude: physical.longitude,
     phone: physical.phone,
     whatsapp: physical.whatsapp,
     instagram: physical.instagram,
     website: physical.website,
+  } as T & {
+    address: string;
+    latitude: number | null;
+    longitude: number | null;
   };
 }
 

@@ -34,9 +34,6 @@ function loc(partial: Record<string, unknown> & { id: string }): BusinessLocatio
 
 const businessMirror: PublicPhysicalReadBusinessSource = {
   cityId: 'city-brand',
-  address: 'Legacy A',
-  latitude: 10,
-  longitude: 20,
   phone: '+7000',
   whatsapp: '+7111',
   instagram: '@brand',
@@ -90,10 +87,25 @@ describe('business-physical-read-normalization.util (A.9.3.1)', () => {
     expect(projection.address).not.toBe('Secondary B');
   });
 
-  it('H — zero locations uses legacy Business fallback', () => {
+  it('H — zero locations fail-closed (no legacy Business geo)', () => {
     const projection = projectPublicPhysicalReadFields(businessMirror, [], undefined);
-    expect(projection.address).toBe('Legacy A');
-    expect(projection.latitude).toBe(10);
+    expect(projection.address).toBe('');
+    expect(projection.latitude).toBeNull();
+    expect(projection.longitude).toBeNull();
+    expect(projection.cityId).toBe('city-brand');
+  });
+
+  it('A.9.4.4B — stale Business geo on row ignored when primary BL differs', () => {
+    const staleRow = {
+      ...businessMirror,
+      address: 'STALE Business mirror',
+      latitude: 99,
+      longitude: 88,
+    };
+    const projection = projectPublicPhysicalReadFields(staleRow, locations, undefined);
+    expect(projection.address).toBe('Primary addr');
+    expect(projection.latitude).toBe(51.1);
+    expect(projection.longitude).toBe(51.2);
   });
 
   it('J — zero-primary uses oldest location (same as effective physical)', () => {

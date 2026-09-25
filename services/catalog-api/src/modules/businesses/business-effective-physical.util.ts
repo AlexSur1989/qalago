@@ -15,27 +15,23 @@ export type EffectivePhysicalDto = {
   workHours: Prisma.JsonValue | null;
 };
 
-export type BusinessPhysicalFallback = Pick<
+/** Business-level defaults for contact merge (not physical geo authority). */
+export type BusinessContactDefaults = Pick<
   Business,
-  | 'cityId'
-  | 'address'
-  | 'latitude'
-  | 'longitude'
-  | 'phone'
-  | 'whatsapp'
-  | 'instagram'
-  | 'website'
-  | 'workHours'
+  'cityId' | 'phone' | 'whatsapp' | 'instagram' | 'website' | 'workHours'
 >;
+
+/** @deprecated Alias for contact defaults — runtime geo comes from BusinessLocation only (A.9.4.4B). */
+export type BusinessPhysicalFallback = BusinessContactDefaults;
 
 export type ActiveLocationResolution =
   | 'requested'
   | 'primary_default'
   | 'invalid_location_fallback_primary'
   | 'foreign_location_fallback_primary'
-  | 'legacy_business_only';
+  | 'missing_primary_location';
 
-function toNumberOrNull(value: Business['latitude']): number | null {
+function toNumberOrNull(value: BusinessLocation['latitude']): number | null {
   if (value == null) return null;
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
@@ -69,7 +65,7 @@ export function resolveActiveBusinessLocationForDetail(
   if (!trimmed) {
     return {
       location: primary,
-      resolution: primary ? 'primary_default' : 'legacy_business_only',
+      resolution: primary ? 'primary_default' : 'missing_primary_location',
     };
   }
 
@@ -80,27 +76,31 @@ export function resolveActiveBusinessLocationForDetail(
 
   return {
     location: primary,
-    resolution: primary ? 'invalid_location_fallback_primary' : 'legacy_business_only',
+    resolution: primary ? 'invalid_location_fallback_primary' : 'missing_primary_location',
   };
 }
 
+/**
+ * Physical geo fields always from `location` when present; never from legacy Business storage.
+ * Contact fields merge branch overrides with Business-level defaults.
+ */
 export function buildEffectivePhysicalDto(
-  business: BusinessPhysicalFallback,
+  contactDefaults: BusinessContactDefaults,
   location: BusinessLocation | null,
 ): EffectivePhysicalDto {
   if (!location) {
     return {
       locationId: null,
       isPrimary: false,
-      cityId: business.cityId,
-      address: business.address,
-      latitude: toNumberOrNull(business.latitude),
-      longitude: toNumberOrNull(business.longitude),
-      phone: business.phone ?? null,
-      whatsapp: business.whatsapp ?? null,
-      instagram: business.instagram ?? null,
-      website: business.website ?? null,
-      workHours: business.workHours ?? null,
+      cityId: contactDefaults.cityId,
+      address: '',
+      latitude: null,
+      longitude: null,
+      phone: contactDefaults.phone ?? null,
+      whatsapp: contactDefaults.whatsapp ?? null,
+      instagram: contactDefaults.instagram ?? null,
+      website: contactDefaults.website ?? null,
+      workHours: contactDefaults.workHours ?? null,
     };
   }
 
@@ -111,15 +111,17 @@ export function buildEffectivePhysicalDto(
     address: location.address,
     latitude: toNumberOrNull(location.latitude),
     longitude: toNumberOrNull(location.longitude),
-    phone: location.phone ?? business.phone ?? null,
-    whatsapp: location.whatsapp ?? business.whatsapp ?? null,
-    instagram: location.instagram ?? business.instagram ?? null,
-    website: location.website ?? business.website ?? null,
-    workHours: location.workHours ?? business.workHours ?? null,
+    phone: location.phone ?? contactDefaults.phone ?? null,
+    whatsapp: location.whatsapp ?? contactDefaults.whatsapp ?? null,
+    instagram: location.instagram ?? contactDefaults.instagram ?? null,
+    website: location.website ?? contactDefaults.website ?? null,
+    workHours: location.workHours ?? contactDefaults.workHours ?? null,
   };
 }
 
-export function attachEffectivePhysicalToDetail<T extends BusinessPhysicalFallback>(
+export function attachEffectivePhysicalToDetail<
+  T extends BusinessContactDefaults & { id?: string },
+>(
   business: T,
   locations: BusinessLocation[],
   requestedLocationId?: string | null,

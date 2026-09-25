@@ -26,17 +26,14 @@ function loc(partial: Record<string, unknown> & { id: string }): BusinessLocatio
   } as unknown as BusinessLocation;
 }
 
-const businessFallback = {
+const businessFallback: BusinessPhysicalFallback = {
   cityId: 'city-legacy',
-  address: 'Legacy address',
-  latitude: 10,
-  longitude: 20,
   phone: '+7000',
   whatsapp: '+7111',
   instagram: '@brand',
   website: 'https://brand.kz',
   workHours: { mon: '09:00-18:00' },
-} as unknown as BusinessPhysicalFallback;
+};
 
 describe('business-effective-physical.util (Stage 6.12A.7.6)', () => {
   const primary = loc({
@@ -141,9 +138,18 @@ describe('business-effective-physical.util (Stage 6.12A.7.6)', () => {
     expect(location?.id).toBe('loc-l1');
   });
 
-  it('J — legacy top-level business fields unchanged in builder input', () => {
-    expect(businessFallback.address).toBe('Legacy address');
+  it('J — geo from location only, not contact defaults', () => {
     const dto = buildEffectivePhysicalDto(businessFallback, primary);
     expect(dto.address).toBe('Primary addr');
+    expect(dto.latitude).toBe(51.1);
+  });
+
+  it('K — missing location fail-closed geo (A.9.4.4B)', () => {
+    const dto = buildEffectivePhysicalDto(businessFallback, null);
+    expect(dto.address).toBe('');
+    expect(dto.latitude).toBeNull();
+    expect(dto.longitude).toBeNull();
+    expect(dto.cityId).toBe('city-legacy');
+    expect(dto.phone).toBe('+7000');
   });
 });

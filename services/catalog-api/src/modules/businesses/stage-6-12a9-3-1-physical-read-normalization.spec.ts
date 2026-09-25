@@ -142,7 +142,7 @@ describe('Stage 6.12A.9.3.1 — public physical read normalization', () => {
     });
     const row = result.items.find((item) => item.id === business.id);
     expect(row).toBeDefined();
-    expect(row!.address).toBe('Primary branch addr');
+    expect((row as { address: string }).address).toBe('Primary branch addr');
   });
 
   it('B — list row with contextLocationId uses secondary branch physical', async () => {
@@ -157,9 +157,6 @@ describe('Stage 6.12A.9.3.1 — public physical read normalization', () => {
     const listRow = {
       id: business.id,
       cityId: uralskCityId,
-      address: business.address,
-      latitude: business.latitude,
-      longitude: business.longitude,
       phone: null,
       whatsapp: null,
       instagram: null,
@@ -202,7 +199,9 @@ describe('Stage 6.12A.9.3.1 — public physical read normalization', () => {
     const favoritesService = new FavoritesService(prisma as unknown as PrismaService);
     const rows = await favoritesService.findAll(userId);
     const fav = rows.find((row) => row.businessId === business.id);
-    expect(fav?.business.address).toBe('Favorite primary addr');
+    expect((fav?.business as unknown as { address: string }).address).toBe(
+      'Favorite primary addr',
+    );
     expect(fav).not.toHaveProperty('contextLocationId');
   });
 
@@ -227,7 +226,7 @@ describe('Stage 6.12A.9.3.1 — public physical read normalization', () => {
     });
     const rows = result.items.filter((item) => item.id === business.id);
     expect(rows.length).toBeGreaterThanOrEqual(2);
-    const addresses = rows.map((row) => row.address).sort();
+    const addresses = rows.map((row) => (row as { address: string }).address).sort();
     expect(addresses).toEqual(expect.arrayContaining(['Map primary', 'Map secondary']));
     expect(rows.every((row) => 'locationId' in row && row.locationId != null)).toBe(true);
     expect(secondaryId).toBeDefined();

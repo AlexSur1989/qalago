@@ -74,7 +74,9 @@ import { attachEffectivePhysicalToDetail } from './business-effective-physical.u
 import {
   applyPublicPhysicalReadFromEffectivePhysical,
   loadBusinessLocationsGroupedByBusinessId,
+  normalizeFavoriteBusinessPhysical,
   normalizePublicBusinessListItems,
+  type PublicPhysicalReadBusinessSource,
 } from './business-physical-read-normalization.util';
 import { attachContextLocationIdForBranch } from './business-discovery-context.util';
 import {
@@ -92,9 +94,6 @@ const businessListSelect = {
   title: true,
   slug: true,
   shortDesc: true,
-  address: true,
-  latitude: true,
-  longitude: true,
   phone: true,
   whatsapp: true,
   coverImageUrl: true,
@@ -263,7 +262,7 @@ export class BusinessesService {
     )) as typeof items;
 
     const normalizedItems = await this.normalizePublicCatalogListPhysicalFields(
-      enrichedItems as Array<{ id: string; cityId: string; address: string } & (typeof enrichedItems)[number]>,
+      enrichedItems as Array<{ id: string; cityId: string } & (typeof enrichedItems)[number]>,
       query,
     );
 
@@ -278,7 +277,7 @@ export class BusinessesService {
    * Skips forMap=true rows (already BusinessLocation-grain from map presenter).
    */
   private async normalizePublicCatalogListPhysicalFields<
-    T extends { id: string; cityId: string; address: string },
+    T extends { id: string; cityId: string },
   >(items: readonly T[], query: ListBusinessesQueryDto): Promise<T[]> {
     if (items.length === 0 || query.forMap === true) {
       return [...items];
@@ -294,7 +293,10 @@ export class BusinessesService {
       businessIds,
     );
 
-    return normalizePublicBusinessListItems(items, locationsByBusinessId);
+    return normalizePublicBusinessListItems(
+      items as unknown as Array<{ id: string } & PublicPhysicalReadBusinessSource>,
+      locationsByBusinessId,
+    ) as unknown as T[];
   }
 
   /**
@@ -736,7 +738,6 @@ export class BusinessesService {
       id: item.id,
       title: item.title,
       shortDesc: item.shortDesc,
-      address: item.address,
       category: item.category,
       businessSubcategories: item.businessSubcategories,
       serviceMatchKind:
@@ -986,7 +987,6 @@ export class BusinessesService {
       id: item.id,
       title: item.title,
       shortDesc: item.shortDesc,
-      address: item.address,
       category: item.category,
       businessSubcategories: item.businessSubcategories,
       serviceMatchKind:
@@ -1212,7 +1212,25 @@ export class BusinessesService {
       });
     }
 
-    return { items };
+    if (items.length === 0) {
+      return { items };
+    }
+
+    const businessIds = items.map((entry) => entry.business.id);
+    const locationsByBusinessId = await loadBusinessLocationsGroupedByBusinessId(
+      this.prisma,
+      businessIds,
+    );
+
+    return {
+      items: items.map((entry) => ({
+        ...entry,
+        business: normalizeFavoriteBusinessPhysical(
+          entry.business,
+          locationsByBusinessId.get(entry.business.id) ?? [],
+        ),
+      })),
+    };
   }
 
   async recommended(user: AuthUser, citySlug?: string) {

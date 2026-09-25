@@ -27,9 +27,6 @@ type BusinessBrandListRow = {
   title: string;
   slug: string;
   shortDesc: string | null;
-  address: string;
-  latitude: Prisma.Decimal | null;
-  longitude: Prisma.Decimal | null;
   phone: string | null;
   whatsapp: string | null;
   coverImageUrl: string | null;
