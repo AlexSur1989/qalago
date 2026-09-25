@@ -9,7 +9,7 @@
 ## 2026-09-25 — 6.12A.9.4.3D Physical writer QA closure
 
 - **Status:** **6.12A.9.4.3D PASS — PHYSICAL WRITER QA FINALIZED**; **6.12A.9.4.3 CLOSED — BUSINESS PHYSICAL WRITERS MIGRATED TO BUSINESSLOCATION AUTHORITY**.
-- **Checkpoint (docs closure):** `1cd00d53ba67d9a9953f842de2870a2f553d8693`.
+- **Checkpoint (docs closure):** `75d58f6bb477a0a295029a867fd225989544c172`.
 - **Baseline (pre-physical-QA docs):** `4d0035363032d875091bf14cbec0fe27103e19ea` (**3C** docs follow-up).
 - **Implementation checkpoints (unchanged):** **3A** `51e0b5bb502930ff43adf0e7f875b95137a12ae4` (owner primary physical write inversion); **3B** `cde02e6d0faee3b5b6831ba479d6f4dcdff14b17` (onboarding/create normalization); **3C** `91284804547a78c1b4b6521ffe648e63508c2fe9` (seed/dev writer normalization).
 - **Scope:** Manual Business Web physical QA + read-only integrity audits + fixture cleanup (dev); local helpers **`infra/local-backups/a943d-physical-*`** (untracked). **No product-code / schema / test / DB fixture re-insert changes in this closure.**
