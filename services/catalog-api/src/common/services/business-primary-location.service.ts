@@ -9,13 +9,17 @@ import {
 } from '../utils/business-location-invariant.util';
 import type { Business, BusinessLocation, Prisma } from '@prisma/client';
 import {
+  AuthoritativePrimaryPhysicalInput,
   BusinessPhysicalSnapshot,
+  businessBootstrapPhysicalFromPrimaryInput,
   businessUpdateDataFromPhysicalSnapshot,
   locationPatchTouchesSynchronizedPhysicalFields,
   patchTouchesSynchronizedPhysicalFields,
   physicalSnapshotFromLocation,
   primaryLocationCreateDataFromBusiness,
+  primaryLocationCreateDataFromPhysicalSnapshot,
   primaryLocationUpdateDataFromBusiness,
+  primaryPhysicalFromBusinessRecord,
 } from '../utils/business-primary-location.util';
 
 export type PrimaryLocationResolution =
@@ -65,25 +69,80 @@ export class BusinessPrimaryLocationService {
     return resolved.location;
   }
 
-  /** Creates exactly one primary location from the Business row (same transaction as Business create). */
-  async createInitialPrimary(
+  /**
+   * Creates authoritative initial primary BL from physical input (repair / legacy callers).
+   * Prefer {@link createBusinessWithInitialPrimary} for production onboarding/create.
+   */
+  async createAuthoritativeInitialPrimary(
     tx: Prisma.TransactionClient,
-    business: BusinessPhysicalSnapshot,
+    businessId: string,
+    physical: AuthoritativePrimaryPhysicalInput,
   ): Promise<BusinessLocation> {
-    const existing = await this.resolvePrimaryLocation(tx, business.id);
+    const existing = await this.resolvePrimaryLocation(tx, businessId);
     if (existing.status === 'ok') {
       throw new InternalServerErrorException(
-        `Business ${business.id} already has a primary BusinessLocation`,
+        `Business ${businessId} already has a primary BusinessLocation`,
       );
     }
     if (existing.status === 'ambiguous') {
       throw new InternalServerErrorException(
-        `Business ${business.id} has multiple primary BusinessLocation rows`,
+        `Business ${businessId} has multiple primary BusinessLocation rows`,
       );
     }
     return tx.businessLocation.create({
-      data: primaryLocationCreateDataFromBusiness(business),
+      data: primaryLocationCreateDataFromPhysicalSnapshot(businessId, physical),
     });
+  }
+
+  /** Repair/transitional: copies physical fields from an existing Business row onto new primary BL. */
+  async createInitialPrimary(
+    tx: Prisma.TransactionClient,
+    business: BusinessPhysicalSnapshot,
+  ): Promise<BusinessLocation> {
+    return this.createAuthoritativeInitialPrimary(
+      tx,
+      business.id,
+      primaryPhysicalFromBusinessRecord(business),
+    );
+  }
+
+  /**
+   * Production aggregate: Business brand shell + exactly one primary BL + compatibility mirror.
+   * Physical authority: `primaryPhysical` → BL → Business mirror (NOT NULL bootstrap only).
+   */
+  async createBusinessWithInitialPrimary(
+    tx: Prisma.TransactionClient,
+    params: {
+      brand: Omit<
+        Prisma.BusinessUncheckedCreateInput,
+        'cityId' | 'address' | 'latitude' | 'longitude' | 'locationSource'
+      >;
+      primaryPhysical: AuthoritativePrimaryPhysicalInput;
+    },
+  ): Promise<{ business: Business; primaryLocation: BusinessLocation }> {
+    const bootstrap = businessBootstrapPhysicalFromPrimaryInput(params.primaryPhysical);
+    const business = await tx.business.create({
+      data: {
+        ...params.brand,
+        ...bootstrap,
+        phone: params.brand.phone ?? params.primaryPhysical.phone ?? undefined,
+        whatsapp: params.brand.whatsapp ?? params.primaryPhysical.whatsapp ?? undefined,
+        instagram: params.brand.instagram ?? params.primaryPhysical.instagram ?? undefined,
+        website: params.brand.website ?? params.primaryPhysical.website ?? undefined,
+        workHours:
+          params.brand.workHours !== undefined
+            ? params.brand.workHours
+            : params.primaryPhysical.workHours ?? undefined,
+      },
+    });
+
+    const primaryLocation = await this.createAuthoritativeInitialPrimary(
+      tx,
+      business.id,
+      params.primaryPhysical,
+    );
+    const syncedBusiness = await this.syncBusinessFromPrimaryLocationRecord(tx, primaryLocation);
+    return { business: syncedBusiness, primaryLocation };
   }
 
   /**

@@ -65,6 +65,67 @@ describe('BusinessPrimaryLocationService (Stage 6.12A.3)', () => {
     );
   });
 
+  it('createBusinessWithInitialPrimary mirrors primary BL onto Business', async () => {
+    const createImpl = jest.fn().mockResolvedValue({
+      id: deterministicPrimaryLocationId('biz-new'),
+      businessId: 'biz-new',
+      isPrimary: true,
+      cityId: 'city-1',
+      address: 'Main st',
+      latitude: null,
+      longitude: null,
+      locationSource: null,
+      workHours: null,
+      phone: '+77001112233',
+      whatsapp: null,
+      instagram: null,
+      website: null,
+    });
+    const updateImpl = jest.fn().mockResolvedValue({ id: 'biz-new', cityId: 'city-1', address: 'Main st' });
+    const tx = {
+      businessLocation: {
+        findMany: jest.fn().mockResolvedValue([]),
+        create: createImpl,
+        update: jest.fn(),
+      },
+      business: {
+        create: jest.fn().mockResolvedValue({
+          id: 'biz-new',
+          cityId: 'city-1',
+          address: 'Main st',
+          phone: '+77001112233',
+        }),
+        update: updateImpl,
+      },
+    };
+
+    await service.createBusinessWithInitialPrimary(tx as never, {
+      brand: {
+        title: 'Brand',
+        slug: 'brand',
+        categoryId: 'cat-1',
+        ownerId: 'owner-1',
+        status: 'PENDING' as never,
+        phone: '+77001112233',
+      },
+      primaryPhysical: {
+        cityId: 'city-1',
+        address: 'Main st',
+        latitude: null,
+        longitude: null,
+        locationSource: null,
+        workHours: null,
+        phone: '+77001112233',
+        whatsapp: null,
+        instagram: null,
+        website: null,
+      },
+    });
+
+    expect(createImpl).toHaveBeenCalled();
+    expect(updateImpl).toHaveBeenCalled();
+  });
+
   it('createInitialPrimary uses deterministic id aligned with A.2 backfill', async () => {
     const createImpl = jest.fn().mockResolvedValue({ id: deterministicPrimaryLocationId('biz-1') });
     const tx = mockTx({ primaries: [], createImpl });

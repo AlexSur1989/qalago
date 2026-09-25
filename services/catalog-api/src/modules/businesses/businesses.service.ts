@@ -173,21 +173,30 @@ export class BusinessesService {
     const slug = `${baseSlug}-${randomBytes(3).toString('hex')}`;
 
     return this.prisma.$transaction(async (tx) => {
-      const business = await tx.business.create({
-        data: {
+      const { business } = await this.primaryLocation.createBusinessWithInitialPrimary(tx, {
+        brand: {
           title: dto.title,
           slug,
           categoryId: dto.categoryId,
-          cityId,
-          address: dto.address,
           shortDesc: dto.shortDesc,
           phone: dto.phone,
           ownerId: user.id,
           status: BusinessStatus.PENDING,
         },
+        primaryPhysical: {
+          cityId,
+          address: dto.address,
+          latitude: null,
+          longitude: null,
+          locationSource: null,
+          workHours: null,
+          phone: dto.phone ?? null,
+          whatsapp: null,
+          instagram: null,
+          website: null,
+        },
       });
 
-      await this.primaryLocation.createInitialPrimary(tx, business);
       await this.membership.createActiveOwnerMembership(tx, user.id, business.id);
 
       return business;

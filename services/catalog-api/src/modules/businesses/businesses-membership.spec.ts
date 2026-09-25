@@ -19,18 +19,18 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
   } as unknown as BusinessMembershipService;
 
   const primaryLocation = {
-    createInitialPrimary: jest.fn().mockResolvedValue({ id: 'bl-primary', isPrimary: true }),
+    createBusinessWithInitialPrimary: jest.fn().mockResolvedValue({
+      business: {
+        id: 'biz-new',
+        ownerId: 'owner-1',
+        title: 'New Cafe',
+      },
+      primaryLocation: { id: 'bl-primary', isPrimary: true },
+    }),
   };
 
   function createService() {
     const tx = {
-      business: {
-        create: jest.fn().mockResolvedValue({
-          id: 'biz-new',
-          ownerId: 'owner-1',
-          title: 'New Cafe',
-        }),
-      },
       user: { update: jest.fn().mockResolvedValue({}) },
       businessMembership: { upsert: jest.fn() },
     };
@@ -73,19 +73,16 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
       address: 'Street 1',
     });
 
-    expect(tx.business.create).toHaveBeenCalledWith(
+    expect(primaryLocation.createBusinessWithInitialPrimary).toHaveBeenCalledWith(
+      tx,
       expect.objectContaining({
-        data: expect.objectContaining({ ownerId: 'admin-1' }),
+        brand: expect.objectContaining({ ownerId: 'admin-1' }),
       }),
     );
     expect(membership.createActiveOwnerMembership).toHaveBeenCalledWith(
       tx,
       'admin-1',
       'biz-new',
-    );
-    expect(primaryLocation.createInitialPrimary).toHaveBeenCalledWith(
-      tx,
-      expect.objectContaining({ id: 'biz-new' }),
     );
   });
 

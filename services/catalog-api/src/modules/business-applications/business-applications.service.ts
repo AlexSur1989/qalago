@@ -399,24 +399,29 @@ export class BusinessApplicationsService {
           : BusinessStatus.PENDING;
 
       const slug = await this.generateUniqueSlug(tx, locked.title);
-      const business = await tx.business.create({
-        data: {
+      const { business } = await this.primaryLocation.createBusinessWithInitialPrimary(tx, {
+        brand: {
           title: locked.title.trim(),
           slug,
           categoryId: locked.categoryId,
-          cityId: locked.cityId,
-          address: locked.address.trim(),
           shortDesc: locked.shortDesc,
           phone: locked.phone,
           ownerId: locked.applicantUserId,
           status: businessStatus,
-          latitude: locked.latitude ?? undefined,
-          longitude: locked.longitude ?? undefined,
-          locationSource: locked.locationSource ?? undefined,
+        },
+        primaryPhysical: {
+          cityId: locked.cityId,
+          address: locked.address.trim(),
+          latitude: locked.latitude,
+          longitude: locked.longitude,
+          locationSource: locked.locationSource,
+          workHours: null,
+          phone: locked.phone,
+          whatsapp: null,
+          instagram: null,
+          website: null,
         },
       });
-
-      await this.primaryLocation.createInitialPrimary(tx, business);
 
       await this.membership.createActiveOwnerMembership(
         tx,

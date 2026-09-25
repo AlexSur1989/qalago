@@ -70,7 +70,14 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
     assertOwnershipClaimCreate: jest.fn(),
   };
   const primaryLocation = {
-    createInitialPrimary: jest.fn().mockResolvedValue({ id: 'bl-primary', isPrimary: true }),
+    createBusinessWithInitialPrimary: jest.fn().mockResolvedValue({
+      business: {
+        id: 'biz-new',
+        title: 'Cafe Sultan',
+        status: BusinessStatus.ACTIVE,
+      },
+      primaryLocation: { id: 'bl-primary', isPrimary: true },
+    }),
   };
   const cityScope = {
     resolveCityId: jest.fn().mockResolvedValue('city-uralsk'),
@@ -303,18 +310,15 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
 
     await service.adminApprove(admin, 'app-1');
 
-    expect(prisma.business.create).toHaveBeenCalledWith(
+    expect(primaryLocation.createBusinessWithInitialPrimary).toHaveBeenCalledWith(
+      prisma,
       expect.objectContaining({
-        data: expect.objectContaining({
-          latitude: undefined,
-          longitude: undefined,
-          locationSource: undefined,
+        primaryPhysical: expect.objectContaining({
+          latitude: null,
+          longitude: null,
+          locationSource: null,
         }),
       }),
-    );
-    expect(primaryLocation.createInitialPrimary).toHaveBeenCalledWith(
-      prisma,
-      expect.objectContaining({ id: 'biz-new' }),
     );
   });
 
@@ -349,11 +353,10 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
 
     await service.adminApprove(admin, 'app-1');
 
-    expect(prisma.business.create).toHaveBeenCalledWith(
+    expect(primaryLocation.createBusinessWithInitialPrimary).toHaveBeenCalledWith(
+      prisma,
       expect.objectContaining({
-        data: expect.objectContaining({
-          latitude: expect.anything(),
-          longitude: expect.anything(),
+        primaryPhysical: expect.objectContaining({
           locationSource: 'GEOCODED',
         }),
       }),
@@ -383,9 +386,10 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
 
     const result = await service.adminApprove(admin, 'app-1');
 
-    expect(prisma.business.create).toHaveBeenCalledWith(
+    expect(primaryLocation.createBusinessWithInitialPrimary).toHaveBeenCalledWith(
+      prisma,
       expect.objectContaining({
-        data: expect.objectContaining({
+        brand: expect.objectContaining({
           ownerId: 'user-1',
           status: BusinessStatus.ACTIVE,
         }),
@@ -428,9 +432,10 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
 
     await service.adminApprove(admin, 'app-1');
 
-    expect(prisma.business.create).toHaveBeenCalledWith(
+    expect(primaryLocation.createBusinessWithInitialPrimary).toHaveBeenCalledWith(
+      prisma,
       expect.objectContaining({
-        data: expect.objectContaining({ status: BusinessStatus.PENDING }),
+        brand: expect.objectContaining({ status: BusinessStatus.PENDING }),
       }),
     );
   });
@@ -449,7 +454,60 @@ describe('BusinessApplicationsService (Stage 5N.1)', () => {
 
     const result = await service.adminApprove(admin, 'app-1');
     expect(result.business?.id).toBe('biz-new');
-    expect(prisma.business.create).not.toHaveBeenCalled();
+    expect(primaryLocation.createBusinessWithInitialPrimary).not.toHaveBeenCalled();
+  });
+
+  it('rolls back approval when aggregate create fails', async () => {
+    prisma.businessApplication.findUnique = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ...baseApplication,
+        status: BusinessApplicationStatus.PENDING,
+        applicant: { id: 'user-1', name: 'User', role: UserRole.USER },
+        reviewedBy: null,
+        city: { launchStatus: CityLaunchStatus.LIVE },
+        category: null,
+        approvedBusiness: null,
+      })
+      .mockResolvedValueOnce({ ...baseApplication, status: BusinessApplicationStatus.PENDING });
+
+    primaryLocation.createBusinessWithInitialPrimary = jest
+      .fn()
+      .mockRejectedValue(new Error('primary create failed'));
+
+    await expect(service.adminApprove(admin, 'app-1')).rejects.toThrow('primary create failed');
+    expect(prisma.businessApplication.updateMany).not.toHaveBeenCalled();
+    expect(membership.createActiveOwnerMembership).not.toHaveBeenCalled();
+  });
+
+  it('rolls back approval when membership creation fails after aggregate', async () => {
+    primaryLocation.createBusinessWithInitialPrimary = jest.fn().mockResolvedValue({
+      business: {
+        id: 'biz-new',
+        title: 'Cafe Sultan',
+        status: BusinessStatus.ACTIVE,
+      },
+      primaryLocation: { id: 'bl-primary', isPrimary: true },
+    });
+
+    prisma.businessApplication.findUnique = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ...baseApplication,
+        status: BusinessApplicationStatus.PENDING,
+        applicant: { id: 'user-1', name: 'User', role: UserRole.USER },
+        reviewedBy: null,
+        city: { launchStatus: CityLaunchStatus.LIVE },
+        category: null,
+        approvedBusiness: null,
+      })
+      .mockResolvedValueOnce({ ...baseApplication, status: BusinessApplicationStatus.PENDING });
+
+    prisma.businessApplication.updateMany = jest.fn().mockResolvedValue({ count: 1 });
+    membership.createActiveOwnerMembership = jest.fn().mockRejectedValue(new Error('membership failed'));
+
+    await expect(service.adminApprove(admin, 'app-1')).rejects.toThrow('membership failed');
+    expect(primaryLocation.createBusinessWithInitialPrimary).toHaveBeenCalled();
   });
 
   it('denies approve after reject race', async () => {

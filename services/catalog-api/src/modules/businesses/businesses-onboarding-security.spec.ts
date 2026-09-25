@@ -20,19 +20,18 @@ describe('BusinessesService — onboarding security (Stage 5N.5)', () => {
   } as unknown as BusinessMembershipService;
 
   const primaryLocation = {
-    createInitialPrimary: jest.fn().mockResolvedValue({ id: 'bl-primary' }),
+    createBusinessWithInitialPrimary: jest.fn().mockResolvedValue({
+      business: {
+        id: 'biz-new',
+        ownerId: 'admin-1',
+        title: 'Imported Cafe',
+      },
+      primaryLocation: { id: 'bl-primary', isPrimary: true },
+    }),
   };
 
   function createService() {
-    const tx = {
-      business: {
-        create: jest.fn().mockResolvedValue({
-          id: 'biz-new',
-          ownerId: 'admin-1',
-          title: 'Imported Cafe',
-        }),
-      },
-    };
+    const tx = {};
 
     const prisma = {
       $transaction: jest.fn(async (fn: (t: typeof tx) => unknown) => fn(tx)),
@@ -83,7 +82,7 @@ describe('BusinessesService — onboarding security (Stage 5N.5)', () => {
       { id: 'admin-1', sub: 'admin-1', phone: '+7', role: UserRole.ADMIN },
       { title: 'Imported Cafe', categoryId: 'cat-1', citySlug: 'uralsk', address: 'A' },
     );
-    expect(tx.business.create).toHaveBeenCalled();
+    expect(primaryLocation.createBusinessWithInitialPrimary).toHaveBeenCalled();
     expect(membership.createActiveOwnerMembership).toHaveBeenCalled();
   });
 });

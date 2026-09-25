@@ -113,29 +113,62 @@ export type BusinessPhysicalSnapshot = Pick<
   SynchronizedBusinessPhysicalKey | 'id'
 >;
 
+/** Physical fields for an initial primary branch (no business id yet). */
+export type AuthoritativePrimaryPhysicalInput = Omit<BusinessPhysicalSnapshot, 'id'>;
+
+export function primaryPhysicalFromBusinessRecord(
+  business: BusinessPhysicalSnapshot,
+): AuthoritativePrimaryPhysicalInput {
+  const { id: _id, ...physical } = business;
+  return physical;
+}
+
 /** Matches A.2 backfill deterministic id so new rows align with migrated primaries. */
 export function deterministicPrimaryLocationId(businessId: string): string {
   const digest = createHash('md5').update(`${businessId}:6.12A.2-primary`).digest('hex');
   return `bl${digest.slice(0, 22)}`;
 }
 
+export function primaryLocationCreateDataFromPhysicalSnapshot(
+  businessId: string,
+  physical: AuthoritativePrimaryPhysicalInput,
+): Prisma.BusinessLocationCreateInput {
+  return {
+    id: deterministicPrimaryLocationId(businessId),
+    business: { connect: { id: businessId } },
+    city: { connect: { id: physical.cityId } },
+    address: physical.address,
+    latitude: physical.latitude ?? undefined,
+    longitude: physical.longitude ?? undefined,
+    locationSource: physical.locationSource ?? undefined,
+    workHours: physical.workHours ?? undefined,
+    phone: physical.phone ?? undefined,
+    whatsapp: physical.whatsapp ?? undefined,
+    instagram: physical.instagram ?? undefined,
+    website: physical.website ?? undefined,
+    isPrimary: true,
+  };
+}
+
 export function primaryLocationCreateDataFromBusiness(
   business: BusinessPhysicalSnapshot,
 ): Prisma.BusinessLocationCreateInput {
+  return primaryLocationCreateDataFromPhysicalSnapshot(
+    business.id,
+    primaryPhysicalFromBusinessRecord(business),
+  );
+}
+
+/** NOT NULL bootstrap fields on Business.create — same snapshot as authoritative primary BL (6.12A.9.4.3B). */
+export function businessBootstrapPhysicalFromPrimaryInput(
+  physical: AuthoritativePrimaryPhysicalInput,
+): Pick<Business, 'cityId' | 'address' | 'latitude' | 'longitude' | 'locationSource'> {
   return {
-    id: deterministicPrimaryLocationId(business.id),
-    business: { connect: { id: business.id } },
-    city: { connect: { id: business.cityId } },
-    address: business.address,
-    latitude: business.latitude ?? undefined,
-    longitude: business.longitude ?? undefined,
-    locationSource: business.locationSource ?? undefined,
-    workHours: business.workHours ?? undefined,
-    phone: business.phone ?? undefined,
-    whatsapp: business.whatsapp ?? undefined,
-    instagram: business.instagram ?? undefined,
-    website: business.website ?? undefined,
-    isPrimary: true,
+    cityId: physical.cityId,
+    address: physical.address,
+    latitude: physical.latitude,
+    longitude: physical.longitude,
+    locationSource: physical.locationSource,
   };
 }
 

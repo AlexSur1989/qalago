@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-25 — 6.12A.9.4.3B Onboarding / create writer normalization
+
+- **Status:** **6.12A.9.4.3B PASS — ONBOARDING / CREATE PHYSICAL WRITERS NORMALIZED** (overall **A.9.4.3** not closed — **3C/3D** deferred).
+- **Checkpoint (implementation):** _(set at commit)_.
+- **Baseline:** `3c20959cedc4cf105b664c87f6951070bec72521` (**A.9.4.3A** docs closure).
+- **Scope:** **`services/catalog-api`** — shared **`createBusinessWithInitialPrimary`** aggregate (authoritative **`primaryPhysical`** → primary BL → Business mirror; NOT NULL bootstrap only); **application approval** + **Admin `POST /businesses`** refactored; tests. No schema/client/API shape changes.
+- **Summary:** Production onboarding/create no longer treat Business row as physical authority; **`createInitialPrimary`** retained for **2A repair** and test fixtures only.
+- **Verified:** focused Jest (**3B**, approval, admin create, rollback, **3A** regression, **2B**); **`npm run build`**; **`integrity:business-locations:audit`** read-only **PASS**.
+- **Deferred:** **A.9.4.3C** seed/dev scripts; **A.9.4.3D** physical QA; **A.9.4.4** / **A.9.4.5**; **F.4**; **6.12B** import.
+- **Next:** **6.12A.9.4.3C** — seed / dev writer normalization (not auto-started).
+
+---
+
 ## 2026-09-25 — 6.12A.9.4.3A Owner primary physical write inversion
 
 - **Status:** **6.12A.9.4.3A PASS — OWNER PRIMARY PHYSICAL WRITE AUTHORITY INVERTED** (overall **A.9.4.3** not closed — **3B/3C/3D** deferred).

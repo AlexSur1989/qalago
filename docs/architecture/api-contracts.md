@@ -635,6 +635,9 @@ Auth user recommendations (rule-based MVP; AI later). Cold start (no favorites):
 
 ### POST /businesses (privileged import only)
 
+Platform admin import (**Stage 5N.5**). Creates **Business** + exactly one **primary BusinessLocation** in one transaction (**A.9.4.3B**): request **city/address** (and optional **phone**) define authoritative **primaryPhysical**; legacy **Business** physical columns are compatibility mirror after BL create. Response shape unchanged.
+
+
 **Stage 5N.5.** Normal users (`USER`, `BUSINESS`, owners, managers) receive **403 Forbidden**. Only platform `ADMIN` / `SUPER_ADMIN` may create via this route (catalog import). Self-service: `POST /business-applications` → moderation → Business + ACTIVE OWNER membership. Does **not** mutate `User.role`.
 
 ---

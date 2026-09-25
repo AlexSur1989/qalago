@@ -8,16 +8,17 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `db9d8c32f5696aa0d94120d9c9d49fbc39e324ec` — **A.9.4.3A** closure docs (impl **`51e0b5bb502930ff43adf0e7f875b95137a12ae4`**) |
+| **Repo HEAD (current)** | _(see `git rev-parse HEAD`)_ — **A.9.4.3B** implementation |
+| **A.9.4.3B implementation SHA** | _(see changelog)_ |
 | **A.9.4.3A implementation SHA** | `51e0b5bb502930ff43adf0e7f875b95137a12ae4` |
 | **A.9.4.2B implementation SHA** | `07e0a8cdc41c72f53821e57ed892337f5d886f05` |
 | **A.9.4.2A implementation SHA** | `7909260e0b9c1a99fdb2fb0455d1e5a532d5c8bd` |
-| **Last completed stage** | **6.12A.9.4.3A PASS** — owner primary physical write authority inverted (**A.9.4.3** split; **3B/3C/3D** open) |
-| **Last product implementation** | **6.12A.9.4.3A** — owner **`PATCH /businesses/:id`** BL-authoritative physical writes |
+| **Last completed stage** | **6.12A.9.4.3B PASS** — onboarding/create writers normalized (**3C/3D** open) |
+| **Last product implementation** | **6.12A.9.4.3B** — **`createBusinessWithInitialPrimary`** for approval + admin create |
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending** | **A.9.4.3D** (after **3B/3C**); none for **A.9.4.2** |
-| **Next agreed development action** | **6.12A.9.4.3B** onboarding/create writer normalization (not auto-started) |
+| **Next agreed development action** | **6.12A.9.4.3C** seed / dev writer normalization (not auto-started) |
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 
