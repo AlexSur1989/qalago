@@ -659,7 +659,7 @@ Applicant-editable body (create/patch): `title`, `categoryId`, `citySlug`/`cityI
 
 **Submit (Stage 6.11C.4):** `POST .../submit` requires a valid stored coordinate pair on the application. Legacy drafts without coordinates remain approvable by moderators but cannot be submitted until coordinates are set.
 
-**Approval coordinates:** When the application has `latitude`/`longitude`, approval copies them and `locationSource` onto the created `Business`. Applications without coordinates (legacy) still approve with null business coordinates.
+**Approval physical (A.9.4.3B):** Application `cityId` / `address` / optional coordinates / `locationSource` define authoritative **initial primary BusinessLocation**; legacy **Business** physical columns are compatibility mirror (same JSON as before). Legacy applications without coordinates still approve with null branch coordinates.
 
 Admin moderation:
 

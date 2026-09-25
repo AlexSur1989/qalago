@@ -9,7 +9,7 @@
 ## 2026-09-25 — 6.12A.9.4.3B Onboarding / create writer normalization
 
 - **Status:** **6.12A.9.4.3B PASS — ONBOARDING / CREATE PHYSICAL WRITERS NORMALIZED** (overall **A.9.4.3** not closed — **3C/3D** deferred).
-- **Checkpoint (implementation):** _(set at commit)_.
+- **Checkpoint (implementation):** `cde02e6d0faee3b5b6831ba479d6f4dcdff14b17`.
 - **Baseline:** `3c20959cedc4cf105b664c87f6951070bec72521` (**A.9.4.3A** docs closure).
 - **Scope:** **`services/catalog-api`** — shared **`createBusinessWithInitialPrimary`** aggregate (authoritative **`primaryPhysical`** → primary BL → Business mirror; NOT NULL bootstrap only); **application approval** + **Admin `POST /businesses`** refactored; tests. No schema/client/API shape changes.
 - **Summary:** Production onboarding/create no longer treat Business row as physical authority; **`createInitialPrimary`** retained for **2A repair** and test fixtures only.
