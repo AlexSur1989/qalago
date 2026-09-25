@@ -8,7 +8,7 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `7909260e0b9c1a99fdb2fb0455d1e5a532d5c8bd` — **2A** impl (+ docs follow-up pending) |
+| **Repo HEAD (current)** | `9162184524250da2166ef13b6d1b7388f739398d` — **A.9.4.2A** docs closure |
 | **A.9.4.2A implementation SHA** | `7909260e0b9c1a99fdb2fb0455d1e5a532d5c8bd` |
 | **A.9.4.1B implementation SHA** | `38d2a83b1a71fe4eaec23fec2a04467964b7cbed` |
 | **Last completed stage** | **6.12A.9.4.2A PASS** — BusinessLocation integrity auditor & repair tooling |
