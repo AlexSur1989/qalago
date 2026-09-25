@@ -158,7 +158,7 @@ describe('Stage 6.12A.9.4.3B — onboarding/create writer normalization', () => 
     if (skip) return;
     const brokenPrimary = new BusinessPrimaryLocationService();
     jest
-      .spyOn(brokenPrimary, 'createAuthoritativeInitialPrimary')
+      .spyOn(brokenPrimary, 'createBusinessWithInitialPrimary')
       .mockRejectedValueOnce(new Error('bl create failed'));
 
     const cityScope = {
@@ -186,9 +186,10 @@ describe('Stage 6.12A.9.4.3B — onboarding/create writer normalization', () => 
     const beforeCount = await prisma.business.count();
     const admin = { id: adminUserId, sub: adminUserId, phone: '+7', role: UserRole.ADMIN };
 
+    const rollbackSlugPrefix = `a943b-rollback-${randomBytes(3).toString('hex')}`;
     await expect(
       svc.create(admin, {
-        title: `A943B Rollback ${randomBytes(3).toString('hex')}`,
+        title: `A943B Rollback ${rollbackSlugPrefix}`,
         categoryId,
         citySlug: 'uralsk',
         address: 'Rollback addr',
@@ -196,6 +197,7 @@ describe('Stage 6.12A.9.4.3B — onboarding/create writer normalization', () => 
     ).rejects.toThrow('bl create failed');
 
     expect(await prisma.business.count()).toBe(beforeCount);
+    await prisma.business.deleteMany({ where: { slug: { startsWith: 'a943b-rollback-' } } });
   });
 
   it('application approval maps physical snapshot to primary BL and mirror', async () => {

@@ -1,8 +1,68 @@
-import { BusinessStatus, BusinessPlanTier, BusinessMembershipRole, BusinessMembershipStatus, PrismaClient, PromotionStatus, UserRole } from '@prisma/client';
+import {
+  BusinessLocationSource,
+  BusinessStatus,
+  BusinessPlanTier,
+  BusinessMembershipRole,
+  BusinessMembershipStatus,
+  Prisma,
+  PrismaClient,
+  PromotionStatus,
+  UserRole,
+} from '@prisma/client';
+import { upsertSeedBusinessWithPrimaryMirrorInTx } from '../src/common/utils/business-primary-location-aggregate.util';
+import type { AuthoritativePrimaryPhysicalInput } from '../src/common/utils/business-primary-location.util';
 import { seedMonetizationCatalog } from './seed-monetization';
 import { seedSubcategories } from './seed-subcategories';
 
 const prisma = new PrismaClient();
+
+function seedPrimaryPhysical(input: {
+  cityId: string;
+  address: string;
+  lat?: number;
+  lng?: number;
+  locationSource?: BusinessLocationSource | null;
+  phone?: string | null;
+  whatsapp?: string | null;
+  instagram?: string | null;
+  website?: string | null;
+  workHours?: Prisma.InputJsonValue | null;
+}): AuthoritativePrimaryPhysicalInput {
+  return {
+    cityId: input.cityId,
+    address: input.address,
+    latitude: input.lat ?? null,
+    longitude: input.lng ?? null,
+    locationSource: input.locationSource ?? null,
+    workHours: (input.workHours ?? null) as AuthoritativePrimaryPhysicalInput['workHours'],
+    phone: input.phone ?? null,
+    whatsapp: input.whatsapp ?? null,
+    instagram: input.instagram ?? null,
+    website: input.website ?? null,
+  };
+}
+
+async function upsertSeededBusiness(params: {
+  slug: string;
+  brandCreate: Omit<
+    Prisma.BusinessUncheckedCreateInput,
+    'cityId' | 'address' | 'latitude' | 'longitude' | 'locationSource' | 'slug'
+  >;
+  brandUpdate: Omit<
+    Prisma.BusinessUncheckedUpdateInput,
+    'cityId' | 'address' | 'latitude' | 'longitude' | 'locationSource'
+  >;
+  primaryPhysical: AuthoritativePrimaryPhysicalInput;
+}) {
+  return prisma.$transaction((tx) =>
+    upsertSeedBusinessWithPrimaryMirrorInTx(tx, {
+      where: { slug: params.slug },
+      brandCreate: params.brandCreate,
+      brandUpdate: params.brandUpdate,
+      primaryPhysical: params.primaryPhysical,
+    }),
+  );
+}
 
 async function ensureActiveOwnerMembership(
   client: PrismaClient,
@@ -438,15 +498,24 @@ async function main() {
   const businessIds: Record<string, string> = {};
 
   for (const b of businesses) {
-    const record = await prisma.business.upsert({
-      where: { slug: b.slug },
-      update: {
+    const primaryPhysical = seedPrimaryPhysical({
+      cityId: city.id,
+      address: b.address,
+      lat: b.lat,
+      lng: b.lng,
+      phone: b.phone,
+      whatsapp: b.whatsapp,
+      instagram: b.instagram,
+      website: b.website,
+      workHours: b.workHours,
+    });
+    const record = await upsertSeededBusiness({
+      slug: b.slug,
+      primaryPhysical,
+      brandUpdate: {
         title: b.title,
         shortDesc: b.shortDesc,
         description: b.description,
-        address: b.address,
-        latitude: b.lat,
-        longitude: b.lng,
         phone: b.phone,
         whatsapp: b.whatsapp,
         instagram: b.instagram,
@@ -456,28 +525,22 @@ async function main() {
         isFeatured: b.featured,
         featuredSlot: b.featuredSlot,
         status: BusinessStatus.ACTIVE,
-        cityId: city.id,
         categoryId: categoryRecords[b.categorySlug],
         ownerId: owner.id,
       },
-      create: {
-        slug: b.slug,
+      brandCreate: {
         title: b.title,
         shortDesc: b.shortDesc,
-        address: b.address,
-        latitude: b.lat,
-        longitude: b.lng,
+        description: b.description,
         phone: b.phone,
         whatsapp: b.whatsapp,
         instagram: b.instagram,
         website: b.website,
         coverImageUrl: b.coverImageUrl,
-        description: b.description,
         workHours: b.workHours,
         isFeatured: b.featured,
         featuredSlot: b.featuredSlot,
         status: BusinessStatus.ACTIVE,
-        cityId: city.id,
         categoryId: categoryRecords[b.categorySlug],
         ownerId: owner.id,
       },
@@ -953,16 +1016,25 @@ async function main() {
   }
 
   // Pending business for admin moderation demo
-  const pendingCafe = await prisma.business.upsert({
-    where: { slug: 'new-pending-cafe' },
-    update: {
+  const pendingCafePrimary = seedPrimaryPhysical({
+    cityId: city.id,
+    address: 'ул. Тестовая, 1, Уральск',
+    lat: 51.23,
+    lng: 51.38,
+    phone: '+77112241006',
+    whatsapp: '+77012241006',
+    instagram: 'https://instagram.com/qalago.demo',
+    website: 'https://qalago.kz/demo/new-pending-cafe',
+    workHours: allWeek('08:30-21:00', '09:00-22:00', '09:00-21:00'),
+  });
+  const pendingCafe = await upsertSeededBusiness({
+    slug: 'new-pending-cafe',
+    primaryPhysical: pendingCafePrimary,
+    brandUpdate: {
       title: 'New Pending Cafe',
       shortDesc: 'Новая кофейня ожидает модерации',
       description:
         'Демо-заявка владельца: камерная кофейня с завтраками, десертами и доставкой напитков в пределах центра.',
-      address: 'ул. Тестовая, 1, Уральск',
-      latitude: 51.23,
-      longitude: 51.38,
       phone: '+77112241006',
       whatsapp: '+77012241006',
       instagram: 'https://instagram.com/qalago.demo',
@@ -970,19 +1042,14 @@ async function main() {
       coverImageUrl: photo('photo-1554118811-1e0d58224f24'),
       workHours: allWeek('08:30-21:00', '09:00-22:00', '09:00-21:00'),
       status: BusinessStatus.PENDING,
-      cityId: city.id,
       categoryId: categoryRecords['food'],
       ownerId: owner.id,
     },
-    create: {
-      slug: 'new-pending-cafe',
+    brandCreate: {
       title: 'New Pending Cafe',
       shortDesc: 'Новая кофейня ожидает модерации',
       description:
         'Демо-заявка владельца: камерная кофейня с завтраками, десертами и доставкой напитков в пределах центра.',
-      address: 'ул. Тестовая, 1, Уральск',
-      latitude: 51.23,
-      longitude: 51.38,
       phone: '+77112241006',
       whatsapp: '+77012241006',
       instagram: 'https://instagram.com/qalago.demo',
@@ -990,7 +1057,6 @@ async function main() {
       coverImageUrl: photo('photo-1554118811-1e0d58224f24'),
       workHours: allWeek('08:30-21:00', '09:00-22:00', '09:00-21:00'),
       status: BusinessStatus.PENDING,
-      cityId: city.id,
       categoryId: categoryRecords['food'],
       ownerId: owner.id,
     },
@@ -1010,32 +1076,30 @@ async function main() {
     });
   }
 
-  const pendingAktobe = await prisma.business.upsert({
-    where: { slug: 'aktobe-pending-bistro' },
-    update: {
+  const pendingAktobe = await upsertSeededBusiness({
+    slug: 'aktobe-pending-bistro',
+    primaryPhysical: seedPrimaryPhysical({
+      cityId: aktobe.id,
+      address: 'пр. Абая, 99, Актобе',
+      lat: 50.285,
+      lng: 57.169,
+      phone: '+77112241007',
+    }),
+    brandUpdate: {
       title: 'Aktobe Pending Bistro',
       shortDesc: 'Новый ресторан в Актобе ожидает модерации',
       description: 'Демо-заявка для CITY_ADMIN: семейный бistro в центре Актобе.',
-      address: 'пр. Абая, 99, Актобе',
-      latitude: 50.285,
-      longitude: 57.169,
       phone: '+77112241007',
       status: BusinessStatus.PENDING,
-      cityId: aktobe.id,
       categoryId: categoryRecords['food'],
       ownerId: owner.id,
     },
-    create: {
-      slug: 'aktobe-pending-bistro',
+    brandCreate: {
       title: 'Aktobe Pending Bistro',
       shortDesc: 'Новый ресторан в Актобе ожидает модерации',
       description: 'Демо-заявка для CITY_ADMIN: семейный bistro в центре Актобе.',
-      address: 'пр. Абая, 99, Актобе',
-      latitude: 50.285,
-      longitude: 57.169,
       phone: '+77112241007',
       status: BusinessStatus.PENDING,
-      cityId: aktobe.id,
       categoryId: categoryRecords['food'],
       ownerId: owner.id,
     },
@@ -1083,31 +1147,30 @@ async function main() {
   ];
 
   for (const b of aktobeBusinesses) {
-    await prisma.business.upsert({
-      where: { slug: b.slug },
-      update: {
-        title: b.title,
+    await upsertSeededBusiness({
+      slug: b.slug,
+      primaryPhysical: seedPrimaryPhysical({
+        cityId: aktobe.id,
         address: b.address,
-        latitude: b.lat,
-        longitude: b.lng,
+        lat: b.lat,
+        lng: b.lng,
+        phone: '+77131234567',
+        whatsapp: '+77131234567',
+      }),
+      brandUpdate: {
+        title: b.title,
         isFeatured: b.featured,
         status: BusinessStatus.ACTIVE,
-        cityId: aktobe.id,
         categoryId: categoryRecords[b.categorySlug],
         ownerId: owner.id,
       },
-      create: {
-        slug: b.slug,
+      brandCreate: {
         title: b.title,
         shortDesc: b.shortDesc,
-        address: b.address,
-        latitude: b.lat,
-        longitude: b.lng,
         phone: '+77131234567',
         whatsapp: '+77131234567',
         isFeatured: b.featured,
         status: BusinessStatus.ACTIVE,
-        cityId: aktobe.id,
         categoryId: categoryRecords[b.categorySlug],
         ownerId: owner.id,
       },
@@ -1129,29 +1192,30 @@ async function main() {
   qaExpiresAt.setDate(qaExpiresAt.getDate() + 30);
 
   for (const qa of qaPlanTiers) {
-    const qaBusiness = await prisma.business.upsert({
-      where: { slug: qa.slug },
-      update: {
+    const qaBusiness = await upsertSeededBusiness({
+      slug: qa.slug,
+      primaryPhysical: seedPrimaryPhysical({
+        cityId: city.id,
+        address: 'ул. QA, 1, Уральск',
+        lat: 51.229,
+        lng: 51.385,
+        phone: '+77112249999',
+      }),
+      brandUpdate: {
         title: qa.title,
         planTier: qa.tier,
         planExpiresAt: qa.tier === BusinessPlanTier.FREE ? null : qaExpiresAt,
         status: BusinessStatus.ACTIVE,
-        cityId: city.id,
         categoryId: categoryRecords['food'],
         ownerId: owner.id,
       },
-      create: {
-        slug: qa.slug,
+      brandCreate: {
         title: qa.title,
         shortDesc: `DEV seed: ${qa.tier} tier QA`,
-        address: 'ул. QA, 1, Уральск',
-        latitude: 51.229,
-        longitude: 51.385,
         phone: '+77112249999',
         planTier: qa.tier,
         planExpiresAt: qa.tier === BusinessPlanTier.FREE ? null : qaExpiresAt,
         status: BusinessStatus.ACTIVE,
-        cityId: city.id,
         categoryId: categoryRecords['food'],
         ownerId: owner.id,
       },

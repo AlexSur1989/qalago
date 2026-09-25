@@ -8,17 +8,18 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `26ee8fa548113ca0617731c6ee1bd777c2c59e2f` — **A.9.4.3B** docs closure (impl **`cde02e6d0faee3b5b6831ba479d6f4dcdff14b17`**) |
+| **Repo HEAD (current)** | _(see `git rev-parse HEAD`)_ — **A.9.4.3C** implementation |
+| **A.9.4.3C implementation SHA** | _(see changelog)_ |
 | **A.9.4.3B implementation SHA** | `cde02e6d0faee3b5b6831ba479d6f4dcdff14b17` |
 | **A.9.4.3A implementation SHA** | `51e0b5bb502930ff43adf0e7f875b95137a12ae4` |
 | **A.9.4.2B implementation SHA** | `07e0a8cdc41c72f53821e57ed892337f5d886f05` |
 | **A.9.4.2A implementation SHA** | `7909260e0b9c1a99fdb2fb0455d1e5a532d5c8bd` |
-| **Last completed stage** | **6.12A.9.4.3B PASS** — onboarding/create writers normalized (**3C/3D** open) |
-| **Last product implementation** | **6.12A.9.4.3B** — **`createBusinessWithInitialPrimary`** for approval + admin create |
+| **Last completed stage** | **6.12A.9.4.3C PASS** — seed/dev writers normalized (**3D** physical QA open) |
+| **Last product implementation** | **6.12A.9.4.3C** — seed + **5N QA** aggregate physical writes |
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending** | **A.9.4.3D** (after **3B/3C**); none for **A.9.4.2** |
-| **Next agreed development action** | **6.12A.9.4.3C** seed / dev writer normalization (not auto-started) |
+| **Next agreed development action** | **6.12A.9.4.3D** physical QA (not auto-started) |
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 

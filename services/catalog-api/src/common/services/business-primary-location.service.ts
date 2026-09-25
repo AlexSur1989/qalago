@@ -9,15 +9,17 @@ import {
 } from '../utils/business-location-invariant.util';
 import type { Business, BusinessLocation, Prisma } from '@prisma/client';
 import {
+  createAuthoritativeInitialPrimaryInTx,
+  createBusinessWithInitialPrimaryInTx,
+  syncBusinessMirrorFromPrimaryInTx,
+} from '../utils/business-primary-location-aggregate.util';
+import {
   AuthoritativePrimaryPhysicalInput,
   BusinessPhysicalSnapshot,
-  businessBootstrapPhysicalFromPrimaryInput,
   businessUpdateDataFromPhysicalSnapshot,
   locationPatchTouchesSynchronizedPhysicalFields,
   patchTouchesSynchronizedPhysicalFields,
   physicalSnapshotFromLocation,
-  primaryLocationCreateDataFromBusiness,
-  primaryLocationCreateDataFromPhysicalSnapshot,
   primaryLocationUpdateDataFromBusiness,
   primaryPhysicalFromBusinessRecord,
 } from '../utils/business-primary-location.util';
@@ -78,20 +80,17 @@ export class BusinessPrimaryLocationService {
     businessId: string,
     physical: AuthoritativePrimaryPhysicalInput,
   ): Promise<BusinessLocation> {
-    const existing = await this.resolvePrimaryLocation(tx, businessId);
-    if (existing.status === 'ok') {
-      throw new InternalServerErrorException(
-        `Business ${businessId} already has a primary BusinessLocation`,
-      );
+    try {
+      return await createAuthoritativeInitialPrimaryInTx(tx, businessId, physical);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('already has a primary')) {
+        throw new InternalServerErrorException(error.message);
+      }
+      if (error instanceof Error && error.message.includes('multiple primary')) {
+        throw new InternalServerErrorException(error.message);
+      }
+      throw error;
     }
-    if (existing.status === 'ambiguous') {
-      throw new InternalServerErrorException(
-        `Business ${businessId} has multiple primary BusinessLocation rows`,
-      );
-    }
-    return tx.businessLocation.create({
-      data: primaryLocationCreateDataFromPhysicalSnapshot(businessId, physical),
-    });
   }
 
   /** Repair/transitional: copies physical fields from an existing Business row onto new primary BL. */
@@ -120,29 +119,7 @@ export class BusinessPrimaryLocationService {
       primaryPhysical: AuthoritativePrimaryPhysicalInput;
     },
   ): Promise<{ business: Business; primaryLocation: BusinessLocation }> {
-    const bootstrap = businessBootstrapPhysicalFromPrimaryInput(params.primaryPhysical);
-    const business = await tx.business.create({
-      data: {
-        ...params.brand,
-        ...bootstrap,
-        phone: params.brand.phone ?? params.primaryPhysical.phone ?? undefined,
-        whatsapp: params.brand.whatsapp ?? params.primaryPhysical.whatsapp ?? undefined,
-        instagram: params.brand.instagram ?? params.primaryPhysical.instagram ?? undefined,
-        website: params.brand.website ?? params.primaryPhysical.website ?? undefined,
-        workHours:
-          params.brand.workHours !== undefined
-            ? params.brand.workHours
-            : params.primaryPhysical.workHours ?? undefined,
-      },
-    });
-
-    const primaryLocation = await this.createAuthoritativeInitialPrimary(
-      tx,
-      business.id,
-      params.primaryPhysical,
-    );
-    const syncedBusiness = await this.syncBusinessFromPrimaryLocationRecord(tx, primaryLocation);
-    return { business: syncedBusiness, primaryLocation };
+    return createBusinessWithInitialPrimaryInTx(tx, params);
   }
 
   /**
@@ -181,11 +158,7 @@ export class BusinessPrimaryLocationService {
         'syncBusinessFromPrimaryLocationRecord requires a primary location row',
       );
     }
-    const snapshot = physicalSnapshotFromLocation(location);
-    return tx.business.update({
-      where: { id: snapshot.id },
-      data: businessUpdateDataFromPhysicalSnapshot(snapshot),
-    });
+    return syncBusinessMirrorFromPrimaryInTx(tx, location);
   }
 
   /**

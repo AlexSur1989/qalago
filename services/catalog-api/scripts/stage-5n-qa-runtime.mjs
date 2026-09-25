@@ -3,7 +3,18 @@
  * Covers onboarding, RBAC, moderation, security paths not fully proven by unit tests.
  * Usage: node scripts/stage-5n-qa-runtime.mjs
  */
-import { PrismaClient } from '@prisma/client';
+import { createRequire } from 'module';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+
+const require = createRequire(import.meta.url);
+const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+require('ts-node/register/transpile-only');
+
+const { PrismaClient } = require('@prisma/client');
+const { createBusinessWithInitialPrimaryInTx } = require(
+  '../src/common/utils/business-primary-location-aggregate.util.ts',
+);
 
 const BASE = process.env.API_BASE ?? 'http://localhost:3002/api/v1';
 const prisma = new PrismaClient();
@@ -72,23 +83,25 @@ async function setupUnownedBusiness(categoryId) {
   if (existing) return existing;
 
   return prisma.$transaction(async (tx) => {
-    const business = await tx.business.create({
-      data: {
+    const { business } = await createBusinessWithInitialPrimaryInTx(tx, {
+      brand: {
         title: `QA Unowned ${slug}`,
         slug,
         categoryId,
-        cityId: city.id,
-        address: 'QA Unowned Address 1',
         status: 'ACTIVE',
         ownerId: null,
       },
-    });
-    await tx.businessLocation.create({
-      data: {
-        businessId: business.id,
+      primaryPhysical: {
         cityId: city.id,
-        address: business.address,
-        isPrimary: true,
+        address: 'QA Unowned Address 1',
+        latitude: null,
+        longitude: null,
+        locationSource: null,
+        workHours: null,
+        phone: null,
+        whatsapp: null,
+        instagram: null,
+        website: null,
       },
     });
     return business;

@@ -156,7 +156,8 @@ Existing invalid rows must be **repaired** before enforcing; production writers 
 - **A.9.4.2E (VERIFIED — physical QA):** Business Web + owner API — two-branch display, set-primary persistence (F5), **409** primary delete while secondary exists, **200** secondary delete, sole-branch delete → **409** `BUSINESS_LOCATION_LAST_DELETE_BLOCKED` (**LAST** precedence over **PRIMARY** when branch is both primary and last); integrity auditor green before/after.
 - **A.9.4.2C:** **NOT REQUIRED** for closure (2A tooling + 2B enforcement + partial unique index + physical QA); DB triggers remain **optional / not approved**.
 - **A.9.4.3A (IMPLEMENTED — catalog-api):** owner **`PATCH /businesses/:id`** — primary physical fields authoritative on **primary BusinessLocation**; **Business** mirror via **`syncBusinessFromPrimaryLocationRecord`**.
-- **A.9.4.3B (IMPLEMENTED — catalog-api):** **application approval** + **Admin `POST /businesses`** — **`createBusinessWithInitialPrimary`**; physical snapshot → primary BL → mirror. **`createInitialPrimary(Business)`** remains **repair / test** only. **Not complete:** **A.9.4.3C** seed/dev scripts; **3D** physical QA; read-fallback removal; column retirement.
+- **A.9.4.3B (IMPLEMENTED — catalog-api):** **application approval** + **Admin `POST /businesses`** — **`createBusinessWithInitialPrimary`**; physical snapshot → primary BL → mirror. **`createInitialPrimary(Business)`** remains **repair / intentional test fixture** only.
+- **A.9.4.3C (IMPLEMENTED — catalog-api):** tracked **`prisma/seed.ts`** + **`scripts/stage-5n-qa-runtime.mjs`** use **`business-primary-location-aggregate.util`** — idempotent **`upsertSeedBusinessWithPrimaryMirrorInTx`** / **`createBusinessWithInitialPrimaryInTx`** (same BL → mirror semantics). Corrupt multi-primary seed fails with integrity-tooling guidance. **Not complete:** **3D** physical QA; read-fallback removal; column retirement.
 
 ### Cross-city business rule
 

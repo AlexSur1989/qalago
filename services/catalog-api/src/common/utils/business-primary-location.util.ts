@@ -175,16 +175,22 @@ export function businessBootstrapPhysicalFromPrimaryInput(
 export function primaryLocationUpdateDataFromBusiness(
   business: BusinessPhysicalSnapshot,
 ): Prisma.BusinessLocationUpdateInput {
+  return primaryLocationUpdateDataFromPhysicalInput(primaryPhysicalFromBusinessRecord(business));
+}
+
+export function primaryLocationUpdateDataFromPhysicalInput(
+  physical: AuthoritativePrimaryPhysicalInput,
+): Prisma.BusinessLocationUpdateInput {
   return {
-    city: { connect: { id: business.cityId } },
-    address: business.address,
-    latitude: business.latitude,
-    longitude: business.longitude,
-    locationSource: business.locationSource,
-    workHours: business.workHours === null ? Prisma.JsonNull : business.workHours,
-    phone: business.phone,
-    whatsapp: business.whatsapp,
-    instagram: business.instagram,
-    website: business.website,
+    city: { connect: { id: physical.cityId } },
+    address: physical.address,
+    latitude: physical.latitude,
+    longitude: physical.longitude,
+    locationSource: physical.locationSource,
+    workHours: physical.workHours === null ? Prisma.JsonNull : physical.workHours,
+    phone: physical.phone,
+    whatsapp: physical.whatsapp,
+    instagram: physical.instagram,
+    website: physical.website,
   };
 }
