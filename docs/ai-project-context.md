@@ -8,7 +8,7 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `042fc598894cfd373cf516d2c7b370ec36c0d83c` — **A.9.4.2E** docs closure (+ checkpoint SHA follow-up) |
+| **Repo HEAD (current)** | `0db71ba23fe1909695eb6d1c849a130e0d9bc99a` — **A.9.4.2E** docs closure (canonical checkpoint **`b4ada07…`** in changelog) |
 | **A.9.4.2B implementation SHA** | `07e0a8cdc41c72f53821e57ed892337f5d886f05` |
 | **A.9.4.2A implementation SHA** | `7909260e0b9c1a99fdb2fb0455d1e5a532d5c8bd` |
 | **Last completed stage** | **6.12A.9.4.2 PASS** — BusinessLocation & primary invariants finalized (**2E** physical QA closed) |
