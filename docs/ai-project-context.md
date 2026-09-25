@@ -8,7 +8,7 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `07e0a8cdc41c72f53821e57ed892337f5d886f05` — **2B** impl (+ docs follow-up pending) |
+| **Repo HEAD (current)** | `1ba3d5b…` — **A.9.4.2B** docs closure (see `git rev-parse HEAD`) |
 | **A.9.4.2B implementation SHA** | `07e0a8cdc41c72f53821e57ed892337f5d886f05` |
 | **A.9.4.2A implementation SHA** | `7909260e0b9c1a99fdb2fb0455d1e5a532d5c8bd` |
 | **Last completed stage** | **6.12A.9.4.2B PASS** — runtime invariant enforcement (physical QA pending) |
