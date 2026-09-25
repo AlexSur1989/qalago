@@ -1,4 +1,5 @@
-import { BadRequestException } from '@nestjs/common';
+import { ConflictException } from '@nestjs/common';
+import { BusinessLocationPrimaryDeleteBlockedCode } from '../../common/utils/business-location-invariant.util';
 import { PrismaClient, UserRole } from '@prisma/client';
 import { randomBytes } from 'crypto';
 import {
@@ -93,11 +94,11 @@ describe('Stage 6.12A.9.1 — Single-primary integrity hardening', () => {
       where: { businessId: business.id, isPrimary: true },
     });
 
+    await expect(svc.deleteLocation(owner(), business.id, primary.id)).rejects.toMatchObject({
+      response: { code: BusinessLocationPrimaryDeleteBlockedCode },
+    });
     await expect(svc.deleteLocation(owner(), business.id, primary.id)).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
-    await expect(svc.deleteLocation(owner(), business.id, primary.id)).rejects.toThrow(
-      /Primary branch cannot be deleted/i,
+      ConflictException,
     );
 
     const primaries = await prisma.businessLocation.findMany({

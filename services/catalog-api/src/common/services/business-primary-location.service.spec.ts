@@ -1,4 +1,5 @@
-import { InternalServerErrorException } from '@nestjs/common';
+import { ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { BusinessLocationPrimaryInvariantBrokenCode } from '../utils/business-location-invariant.util';
 import { BusinessPrimaryLocationService } from './business-primary-location.service';
 import { deterministicPrimaryLocationId } from '../utils/business-primary-location.util';
 
@@ -56,8 +57,11 @@ describe('BusinessPrimaryLocationService (Stage 6.12A.3)', () => {
 
   it('getPrimaryLocationOrThrow fails on missing primary', async () => {
     const tx = mockTx({ primaries: [] });
+    await expect(service.getPrimaryLocationOrThrow(tx as never, 'biz-1')).rejects.toMatchObject({
+      response: { code: BusinessLocationPrimaryInvariantBrokenCode },
+    });
     await expect(service.getPrimaryLocationOrThrow(tx as never, 'biz-1')).rejects.toBeInstanceOf(
-      InternalServerErrorException,
+      ConflictException,
     );
   });
 

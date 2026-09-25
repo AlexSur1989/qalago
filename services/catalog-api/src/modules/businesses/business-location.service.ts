@@ -4,6 +4,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { rethrowLocationDeleteConflict } from '../../common/utils/branch-availability-management.util';
+import {
+  assertDeleteLocationAllowed,
+  assertPrimaryInvariantForSecondaryMutation,
+  countBusinessLocationPrimaryState,
+  lockBusinessAggregateForUpdate,
+} from '../../common/utils/business-location-invariant.util';
 import { clearAdCampaignBranchReferencesBeforeDelete } from '../monetization/utils/campaign-location-context.util';
 import { BusinessPermission, BusinessStatus, Prisma } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
@@ -83,22 +89,37 @@ export class BusinessLocationService {
       null,
     );
 
-    const created = await this.prisma.businessLocation.create({
-      data: {
-        businessId,
-        cityId: dto.cityId,
-        address: dto.address.trim(),
-        latitude: latitude ?? undefined,
-        longitude: longitude ?? undefined,
-        locationSource: dto.locationSource ?? undefined,
-        workHours: dto.workHours ?? undefined,
-        phone: dto.phone ?? undefined,
-        whatsapp: dto.whatsapp ?? undefined,
-        instagram: dto.instagram ?? undefined,
-        website: dto.website ?? undefined,
-        isPrimary: false,
-      },
+    const created = await this.prisma.$transaction(async (tx) => {
+      await lockBusinessAggregateForUpdate(tx, businessId);
+      const counts = await countBusinessLocationPrimaryState(tx, businessId);
+      const isFirstLocation = counts.locationCount === 0;
+      if (!isFirstLocation) {
+        assertPrimaryInvariantForSecondaryMutation(counts);
+      }
+
+      const row = await tx.businessLocation.create({
+        data: {
+          businessId,
+          cityId: dto.cityId,
+          address: dto.address.trim(),
+          latitude: latitude ?? undefined,
+          longitude: longitude ?? undefined,
+          locationSource: dto.locationSource ?? undefined,
+          workHours: dto.workHours ?? undefined,
+          phone: dto.phone ?? undefined,
+          whatsapp: dto.whatsapp ?? undefined,
+          instagram: dto.instagram ?? undefined,
+          website: dto.website ?? undefined,
+          isPrimary: isFirstLocation,
+        },
+      });
+
+      if (isFirstLocation) {
+        await this.primaryLocation.syncBusinessFromPrimaryLocationRecord(tx, row);
+      }
+      return row;
     });
+
     return toBusinessLocationResponse(created);
   }
 
@@ -135,6 +156,11 @@ export class BusinessLocationService {
       this.primaryLocation.shouldSyncBusinessAfterLocationPatch(changedKeys);
 
     const updated = await this.prisma.$transaction(async (tx) => {
+      if (syncBusiness) {
+        await lockBusinessAggregateForUpdate(tx, businessId);
+        const counts = await countBusinessLocationPrimaryState(tx, businessId);
+        assertPrimaryInvariantForSecondaryMutation(counts);
+      }
       const row = await tx.businessLocation.update({
         where: { id: locationId },
         data: {
@@ -166,10 +192,12 @@ export class BusinessLocationService {
       BusinessPermission.BUSINESS_PROFILE_EDIT,
     );
     const location = await this.findScopedLocation(businessId, locationId);
-    if (location.isPrimary) {
-      throw new BadRequestException('Primary branch cannot be deleted');
-    }
+
     await this.prisma.$transaction(async (tx) => {
+      await lockBusinessAggregateForUpdate(tx, businessId);
+      const counts = await countBusinessLocationPrimaryState(tx, businessId);
+      assertDeleteLocationAllowed(counts, location);
+
       await clearAdCampaignBranchReferencesBeforeDelete(tx, businessId, locationId);
       try {
         await tx.businessLocation.delete({ where: { id: locationId } });
@@ -188,9 +216,12 @@ export class BusinessLocationService {
     );
     await this.findScopedLocation(businessId, locationId);
 
-    const result = await this.prisma.$transaction(async (tx) =>
-      this.primaryLocation.promoteLocationToPrimary(tx, businessId, locationId),
-    );
+    const result = await this.prisma.$transaction(async (tx) => {
+      await lockBusinessAggregateForUpdate(tx, businessId);
+      const counts = await countBusinessLocationPrimaryState(tx, businessId);
+      assertPrimaryInvariantForSecondaryMutation(counts);
+      return this.primaryLocation.promoteLocationToPrimary(tx, businessId, locationId);
+    });
 
     return toBusinessLocationResponse(result.location);
   }

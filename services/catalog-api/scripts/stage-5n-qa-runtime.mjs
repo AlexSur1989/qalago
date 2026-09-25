@@ -71,16 +71,27 @@ async function setupUnownedBusiness(categoryId) {
   });
   if (existing) return existing;
 
-  return prisma.business.create({
-    data: {
-      title: `QA Unowned ${slug}`,
-      slug,
-      categoryId,
-      cityId: city.id,
-      address: 'QA Unowned Address 1',
-      status: 'ACTIVE',
-      ownerId: null,
-    },
+  return prisma.$transaction(async (tx) => {
+    const business = await tx.business.create({
+      data: {
+        title: `QA Unowned ${slug}`,
+        slug,
+        categoryId,
+        cityId: city.id,
+        address: 'QA Unowned Address 1',
+        status: 'ACTIVE',
+        ownerId: null,
+      },
+    });
+    await tx.businessLocation.create({
+      data: {
+        businessId: business.id,
+        cityId: city.id,
+        address: business.address,
+        isPrimary: true,
+      },
+    });
+    return business;
   });
 }
 

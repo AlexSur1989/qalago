@@ -1,8 +1,12 @@
 import {
+  ConflictException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import {
+  BusinessLocationPrimaryInvariantBrokenCode,
+} from '../utils/business-location-invariant.util';
 import type { Business, BusinessLocation, Prisma } from '@prisma/client';
 import {
   BusinessPhysicalSnapshot,
@@ -47,14 +51,16 @@ export class BusinessPrimaryLocationService {
   ): Promise<BusinessLocation> {
     const resolved = await this.resolvePrimaryLocation(tx, businessId);
     if (resolved.status === 'missing') {
-      throw new InternalServerErrorException(
-        `Business ${businessId} has no primary BusinessLocation`,
-      );
+      throw new ConflictException({
+        code: BusinessLocationPrimaryInvariantBrokenCode,
+        message: `Business ${businessId} has no primary BusinessLocation`,
+      });
     }
     if (resolved.status === 'ambiguous') {
-      throw new InternalServerErrorException(
-        `Business ${businessId} has ${resolved.count} primary BusinessLocation rows`,
-      );
+      throw new ConflictException({
+        code: BusinessLocationPrimaryInvariantBrokenCode,
+        message: `Business ${businessId} has ${resolved.count} primary BusinessLocation rows`,
+      });
     }
     return resolved.location;
   }
