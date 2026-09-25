@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-25 — 6.12A.9.4.3A Owner primary physical write inversion
+
+- **Status:** **6.12A.9.4.3A PASS — OWNER PRIMARY PHYSICAL WRITE AUTHORITY INVERTED** (overall **A.9.4.3** not closed — **3B/3C/3D** deferred).
+- **Checkpoint (implementation):** _(set at commit)_.
+- **Baseline:** `3a4bf89e2a14813f84b647f41088b3e4b97509f5` (**A.9.4.3** read-only audit closure).
+- **Scope:** **`services/catalog-api`** — owner **`PATCH /businesses/:id`**: primary physical fields authoritative on **primary BusinessLocation** + **`syncBusinessFromPrimaryLocationRecord`**; **Business → primary BL** contact sync unchanged; aggregate lock + primary re-resolution; **`locationSource`** in **`PROFILE_FIELDS`**; focused tests. No schema/public JSON shape/client changes.
+- **Summary:** Multi-city coordinate validation uses **primary BL `cityId`**; mixed business + physical PATCH atomic; concurrency vs **set-primary** tested; **`syncPrimaryFromBusinessRecord`** remains for contact/hours owner PATCH and **3B** transitional paths only (not owner physical authority).
+- **Verified:** focused Jest (**A.3**, **3A**, permissions); **`npm run build`**; **`integrity:business-locations:audit`** read-only **PASS** (`mirrorMismatchCount=0`).
+- **Deferred:** **A.9.4.3B** onboarding/create writer normalization; **A.9.4.3C** seed/dev scripts; **A.9.4.3D** physical QA; **A.9.4.4** / **A.9.4.5**; **F.4**.
+- **Next:** **6.12A.9.4.3B** — onboarding/create writer normalization (not auto-started).
+
+---
+
 ## 2026-09-25 — 6.12A.9.4.2E BusinessLocation physical QA closure
 
 - **Status:** **6.12A.9.4.2E PASS — PHYSICAL QA CLOSED**; **6.12A.9.4.2 PASS — BUSINESSLOCATION & PRIMARY INVARIANTS FINALIZED**.

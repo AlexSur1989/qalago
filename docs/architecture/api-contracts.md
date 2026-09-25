@@ -608,9 +608,11 @@ OWNER `permissions` in response are the full enum (implicit all). MANAGER receiv
 
 ### PATCH /businesses/:id
 
-Owner, manager (field-level permissions), or admin. Body (all optional): `title`, `shortDesc`, `description`, `address`, `latitude`, `longitude`, `phone`, `whatsapp`, `instagram`, `website`, `coverImageUrl`, `workHours`.
+Owner, manager (field-level permissions), or admin. Body (all optional): `title`, `shortDesc`, `description`, `address`, `latitude`, `longitude`, `locationSource`, `phone`, `whatsapp`, `instagram`, `website`, `coverImageUrl`, `workHours`.
 
-Field groups require matching `BusinessPermission`: profile fields → `BUSINESS_PROFILE_EDIT`; `workHours` → `BUSINESS_HOURS_EDIT`. Mixed PATCH requires all relevant permissions.
+Field groups require matching `BusinessPermission`: profile fields (including **`address`**, **`latitude`**, **`longitude`**, **`locationSource`**) → `BUSINESS_PROFILE_EDIT`; `workHours` → `BUSINESS_HOURS_EDIT`. Mixed PATCH requires all relevant permissions.
+
+**Write authority (A.9.4.3A):** request/response JSON unchanged. **`address` / `latitude` / `longitude` / `locationSource`** are applied to the **current primary** `BusinessLocation` inside a **Business** aggregate lock; legacy **`Business`** columns updated via mirror sync. Contact/hours fields still write **`Business`** first, then mirror to primary BL (**A.3**). Coordinate city-bounds validation uses **primary branch `cityId`**, not parent **`Business.cityId`** alone.
 
 ### GET /businesses/recommended/me
 

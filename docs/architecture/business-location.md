@@ -21,17 +21,17 @@ Relationship: **Business 1 → N BusinessLocation**.
 
 - Migration **`20260921190000_stage_6_12a2_business_location_backfill`**: idempotent `INSERT … SELECT` from `Business` where no `BusinessLocation` exists yet.
 - Copies: `cityId`, `address`, lat/lng, `locationSource`, `workHours`, phone/social/website; **`isPrimary = true`**; deterministic `id` prefix `bl` + md5 fragment.
-- **Does not UPDATE `Business`** — legacy physical columns remain authoritative for APIs and map until A.3+.
+- **Does not UPDATE `Business`** — seeds primary **BusinessLocation** rows; legacy **Business** physical columns remain **compatibility mirror** (synced on writes per **A.3** / **A.9.4.3A**).
 - **Geography:** derived on insert via BusinessLocation trigger (not copied from `Business.location`).
 - **Temporary gap (until A.3):** closed in A.3 — see below.
 
 ## Stage 6.12A.3 (primary compatibility & write sync)
 
-- **Transition policy:** legacy `Business` physical columns remain on public API responses; **writes** to those fields and **production creates** keep the **primary** `BusinessLocation` in sync in the **same DB transaction**.
+- **Transition policy:** legacy `Business` physical columns remain on public API responses as **compatibility mirror**; public reads project from **BusinessLocation** (**A.9.3.x**). **Owner PATCH** primary physical authority inverted in **A.9.4.3A** (see below); contact/hours and transitional create paths still use **Business → primary BL** sync where noted.
 - **Synchronized fields:** `cityId`, `address`, `latitude`, `longitude`, `locationSource`, `workHours`, `phone`, `whatsapp`, `instagram`, `website` (brand/plan/taxonomy fields are **not** mirrored).
 - **Central services:** `BusinessPrimaryLocationService` — resolve primary (`isPrimary=true` only; no “first by createdAt” fallback); `createInitialPrimary`; `syncPrimaryFromBusinessRecord`.
 - **Production create paths:** admin `POST /businesses` (import) and business-application **approval** create `Business` + one primary location atomically.
-- **Owner PATCH:** `PATCH /businesses/:id` — when the DTO touches any synchronized physical field, update Business + primary location in one transaction; brand-only patches skip location writes; partial PATCH semantics unchanged (omitted fields not cleared).
+- **Owner PATCH (pre–A.9.4.3A):** `PATCH /businesses/:id` wrote **Business** first, then **`syncPrimaryFromBusinessRecord`**. **A.9.4.3A** inverts **address / latitude / longitude / locationSource** only: authoritative write on **primary BusinessLocation**, then **`syncBusinessFromPrimaryLocationRecord`** onto **Business** mirror; **phone / whatsapp / website / instagram / workHours** remain **Business-level** writes with **Business → primary BL** contact sync. Aggregate **Business** row lock + primary re-resolution inside the transaction (**A.9.4.2B** discipline). Coordinate validation uses **primary `BusinessLocation.cityId`**, not parent **`Business.cityId`**. Brand-only patches skip location writes; partial PATCH semantics unchanged.
 - **Primary resolution errors:** missing or multiple primary rows → controlled internal error on sync paths (no silent repair during ordinary PATCH).
 - **Read layer (A.3):** writes keep primary in sync; **A.9.3.1** public list/detail/favorites **project** top-level physical fields from effective **BusinessLocation** context (primary or `contextLocationId`); **A.9.3.2** discovery SQL (search address predicates, bbox membership, search relevance address tier) uses **BusinessLocation** only; **A.9.3.2b** removed **`Business.latitude/longitude`** from **`GET /businesses`** Prisma geo filters — complete bbox and map readiness use **BL PostGIS / branch coordinate guards**; legacy **Business** columns remain in schema as compatibility storage, not blind read authority for discovery geo/search.
 - **Map / discovery geo (A.7.1+ / A.9.3.2b):** public list/map viewport membership uses **`BusinessLocation.location`** (PostGIS) and branch coordinate guards — **not** legacy **`Business.location`** / **`Business.latitude/longitude`** as filter authority. Write-path triggers still keep primary **`Business`** mirror and primary **`BusinessLocation`** geography aligned on coordinate updates.
@@ -40,7 +40,7 @@ Relationship: **Business 1 → N BusinessLocation**.
 
 - **Endpoints:** `GET/POST/PATCH` under `/businesses/:businessId/locations`, plus `POST …/set-primary` (see [api-contracts.md](./api-contracts.md)).
 - **Business 1 → N locations:** secondary branches may live in **different cities**; **`Business.cityId`** is **home/parent/compatibility city** (mirrors primary when synced) — **not** public discovery city membership (**A.7.9.3A+** uses **`BusinessLocation.cityId`**).
-- **Create:** always `isPrimary=false`; does not copy primary contacts/hours unless provided in body.
+- **Create:** first branch on a zero-location business → **primary** + mirror sync (**A.9.4.2B**); additional branches → **`isPrimary=false`**. Does not copy primary contacts/hours unless provided in body.
 - **PATCH secondary:** branch-only — legacy `Business` and primary row unchanged.
 - **PATCH primary / set-primary / legacy PATCH Business:** bidirectional sync of synchronized physical fields (A.3 service layer); single transaction; no HTTP recursion.
 - **Primary switch:** explicit `set-primary` only (generic PATCH cannot toggle `isPrimary`); partial unique index preserved via unset-old-then-set-new in one transaction.
@@ -155,7 +155,7 @@ Existing invalid rows must be **repaired** before enforcing; production writers 
 - **A.9.4.2B (IMPLEMENTED — catalog-api):** runtime enforcement on owner location API — first **POST** on zero-location Business creates **primary** + mirror sync; **DELETE** blocks last branch and primary (stable **409** codes); **set-primary** / create / delete serialized per Business via **`SELECT … FOR UPDATE`** on **Business**; corrupt zero-primary → **409** `BUSINESS_LOCATION_PRIMARY_INVARIANT_BROKEN` (repair via **2A** `--apply`).
 - **A.9.4.2E (VERIFIED — physical QA):** Business Web + owner API — two-branch display, set-primary persistence (F5), **409** primary delete while secondary exists, **200** secondary delete, sole-branch delete → **409** `BUSINESS_LOCATION_LAST_DELETE_BLOCKED` (**LAST** precedence over **PRIMARY** when branch is both primary and last); integrity auditor green before/after.
 - **A.9.4.2C:** **NOT REQUIRED** for closure (2A tooling + 2B enforcement + partial unique index + physical QA); DB triggers remain **optional / not approved**.
-- **Not implemented:** read-fallback removal; **A.9.4.3+** writer migration / column retirement.
+- **A.9.4.3A (IMPLEMENTED — catalog-api):** owner **`PATCH /businesses/:id`** — primary physical fields (**address**, **latitude**, **longitude**, **locationSource**) authoritative on **primary BusinessLocation**; **Business** mirror via **`syncBusinessFromPrimaryLocationRecord`**; **`locationSource`** requires **`BUSINESS_PROFILE_EDIT`**; concurrency with **set-primary** covered in tests. **Not complete:** **A.9.4.3B/C** onboarding/create/seed paths; read-fallback removal; column retirement.
 
 ### Cross-city business rule
 
@@ -201,7 +201,10 @@ Existing invalid rows must be **repaired** before enforcing; production writers 
 |----|--------|
 | **A.9.4.1** | Non-discovery city authority hardening — admin scope/display, monetization campaign city default, analytics fallback, dedupe direction, public **`cityId`** projection |
 | **A.9.4.2** | Location/primary invariant hardening — ≥1 location, exactly one primary, repair/audit, create/delete/promote guarantees |
-| **A.9.4.3** | API/writer migration — derive compatibility DTO physical fields from BL; move physical writes toward BL; preserve client JSON |
+| **A.9.4.3A** | **IMPLEMENTED** — owner legacy PATCH physical authority inverted (BL → Business mirror) |
+| **A.9.4.3B–C** | Onboarding/create/seed writer normalization (transitional **Business → BL** paths) |
+| **A.9.4.3D** | Physical QA for full **A.9.4.3** closure |
+| **A.9.4.3** (overall) | API/writer migration — derive compatibility DTO physical fields from BL; preserve client JSON |
 | **A.9.4.4** | Legacy Business geo storage retirement — triggers/indexes, `location`, lat/lng, `locationSource`, `address` when blockers cleared |
 | **A.9.4.5** | **`Business.cityId`** final retirement/derivation — only after admin, monetization, analytics, onboarding, dedupe, imports, API compatibility no longer require stored parent city |
 

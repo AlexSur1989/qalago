@@ -61,6 +61,11 @@ import {
   isOptionalBusinessCoordinatePairValid,
 } from '../../common/utils/business-coordinates.util';
 import { assertBusinessCoordinatesWithinCity } from '../../common/utils/city-geocoding-persistence.util';
+import { lockBusinessAggregateForUpdate } from '../../common/utils/business-location-invariant.util';
+import {
+  patchTouchesBusinessToPrimaryContactSync,
+  patchTouchesPrimaryPhysicalFields,
+} from '../../common/utils/business-primary-location.util';
 import { BusinessPublicContentService } from './business-public-content.service';
 import { BusinessSubcategoryService } from './business-subcategory.service';
 import { SubcategoriesService } from '../categories/subcategories.service';
@@ -1246,56 +1251,94 @@ export class BusinessesService {
     const access = await this.businessAccess.resolveAccess(user, id);
     const changedKeys = changedFieldsFromDto(dto as Record<string, unknown>);
 
-    const { subcategoryIds, ...patch } = dto;
+    const { subcategoryIds, address, latitude: dtoLatitude, longitude: dtoLongitude, locationSource, ...businessLevelPatch } =
+      dto;
 
-    let latitude = dto.latitude;
-    let longitude = dto.longitude;
-    if (dto.latitude !== undefined || dto.longitude !== undefined) {
-      const mergedLat =
-        dto.latitude !== undefined
-          ? dto.latitude
-          : business.latitude != null
-            ? Number(business.latitude)
-            : undefined;
-      const mergedLng =
-        dto.longitude !== undefined
-          ? dto.longitude
-          : business.longitude != null
-            ? Number(business.longitude)
-            : undefined;
-      if (!isOptionalBusinessCoordinatePairValid(mergedLat, mergedLng)) {
-        throw new BadRequestException(
-          'latitude and longitude must be provided together and form a valid coordinate pair',
-        );
-      }
-      if (mergedLat !== undefined && mergedLng !== undefined) {
-        assertValidBusinessCoordinatePair(mergedLat, mergedLng);
-        await assertBusinessCoordinatesWithinCity(
-          this.prisma,
-          business.cityId,
-          mergedLat,
-          mergedLng,
-        );
-        latitude = mergedLat;
-        longitude = mergedLng;
-      }
-    }
-
-    const syncPrimary = this.primaryLocation.shouldSyncAfterPatch(changedKeys);
+    const touchesPrimaryPhysical = patchTouchesPrimaryPhysicalFields(changedKeys);
+    const syncContactsToPrimary = patchTouchesBusinessToPrimaryContactSync(changedKeys);
+    const needsAggregateLock = touchesPrimaryPhysical || syncContactsToPrimary;
 
     const updated = await this.prisma.$transaction(async (tx) => {
-      const row = await tx.business.update({
-        where: { id },
-        data: {
-          ...patch,
-          latitude: latitude !== undefined ? latitude : undefined,
-          longitude: longitude !== undefined ? longitude : undefined,
-        },
-        include: businessDetailInclude,
-      });
-      if (syncPrimary) {
+      if (needsAggregateLock) {
+        await lockBusinessAggregateForUpdate(tx, id);
+      }
+
+      let primary =
+        needsAggregateLock
+          ? await this.primaryLocation.getPrimaryLocationOrThrow(tx, id)
+          : null;
+
+      let resolvedLatitude: number | undefined;
+      let resolvedLongitude: number | undefined;
+      if (touchesPrimaryPhysical && (dtoLatitude !== undefined || dtoLongitude !== undefined)) {
+        const mergedLat =
+          dtoLatitude !== undefined
+            ? dtoLatitude
+            : primary!.latitude != null
+              ? Number(primary!.latitude)
+              : undefined;
+        const mergedLng =
+          dtoLongitude !== undefined
+            ? dtoLongitude
+            : primary!.longitude != null
+              ? Number(primary!.longitude)
+              : undefined;
+        if (!isOptionalBusinessCoordinatePairValid(mergedLat, mergedLng)) {
+          throw new BadRequestException(
+            'latitude and longitude must be provided together and form a valid coordinate pair',
+          );
+        }
+        if (mergedLat !== undefined && mergedLng !== undefined) {
+          assertValidBusinessCoordinatePair(mergedLat, mergedLng);
+          await assertBusinessCoordinatesWithinCity(
+            tx as never,
+            primary!.cityId,
+            mergedLat,
+            mergedLng,
+          );
+          resolvedLatitude = mergedLat;
+          resolvedLongitude = mergedLng;
+        }
+      }
+
+      const businessUpdateData: Prisma.BusinessUpdateInput = { ...businessLevelPatch };
+      const hasBusinessLevelFields = Object.entries(businessLevelPatch).some(
+        ([, value]) => value !== undefined,
+      );
+
+      let row = hasBusinessLevelFields
+        ? await tx.business.update({
+            where: { id },
+            data: businessUpdateData,
+            include: businessDetailInclude,
+          })
+        : await tx.business.findUniqueOrThrow({
+            where: { id },
+            include: businessDetailInclude,
+          });
+
+      if (syncContactsToPrimary) {
         await this.primaryLocation.syncPrimaryFromBusinessRecord(tx, row);
       }
+
+      if (touchesPrimaryPhysical) {
+        primary = await this.primaryLocation.getPrimaryLocationOrThrow(tx, id);
+        const updatedPrimary = await tx.businessLocation.update({
+          where: { id: primary.id },
+          data: {
+            address: address !== undefined ? address.trim() : undefined,
+            latitude: resolvedLatitude !== undefined ? resolvedLatitude : undefined,
+            longitude: resolvedLongitude !== undefined ? resolvedLongitude : undefined,
+            locationSource: locationSource !== undefined ? locationSource : undefined,
+          },
+        });
+        await this.primaryLocation.syncBusinessFromPrimaryLocationRecord(tx, updatedPrimary);
+        row = await tx.business.findUniqueOrThrow({
+          where: { id },
+          include: businessDetailInclude,
+        });
+      }
+
       return row;
     });
 

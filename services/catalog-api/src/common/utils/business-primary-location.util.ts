@@ -35,6 +35,31 @@ export function patchTouchesSynchronizedPhysicalFields(changedKeys: string[]): b
   return changedKeys.some((k) => BUSINESS_LOCATION_SYNC_PATCH_KEYS.has(k));
 }
 
+/** Owner PATCH fields whose authority is primary BusinessLocation (Stage 6.12A.9.4.3A). */
+export const PRIMARY_PHYSICAL_BUSINESS_PATCH_KEYS = new Set<string>([
+  'address',
+  'latitude',
+  'longitude',
+  'locationSource',
+]);
+
+/** Owner PATCH contact/hours fields that still write Business first, then mirror to primary BL. */
+export const BUSINESS_TO_PRIMARY_CONTACT_SYNC_PATCH_KEYS = new Set<string>([
+  'workHours',
+  'phone',
+  'whatsapp',
+  'instagram',
+  'website',
+]);
+
+export function patchTouchesPrimaryPhysicalFields(changedKeys: string[]): boolean {
+  return changedKeys.some((k) => PRIMARY_PHYSICAL_BUSINESS_PATCH_KEYS.has(k));
+}
+
+export function patchTouchesBusinessToPrimaryContactSync(changedKeys: string[]): boolean {
+  return changedKeys.some((k) => BUSINESS_TO_PRIMARY_CONTACT_SYNC_PATCH_KEYS.has(k));
+}
+
 /** PATCH keys on UpdateBusinessLocationDto that trigger primary ↔ Business sync. */
 export const BUSINESS_LOCATION_API_SYNC_PATCH_KEYS = new Set<string>([
   'cityId',

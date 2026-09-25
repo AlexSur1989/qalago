@@ -11,6 +11,7 @@ export const PROFILE_FIELDS = new Set([
   'address',
   'latitude',
   'longitude',
+  'locationSource',
   'phone',
   'whatsapp',
   'instagram',

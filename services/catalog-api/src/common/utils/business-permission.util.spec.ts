@@ -32,4 +32,9 @@ describe('business-permission.util', () => {
     const perms = getRequiredPermissionsForPatch({ workHours: { mon: '9-18' } });
     expect(perms).toEqual([BusinessPermission.BUSINESS_HOURS_EDIT]);
   });
+
+  it('getRequiredPermissionsForPatch locationSource requires profile edit', () => {
+    const perms = getRequiredPermissionsForPatch({ locationSource: 'MANUAL' as never });
+    expect(perms).toEqual([BusinessPermission.BUSINESS_PROFILE_EDIT]);
+  });
 });
