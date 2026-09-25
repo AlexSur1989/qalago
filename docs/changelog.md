@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-25 — 6.12A.9.4.4B Runtime Business geo read cutover
+
+- **Status:** **6.12A.9.4.4B PASS — RUNTIME BUSINESS GEO READS CUT OVER TO BUSINESSLOCATION** (overall **A.9.4.4** not closed — **4.4C** mirror/column retirement remains).
+- **Checkpoint (implementation):** `34032806ae08db5868c1a8d8fb78d31d95f8ebac`.
+- **Baseline:** `df9a0d1017cc8ddfddfb6428735c212ee1437dbf` (**A.9.4.4A** docs alignment).
+- **Scope:** **`services/catalog-api`** runtime read paths — list/detail/discovery/search/nearby/favorites/promotion feed/ad business cards; **`buildEffectivePhysicalDto`** / public physical normalization; Prisma selects drop legacy **Business** physical columns where outputs are BL-projected. No schema/migration, no mirror write removal, no **`Business.cityId`** retirement, no map renderer changes, no client changes.
+- **Summary:** Production runtime physical fields (**address**, **latitude**, **longitude**, effective **cityId** on physical DTOs) resolve from **BusinessLocation** (primary / **contextLocationId** / detail **locationId**). Legacy **Business** geo is not an authoritative fallback (**fail-closed** empty geo when no branch). Public JSON shape preserved; discovery **Business-grain**, map **BL-grain**, favorites **Business-grain** unchanged. Transitional mirror writes and integrity/repair tooling still read **Business** mirror for comparison until **4.4C**.
+- **Verified:** focused Jest (physical normalization util, effective physical, **A.9.3.1** integration, discovery **3.2**, promotions **7.8.3**, ad serving location, map spatial, **businesses.service** / membership); **`npm run build`**; **`integrity:business-locations:audit`** read-only **PASS** (109/110, `mirrorMismatchCount=0`); full suite **190/198** pass (**8** pre-existing env/DB/flaky failures unrelated to **4.4B**).
+- **Deferred:** **A.9.4.4C** — remove mirror writes + legacy column migration; **A.9.4.5** **`Business.cityId`**; application/claim dedupe still compares **Business.address** (non-display).
+- **Next:** **6.12A.9.4.4C** — mirror removal / column retirement (not auto-started).
+
+---
+
 ## 2026-09-25 — 6.12A.9.4.4A Rogue Business geo writer retirement
 
 - **Status:** **6.12A.9.4.4A PASS — ROGUE BUSINESS GEO WRITER RETIRED** (overall **A.9.4.4** not closed — **4.4B** read cutover remains).
