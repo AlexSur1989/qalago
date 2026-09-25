@@ -9,7 +9,7 @@
 ## 2026-09-25 — 6.12A.9.4.3A Owner primary physical write inversion
 
 - **Status:** **6.12A.9.4.3A PASS — OWNER PRIMARY PHYSICAL WRITE AUTHORITY INVERTED** (overall **A.9.4.3** not closed — **3B/3C/3D** deferred).
-- **Checkpoint (implementation):** _(set at commit)_.
+- **Checkpoint (implementation):** `51e0b5bb502930ff43adf0e7f875b95137a12ae4`.
 - **Baseline:** `3a4bf89e2a14813f84b647f41088b3e4b97509f5` (**A.9.4.3** read-only audit closure).
 - **Scope:** **`services/catalog-api`** — owner **`PATCH /businesses/:id`**: primary physical fields authoritative on **primary BusinessLocation** + **`syncBusinessFromPrimaryLocationRecord`**; **Business → primary BL** contact sync unchanged; aggregate lock + primary re-resolution; **`locationSource`** in **`PROFILE_FIELDS`**; focused tests. No schema/public JSON shape/client changes.
 - **Summary:** Multi-city coordinate validation uses **primary BL `cityId`**; mixed business + physical PATCH atomic; concurrency vs **set-primary** tested; **`syncPrimaryFromBusinessRecord`** remains for contact/hours owner PATCH and **3B** transitional paths only (not owner physical authority).
