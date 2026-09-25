@@ -8,8 +8,8 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | _(see `git rev-parse HEAD`)_ — **A.9.4.3C** implementation |
-| **A.9.4.3C implementation SHA** | _(see changelog)_ |
+| **Repo HEAD (current)** | `91284804547a78c1b4b6521ffe648e63508c2fe9` — **A.9.4.3C** (+ docs follow-up pending) |
+| **A.9.4.3C implementation SHA** | `91284804547a78c1b4b6521ffe648e63508c2fe9` |
 | **A.9.4.3B implementation SHA** | `cde02e6d0faee3b5b6831ba479d6f4dcdff14b17` |
 | **A.9.4.3A implementation SHA** | `51e0b5bb502930ff43adf0e7f875b95137a12ae4` |
 | **A.9.4.2B implementation SHA** | `07e0a8cdc41c72f53821e57ed892337f5d886f05` |

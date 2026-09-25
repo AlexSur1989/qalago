@@ -9,7 +9,7 @@
 ## 2026-09-25 — 6.12A.9.4.3C Seed / dev writer normalization
 
 - **Status:** **6.12A.9.4.3C PASS — SEED / DEV PHYSICAL WRITERS NORMALIZED** (overall **A.9.4.3** not closed — **3D** physical QA remains).
-- **Checkpoint (implementation):** _(set at commit)_.
+- **Checkpoint (implementation):** `91284804547a78c1b4b6521ffe648e63508c2fe9`.
 - **Baseline:** `371a2a341666e61723bea81a7bda13eaf4dc6e35` (**A.9.4.3B** docs closure).
 - **Scope:** **`prisma/seed.ts`**, **`scripts/stage-5n-qa-runtime.mjs`**, shared **`business-primary-location-aggregate.util.ts`** (production service delegates unchanged semantics); idempotency unit tests. No production API/schema changes.
 - **Summary:** Tracked seed upserts use **`upsertSeedBusinessWithPrimaryMirrorInTx`** (primaryPhysical → primary BL → mirror); re-seed updates existing primary without duplicate branches; corrupt multi-primary fails with repair guidance. **5N QA** unowned business create uses **`createBusinessWithInitialPrimaryInTx`**. Production writers unchanged (**3A/3B**). Intentional corruption/repair fixtures exempt.
