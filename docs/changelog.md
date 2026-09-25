@@ -9,7 +9,7 @@
 ## 2026-09-25 — 6.12A.9.4.2E BusinessLocation physical QA closure
 
 - **Status:** **6.12A.9.4.2E PASS — PHYSICAL QA CLOSED**; **6.12A.9.4.2 PASS — BUSINESSLOCATION & PRIMARY INVARIANTS FINALIZED**.
-- **Checkpoint (docs closure):** *(recorded on commit)*.
+- **Checkpoint (docs closure):** `b4ada073289c528e28cdd311a9adc7c68d39ed20`.
 - **Baseline (pre-fixture docs):** `2e6a10e35ee7f3e3bdc10c1d9a020ce2cb07c8ea` (**2B** docs closure).
 - **2B implementation checkpoint (unchanged):** `07e0a8cdc41c72f53821e57ed892337f5d886f05`.
 - **Scope:** Physical/manual QA only — Business Web + catalog-api owner location API; fixture **`QA A942E INVARIANT PHYSICAL`** (`infra/local-backups/a942e-invariant-physical-*`, local/untracked); cleanup restored pre-insert counts. **No product-code changes.**
