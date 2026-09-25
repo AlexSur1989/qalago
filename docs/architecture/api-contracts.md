@@ -585,7 +585,7 @@ OWNER `permissions` in response are the full enum (implicit all). MANAGER receiv
 
 **Target invariant (committed DB state):** every **Business** has **≥1** `BusinessLocation` and **exactly one** `isPrimary=true` (DB partial unique enforces **≤1** primary only).
 
-**CLI (`services/catalog-api`):** `npm run integrity:business-locations` — default **DRY_RUN** (read-only plan); `--audit-only` for CI gate; `--apply` mutates only when explicitly passed. Does **not** change public REST behavior (**A.9.4.2B** enforcement deferred).
+**CLI (`services/catalog-api`):** `npm run integrity:business-locations` — default **DRY_RUN** (read-only plan); `--audit-only` for CI gate; `--apply` mutates only when explicitly passed. Complements **A.9.4.2B** runtime API enforcement.
 
 ### Business locations (Stage 6.12A.4 — management API)
 
@@ -597,10 +597,10 @@ OWNER `permissions` in response are the full enum (implicit all). MANAGER receiv
 |--------|------|---------------------|-------|
 | GET | `/businesses/:businessId/locations` | Active business access (OWNER/MANAGER/ADMIN) | `{ items: BusinessLocation[] }`; order: primary first, then `createdAt`, `id`. |
 | GET | `/businesses/:businessId/locations/:locationId` | Same | 404 if location not under `:businessId`. |
-| POST | `/businesses/:businessId/locations` | `BUSINESS_PROFILE_EDIT` | Body: `cityId`, `address`, optional coordinates/`locationSource`/`workHours`/contacts. Creates **`isPrimary=false`**; does not change legacy `Business` physical fields. Cross-city allowed. |
+| POST | `/businesses/:businessId/locations` | `BUSINESS_PROFILE_EDIT` | Body: `cityId`, `address`, optional coordinates/`locationSource`/`workHours`/contacts. **Zero** existing branches → creates **primary** (`isPrimary=true`) and syncs legacy **Business** mirror (**A.9.4.2B**); otherwise **secondary** (`isPrimary=false`, requires exactly one primary already). Cross-city allowed. Aggregate lock on **Business**. |
 | PATCH | `/businesses/:businessId/locations/:locationId` | Field-level: profile fields → `BUSINESS_PROFILE_EDIT`; `workHours` → `BUSINESS_HOURS_EDIT` | Partial PATCH. **`isPrimary` not accepted.** Primary row: updates location + legacy `Business` physical fields atomically. Secondary: updates location only. |
-| POST | `/businesses/:businessId/locations/:locationId/set-primary` | `BUSINESS_PROFILE_EDIT` | Transaction: unset old primary, set new primary, mirror physical fields onto `Business`. Idempotent if already primary. |
-| DELETE | `/businesses/:businessId/locations/:locationId` | `BUSINESS_PROFILE_EDIT` | **Non-primary only.** **409** `BUSINESS_LOCATION_DELETE_BLOCKED` when branch-scoped references exist (catalog/promotion branch assignments, branch media, etc.). Owner must clear assignments first. |
+| POST | `/businesses/:businessId/locations/:locationId/set-primary` | `BUSINESS_PROFILE_EDIT` | Transaction: unset old primary, set new primary, mirror physical fields onto `Business`. Idempotent if already primary. **409** `BUSINESS_LOCATION_PRIMARY_INVARIANT_BROKEN` when invariant corrupt (use **2A** repair). Aggregate lock on **Business**. |
+| DELETE | `/businesses/:businessId/locations/:locationId` | `BUSINESS_PROFILE_EDIT` | **Secondary only** when another branch remains. **409** `BUSINESS_LOCATION_LAST_DELETE_BLOCKED` (sole surviving branch). **409** `BUSINESS_LOCATION_PRIMARY_DELETE_BLOCKED` (primary while other branches exist). **409** `BUSINESS_LOCATION_DELETE_BLOCKED` when branch-scoped references exist. Same transaction + aggregate lock. |
 
 **Response DTO (`BusinessLocation`):** `id`, `businessId`, `cityId`, `address`, `latitude`, `longitude`, `locationSource`, `workHours`, `phone`, `whatsapp`, `instagram`, `website`, `isPrimary`, `createdAt`, `updatedAt` (no raw PostGIS geography).
 

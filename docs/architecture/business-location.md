@@ -152,7 +152,8 @@ Existing invalid rows must be **repaired** before enforcing; production writers 
 - **CLI (default DRY_RUN, no writes):** from `services/catalog-api` — `npm run integrity:business-locations` or `node scripts/dev/business-location-integrity.mjs`; **`--audit-only`** concise CI gate (exit **1** when violations); **`--apply`** explicit repair only.
 - **Repairs:** zero-primary → promote oldest `BusinessLocation` (`createdAt ASC`, `id ASC`) + **`syncBusinessFromPrimaryLocationRecord`**; zero-location → **`createInitialPrimary`** when `Business.cityId` + non-empty `address` (+ valid coordinate pair or both null); multi-primary → **MANUAL_REMEDIATION** (not auto-fixed in 2A).
 - **Legacy auditor:** `node scripts/dev/audit-primary-integrity.mjs` (aggregate counts; **`pass`** now includes zero-location).
-- **Not in 2A:** service/API enforcement (**2B**), DB triggers (**2C** optional / not approved).
+- **A.9.4.2B (IMPLEMENTED — catalog-api):** runtime enforcement on owner location API — first **POST** on zero-location Business creates **primary** + mirror sync; **DELETE** blocks last branch and primary (stable **409** codes); **set-primary** / create / delete serialized per Business via **`SELECT … FOR UPDATE`** on **Business**; corrupt zero-primary → **409** `BUSINESS_LOCATION_PRIMARY_INVARIANT_BROKEN` (repair via **2A** `--apply`).
+- **Not implemented:** DB triggers (**2C** optional / not approved); read-fallback removal deferred until **2E** / closure.
 
 ### Cross-city business rule
 

@@ -8,15 +8,15 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `9162184524250da2166ef13b6d1b7388f739398d` — **A.9.4.2A** docs closure |
+| **Repo HEAD (current)** | `07e0a8cdc41c72f53821e57ed892337f5d886f05` — **2B** impl (+ docs follow-up pending) |
+| **A.9.4.2B implementation SHA** | `07e0a8cdc41c72f53821e57ed892337f5d886f05` |
 | **A.9.4.2A implementation SHA** | `7909260e0b9c1a99fdb2fb0455d1e5a532d5c8bd` |
-| **A.9.4.1B implementation SHA** | `38d2a83b1a71fe4eaec23fec2a04467964b7cbed` |
-| **Last completed stage** | **6.12A.9.4.2A PASS** — BusinessLocation integrity auditor & repair tooling |
-| **Last product implementation** | **6.12A.9.4.2A** — DRY_RUN/`--apply` integrity CLI + repair util |
-| **Prior** | **6.12A.9.4.1** city context; **6.12A.9.4.2** read-only audit |
-| **A.9.4.2B / 2C** | **NOT STARTED** (service enforcement / DB trigger optional) |
-| **Physical QA pending** | — |
-| **Next agreed development action** | **6.12A.9.4.2B** service-enforcement scope (not auto-started) |
+| **Last completed stage** | **6.12A.9.4.2B PASS** — runtime invariant enforcement (physical QA pending) |
+| **Last product implementation** | **6.12A.9.4.2B** — location API aggregate lock + delete/create guards |
+| **Prior** | **6.12A.9.4.2A** integrity CLI; **6.12A.9.4.1** city context |
+| **A.9.4.2C** | **NOT APPROVED / NOT STARTED** |
+| **Physical QA pending** | **6.12A.9.4.2E** minimal owner branch API QA |
+| **Next agreed development action** | **2E physical QA** or **A.9.4.2 closure review** (not auto-started) |
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 
@@ -206,7 +206,8 @@ Future architecture should allow **backend/admin-central configuration** of cons
 - **A.9.4.1A** — Admin BL-presence visibility + **`assertBusinessParentCityInAdminScope`** owner-route guard **IMPLEMENTED** (catalog-api).
 - **A.9.4.1B** — campaign city, analytics attribution, BL dedupe, public **`cityId`** projection **IMPLEMENTED** (catalog-api).
 - **A.9.4.2A** — integrity auditor + repair CLI **IMPLEMENTED** (catalog-api).
-- **A.9.4.2B+** / **A.9.4.3–A.9.4.5** — service enforcement, writer migration, column retirement **NOT IMPLEMENTED**.
+- **A.9.4.2B** — runtime location invariant enforcement **IMPLEMENTED** (catalog-api).
+- **A.9.4.2C+** / **A.9.4.3–A.9.4.5** — DB trigger (optional), writer migration, column retirement **NOT IMPLEMENTED**.
 - **F.4** — Consumer Web business/branch URLs & SEO; **does not require** A.9.4 DB column removal (**A.9.4.0** gate); not started.
 - Post **6.12A:** User contour audit, Business Web owner contour, Admin Web contour, Admin Catalog/CMS, centralized Home config, Catalog Import, QalaGo AI, remaining Consumer Web, production monetization, analytics UX, role-based E2E, security/legal/release — **not** current track unless explicitly staged.
 

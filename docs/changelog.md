@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-09-25 — 6.12A.9.4.2B BusinessLocation runtime invariant enforcement
+
+- **Status:** **6.12A.9.4.2B PASS — RUNTIME INVARIANTS ENFORCED** (physical QA pending per closure policy).
+- **Checkpoint (implementation):** `07e0a8cdc41c72f53821e57ed892337f5d886f05`.
+- **Baseline:** `0c366ebdfedf134fc7aa97248e677d3348592d13` (**2A** docs); impl ancestor **`7909260…`**.
+- **Scope:** **`services/catalog-api`** — `BusinessLocationService` aggregate locking, first-location primary + mirror, delete guards + stable **409** codes, primary-service invariant errors; **`stage-5n-qa-runtime.mjs`** minimal primary BL on create; tests. No schema/migration/trigger/Business Web redesign.
+- **Summary:** Production location mutations cannot commit new zero-primary / last-delete states; **2A** remains repair path for existing corruption; **2C** not implemented.
+- **Deferred:** **6.12A.9.4.2E** physical QA; read-fallback removal; **A.9.4.3**; **F.4**.
+- **Next:** **2E physical QA** or **A.9.4.2 closure review** (agree before starting).
+
+---
+
 ## 2026-09-25 — 6.12A.9.4.2A BusinessLocation integrity auditor & repair tooling
 
 - **Status:** **6.12A.9.4.2A PASS — INTEGRITY TOOLING READY**.
