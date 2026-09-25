@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-09-25 — 6.12A.9.4.2E BusinessLocation physical QA closure
+
+- **Status:** **6.12A.9.4.2E PASS — PHYSICAL QA CLOSED**; **6.12A.9.4.2 PASS — BUSINESSLOCATION & PRIMARY INVARIANTS FINALIZED**.
+- **Checkpoint (docs closure):** *(recorded on commit)*.
+- **Baseline (pre-fixture docs):** `2e6a10e35ee7f3e3bdc10c1d9a020ce2cb07c8ea` (**2B** docs closure).
+- **2B implementation checkpoint (unchanged):** `07e0a8cdc41c72f53821e57ed892337f5d886f05`.
+- **Scope:** Physical/manual QA only — Business Web + catalog-api owner location API; fixture **`QA A942E INVARIANT PHYSICAL`** (`infra/local-backups/a942e-invariant-physical-*`, local/untracked); cleanup restored pre-insert counts. **No product-code changes.**
+- **Summary:** OWNER OTP login **PASS**; two-branch list **PASS**; set **L2** primary **PASS**; F5 persistence **PASS**; DELETE primary while two branches → **409** `BUSINESS_LOCATION_PRIMARY_DELETE_BLOCKED` **PASS**; DELETE secondary **L1** → **200** **PASS**; DELETE sole remaining **L2** → **409** `BUSINESS_LOCATION_LAST_DELETE_BLOCKED` with **LAST** precedence over **PRIMARY** **PASS**; `integrity:business-locations:audit` **PASS** throughout; fixture cleanup idempotent after **L1** already removed in QA; post-cleanup counts **Business 109**, **ACTIVE 37**, **BL 110**, **multi-branch 1**, **primary 109**, **Users 24**, **memberships 40**.
+- **2C:** **NOT REQUIRED** — **2A** audit/repair, **2B** aggregate lock + partial unique index, concurrency tests, and **2E** physical QA green; no new committed-state invariant gap observed.
+- **Deferred:** **A.9.4.3** writer-migration audit/implementation; **F.4**; read-fallback removal; **2C** DB trigger (not approved).
+- **Next:** **6.12A.9.4.3 READ-ONLY writer-migration audit** (agree before start; **not auto-started**).
+
+---
+
 ## 2026-09-25 — 6.12A.9.4.2B BusinessLocation runtime invariant enforcement
 
 - **Status:** **6.12A.9.4.2B PASS — RUNTIME INVARIANTS ENFORCED** (physical QA pending per closure policy).

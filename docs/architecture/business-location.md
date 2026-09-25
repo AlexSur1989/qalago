@@ -153,7 +153,9 @@ Existing invalid rows must be **repaired** before enforcing; production writers 
 - **Repairs:** zero-primary → promote oldest `BusinessLocation` (`createdAt ASC`, `id ASC`) + **`syncBusinessFromPrimaryLocationRecord`**; zero-location → **`createInitialPrimary`** when `Business.cityId` + non-empty `address` (+ valid coordinate pair or both null); multi-primary → **MANUAL_REMEDIATION** (not auto-fixed in 2A).
 - **Legacy auditor:** `node scripts/dev/audit-primary-integrity.mjs` (aggregate counts; **`pass`** now includes zero-location).
 - **A.9.4.2B (IMPLEMENTED — catalog-api):** runtime enforcement on owner location API — first **POST** on zero-location Business creates **primary** + mirror sync; **DELETE** blocks last branch and primary (stable **409** codes); **set-primary** / create / delete serialized per Business via **`SELECT … FOR UPDATE`** on **Business**; corrupt zero-primary → **409** `BUSINESS_LOCATION_PRIMARY_INVARIANT_BROKEN` (repair via **2A** `--apply`).
-- **Not implemented:** DB triggers (**2C** optional / not approved); read-fallback removal deferred until **2E** / closure.
+- **A.9.4.2E (VERIFIED — physical QA):** Business Web + owner API — two-branch display, set-primary persistence (F5), **409** primary delete while secondary exists, **200** secondary delete, sole-branch delete → **409** `BUSINESS_LOCATION_LAST_DELETE_BLOCKED` (**LAST** precedence over **PRIMARY** when branch is both primary and last); integrity auditor green before/after.
+- **A.9.4.2C:** **NOT REQUIRED** for closure (2A tooling + 2B enforcement + partial unique index + physical QA); DB triggers remain **optional / not approved**.
+- **Not implemented:** read-fallback removal; **A.9.4.3+** writer migration / column retirement.
 
 ### Cross-city business rule
 
