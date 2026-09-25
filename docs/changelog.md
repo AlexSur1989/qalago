@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-25 — 6.12A.9.4.4A Rogue Business geo writer retirement
+
+- **Status:** **6.12A.9.4.4A PASS — ROGUE BUSINESS GEO WRITER RETIRED** (overall **A.9.4.4** not closed — **4.4B** read cutover remains).
+- **Checkpoint (implementation):** `cc7c0beead14b980a8e9db11c8346ca5eeea7141`.
+- **Baseline:** `52079be146e00b35c3b2b3034d5b5415a712984c` (A.9.4.3 docs SHA alignment).
+- **Scope:** **`scripts/sync-businesses-visibility.ts`**, **`src/scripts/sync-businesses-visibility.util.ts`**, unit tests. No schema/migration, no public read-path changes, no **BusinessLocation** geo repair added, **A.9.4.3** mirror writers unchanged.
+- **Summary:** Dev **`npm run sync:businesses`** / root **`npm run dev:api:sync`** are **visibility/status-only** (non-**ACTIVE** → **ACTIVE**). Removed legacy city-center **Business** lat/lng backfill. Guardrail **`assertVisibilitySyncBusinessUpdateData`** blocks geo keys on planned updates. No **BusinessLocation** physical writes from this command.
+- **Integrity (audit-only, dev DB):** before/after **PASS** — `businessCount` 109, `locationCount` 110, `zeroLocationCount` 0, `zeroPrimaryCount` 0, `multiPrimaryCount` 0, `mirrorMismatchCount` 0, `failedCount` 0.
+- **Deferred:** **A.9.4.4B** runtime read cutover; **A.9.4.4C** mirror removal + column migration; **A.9.4.5** **`Business.cityId`**; transitional mirror/bootstrap/repair writers remain by design.
+- **Next:** **6.12A.9.4.4B** — runtime read cutover (not auto-started).
+
+---
+
 ## 2026-09-25 — 6.12A.9.4.3D Physical writer QA closure
 
 - **Status:** **6.12A.9.4.3D PASS — PHYSICAL WRITER QA FINALIZED**; **6.12A.9.4.3 CLOSED — BUSINESS PHYSICAL WRITERS MIGRATED TO BUSINESSLOCATION AUTHORITY**.
@@ -2724,7 +2737,7 @@
 
 **Сделано**
 - Mobile: если GPS дальше 25 км от центра выбранного города — поиск от **центра города**
-- Скрипт `npm run dev:api:sync` — активирует PENDING и проставляет координаты из центра города
+- Скрипт `npm run dev:api:sync` — активирует PENDING (status-only; **A.9.4.4A** убрал backfill координат на **Business**)
 - Admin: колонка **«Приложение»** — «В приложении» / «Не в приложении»
 - Dev: `npm run dev:restart`, `scripts/dev/restart-all.ps1`, таблица портов в SETUP.md
 
