@@ -1,6 +1,7 @@
 /**
- * READ-ONLY primary integrity audit (Stage 6.12A.9.1).
+ * READ-ONLY primary integrity audit (Stage 6.12A.9.1 / A.9.4.2A counts).
  * No INSERT/UPDATE/DELETE. Exit 0 = PASS, 1 = FAIL or error.
+ * For repair planning use: node scripts/dev/business-location-integrity.mjs
  *
  * Usage (from services/catalog-api):
  *   node scripts/dev/audit-primary-integrity.mjs

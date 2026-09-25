@@ -19,7 +19,9 @@
     "bootstrap:super-admin": "ts-node --transpile-only scripts/bootstrap-super-admin.ts",
     "staff:mfa:emergency-reset": "ts-node --transpile-only scripts/staff-mfa-emergency-reset.ts",
     "seed:monetization-demo": "ts-node --transpile-only scripts/seed-monetization-demo.ts",
-    "sync:businesses": "ts-node --transpile-only scripts/sync-businesses-visibility.ts"
+    "sync:businesses": "ts-node --transpile-only scripts/sync-businesses-visibility.ts",
+    "integrity:business-locations": "node scripts/dev/business-location-integrity.mjs",
+    "integrity:business-locations:audit": "node scripts/dev/business-location-integrity.mjs --audit-only"
   },
   "prisma": {
     "seed": "ts-node --transpile-only prisma/seed.ts"
