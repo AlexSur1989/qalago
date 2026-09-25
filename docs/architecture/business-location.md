@@ -147,6 +147,13 @@ Relationship: **Business 1 → N BusinessLocation**.
 
 Existing invalid rows must be **repaired** before enforcing; production writers must guarantee invariants before removing Business physical fallback.
 
+### Integrity tooling (**A.9.4.2A IMPLEMENTED** — catalog-api)
+
+- **CLI (default DRY_RUN, no writes):** from `services/catalog-api` — `npm run integrity:business-locations` or `node scripts/dev/business-location-integrity.mjs`; **`--audit-only`** concise CI gate (exit **1** when violations); **`--apply`** explicit repair only.
+- **Repairs:** zero-primary → promote oldest `BusinessLocation` (`createdAt ASC`, `id ASC`) + **`syncBusinessFromPrimaryLocationRecord`**; zero-location → **`createInitialPrimary`** when `Business.cityId` + non-empty `address` (+ valid coordinate pair or both null); multi-primary → **MANUAL_REMEDIATION** (not auto-fixed in 2A).
+- **Legacy auditor:** `node scripts/dev/audit-primary-integrity.mjs` (aggregate counts; **`pass`** now includes zero-location).
+- **Not in 2A:** service/API enforcement (**2B**), DB triggers (**2C** optional / not approved).
+
 ### Cross-city business rule
 
 - **Business** = brand identity; **city membership** = **`BusinessLocation` presence**, not **`Business.cityId` equality**.
@@ -157,12 +164,11 @@ Existing invalid rows must be **repaired** before enforcing; production writers 
 - **No immediate removal** of top-level JSON fields used by shipped clients (`cityId`, `address`, lat/lng, contacts, hours, etc.).
 - Fields may remain **derived** from context **`BusinessLocation`**, primary **`BusinessLocation`**, or Business default/fallback per **A.9.3** semantics — **no major-version breaking removal** in A.9.4 unless separately agreed.
 
-### Public `cityId` projection rule (future — **A.9.4.1** area)
+### Public `cityId` projection rule (**A.9.4.1B IMPLEMENTED**)
 
-- When **`contextLocationId`** present → top-level compatibility **`cityId`** = that branch’s **`cityId`**.
-- When explicit selected **`locationId`** context → **`cityId`** = selected branch.
-- Business-grain response with no branch context → **`cityId`** = **primary** branch.
-- This is **API projection**, not Business identity semantics (today list items may still expose parent **`Business.cityId`** — latent mismatch documented in **A.9.4** audit).
+- When **`contextLocationId`** present → top-level compatibility **`cityId`** = that branch’s **`cityId`** (with address/coords from same BL context).
+- When explicit selected **`locationId`** on detail → **`cityId`** = selected branch.
+- Business-grain response with no branch context → **`cityId`** = **primary** branch; no BL during transition → parent **`Business.cityId`** fallback only.
 
 ### Owner / Business Web transition (long-term)
 

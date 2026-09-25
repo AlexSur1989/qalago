@@ -8,15 +8,15 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `7c4d666adafbe2ae8baa6792b1bf404225ed737e` — **A.9.4.1** docs closure |
+| **Repo HEAD (current)** | `7909260e0b9c1a99fdb2fb0455d1e5a532d5c8bd` — **2A** impl (+ docs follow-up pending) |
+| **A.9.4.2A implementation SHA** | `7909260e0b9c1a99fdb2fb0455d1e5a532d5c8bd` |
 | **A.9.4.1B implementation SHA** | `38d2a83b1a71fe4eaec23fec2a04467964b7cbed` |
-| **A.9.4.1A implementation SHA** | `955f9d86c660d1019158236c4417cf337b13ae9d` |
-| **Last completed stage** | **6.12A.9.4.1 PASS** — non-discovery city authority hardened (1A admin + 1B campaign/analytics/dedupe/public `cityId`) |
-| **Last product implementation** | **6.12A.9.4.1B** — branch-aware campaign city, analytics attribution, BL dedupe, public `cityId` projection |
-| **Prior** | **6.12A.9.4.1A** Admin BL scope; **6.12A.9.4.0** policy gate |
-| **A.9.4.1 audit** | **CLOSED** — split **1A+1B** implemented |
+| **Last completed stage** | **6.12A.9.4.2A PASS** — BusinessLocation integrity auditor & repair tooling |
+| **Last product implementation** | **6.12A.9.4.2A** — DRY_RUN/`--apply` integrity CLI + repair util |
+| **Prior** | **6.12A.9.4.1** city context; **6.12A.9.4.2** read-only audit |
+| **A.9.4.2B / 2C** | **NOT STARTED** (service enforcement / DB trigger optional) |
 | **Physical QA pending** | — |
-| **Next agreed development action** | **A.9.4.2 READ-ONLY invariant-hardening audit** (not auto-started) |
+| **Next agreed development action** | **6.12A.9.4.2B** service-enforcement scope (not auto-started) |
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 
@@ -205,7 +205,8 @@ Future architecture should allow **backend/admin-central configuration** of cons
 - **A.9.4.0** — retirement **policy gate finalized** (docs).
 - **A.9.4.1A** — Admin BL-presence visibility + **`assertBusinessParentCityInAdminScope`** owner-route guard **IMPLEMENTED** (catalog-api).
 - **A.9.4.1B** — campaign city, analytics attribution, BL dedupe, public **`cityId`** projection **IMPLEMENTED** (catalog-api).
-- **A.9.4.2+** / **A.9.4.3–A.9.4.5** — invariants, writer migration, column retirement **NOT IMPLEMENTED**.
+- **A.9.4.2A** — integrity auditor + repair CLI **IMPLEMENTED** (catalog-api).
+- **A.9.4.2B+** / **A.9.4.3–A.9.4.5** — service enforcement, writer migration, column retirement **NOT IMPLEMENTED**.
 - **F.4** — Consumer Web business/branch URLs & SEO; **does not require** A.9.4 DB column removal (**A.9.4.0** gate); not started.
 - Post **6.12A:** User contour audit, Business Web owner contour, Admin Web contour, Admin Catalog/CMS, centralized Home config, Catalog Import, QalaGo AI, remaining Consumer Web, production monetization, analytics UX, role-based E2E, security/legal/release — **not** current track unless explicitly staged.
 

@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-09-25 — 6.12A.9.4.2A BusinessLocation integrity auditor & repair tooling
+
+- **Status:** **6.12A.9.4.2A PASS — INTEGRITY TOOLING READY**.
+- **Checkpoint (implementation):** `7909260e0b9c1a99fdb2fb0455d1e5a532d5c8bd`.
+- **Baseline:** `a80827bf9d8491bbfec15d93eca19b468c659eb8` (**A.9.4.2** read-only audit).
+- **Scope:** **`services/catalog-api`** — extend **`collectPrimaryIntegrityReport`**, **`business-location-integrity-repair.util`**, CLI **`scripts/dev/business-location-integrity.mjs`**, npm **`integrity:business-locations`**, tests. No schema/migration/service API changes.
+- **Summary:** Default **DRY_RUN** (no DB writes); **`--apply`** explicit repair; **`--audit-only`** CI gate. Repairs: zero-primary → deterministic promote + **`syncBusinessFromPrimaryLocationRecord`**; zero-location → **`createInitialPrimary`** when mirror fields valid; multi-primary → **MANUAL_REMEDIATION**. **`qalago_dev` audited read-only post-impl** (no `--apply`).
+- **Deferred:** **A.9.4.2B** service enforcement; **2C** DB trigger (not approved); **A.9.4.3**; **F.4**; **`stage-5n-qa-runtime.mjs`** zero-BL create (documented debt).
+- **Next:** **6.12A.9.4.2B** service-enforcement implementation scope (not auto-started).
+
+---
+
 ## 2026-09-25 — 6.12A.9.4.1 City context hardening (1A + 1B)
 
 - **Status:** **6.12A.9.4.1 PASS — NON-DISCOVERY CITY AUTHORITY HARDENED**.
