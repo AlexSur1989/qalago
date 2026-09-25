@@ -6,6 +6,22 @@
 
 ---
 
+## 2026-09-25 — 6.12A.9.4.3D Physical writer QA closure
+
+- **Status:** **6.12A.9.4.3D PASS — PHYSICAL WRITER QA FINALIZED**; **6.12A.9.4.3 CLOSED — BUSINESS PHYSICAL WRITERS MIGRATED TO BUSINESSLOCATION AUTHORITY**.
+- **Checkpoint (docs closure):** `1cd00d53ba67d9a9953f842de2870a2f553d8693`.
+- **Baseline (pre-physical-QA docs):** `4d0035363032d875091bf14cbec0fe27103e19ea` (**3C** docs follow-up).
+- **Implementation checkpoints (unchanged):** **3A** `51e0b5bb502930ff43adf0e7f875b95137a12ae4` (owner primary physical write inversion); **3B** `cde02e6d0faee3b5b6831ba479d6f4dcdff14b17` (onboarding/create normalization); **3C** `91284804547a78c1b4b6521ffe648e63508c2fe9` (seed/dev writer normalization).
+- **Scope:** Manual Business Web physical QA + read-only integrity audits + fixture cleanup (dev); local helpers **`infra/local-backups/a943d-physical-*`** (untracked). **No product-code / schema / test / DB fixture re-insert changes in this closure.**
+- **Fixture (dev, cleaned):** Business **`cmugwtakv0002uls02y6oz9uo`** (`qa-a943d-physical-writer`, **QA A943D PHYSICAL WRITER**); owner **`cmugwtaih0000uls0ke7h3715`** (`+79990094301`); primary **L1** **`bl54ddf8bcb2145cd4ee2313`**; secondary **L2** **`cmugwtalt0004uls0ldvzpxgi`**; Uralsk.
+- **Physical QA summary:** Initial profile showed primary **L1** (*A.9.4.3D QA Primary Branch*). Owner edited main Business profile → *Primary EDITED*; Locations UI **L1/L2** aligned; **F5** **PASS**. Secondary **L2** edited independently → *Secondary EDITED*; main profile stayed *Primary EDITED* (**secondary isolation**). **L2** promoted primary → Business mirror *Secondary EDITED* (**promotion mirror**). Owner edited main profile → *New Primary EDITED*; Locations UI: **L2** primary *New Primary EDITED*, **L1** non-primary *Primary EDITED* (**post-promotion owner write targets current primary**, not former primary); **F5** **PASS**.
+- **Integrity:** Pre-cleanup audit **PASS** (`businessCount` 110, `locationCount` 112, `mirrorMismatchCount` 0, …). Fixture cleanup **PASS** — restored baseline **Business 109**, **ACTIVE 37**, **BL 110**, **multi-branch 1**, **primary 109**, **Users 24**, **memberships 40**. Post-cleanup audit **PASS** (`businessCount` 109, `locationCount` 110, …).
+- **Track recap:** **3A** — owner **`PATCH`** primary physical fields authoritative on **primary BusinessLocation**; **3B** — application approval + Admin create via **`createBusinessWithInitialPrimary`**; **3C** — seed + **5N QA** aggregate helpers; **3D** — end-to-end owner writer behavior verified in browser.
+- **Deferred:** **A.9.4.4** legacy geo writer audit/normalization (incl. **`scripts/sync-businesses-visibility.ts`** — still writes **Business** lat/lng directly; must be addressed before legacy geo storage retirement); **A.9.4.5** column retirement; **F.4**; **6.12B** import. Legacy **Business** physical columns and **`Business.cityId`** **not** retired.
+- **Next:** **6.12A.9.4.4** — legacy geo / visibility writer hardening (agree before start; **not auto-started**).
+
+---
+
 ## 2026-09-25 — 6.12A.9.4.3C Seed / dev writer normalization
 
 - **Status:** **6.12A.9.4.3C PASS — SEED / DEV PHYSICAL WRITERS NORMALIZED** (overall **A.9.4.3** not closed — **3D** physical QA remains).

@@ -8,18 +8,19 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `91284804547a78c1b4b6521ffe648e63508c2fe9` — **A.9.4.3C** (+ docs follow-up pending) |
+| **Repo HEAD (current)** | `1cd00d53ba67d9a9953f842de2870a2f553d8693` — **A.9.4.3D** docs closure (**A.9.4.3 CLOSED**) |
+| **A.9.4.3D docs closure** | `1cd00d53ba67d9a9953f842de2870a2f553d8693` — physical QA finalized |
 | **A.9.4.3C implementation SHA** | `91284804547a78c1b4b6521ffe648e63508c2fe9` |
 | **A.9.4.3B implementation SHA** | `cde02e6d0faee3b5b6831ba479d6f4dcdff14b17` |
 | **A.9.4.3A implementation SHA** | `51e0b5bb502930ff43adf0e7f875b95137a12ae4` |
 | **A.9.4.2B implementation SHA** | `07e0a8cdc41c72f53821e57ed892337f5d886f05` |
 | **A.9.4.2A implementation SHA** | `7909260e0b9c1a99fdb2fb0455d1e5a532d5c8bd` |
-| **Last completed stage** | **6.12A.9.4.3C PASS** — seed/dev writers normalized (**3D** physical QA open) |
-| **Last product implementation** | **6.12A.9.4.3C** — seed + **5N QA** aggregate physical writes |
+| **Last completed stage** | **6.12A.9.4.3 CLOSED** — owner/onboarding/seed writers + **3D** physical QA (**BusinessLocation** authority for covered physical writes) |
+| **Last product implementation** | **6.12A.9.4.3C** — seed + **5N QA** aggregate physical writes (**3A/3B/3C** impl SHAs above) |
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
-| **Physical QA pending** | **A.9.4.3D** (after **3B/3C**); none for **A.9.4.2** |
-| **Next agreed development action** | **6.12A.9.4.3D** physical QA (not auto-started) |
+| **Physical QA pending** | None for **A.9.4.3** / **A.9.4.2** |
+| **Next agreed development action** | **6.12A.9.4.4** — legacy geo / visibility writers (incl. **`scripts/sync-businesses-visibility.ts`** audit/normalization); **not started** |
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 
@@ -153,7 +154,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **Business detail (A.7.6–A.7.9.6 CLOSED):** optional **`locationId`** selects active branch; **`effectivePhysical`** / **`effectiveMedia`** / **`effectiveCatalog`** / **`effectivePromotions`**; consumer **`/business/:id/catalog|promotions?locationId=`**; in-detail **«Филиалы»** switch via **`context.replace`**. Reviews/favorites/analytics stay **`Business.id`**. Branch-specific media physical QA = **A.7.7**, not re-tested in **A.7.9.6**.
 - **Discovery grain (A.7.9 CLOSED via A.7.9.6):** list/search/category/nearby/promotions feed = **Business-grain** card + backend **`contextLocationId`**; **map** = **BusinessLocation-grain** (**`locationId`** per marker).
 - **Primary:** default active context when `locationId` omitted; **`isPrimary` badge ≠ forced active** when user/map selects another branch.
-- **Primary sync:** legacy **Business** physical columns mirror **primary** for backward compatibility; branch assignments in **A.7.8.2**; **public branch-effective** catalog/promotions in **A.7.8.3** (`effectiveCatalog` / `effectivePromotions` + `/catalog?locationId=`); legacy **`catalogPreview`** / **`promotionsPreview`** stay business-wide; **A.7.9** defers city/search/map feed grain; branch reviews deferred.
+- **Primary sync:** legacy **Business** physical columns mirror **primary** for backward compatibility (**columns not retired** — **A.9.4.5** deferred). **A.9.4.3 CLOSED:** production owner profile physical writes, onboarding/create, and seed/**5N QA** dev writers covered by the track write **primary BusinessLocation** first (mirror follows); secondary branch edits do not mutate Business primary mirror; **set-primary** re-resolves mirror; post-promotion owner edits target **current** primary. **A.9.4.4 gate:** **`scripts/sync-businesses-visibility.ts`** still writes **Business** geo directly — must be audited/normalized before legacy geo storage retirement. Branch assignments in **A.7.8.2**; **public branch-effective** catalog/promotions in **A.7.8.3**; legacy previews stay business-wide; branch reviews deferred.
 - **Branch catalog/promotion invariants (A.7.8 CLOSED):** **ServiceMenuGroup** = business-wide. **ServiceItem** / **Promotion:** **0** assignment rows = all branches; **≥1** = only assigned **`BusinessLocation`** ids. Owner edits via **Business Web** (**ALL/SELECTED**); **Admin** read-only content inspection (no branch editing). Public/Flutter use **`effectiveCatalog`** / **`effectivePromotions`**; legacy **`catalogPreview`** / **`promotionsPreview`** + city **`GET /promotions`** remain business-grain until **A.7.9**. Assignments = availability only. **BusinessLocation** delete **RESTRICT** while assignments exist.
 - **Branch media invariants (A.7.7 CLOSED):** shared = **`BusinessImage.locationId` null**; branch = **`locationId` = `BusinessLocation.id`** (same business); public branch view = **active branch media + shared brand** (never sibling branches); **`effectiveMedia`** is branch-aware public truth; legacy **`galleryPreview`** on detail is **compatibility-only** (not branch truth); **`Business.coverImageUrl`** remains **brand-level**; owner **Business Web** + consumer **Flutter** + **Admin MEDIA** moderation aligned; plan quota Business-wide; **`moderationHidden`** never on public surfaces.
 - **Branch media deferred / debt:** legacy business-wide **`galleryPreview`**; full Admin gallery manager; Admin upload/reorder; owner Flutter branch upload; Consumer Web branch media (**F.4**); orphan file GC; reorder API/UX; explicit branch cover column; branch-level moderation status; CDN migration.
@@ -212,7 +213,8 @@ Future architecture should allow **backend/admin-central configuration** of cons
 - **A.9.4.2B** — runtime location invariant enforcement **IMPLEMENTED** (catalog-api).
 - **A.9.4.2E** — owner branch physical QA **VERIFIED** (Business Web + API; fixture cleanup restored baseline).
 - **A.9.4.2 overall** — **PASS** (invariants finalized); **2C** DB trigger **NOT REQUIRED**.
-- **A.9.4.3–A.9.4.5** — writer migration, column retirement **NOT IMPLEMENTED** (**2C+** optional trigger not approved).
+- **A.9.4.3** — **CLOSED** (**3A** owner inversion, **3B** onboarding/create, **3C** seed/dev, **3D** physical QA); legacy **Business** physical columns **`Business.cityId`** **not** retired.
+- **A.9.4.4–A.9.4.5** — legacy geo writers (incl. **`sync-businesses-visibility.ts`**) + column retirement **NOT STARTED** (**2C+** optional trigger not approved).
 - **F.4** — Consumer Web business/branch URLs & SEO; **does not require** A.9.4 DB column removal (**A.9.4.0** gate); not started.
 - Post **6.12A:** User contour audit, Business Web owner contour, Admin Web contour, Admin Catalog/CMS, centralized Home config, Catalog Import, QalaGo AI, remaining Consumer Web, production monetization, analytics UX, role-based E2E, security/legal/release — **not** current track unless explicitly staged.
 
