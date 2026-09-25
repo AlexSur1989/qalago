@@ -1,17 +1,24 @@
 import { BusinessStatus, PrismaClient } from '@prisma/client';
+import {
+  assertVisibilitySyncBusinessUpdateData,
+  planVisibilitySyncUpdates,
+  type VisibilitySyncCityRow,
+} from '../src/scripts/sync-businesses-visibility.util';
 
 const prisma = new PrismaClient();
 
 /**
- * Makes admin-visible businesses appear in the public catalog:
- * - PENDING / BLOCKED (except explicitly blocked) -> ACTIVE
- * - Missing coordinates -> city center (so geo radius still finds them)
+ * Dev helper: makes non-ACTIVE businesses appear in the public catalog (status → ACTIVE).
+ * Does NOT write Business or BusinessLocation physical geo (A.9.4.4A).
+ * Use explicit BusinessLocation repair/import flows for coordinates.
  */
 async function main() {
   const cities = await prisma.city.findMany({
-    select: { id: true, slug: true, nameRu: true, centerLat: true, centerLng: true },
+    select: { id: true, slug: true, nameRu: true },
   });
-  const cityById = new Map(cities.map((c) => [c.id, c]));
+  const cityById = new Map<string, VisibilitySyncCityRow>(
+    cities.map((c) => [c.id, c]),
+  );
 
   const businesses = await prisma.business.findMany({
     select: {
@@ -20,53 +27,23 @@ async function main() {
       slug: true,
       status: true,
       cityId: true,
-      latitude: true,
-      longitude: true,
     },
     orderBy: { createdAt: 'asc' },
   });
 
-  let activated = 0;
-  let geocoded = 0;
+  const plan = planVisibilitySyncUpdates(businesses, cityById);
 
-  for (const business of businesses) {
-    const city = cityById.get(business.cityId);
-    if (!city) {
-      console.warn(`SKIP ${business.slug}: unknown cityId ${business.cityId}`);
-      continue;
-    }
+  for (const slug of plan.skippedUnknownCitySlugs) {
+    console.warn(`SKIP ${slug}: unknown cityId`);
+  }
 
-    const updates: {
-      status?: BusinessStatus;
-      latitude?: number;
-      longitude?: number;
-    } = {};
-
-    if (business.status !== BusinessStatus.ACTIVE) {
-      updates.status = BusinessStatus.ACTIVE;
-      activated += 1;
-      console.log(
-        `[${city.slug}] ACTIVE: ${business.title} (was ${business.status})`,
-      );
-    }
-
-    if (
-      (business.latitude == null || business.longitude == null) &&
-      city.centerLat != null &&
-      city.centerLng != null
-    ) {
-      updates.latitude = Number(city.centerLat);
-      updates.longitude = Number(city.centerLng);
-      geocoded += 1;
-      console.log(`[${city.slug}] GEO: ${business.title} -> city center`);
-    }
-
-    if (Object.keys(updates).length > 0) {
-      await prisma.business.update({
-        where: { id: business.id },
-        data: updates,
-      });
-    }
+  for (const item of plan.updates) {
+    assertVisibilitySyncBusinessUpdateData(item.data);
+    console.log(item.logLine);
+    await prisma.business.update({
+      where: { id: item.businessId },
+      data: item.data,
+    });
   }
 
   console.log('\n=== Summary ===');
@@ -84,7 +61,7 @@ async function main() {
       `${city.slug} (${city.nameRu}): ${parts || 'no businesses'} | public ACTIVE=${publicCount}`,
     );
   }
-  console.log(`Activated: ${activated}, geocoded: ${geocoded}`);
+  console.log(`Activated: ${plan.activated}`);
 }
 
 main()
