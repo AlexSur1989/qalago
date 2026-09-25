@@ -8,7 +8,7 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `51e0b5bb502930ff43adf0e7f875b95137a12ae4` — **A.9.4.3A** implementation (+ docs follow-up pending) |
+| **Repo HEAD (current)** | `d4fbff2` — docs SHA follow-up for **A.9.4.3A** (impl **`51e0b5b…`**) |
 | **A.9.4.3A implementation SHA** | `51e0b5bb502930ff43adf0e7f875b95137a12ae4` |
 | **A.9.4.2B implementation SHA** | `07e0a8cdc41c72f53821e57ed892337f5d886f05` |
 | **A.9.4.2A implementation SHA** | `7909260e0b9c1a99fdb2fb0455d1e5a532d5c8bd` |
