@@ -9,7 +9,7 @@
 ## 2026-09-26 — 6.12A.9.4.5D3 Post-cityId regression + fixture cutover + 5D closure
 
 - **Status:** **6.12A.9.4.5D3 PASS — POST-cityId REGRESSION FINALIZED**; **6.12A.9.4.5D PASS — BUSINESS.cityId RETIREMENT FINALIZED**; **5E** not started.
-- **Checkpoint (implementation):** _(set at commit)_.
+- **Checkpoint (implementation):** `7a153cdf497c711c3aeda2b60cc72588f50d7859`.
 - **Baseline (D3 start):** `68c395f96e1ef4bae58255936e0da26f53ea0e5e`; **5D1** `ffeffdc3d844a183e31f46d5f776c4b49e047209`; **5D2** `db82561a1dc101c1420a099a84ddb7547563f40d`.
 - **Scope:** **`services/catalog-api`** — integration/unit spec fixture cutover for **POST-cityId** live dev DB; analytics dashboard mocks (**primary BL** timezone/city); catalog search util spec (**`locations.some`** city scope); dev codemod helpers **`5d3-strip-business-cityid-specs.mjs`** / **`5d3-fix-spec-indent.mjs`**. **No** product runtime changes; **no** schema/migration; **no** seed/integrity **`--apply`**; **no** **5E** physical QA.
 - **Summary:** All active tests create **Business** shell without **`cityId`**; city membership via **primary/secondary BusinessLocation** (`specCreateInitialPrimary`, `createTestBusinessWithPrimary`, nested **`locations.create`**). **`Business.cityId`** column absent on dev DB and Prisma model. Public API **`cityId`** remains BL-derived projection. **5A/5B/5C** semantics unchanged from prior substages.
