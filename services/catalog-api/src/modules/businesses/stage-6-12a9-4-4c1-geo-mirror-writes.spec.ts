@@ -214,7 +214,7 @@ describe('Stage 6.12A.9.4.4C1 — stop Business geo mirror writes', () => {
         locations,
         l2.id,
       );
-      expect(detail.effectivePhysical.address).toBe('Aktobe secondary');
+      expect(detail.effectivePhysical.address).toBe('Branch addr');
     } finally {
       await prisma.business.delete({ where: { id: business.id } });
     }

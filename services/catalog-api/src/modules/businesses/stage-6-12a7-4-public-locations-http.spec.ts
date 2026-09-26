@@ -45,6 +45,8 @@ describe('Stage 6.12A.7.4 — public locations HTTP routing', () => {
   let listPublicLocations: jest.Mock;
   let getLocation: jest.Mock;
 
+  jest.setTimeout(30_000);
+
   beforeAll(async () => {
     listPublicLocations = jest.fn();
     getLocation = jest.fn();

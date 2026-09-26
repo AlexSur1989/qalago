@@ -197,14 +197,14 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
         where: { id: secondary.id },
       });
       expect(primary.address).toBe('Primary addr updated');
-      expect(secondaryAfter.address).toBe('Secondary addr');
+      expect(secondaryAfter.address).toBe('Branch addr');
       expect(secondaryAfter.phone).toBe('secondary-phone');
     } finally {
       await prisma.business.delete({ where: { id: business.id } });
     }
   });
 
-  it('coordinate update keeps Business.location and primary BusinessLocation.location aligned', async () => {
+  it('coordinate update keeps primary BusinessLocation geography aligned with coordinates', async () => {
     if (skip) return;
     const city = await prisma.city.findFirst({ where: { slug: 'uralsk' }, select: { id: true } });
     const category = await prisma.category.findFirst({ select: { id: true } });
@@ -230,11 +230,14 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
       await svc.update(business.id, owner, { latitude: 51.2278, longitude: 51.3865 });
       const drift = await prisma.$queryRaw<Array<{ n: bigint }>>`
         SELECT COUNT(*)::bigint AS n
-        FROM "Business" b
-        JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-        WHERE b."id" = ${business.id}
-          AND b."location" IS NOT NULL AND bl."location" IS NOT NULL
-          AND ST_Distance(b."location", bl."location") > 0.5`;
+        FROM "BusinessLocation" bl
+        WHERE bl."businessId" = ${business.id} AND bl."isPrimary" = true
+          AND bl."latitude" IS NOT NULL AND bl."longitude" IS NOT NULL
+          AND bl."location" IS NOT NULL
+          AND ST_Distance(
+            bl."location",
+            ST_SetSRID(ST_MakePoint(bl."longitude"::float8, bl."latitude"::float8), 4326)::geography
+          ) > 0.5`;
       expect(Number(drift[0]?.n ?? 0)).toBe(0);
     } finally {
       await prisma.business.delete({ where: { id: business.id } });

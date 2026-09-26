@@ -127,7 +127,7 @@ describe('Stage 6.12A.9.4.4C2 — BusinessLocation-native integrity', () => {
     });
     await prisma.businessLocation.create({
       data: {
-        address: 'Branch addr',
+        address: '   ',
         businessId: business.id,
         cityId: uralskCityId,
         isPrimary: true,
@@ -164,6 +164,7 @@ describe('Stage 6.12A.9.4.4C2 — BusinessLocation-native integrity', () => {
         address: 'Branch addr',
         businessId: business.id,
         cityId: uralskCityId,
+        latitude: 51.22,
         isPrimary: true,
       },
     });

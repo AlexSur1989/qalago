@@ -1,11 +1,13 @@
 # Business spatial location (Stage 6.11C.5C)
 
-## Hybrid model
+> **Post–A.9.4.4C4 (dev DB):** **`Business.latitude` / `longitude` / `location`** and Business-only spatial trigger/index are **retired**. Application-facing coordinates and PostGIS queries use **`BusinessLocation`** — see [business-location.md](./business-location.md) § **A.9.4.4C4**. Sections below describe the **historical Business-grain** model prior to column retirement.
+
+## Hybrid model (historical — pre–A.9.4.4C4)
 
 | Field | Role |
 |-------|------|
-| `Business.latitude` / `Business.longitude` | **Authoritative** application-facing WGS84 coordinates (API, mobile, web). |
-| `Business.location` | **Derived** `geography(Point,4326)` for PostGIS queries (C.5D/E). |
+| `Business.latitude` / `Business.longitude` | **Was** application-facing WGS84 on Business; **now** on **BusinessLocation**. |
+| `Business.location` | **Was** derived geography on Business; **now** on **BusinessLocation**. |
 
 `BusinessApplication` keeps lat/lng only — no spatial column.
 

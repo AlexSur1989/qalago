@@ -4,10 +4,19 @@
 
 | Entity | Role |
 |--------|------|
-| **Business** | Brand / organization identity: title, slug, taxonomy, plan, membership, reviews, favorites, promotions, catalog, ads, analytics |
-| **BusinessLocation** | Physical branch / venue: city, address, coordinates, hours, branch contacts |
+| **Business** | Brand / organization identity: title, slug, taxonomy, plan, membership, reviews, favorites, promotions, catalog, ads, analytics; **temporary** **`cityId`** + brand-level contact defaults (**A.9.4.5** retires **`cityId`**) |
+| **BusinessLocation** | **Authoritative** physical branch / venue: city, address, coordinates, `locationSource`, PostGIS **`location`**, hours, branch contacts |
 
 Relationship: **Business 1 → N BusinessLocation**.
+
+## Stage 6.12A.9.4.4C4 (legacy Business geo storage retired — dev DB)
+
+Migration **`20260926120000_stage_6_12a9_4_4c4_business_geo_column_retirement`** (applied on dev **`qalago_dev`**):
+
+- **Removed from `Business`:** `address`, `latitude`, `longitude`, `locationSource`, `location` (geography), **`business_sync_location_trigger`**, **`Business_location_gist_idx`**, **`business_derive_location_from_coordinates()`**.
+- **Retained on `Business`:** **`cityId`** (compatibility mirror of primary BL city until **A.9.4.5**), **`workHours`**, **`phone`**, **`whatsapp`**, **`website`**, **`instagram`** (synced from primary BL on normal write paths — **A.9.4.4C1**).
+- **PostGIS authority:** **`BusinessLocation.location`** + **`business_location_sync_location_trigger`** / GiST index unchanged.
+- **Public API physical fields** (`address`, `latitude`, `longitude`, `locationSource`, `effectivePhysical`, map/list **`contextLocationId`**) are **projected from BusinessLocation** only — no Prisma read/write of retired Business geo columns.
 
 ## Stage 6.12A.1 (database foundation)
 

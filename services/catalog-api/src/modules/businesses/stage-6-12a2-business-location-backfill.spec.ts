@@ -2,21 +2,6 @@ import { randomBytes } from 'crypto';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { POSTGIS_TEST_ROLLBACK, withPostgisIntegrationTransaction } from './postgis-integration-test.util';
 
-const BACKFILL_INSERT_SQL = Prisma.sql`
-  INSERT INTO "BusinessLocation" (
-    "id", "businessId", "cityId", "address", "latitude", "longitude",
-    "locationSource", "workHours", "phone", "whatsapp", "instagram", "website",
-    "isPrimary", "createdAt", "updatedAt"
-  )
-  SELECT
-    'bl' || substr(md5(b."id" || ':6.12A.2-primary'), 1, 22),
-    b."id", b."cityId", b."address", b."latitude", b."longitude",
-    b."locationSource", b."workHours", b."phone", b."whatsapp", b."instagram", b."website",
-    true, b."createdAt", CURRENT_TIMESTAMP
-  FROM "Business" b
-  WHERE NOT EXISTS (SELECT 1 FROM "BusinessLocation" bl WHERE bl."businessId" = b."id")
-`;
-
 describe('Stage 6.12A.2 — BusinessLocation backfill integrity (runtime DB)', () => {
   const prisma = new PrismaClient();
   let skip = false;
@@ -44,8 +29,8 @@ describe('Stage 6.12A.2 — BusinessLocation backfill integrity (runtime DB)', (
     const businesses = await prisma.business.count();
     const locations = await prisma.businessLocation.count();
     const primaries = await prisma.businessLocation.count({ where: { isPrimary: true } });
-    expect(locations).toBe(businesses);
     expect(primaries).toBe(businesses);
+    expect(locations).toBeGreaterThanOrEqual(businesses);
 
     const orphans = await prisma.$queryRaw<Array<{ n: bigint }>>`
       SELECT COUNT(*)::bigint AS n
@@ -65,61 +50,14 @@ describe('Stage 6.12A.2 — BusinessLocation backfill integrity (runtime DB)', (
     expect(Number(multiPrimary[0]?.n ?? 0)).toBe(0);
   });
 
-  it('field parity between Business and primary BusinessLocation', async () => {
+  it('Business.cityId matches primary BusinessLocation cityId (C2 parent city mirror)', async () => {
     if (skip) return;
-    const mismatches = await prisma.$queryRaw<Array<{ field: string; n: bigint }>>`
-      SELECT 'cityId' AS field, COUNT(*)::bigint AS n
+    const [mismatch] = await prisma.$queryRaw<Array<{ n: bigint }>>`
+      SELECT COUNT(*)::bigint AS n
       FROM "Business" b
       JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-      WHERE b."cityId" IS DISTINCT FROM bl."cityId"
-      UNION ALL
-      SELECT 'address', COUNT(*)::bigint
-      FROM "Business" b
-      JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-      WHERE b."address" IS DISTINCT FROM bl."address"
-      UNION ALL
-      SELECT 'latitude', COUNT(*)::bigint
-      FROM "Business" b
-      JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-      WHERE b."latitude" IS DISTINCT FROM bl."latitude"
-      UNION ALL
-      SELECT 'longitude', COUNT(*)::bigint
-      FROM "Business" b
-      JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-      WHERE b."longitude" IS DISTINCT FROM bl."longitude"
-      UNION ALL
-      SELECT 'locationSource', COUNT(*)::bigint
-      FROM "Business" b
-      JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-      WHERE b."locationSource" IS DISTINCT FROM bl."locationSource"
-      UNION ALL
-      SELECT 'workHours', COUNT(*)::bigint
-      FROM "Business" b
-      JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-      WHERE b."workHours" IS DISTINCT FROM bl."workHours"
-      UNION ALL
-      SELECT 'phone', COUNT(*)::bigint
-      FROM "Business" b
-      JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-      WHERE b."phone" IS DISTINCT FROM bl."phone"
-      UNION ALL
-      SELECT 'whatsapp', COUNT(*)::bigint
-      FROM "Business" b
-      JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-      WHERE b."whatsapp" IS DISTINCT FROM bl."whatsapp"
-      UNION ALL
-      SELECT 'instagram', COUNT(*)::bigint
-      FROM "Business" b
-      JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-      WHERE b."instagram" IS DISTINCT FROM bl."instagram"
-      UNION ALL
-      SELECT 'website', COUNT(*)::bigint
-      FROM "Business" b
-      JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-      WHERE b."website" IS DISTINCT FROM bl."website"`;
-    for (const row of mismatches) {
-      expect(Number(row.n)).toBe(0);
-    }
+      WHERE b."cityId" IS DISTINCT FROM bl."cityId"`;
+    expect(Number(mismatch?.n ?? 0)).toBe(0);
   });
 
   it('geo parity: coordinates imply location; null coords imply null location', async () => {
@@ -137,23 +75,15 @@ describe('Stage 6.12A.2 — BusinessLocation backfill integrity (runtime DB)', (
       WHERE (bl."latitude" IS NULL OR bl."longitude" IS NULL)
         AND bl."location" IS NOT NULL`;
     expect(Number(nullCoordsWithGeo[0]?.n ?? 0)).toBe(0);
-
-    const geoDrift = await prisma.$queryRaw<Array<{ n: bigint }>>`
-      SELECT COUNT(*)::bigint AS n
-      FROM "Business" b
-      JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-      WHERE b."location" IS NOT NULL AND bl."location" IS NOT NULL
-        AND ST_Distance(b."location", bl."location") > 0.5`;
-    expect(Number(geoDrift[0]?.n ?? 0)).toBe(0);
   });
 
-  it('idempotent backfill insert affects zero rows when all businesses already have locations', async () => {
+  it('legacy A.2 backfill is fully applied (no Business without a location)', async () => {
     if (skip) return;
-    const before = await prisma.businessLocation.count();
-    const inserted = await prisma.$executeRaw(BACKFILL_INSERT_SQL);
-    const after = await prisma.businessLocation.count();
-    expect(inserted).toBe(0);
-    expect(after).toBe(before);
+    const missing = await prisma.$queryRaw<Array<{ n: bigint }>>`
+      SELECT COUNT(*)::bigint AS n
+      FROM "Business" b
+      WHERE NOT EXISTS (SELECT 1 FROM "BusinessLocation" bl WHERE bl."businessId" = b."id")`;
+    expect(Number(missing[0]?.n ?? 0)).toBe(0);
   });
 
   it('skips businesses that already have a location (transaction fixture)', async () => {
@@ -188,7 +118,7 @@ describe('Stage 6.12A.2 — BusinessLocation backfill integrity (runtime DB)', (
           )
           SELECT
             'bl' || substr(md5(b."id" || ':6.12A.2-primary'), 1, 22),
-            b."id", b."cityId", b."address", true, b."createdAt", CURRENT_TIMESTAMP
+            b."id", b."cityId", 'duplicate attempt', true, b."createdAt", CURRENT_TIMESTAMP
           FROM "Business" b
           WHERE b."id" = ${biz.id}
             AND NOT EXISTS (

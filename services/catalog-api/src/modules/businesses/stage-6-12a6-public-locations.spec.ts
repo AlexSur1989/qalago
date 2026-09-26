@@ -72,7 +72,9 @@ describe('Stage 6.12A.6 — public BusinessLocation read', () => {
       },
     });
     createdBusinessIds.push(business.id);
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Test address');
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Test address', {
+      phone: '+77001111111',
+    });
     return business;
   }
 

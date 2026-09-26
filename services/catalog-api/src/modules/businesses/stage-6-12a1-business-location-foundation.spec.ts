@@ -45,16 +45,19 @@ describe('Stage 6.12A.1 — BusinessLocation foundation (runtime DB)', () => {
     expect(typeof prisma.businessLocation.create).toBe('function');
   });
 
-  it('legacy Business physical columns still exist', async () => {
+  it('post-C4 Business retains brand/contact columns; legacy physical geo retired', async () => {
     if (skip) return;
     const cols = await prisma.$queryRaw<Array<{ column_name: string }>>`
       SELECT column_name
       FROM information_schema.columns
       WHERE table_schema = 'public' AND table_name = 'Business'
-        AND column_name IN ('cityId', 'address', 'latitude', 'longitude', 'location', 'workHours')`;
+        AND column_name IN (
+          'cityId', 'address', 'latitude', 'longitude', 'location', 'locationSource', 'workHours',
+          'phone', 'whatsapp', 'website', 'instagram'
+        )`;
     const names = cols.map((c) => c.column_name).sort();
     expect(names).toEqual(
-      ['address', 'cityId', 'latitude', 'location', 'longitude', 'workHours'].sort(),
+      ['cityId', 'instagram', 'phone', 'website', 'whatsapp', 'workHours'].sort(),
     );
   });
 
@@ -165,10 +168,13 @@ describe('Stage 6.12A.1 — BusinessLocation foundation (runtime DB)', () => {
     });
   });
 
-  it('BusinessLocation count is zero or matches Business count (pre/post A.2 backfill)', async () => {
+  it('every Business has at least one BusinessLocation (post backfill / multibranch)', async () => {
     if (skip) return;
-    const businesses = await prisma.business.count();
-    const locations = await prisma.businessLocation.count();
-    expect(locations === 0 || locations === businesses).toBe(true);
+    const orphans = await prisma.$queryRaw<Array<{ n: bigint }>>`
+      SELECT COUNT(*)::bigint AS n
+      FROM "Business" b
+      LEFT JOIN "BusinessLocation" bl ON bl."businessId" = b."id"
+      WHERE bl."id" IS NULL`;
+    expect(Number(orphans[0]?.n ?? 0)).toBe(0);
   });
 });

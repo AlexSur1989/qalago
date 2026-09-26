@@ -98,7 +98,11 @@ describe('Stage 6.12A.4 — BusinessLocation management API', () => {
         status: 'ACTIVE',
       },
     });
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Uralsk primary addr', { latitude: 51.2278, longitude: 51.3865 });
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Uralsk primary addr', {
+      latitude: 51.2278,
+      longitude: 51.3865,
+      phone: 'primary-phone',
+    });
     return business;
   }
 

@@ -8,7 +8,7 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `713a53f` — **A.9.4.4C4B** docs closure |
+| **Repo HEAD (current)** | `b312071` — **A.9.4.4C4C** closure |
 | **A.9.4.3D docs closure** | `75d58f6bb477a0a295029a867fd225989544c172` — physical QA finalized |
 | **A.9.4.3C implementation SHA** | `91284804547a78c1b4b6521ffe648e63508c2fe9` |
 | **A.9.4.3B implementation SHA** | `cde02e6d0faee3b5b6831ba479d6f4dcdff14b17` |
@@ -20,14 +20,14 @@
 | **A.9.4.4C1 implementation SHA** | `80f678a9584f2614c1aaf029e56183c48315f1bb` |
 | **A.9.4.4C2 implementation SHA** | `10c767d272e0033b25fdc93938e62727f9f89beb` |
 | **A.9.4.4C3 implementation SHA** | `a78ff95457c10e7e31ccce846906e91a1b99f670` |
-| **Last completed stage** | **6.12A.9.4.4C4B PASS** — dev DB migrated; **Business** legacy geo columns retired |
-| **Last product implementation** | **6.12A.9.4.4C4A** `90cd95b89f0f72751df517c90a9785962a944024` (C4B = DB apply + docs only) |
+| **Last completed stage** | **6.12A.9.4.4C4 PASS** — legacy **Business** geo storage retired; **C4C** post-migration regression finalized |
+| **Last product implementation** | **6.12A.9.4.4C4A** `90cd95b89f0f72751df517c90a9785962a944024`; **C4C** = post-C4 spec/regression + docs (no new migration) |
 | **A.9.4.4C4A implementation SHA** | `90cd95b89f0f72751df517c90a9785962a944024` |
 | **A.9.4.4C4B docs SHA** | `713a53f8ad9f40f5acb622c76f60017f887b7b27` |
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending** | None for **A.9.4.3** / **A.9.4.2** |
-| **Next agreed development action** | **6.12A.9.4.4C4C** — full regression + integrity closure on **post-C4** dev DB (**not started**) |
+| **Next agreed development action** | **A.9.4.5** — **`Business.cityId`** compatibility retirement (**not started**; requires explicit agreement) |
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 

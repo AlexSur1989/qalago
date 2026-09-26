@@ -114,9 +114,7 @@ describe('Stage 6.12A.9.4.2A — BusinessLocation integrity repair tooling', () 
       },
     });
 
-    const geoBefore = await prisma.businessLocation.findFirstOrThrow({
-      where: { businessId: business.id, isPrimary: true },
-    });
+    const expectedPrimaryCityId = older.cityId;
 
     try {
       const summary = await runBusinessLocationIntegrity(prisma, 'APPLY');
@@ -138,7 +136,7 @@ describe('Stage 6.12A.9.4.2A — BusinessLocation integrity repair tooling', () 
           cityId: true,
         },
       });
-      expect(businessRow.cityId).toBe(geoBefore.cityId);
+      expect(businessRow.cityId).toBe(expectedPrimaryCityId);
       expect(businessRow.cityId).toBe(uralskCityId);
 
       const second = await runBusinessLocationIntegrity(prisma, 'APPLY');

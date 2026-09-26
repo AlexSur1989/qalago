@@ -221,7 +221,7 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         where: { businessId: business.id, isPrimary: true },
       });
       expect(Number(primaryAfter.latitude)).toBeCloseTo(50.29, 4);
-      expect(businessRow.cityId).toBe(uralskCityId);
+      expect(businessRow.cityId).toBe(aktobeCityId);
       await assertPrimaryBusinessCompatibilityParity(prisma, business.id);
     } finally {
       await prisma.business.delete({ where: { id: business.id } });
