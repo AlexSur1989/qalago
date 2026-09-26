@@ -232,7 +232,6 @@ export class AnalyticsService {
         explicitCityId: isSearchPerformed ? dto.cityId : dto.cityId,
         businessLocationCityId,
         primaryBusinessLocationCityId,
-        parentBusinessCityId: business?.cityId,
       }),
       ...(ATTRIBUTION_EVENT_TYPES.has(dto.type) && dto.trafficSource
         ? { trafficSource: dto.trafficSource }

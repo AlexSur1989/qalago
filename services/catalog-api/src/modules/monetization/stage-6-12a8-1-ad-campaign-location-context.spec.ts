@@ -156,12 +156,24 @@ describe('Stage 6.12A.8.1 — AdCampaign / AnalyticsEvent location context (runt
     expect(withLocation).toBe(0);
   });
 
-  it('H — historical AnalyticsEvent rows keep null businessLocationId', async () => {
-    if (skip) return;
-    const withLocation = await prisma.analyticsEvent.count({
-      where: { businessLocationId: { not: null } },
+  it('H — analytics branch attribution: optional businessLocationId per contract (A.8.5+)', async () => {
+    await withFixture(async ({ tx, businessId, secondaryLocationId }) => {
+      const withoutBranch = await tx.analyticsEvent.create({
+        data: {
+          businessId,
+          type: AnalyticsEventType.VIEW_BUSINESS,
+        },
+      });
+      expect(withoutBranch.businessLocationId).toBeNull();
+      const withBranch = await tx.analyticsEvent.create({
+        data: {
+          businessId,
+          businessLocationId: secondaryLocationId,
+          type: AnalyticsEventType.VIEW_BUSINESS,
+        },
+      });
+      expect(withBranch.businessLocationId).toBe(secondaryLocationId);
     });
-    expect(withLocation).toBe(0);
   });
 
   it('A/B — AdCampaign remains Business-owned with nullable branch fields', async () => {

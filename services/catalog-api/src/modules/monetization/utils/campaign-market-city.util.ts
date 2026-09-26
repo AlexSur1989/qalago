@@ -10,8 +10,6 @@ type CampaignCityDb = Pick<PrismaClient, 'businessLocation'>;
 
 export type CampaignMarketCityInput = {
   businessId: string;
-  /** Temporary parent/home city fallback when no BL resolution is possible. */
-  parentBusinessCityId: string;
   /** Quote / availability explicit market city (validated against branch presence). */
   explicitCityId?: string | null;
   targetBusinessLocationId?: string | null;
@@ -24,9 +22,17 @@ function normalizeId(value: string | null | undefined): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+function failMarketCityUnresolved(): never {
+  monetizationBadRequest(
+    MonetizationErrorCode.CAMPAIGN_MARKET_CITY_UNRESOLVED,
+    'Cannot resolve campaign market city from branch or primary location context',
+  );
+}
+
 /**
- * Stage 6.12A.9.4.1B — single campaign/order market city resolution.
- * Priority: target/destination BL city → explicit city with BL presence → primary BL → parent Business.cityId.
+ * Stage 6.12A.9.4.1B / 6.12A.9.4.5B — campaign/order market city resolution.
+ * Priority: target/destination BL city → explicit city with BL presence → primary BL.
+ * Does not use Business.cityId (A.9.4.5B).
  */
 export async function resolveCampaignMarketCityId(
   db: Prisma.TransactionClient | CampaignCityDb,
@@ -55,7 +61,7 @@ export async function resolveCampaignMarketCityId(
   const explicit = normalizeId(input.explicitCityId);
   if (explicit) {
     if (!db.businessLocation?.findFirst) {
-      return input.parentBusinessCityId;
+      failMarketCityUnresolved();
     }
     const inCity = await db.businessLocation.findFirst({
       where: { businessId: input.businessId, cityId: explicit },
@@ -75,7 +81,7 @@ export async function resolveCampaignMarketCityId(
     return primaryCity;
   }
 
-  return input.parentBusinessCityId;
+  failMarketCityUnresolved();
 }
 
 export function readCampaignCityIdFromMetadata(
@@ -84,4 +90,35 @@ export function readCampaignCityIdFromMetadata(
   if (!metadata) return undefined;
   const value = metadata.campaignCityId;
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
+}
+
+function readBranchIdsFromMetadata(metadata: Record<string, unknown> | null | undefined): {
+  targetBusinessLocationId?: string | null;
+  destinationBusinessLocationId?: string | null;
+} {
+  if (!metadata) return {};
+  const target = metadata.targetBusinessLocationId;
+  const destination = metadata.destinationBusinessLocationId;
+  return {
+    targetBusinessLocationId: typeof target === 'string' ? target : null,
+    destinationBusinessLocationId: typeof destination === 'string' ? destination : null,
+  };
+}
+
+/**
+ * Purchase-time stable city: persisted order metadata first, then live resolver (no Business.cityId).
+ */
+export async function resolvePersistedOrderItemMarketCityId(
+  db: Prisma.TransactionClient | CampaignCityDb,
+  businessId: string,
+  metadata: Record<string, unknown> | null | undefined,
+): Promise<string> {
+  const persisted = readCampaignCityIdFromMetadata(metadata);
+  if (persisted) return persisted;
+  const branches = readBranchIdsFromMetadata(metadata);
+  return resolveCampaignMarketCityId(db, {
+    businessId,
+    targetBusinessLocationId: branches.targetBusinessLocationId,
+    destinationBusinessLocationId: branches.destinationBusinessLocationId,
+  });
 }

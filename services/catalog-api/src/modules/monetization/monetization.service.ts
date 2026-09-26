@@ -198,7 +198,6 @@ export class MonetizationService {
 
     const marketCityId = await resolveCampaignMarketCityId(this.prisma, {
       businessId: dto.businessId,
-      parentBusinessCityId: business.cityId,
       explicitCityId: dto.cityId,
     });
 
@@ -284,7 +283,6 @@ export class MonetizationService {
 
     const marketCityId = await resolveCampaignMarketCityId(this.prisma, {
       businessId: dto.businessId,
-      parentBusinessCityId: business.cityId,
       explicitCityId: dto.cityId,
     });
 

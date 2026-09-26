@@ -47,6 +47,7 @@ import { validateAndResolveCampaignLocationContext } from './utils/campaign-loca
 import {
   readCampaignCityIdFromMetadata,
   resolveCampaignMarketCityId,
+  resolvePersistedOrderItemMarketCityId,
 } from './utils/campaign-market-city.util';
 
 type PricedOrderLine = {
@@ -172,7 +173,6 @@ export class OrderService {
 
     const marketCityId = await resolveCampaignMarketCityId(this.prisma, {
       businessId: dto.businessId,
-      parentBusinessCityId: business.cityId,
       targetBusinessLocationId: dto.targetBusinessLocationId,
       destinationBusinessLocationId: dto.destinationBusinessLocationId,
     });
@@ -288,7 +288,6 @@ export class OrderService {
 
       const marketCityId = await resolveCampaignMarketCityId(this.prisma, {
         businessId,
-        parentBusinessCityId: business.cityId,
         targetBusinessLocationId: item.targetBusinessLocationId,
         destinationBusinessLocationId: item.destinationBusinessLocationId,
       });
@@ -543,12 +542,15 @@ export class OrderService {
   ) {
     const business = await tx.business.findUniqueOrThrow({
       where: { id: businessId },
-      select: { cityId: true, categoryId: true },
+      select: { categoryId: true },
     });
 
     for (const line of lines) {
-      const lineCityId =
-        readCampaignCityIdFromMetadata(line.metadata) ?? business.cityId;
+      const lineCityId = await resolvePersistedOrderItemMarketCityId(
+        tx,
+        businessId,
+        line.metadata as Record<string, unknown> | undefined,
+      );
       if (line.productType === MonetizationProductType.PACKAGE && line.packageSnapshot) {
         for (const item of line.packageSnapshot.items) {
           const placementCode = item.placementCode;
@@ -609,8 +611,11 @@ export class OrderService {
         typeof item.metadata === 'object' && item.metadata && !Array.isArray(item.metadata)
           ? (item.metadata as Record<string, unknown>)
           : {};
-      const itemCityId =
-        readCampaignCityIdFromMetadata(meta) ?? order.business.cityId;
+      const itemCityId = await resolvePersistedOrderItemMarketCityId(
+        tx,
+        order.businessId,
+        meta,
+      );
       await this.inventoryReservation.syncReservationsForOrderItem(tx, {
         orderId: order.id,
         orderItemId: item.id,
@@ -633,7 +638,7 @@ export class OrderService {
       where: { id: orderId },
       include: {
         items: { include: { product: true } },
-        business: { select: { cityId: true, categoryId: true } },
+        business: { select: { categoryId: true } },
       },
     });
 
@@ -645,7 +650,11 @@ export class OrderService {
           promotionId?: string;
           campaignCityId?: string;
         };
-        const itemCityId = meta.campaignCityId ?? order.business.cityId;
+        const itemCityId = await resolvePersistedOrderItemMarketCityId(
+          tx,
+          order.businessId,
+          meta as Record<string, unknown>,
+        );
         const pkg = await tx.promotionPackage.findUnique({
           where: { code: pkgSnapshot.packageCode },
           include: { items: { include: { product: true } } },
@@ -682,7 +691,11 @@ export class OrderService {
         creativeId?: string;
         campaignCityId?: string;
       };
-      const itemCityId = meta.campaignCityId ?? order.business.cityId;
+      const itemCityId = await resolvePersistedOrderItemMarketCityId(
+        tx,
+        order.businessId,
+        meta as Record<string, unknown>,
+      );
       const rebuiltLine = await this.packageSnapshot.buildProductLineSnapshot(tx, {
         productCode: lineSnapshot.productCode,
         productType: item.product.type,

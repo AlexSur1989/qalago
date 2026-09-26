@@ -11,6 +11,11 @@ import { MonetizationAccessService } from './monetization-access.service';
 import { PurchaseIntegrityService } from './purchase-integrity.service';
 import { CampaignStatusService } from './campaign-status.service';
 import { PRODUCT_PLACEMENT_MAP } from './constants/monetization.constants';
+import { findPrimaryBusinessLocationCityId } from '../../common/utils/primary-business-location.util';
+import {
+  MonetizationErrorCode,
+  monetizationBadRequest,
+} from './errors/monetization.errors';
 export type ProductPurchaseUiState =
   | 'AVAILABLE'
   | 'ACTIVE'
@@ -52,7 +57,7 @@ export class ProductPurchaseStateService {
     await this.access.assertCanManageBusiness(user, businessId);
     const business = await this.prisma.business.findUniqueOrThrow({
       where: { id: businessId },
-      select: { id: true, cityId: true, categoryId: true },
+      select: { id: true, categoryId: true },
     });
 
     const products = await this.prisma.monetizationProduct.findMany({
@@ -118,7 +123,7 @@ export class ProductPurchaseStateService {
   }
 
   private async resolveProductState(
-    business: { id: string; cityId: string; categoryId: string },
+    business: { id: string; categoryId: string },
     product: { id: string; code: string; type: MonetizationProductType },
     productCampaigns: Array<{
       id: string;
@@ -217,12 +222,19 @@ export class ProductPurchaseStateService {
     }
 
     try {
+      const marketCityId = await findPrimaryBusinessLocationCityId(this.prisma, business.id);
+      if (!marketCityId) {
+        monetizationBadRequest(
+          MonetizationErrorCode.CAMPAIGN_MARKET_CITY_UNRESOLVED,
+          'Cannot resolve market city for product schedule preview',
+        );
+      }
       const schedule = await this.purchaseIntegrity.resolveProductSchedule(
         this.prisma,
         {
           productType: product.type,
           businessId: business.id,
-          cityId: business.cityId,
+          cityId: marketCityId!,
           categoryId: business.categoryId,
           durationDays: 7,
         },

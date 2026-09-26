@@ -178,6 +178,12 @@ describe('Stage 6.7B — purchase integrity core', () => {
     const prisma = {
       $transaction: jest.fn(),
       business: { findUnique: jest.fn(), findUniqueOrThrow: jest.fn() },
+      businessLocation: {
+        findMany: jest.fn().mockResolvedValue([
+          { id: 'bl-1', cityId: 'city-1', isPrimary: true, createdAt: new Date(0) },
+        ]),
+        findFirst: jest.fn(),
+      },
       monetizationProduct: { findUnique: jest.fn() },
       promotion: { findFirst: jest.fn() },
       adCreative: { findFirst: jest.fn() },

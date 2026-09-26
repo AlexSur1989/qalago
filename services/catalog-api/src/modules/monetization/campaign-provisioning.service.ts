@@ -21,10 +21,7 @@ import {
   parseCampaignLocationFieldsFromMeta,
   validateAndResolveCampaignLocationContext,
 } from './utils/campaign-location-context.util';
-import {
-  readCampaignCityIdFromMetadata,
-  resolveCampaignMarketCityId,
-} from './utils/campaign-market-city.util';
+import { resolvePersistedOrderItemMarketCityId } from './utils/campaign-market-city.util';
 
 type OrderItemMeta = {
   desiredStartAt?: string;
@@ -63,7 +60,7 @@ export class CampaignProvisioningService {
       where: { id: orderId },
       include: {
         items: { include: { product: true } },
-        business: { select: { cityId: true, categoryId: true } },
+        business: { select: { categoryId: true } },
       },
     });
     if (!order) {
@@ -89,7 +86,7 @@ export class CampaignProvisioningService {
     order: {
       id: string;
       businessId: string;
-      business: { cityId: string; categoryId: string };
+      business: { categoryId: string };
     },
     item: {
       id: string;
@@ -117,6 +114,7 @@ export class CampaignProvisioningService {
       }
 
       const itemMeta: OrderItemMeta = {
+        ...meta,
         packageCode: snapshot!.packageCode,
         desiredStartAt: pkgItem.projectedStartAt,
         promotionId: pkgItem.promotionId ?? meta.promotionId,
@@ -129,7 +127,6 @@ export class CampaignProvisioningService {
 
       await this.createCampaignForProduct(tx, {
         businessId: order.businessId,
-        cityId: order.business.cityId,
         categoryId: pkgItem.categoryId ?? order.business.categoryId,
         orderItemId: item.id,
         orderId: order.id,
@@ -148,7 +145,7 @@ export class CampaignProvisioningService {
     order: {
       id: string;
       businessId: string;
-      business: { cityId: string; categoryId: string };
+      business: { categoryId: string };
     },
     item: {
       id: string;
@@ -179,7 +176,6 @@ export class CampaignProvisioningService {
 
     await this.createCampaignForProduct(tx, {
       businessId: order.businessId,
-      cityId: order.business.cityId,
       categoryId,
       orderItemId: item.id,
       orderId: order.id,
@@ -218,7 +214,6 @@ export class CampaignProvisioningService {
     tx: Prisma.TransactionClient,
     ctx: {
       businessId: string;
-      cityId: string;
       categoryId: string;
       orderItemId: string;
       orderId: string;
@@ -230,18 +225,11 @@ export class CampaignProvisioningService {
       promotionId?: string | null;
     },
   ) {
-    const parentBusiness = await tx.business.findUnique({
-      where: { id: ctx.businessId },
-      select: { cityId: true },
-    });
-    const campaignCityId =
-      readCampaignCityIdFromMetadata(ctx.metadata as Record<string, unknown>) ??
-      (await resolveCampaignMarketCityId(tx, {
-        businessId: ctx.businessId,
-        parentBusinessCityId: parentBusiness!.cityId,
-        targetBusinessLocationId: ctx.metadata.targetBusinessLocationId,
-        destinationBusinessLocationId: ctx.metadata.destinationBusinessLocationId,
-      }));
+    const campaignCityId = await resolvePersistedOrderItemMarketCityId(
+      tx,
+      ctx.businessId,
+      ctx.metadata as Record<string, unknown>,
+    );
 
     const placementCode = PRODUCT_PLACEMENT_MAP[ctx.product.type];
     if (!placementCode) return;

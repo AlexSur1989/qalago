@@ -1,7 +1,10 @@
 import { MonetizationProductType } from '@prisma/client';
-import { resolveCampaignMarketCityId } from './campaign-market-city.util';
+import {
+  resolveCampaignMarketCityId,
+  resolvePersistedOrderItemMarketCityId,
+} from './campaign-market-city.util';
 
-describe('resolveCampaignMarketCityId (A.9.4.1B)', () => {
+describe('resolveCampaignMarketCityId (A.9.4.1B / A.9.4.5B)', () => {
   const businessId = 'biz-cross';
   const cityA = 'city-a';
   const cityB = 'city-b';
@@ -38,7 +41,6 @@ describe('resolveCampaignMarketCityId (A.9.4.1B)', () => {
     await expect(
       resolveCampaignMarketCityId(prisma as never, {
         businessId,
-        parentBusinessCityId: cityA,
         targetBusinessLocationId: 'l2',
       }),
     ).resolves.toBe(cityB);
@@ -54,7 +56,6 @@ describe('resolveCampaignMarketCityId (A.9.4.1B)', () => {
     await expect(
       resolveCampaignMarketCityId(prisma as never, {
         businessId,
-        parentBusinessCityId: cityA,
       }),
     ).resolves.toBe(cityA);
   });
@@ -66,7 +67,6 @@ describe('resolveCampaignMarketCityId (A.9.4.1B)', () => {
     await expect(
       resolveCampaignMarketCityId(prisma as never, {
         businessId,
-        parentBusinessCityId: cityA,
         explicitCityId: cityB,
       }),
     ).resolves.toBe(cityB);
@@ -79,19 +79,44 @@ describe('resolveCampaignMarketCityId (A.9.4.1B)', () => {
     await expect(
       resolveCampaignMarketCityId(prisma as never, {
         businessId,
-        parentBusinessCityId: cityA,
         explicitCityId: cityB,
       }),
     ).rejects.toMatchObject({ response: { code: 'INVALID_CAMPAIGN_BRANCH' } });
   });
 
-  it('falls back to parent Business.cityId when no locations', async () => {
+  it('fail-closed when no locations and no explicit city (no Business.cityId fallback)', async () => {
     const prisma = db({ locations: [] });
     await expect(
       resolveCampaignMarketCityId(prisma as never, {
         businessId,
-        parentBusinessCityId: cityA,
+      }),
+    ).rejects.toMatchObject({ response: { code: 'CAMPAIGN_MARKET_CITY_UNRESOLVED' } });
+  });
+
+  it('resolvePersistedOrderItemMarketCityId uses persisted campaignCityId after primary promotion', async () => {
+    const prisma = db({
+      locations: [
+        { id: 'l1', businessId, cityId: cityA, isPrimary: false, createdAt: new Date(1) },
+        { id: 'l2', businessId, cityId: cityB, isPrimary: true, createdAt: new Date(2) },
+      ],
+    });
+    await expect(
+      resolvePersistedOrderItemMarketCityId(prisma as never, businessId, {
+        campaignCityId: cityA,
+        productType: MonetizationProductType.FEATURED_BUSINESS,
       }),
     ).resolves.toBe(cityA);
+  });
+
+  it('after promotion, new resolve without metadata follows new primary BL', async () => {
+    const prisma = db({
+      locations: [
+        { id: 'l1', businessId, cityId: cityA, isPrimary: false, createdAt: new Date(1) },
+        { id: 'l2', businessId, cityId: cityB, isPrimary: true, createdAt: new Date(2) },
+      ],
+    });
+    await expect(
+      resolveCampaignMarketCityId(prisma as never, { businessId }),
+    ).resolves.toBe(cityB);
   });
 });

@@ -138,6 +138,12 @@ describe('Stage 6.7QA — purchase adversarial', () => {
             isActive: true,
           }),
         },
+        businessLocation: {
+          findMany: jest.fn().mockResolvedValue([
+            { id: 'bl-1', cityId: 'city-1', isPrimary: true, createdAt: new Date(0) },
+          ]),
+          findFirst: jest.fn(),
+        },
         $transaction: jest.fn(),
       } as unknown as PrismaService;
 

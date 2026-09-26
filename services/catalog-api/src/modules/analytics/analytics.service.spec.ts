@@ -35,6 +35,12 @@ describe('AnalyticsService', () => {
         findFirst: jest.fn(),
         findUnique: jest.fn(),
       },
+      businessLocation: {
+        findMany: jest.fn().mockResolvedValue([
+          { id: 'bl-1', cityId: 'city-primary', isPrimary: true, createdAt: new Date(0) },
+        ]),
+        findFirst: jest.fn(),
+      },
       analyticsEvent: {
         create: jest.fn(),
         findUnique: jest.fn(),
@@ -78,7 +84,7 @@ describe('AnalyticsService', () => {
 
   it('tracks public events for active businesses', async () => {
     const { prisma, service } = createService();
-    prisma.business.findFirst.mockResolvedValue({ id: 'business-1', cityId: 'city-1' });
+    prisma.business.findFirst.mockResolvedValue({ id: 'business-1', cityId: 'city-mirror-stale' });
     prisma.analyticsEvent.findUnique.mockResolvedValue(null);
     prisma.analyticsEvent.create.mockResolvedValue({ id: 'event-1' });
 
@@ -92,7 +98,7 @@ describe('AnalyticsService', () => {
     expect(prisma.analyticsEvent.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         businessId: 'business-1',
-        cityId: 'city-1',
+        cityId: 'city-primary',
         type: AnalyticsEventType.CALL_CLICK,
         isInternal: false,
       }),
