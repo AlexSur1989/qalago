@@ -1,7 +1,7 @@
 import type { Business, BusinessLocation, Prisma } from '@prisma/client';
 import {
   type AuthoritativePrimaryPhysicalInput,
-  businessBootstrapPhysicalFromPrimaryInput,
+  legacyBusinessInsertGeoBootstrapFromPrimaryPhysical,
   businessCompatibilityUpdateFromPrimaryLocation,
   businessLegacyFullMirrorUpdateFromPrimaryLocation,
   physicalSnapshotFromLocation,
@@ -61,7 +61,7 @@ export async function syncBusinessMirrorFromPrimaryInTx(
   return syncBusinessCompatibilityFromPrimaryInTx(tx, location);
 }
 
-/** Legacy full geo mirror — create/bootstrap (C3) and migration tooling only; not integrity repair (C2). */
+/** Legacy full geo mirror — C4 migration/tests only; not create, production, or integrity repair. */
 export async function syncBusinessLegacyFullMirrorFromPrimaryInTx(
   tx: Prisma.TransactionClient,
   location: Pick<BusinessLocation, 'isPrimary' | 'businessId'> &
@@ -77,6 +77,7 @@ export async function syncBusinessLegacyFullMirrorFromPrimaryInTx(
   });
 }
 
+/** Creates exactly one primary BL from authoritative physical input (existing Business shell). */
 export async function createAuthoritativeInitialPrimaryInTx(
   tx: Prisma.TransactionClient,
   businessId: string,
@@ -94,7 +95,31 @@ export async function createAuthoritativeInitialPrimaryInTx(
   });
 }
 
-/** Production + dev create: brand shell + exactly one primary BL + Business mirror. */
+function mergeBrandContactsWithPrimaryPhysical(
+  brand: Omit<
+    Prisma.BusinessUncheckedCreateInput,
+    'cityId' | 'address' | 'latitude' | 'longitude' | 'locationSource'
+  >,
+  primaryPhysical: AuthoritativePrimaryPhysicalInput,
+): Prisma.BusinessUncheckedCreateInput {
+  const insertGeoBootstrap = legacyBusinessInsertGeoBootstrapFromPrimaryPhysical(primaryPhysical);
+  return {
+    ...brand,
+    ...insertGeoBootstrap,
+    phone: brand.phone ?? primaryPhysical.phone ?? undefined,
+    whatsapp: brand.whatsapp ?? primaryPhysical.whatsapp ?? undefined,
+    instagram: brand.instagram ?? primaryPhysical.instagram ?? undefined,
+    website: brand.website ?? primaryPhysical.website ?? undefined,
+    workHours:
+      brand.workHours !== undefined ? brand.workHours : primaryPhysical.workHours ?? undefined,
+  };
+}
+
+/**
+ * Production + tracked dev create (A.9.4.4C3): brand shell + authoritative primary BL atomically.
+ * Physical authority: `primaryPhysical` → BusinessLocation only; Business geo columns receive
+ * INSERT-only legacy bootstrap for current schema; post-create sync is city + contacts only.
+ */
 export async function createBusinessWithInitialPrimaryInTx(
   tx: Prisma.TransactionClient,
   params: {
@@ -105,20 +130,8 @@ export async function createBusinessWithInitialPrimaryInTx(
     primaryPhysical: AuthoritativePrimaryPhysicalInput;
   },
 ): Promise<{ business: Business; primaryLocation: BusinessLocation }> {
-  const bootstrap = businessBootstrapPhysicalFromPrimaryInput(params.primaryPhysical);
   const business = await tx.business.create({
-    data: {
-      ...params.brand,
-      ...bootstrap,
-      phone: params.brand.phone ?? params.primaryPhysical.phone ?? undefined,
-      whatsapp: params.brand.whatsapp ?? params.primaryPhysical.whatsapp ?? undefined,
-      instagram: params.brand.instagram ?? params.primaryPhysical.instagram ?? undefined,
-      website: params.brand.website ?? params.primaryPhysical.website ?? undefined,
-      workHours:
-        params.brand.workHours !== undefined
-          ? params.brand.workHours
-          : params.primaryPhysical.workHours ?? undefined,
-    },
+    data: mergeBrandContactsWithPrimaryPhysical(params.brand, params.primaryPhysical),
   });
 
   const primaryLocation = await createAuthoritativeInitialPrimaryInTx(
@@ -144,21 +157,23 @@ export type SeedBusinessUpsertParams = {
 };
 
 /**
- * Idempotent seed/dev upsert: authoritative primaryPhysical → primary BL → Business mirror.
- * Does not create duplicate branches on re-run; updates the existing primary when present.
+ * Idempotent seed/dev upsert (A.9.4.4C3): brand metadata + authoritative primary BL.
+ * Re-run updates the existing primary branch; does not treat Business geo as authority.
  */
-export async function upsertSeedBusinessWithPrimaryMirrorInTx(
+export async function upsertSeedBusinessWithPrimaryLocationInTx(
   tx: Prisma.TransactionClient,
   params: SeedBusinessUpsertParams,
 ): Promise<Business> {
-  const bootstrap = businessBootstrapPhysicalFromPrimaryInput(params.primaryPhysical);
+  const insertGeoBootstrap = legacyBusinessInsertGeoBootstrapFromPrimaryPhysical(
+    params.primaryPhysical,
+  );
 
   const business = await tx.business.upsert({
     where: params.where,
     create: {
       slug: params.where.slug,
       ...params.brandCreate,
-      ...bootstrap,
+      ...insertGeoBootstrap,
       phone: params.brandCreate.phone ?? params.primaryPhysical.phone ?? undefined,
       whatsapp: params.brandCreate.whatsapp ?? params.primaryPhysical.whatsapp ?? undefined,
       instagram: params.brandCreate.instagram ?? params.primaryPhysical.instagram ?? undefined,
@@ -191,4 +206,12 @@ export async function upsertSeedBusinessWithPrimaryMirrorInTx(
   }
 
   return syncBusinessCompatibilityFromPrimaryInTx(tx, primaryLocation);
+}
+
+/** @deprecated Use {@link upsertSeedBusinessWithPrimaryLocationInTx} (C3 — BL authority, not mirror). */
+export async function upsertSeedBusinessWithPrimaryMirrorInTx(
+  tx: Prisma.TransactionClient,
+  params: SeedBusinessUpsertParams,
+): Promise<Business> {
+  return upsertSeedBusinessWithPrimaryLocationInTx(tx, params);
 }

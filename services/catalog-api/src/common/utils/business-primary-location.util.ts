@@ -121,8 +121,8 @@ export function businessCompatibilityUpdateFromPrimaryLocation(
 }
 
 /**
- * Legacy full mirror including geo — integrity `--apply` repair only until C2/C4.
- * Not used by owner PATCH, BL CRUD, or promote in normal production.
+ * Legacy full mirror including geo — C4 migration / historical tests only.
+ * Not used by create/onboarding, owner PATCH, BL CRUD, promote, or integrity repair (C2).
  */
 export function businessLegacyFullMirrorUpdateFromPrimaryLocation(
   snapshot: BusinessPhysicalSnapshot,
@@ -194,8 +194,12 @@ export function primaryLocationCreateDataFromBusiness(
   );
 }
 
-/** NOT NULL bootstrap fields on Business.create — same snapshot as authoritative primary BL (6.12A.9.4.3B). */
-export function businessBootstrapPhysicalFromPrimaryInput(
+/**
+ * INSERT-only legacy geo on `Business.create` / upsert `create` until C4 column drop.
+ * Values are copied from authoritative `primaryPhysical` for NOT NULL / FK compatibility only —
+ * not read as authority at runtime, integrity, or post-create sync (A.9.4.4C3).
+ */
+export function legacyBusinessInsertGeoBootstrapFromPrimaryPhysical(
   physical: AuthoritativePrimaryPhysicalInput,
 ): Pick<Business, 'cityId' | 'address' | 'latitude' | 'longitude' | 'locationSource'> {
   return {
@@ -205,6 +209,13 @@ export function businessBootstrapPhysicalFromPrimaryInput(
     longitude: physical.longitude,
     locationSource: physical.locationSource,
   };
+}
+
+/** @deprecated Use {@link legacyBusinessInsertGeoBootstrapFromPrimaryPhysical} (C3 boundary name). */
+export function businessBootstrapPhysicalFromPrimaryInput(
+  physical: AuthoritativePrimaryPhysicalInput,
+): Pick<Business, 'cityId' | 'address' | 'latitude' | 'longitude' | 'locationSource'> {
+  return legacyBusinessInsertGeoBootstrapFromPrimaryPhysical(physical);
 }
 
 /** Business → primary BL: contact/default fields only (never stale Business geo — A.9.4.4C1). */

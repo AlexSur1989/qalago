@@ -9,7 +9,7 @@ import {
   PromotionStatus,
   UserRole,
 } from '@prisma/client';
-import { upsertSeedBusinessWithPrimaryMirrorInTx } from '../src/common/utils/business-primary-location-aggregate.util';
+import { upsertSeedBusinessWithPrimaryLocationInTx } from '../src/common/utils/business-primary-location-aggregate.util';
 import type { AuthoritativePrimaryPhysicalInput } from '../src/common/utils/business-primary-location.util';
 import { seedMonetizationCatalog } from './seed-monetization';
 import { seedSubcategories } from './seed-subcategories';
@@ -55,7 +55,7 @@ async function upsertSeededBusiness(params: {
   primaryPhysical: AuthoritativePrimaryPhysicalInput;
 }) {
   return prisma.$transaction((tx) =>
-    upsertSeedBusinessWithPrimaryMirrorInTx(tx, {
+    upsertSeedBusinessWithPrimaryLocationInTx(tx, {
       where: { slug: params.slug },
       brandCreate: params.brandCreate,
       brandUpdate: params.brandUpdate,

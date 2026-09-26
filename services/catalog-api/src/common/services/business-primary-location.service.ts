@@ -106,8 +106,8 @@ export class BusinessPrimaryLocationService {
   }
 
   /**
-   * Production aggregate: Business brand shell + exactly one primary BL + compatibility mirror.
-   * Physical authority: `primaryPhysical` → BL → Business mirror (NOT NULL bootstrap only).
+   * Production aggregate (C3): Business brand shell + exactly one authoritative primary BL.
+   * `primaryPhysical` → BusinessLocation; Business INSERT may carry legacy geo bootstrap only.
    */
   async createBusinessWithInitialPrimary(
     tx: Prisma.TransactionClient,
@@ -160,7 +160,7 @@ export class BusinessPrimaryLocationService {
     return syncBusinessCompatibilityFromPrimaryInTx(tx, location);
   }
 
-  /** Integrity `--apply` repair — legacy full geo mirror until C2/C4. */
+  /** C4 migration / tests only — not create, production paths, or integrity repair (C2). */
   async syncBusinessLegacyFullMirrorFromPrimaryLocationRecord(
     tx: Prisma.TransactionClient,
     location: Parameters<typeof physicalSnapshotFromLocation>[0],

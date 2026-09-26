@@ -2,10 +2,10 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { deterministicPrimaryLocationId } from './business-primary-location.util';
 import {
   BusinessLocationSeedInvariantError,
-  upsertSeedBusinessWithPrimaryMirrorInTx,
+  upsertSeedBusinessWithPrimaryLocationInTx,
 } from './business-primary-location-aggregate.util';
 
-describe('business-primary-location-aggregate.util (Stage 6.12A.9.4.3C)', () => {
+describe('business-primary-location-aggregate.util (Stage 6.12A.9.4.4C3)', () => {
   const primaryPhysical = {
     cityId: 'city-1',
     address: 'Seed addr 1',
@@ -106,11 +106,11 @@ describe('business-primary-location-aggregate.util (Stage 6.12A.9.4.3C)', () => 
     };
   }
 
-  it('upsertSeedBusinessWithPrimaryMirror creates one primary on first run', async () => {
+  it('upsertSeedBusinessWithPrimaryLocation creates one primary on first run', async () => {
     const state = { primaries: [] as Array<{ id: string; businessId: string; isPrimary: boolean }> };
     const tx = buildTx(state);
 
-    await upsertSeedBusinessWithPrimaryMirrorInTx(tx as never, {
+    await upsertSeedBusinessWithPrimaryLocationInTx(tx as never, {
       where: { slug: 'seed-slug' },
       brandCreate: { title: 'Seed Biz', categoryId: 'cat', ownerId: 'owner', status: 'ACTIVE' },
       brandUpdate: { title: 'Seed Biz' },
@@ -122,7 +122,7 @@ describe('business-primary-location-aggregate.util (Stage 6.12A.9.4.3C)', () => 
     expect(tx.business.update).toHaveBeenCalled();
   });
 
-  it('upsertSeedBusinessWithPrimaryMirror updates existing primary on second run', async () => {
+  it('upsertSeedBusinessWithPrimaryLocation updates existing primary on second run without Business geo sync', async () => {
     const state = {
       business: { id: 'biz-seed-1', slug: 'seed-slug' },
       primaries: [{ id: deterministicPrimaryLocationId('biz-seed-1'), businessId: 'biz-seed-1', isPrimary: true }],
@@ -134,7 +134,7 @@ describe('business-primary-location-aggregate.util (Stage 6.12A.9.4.3C)', () => 
       address: 'Seed addr 2',
     };
 
-    await upsertSeedBusinessWithPrimaryMirrorInTx(tx as never, {
+    await upsertSeedBusinessWithPrimaryLocationInTx(tx as never, {
       where: { slug: 'seed-slug' },
       brandCreate: { title: 'Seed Biz', categoryId: 'cat', ownerId: 'owner', status: 'ACTIVE' },
       brandUpdate: { title: 'Seed Biz' },
@@ -144,9 +144,19 @@ describe('business-primary-location-aggregate.util (Stage 6.12A.9.4.3C)', () => 
     expect(tx.businessLocation.create).not.toHaveBeenCalled();
     expect(tx.businessLocation.update).toHaveBeenCalledTimes(1);
     expect(state.primaries).toHaveLength(1);
+    expect(tx.business.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.not.objectContaining({
+          address: expect.anything(),
+          latitude: expect.anything(),
+          longitude: expect.anything(),
+          locationSource: expect.anything(),
+        }),
+      }),
+    );
   });
 
-  it('upsertSeedBusinessWithPrimaryMirror fails on multi-primary corruption', async () => {
+  it('upsertSeedBusinessWithPrimaryLocation fails on multi-primary corruption', async () => {
     const state = {
       business: { id: 'biz-seed-1', slug: 'seed-slug' },
       primaries: [
@@ -157,7 +167,7 @@ describe('business-primary-location-aggregate.util (Stage 6.12A.9.4.3C)', () => 
     const tx = buildTx(state);
 
     await expect(
-      upsertSeedBusinessWithPrimaryMirrorInTx(tx as never, {
+      upsertSeedBusinessWithPrimaryLocationInTx(tx as never, {
         where: { slug: 'seed-slug' },
         brandCreate: { title: 'Seed Biz', categoryId: 'cat', ownerId: 'owner', status: 'ACTIVE' },
         brandUpdate: { title: 'Seed Biz' },

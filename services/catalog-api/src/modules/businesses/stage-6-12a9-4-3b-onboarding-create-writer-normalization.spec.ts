@@ -20,8 +20,10 @@ import { createMockBusinessAccess, asBusinessAccessService } from '../../test-ut
 import { createMockSubcategoryDeps } from '../../test-utils/mock-subcategory-deps';
 import { POSTGIS_TEST_ROLLBACK, withPostgisIntegrationTransaction } from './postgis-integration-test.util';
 import {
-  assertPrimaryBusinessLocationParity,
+  assertPrimaryBusinessCompatibilityParity,
 } from './business-location-parity.test-util';
+import { buildEffectivePhysicalDto } from './business-effective-physical.util';
+import { businessRowToContactDefaults } from './business-physical-read-normalization.util';
 import { buildApplicationDedupeKey } from '../../common/utils/business-application-dedupe.util';
 
 describe('Stage 6.12A.9.4.3B — onboarding/create writer normalization', () => {
@@ -114,7 +116,7 @@ describe('Stage 6.12A.9.4.3B — onboarding/create writer normalization', () => 
     );
   }
 
-  it('admin POST /businesses creates Business + one primary BL with mirror parity', async () => {
+  it('admin POST /businesses creates Business + one authoritative primary BL (C3)', async () => {
     if (skip) return;
     const slugSuffix = randomBytes(4).toString('hex');
     const svc = buildBusinessesService();
@@ -133,8 +135,26 @@ describe('Stage 6.12A.9.4.3B — onboarding/create writer normalization', () => 
       expect(locations).toHaveLength(1);
       expect(locations[0]?.isPrimary).toBe(true);
       expect(locations[0]?.address).toBe(`Admin addr ${slugSuffix}`);
-      expect(business.address).toBe(`Admin addr ${slugSuffix}`);
-      await assertPrimaryBusinessLocationParity(prisma, business.id);
+      expect(business.cityId).toBe(uralskCityId);
+      await assertPrimaryBusinessCompatibilityParity(prisma, business.id);
+
+      const geoBefore = await prisma.business.findUniqueOrThrow({
+        where: { id: business.id },
+        select: { address: true, latitude: true, longitude: true },
+      });
+      await prisma.businessLocation.update({
+        where: { id: locations[0]!.id },
+        data: { address: `BL-only addr ${slugSuffix}` },
+      });
+      const geoAfter = await prisma.business.findUniqueOrThrow({
+        where: { id: business.id },
+        select: { address: true, latitude: true, longitude: true },
+      });
+      expect(geoAfter.address).toBe(geoBefore.address);
+      const bl = await prisma.businessLocation.findUniqueOrThrow({ where: { id: locations[0]!.id } });
+      const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
+      const dto = buildEffectivePhysicalDto(businessRowToContactDefaults(businessRow), bl);
+      expect(dto.address).toBe(`BL-only addr ${slugSuffix}`);
     } finally {
       await prisma.business.delete({ where: { id: business.id } });
     }
@@ -200,7 +220,7 @@ describe('Stage 6.12A.9.4.3B — onboarding/create writer normalization', () => 
     await prisma.business.deleteMany({ where: { slug: { startsWith: 'a943b-rollback-' } } });
   });
 
-  it('application approval maps physical snapshot to primary BL and mirror', async () => {
+  it('application approval maps physical snapshot to authoritative primary BL (C3)', async () => {
     if (skip) return;
     const title = `A943B Approve ${randomBytes(4).toString('hex')}`;
     const address = `Approve addr ${randomBytes(3).toString('hex')}`;
@@ -238,9 +258,11 @@ describe('Stage 6.12A.9.4.3B — onboarding/create writer normalization', () => 
       expect(primary.locationSource).toBe(BusinessLocationSource.GEOCODED);
 
       const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: businessId } });
-      expect(businessRow.address).toBe(address);
+      expect(businessRow.cityId).toBe(uralskCityId);
       expect(businessRow.status).toBe(BusinessStatus.ACTIVE);
-      await assertPrimaryBusinessLocationParity(prisma, businessId);
+      await assertPrimaryBusinessCompatibilityParity(prisma, businessId);
+      const dto = buildEffectivePhysicalDto(businessRowToContactDefaults(businessRow), primary);
+      expect(dto.address).toBe(address);
 
       const membership = await prisma.businessMembership.findFirst({
         where: { businessId, userId: fixtureOwnerId },
@@ -280,7 +302,7 @@ describe('Stage 6.12A.9.4.3B — onboarding/create writer normalization', () => 
     }
   });
 
-  it('aggregate helper commits primary BL before mirror sync (transaction rollback)', async () => {
+  it('aggregate helper commits primary BL before compatibility sync (transaction rollback)', async () => {
     if (skip) return;
     const slug = `a943b-tx-${randomBytes(4).toString('hex')}`;
 
