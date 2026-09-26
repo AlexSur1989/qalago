@@ -102,11 +102,8 @@ describe('Stage 6.12A.9.3.2b — legacy Prisma geo filter cleanup', () => {
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Parent mirror Uralsk',
         ownerId,
         status: BusinessStatus.ACTIVE,
-        latitude: primaryLat,
-        longitude: primaryLng,
         businessSubcategories: { create: { subcategoryId } },
       },
     });
@@ -114,11 +111,9 @@ describe('Stage 6.12A.9.3.2b — legacy Prisma geo filter cleanup', () => {
 
     const lPrimary = await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: uralskCityId,
-        address: 'Uralsk primary',
-        latitude: primaryLat,
-        longitude: primaryLng,
         isPrimary: true,
       },
     });
@@ -126,11 +121,9 @@ describe('Stage 6.12A.9.3.2b — legacy Prisma geo filter cleanup', () => {
 
     const lSecondary = await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: aktobeCityId,
-        address: 'Aktobe secondary',
-        latitude: secondaryLat,
-        longitude: secondaryLng,
         isPrimary: false,
       },
     });
@@ -154,8 +147,6 @@ describe('Stage 6.12A.9.3.2b — legacy Prisma geo filter cleanup', () => {
     const result = await service.findAll({
       citySlug: 'aktobe',
       ...aktobeBbox,
-      latitude: secondaryLat,
-      longitude: secondaryLng,
       radiusKm: 15,
       sort: BusinessCatalogSort.RECOMMENDED,
       limit: 100,
@@ -173,8 +164,6 @@ describe('Stage 6.12A.9.3.2b — legacy Prisma geo filter cleanup', () => {
     const result = await service.findAll({
       citySlug: 'aktobe',
       ...aktobeBbox,
-      latitude: secondaryLat,
-      longitude: secondaryLng,
       sort: BusinessCatalogSort.RATING,
       limit: 100,
     });
@@ -194,11 +183,8 @@ describe('Stage 6.12A.9.3.2b — legacy Prisma geo filter cleanup', () => {
         slug,
         categoryId,
         cityId: aktobeCityId,
-        address: 'Ghost',
         ownerId,
         status: BusinessStatus.ACTIVE,
-        latitude: lat,
-        longitude: lng,
         businessSubcategories: { create: { subcategoryId } },
       },
     });
@@ -210,11 +196,9 @@ describe('Stage 6.12A.9.3.2b — legacy Prisma geo filter cleanup', () => {
     `;
     const oralBranch = await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: uralskCityId,
-        address: 'Far oral',
-        latitude: 51.22,
-        longitude: 51.39,
         isPrimary: true,
       },
     });
@@ -237,22 +221,17 @@ describe('Stage 6.12A.9.3.2b — legacy Prisma geo filter cleanup', () => {
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Stale parent',
         ownerId,
         status: BusinessStatus.ACTIVE,
-        latitude: null,
-        longitude: null,
         businessSubcategories: { create: { subcategoryId } },
       },
     });
     createdBusinessIds.push(business.id);
     const bl = await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: uralskCityId,
-        address: 'Valid branch',
-        latitude: lat,
-        longitude: lng,
         isPrimary: true,
       },
     });
@@ -276,22 +255,17 @@ describe('Stage 6.12A.9.3.2b — legacy Prisma geo filter cleanup', () => {
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Parent',
         ownerId,
         status: BusinessStatus.ACTIVE,
-        latitude: 51.22,
-        longitude: 51.38,
         businessSubcategories: { create: { subcategoryId } },
       },
     });
     createdBusinessIds.push(business.id);
     await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: uralskCityId,
-        address: 'No coords branch',
-        latitude: null,
-        longitude: null,
         isPrimary: true,
       },
     });
@@ -335,8 +309,6 @@ describe('Stage 6.12A.9.3.2b — legacy Prisma geo filter cleanup', () => {
     const service = buildService(aktobeCityId);
     const result = await service.findAll({
       citySlug: 'aktobe',
-      latitude: secondaryLat,
-      longitude: secondaryLng,
       radiusKm: 20,
       limit: 100,
     });

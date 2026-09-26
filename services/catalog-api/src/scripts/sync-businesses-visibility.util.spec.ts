@@ -63,13 +63,13 @@ describe('sync-businesses-visibility (A.9.4.4A)', () => {
       assertVisibilitySyncBusinessUpdateData({
         status: BusinessStatus.ACTIVE,
         latitude: 51.2,
-      }),
+      } as never),
     ).toThrow(/must not write Business\.latitude/);
 
     expect(() =>
       assertVisibilitySyncBusinessUpdateData({
         longitude: 51.3,
-      }),
+      } as never),
     ).toThrow(/must not write Business\.longitude/);
   });
 

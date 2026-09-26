@@ -143,10 +143,7 @@ describe('Stage 6.11C.5D — PostGIS nearest (runtime DB)', () => {
             slug,
             cityId,
             categoryId: category.id,
-            address: 'Test',
             status: BusinessStatus.ACTIVE,
-            latitude: null,
-            longitude: null,
           },
         });
         const { total } = await queryCatalogNearestPage(tx, {

@@ -109,7 +109,6 @@ describe('Stage 6.12A.7.8.2 — branch availability management', () => {
         slug,
         categoryId,
         cityId,
-        address: 'Main',
         status: 'ACTIVE',
         ownerId,
         locations: {

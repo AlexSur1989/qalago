@@ -171,15 +171,14 @@ describe('Stage 6.12A.2 — BusinessLocation backfill integrity (runtime DB)', (
             slug,
             categoryId: category.id,
             cityId: city.id,
-            address: 'Skip addr',
             status: 'PENDING',
           },
         });
         await tx.businessLocation.create({
           data: {
+            address: 'Branch addr',
             businessId: biz.id,
             cityId: city.id,
-            address: 'Existing branch',
             isPrimary: true,
           },
         });

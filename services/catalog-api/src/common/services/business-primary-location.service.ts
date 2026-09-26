@@ -12,16 +12,13 @@ import {
   createAuthoritativeInitialPrimaryInTx,
   createBusinessWithInitialPrimaryInTx,
   syncBusinessCompatibilityFromPrimaryInTx,
-  syncBusinessLegacyFullMirrorFromPrimaryInTx,
 } from '../utils/business-primary-location-aggregate.util';
 import {
   AuthoritativePrimaryPhysicalInput,
-  BusinessPhysicalSnapshot,
   locationPatchTouchesSynchronizedPhysicalFields,
   patchTouchesSynchronizedPhysicalFields,
   physicalSnapshotFromLocation,
   primaryLocationContactUpdateDataFromBusiness,
-  primaryPhysicalFromBusinessRecord,
 } from '../utils/business-primary-location.util';
 
 export type PrimaryLocationResolution =
@@ -31,10 +28,6 @@ export type PrimaryLocationResolution =
 
 @Injectable()
 export class BusinessPrimaryLocationService {
-  /**
-   * Resolves the primary BusinessLocation for a business.
-   * Does not fall back to arbitrary non-primary rows.
-   */
   async resolvePrimaryLocation(
     tx: Prisma.TransactionClient,
     businessId: string,
@@ -71,10 +64,6 @@ export class BusinessPrimaryLocationService {
     return resolved.location;
   }
 
-  /**
-   * Creates authoritative initial primary BL from physical input (repair / legacy callers).
-   * Prefer {@link createBusinessWithInitialPrimary} for production onboarding/create.
-   */
   async createAuthoritativeInitialPrimary(
     tx: Prisma.TransactionClient,
     businessId: string,
@@ -93,42 +82,28 @@ export class BusinessPrimaryLocationService {
     }
   }
 
-  /** Repair/transitional: copies physical fields from an existing Business row onto new primary BL. */
+  /** Adds authoritative primary BL to an existing Business shell (explicit physical input only). */
   async createInitialPrimary(
     tx: Prisma.TransactionClient,
-    business: BusinessPhysicalSnapshot,
+    businessId: string,
+    physical: AuthoritativePrimaryPhysicalInput,
   ): Promise<BusinessLocation> {
-    return this.createAuthoritativeInitialPrimary(
-      tx,
-      business.id,
-      primaryPhysicalFromBusinessRecord(business),
-    );
+    return this.createAuthoritativeInitialPrimary(tx, businessId, physical);
   }
 
-  /**
-   * Production aggregate (C3): Business brand shell + exactly one authoritative primary BL.
-   * `primaryPhysical` → BusinessLocation; Business INSERT may carry legacy geo bootstrap only.
-   */
   async createBusinessWithInitialPrimary(
     tx: Prisma.TransactionClient,
     params: {
-      brand: Omit<
-        Prisma.BusinessUncheckedCreateInput,
-        'cityId' | 'address' | 'latitude' | 'longitude' | 'locationSource'
-      >;
+      brand: Omit<Prisma.BusinessUncheckedCreateInput, 'cityId'>;
       primaryPhysical: AuthoritativePrimaryPhysicalInput;
     },
   ): Promise<{ business: Business; primaryLocation: BusinessLocation }> {
     return createBusinessWithInitialPrimaryInTx(tx, params);
   }
 
-  /**
-   * Mirrors synchronized physical fields from Business onto the primary BusinessLocation.
-   * Must run in the same transaction as the Business update.
-   */
   async syncPrimaryFromBusinessRecord(
     tx: Prisma.TransactionClient,
-    business: BusinessPhysicalSnapshot,
+    business: Pick<Business, 'id' | 'phone' | 'whatsapp' | 'instagram' | 'website' | 'workHours'>,
   ): Promise<BusinessLocation> {
     const primary = await this.getPrimaryLocationOrThrow(tx, business.id);
     return tx.businessLocation.update({
@@ -145,9 +120,6 @@ export class BusinessPrimaryLocationService {
     return locationPatchTouchesSynchronizedPhysicalFields(changedKeys);
   }
 
-  /**
-   * Syncs cityId + contact defaults from primary BusinessLocation onto Business (no geo mirror).
-   */
   async syncBusinessFromPrimaryLocationRecord(
     tx: Prisma.TransactionClient,
     location: Parameters<typeof physicalSnapshotFromLocation>[0],
@@ -160,23 +132,6 @@ export class BusinessPrimaryLocationService {
     return syncBusinessCompatibilityFromPrimaryInTx(tx, location);
   }
 
-  /** C4 migration / tests only — not create, production paths, or integrity repair (C2). */
-  async syncBusinessLegacyFullMirrorFromPrimaryLocationRecord(
-    tx: Prisma.TransactionClient,
-    location: Parameters<typeof physicalSnapshotFromLocation>[0],
-  ): Promise<Business> {
-    if (!location.isPrimary) {
-      throw new InternalServerErrorException(
-        'syncBusinessLegacyFullMirrorFromPrimaryLocationRecord requires a primary location row',
-      );
-    }
-    return syncBusinessLegacyFullMirrorFromPrimaryInTx(tx, location);
-  }
-
-  /**
-   * Promotes a secondary location to primary and syncs legacy Business physical fields.
-   * Unsets the previous primary in the same transaction (partial unique index safe).
-   */
   async promoteLocationToPrimary(
     tx: Prisma.TransactionClient,
     businessId: string,

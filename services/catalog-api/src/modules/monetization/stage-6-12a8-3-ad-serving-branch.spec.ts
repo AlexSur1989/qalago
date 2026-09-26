@@ -78,9 +78,6 @@ describe('Stage 6.12A.8.3 — branch-aware ad serving', () => {
             slug,
             categoryId,
             cityId: cityUralskId,
-            address: 'Legacy Uralsk HQ',
-            latitude: 51.1,
-            longitude: 51.2,
             phone: 'legacy-phone',
             status: 'ACTIVE',
             locations: {
@@ -89,23 +86,17 @@ describe('Stage 6.12A.8.3 — branch-aware ad serving', () => {
                   cityId: cityUralskId,
                   address: 'Uralsk L1 primary',
                   isPrimary: true,
-                  latitude: 51.21,
-                  longitude: 51.22,
                   phone: 'l1-phone',
                 },
                 {
                   cityId: cityUralskId,
-                  address: 'Uralsk L3 secondary',
+                  address: 'Uralsk L2',
                   isPrimary: false,
-                  latitude: 51.31,
-                  longitude: 51.32,
                 },
                 {
                   cityId: cityAktobeId,
-                  address: 'Aktobe only',
+                  address: 'Aktobe branch',
                   isPrimary: false,
-                  latitude: 50.1,
-                  longitude: 50.2,
                 },
               ],
             },
@@ -317,7 +308,6 @@ describe('Stage 6.12A.8.3 — branch-aware ad serving', () => {
         slug,
         categoryId,
         cityId: cityUralskId,
-        address: 'HQ',
         status: 'ACTIVE',
         locations: {
           create: [

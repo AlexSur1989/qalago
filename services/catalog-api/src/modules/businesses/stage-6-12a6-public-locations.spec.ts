@@ -5,6 +5,7 @@ import { BusinessLocationService } from './business-location.service';
 import { BusinessPrimaryLocationService } from '../../common/services/business-primary-location.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
+import { specCreateInitialPrimary, testPrimaryPhysical, createTestBusinessWithPrimary } from './business-with-primary.test-fixture';
 
 describe('Stage 6.12A.6 — public BusinessLocation read', () => {
   const prisma = new PrismaClient();
@@ -65,16 +66,13 @@ describe('Stage 6.12A.6 — public BusinessLocation read', () => {
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Primary street 1',
         phone: '+77001111111',
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
-        latitude: 51.2278,
-        longitude: 51.3865,
       },
     });
     createdBusinessIds.push(business.id);
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Test address');
     return business;
   }
 

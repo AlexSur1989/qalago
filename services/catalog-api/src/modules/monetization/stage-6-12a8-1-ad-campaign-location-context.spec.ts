@@ -73,7 +73,6 @@ describe('Stage 6.12A.8.1 — AdCampaign / AnalyticsEvent location context (runt
             slug: slugA,
             categoryId,
             cityId,
-            address: 'A street',
             status: 'ACTIVE',
             locations: {
               create: [
@@ -90,7 +89,6 @@ describe('Stage 6.12A.8.1 — AdCampaign / AnalyticsEvent location context (runt
             slug: slugB,
             categoryId,
             cityId,
-            address: 'B street',
             status: 'ACTIVE',
             locations: {
               create: { cityId, address: 'B primary', isPrimary: true },

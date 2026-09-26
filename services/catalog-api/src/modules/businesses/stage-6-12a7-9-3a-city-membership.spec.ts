@@ -102,11 +102,8 @@ describe('Stage 6.12A.7.9.3A — BusinessLocation city membership + city context
         slug,
         categoryId,
         cityId: options.businessCityId,
-        address: options.primaryAddress,
         ownerId,
         status: options.status ?? BusinessStatus.ACTIVE,
-        latitude: 51.2278,
-        longitude: 51.3865,
         businessSubcategories: { create: { subcategoryId } },
       },
     });
@@ -114,11 +111,9 @@ describe('Stage 6.12A.7.9.3A — BusinessLocation city membership + city context
 
     const primary = await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: options.primaryCityId,
-        address: options.primaryAddress,
-        latitude: options.primaryCityId === aktobeCityId ? 50.283 : 51.2278,
-        longitude: options.primaryCityId === aktobeCityId ? 57.167 : 51.3865,
         isPrimary: true,
       },
     });
@@ -127,11 +122,9 @@ describe('Stage 6.12A.7.9.3A — BusinessLocation city membership + city context
     for (const branch of options.extraBranches ?? []) {
       const row = await prisma.businessLocation.create({
         data: {
+          address: 'Branch addr',
           businessId: business.id,
           cityId: branch.cityId,
-          address: branch.address,
-          latitude: branch.lat ?? 51.228,
-          longitude: branch.lng ?? 51.387,
           isPrimary: false,
         },
       });

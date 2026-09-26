@@ -76,7 +76,6 @@ describe('Stage 6.12A.8.2 — campaign location validation + lifecycle', () => {
             slug: slugA,
             categoryId,
             cityId: cityUralskId,
-            address: 'Uralsk HQ',
             status: 'ACTIVE',
             locations: {
               create: [
@@ -93,7 +92,6 @@ describe('Stage 6.12A.8.2 — campaign location validation + lifecycle', () => {
             slug: slugB,
             categoryId,
             cityId: cityUralskId,
-            address: 'Other',
             status: 'ACTIVE',
             locations: {
               create: { cityId: cityUralskId, address: 'B1', isPrimary: true },
@@ -188,7 +186,6 @@ describe('Stage 6.12A.8.2 — campaign location validation + lifecycle', () => {
             slug,
             categoryId,
             cityId: cityUralskId,
-            address: 'HQ',
             status: 'ACTIVE',
             locations: {
               create: [

@@ -70,7 +70,6 @@ describe('Stage 6.12A.7.7.3 — effective public media', () => {
         slug,
         categoryId,
         cityId,
-        address: 'HQ',
         status: 'ACTIVE',
         coverImageUrl: '/uploads/SHARED-B',
         locations: {
@@ -91,7 +90,6 @@ describe('Stage 6.12A.7.7.3 — effective public media', () => {
         slug: slugOther,
         categoryId,
         cityId,
-        address: 'O',
         status: 'ACTIVE',
         locations: { create: { cityId, address: 'OB', isPrimary: true } },
         images: {

@@ -50,21 +50,16 @@ describe('Stage 6.12A.9.4.4C2 — BusinessLocation-native integrity', () => {
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Legacy business address only',
         ownerId,
         status: 'PENDING',
-        latitude: 51.1,
-        longitude: 51.2,
       },
     });
     await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: uralskCityId,
-        address: 'Authoritative BL address',
         isPrimary: true,
-        latitude: 51.2278,
-        longitude: 51.3865,
       },
     });
 
@@ -95,16 +90,15 @@ describe('Stage 6.12A.9.4.4C2 — BusinessLocation-native integrity', () => {
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Addr',
         ownerId,
         status: 'PENDING',
       },
     });
     await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: otherCity.id,
-        address: 'Branch addr',
         isPrimary: true,
       },
     });
@@ -127,16 +121,15 @@ describe('Stage 6.12A.9.4.4C2 — BusinessLocation-native integrity', () => {
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Parent addr',
         ownerId,
         status: 'PENDING',
       },
     });
     await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: uralskCityId,
-        address: '   ',
         isPrimary: true,
       },
     });
@@ -162,19 +155,16 @@ describe('Stage 6.12A.9.4.4C2 — BusinessLocation-native integrity', () => {
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Addr',
         ownerId,
         status: 'PENDING',
       },
     });
     await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: uralskCityId,
-        address: 'Partial',
         isPrimary: true,
-        latitude: 51.2,
-        longitude: null,
       },
     });
 

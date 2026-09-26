@@ -77,7 +77,6 @@ describe('Stage 6.12A.1 — BusinessLocation foundation (runtime DB)', () => {
         slug,
         categoryId,
         cityId,
-        address: 'Fixture address',
         status: 'PENDING',
       },
       select: { id: true },

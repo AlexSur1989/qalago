@@ -76,7 +76,6 @@ describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () =>
         slug: slugA,
         categoryId,
         cityId,
-        address: 'A',
         status: 'ACTIVE',
         locations: {
           create: [
@@ -93,7 +92,6 @@ describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () =>
         slug: slugB,
         categoryId,
         cityId,
-        address: 'B',
         status: 'ACTIVE',
         locations: { create: { cityId, address: 'B1', isPrimary: true } },
       },
@@ -263,7 +261,6 @@ describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () =>
         slug,
         categoryId,
         cityId,
-        address: 'X',
         status: 'ACTIVE',
         planTier: 'VIP',
         images: {

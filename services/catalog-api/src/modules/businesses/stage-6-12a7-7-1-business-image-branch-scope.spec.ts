@@ -62,18 +62,17 @@ describe('Stage 6.12A.7.7.1 — BusinessImage branch scope (runtime DB)', () => 
             slug: slugA,
             categoryId,
             cityId,
-            address: 'A street',
             status: 'ACTIVE',
             locations: {
               create: [
                 {
                   cityId,
-                  address: 'Primary',
+                  address: 'Primary A',
                   isPrimary: true,
                 },
                 {
                   cityId,
-                  address: 'Secondary',
+                  address: 'Secondary A',
                   isPrimary: false,
                 },
               ],
@@ -87,12 +86,11 @@ describe('Stage 6.12A.7.7.1 — BusinessImage branch scope (runtime DB)', () => 
             slug: slugB,
             categoryId,
             cityId,
-            address: 'B street',
             status: 'ACTIVE',
             locations: {
               create: {
                 cityId,
-                address: 'B primary',
+                address: 'Primary B',
                 isPrimary: true,
               },
             },
@@ -180,7 +178,6 @@ describe('Stage 6.12A.7.7.1 — BusinessImage branch scope (runtime DB)', () => 
         slug,
         categoryId,
         cityId,
-        address: 'Del',
         status: 'ACTIVE',
         images: {
           create: [{ imageUrl: '/uploads/a771-del.jpg', locationId: null }],

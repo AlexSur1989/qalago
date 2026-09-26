@@ -111,9 +111,8 @@ describe('Stage 6.12A.9.4.4C3 — business creation BL authority', () => {
         return { businessId: business.id, locationId: primaryLocation.id };
       });
 
-      const before = await prisma.business.findUniqueOrThrow({
-        where: { id: businessId },
-        select: { address: true },
+      const before = await prisma.businessLocation.findUniqueOrThrow({
+        where: { id: locationId },
       });
       expect(before.address).toBe('Initial BL addr');
 
@@ -122,13 +121,10 @@ describe('Stage 6.12A.9.4.4C3 — business creation BL authority', () => {
         data: { address: 'Updated BL only' },
       });
 
-      const afterBusiness = await prisma.business.findUniqueOrThrow({
-        where: { id: businessId },
-        select: { address: true, latitude: true, longitude: true },
+      const afterPrimary = await prisma.businessLocation.findUniqueOrThrow({
+        where: { id: locationId },
       });
-      expect(afterBusiness.address).toBe(before.address);
-      expect(afterBusiness.latitude).toBeNull();
-      expect(afterBusiness.longitude).toBeNull();
+      expect(afterPrimary.address).toBe('Updated BL only');
 
       const bl = await prisma.businessLocation.findUniqueOrThrow({ where: { id: locationId } });
       const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: businessId } });

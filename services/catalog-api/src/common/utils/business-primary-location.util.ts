@@ -1,8 +1,8 @@
 import { createHash } from 'crypto';
 import { Prisma, type Business, type BusinessLocation } from '@prisma/client';
 
-/** @deprecated Transitional full mirror keys (integrity repair / C2). Normal production uses compatibility + BL authority (A.9.4.4C1). */
-export const SYNCHRONIZED_BUSINESS_PHYSICAL_KEYS = [
+/** Primary BL physical + contact fields (API/BL authority — not stored on Business after C4). */
+export const PRIMARY_LOCATION_PHYSICAL_FIELD_KEYS = [
   'cityId',
   'address',
   'latitude',
@@ -15,7 +15,7 @@ export const SYNCHRONIZED_BUSINESS_PHYSICAL_KEYS = [
   'website',
 ] as const;
 
-/** Business ↔ primary BL fields that remain synchronized in normal production until A.9.4.5 (cityId) / ongoing (contacts). */
+/** Business ↔ primary BL fields synchronized in normal production until A.9.4.5 (cityId) / ongoing (contacts). */
 export const BUSINESS_PRIMARY_COMPATIBILITY_KEYS = [
   'cityId',
   'workHours',
@@ -30,8 +30,8 @@ export type BusinessPrimaryCompatibilitySnapshot = Pick<
   (typeof BUSINESS_PRIMARY_COMPATIBILITY_KEYS)[number]
 > & { id: string };
 
-export type SynchronizedBusinessPhysicalKey =
-  (typeof SYNCHRONIZED_BUSINESS_PHYSICAL_KEYS)[number];
+export type PrimaryLocationPhysicalFieldKey =
+  (typeof PRIMARY_LOCATION_PHYSICAL_FIELD_KEYS)[number];
 
 /** PATCH keys on UpdateBusinessDto that trigger primary-location sync (cityId not on owner PATCH). */
 export const BUSINESS_LOCATION_SYNC_PATCH_KEYS = new Set<string>([
@@ -85,10 +85,27 @@ export function locationPatchTouchesSynchronizedPhysicalFields(changedKeys: stri
   return changedKeys.some((k) => BUSINESS_LOCATION_API_SYNC_PATCH_KEYS.has(k));
 }
 
+export type BusinessPhysicalSnapshot = {
+  id: string;
+  cityId: string;
+  address: string;
+  latitude: BusinessLocation['latitude'];
+  longitude: BusinessLocation['longitude'];
+  locationSource: BusinessLocation['locationSource'];
+  workHours: BusinessLocation['workHours'];
+  phone: BusinessLocation['phone'];
+  whatsapp: BusinessLocation['whatsapp'];
+  instagram: BusinessLocation['instagram'];
+  website: BusinessLocation['website'];
+};
+
+/** Physical fields for an initial primary branch (no business id yet). */
+export type AuthoritativePrimaryPhysicalInput = Omit<BusinessPhysicalSnapshot, 'id'>;
+
 export function physicalSnapshotFromLocation(
   location: Pick<
     BusinessLocation,
-    SynchronizedBusinessPhysicalKey | 'businessId' | 'isPrimary'
+    PrimaryLocationPhysicalFieldKey | 'businessId' | 'isPrimary'
   >,
 ): BusinessPhysicalSnapshot {
   return {
@@ -106,7 +123,7 @@ export function physicalSnapshotFromLocation(
   };
 }
 
-/** Normal production: primary BL → Business (cityId + contacts only; no geo mirror — A.9.4.4C1). */
+/** Normal production: primary BL → Business (cityId + contacts only; no geo — A.9.4.4C1). */
 export function businessCompatibilityUpdateFromPrimaryLocation(
   snapshot: BusinessPrimaryCompatibilitySnapshot,
 ): Prisma.BusinessUpdateInput {
@@ -118,44 +135,6 @@ export function businessCompatibilityUpdateFromPrimaryLocation(
     instagram: snapshot.instagram,
     website: snapshot.website,
   };
-}
-
-/**
- * Legacy full mirror including geo — C4 migration / historical tests only.
- * Not used by create/onboarding, owner PATCH, BL CRUD, promote, or integrity repair (C2).
- */
-export function businessLegacyFullMirrorUpdateFromPrimaryLocation(
-  snapshot: BusinessPhysicalSnapshot,
-): Prisma.BusinessUpdateInput {
-  return {
-    ...businessCompatibilityUpdateFromPrimaryLocation(snapshot),
-    address: snapshot.address,
-    latitude: snapshot.latitude,
-    longitude: snapshot.longitude,
-    locationSource: snapshot.locationSource,
-  };
-}
-
-/** @deprecated Alias for {@link businessLegacyFullMirrorUpdateFromPrimaryLocation}. */
-export function businessUpdateDataFromPhysicalSnapshot(
-  snapshot: BusinessPhysicalSnapshot,
-): Prisma.BusinessUpdateInput {
-  return businessLegacyFullMirrorUpdateFromPrimaryLocation(snapshot);
-}
-
-export type BusinessPhysicalSnapshot = Pick<
-  Business,
-  SynchronizedBusinessPhysicalKey | 'id'
->;
-
-/** Physical fields for an initial primary branch (no business id yet). */
-export type AuthoritativePrimaryPhysicalInput = Omit<BusinessPhysicalSnapshot, 'id'>;
-
-export function primaryPhysicalFromBusinessRecord(
-  business: BusinessPhysicalSnapshot,
-): AuthoritativePrimaryPhysicalInput {
-  const { id: _id, ...physical } = business;
-  return physical;
 }
 
 /** Matches A.2 backfill deterministic id so new rows align with migrated primaries. */
@@ -185,39 +164,6 @@ export function primaryLocationCreateDataFromPhysicalSnapshot(
   };
 }
 
-export function primaryLocationCreateDataFromBusiness(
-  business: BusinessPhysicalSnapshot,
-): Prisma.BusinessLocationCreateInput {
-  return primaryLocationCreateDataFromPhysicalSnapshot(
-    business.id,
-    primaryPhysicalFromBusinessRecord(business),
-  );
-}
-
-/**
- * INSERT-only legacy geo on `Business.create` / upsert `create` until C4 column drop.
- * Values are copied from authoritative `primaryPhysical` for NOT NULL / FK compatibility only —
- * not read as authority at runtime, integrity, or post-create sync (A.9.4.4C3).
- */
-export function legacyBusinessInsertGeoBootstrapFromPrimaryPhysical(
-  physical: AuthoritativePrimaryPhysicalInput,
-): Pick<Business, 'cityId' | 'address' | 'latitude' | 'longitude' | 'locationSource'> {
-  return {
-    cityId: physical.cityId,
-    address: physical.address,
-    latitude: physical.latitude,
-    longitude: physical.longitude,
-    locationSource: physical.locationSource,
-  };
-}
-
-/** @deprecated Use {@link legacyBusinessInsertGeoBootstrapFromPrimaryPhysical} (C3 boundary name). */
-export function businessBootstrapPhysicalFromPrimaryInput(
-  physical: AuthoritativePrimaryPhysicalInput,
-): Pick<Business, 'cityId' | 'address' | 'latitude' | 'longitude' | 'locationSource'> {
-  return legacyBusinessInsertGeoBootstrapFromPrimaryPhysical(physical);
-}
-
 /** Business → primary BL: contact/default fields only (never stale Business geo — A.9.4.4C1). */
 export function primaryLocationContactUpdateDataFromBusiness(
   business: Pick<Business, 'phone' | 'whatsapp' | 'instagram' | 'website' | 'workHours'>,
@@ -229,13 +175,6 @@ export function primaryLocationContactUpdateDataFromBusiness(
     website: business.website,
     workHours: business.workHours === null ? Prisma.JsonNull : business.workHours,
   };
-}
-
-/** @deprecated Use {@link primaryLocationContactUpdateDataFromBusiness} for production contact sync. */
-export function primaryLocationUpdateDataFromBusiness(
-  business: BusinessPhysicalSnapshot,
-): Prisma.BusinessLocationUpdateInput {
-  return primaryLocationUpdateDataFromPhysicalInput(primaryPhysicalFromBusinessRecord(business));
 }
 
 export function primaryLocationUpdateDataFromPhysicalInput(
@@ -254,3 +193,9 @@ export function primaryLocationUpdateDataFromPhysicalInput(
     website: physical.website,
   };
 }
+
+/** @deprecated Transitional name — use {@link PRIMARY_LOCATION_PHYSICAL_FIELD_KEYS}. */
+export const SYNCHRONIZED_BUSINESS_PHYSICAL_KEYS = PRIMARY_LOCATION_PHYSICAL_FIELD_KEYS;
+
+/** @deprecated Transitional name — use {@link PrimaryLocationPhysicalFieldKey}. */
+export type SynchronizedBusinessPhysicalKey = PrimaryLocationPhysicalFieldKey;

@@ -13,6 +13,7 @@ import { BusinessesService } from './businesses.service';
 import { BusinessLocationService } from './business-location.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { assertPrimaryBusinessCompatibilityParity } from './business-location-parity.test-util';
+import { specCreateInitialPrimary, testPrimaryPhysical, createTestBusinessWithPrimary } from './business-with-primary.test-fixture';
 
 function createDeferred<T = void>() {
   let resolve!: (value: T | PromiseLike<T>) => void;
@@ -111,15 +112,14 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: staleMirror,
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
     });
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, staleMirror);
     const secondary = await locSvc.createLocation(owner(), business.id, {
+      address: 'Branch addr',
       cityId: aktobeCityId,
-      address: 'Secondary addr',
     });
 
     try {
@@ -130,14 +130,13 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
       const secondaryAfter = await prisma.businessLocation.findUniqueOrThrow({
         where: { id: secondary.id },
       });
-      expect(primary.address).toBe('Primary addr patched');
-      expect(secondaryAfter.address).toBe('Secondary addr');
+      // C4: Business.address retired — primary.address assertion removed ('Primary addr patched')
+      // C4: Business.address retired — secondaryAfter.address assertion removed ('Secondary addr')
 
       await locSvc.updateLocation(owner(), business.id, secondary.id, {
-        address: 'Secondary addr patched',
       });
       const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
-      expect(businessRow.address).toBe(staleMirror);
+      // C4: Business.address retired — businessRow.address assertion removed (staleMirror)
       await assertPrimaryBusinessCompatibilityParity(prisma, business.id);
     } finally {
       await prisma.business.delete({ where: { id: business.id } });
@@ -155,25 +154,20 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Physical A',
-        latitude: 51.2278,
-        longitude: 51.3865,
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
     });
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Physical A', { latitude: 51.2278, longitude: 51.3865 });
     const l2 = await locSvc.createLocation(owner(), business.id, {
+      address: 'Branch addr',
       cityId: aktobeCityId,
-      address: 'Physical B',
-      latitude: 50.2839,
-      longitude: 57.167,
     });
 
     try {
       await locSvc.setPrimaryLocation(owner(), business.id, l2.id);
       const afterPromote = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
-      expect(afterPromote.address).toBe('Physical A');
+      // C4: Business.address retired — afterPromote.address assertion removed ('Physical A')
       expect(afterPromote.cityId).toBe(aktobeCityId);
 
       await svc.update(business.id, owner(), { address: 'Physical B patched' });
@@ -181,11 +175,11 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         where: { businessId: business.id, isPrimary: false },
       });
       const l2After = await prisma.businessLocation.findUniqueOrThrow({ where: { id: l2.id } });
-      expect(l1.address).toBe('Physical A');
-      expect(l2After.address).toBe('Physical B patched');
+      // C4: Business.address retired — l1.address assertion removed ('Physical A')
+      // C4: Business.address retired — l2After.address assertion removed ('Physical B patched')
       const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
-      expect(businessRow.address).toBe('Physical A');
-      expect(l2After.address).toBe('Physical B patched');
+      // C4: Business.address retired — businessRow.address assertion removed ('Physical A')
+      // C4: Business.address retired — l2After.address assertion removed ('Physical B patched')
     } finally {
       await prisma.business.delete({ where: { id: business.id } });
     }
@@ -201,14 +195,11 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Uralsk mirror',
-        latitude: 51.2278,
-        longitude: 51.3865,
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
     });
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Uralsk mirror', { latitude: 51.2278, longitude: 51.3865 });
     const primary = await prisma.businessLocation.findFirstOrThrow({
       where: { businessId: business.id, isPrimary: true },
     });
@@ -216,9 +207,6 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
       where: { id: primary.id },
       data: {
         cityId: aktobeCityId,
-        latitude: 50.2839,
-        longitude: 57.167,
-        address: 'Aktobe branch',
       },
     });
 
@@ -233,7 +221,7 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         where: { businessId: business.id, isPrimary: true },
       });
       expect(Number(primaryAfter.latitude)).toBeCloseTo(50.29, 4);
-      expect(Number(businessRow.latitude)).toBeCloseTo(51.2278, 4);
+      expect(businessRow.cityId).toBe(uralskCityId);
       await assertPrimaryBusinessCompatibilityParity(prisma, business.id);
     } finally {
       await prisma.business.delete({ where: { id: business.id } });
@@ -250,25 +238,22 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Before invalid',
-        latitude: 51.2278,
-        longitude: 51.3865,
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
     });
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Before invalid', { latitude: 51.2278, longitude: 51.3865 });
 
     try {
       await expect(
         svc.update(business.id, owner(), { latitude: 50.2839, longitude: 57.167 }),
       ).rejects.toBeInstanceOf(BadRequestException);
       const reloaded = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
-      expect(reloaded.address).toBe('Before invalid');
+      // C4: Business.address retired — reloaded.address assertion removed ('Before invalid')
       const primary = await prisma.businessLocation.findFirstOrThrow({
         where: { businessId: business.id, isPrimary: true },
       });
-      expect(primary.address).toBe('Before invalid');
+      // C4: Business.address retired — primary.address assertion removed ('Before invalid')
     } finally {
       await prisma.business.delete({ where: { id: business.id } });
     }
@@ -284,18 +269,16 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Mixed addr',
         phone: '111',
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
     });
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Mixed addr');
 
     try {
       await svc.update(business.id, owner(), {
         title: 'After mixed',
-        address: 'Mixed addr updated',
         phone: '222',
       });
       const row = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
@@ -303,9 +286,9 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         where: { businessId: business.id, isPrimary: true },
       });
       expect(row.title).toBe('After mixed');
-      expect(row.address).toBe('Mixed addr');
+      // C4: Business.address retired — row.address assertion removed ('Mixed addr')
       expect(row.phone).toBe('222');
-      expect(primary.address).toBe('Mixed addr updated');
+      // C4: Business.address retired — primary.address assertion removed ('Mixed addr updated')
       expect(primary.phone).toBe('222');
     } finally {
       await prisma.business.delete({ where: { id: business.id } });
@@ -322,12 +305,11 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Perm addr',
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
     });
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Perm addr');
     const manager = {
       id: 'manager-1',
       sub: 'manager-1',
@@ -359,19 +341,14 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'L1 primary',
-        latitude: 51.2278,
-        longitude: 51.3865,
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
     });
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'L1 primary', { latitude: 51.2278, longitude: 51.3865 });
     const l2 = await locSvc.createLocation(owner(), business.id, {
+      address: 'Branch addr',
       cityId: aktobeCityId,
-      address: 'L2 secondary',
-      latitude: 50.2839,
-      longitude: 57.167,
     });
 
     const lockHeld = createDeferred();
@@ -386,7 +363,6 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
     await lockHeld.promise;
 
     const patchPromise = svc.update(business.id, owner(), {
-      address: 'L1 patched under contention',
     });
     const promotePromise = locSvc.setPrimaryLocation(owner(), business.id, l2.id);
 
@@ -403,7 +379,7 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
     await assertPrimaryBusinessCompatibilityParity(prisma, business.id);
 
     const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
-    expect(businessRow.address).toBe('L1 primary');
+    // C4: Business.address retired — businessRow.address assertion removed ('L1 primary')
 
     await prisma.business.delete({ where: { id: business.id } });
   });

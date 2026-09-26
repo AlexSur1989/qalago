@@ -14,6 +14,7 @@ import {
   assertPrimaryBusinessLocationParity,
 } from './business-location-parity.test-util';
 import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
+import { specCreateInitialPrimary, testPrimaryPhysical, createTestBusinessWithPrimary } from './business-with-primary.test-fixture';
 
 describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement', () => {
   const prisma = new PrismaClient();
@@ -77,7 +78,6 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Mirror target addr',
         phone: 'first-phone',
         ownerId: fixtureOwnerId,
         status: 'PENDING',
@@ -87,8 +87,8 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
     try {
       const svc = buildLocationService();
       const created = await svc.createLocation(owner(), business.id, {
-        cityId: uralskCityId,
         address: 'Branch addr',
+        cityId: uralskCityId,
         phone: 'branch-phone',
       });
       expect(created.isPrimary).toBe(true);
@@ -98,8 +98,8 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
 
       await assertPrimaryBusinessLocationParity(prisma, business.id);
       const row = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
-      expect(row.address).toBe('Mirror target addr');
       expect(row.phone).toBe('branch-phone');
+      expect(row.cityId).toBe(uralskCityId);
     } finally {
       await prisma.business.delete({ where: { id: business.id } });
     }
@@ -114,7 +114,6 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Parallel base',
         ownerId: fixtureOwnerId,
         status: 'PENDING',
       },
@@ -124,12 +123,12 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
       const svc = buildLocationService();
       const results = await Promise.allSettled([
         svc.createLocation(owner(), business.id, {
+          address: 'Branch addr',
           cityId: uralskCityId,
-          address: 'Parallel A',
         }),
         svc.createLocation(owner(), business.id, {
+          address: 'Branch addr',
           cityId: uralskCityId,
-          address: 'Parallel B',
         }),
       ]);
 
@@ -158,12 +157,11 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Only branch',
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
     });
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Only branch');
 
     try {
       const svc = buildLocationService();
@@ -187,16 +185,15 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Primary addr',
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
     });
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Primary addr');
     const svc = buildLocationService();
     await svc.createLocation(owner(), business.id, {
+      address: 'Branch addr',
       cityId: aktobeCityId,
-      address: 'Secondary addr',
     });
     const primary = await prisma.businessLocation.findFirstOrThrow({
       where: { businessId: business.id, isPrimary: true },
@@ -220,16 +217,15 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Corrupt',
         ownerId: fixtureOwnerId,
         status: 'PENDING',
       },
     });
     const branch = await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: uralskCityId,
-        address: 'No primary flag',
         isPrimary: false,
       },
     });
@@ -257,20 +253,19 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Primary base',
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
     });
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Primary base');
     const svc = buildLocationService();
     const l2 = await svc.createLocation(owner(), business.id, {
+      address: 'Branch addr',
       cityId: aktobeCityId,
-      address: 'L2 concurrent',
     });
     const l3 = await svc.createLocation(owner(), business.id, {
+      address: 'Branch addr',
       cityId: aktobeCityId,
-      address: 'L3 concurrent',
     });
 
     try {

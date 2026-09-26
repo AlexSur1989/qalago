@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { BusinessLocationPrimaryInvariantBrokenCode } from '../utils/business-location-invariant.util';
 import { BusinessPrimaryLocationService } from './business-primary-location.service';
 import { deterministicPrimaryLocationId } from '../utils/business-primary-location.util';
+import { testPrimaryPhysical } from '../../modules/businesses/business-with-primary.test-fixture';
 
 describe('BusinessPrimaryLocationService (Stage 6.12A.3)', () => {
   const service = new BusinessPrimaryLocationService();
@@ -140,7 +141,7 @@ describe('BusinessPrimaryLocationService (Stage 6.12A.3)', () => {
   it('createInitialPrimary uses deterministic id aligned with A.2 backfill', async () => {
     const createImpl = jest.fn().mockResolvedValue({ id: deterministicPrimaryLocationId('biz-1') });
     const tx = mockTx({ primaries: [], createImpl });
-    await service.createInitialPrimary(tx as never, businessSnapshot);
+    await service.createInitialPrimary(tx as never, 'biz-1', testPrimaryPhysical('city-1', 'Main st', { phone: '+77001112233' }));
     expect(createImpl).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
@@ -155,7 +156,7 @@ describe('BusinessPrimaryLocationService (Stage 6.12A.3)', () => {
     const tx = mockTx({
       primaries: [{ id: 'bl-existing', isPrimary: true, businessId: 'biz-1' }],
     });
-    await expect(service.createInitialPrimary(tx as never, businessSnapshot)).rejects.toBeInstanceOf(
+    await expect(service.createInitialPrimary(tx as never, 'biz-1', testPrimaryPhysical('city-1', 'Main st', { phone: '+77001112233' }))).rejects.toBeInstanceOf(
       InternalServerErrorException,
     );
   });

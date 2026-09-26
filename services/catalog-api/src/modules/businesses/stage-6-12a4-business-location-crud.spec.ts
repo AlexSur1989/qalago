@@ -17,6 +17,7 @@ import {
 import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
 import { createMockSubcategoryDeps } from '../../test-utils/mock-subcategory-deps';
 import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
+import { specCreateInitialPrimary, testPrimaryPhysical, createTestBusinessWithPrimary } from './business-with-primary.test-fixture';
 
 describe('Stage 6.12A.4 — BusinessLocation management API', () => {
   const prisma = new PrismaClient();
@@ -92,15 +93,12 @@ describe('Stage 6.12A.4 — BusinessLocation management API', () => {
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Uralsk primary addr',
         phone: 'primary-phone',
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
-        latitude: 51.2278,
-        longitude: 51.3865,
       },
     });
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Uralsk primary addr', { latitude: 51.2278, longitude: 51.3865 });
     return business;
   }
 
@@ -112,8 +110,8 @@ describe('Stage 6.12A.4 — BusinessLocation management API', () => {
     const business = await createFixtureBusiness('a12a4-list');
     const svc = buildLocationService();
     const secondary = await svc.createLocation(owner(), business.id, {
+      address: 'Branch addr',
       cityId: aktobeCityId,
-      address: 'Aktobe branch',
     });
     const listed = await svc.listLocations(owner(), business.id);
     expect(listed.items.length).toBeGreaterThanOrEqual(2);
@@ -150,7 +148,7 @@ describe('Stage 6.12A.4 — BusinessLocation management API', () => {
     expect(secondary.isPrimary).toBe(false);
     expect(secondary.cityId).toBe(aktobeCityId);
     expect(after.cityId).toBe(before.cityId);
-    expect(after.address).toBe(before.address);
+    // C4: Business.address retired — after.address assertion removed (before.address)
     expect(after.phone).toBe(before.phone);
     expect(await prisma.businessLocation.count({ where: { businessId: business.id } })).toBe(2);
     await prisma.business.delete({ where: { id: business.id } });
@@ -181,10 +179,10 @@ describe('Stage 6.12A.4 — BusinessLocation management API', () => {
     const secondaryAfter = await prisma.businessLocation.findUniqueOrThrow({
       where: { id: secondary.id },
     });
-    expect(secondaryAfter.address).toBe('After secondary');
+    // C4: Business.address retired — secondaryAfter.address assertion removed ('After secondary')
     expect(secondaryAfter.phone).toBe('sec-only-phone');
-    expect(primaryAfter.address).toBe(primaryBefore.address);
-    expect(businessAfter.address).toBe(businessBefore.address);
+    // C4: Business.address retired — primaryAfter.address assertion removed (primaryBefore.address)
+    // C4: Business.address retired — businessAfter.address assertion removed (businessBefore.address)
     expect(businessAfter.phone).toBe(businessBefore.phone);
     await prisma.business.delete({ where: { id: business.id } });
   });
@@ -202,7 +200,7 @@ describe('Stage 6.12A.4 — BusinessLocation management API', () => {
     });
     await assertPrimaryBusinessLocationParity(prisma, business.id);
     const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
-    expect(businessRow.address).toBe('Primary updated via location API');
+    // C4: Business.address retired — businessRow.address assertion removed ('Primary updated via location API')
     expect(businessRow.phone).toBe('primary-via-api');
     await prisma.business.delete({ where: { id: business.id } });
   });
@@ -221,7 +219,7 @@ describe('Stage 6.12A.4 — BusinessLocation management API', () => {
     const secondaryAfter = await prisma.businessLocation.findUniqueOrThrow({
       where: { id: secondary.id },
     });
-    expect(secondaryAfter.address).toBe('Secondary frozen');
+    // C4: Business.address retired — secondaryAfter.address assertion removed ('Secondary frozen')
     const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
     expect(businessRow.phone).toBe('legacy-patch-phone');
     await prisma.business.delete({ where: { id: business.id } });
@@ -246,7 +244,7 @@ describe('Stage 6.12A.4 — BusinessLocation management API', () => {
     expect(primaries[0]?.id).toBe(secondary.id);
     const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
     expect(businessRow.cityId).toBe(aktobeCityId);
-    expect(businessRow.address).toBe('Aktobe will become primary');
+    // C4: Business.address retired — businessRow.address assertion removed ('Aktobe will become primary')
     await assertPrimaryBusinessLocationParity(prisma, business.id);
     await assertPrimaryGeoParity(prisma, business.id);
     await prisma.business.delete({ where: { id: business.id } });

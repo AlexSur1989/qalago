@@ -76,10 +76,9 @@ export function assertMapBboxSpanWithinLimits(bbox: NormalizedMapBbox): void {
 }
 
 /**
- * Prisma filter on legacy Business mirror coordinates.
- * @deprecated A.9.3.2b — public discovery/map must not use parent lat/lng; tests/docs only.
+ * Prisma filter on authoritative BusinessLocation coordinates (post A.9.4.4C4 Business geo retirement).
  */
-export function validStoredBusinessCoordinateWhere(): Prisma.BusinessWhereInput {
+export function validStoredBusinessLocationCoordinateWhere(): Prisma.BusinessLocationWhereInput {
   return {
     latitude: { not: null, gte: LAT_MIN, lte: LAT_MAX },
     longitude: { not: null, gte: LNG_MIN, lte: LNG_MAX },
@@ -87,6 +86,13 @@ export function validStoredBusinessCoordinateWhere(): Prisma.BusinessWhereInput 
       AND: [{ latitude: 0 }, { longitude: 0 }],
     },
   };
+}
+
+/** @deprecated A.9.4.4C4 — Business mirror lat/lng columns removed; use validStoredBusinessLocationCoordinateWhere. */
+export function validStoredBusinessCoordinateWhere(): never {
+  throw new Error(
+    'validStoredBusinessCoordinateWhere retired in A.9.4.4C4; use validStoredBusinessLocationCoordinateWhere',
+  );
 }
 
 export function mergeWhereWithAnd(

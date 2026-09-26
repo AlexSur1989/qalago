@@ -65,7 +65,6 @@ describe('Stage 6.12A.7.8.3 — effective catalog / promotions', () => {
         slug,
         categoryId,
         cityId,
-        address: 'HQ',
         status: 'ACTIVE',
         locations: {
           create: [
@@ -278,7 +277,6 @@ describe('Stage 6.12A.7.8.3 — effective catalog / promotions', () => {
         slug: otherSlug,
         categoryId,
         cityId,
-        address: 'O',
         status: 'ACTIVE',
         locations: { create: { cityId, address: 'OB', isPrimary: true } },
       },

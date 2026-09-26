@@ -14,6 +14,7 @@ import {
   resolveNearestRadiusMeters,
 } from './business-catalog-postgis-geo.query';
 import type { BusinessDiscoveryContext } from './business-discovery-context.util';
+import { specCreateInitialPrimary, testPrimaryPhysical, createTestBusinessWithPrimary } from './business-with-primary.test-fixture';
 
 type GeoListItem = { id: string } & BusinessDiscoveryContext;
 
@@ -133,16 +134,13 @@ describe('Stage 6.12A.7.9.2 — nearby nearest BusinessLocation per Business', (
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Fixture primary',
         ownerId,
         status: BusinessStatus.ACTIVE,
-        latitude: userLat,
-        longitude: userLng,
         businessSubcategories: { create: { subcategoryId } },
       },
     });
     createdBusinessIds.push(business.id);
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Test address');
     return business;
   }
 
@@ -158,8 +156,6 @@ describe('Stage 6.12A.7.9.2 — nearby nearest BusinessLocation per Business', (
         businessId,
         cityId: uralskCityId,
         address,
-        latitude: lat,
-        longitude: lng,
         isPrimary: false,
       },
     });

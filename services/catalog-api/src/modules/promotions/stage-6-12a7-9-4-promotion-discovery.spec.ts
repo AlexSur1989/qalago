@@ -76,22 +76,17 @@ describe('Stage 6.12A.7.9.4 — branch-aware promotion discovery', () => {
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Parent Oral',
         ownerId,
         status: BusinessStatus.ACTIVE,
-        latitude: 51.2278,
-        longitude: 51.3865,
       },
     });
     createdBusinessIds.push(business.id);
 
     const l1 = await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: uralskCityId,
-        address: 'Oral branch',
-        latitude: 51.2278,
-        longitude: 51.3865,
         isPrimary: true,
       },
     });
@@ -161,21 +156,16 @@ describe('Stage 6.12A.7.9.4 — branch-aware promotion discovery', () => {
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Only aktobe',
         ownerId,
         status: BusinessStatus.ACTIVE,
-        latitude: 50.283,
-        longitude: 57.167,
       },
     });
     createdBusinessIds.push(business.id);
     const l2 = await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: aktobeCityId,
-        address: 'Only Aktobe loc',
-        latitude: 50.283,
-        longitude: 57.167,
         isPrimary: true,
       },
     });
@@ -224,21 +214,16 @@ describe('Stage 6.12A.7.9.4 — branch-aware promotion discovery', () => {
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Parent',
         ownerId,
         status: BusinessStatus.ACTIVE,
-        latitude: 51.2278,
-        longitude: 51.3865,
       },
     });
     createdBusinessIds.push(business.id);
     const l1 = await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: uralskCityId,
-        address: 'L1 assigned',
-        latitude: 51.2278,
-        longitude: 51.3865,
         isPrimary: false,
       },
     });

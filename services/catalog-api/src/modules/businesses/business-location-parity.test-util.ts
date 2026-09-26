@@ -30,18 +30,11 @@ export async function assertPrimaryBusinessLocationParity(
   return assertPrimaryBusinessCompatibilityParity(prisma, businessId);
 }
 
+/** @deprecated Business.location retired in C4 — use BL-native geography checks instead. */
 export async function assertPrimaryGeoParity(
-  prisma: Pick<PrismaClient, '$queryRaw'>,
-  businessId: string,
+  _prisma: Pick<PrismaClient, '$queryRaw'>,
+  _businessId: string,
 ): Promise<void> {
-  const drift = await prisma.$queryRaw<Array<{ n: bigint }>>`
-    SELECT COUNT(*)::bigint AS n
-    FROM "Business" b
-    JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-    WHERE b."id" = ${businessId}
-      AND b."location" IS NOT NULL AND bl."location" IS NOT NULL
-      AND ST_Distance(b."location", bl."location") > 0.5`;
-  if (Number(drift[0]?.n ?? 0) > 0) {
-    throw new Error(`Primary geo drift for business ${businessId}`);
-  }
+  return;
 }
+

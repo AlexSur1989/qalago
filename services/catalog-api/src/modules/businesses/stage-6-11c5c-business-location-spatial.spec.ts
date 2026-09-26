@@ -4,8 +4,10 @@ import {
   POSTGIS_TEST_ROLLBACK,
   withPostgisIntegrationTransaction,
 } from './postgis-integration-test.util';
+import { createBusinessWithInitialPrimaryInTx } from '../../common/utils/business-primary-location-aggregate.util';
+import { testPrimaryPhysical } from './business-with-primary.test-fixture';
 
-describe('Stage 6.11C.5C — Business.location trigger (runtime DB)', () => {
+describe('Stage 6.11C.5C — BusinessLocation.location trigger (runtime DB)', () => {
   const prisma = new PrismaClient();
   let skip = false;
   let cityId = '';
@@ -19,7 +21,7 @@ describe('Stage 6.11C.5C — Business.location trigger (runtime DB)', () => {
           SELECT 1
           FROM information_schema.columns
           WHERE table_schema = 'public'
-            AND table_name = 'Business'
+            AND table_name = 'BusinessLocation'
             AND column_name = 'location'
         ) AS exists
       `;
@@ -45,14 +47,33 @@ describe('Stage 6.11C.5C — Business.location trigger (runtime DB)', () => {
   });
 
   async function withRollback<T>(
-    fn: (tx: Prisma.TransactionClient, slug: string) => Promise<T>,
+    fn: (
+      tx: Prisma.TransactionClient,
+      slug: string,
+      businessId: string,
+      locationId: string,
+    ) => Promise<T>,
   ): Promise<T | undefined> {
     if (skip) {
       return undefined;
     }
-    const slug = `c5c-trigger-${randomBytes(6).toString('hex')}`;
+    const slug = `c5c-bl-trigger-${randomBytes(6).toString('hex')}`;
     try {
-      return await withPostgisIntegrationTransaction(prisma, (tx) => fn(tx, slug));
+      return await withPostgisIntegrationTransaction(prisma, async (tx) => {
+        const { business, primaryLocation } = await createBusinessWithInitialPrimaryInTx(tx, {
+          brand: {
+            title: 'C5C BL Trigger Fixture',
+            slug,
+            categoryId,
+            status: 'PENDING',
+          },
+          primaryPhysical: testPrimaryPhysical(cityId, 'Trigger test', {
+            latitude: null,
+            longitude: null,
+          }),
+        });
+        return fn(tx, slug, business.id, primaryLocation.id);
+      });
     } finally {
       await prisma.business.deleteMany({
         where: {
@@ -60,28 +81,6 @@ describe('Stage 6.11C.5C — Business.location trigger (runtime DB)', () => {
         },
       });
     }
-  }
-
-  async function insertFixture(
-    tx: Prisma.TransactionClient,
-    slug: string,
-    latitude: number | null,
-    longitude: number | null,
-  ): Promise<string> {
-    const created = await tx.business.create({
-      data: {
-        title: 'C5C Trigger Fixture',
-        slug,
-        categoryId,
-        cityId,
-        address: 'Trigger test',
-        status: 'PENDING',
-        latitude: latitude ?? undefined,
-        longitude: longitude ?? undefined,
-      },
-      select: { id: true },
-    });
-    return created.id;
   }
 
   async function readLocation(
@@ -99,7 +98,7 @@ describe('Stage 6.11C.5C — Business.location trigger (runtime DB)', () => {
         ("location" IS NULL) AS location_is_null,
         CASE WHEN "location" IS NULL THEN NULL ELSE ST_X("location"::geometry) END AS st_x,
         CASE WHEN "location" IS NULL THEN NULL ELSE ST_Y("location"::geometry) END AS st_y
-      FROM "Business"
+      FROM "BusinessLocation"
       WHERE id = ${id}
     `;
     const row = rows[0];
@@ -111,18 +110,21 @@ describe('Stage 6.11C.5C — Business.location trigger (runtime DB)', () => {
   }
 
   it('valid coordinates → location populated (lng X, lat Y)', async () => {
-    await withRollback(async (tx, slug) => {
-      const id = await insertFixture(tx, slug, 51.2224711, 51.3946096);
-      const loc = await readLocation(tx, id);
+    await withRollback(async (tx, _slug, _businessId, locationId) => {
+      await tx.businessLocation.update({
+        where: { id: locationId },
+        data: { latitude: 51.2224711, longitude: 51.3946096 },
+      });
+      const loc = await readLocation(tx, locationId);
       expect(loc.locationIsNull).toBe(false);
       expect(loc.stX).toBeCloseTo(51.3946096, 5);
       expect(loc.stY).toBeCloseTo(51.2224711, 5);
 
-      await tx.business.update({
-        where: { id },
+      await tx.businessLocation.update({
+        where: { id: locationId },
         data: { latitude: 51.23, longitude: 51.4 },
       });
-      const updated = await readLocation(tx, id);
+      const updated = await readLocation(tx, locationId);
       expect(updated.stX).toBeCloseTo(51.4, 5);
       expect(updated.stY).toBeCloseTo(51.23, 5);
 
@@ -131,39 +133,40 @@ describe('Stage 6.11C.5C — Business.location trigger (runtime DB)', () => {
   });
 
   it('NULL partial / both NULL / 0,0 / out-of-range → location NULL', async () => {
-    await withRollback(async (tx, slug) => {
-      const idNullLat = await insertFixture(tx, `${slug}-a`, null, 51.39);
+    await withRollback(async (tx, slug, businessId, locationId) => {
+      const idNullLat = await insertSecondary(tx, businessId, slug, null, 51.39);
       expect((await readLocation(tx, idNullLat)).locationIsNull).toBe(true);
 
-      const idNullLng = await insertFixture(tx, `${slug}-b`, 51.22, null);
+      const idNullLng = await insertSecondary(tx, businessId, `${slug}-b`, 51.22, null);
       expect((await readLocation(tx, idNullLng)).locationIsNull).toBe(true);
 
-      const idBothNull = await insertFixture(tx, `${slug}-c`, null, null);
+      const idBothNull = await insertSecondary(tx, businessId, `${slug}-c`, null, null);
       expect((await readLocation(tx, idBothNull)).locationIsNull).toBe(true);
 
-      const idZero = await insertFixture(tx, `${slug}-d`, 0, 0);
+      const idZero = await insertSecondary(tx, businessId, `${slug}-d`, 0, 0);
       expect((await readLocation(tx, idZero)).locationIsNull).toBe(true);
 
-      const idBadLat = await insertFixture(tx, `${slug}-e`, 91, 51.39);
+      const idBadLat = await insertSecondary(tx, businessId, `${slug}-e`, 91, 51.39);
       expect((await readLocation(tx, idBadLat)).locationIsNull).toBe(true);
 
-      const idBadLng = await insertFixture(tx, `${slug}-f`, 51.22, 181);
+      const idBadLng = await insertSecondary(tx, businessId, `${slug}-f`, 51.22, 181);
       expect((await readLocation(tx, idBadLng)).locationIsNull).toBe(true);
+
+      expect((await readLocation(tx, locationId)).locationIsNull).toBe(true);
 
       throw new Error(POSTGIS_TEST_ROLLBACK);
     });
   });
 
   it('restore valid coordinates after NULL → location repopulated', async () => {
-    await withRollback(async (tx, slug) => {
-      const id = await insertFixture(tx, slug, null, null);
-      expect((await readLocation(tx, id)).locationIsNull).toBe(true);
+    await withRollback(async (tx, _slug, _businessId, locationId) => {
+      expect((await readLocation(tx, locationId)).locationIsNull).toBe(true);
 
-      await tx.business.update({
-        where: { id },
+      await tx.businessLocation.update({
+        where: { id: locationId },
         data: { latitude: 51.2224711, longitude: 51.3946096 },
       });
-      const loc = await readLocation(tx, id);
+      const loc = await readLocation(tx, locationId);
       expect(loc.locationIsNull).toBe(false);
       expect(loc.stX).toBeCloseTo(51.3946096, 5);
       expect(loc.stY).toBeCloseTo(51.2224711, 5);
@@ -172,12 +175,33 @@ describe('Stage 6.11C.5C — Business.location trigger (runtime DB)', () => {
     });
   });
 
-  it('Prisma business findFirst still works with spatial column present', async () => {
+  it('Prisma businessLocation findFirst still works with spatial column present', async () => {
     if (skip) return;
-    const row = await prisma.business.findFirst({
-      where: { status: 'ACTIVE' },
+    const row = await prisma.businessLocation.findFirst({
+      where: { isPrimary: true },
       select: { id: true, latitude: true, longitude: true, locationSource: true },
     });
     expect(row).toBeTruthy();
   });
+
+  async function insertSecondary(
+    tx: Prisma.TransactionClient,
+    businessId: string,
+    slugSuffix: string,
+    latitude: number | null,
+    longitude: number | null,
+  ): Promise<string> {
+    const created = await tx.businessLocation.create({
+      data: {
+        businessId,
+        cityId,
+        address: `Secondary ${slugSuffix}`,
+        isPrimary: false,
+        latitude: latitude ?? undefined,
+        longitude: longitude ?? undefined,
+      },
+      select: { id: true },
+    });
+    return created.id;
+  }
 });

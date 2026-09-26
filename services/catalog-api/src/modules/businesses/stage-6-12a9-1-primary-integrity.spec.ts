@@ -12,6 +12,7 @@ import {
   assertPrimaryBusinessLocationParity,
 } from './business-location-parity.test-util';
 import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
+import { specCreateInitialPrimary, testPrimaryPhysical, createTestBusinessWithPrimary } from './business-with-primary.test-fixture';
 
 describe('Stage 6.12A.9.1 — Single-primary integrity hardening', () => {
   const prisma = new PrismaClient();
@@ -67,15 +68,12 @@ describe('Stage 6.12A.9.1 — Single-primary integrity hardening', () => {
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Uralsk primary addr',
         phone: 'primary-phone',
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
-        latitude: 51.2278,
-        longitude: 51.3865,
       },
     });
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Uralsk primary addr', { latitude: 51.2278, longitude: 51.3865 });
     return business;
   }
 
@@ -87,8 +85,8 @@ describe('Stage 6.12A.9.1 — Single-primary integrity hardening', () => {
     const business = await createFixtureBusiness('a91-del-primary');
     const svc = buildLocationService();
     const secondary = await svc.createLocation(owner(), business.id, {
+      address: 'Branch addr',
       cityId: aktobeCityId,
-      address: 'Secondary survives',
     });
     const primary = await prisma.businessLocation.findFirstOrThrow({
       where: { businessId: business.id, isPrimary: true },
@@ -154,7 +152,10 @@ describe('Stage 6.12A.9.1 — Single-primary integrity hardening', () => {
     await assertPrimaryBusinessLocationParity(prisma, business.id);
     const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
     const winner = primaries[0]!;
-    expect(businessRow.address).toBe(winner.id === l2.id ? 'Concurrent L2' : 'Concurrent L3');
+    const winnerPrimary = await prisma.businessLocation.findFirstOrThrow({
+      where: { businessId: business.id, isPrimary: true },
+    });
+    expect(winnerPrimary.address).toBe(winner.id === l2.id ? 'Concurrent L2' : 'Concurrent L3');
 
     await prisma.business.delete({ where: { id: business.id } });
   });
@@ -168,7 +169,6 @@ describe('Stage 6.12A.9.1 — Single-primary integrity hardening', () => {
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Invalid no primary',
         ownerId: fixtureOwnerId,
         status: 'PENDING',
       },

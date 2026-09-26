@@ -10,6 +10,7 @@ import { POSTGIS_TEST_ROLLBACK, withPostgisIntegrationTransaction } from './post
 import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
 import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
 import { createMockSubcategoryDeps } from '../../test-utils/mock-subcategory-deps';
+import { specCreateInitialPrimary, testPrimaryPhysical, createTestBusinessWithPrimary } from './business-with-primary.test-fixture';
 
 describe('Stage 6.12A.3 — primary location compatibility sync', () => {
   const prisma = new PrismaClient();
@@ -126,13 +127,12 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
         slug,
         categoryId: category.id,
         cityId: city.id,
-        address: 'Before',
         phone: '111',
         ownerId: owner.id,
         status: 'ACTIVE',
       },
     });
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Before');
     const primaryBefore = await prisma.businessLocation.findFirstOrThrow({
       where: { businessId: business.id, isPrimary: true },
     });
@@ -172,18 +172,17 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
         slug,
         categoryId: category.id,
         cityId: city.id,
-        address: 'Primary addr',
         phone: 'primary-phone',
         ownerId: owner.id,
         status: 'ACTIVE',
       },
     });
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Primary addr');
     const secondary = await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: city.id,
-        address: 'Secondary addr',
         phone: 'secondary-phone',
         isPrimary: false,
       },
@@ -221,12 +220,11 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
         slug,
         categoryId: category.id,
         cityId: city.id,
-        address: 'Geo addr',
         ownerId: owner.id,
         status: 'ACTIVE',
       },
     });
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Geo addr');
 
     try {
       await svc.update(business.id, owner, { latitude: 51.2278, longitude: 51.3865 });
@@ -258,13 +256,12 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
         slug,
         categoryId: category.id,
         cityId: city.id,
-        address: 'Rollback addr',
         phone: 'before-rollback',
         ownerId: owner.id,
         status: 'ACTIVE',
       },
     });
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Rollback addr');
 
     const brokenPrimary = new BusinessPrimaryLocationService();
     jest.spyOn(brokenPrimary, 'syncPrimaryFromBusinessRecord').mockRejectedValueOnce(new Error('sync failed'));
@@ -310,7 +307,6 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
             slug,
             categoryId: category.id,
             cityId: city.id,
-            address: 'No primary',
             ownerId: fixtureOwnerId,
             status: 'ACTIVE',
           },

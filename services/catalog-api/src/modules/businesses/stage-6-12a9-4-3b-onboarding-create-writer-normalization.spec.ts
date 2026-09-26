@@ -138,19 +138,18 @@ describe('Stage 6.12A.9.4.3B — onboarding/create writer normalization', () => 
       expect(business.cityId).toBe(uralskCityId);
       await assertPrimaryBusinessCompatibilityParity(prisma, business.id);
 
-      const geoBefore = await prisma.business.findUniqueOrThrow({
-        where: { id: business.id },
-        select: { address: true, latitude: true, longitude: true },
+      const geoBefore = await prisma.businessLocation.findUniqueOrThrow({
+        where: { id: locations[0]!.id },
       });
       await prisma.businessLocation.update({
         where: { id: locations[0]!.id },
         data: { address: `BL-only addr ${slugSuffix}` },
       });
-      const geoAfter = await prisma.business.findUniqueOrThrow({
-        where: { id: business.id },
-        select: { address: true, latitude: true, longitude: true },
+      const geoAfter = await prisma.businessLocation.findUniqueOrThrow({
+        where: { id: locations[0]!.id },
       });
-      expect(geoAfter.address).toBe(geoBefore.address);
+      expect(geoAfter.address).toBe(`BL-only addr ${slugSuffix}`);
+      expect(geoBefore.address).not.toBe(geoAfter.address);
       const bl = await prisma.businessLocation.findUniqueOrThrow({ where: { id: locations[0]!.id } });
       const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
       const dto = buildEffectivePhysicalDto(businessRowToContactDefaults(businessRow), bl);
@@ -333,7 +332,10 @@ describe('Stage 6.12A.9.4.3B — onboarding/create writer normalization', () => 
           },
         );
         expect(bl.isPrimary).toBe(true);
-        expect(business.address).toBe('Tx addr');
+        const primary = await tx.businessLocation.findFirstOrThrow({
+          where: { businessId: business.id, isPrimary: true },
+        });
+        expect(primary.address).toBe('Tx addr');
         throw new Error(POSTGIS_TEST_ROLLBACK);
       });
     } finally {

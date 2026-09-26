@@ -54,7 +54,6 @@ describe('Stage 6.12A.9.4.2A — BusinessLocation integrity repair tooling', () 
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Dry zp addr',
         ownerId,
         status: 'PENDING',
       },
@@ -90,19 +89,16 @@ describe('Stage 6.12A.9.4.2A — BusinessLocation integrity repair tooling', () 
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Primary target addr',
         phone: 'apply-zp-phone',
         ownerId,
         status: 'ACTIVE',
-        latitude: 51.2278,
-        longitude: 51.3865,
       },
     });
     const older = await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: uralskCityId,
-        address: 'Older branch',
         isPrimary: false,
         createdAt: new Date('2019-01-01'),
         phone: 'older-phone',
@@ -110,23 +106,16 @@ describe('Stage 6.12A.9.4.2A — BusinessLocation integrity repair tooling', () 
     });
     await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: uralskCityId,
-        address: 'Newer branch',
         isPrimary: false,
         createdAt: new Date('2022-01-01'),
       },
     });
 
-    const geoBefore = await prisma.business.findUniqueOrThrow({
-      where: { id: business.id },
-      select: {
-        address: true,
-        latitude: true,
-        longitude: true,
-        locationSource: true,
-        cityId: true,
-      },
+    const geoBefore = await prisma.businessLocation.findFirstOrThrow({
+      where: { businessId: business.id, isPrimary: true },
     });
 
     try {
@@ -146,17 +135,10 @@ describe('Stage 6.12A.9.4.2A — BusinessLocation integrity repair tooling', () 
       const businessRow = await prisma.business.findUniqueOrThrow({
         where: { id: business.id },
         select: {
-          address: true,
-          latitude: true,
-          longitude: true,
-          locationSource: true,
           cityId: true,
         },
       });
-      expect(businessRow.address).toBe(geoBefore.address);
-      expect(String(businessRow.latitude)).toBe(String(geoBefore.latitude));
-      expect(String(businessRow.longitude)).toBe(String(geoBefore.longitude));
-      expect(businessRow.locationSource).toBe(geoBefore.locationSource);
+      expect(businessRow.cityId).toBe(geoBefore.cityId);
       expect(businessRow.cityId).toBe(uralskCityId);
 
       const second = await runBusinessLocationIntegrity(prisma, 'APPLY');
@@ -175,11 +157,8 @@ describe('Stage 6.12A.9.4.2A — BusinessLocation integrity repair tooling', () 
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Reconstruct me',
         ownerId,
         status: 'PENDING',
-        latitude: 51.2278,
-        longitude: 51.3865,
       },
     });
 
@@ -205,7 +184,6 @@ describe('Stage 6.12A.9.4.2A — BusinessLocation integrity repair tooling', () 
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: '',
         ownerId,
         status: 'PENDING',
       },
@@ -235,16 +213,15 @@ describe('Stage 6.12A.9.4.2A — BusinessLocation integrity repair tooling', () 
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Valid addr',
         ownerId,
         status: 'PENDING',
       },
     });
     await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: uralskCityId,
-        address: 'Only primary',
         isPrimary: true,
       },
     });

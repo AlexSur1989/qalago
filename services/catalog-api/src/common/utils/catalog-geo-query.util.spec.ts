@@ -3,7 +3,7 @@ import {
   assertCatalogGeoQuery,
   assertMapBboxSpanWithinLimits,
   isOptionalUserGeoCoordinatePairValid,
-  validStoredBusinessCoordinateWhere,
+  validStoredBusinessLocationCoordinateWhere,
 } from './catalog-geo-query.util';
 import {
   MAX_MAP_BBOX_LAT_SPAN_DEGREES,
@@ -121,9 +121,9 @@ describe('catalog-geo-query.util', () => {
     });
   });
 
-  describe('validStoredBusinessCoordinateWhere', () => {
-    it('excludes null and 0,0 sentinel', () => {
-      const where = validStoredBusinessCoordinateWhere();
+  describe('validStoredBusinessLocationCoordinateWhere', () => {
+    it('excludes null and 0,0 sentinel on BusinessLocation', () => {
+      const where = validStoredBusinessLocationCoordinateWhere();
       expect(where.NOT).toEqual({
         AND: [{ latitude: 0 }, { longitude: 0 }],
       });

@@ -9,6 +9,7 @@ import { createMockBusinessAccess, asBusinessAccessService } from '../../test-ut
 import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
 import { FavoritesService } from '../favorites/favorites.service';
 import { attachContextLocationIdForBranch } from './business-discovery-context.util';
+import { specCreateInitialPrimary } from './business-with-primary.test-fixture';
 import {
   loadBusinessLocationsGroupedByBusinessId,
   normalizePublicBusinessListItems,
@@ -91,22 +92,16 @@ describe('Stage 6.12A.9.3.1 — public physical read normalization', () => {
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: options.businessAddress,
         ownerId,
         status: BusinessStatus.ACTIVE,
-        latitude: 51.1,
-        longitude: 51.2,
         businessSubcategories: { create: { subcategoryId } },
       },
     });
     createdBusinessIds.push(business.id);
-    const primary = await primaryLocation.createInitialPrimary(prisma, business);
+    const primary = await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Test address');
     await prisma.businessLocation.update({
       where: { id: primary.id },
       data: {
-        address: options.primaryAddress,
-        latitude: 51.11,
-        longitude: 51.21,
       },
     });
 
@@ -191,7 +186,7 @@ describe('Stage 6.12A.9.3.1 — public physical read normalization', () => {
     });
     await prisma.business.update({
       where: { id: business.id },
-      data: { address: 'Stale fav mirror' },
+      data: {},
     });
     await prisma.favorite.create({
       data: { userId, businessId: business.id },

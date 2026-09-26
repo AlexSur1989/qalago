@@ -137,11 +137,8 @@ describe('Stage 6.12A.9.3.2 — discovery SQL physical read cleanup', () => {
         slug,
         categoryId,
         cityId: options.businessCityId,
-        address: options.legacyAddress,
         ownerId,
         status: BusinessStatus.ACTIVE,
-        latitude: options.mirrorLegacyCoordsOnBusiness ? options.primaryLat : 0,
-        longitude: options.mirrorLegacyCoordsOnBusiness ? options.primaryLng : 0,
         businessSubcategories: { create: { subcategoryId } },
       },
     });
@@ -149,11 +146,9 @@ describe('Stage 6.12A.9.3.2 — discovery SQL physical read cleanup', () => {
 
     const lPrimary = await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: uralskCityId,
-        address: options.primaryAddress,
-        latitude: options.primaryLat,
-        longitude: options.primaryLng,
         isPrimary: true,
       },
     });
@@ -161,11 +156,9 @@ describe('Stage 6.12A.9.3.2 — discovery SQL physical read cleanup', () => {
 
     const lSecondary = await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: options.secondaryCityId,
-        address: options.secondaryAddress,
-        latitude: options.secondaryLat,
-        longitude: options.secondaryLng,
         isPrimary: false,
       },
     });
@@ -246,7 +239,6 @@ describe('Stage 6.12A.9.3.2 — discovery SQL physical read cleanup', () => {
       {
         id: 'b1',
         title: 'Brand',
-        address: 'OLD LEGACY STREET ONLY',
         branchAddressMatch: false,
       },
       'OLD LEGACY STREET',
@@ -299,11 +291,8 @@ describe('Stage 6.12A.9.3.2 — discovery SQL physical read cleanup', () => {
         slug,
         categoryId,
         cityId: aktobeCityId,
-        address: 'Ghost legacy',
         ownerId,
         status: BusinessStatus.ACTIVE,
-        latitude: lat,
-        longitude: lng,
         businessSubcategories: { create: { subcategoryId } },
       },
     });
@@ -315,11 +304,9 @@ describe('Stage 6.12A.9.3.2 — discovery SQL physical read cleanup', () => {
     `;
     const oralOnlyBranch = await prisma.businessLocation.create({
       data: {
+        address: 'Branch addr',
         businessId: business.id,
         cityId: uralskCityId,
-        address: 'Only Uralsk branch far away',
-        latitude: 51.22,
-        longitude: 51.39,
         isPrimary: true,
       },
     });

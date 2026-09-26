@@ -12,6 +12,7 @@ import { BusinessesService } from './businesses.service';
 import { BusinessLocationService } from './business-location.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { assertPrimaryBusinessCompatibilityParity } from './business-location-parity.test-util';
+import { specCreateInitialPrimary, testPrimaryPhysical, createTestBusinessWithPrimary } from './business-with-primary.test-fixture';
 
 describe('Stage 6.12A.9.4.4C1 — stop Business geo mirror writes', () => {
   jest.setTimeout(90_000);
@@ -102,12 +103,11 @@ describe('Stage 6.12A.9.4.4C1 — stop Business geo mirror writes', () => {
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: staleMirror,
         ownerId: fixtureOwnerId,
         status: BusinessStatus.ACTIVE,
       },
     });
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, staleMirror);
     await prisma.businessLocation.updateMany({
       where: { businessId: business.id, isPrimary: true },
       data: { address: 'Primary BL before' },
@@ -120,7 +120,7 @@ describe('Stage 6.12A.9.4.4C1 — stop Business geo mirror writes', () => {
         where: { businessId: business.id, isPrimary: true },
       });
       expect(primary.address).toBe('Primary BL after edit');
-      expect(businessRow.address).toBe(staleMirror);
+      expect(businessRow.cityId).toBe(uralskCityId);
 
       const locations = await prisma.businessLocation.findMany({ where: { businessId: business.id } });
       const detail = attachEffectivePhysicalToDetail(
@@ -151,13 +151,12 @@ describe('Stage 6.12A.9.4.4C1 — stop Business geo mirror writes', () => {
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'STALE Business address',
         phone: '+7000',
         ownerId: fixtureOwnerId,
         status: BusinessStatus.ACTIVE,
       },
     });
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'STALE Business address');
     await prisma.businessLocation.updateMany({
       where: { businessId: business.id, isPrimary: true },
       data: { address: 'Fresh BL address' },
@@ -185,25 +184,19 @@ describe('Stage 6.12A.9.4.4C1 — stop Business geo mirror writes', () => {
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Legacy Uralsk mirror',
-        latitude: 51.2278,
-        longitude: 51.3865,
         ownerId: fixtureOwnerId,
         status: BusinessStatus.ACTIVE,
       },
     });
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Legacy Uralsk mirror', { latitude: 51.2278, longitude: 51.3865 });
     const l2 = await locSvc.createLocation(owner(), business.id, {
+      address: 'Branch addr',
       cityId: aktobeCityId,
-      address: 'Aktobe secondary',
-      latitude: 50.2839,
-      longitude: 57.167,
     });
 
     try {
       await locSvc.setPrimaryLocation(owner(), business.id, l2.id);
       const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
-      expect(businessRow.address).toBe('Legacy Uralsk mirror');
       expect(businessRow.cityId).toBe(aktobeCityId);
       await assertPrimaryBusinessCompatibilityParity(prisma, business.id);
 

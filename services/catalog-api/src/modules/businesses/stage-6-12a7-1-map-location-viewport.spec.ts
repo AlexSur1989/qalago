@@ -13,6 +13,7 @@ import {
 } from './business-catalog-postgis-geo.query';
 import type { MapLocationBusinessListItem } from './business-map-location-list.presenter';
 import type { BusinessDiscoveryContext } from './business-discovery-context.util';
+import { specCreateInitialPrimary, testPrimaryPhysical, createTestBusinessWithPrimary } from './business-with-primary.test-fixture';
 
 type GeoListItem = { id: string } & BusinessDiscoveryContext;
 
@@ -101,16 +102,16 @@ describe('Stage 6.12A.7.1 — map forMap viewport (BusinessLocation grain)', () 
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: options?.primaryAddress ?? 'Primary Uralsk addr',
         ownerId,
         status: options?.status ?? BusinessStatus.ACTIVE,
-        latitude: lat,
-        longitude: lng,
         businessSubcategories: { create: { subcategoryId } },
       },
     });
     createdBusinessIds.push(business.id);
-    await primaryLocation.createInitialPrimary(prisma, business);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Primary Uralsk addr', {
+      latitude: lat,
+      longitude: lng,
+    });
     return business;
   }
 
@@ -128,8 +129,8 @@ describe('Stage 6.12A.7.1 — map forMap viewport (BusinessLocation grain)', () 
         businessId,
         cityId: data.cityId,
         address: data.address,
-        latitude: data.latitude ?? null,
-        longitude: data.longitude ?? null,
+        latitude: data.latitude ?? undefined,
+        longitude: data.longitude ?? undefined,
         isPrimary: false,
       },
     });
