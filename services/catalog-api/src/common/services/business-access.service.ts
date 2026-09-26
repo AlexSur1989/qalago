@@ -26,7 +26,7 @@ export type ResolvedBusinessAccess = {
  * Stage 5M.2 — centralized business authorization.
  *
  * SUPER_ADMIN / ADMIN: global, all permissions
- * CITY_ADMIN: parent Business.cityId in managed city (not secondary branches), all permissions on owner routes
+ * CITY_ADMIN: primary BusinessLocation.cityId in managed city (A.9.4.5A — not secondary branches)
  * OWNER: ACTIVE OWNER membership, or legacy ownerId when no membership row exists
  * MANAGER: ACTIVE membership + explicit permissions only
  */
@@ -50,7 +50,7 @@ export class BusinessAccessService {
     }
 
     if (user.role === UserRole.CITY_ADMIN) {
-      await this.cityScope.assertBusinessParentCityInAdminScope(user, business.cityId);
+      await this.cityScope.assertBusinessPrimaryLocationCityInAdminScope(user, business.id);
       return {
         business,
         accessRole: 'CITY_ADMIN',

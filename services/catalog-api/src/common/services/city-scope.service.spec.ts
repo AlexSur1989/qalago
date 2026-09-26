@@ -81,14 +81,29 @@ describe('CityScopeService', () => {
       );
     });
 
-    it('assertBusinessParentCityInAdminScope uses parent Business.cityId only', async () => {
+    it('assertBusinessPrimaryLocationCityInAdminScope uses primary BL city only', async () => {
+      prisma.businessLocation.findFirst.mockResolvedValue({ cityId: 'city-a' });
+      await expect(
+        service.assertBusinessPrimaryLocationCityInAdminScope(cityAdmin, 'biz-1'),
+      ).resolves.toBeUndefined();
+      expect(prisma.businessLocation.findFirst).toHaveBeenCalledWith({
+        where: { businessId: 'biz-1', isPrimary: true },
+        select: { cityId: true },
+      });
+
+      prisma.businessLocation.findFirst.mockResolvedValue({ cityId: 'city-c' });
+      await expect(
+        service.assertBusinessPrimaryLocationCityInAdminScope(cityAdmin, 'biz-2'),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it('deprecated assertBusinessParentCityInAdminScope still checks mirror cityId string', async () => {
       await expect(
         service.assertBusinessParentCityInAdminScope(cityAdmin, 'city-a'),
       ).resolves.toBeUndefined();
       await expect(
         service.assertBusinessParentCityInAdminScope(cityAdmin, 'city-c'),
       ).rejects.toBeInstanceOf(ForbiddenException);
-      expect(prisma.businessLocation.findFirst).not.toHaveBeenCalled();
     });
 
     it('assertCityInAdminScope rejects out-of-scope city id', async () => {

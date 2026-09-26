@@ -69,7 +69,7 @@ export default function MonetizationOrderDetailPage() {
         <dl className="detail-grid">
           <dt>Бизнес</dt>
           <dd>{order.business.title}</dd>
-          <dt>Город</dt>
+          <dt>Город основного филиала</dt>
           <dd>{order.business.city.nameRu}</dd>
           <dt>Категория</dt>
           <dd>{order.business.category?.title ?? '—'}</dd>

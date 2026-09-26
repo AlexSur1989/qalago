@@ -116,15 +116,20 @@ describe('Stage 6.12A.9.4.1A admin branch city scope', () => {
       access = new BusinessAccessService(prisma as never, cityScope, membership);
     });
 
-    it('CITY_ADMIN B denied owner-equivalent resolveAccess when home city is A (secondary branch only)', async () => {
+    it('CITY_ADMIN B denied owner-equivalent resolveAccess when primary is in city A', async () => {
+      prisma.businessLocation.findFirst.mockResolvedValue({ cityId: cityA });
       await expect(access.resolveAccess(cityAdminB, businessId)).rejects.toBeInstanceOf(
         ForbiddenException,
       );
-      expect(prisma.businessLocation.findFirst).not.toHaveBeenCalled();
+      expect(prisma.businessLocation.findFirst).toHaveBeenCalledWith({
+        where: { businessId, isPrimary: true },
+        select: { cityId: true },
+      });
     });
 
-    it('CITY_ADMIN A granted owner-equivalent resolveAccess when home city matches', async () => {
+    it('CITY_ADMIN A granted owner-equivalent resolveAccess when primary city matches', async () => {
       prisma.staffCityScope.findMany.mockResolvedValue([{ cityId: cityA }]);
+      prisma.businessLocation.findFirst.mockResolvedValue({ cityId: cityA });
       const result = await access.resolveAccess(
         { ...cityAdminB, id: 'admin-a', sub: 'admin-a' },
         businessId,

@@ -121,14 +121,8 @@ export default function OwnershipClaimDetailPage() {
       </p>
 
       <dl className="detail-list">
-        <dt>Город</dt>
+        <dt>Город основного филиала</dt>
         <dd>{item.business?.city?.nameRu ?? '—'}</dd>
-        {item.business?.address && (
-          <>
-            <dt>Адрес</dt>
-            <dd>{item.business.address}</dd>
-          </>
-        )}
         <dt>Способ проверки</dt>
         <dd>{verificationMethodLabel(item.verificationMethod)}</dd>
         <dt>Дата подачи</dt>

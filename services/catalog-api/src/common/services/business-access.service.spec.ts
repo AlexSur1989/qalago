@@ -47,9 +47,9 @@ describe('BusinessAccessService (Stage 5M.2)', () => {
     };
     cityScope = new CityScopeService(prisma as never, {} as never);
     jest
-      .spyOn(cityScope, 'assertBusinessParentCityInAdminScope')
-      .mockImplementation(async (_user, cityId) => {
-        if (cityId === aktobeCityId) {
+      .spyOn(cityScope, 'assertBusinessPrimaryLocationCityInAdminScope')
+      .mockImplementation(async (_user, businessId) => {
+        if (businessId === businessAktobe.id) {
           throw new ForbiddenException('Not allowed to manage businesses in this city');
         }
       });

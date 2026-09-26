@@ -73,7 +73,12 @@ export class CityScopeService {
     return undefined;
   }
 
-  /** Stage 6.12A.9.4.1A — staff Admin routes: business visible iff a branch exists in scope. */
+  /**
+   * Stage 6.12A.9.4.1A / 6.12A.9.4.5A — staff Admin **visibility** (list, moderation, claims filter):
+   * business visible iff **any** BusinessLocation exists in a managed city.
+   * Do not use for owner-equivalent Business Web access — see
+   * {@link assertBusinessPrimaryLocationCityInAdminScope}.
+   */
   buildAdminBusinessScopeWhere(scopedCityId: string): Prisma.BusinessWhereInput {
     return {
       locations: { some: { cityId: scopedCityId } },
@@ -81,7 +86,8 @@ export class CityScopeService {
   }
 
   /**
-   * Staff Admin authorization by business id + BusinessLocation presence (not parent Business.cityId).
+   * Staff Admin **visibility** by business id — **any BL** in managed cities (A.9.4.5A).
+   * Not parent Business.cityId; not primary-only.
    */
   async assertBusinessInAdminScope(user: AuthUser, businessId: string) {
     if (user.role !== UserRole.CITY_ADMIN) return;
@@ -101,8 +107,30 @@ export class CityScopeService {
   }
 
   /**
-   * Owner/business Web authorization for CITY_ADMIN — parent Business.cityId only.
-   * Prevents secondary-branch presence from granting owner-equivalent access (P0).
+   * Owner-equivalent Business Web / {@link BusinessAccessService} gate for CITY_ADMIN (A.9.4.5A).
+   * Allowed only when **current primary** BusinessLocation.cityId is in managed scope.
+   * Secondary-branch presence alone must not grant access.
+   */
+  async assertBusinessPrimaryLocationCityInAdminScope(user: AuthUser, businessId: string) {
+    if (user.role !== UserRole.CITY_ADMIN) return;
+
+    const cityIds = await this.getCityAdminScopeCityIds(user.id);
+    if (!cityIds.length) {
+      throw new ForbiddenException('City admin has no assigned city');
+    }
+
+    const primary = await this.prisma.businessLocation.findFirst({
+      where: { businessId, isPrimary: true },
+      select: { cityId: true },
+    });
+    if (!primary || !cityIds.includes(primary.cityId)) {
+      throw new ForbiddenException('Not allowed to manage businesses in this city');
+    }
+  }
+
+  /**
+   * @deprecated A.9.4.5A — compatibility mirror check only; do not use for authorization.
+   * Use {@link assertBusinessPrimaryLocationCityInAdminScope} for owner-equivalent CITY_ADMIN.
    */
   async assertBusinessParentCityInAdminScope(user: AuthUser, businessCityId: string) {
     if (user.role !== UserRole.CITY_ADMIN) return;
