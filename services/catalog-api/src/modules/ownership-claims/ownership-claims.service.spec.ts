@@ -78,6 +78,9 @@ describe('OwnershipClaimsService (Stage 5N.2)', () => {
         findUniqueOrThrow: jest.fn(),
         update: jest.fn(),
       },
+      businessLocation: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
       businessOwnershipClaim: {
         create: jest.fn(),
         findMany: jest.fn(),
@@ -108,6 +111,24 @@ describe('OwnershipClaimsService (Stage 5N.2)', () => {
       notifications as never,
       rateLimit as never,
     );
+  });
+
+  it('enriches claim business summary address from primary BusinessLocation', async () => {
+    prisma.business.findUnique.mockResolvedValue(activeBusiness);
+    membership.getMembership.mockResolvedValue(null);
+    prisma.businessOwnershipClaim.findFirst.mockResolvedValue(null);
+    prisma.businessLocation.findMany.mockResolvedValue([
+      { businessId: 'biz-1', address: 'Primary branch addr' },
+    ]);
+    prisma.businessOwnershipClaim.create.mockResolvedValue({
+      id: 'claim-1',
+      status: BusinessOwnershipClaimStatus.PENDING,
+      business: { id: 'biz-1', title: 'Existing Cafe', cityId: 'city-uralsk', status: BusinessStatus.ACTIVE },
+    });
+
+    const claim = await service.create(user, 'biz-1', {});
+    expect(claim.business.address).toBe('Primary branch addr');
+    expect(prisma.businessLocation.findMany).toHaveBeenCalled();
   });
 
   it('creates PENDING claim without membership or ownerId change', async () => {
@@ -393,7 +414,9 @@ describe('OwnershipClaimsService (Stage 5N.2)', () => {
     });
     prisma.businessOwnershipClaim.updateMany.mockResolvedValue({ count: 1 });
     prisma.businessOwnershipClaim.findUniqueOrThrow.mockResolvedValue({
+      id: 'claim-6',
       status: BusinessOwnershipClaimStatus.REJECTED,
+      business: activeBusiness,
     });
 
     await service.adminReject(admin, 'claim-6', { rejectionReason: 'Not verified' });
@@ -419,7 +442,9 @@ describe('OwnershipClaimsService (Stage 5N.2)', () => {
     });
     prisma.businessOwnershipClaim.updateMany.mockResolvedValue({ count: 1 });
     prisma.businessOwnershipClaim.findUniqueOrThrow.mockResolvedValue({
+      id: 'claim-7',
       status: BusinessOwnershipClaimStatus.CANCELLED,
+      business: { id: 'biz-1', cityId: 'city-uralsk', title: 'Existing Cafe', status: BusinessStatus.ACTIVE },
     });
 
     await service.cancel(user, 'claim-7');

@@ -275,7 +275,10 @@ async function applyZeroPrimaryRepair(
       where: { id: chosenId },
       data: { isPrimary: true },
     });
-    await primaryLocationService.syncBusinessFromPrimaryLocationRecord(tx, newPrimary);
+    await primaryLocationService.syncBusinessLegacyFullMirrorFromPrimaryLocationRecord(
+      tx,
+      newPrimary,
+    );
 
     return {
       businessId,

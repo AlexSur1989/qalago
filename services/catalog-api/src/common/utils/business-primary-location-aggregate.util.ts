@@ -2,7 +2,8 @@ import type { Business, BusinessLocation, Prisma } from '@prisma/client';
 import {
   type AuthoritativePrimaryPhysicalInput,
   businessBootstrapPhysicalFromPrimaryInput,
-  businessUpdateDataFromPhysicalSnapshot,
+  businessCompatibilityUpdateFromPrimaryLocation,
+  businessLegacyFullMirrorUpdateFromPrimaryLocation,
   physicalSnapshotFromLocation,
   primaryLocationCreateDataFromPhysicalSnapshot,
   primaryLocationUpdateDataFromPhysicalInput,
@@ -36,18 +37,43 @@ export async function resolvePrimaryLocationInTx(
   return { status: 'ok', location: primaries[0]! };
 }
 
-export async function syncBusinessMirrorFromPrimaryInTx(
+/** Normal production: sync cityId + contacts from primary BL onto Business (no geo — A.9.4.4C1). */
+export async function syncBusinessCompatibilityFromPrimaryInTx(
   tx: Prisma.TransactionClient,
   location: Pick<BusinessLocation, 'isPrimary' | 'businessId'> &
     Parameters<typeof physicalSnapshotFromLocation>[0],
 ): Promise<Business> {
   if (!location.isPrimary) {
-    throw new Error('syncBusinessMirrorFromPrimaryInTx requires a primary location row');
+    throw new Error('syncBusinessCompatibilityFromPrimaryInTx requires a primary location row');
   }
   const snapshot = physicalSnapshotFromLocation(location);
   return tx.business.update({
     where: { id: snapshot.id },
-    data: businessUpdateDataFromPhysicalSnapshot(snapshot),
+    data: businessCompatibilityUpdateFromPrimaryLocation(snapshot),
+  });
+}
+
+/** @deprecated Name retained for call sites; delegates to compatibility sync (not full geo mirror). */
+export async function syncBusinessMirrorFromPrimaryInTx(
+  tx: Prisma.TransactionClient,
+  location: Parameters<typeof syncBusinessCompatibilityFromPrimaryInTx>[1],
+): Promise<Business> {
+  return syncBusinessCompatibilityFromPrimaryInTx(tx, location);
+}
+
+/** Integrity `--apply` repair only — full legacy geo mirror until C2/C4. */
+export async function syncBusinessLegacyFullMirrorFromPrimaryInTx(
+  tx: Prisma.TransactionClient,
+  location: Pick<BusinessLocation, 'isPrimary' | 'businessId'> &
+    Parameters<typeof physicalSnapshotFromLocation>[0],
+): Promise<Business> {
+  if (!location.isPrimary) {
+    throw new Error('syncBusinessLegacyFullMirrorFromPrimaryInTx requires a primary location row');
+  }
+  const snapshot = physicalSnapshotFromLocation(location);
+  return tx.business.update({
+    where: { id: snapshot.id },
+    data: businessLegacyFullMirrorUpdateFromPrimaryLocation(snapshot),
   });
 }
 
@@ -100,7 +126,7 @@ export async function createBusinessWithInitialPrimaryInTx(
     business.id,
     params.primaryPhysical,
   );
-  const syncedBusiness = await syncBusinessMirrorFromPrimaryInTx(tx, primaryLocation);
+  const syncedBusiness = await syncBusinessCompatibilityFromPrimaryInTx(tx, primaryLocation);
   return { business: syncedBusiness, primaryLocation };
 }
 
@@ -164,5 +190,5 @@ export async function upsertSeedBusinessWithPrimaryMirrorInTx(
     );
   }
 
-  return syncBusinessMirrorFromPrimaryInTx(tx, primaryLocation);
+  return syncBusinessCompatibilityFromPrimaryInTx(tx, primaryLocation);
 }

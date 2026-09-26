@@ -12,10 +12,7 @@ import { BusinessPublicContentService } from './business-public-content.service'
 import { BusinessesService } from './businesses.service';
 import { BusinessLocationService } from './business-location.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import {
-  assertPrimaryBusinessLocationParity,
-  assertPrimaryGeoParity,
-} from './business-location-parity.test-util';
+import { assertPrimaryBusinessCompatibilityParity } from './business-location-parity.test-util';
 
 function createDeferred<T = void>() {
   let resolve!: (value: T | PromiseLike<T>) => void;
@@ -107,13 +104,14 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
     const slug = await createSlug('a943a-secondary');
     const svc = buildBusinessesService();
     const locSvc = buildLocationService();
+    const staleMirror = 'Primary addr';
     const business = await prisma.business.create({
       data: {
         title: 'A943A secondary safety',
         slug,
         categoryId,
         cityId: uralskCityId,
-        address: 'Primary addr',
+        address: staleMirror,
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
@@ -139,8 +137,8 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         address: 'Secondary addr patched',
       });
       const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
-      expect(businessRow.address).toBe('Primary addr patched');
-      await assertPrimaryBusinessLocationParity(prisma, business.id);
+      expect(businessRow.address).toBe(staleMirror);
+      await assertPrimaryBusinessCompatibilityParity(prisma, business.id);
     } finally {
       await prisma.business.delete({ where: { id: business.id } });
     }
@@ -175,7 +173,8 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
     try {
       await locSvc.setPrimaryLocation(owner(), business.id, l2.id);
       const afterPromote = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
-      expect(afterPromote.address).toBe('Physical B');
+      expect(afterPromote.address).toBe('Physical A');
+      expect(afterPromote.cityId).toBe(aktobeCityId);
 
       await svc.update(business.id, owner(), { address: 'Physical B patched' });
       const l1 = await prisma.businessLocation.findFirstOrThrow({
@@ -185,7 +184,8 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
       expect(l1.address).toBe('Physical A');
       expect(l2After.address).toBe('Physical B patched');
       const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
-      expect(businessRow.address).toBe('Physical B patched');
+      expect(businessRow.address).toBe('Physical A');
+      expect(l2After.address).toBe('Physical B patched');
     } finally {
       await prisma.business.delete({ where: { id: business.id } });
     }
@@ -229,8 +229,12 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
 
       await svc.update(business.id, owner(), { latitude: 50.29, longitude: 57.17 });
       const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
-      expect(Number(businessRow.latitude)).toBeCloseTo(50.29, 4);
-      await assertPrimaryBusinessLocationParity(prisma, business.id);
+      const primaryAfter = await prisma.businessLocation.findFirstOrThrow({
+        where: { businessId: business.id, isPrimary: true },
+      });
+      expect(Number(primaryAfter.latitude)).toBeCloseTo(50.29, 4);
+      expect(Number(businessRow.latitude)).toBeCloseTo(51.2278, 4);
+      await assertPrimaryBusinessCompatibilityParity(prisma, business.id);
     } finally {
       await prisma.business.delete({ where: { id: business.id } });
     }
@@ -299,7 +303,7 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         where: { businessId: business.id, isPrimary: true },
       });
       expect(row.title).toBe('After mixed');
-      expect(row.address).toBe('Mixed addr updated');
+      expect(row.address).toBe('Mixed addr');
       expect(row.phone).toBe('222');
       expect(primary.address).toBe('Mixed addr updated');
       expect(primary.phone).toBe('222');
@@ -396,12 +400,10 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
       where: { businessId: business.id, isPrimary: true },
     });
     expect(primaries).toHaveLength(1);
-    await assertPrimaryBusinessLocationParity(prisma, business.id);
-    await assertPrimaryGeoParity(prisma, business.id);
+    await assertPrimaryBusinessCompatibilityParity(prisma, business.id);
 
-    const winner = primaries[0]!;
     const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
-    expect(businessRow.address).toBe(winner.address);
+    expect(businessRow.address).toBe('L1 primary');
 
     await prisma.business.delete({ where: { id: business.id } });
   });

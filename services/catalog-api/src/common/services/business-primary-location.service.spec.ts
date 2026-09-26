@@ -1,4 +1,5 @@
 import { ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { BusinessLocationPrimaryInvariantBrokenCode } from '../utils/business-location-invariant.util';
 import { BusinessPrimaryLocationService } from './business-primary-location.service';
 import { deterministicPrimaryLocationId } from '../utils/business-primary-location.util';
@@ -65,7 +66,7 @@ describe('BusinessPrimaryLocationService (Stage 6.12A.3)', () => {
     );
   });
 
-  it('createBusinessWithInitialPrimary mirrors primary BL onto Business', async () => {
+  it('createBusinessWithInitialPrimary syncs compatibility fields after bootstrap (no post-create geo mirror)', async () => {
     const createImpl = jest.fn().mockResolvedValue({
       id: deterministicPrimaryLocationId('biz-new'),
       businessId: 'biz-new',
@@ -123,7 +124,17 @@ describe('BusinessPrimaryLocationService (Stage 6.12A.3)', () => {
     });
 
     expect(createImpl).toHaveBeenCalled();
-    expect(updateImpl).toHaveBeenCalled();
+    expect(updateImpl).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'biz-new' },
+        data: expect.not.objectContaining({
+          address: expect.anything(),
+          latitude: expect.anything(),
+          longitude: expect.anything(),
+          locationSource: expect.anything(),
+        }),
+      }),
+    );
   });
 
   it('createInitialPrimary uses deterministic id aligned with A.2 backfill', async () => {
@@ -161,8 +172,19 @@ describe('BusinessPrimaryLocationService (Stage 6.12A.3)', () => {
     });
     expect(updateImpl).toHaveBeenCalledWith({
       where: { id: 'bl-primary' },
-      data: expect.objectContaining({ phone: '+77009998877' }),
+      data: {
+        phone: '+77009998877',
+        whatsapp: null,
+        instagram: null,
+        website: null,
+        workHours: Prisma.JsonNull,
+      },
     });
+    expect(updateImpl).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ address: expect.anything() }),
+      }),
+    );
   });
 
   it('shouldSyncAfterPatch respects partial PATCH keys', () => {

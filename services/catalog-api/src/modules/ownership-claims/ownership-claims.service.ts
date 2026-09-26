@@ -35,11 +35,14 @@ import {
 const businessSummarySelect = {
   id: true,
   title: true,
-  address: true,
   status: true,
   cityId: true,
   city: { select: { id: true, slug: true, nameRu: true } },
 } satisfies Prisma.BusinessSelect;
+
+type ClaimWithBusinessSummary = {
+  business: { id: string } & Record<string, unknown>;
+};
 
 const claimInclude = {
   business: { select: businessSummarySelect },
@@ -102,7 +105,7 @@ export class OwnershipClaimsService {
         tx,
       });
 
-      return claim;
+      return this.enrichClaimWithPrimaryAddress(claim);
     });
   }
 
@@ -126,7 +129,10 @@ export class OwnershipClaimsService {
       this.prisma.businessOwnershipClaim.count({ where }),
     ]);
 
-    return { items, meta: { page, limit, total } };
+    return {
+      items: await this.enrichClaimsWithPrimaryAddress(items),
+      meta: { page, limit, total },
+    };
   }
 
   async getOwn(user: AuthUser, id: string) {
@@ -137,7 +143,7 @@ export class OwnershipClaimsService {
     if (!claim || claim.claimantUserId !== user.id) {
       throw new NotFoundException('Claim not found');
     }
-    return claim;
+    return this.enrichClaimWithPrimaryAddress(claim);
   }
 
   async cancel(user: AuthUser, id: string) {
@@ -172,10 +178,11 @@ export class OwnershipClaimsService {
         tx,
       });
 
-      return tx.businessOwnershipClaim.findUniqueOrThrow({
+      const updated = await tx.businessOwnershipClaim.findUniqueOrThrow({
         where: { id },
         include: claimInclude,
       });
+      return this.enrichClaimWithPrimaryAddress(updated);
     });
   }
 
@@ -206,7 +213,10 @@ export class OwnershipClaimsService {
       this.prisma.businessOwnershipClaim.count({ where }),
     ]);
 
-    return { items, meta: { page, limit, total } };
+    return {
+      items: await this.enrichClaimsWithPrimaryAddress(items),
+      meta: { page, limit, total },
+    };
   }
 
   async adminGet(user: AuthUser, id: string) {
@@ -219,7 +229,7 @@ export class OwnershipClaimsService {
       throw new NotFoundException('Claim not found');
     }
     await this.cityScope.assertBusinessInAdminScope(user, claim.businessId);
-    return claim;
+    return this.enrichClaimWithPrimaryAddress(claim);
   }
 
   async adminReject(user: AuthUser, id: string, dto: RejectOwnershipClaimDto) {
@@ -280,7 +290,7 @@ export class OwnershipClaimsService {
       return { updated, pushNotification };
     });
     this.notifications.schedulePushAfterTransaction(rejected.pushNotification);
-    return rejected.updated;
+    return this.enrichClaimWithPrimaryAddress(rejected.updated);
   }
 
   async adminApprove(user: AuthUser, id: string) {
@@ -389,7 +399,10 @@ export class OwnershipClaimsService {
       return { claim: updatedClaim, business: businessAfter, pushNotification };
     });
     this.notifications.schedulePushAfterTransaction(approved.pushNotification);
-    return { claim: approved.claim, business: approved.business };
+    return {
+      claim: await this.enrichClaimWithPrimaryAddress(approved.claim),
+      business: await this.attachPrimaryAddressToBusinessSummary(approved.business),
+    };
   }
 
   /** Centralized eligibility for claim submission (Stage 5N.2). */
@@ -516,6 +529,56 @@ export class OwnershipClaimsService {
     if (pending) {
       throw new ConflictException('You already have a pending claim for this business');
     }
+  }
+
+  private async loadPrimaryAddressesByBusinessId(
+    businessIds: readonly string[],
+  ): Promise<Map<string, string>> {
+    const uniqueIds = [...new Set(businessIds.filter(Boolean))];
+    if (uniqueIds.length === 0) {
+      return new Map();
+    }
+    const rows = await this.prisma.businessLocation.findMany({
+      where: { businessId: { in: uniqueIds }, isPrimary: true },
+      select: { businessId: true, address: true },
+    });
+    return new Map(rows.map((row) => [row.businessId, row.address]));
+  }
+
+  private async attachPrimaryAddressToBusinessSummary<T extends { id: string }>(
+    business: T,
+  ): Promise<T & { address: string }> {
+    const map = await this.loadPrimaryAddressesByBusinessId([business.id]);
+    return { ...business, address: map.get(business.id) ?? '' };
+  }
+
+  private async enrichClaimWithPrimaryAddress<T extends ClaimWithBusinessSummary>(
+    claim: T,
+  ): Promise<T & { business: T['business'] & { address: string } }> {
+    if (!claim.business?.id) {
+      return claim as T & { business: T['business'] & { address: string } };
+    }
+    const map = await this.loadPrimaryAddressesByBusinessId([claim.business.id]);
+    return {
+      ...claim,
+      business: {
+        ...claim.business,
+        address: map.get(claim.business.id) ?? '',
+      },
+    };
+  }
+
+  private async enrichClaimsWithPrimaryAddress<T extends ClaimWithBusinessSummary>(
+    claims: readonly T[],
+  ): Promise<Array<T & { business: T['business'] & { address: string } }>> {
+    const map = await this.loadPrimaryAddressesByBusinessId(claims.map((c) => c.business.id));
+    return claims.map((claim) => ({
+      ...claim,
+      business: {
+        ...claim.business,
+        address: map.get(claim.business.id) ?? '',
+      },
+    }));
   }
 
   private async loadBusinessForClaim(businessId: string) {
