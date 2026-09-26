@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-26 — 6.12A.9.4.4C2 BusinessLocation-native integrity / repair
+
+- **Status:** **6.12A.9.4.4C2 PASS — BUSINESSLOCATION-NATIVE INTEGRITY / REPAIR FINALIZED** (overall **A.9.4.4C** not closed — **C3** bootstrap + **C4** schema remain).
+- **Checkpoint (implementation):** `10c767d272e0033b25fdc93938e62727f9f89beb`.
+- **Baseline:** `cb458e5fe1135a80e58e2983d8994625c43502fa` (**A.9.4.4C1** docs alignment).
+- **Scope:** **`services/catalog-api`** — integrity/repair tooling and parity test helpers only. No schema/migration, no public API change, **C3** not started.
+- **Summary:** Integrity is **BusinessLocation-native**. Retired **Business** geo mirror fields (**address/lat/lng/locationSource/location**) are no longer invariants; **`parentCityMirrorMismatchCount`** tracks temporary **Business.cityId ↔ primary BL.cityId** compatibility until **A.9.4.5**. Zero-location → **MANUAL_REMEDIATION** only (**`--apply`** does not reconstruct BL from legacy **Business** geo). Zero-primary **`--apply`** promotes deterministic existing BL and syncs **city/contact compatibility** only (no legacy full geo mirror). **BL hygiene** metrics: empty address, partial/invalid coordinates, geography parity vs trigger semantics. Parity test util delegates to compatibility assertions (cityId + phone).
+- **Verified:** focused Jest (**2A/2B**, **C1**, **C2**, integrity util, **4.4B** physical read specs); **`npm run build`**; **`integrity:business-locations:audit`** read-only before/after — **109/110** businesses/locations, structural **0** zero-location/zero-primary/multi-primary/**parentCityMirrorMismatch**, **BL hygiene PASS** (`validCoordsNullGeographyCount=0` on current dev DB; no **`--apply`** on dev DB).
+- **Deferred:** **A.9.4.4C3** create/onboarding/seed bootstrap; **C4** column/trigger drop; **A.9.4.5** **`Business.cityId`**; **`syncBusinessLegacyFullMirrorFromPrimaryInTx`** retained for bootstrap/migration call sites only.
+- **Next:** **6.12A.9.4.4C3** — create/bootstrap geo authority (**not auto-started**).
+
+---
+
 ## 2026-09-25 — 6.12A.9.4.4C1 Stop normal Business geo mirror writes
 
 - **Status:** **6.12A.9.4.4C1 PASS — NORMAL BUSINESS GEO MIRROR WRITES RETIRED** (overall **A.9.4.4C** not closed — **C2** integrity + **C3/C4** bootstrap/schema remain).
