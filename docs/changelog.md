@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-27 — F.4 PASS — public business pages finalized
+
+- **Status:** **F.4 PASS — PUBLIC BUSINESS PAGES FINALIZED**. **F.4 is CLOSED** (reopen only on confirmed defect or explicit new scope).
+- **Checkpoint (docs closure):** follows hotfix `678cb23a8e9004aa9be3aea170affaad68eb045e` — see git log for this entry’s commit SHA.
+- **Implementation checkpoints:** Phase **0** read-only audit (**CONTRACT DECISION REQUIRED**); Phase **0.1** `d727331eaa8ef5a53ff9b6245ba914e63c564011`; Phase **1** `3bcd5cac785c5fbc9c5b5f623c96359645cf1854` (docs checkpoint `5e3826d76aa081b205a087d537405efe31c69fa8`); Phase **2** `52dfe1c4c32a906c964ee3e34470a511864faa84`; Phase **2.1** hotfix `678cb23a8e9004aa9be3aea170affaad68eb045e` (**409** field passthrough + **`/favicon.ico`** → **`/icon`**).
+- **Summary:** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); backend **`GET /businesses/by-slug/:businessSlug?citySlug=`**; city membership **404**; city-default branch; wrong-city **`locationId`** permanent normalize; foreign/invalid safe fallback; legacy **`/businesses/{id}`** redirect; indexable canonical/sitemap without query; typed showcase + **BreadcrumbList**; **6.12A** compatible.
+- **Automated verification (recorded):** Phase **2** — F.4 tests **17**; F.2/F.3 **13** files / **85** tests; typecheck + build **PASS**. Phase **2.1** — F.4 tests **17 PASS**; mismatch suite **11 PASS**; F.2/F.3 **15** files / **97 PASS**; typecheck + build **PASS**; favicon routing test **PASS**; **`ProductionExceptionFilter`** regression **PASS**.
+- **Physical / manual browser QA (completed):** discovery → canonical page (Bar Code 51); city-default without query; OSM map CTA; RU/KK UI labels; unknown slug **404**; multi-city fixture (**Uralsk** / **Aktobe** branches, city-default per city); wrong-city URL normalize after **2.1**; temp ID redirects; foreign/invalid **`locationId`** no leak; absent city (**Astana**) **404**; branch switcher cross-city; canonical excludes **`locationId`**; sitemap city/business URLs only; responsive narrow width; favicon **200**; breadcrumbs JSON-LD; **`robots.txt`** disallow **`/businesses/`**.
+- **Deferred (non-blocking):** Consumer Web interactive map; **LocalBusiness** / **AggregateRating** JSON-LD; Web auth/favorites; production **`qalago.kz`** origin config (vs localhost); auto-translation of business-generated text; KK **«Фото»** wording; **F.5+** / **6.12B** / other contours — **not started**.
+- **Next:** **Explicit agreement required** before any next stage (**F.5**, **6.12B**, etc.) — **not auto-started**.
+
+---
+
 ## 2026-09-27 — F.4 Phase 2.1 hotfix wrong-city normalization + favicon
 
 - **Status:** **F.4 PHASE 2.1 HOTFIX — WRONG-CITY NORMALIZATION RUNTIME FIX** (manual QA **not** complete).

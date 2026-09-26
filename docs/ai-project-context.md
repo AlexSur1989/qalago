@@ -9,9 +9,9 @@
 | Field | Value |
 |-------|--------|
 | **Last completed architecture decision gate** | **FUTURE EXTENSIBILITY ARCHITECTURE GATE — AGREED / DOCUMENTED** — **`docs/architecture/future-extensibility-contracts.md`** |
-| **F.4 Phase 0.1** | **PASS — MULTI-CITY PUBLIC BUSINESS URL CONTRACT LOCKED** (same doc, Contract 1 addendum) |
-| **F.4 Phase 1** | **PASS — PUBLIC BUSINESS SLUG/CITY RESOLUTION BACKEND** (`GET /businesses/by-slug/:businessSlug`) |
-| **F.4 Phase 2** | **IMPLEMENTED — CANONICAL CONSUMER WEB BUSINESS PAGE** — **manual QA in progress** (Phase **2.1** hotfix: 409 field passthrough + favicon middleware) |
+| **F.4** | **CLOSED / PASS — PUBLIC BUSINESS PAGES FINALIZED** (Phases **0.1** → **2.1** + physical QA — **`docs/changelog.md`**) |
+| **F.4 implementation SHA** | `52dfe1c4c32a906c964ee3e34470a511864faa84` (Phase 2); hotfix `678cb23a8e9004aa9be3aea170affaad68eb045e` |
+| **F.4 Phase 1 backend SHA** | `3bcd5cac785c5fbc9c5b5f623c96359645cf1854` |
 | **Last completed architecture contour** | **6.12A PASS — BUSINESSLOCATION ARCHITECTURE FINALIZED** (umbrella — see **`docs/changelog.md`** entry **2026-09-27**) |
 | **6.12A.9.4.5E docs closure (canonical checkpoint)** | `657cfc6f1ccad2cf469d0030ade0e0d9aab5146b` |
 | **A.9.4.5D3 implementation SHA** | `7a153cdf497c711c3aeda2b60cc72588f50d7859` |
@@ -40,15 +40,15 @@
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending (6.12A)** | **None** — contour closed (**5E** finalized) |
-| **Next** | **F.4 manual QA** (physical/browser) — **F.4 not FINALIZED**; no auto-start Phase 3 |
+| **Next** | **Explicit agreement required** before next stage — **not auto-started** |
 
-**F.4 Phase 0.1 (locked):** city-routed default branch, city membership **404**, wrong-city **`locationId`** redirect, foreign/invalid normalization, canonical excludes query — **`docs/architecture/future-extensibility-contracts.md`** § Contract 1 addendum.
+**F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
 **Future extensibility gate:** **AGREED / DOCUMENTED** — public URL + **NavigationTarget**, F.4 typed showcase, Event/Promotion + editorial boundaries, config split, lifecycle/media/favorites/notification/analytics/API rules — details in **`docs/architecture/future-extensibility-contracts.md`**. **No product implementation** in this gate.
 
 **6.12A state:** **CLOSED** — BusinessLocation architecture finalized (**A.1–A.9.4.5E**). **Business** = brand; **BusinessLocation** = sole physical/city authority; retired **Business** physical columns including **`cityId`**; contact defaults on **Business** per policy. Grains and RBAC per **`docs/changelog.md`** umbrella entry **2026-09-27**. Dev **`qalago_dev`** baseline: **109 Business / 110 BL / 109 primary**; integrity PASS; migrations **47/47**. Pre-5D2 backup preserved: `infra/local-backups/qalago_dev_native_pg18_pre_5d2_business_cityid_retirement_20260926T131630Z.dump` (596125 bytes; uncommitted). **`a945e-*`** helpers remain local/untracked.
 
-**Post-6.12A candidates (documented — not auto-started):** **F.4** Business Pages; **6.12B** / Catalog Import; remaining Admin / Business Web / Consumer Web contours; other backlog in **`docs/changelog.md`** / architecture docs.
+**Post-6.12A candidates (documented — not auto-started):** **6.12B** / Catalog Import; **F.5+** locale/SEO depth; remaining Admin / Business Web / Consumer Web contours; backlog in **`docs/changelog.md`** / architecture docs.
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 
@@ -94,7 +94,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **6.12A.9.3.4 PASS (physical QA finalized)** — Consumer Web discovery/detail physical context; **QA-001 CLOSED**.
 - **6.12A.9.3.5 PASS (physical QA finalized)** — Business Web permission-safe profile PATCH; primary-branch UX; hours-only MANAGER scope verified; closes **`A.9.3.4+`** owner slice; central audit **P1 CLOSED**.
 - **6.12A.9.4.0 PASS (policy gate)** — legacy physical retirement policies & invariants frozen; **`docs/architecture/business-location.md`** § **9.4.0**; **F.4** not blocked on column drop.
-- **F.4** — **Phase 1 backend** + **Phase 2 Consumer Web** canonical page **IMPLEMENTED**; **manual QA pending** before F.4 closure; **LocalBusiness** JSON-LD deferred.
+- **F.4** — **CLOSED / PASS** — canonical public Business pages implemented + physically verified; **LocalBusiness** / **AggregateRating** JSON-LD still deferred.
 
 ## BusinessLocation track
 
@@ -185,7 +185,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **Primary sync:** legacy **Business** geo **columns** retired (**A.9.4.4C4**); **`Business.cityId`** retired (**A.9.4.5D/E**). **A.9.4.4C1–C3 / 4B CLOSED:** **BL-authoritative** writes/reads; public **`cityId`** = effective **BusinessLocation** projection. Branch assignments **A.7.8.2**; branch-effective catalog/promotions **A.7.8.3**; branch reviews deferred.
 - **Branch catalog/promotion invariants (A.7.8 CLOSED):** **ServiceMenuGroup** = business-wide. **ServiceItem** / **Promotion:** **0** assignment rows = all branches; **≥1** = only assigned **`BusinessLocation`** ids. Owner edits via **Business Web** (**ALL/SELECTED**); **Admin** read-only content inspection (no branch editing). Public/Flutter use **`effectiveCatalog`** / **`effectivePromotions`**; legacy **`catalogPreview`** / **`promotionsPreview`** + city **`GET /promotions`** remain business-grain until **A.7.9**. Assignments = availability only. **BusinessLocation** delete **RESTRICT** while assignments exist.
 - **Branch media invariants (A.7.7 CLOSED):** shared = **`BusinessImage.locationId` null**; branch = **`locationId` = `BusinessLocation.id`** (same business); public branch view = **active branch media + shared brand** (never sibling branches); **`effectiveMedia`** is branch-aware public truth; legacy **`galleryPreview`** on detail is **compatibility-only** (not branch truth); **`Business.coverImageUrl`** remains **brand-level**; owner **Business Web** + consumer **Flutter** + **Admin MEDIA** moderation aligned; plan quota Business-wide; **`moderationHidden`** never on public surfaces.
-- **Branch media deferred / debt:** legacy business-wide **`galleryPreview`**; full Admin gallery manager; Admin upload/reorder; owner Flutter branch upload; Consumer Web branch media (**F.4**); orphan file GC; reorder API/UX; explicit branch cover column; branch-level moderation status; CDN migration.
+- **Branch media deferred / debt:** legacy business-wide **`galleryPreview`**; full Admin gallery manager; Admin upload/reorder; owner Flutter branch upload; orphan file GC; reorder API/UX; explicit branch cover column; branch-level moderation status; CDN migration.
 - **Cross-city:** secondary branches may live in other cities; **A.7.9.3A** discovery uses **branch city presence** + **`contextLocationId`** for the branch in the requested city (not parent **`Business.cityId`** alone).
 - **Public read (A.6):** `GET /businesses/:id/locations/public` (ACTIVE only, guest-safe).
 - **Management (A.4):** authenticated CRUD + `set-primary`; **DELETE** non-primary branch (409 when FK references remain, e.g. catalog/promotion assignments).
@@ -195,14 +195,14 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **Map (A.7.1–A.7.4):** backend **BusinessLocation** grain + **`locationId`**; Flutter map layer uses **physical key**; category map renders **`mapLayerItems`** (fetch bounds); detail accepts optional **`locationId`** for branch address/route; reviews/favorites/analytics remain **Business.id**.
 - **Nearest/radius/list discovery:** **Business-grain** card; branch context via **`contextLocationId`** (A.7.9.2+).
 - **Public discovery:** Backend **A.7.9.3A–3B/4** + Flutter **A.7.9.5** passes **`contextLocationId`** into detail **`locationId`**. Map unchanged (**marker `locationId`**). **A.7.9.6 CLOSED** (physical QA PASS). **A.7 BusinessLocation architecture complete** (A.7.QA audit PASS).
-- **F.4 / F.5:** final business URLs, branch slugs, hreflang, branch JSON-LD — not A.6.
+- **F.5+ (not started):** locale SEO URLs (hreflang), branch JSON-LD richness — beyond closed **F.4** v1 — not A.6.
 - **Branch-level membership, location favorites, branch reviews:** deferred.
 
 ## A.7.QA outstanding debt (not implemented)
 
 | ID | Severity | Summary | Target |
 |----|----------|---------|--------|
-| QA-001 | **CLOSED (A.9.3.4 physical QA PASS)** | L2 discovery → detail context preserved via **`locationId`** + **`effectivePhysical`**; back/reopen without stale primary; temp detail still **noindex** — full pages **F.4** | — |
+| QA-001 | **CLOSED (A.9.3.4 + F.4 PASS)** | Discovery → canonical **`/{citySlug}/business/{businessSlug}`**; branch context preserved | — |
 | QA-002 | **CLOSED / OBSOLETE** (A.9.3.3) | Favorites are **Business-grain**; **`openBusinessFromFavorite`** omits route **`locationId`**; **A.9.3.1** primary projection + detail **`primary_default`** | — |
 | QA-003 | P3 | BL rows with lat/lng but null geography (dev snapshot: 27) | A.9 / ops backfill |
 | QA-004 | P3 | Single-primary enforced in app, not DB | A.9 |
@@ -253,7 +253,7 @@ Future architecture should allow **backend/admin-central configuration** of cons
 - **A.9.4.5** — **`Business.cityId`** retirement — **CLOSED** (**5A–5E**); physical/manual QA **PASS** (**5E**).
 - **6.12A (umbrella)** — **CLOSED** — BusinessLocation architecture finalized (changelog **2026-09-27**).
 - **A.8.1 test debt** — **CLOSED in 5B** (branch **`businessLocationId`** contract spec).
-- **F.4** — Backend + Consumer Web canonical business page **done**; **manual QA** and rich snippets **deferred**.
+- **F.4** — **CLOSED / PASS** (see changelog **2026-09-27** finalized entry). Rich snippets (**LocalBusiness**) remain future work.
 - Post **6.12A:** User contour audit, Business Web owner contour, Admin Web contour, Admin Catalog/CMS, centralized Home config, Catalog Import, QalaGo AI, remaining Consumer Web, production monetization, analytics UX, role-based E2E, security/legal/release — **not** current track unless explicitly staged.
 
 ## Context maintenance

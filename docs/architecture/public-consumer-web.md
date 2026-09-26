@@ -45,9 +45,9 @@ Static App Router segments (e.g. `categories/`, `search/`) take precedence over 
 - `/categories` → `/{DEFAULT_CITY_SLUG}/categories`
 - `/categories/{categoryId}` → resolve in default city → `/{DEFAULT_CITY_SLUG}/{categorySlug}` or 404
 
-### Business pages (F.4)
+### Business pages (F.4 — CLOSED / PASS)
 
-- **Canonical route (F.4 Phase 2, IMPLEMENTED):** **`/{citySlug}/business/{businessSlug}`** with optional **`?locationId=`** for branch context. Server fetch: **`GET /businesses/by-slug/:businessSlug?citySlug=&locationId=`** (Phase 1 backend). Wrong-city owned **`locationId`** → **`permanentRedirect`** to **`/{actualCitySlug}/business/{businessSlug}?locationId=`** (409 normalization). **404** for unknown city/slug, non-public business, or no branch in city.
+- **Canonical route (implemented + physical QA verified):** **`/{citySlug}/business/{businessSlug}`** with optional **`?locationId=`** for branch context. Server fetch: **`GET /businesses/by-slug/:businessSlug?citySlug=&locationId=`** (Phase 1 backend). Wrong-city owned **`locationId`** → **`permanentRedirect`** to **`/{actualCitySlug}/business/{businessSlug}?locationId=`** (409 normalization). **404** for unknown city/slug, non-public business, or no branch in city.
 - **Discovery links (F.2):** category/search/subcategory **`BusinessList`** → canonical URLs with **`contextLocationId`** preserved in query when present.
 - **Legacy compatibility:** **`/businesses/{id}?locationId=`** → **308 permanent redirect** to canonical URL (still **`noindex`** + **`robots.txt` disallow**). Resolves city via active/public branch data — not **`Business.cityId`**.
 - **SEO canonical:** indexable business pages use **`/{citySlug}/business/{businessSlug}`** only — **no `?locationId=`** in canonical or sitemap. One sitemap URL per **(citySlug, businessSlug)** membership (deduped multi-branch same city).
