@@ -6,6 +6,15 @@
 
 ---
 
+## 2026-09-27 — F.4 Phase 2.1 hotfix wrong-city normalization + favicon
+
+- **Status:** **F.4 PHASE 2.1 HOTFIX — WRONG-CITY NORMALIZATION RUNTIME FIX** (manual QA **not** complete).
+- **Summary:** Manual QA found **409** **`BUSINESS_LOCATION_CITY_MISMATCH`** returned only **`statusCode`**, **`message`**, **`code`** — **`ProductionExceptionFilter`** dropped **`businessSlug`**, **`locationId`**, **`citySlug`**; Consumer Web parser correctly rejected incomplete body → **500**. Filter now forwards public normalization fields; strict parser tests added. **`/favicon.ico`** rewritten to **`/icon`** via **`middleware.ts`** so **`[citySlug]`** no longer treats **`favicon.ico`** as a city.
+- **Deferred:** F.4 manual QA resume; F.4 **FINALIZED** gate.
+- **Next:** Resume manual QA from wrong-city URL **`/uralsk/business/...?locationId=<aktobe-branch>`** (expect permanent redirect to Aktobe).
+
+---
+
 ## 2026-09-27 — F.4 Phase 2 canonical Consumer Web business page
 
 - **Status:** **F.4 PHASE 2 IMPLEMENTED — CANONICAL CONSUMER WEB BUSINESS PAGE** (manual QA pending — **F.4 not FINALIZED**).

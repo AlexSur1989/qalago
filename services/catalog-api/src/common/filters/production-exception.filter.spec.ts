@@ -31,4 +31,37 @@ describe('ProductionExceptionFilter', () => {
       }),
     );
   });
+
+  it('preserves F.4 public city-mismatch normalization fields on 409', () => {
+    const config = { get: jest.fn().mockReturnValue('development') } as unknown as ConfigService;
+    const filter = new ProductionExceptionFilter(config);
+    const json = jest.fn();
+    const status = jest.fn().mockReturnValue({ json });
+    const host = {
+      switchToHttp: () => ({
+        getResponse: () => ({ status }),
+      }),
+    };
+
+    filter.catch(
+      new ConflictException({
+        statusCode: 409,
+        code: 'BUSINESS_LOCATION_CITY_MISMATCH',
+        message: 'Business location belongs to another city',
+        businessSlug: 'brand-x',
+        locationId: 'loc-1',
+        citySlug: 'aktobe',
+      }),
+      host as never,
+    );
+
+    expect(json).toHaveBeenCalledWith({
+      statusCode: 409,
+      message: 'Business location belongs to another city',
+      code: 'BUSINESS_LOCATION_CITY_MISMATCH',
+      businessSlug: 'brand-x',
+      locationId: 'loc-1',
+      citySlug: 'aktobe',
+    });
+  });
 });

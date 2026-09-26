@@ -11,7 +11,7 @@
 | **Last completed architecture decision gate** | **FUTURE EXTENSIBILITY ARCHITECTURE GATE — AGREED / DOCUMENTED** — **`docs/architecture/future-extensibility-contracts.md`** |
 | **F.4 Phase 0.1** | **PASS — MULTI-CITY PUBLIC BUSINESS URL CONTRACT LOCKED** (same doc, Contract 1 addendum) |
 | **F.4 Phase 1** | **PASS — PUBLIC BUSINESS SLUG/CITY RESOLUTION BACKEND** (`GET /businesses/by-slug/:businessSlug`) |
-| **F.4 Phase 2** | **IMPLEMENTED — CANONICAL CONSUMER WEB BUSINESS PAGE** (`/{citySlug}/business/{businessSlug}`) — **manual QA pending** |
+| **F.4 Phase 2** | **IMPLEMENTED — CANONICAL CONSUMER WEB BUSINESS PAGE** — **manual QA in progress** (Phase **2.1** hotfix: 409 field passthrough + favicon middleware) |
 | **Last completed architecture contour** | **6.12A PASS — BUSINESSLOCATION ARCHITECTURE FINALIZED** (umbrella — see **`docs/changelog.md`** entry **2026-09-27**) |
 | **6.12A.9.4.5E docs closure (canonical checkpoint)** | `657cfc6f1ccad2cf469d0030ade0e0d9aab5146b` |
 | **A.9.4.5D3 implementation SHA** | `7a153cdf497c711c3aeda2b60cc72588f50d7859` |

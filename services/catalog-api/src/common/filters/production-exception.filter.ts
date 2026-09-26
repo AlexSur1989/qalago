@@ -40,6 +40,13 @@ export class ProductionExceptionFilter implements ExceptionFilter {
         if (typeof obj.code === 'string') {
           body.code = obj.code;
         }
+        /** Public-safe machine-readable fields (e.g. F.4 city normalization). */
+        for (const key of ['businessSlug', 'locationId', 'citySlug'] as const) {
+          const value = obj[key];
+          if (typeof value === 'string' && value.trim()) {
+            body[key] = value;
+          }
+        }
       }
     } else if (production) {
       this.logger.error('Unhandled exception', exception instanceof Error ? exception.stack : String(exception));
