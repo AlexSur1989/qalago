@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { ROUTE_LOCALE_HEADER } from '@/lib/locale-path';
-import { isSupportedPublicLocale } from '@/lib/public-locale';
+import {
+  joinRedirectTarget,
+  resolveMiddlewareLocaleRedirect,
+} from '@/lib/middleware-public-locale-redirect';
 
 /** Browsers request /favicon.ico — rewrite to App Router icon (avoids dynamic segment capture). */
 export function middleware(request: NextRequest) {
@@ -11,11 +14,24 @@ export function middleware(request: NextRequest) {
     return NextResponse.rewrite(new URL('/icon', request.url));
   }
 
-  const parts = pathname.split('/').filter(Boolean);
-  const first = parts[0];
-  if (first && isSupportedPublicLocale(first)) {
+  const decision = resolveMiddlewareLocaleRedirect(
+    pathname,
+    request.nextUrl.searchParams,
+    request.headers.get('cookie'),
+  );
+
+  if (decision.kind === 'permanent') {
+    const target = joinRedirectTarget(decision.pathname, decision.search);
+    const url = new URL(target, request.url);
+    if (url.origin !== request.nextUrl.origin) {
+      return NextResponse.next();
+    }
+    return NextResponse.redirect(url, 308);
+  }
+
+  if (decision.routeLocale) {
     const response = NextResponse.next();
-    response.headers.set(ROUTE_LOCALE_HEADER, first);
+    response.headers.set(ROUTE_LOCALE_HEADER, decision.routeLocale);
     return response;
   }
 

@@ -175,7 +175,7 @@ Required for deterministic SSR, caching, and SEO. **No cookie-dependent HTML lan
 
 Today’s paths such as `/uralsk`, `/uralsk/categories`, `/uralsk/{categorySlug}`, `/uralsk/business/{businessSlug}` remain **compatibility entry routes** after F.5. They must **not** become a third independently indexable locale version.
 
-**F.5 Phase 1+** permanently redirects them **once** to a locale-prefixed URL (no chains):
+**F.5 Phase 1+** permanently redirects them **once** to a locale-prefixed URL (no chains). **Implemented (Phase 1.1):** neutral compatibility is **middleware-only** (no `app/[citySlug]` render tree).
 
 | Condition | Redirect target locale |
 |-----------|-------------------------|

@@ -1,11 +1,11 @@
 import { permanentRedirect } from 'next/navigation';
-import { DEFAULT_CITY_SLUG } from './public-config';
 import { getPreferenceLocaleFromCookies } from './locale-preference';
 import {
-  isTopLevelLocaleSegment,
-  type PublicLocale,
-} from './public-locale';
-import { withPublicLocalePrefix } from './routes';
+  buildLocaleRootPrefixedPath,
+  buildMisplacedLocalePrefixedPath,
+  buildNeutralPrefixedPath,
+} from './public-locale-redirect-paths';
+import { isTopLevelLocaleSegment, type PublicLocale } from './public-locale';
 
 /**
  * Locale-neutral compatibility path → locale-prefixed URL (one hop).
@@ -16,13 +16,13 @@ export async function permanentRedirectNeutralPublicPath(
   querySuffix = '',
 ): Promise<never> {
   const locale = await getPreferenceLocaleFromCookies();
-  const base = withPublicLocalePrefix(locale, logicalPath);
+  const base = buildNeutralPrefixedPath(locale, logicalPath);
   permanentRedirect(querySuffix ? `${base}${querySuffix}` : base);
 }
 
 /** `/ru` or `/kk` alone → default city home in that locale. */
 export function permanentRedirectLocaleRoot(locale: PublicLocale): never {
-  permanentRedirect(withPublicLocalePrefix(locale, `/${DEFAULT_CITY_SLUG}`));
+  permanentRedirect(buildLocaleRootPrefixedPath(locale));
 }
 
 /**
@@ -32,11 +32,7 @@ export function permanentRedirectMisplacedLocalePath(
   locale: PublicLocale,
   tailSegments: string[],
 ): never {
-  const encodedTail = tailSegments.map((s) => encodeURIComponent(s)).join('/');
-  const logical = encodedTail
-    ? `/${DEFAULT_CITY_SLUG}/${encodedTail}`
-    : `/${DEFAULT_CITY_SLUG}`;
-  permanentRedirect(withPublicLocalePrefix(locale, logical));
+  permanentRedirect(buildMisplacedLocalePrefixedPath(locale, tailSegments));
 }
 
 export async function redirectIfCitySlugIsLocaleSegment(citySlug: string): Promise<void> {

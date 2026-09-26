@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-09-27 — F.5 Phase 1.1 hotfix — Next.js route collision resolved
+
+- **Status:** **F.5 PHASE 1.1 HOTFIX PASS — NEXT.JS ROUTE COLLISION RESOLVED** (automated + **dev/production runtime smoke PASS**; **physical browser QA still pending**).
+- **Checkpoint:** `e7b4b7fcf2a95bee7f75a224ca08a1ee29cef1b0`.
+- **Root cause:** Next.js 15.5.25 rejects sibling App Router trees **`app/[locale]/…`** and **`app/[citySlug]/…`** — both claim the first dynamic URL segment (`'citySlug' !== 'locale'`). **`next build`** did not fail; **`next dev`** and request handling on **`next start`** did.
+- **Summary:** Removed obsolete **`app/[citySlug]/**`** compatibility pages; locale-neutral and misplaced locale-prefixed entry redirects moved to **middleware-only** (308, single hop, cookie **`ru`/`kk`** or default **`ru`**, safe query **`locationId`/`page`/`q`**); canonical SSR/render tree **`app/[locale]/[citySlug]/…`** only; preserved **`/`** via **`app/page.tsx`**, legacy **`/businesses/{id}`**, **`/categories*`**, static/system exclusions, favicon → **`/icon`** rewrite, F.4 business semantics unchanged.
+- **Automated verification:** consumer-web vitest **141 PASS** (incl. **`f5-phase1-1-middleware-locale-redirect.test.ts`**); F.5 Phase 1 / F.2–F.4 / mismatch / favicon regressions PASS; **`tsc --noEmit` PASS**; **`next build` PASS**; **dev Ready** + HTTP smoke **`/`**, **`/uralsk`**, **`/ru/uralsk`**, **`/kk/uralsk`**, **`/favicon.ico`** PASS; **production Ready** + smoke incl. **`/robots.txt`**, **`/sitemap.xml`**, canonical business route PASS — **no dynamic slug collision observed**.
+- **Deferred:** F.5 **Phase 2** (hreflang, locale sitemap, full locale canonical metadata); **physical/manual browser QA**.
+- **Next:** Resume **physical browser QA** (human); **explicit approval** before **F.5 Phase 2** — **not auto-started**.
+
+---
+
 ## 2026-09-27 — F.5 Phase 1 — locale routing foundation
 
 - **Status:** **F.5 PHASE 1 IMPLEMENTED — LOCALE ROUTING FOUNDATION** (automated verification PASS; **physical/manual QA pending**).
