@@ -8,7 +8,7 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `10c767d` — **A.9.4.4C2** docs closure |
+| **Repo HEAD (current)** | `a78ff95` — **A.9.4.4C3** docs closure |
 | **A.9.4.3D docs closure** | `75d58f6bb477a0a295029a867fd225989544c172` — physical QA finalized |
 | **A.9.4.3C implementation SHA** | `91284804547a78c1b4b6521ffe648e63508c2fe9` |
 | **A.9.4.3B implementation SHA** | `cde02e6d0faee3b5b6831ba479d6f4dcdff14b17` |
@@ -19,12 +19,13 @@
 | **A.9.4.4B implementation SHA** | `34032806ae08db5868c1a8d8fb78d31d95f8ebac` |
 | **A.9.4.4C1 implementation SHA** | `80f678a9584f2614c1aaf029e56183c48315f1bb` |
 | **A.9.4.4C2 implementation SHA** | `10c767d272e0033b25fdc93938e62727f9f89beb` |
-| **Last completed stage** | **6.12A.9.4.4C2 PASS** — **BusinessLocation-native** integrity/repair; zero-location reconstruct retired |
-| **Last product implementation** | **6.12A.9.4.4C2** — BL hygiene audit + repair scope; **C3/C4** remain |
+| **A.9.4.4C3 implementation SHA** | `a78ff95457c10e7e31ccce846906e91a1b99f670` |
+| **Last completed stage** | **6.12A.9.4.4C3 PASS** — create/onboarding/seed BL-authoritative; INSERT geo bootstrap isolated |
+| **Last product implementation** | **6.12A.9.4.4C3** — **`legacyBusinessInsertGeoBootstrapFromPrimaryPhysical`**; **C4** column drop remains |
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending** | None for **A.9.4.3** / **A.9.4.2** |
-| **Next agreed development action** | **6.12A.9.4.4C3** — create/onboarding/seed bootstrap (**not started**) |
+| **Next agreed development action** | **6.12A.9.4.4C4** — **Business** geo column/trigger retirement (**not started**) |
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 
@@ -158,7 +159,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **Business detail (A.7.6–A.7.9.6 CLOSED):** optional **`locationId`** selects active branch; **`effectivePhysical`** / **`effectiveMedia`** / **`effectiveCatalog`** / **`effectivePromotions`**; consumer **`/business/:id/catalog|promotions?locationId=`**; in-detail **«Филиалы»** switch via **`context.replace`**. Reviews/favorites/analytics stay **`Business.id`**. Branch-specific media physical QA = **A.7.7**, not re-tested in **A.7.9.6**.
 - **Discovery grain (A.7.9 CLOSED via A.7.9.6):** list/search/category/nearby/promotions feed = **Business-grain** card + backend **`contextLocationId`**; **map** = **BusinessLocation-grain** (**`locationId`** per marker).
 - **Primary:** default active context when `locationId` omitted; **`isPrimary` badge ≠ forced active** when user/map selects another branch.
-- **Primary sync:** legacy **Business** physical **columns** remain until **A.9.4.4C4** (**A.9.4.5** **`Business.cityId`** deferred). **A.9.4.4C1 CLOSED:** normal production no longer mirrors **address/lat/lng/locationSource** onto **Business**; **cityId + contacts** compatibility sync remains; **CREATE** bootstrap geo on INSERT until **C3**. **A.9.4.4C2 CLOSED:** integrity/repair is **BL-native** (no reconstruct from **Business** geo; no geo mirror on repair). **A.9.4.4B CLOSED:** runtime reads from **BusinessLocation**. Branch assignments in **A.7.8.2**; **public branch-effective** catalog/promotions in **A.7.8.3**; legacy previews stay business-wide; branch reviews deferred.
+- **Primary sync:** legacy **Business** physical **columns** remain until **A.9.4.4C4** (**A.9.4.5** **`Business.cityId`** deferred). **A.9.4.4C1 CLOSED:** normal production no longer mirrors **address/lat/lng/locationSource** onto **Business**; **cityId + contacts** compatibility sync remains. **A.9.4.4C2 CLOSED:** integrity/repair **BL-native**. **A.9.4.4C3 CLOSED:** create/admin approval/seed use **BL-authoritative** aggregate; **INSERT-only** legacy geo via **`legacyBusinessInsertGeoBootstrapFromPrimaryPhysical`** until **C4**. **A.9.4.4B CLOSED:** runtime reads from **BusinessLocation**. Branch assignments in **A.7.8.2**; **public branch-effective** catalog/promotions in **A.7.8.3**; legacy previews stay business-wide; branch reviews deferred.
 - **Branch catalog/promotion invariants (A.7.8 CLOSED):** **ServiceMenuGroup** = business-wide. **ServiceItem** / **Promotion:** **0** assignment rows = all branches; **≥1** = only assigned **`BusinessLocation`** ids. Owner edits via **Business Web** (**ALL/SELECTED**); **Admin** read-only content inspection (no branch editing). Public/Flutter use **`effectiveCatalog`** / **`effectivePromotions`**; legacy **`catalogPreview`** / **`promotionsPreview`** + city **`GET /promotions`** remain business-grain until **A.7.9**. Assignments = availability only. **BusinessLocation** delete **RESTRICT** while assignments exist.
 - **Branch media invariants (A.7.7 CLOSED):** shared = **`BusinessImage.locationId` null**; branch = **`locationId` = `BusinessLocation.id`** (same business); public branch view = **active branch media + shared brand** (never sibling branches); **`effectiveMedia`** is branch-aware public truth; legacy **`galleryPreview`** on detail is **compatibility-only** (not branch truth); **`Business.coverImageUrl`** remains **brand-level**; owner **Business Web** + consumer **Flutter** + **Admin MEDIA** moderation aligned; plan quota Business-wide; **`moderationHidden`** never on public surfaces.
 - **Branch media deferred / debt:** legacy business-wide **`galleryPreview`**; full Admin gallery manager; Admin upload/reorder; owner Flutter branch upload; Consumer Web branch media (**F.4**); orphan file GC; reorder API/UX; explicit branch cover column; branch-level moderation status; CDN migration.
@@ -221,7 +222,8 @@ Future architecture should allow **backend/admin-central configuration** of cons
 - **A.9.4.4A** — **PASS** — rogue **`sync-businesses-visibility.ts`** geo writer retired (visibility-only).
 - **A.9.4.4B** — **PASS** — runtime physical reads cut over to **BusinessLocation**.
 - **A.9.4.4C1** — **PASS** — normal **Business** geo mirror writes retired (**BL** write authority).
-- **A.9.4.4C3–C4 / A.9.4.5** — bootstrap removal, column/trigger drop, **`Business.cityId`** **NOT STARTED** (**C2** integrity transition **CLOSED**).
+- **A.9.4.4C3** — **PASS** — business creation cut over to **BusinessLocation** authority.
+- **A.9.4.4C4 / A.9.4.5** — column/trigger drop, **`Business.cityId`** **NOT STARTED**.
 - **F.4** — Consumer Web business/branch URLs & SEO; **does not require** A.9.4 DB column removal (**A.9.4.0** gate); not started.
 - Post **6.12A:** User contour audit, Business Web owner contour, Admin Web contour, Admin Catalog/CMS, centralized Home config, Catalog Import, QalaGo AI, remaining Consumer Web, production monetization, analytics UX, role-based E2E, security/legal/release — **not** current track unless explicitly staged.
 

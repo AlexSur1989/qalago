@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-26 — 6.12A.9.4.4C3 Business creation cut over to BusinessLocation authority
+
+- **Status:** **6.12A.9.4.4C3 PASS — BUSINESS CREATION CUT OVER TO BUSINESSLOCATION AUTHORITY** (overall **A.9.4.4C** not closed — **C4** schema/column drop remains).
+- **Checkpoint (implementation):** `a78ff95457c10e7e31ccce846906e91a1b99f670`.
+- **Baseline:** `3608a0036c3bb41ea730721da379a7c051068960` (**A.9.4.4C2** docs closure).
+- **Scope:** **`services/catalog-api`** — create/onboarding/seed aggregate semantics; **`legacyBusinessInsertGeoBootstrapFromPrimaryPhysical`** boundary; seed rename **`upsertSeedBusinessWithPrimaryLocationInTx`**; admin/application paths unchanged API; **`prisma/seed.ts`**. No schema/migration, **C4** not started.
+- **Summary:** Production create semantics: **Business** brand shell + authoritative **primary BusinessLocation** atomically; physical input terminates on BL. **INSERT-only** legacy geo on **Business** isolated in one helper until **C4** column drop; post-create sync remains **cityId + contacts** only (C1). Seed idempotent upsert updates primary BL without re-establishing Business geo authority. Tracked **5N QA** already uses **`createBusinessWithInitialPrimaryInTx`**.
+- **Verified:** focused Jest (**C3**, **3B**, aggregate util, primary-location util/service, **C1**, **C2**); **`npm run build`**; **`integrity:business-locations:audit`** read-only before/after **PASS** (109/110, BL hygiene **0** violations); no dev DB seed/`--apply`.
+- **Deferred:** **A.9.4.4C4** — drop **Business** geo columns/triggers; remove INSERT bootstrap boundary; **A.9.4.5** **`Business.cityId`**.
+- **Next:** **6.12A.9.4.4C4** — destructive schema migration prep (**not auto-started**).
+
+---
+
 ## 2026-09-26 — 6.12A.9.4.4C2 BusinessLocation-native integrity / repair
 
 - **Status:** **6.12A.9.4.4C2 PASS — BUSINESSLOCATION-NATIVE INTEGRITY / REPAIR FINALIZED** (overall **A.9.4.4C** not closed — **C3** bootstrap + **C4** schema remain).
