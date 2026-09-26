@@ -8,9 +8,9 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | _(docs D2 closure)_ — **6.12A.9.4.5D2** |
+| **Repo HEAD (current)** | `db82561a1dc101c1420a099a84ddb7547563f40d` — **6.12A.9.4.5D2** |
 | **A.9.4.5D1 implementation SHA** | `ffeffdc3d844a183e31f46d5f776c4b49e047209` (unchanged) |
-| **A.9.4.5D2 docs SHA** | _(set on commit)_ |
+| **A.9.4.5D2 docs SHA** | `db82561a1dc101c1420a099a84ddb7547563f40d` |
 | **5D pre-migration gate baseline** | `d7b039dd00d062d20622b8d24420194277afc7d8` |
 | **A.9.4.5C implementation SHA** | `e661f0bc50bdc363efd50865510c4a90c9d270af` |
 | **A.9.4.5B implementation SHA** | `f459acd742f13b7406ef1ddc8be0da0408754a3d` |
