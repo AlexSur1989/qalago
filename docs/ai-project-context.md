@@ -8,7 +8,7 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `a78ff95` — **A.9.4.4C3** docs closure |
+| **Repo HEAD (current)** | `90cd95b` — **A.9.4.4C4A** implementation (+ docs follow-up pending) |
 | **A.9.4.3D docs closure** | `75d58f6bb477a0a295029a867fd225989544c172` — physical QA finalized |
 | **A.9.4.3C implementation SHA** | `91284804547a78c1b4b6521ffe648e63508c2fe9` |
 | **A.9.4.3B implementation SHA** | `cde02e6d0faee3b5b6831ba479d6f4dcdff14b17` |
@@ -20,12 +20,13 @@
 | **A.9.4.4C1 implementation SHA** | `80f678a9584f2614c1aaf029e56183c48315f1bb` |
 | **A.9.4.4C2 implementation SHA** | `10c767d272e0033b25fdc93938e62727f9f89beb` |
 | **A.9.4.4C3 implementation SHA** | `a78ff95457c10e7e31ccce846906e91a1b99f670` |
-| **Last completed stage** | **6.12A.9.4.4C3 PASS** — create/onboarding/seed BL-authoritative; INSERT geo bootstrap isolated |
-| **Last product implementation** | **6.12A.9.4.4C3** — **`legacyBusinessInsertGeoBootstrapFromPrimaryPhysical`**; **C4** column drop remains |
+| **Last completed stage** | **6.12A.9.4.4C4A PASS** — destructive migration **prepared, not applied**; dev DB still **PRE-C4** |
+| **Last product implementation** | **6.12A.9.4.4C4A** — Prisma **Business** geo columns removed in schema; forward migration artifact; code/tests compile post-C4 model |
+| **A.9.4.4C4A implementation SHA** | `90cd95b89f0f72751df517c90a9785962a944024` |
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending** | None for **A.9.4.3** / **A.9.4.2** |
-| **Next agreed development action** | **6.12A.9.4.4C4** — **Business** geo column/trigger retirement (**not started**) |
+| **Next agreed development action** | **6.12A.9.4.4C4B** — fresh backup + apply **`stage_6_12a9_4_4c4_business_geo_column_retirement`** (**not started**) |
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 

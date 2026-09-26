@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-26 — 6.12A.9.4.4C4A Destructive migration preparation (not applied)
+
+- **Status:** **6.12A.9.4.4C4A PASS — DESTRUCTIVE MIGRATION PREPARED, NOT APPLIED** (overall **A.9.4.4C4** not closed — **C4B** apply + **C4C** regression remain).
+- **Checkpoint (implementation):** `90cd95b89f0f72751df517c90a9785962a944024`.
+- **Baseline:** `e79753709fdc564eb53028a77d111e883739a6cd` (**A.9.4.4C3** docs closure).
+- **Scope:** **`services/catalog-api`** — Prisma **Business** model without five legacy geo fields; forward migration SQL **`20260926120000_stage_6_12a9_4_4c4_business_geo_column_retirement`** (created, **not applied**); retired INSERT bootstrap + legacy full geo mirror helpers; compatibility/create/seed/repair compile paths; integration spec fixtures migrated to post-C4 Prisma types; **BusinessLocation** spatial infra untouched. **No dev DB mutation**, **no seed**, **no `migrate deploy`**, **C4B not started**.
+- **Summary:** Repository typechecks against post-C4 **Business** ( **`cityId` + contacts/defaults retained** ); public API physical fields remain BL-projected. Dev DB remains **PRE-C4** until **C4B** fresh backup + apply.
+- **Verified:** **`npx tsc --noEmit`**, **`npm run build`**, **`prisma generate`**; focused unit Jest (primary-location util/aggregate/service, catalog-geo-query, dedupe, visibility guard); **`integrity:business-locations:audit`** read-only **PASS** (109/110, BL hygiene **0**).
+- **Deferred:** **C4B** migration apply; **C4C** full integration/regression on migrated DB; runtime integration specs that INSERT **Business** without legacy NOT NULL columns until **C4B**.
+- **Next:** **6.12A.9.4.4C4B** — fresh backup + destructive migration apply (**not auto-started**).
+
+---
+
 ## 2026-09-26 — 6.12A.9.4.4C3 Business creation cut over to BusinessLocation authority
 
 - **Status:** **6.12A.9.4.4C3 PASS — BUSINESS CREATION CUT OVER TO BUSINESSLOCATION AUTHORITY** (overall **A.9.4.4C** not closed — **C4** schema/column drop remains).
