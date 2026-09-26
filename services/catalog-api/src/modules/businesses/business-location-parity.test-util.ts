@@ -22,40 +22,12 @@ export async function assertPrimaryBusinessCompatibilityParity(
   }
 }
 
+/** @deprecated Use assertPrimaryBusinessCompatibilityParity — retired Business geo mirror is not an invariant (C2). */
 export async function assertPrimaryBusinessLocationParity(
   prisma: Pick<PrismaClient, '$queryRaw'>,
   businessId: string,
 ): Promise<void> {
-  const mismatches = await prisma.$queryRaw<Array<{ field: string; n: bigint }>>`
-    SELECT 'cityId' AS field, COUNT(*)::bigint AS n
-    FROM "Business" b
-    JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-    WHERE b."id" = ${businessId} AND b."cityId" IS DISTINCT FROM bl."cityId"
-    UNION ALL
-    SELECT 'address', COUNT(*)::bigint
-    FROM "Business" b
-    JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-    WHERE b."id" = ${businessId} AND b."address" IS DISTINCT FROM bl."address"
-    UNION ALL
-    SELECT 'latitude', COUNT(*)::bigint
-    FROM "Business" b
-    JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-    WHERE b."id" = ${businessId} AND b."latitude" IS DISTINCT FROM bl."latitude"
-    UNION ALL
-    SELECT 'longitude', COUNT(*)::bigint
-    FROM "Business" b
-    JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-    WHERE b."id" = ${businessId} AND b."longitude" IS DISTINCT FROM bl."longitude"
-    UNION ALL
-    SELECT 'phone', COUNT(*)::bigint
-    FROM "Business" b
-    JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-    WHERE b."id" = ${businessId} AND b."phone" IS DISTINCT FROM bl."phone"`;
-  for (const row of mismatches) {
-    if (Number(row.n) > 0) {
-      throw new Error(`Primary parity mismatch on ${row.field} for business ${businessId}`);
-    }
-  }
+  return assertPrimaryBusinessCompatibilityParity(prisma, businessId);
 }
 
 export async function assertPrimaryGeoParity(

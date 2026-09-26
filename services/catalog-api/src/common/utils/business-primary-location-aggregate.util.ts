@@ -61,7 +61,7 @@ export async function syncBusinessMirrorFromPrimaryInTx(
   return syncBusinessCompatibilityFromPrimaryInTx(tx, location);
 }
 
-/** Integrity `--apply` repair only — full legacy geo mirror until C2/C4. */
+/** Legacy full geo mirror — create/bootstrap (C3) and migration tooling only; not integrity repair (C2). */
 export async function syncBusinessLegacyFullMirrorFromPrimaryInTx(
   tx: Prisma.TransactionClient,
   location: Pick<BusinessLocation, 'isPrimary' | 'businessId'> &

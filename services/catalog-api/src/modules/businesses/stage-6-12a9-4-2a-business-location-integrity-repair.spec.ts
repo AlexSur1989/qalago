@@ -4,7 +4,7 @@ import {
   runBusinessLocationIntegrity,
 } from '../../common/utils/business-location-integrity-repair.util';
 import {
-  assertPrimaryBusinessLocationParity,
+  assertPrimaryBusinessCompatibilityParity,
 } from './business-location-parity.test-util';
 
 describe('Stage 6.12A.9.4.2A — BusinessLocation integrity repair tooling', () => {
@@ -81,7 +81,7 @@ describe('Stage 6.12A.9.4.2A — BusinessLocation integrity repair tooling', () 
     }
   });
 
-  it('APPLY repairs zero-primary and syncs Business mirror', async () => {
+  it('APPLY repairs zero-primary without writing retired Business geo mirror', async () => {
     if (skip) return;
     const slug = await createSlug('a942a-apply-zp');
     const business = await prisma.business.create({
@@ -118,6 +118,17 @@ describe('Stage 6.12A.9.4.2A — BusinessLocation integrity repair tooling', () 
       },
     });
 
+    const geoBefore = await prisma.business.findUniqueOrThrow({
+      where: { id: business.id },
+      select: {
+        address: true,
+        latitude: true,
+        longitude: true,
+        locationSource: true,
+        cityId: true,
+      },
+    });
+
     try {
       const summary = await runBusinessLocationIntegrity(prisma, 'APPLY');
       const item = summary.items.find(
@@ -131,9 +142,22 @@ describe('Stage 6.12A.9.4.2A — BusinessLocation integrity repair tooling', () 
       expect(primaries).toHaveLength(1);
       expect(primaries[0]?.id).toBe(older.id);
 
-      await assertPrimaryBusinessLocationParity(prisma, business.id);
-      const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
-      expect(businessRow.address).toBe('Older branch');
+      await assertPrimaryBusinessCompatibilityParity(prisma, business.id);
+      const businessRow = await prisma.business.findUniqueOrThrow({
+        where: { id: business.id },
+        select: {
+          address: true,
+          latitude: true,
+          longitude: true,
+          locationSource: true,
+          cityId: true,
+        },
+      });
+      expect(businessRow.address).toBe(geoBefore.address);
+      expect(String(businessRow.latitude)).toBe(String(geoBefore.latitude));
+      expect(String(businessRow.longitude)).toBe(String(geoBefore.longitude));
+      expect(businessRow.locationSource).toBe(geoBefore.locationSource);
+      expect(businessRow.cityId).toBe(uralskCityId);
 
       const second = await runBusinessLocationIntegrity(prisma, 'APPLY');
       expect(second.repairedCount).toBe(0);
@@ -142,7 +166,7 @@ describe('Stage 6.12A.9.4.2A — BusinessLocation integrity repair tooling', () 
     }
   });
 
-  it('APPLY reconstructs zero-location when safe', async () => {
+  it('APPLY does not reconstruct zero-location from Business geo (C2)', async () => {
     if (skip) return;
     const slug = await createSlug('a942a-apply-zl');
     const business = await prisma.business.create({
@@ -161,15 +185,12 @@ describe('Stage 6.12A.9.4.2A — BusinessLocation integrity repair tooling', () 
 
     try {
       const summary = await runBusinessLocationIntegrity(prisma, 'APPLY');
-      const item = summary.items.find(
-        (i) => i.businessId === business.id && i.result === 'REPAIRED',
-      );
-      expect(item?.proposedAction).toBe('RECONSTRUCT_PRIMARY_LOCATION');
+      const item = summary.items.find((i) => i.businessId === business.id);
+      expect(item?.proposedAction).toBe('MANUAL_REMEDIATION');
+      expect(item?.result).toBe('MANUAL_REMEDIATION');
 
       const locations = await prisma.businessLocation.findMany({ where: { businessId: business.id } });
-      expect(locations).toHaveLength(1);
-      expect(locations[0]?.isPrimary).toBe(true);
-      await assertPrimaryBusinessLocationParity(prisma, business.id);
+      expect(locations).toHaveLength(0);
     } finally {
       await prisma.business.delete({ where: { id: business.id } });
     }

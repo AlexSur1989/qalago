@@ -1,10 +1,9 @@
-import type { Business, BusinessLocation, Prisma, PrismaClient } from '@prisma/client';
+import type { BusinessLocation, Prisma, PrismaClient } from '@prisma/client';
 import { BusinessPrimaryLocationService } from '../services/business-primary-location.service';
 import {
-  isOptionalBusinessCoordinatePairValid,
-  isValidBusinessCoordinatePair,
-} from './business-coordinates.util';
-import type { BusinessPhysicalSnapshot } from './business-primary-location.util';
+  collectBusinessLocationBlHygieneReport,
+  type BusinessLocationBlHygieneReport,
+} from './business-location-bl-hygiene-audit.util';
 import {
   collectPrimaryIntegrityReport,
   type PrimaryIntegrityReport,
@@ -18,11 +17,7 @@ export type IntegrityProblemType =
   | 'ZERO_PRIMARY'
   | 'MULTI_PRIMARY';
 
-export type RepairAction =
-  | 'NONE'
-  | 'RECONSTRUCT_PRIMARY_LOCATION'
-  | 'PROMOTE_DETERMINISTIC_PRIMARY'
-  | 'MANUAL_REMEDIATION';
+export type RepairAction = 'NONE' | 'PROMOTE_DETERMINISTIC_PRIMARY' | 'MANUAL_REMEDIATION';
 
 export type RepairItemResult =
   | 'PLANNED'
@@ -53,7 +48,8 @@ export type BusinessLocationIntegritySummary = {
   zeroLocationCount: number;
   zeroPrimaryCount: number;
   multiPrimaryCount: number;
-  mirrorMismatchCount: number;
+  /** Temporary Business.cityId ↔ primary BL.cityId compatibility until A.9.4.5 (not retired geo). */
+  parentCityMirrorMismatchCount: number;
   repairableCount: number;
   manualRemediationCount: number;
   repairedCount: number;
@@ -62,12 +58,13 @@ export type BusinessLocationIntegritySummary = {
   items: BusinessLocationIntegrityItem[];
   /** Backward-compatible aggregate from A.9.1 collector. */
   primaryIntegrity: PrimaryIntegrityReport;
+  blHygiene: BusinessLocationBlHygieneReport;
   pass: boolean;
 };
 
 type DbClient = Pick<
   PrismaClient,
-  '$queryRaw' | '$transaction' | 'business' | 'businessLocation' | 'city'
+  '$queryRaw' | '$transaction' | 'business' | 'businessLocation'
 >;
 
 const primaryLocationService = new BusinessPrimaryLocationService();
@@ -82,62 +79,11 @@ export function pickDeterministicPrimaryLocationId(
   return sorted[0]!.id;
 }
 
-export function businessRowToPhysicalSnapshot(business: Business): BusinessPhysicalSnapshot {
-  return {
-    id: business.id,
-    cityId: business.cityId,
-    address: business.address,
-    latitude: business.latitude,
-    longitude: business.longitude,
-    locationSource: business.locationSource,
-    workHours: business.workHours,
-    phone: business.phone,
-    whatsapp: business.whatsapp,
-    instagram: business.instagram,
-    website: business.website,
-  };
-}
-
-export function assessZeroLocationReconstructability(
-  business: Pick<Business, 'cityId' | 'address' | 'latitude' | 'longitude'>,
-): { ok: true } | { ok: false; reason: string; errorCode: 'MANUAL_REMEDIATION' } {
-  const cityId = business.cityId?.trim();
-  if (!cityId) {
-    return {
-      ok: false,
-      reason: 'Business.cityId is missing',
-      errorCode: 'MANUAL_REMEDIATION',
-    };
-  }
-  const address = business.address?.trim();
-  if (!address) {
-    return {
-      ok: false,
-      reason: 'Business.address is empty',
-      errorCode: 'MANUAL_REMEDIATION',
-    };
-  }
-
-  const lat = business.latitude != null ? Number(business.latitude) : null;
-  const lng = business.longitude != null ? Number(business.longitude) : null;
-  if (lat == null && lng == null) {
-    return { ok: true };
-  }
-  if (isOptionalBusinessCoordinatePairValid(lat, lng) && isValidBusinessCoordinatePair(lat, lng)) {
-    return { ok: true };
-  }
-  return {
-    ok: false,
-    reason: 'Business coordinates are partial or invalid',
-    errorCode: 'MANUAL_REMEDIATION',
-  };
-}
-
 async function loadIntegrityBusinessIds(prisma: DbClient): Promise<{
   zeroLocationBusinessIds: string[];
   zeroPrimaryBusinessIds: string[];
   multiPrimaryBusinessIds: string[];
-  mirrorMismatchBusinessIds: string[];
+  parentCityMirrorMismatchBusinessIds: string[];
 }> {
   const zeroLocationRows = await prisma.$queryRaw<Array<{ id: string }>>`
     SELECT b.id FROM "Business" b
@@ -156,45 +102,33 @@ async function loadIntegrityBusinessIds(prisma: DbClient): Promise<{
     GROUP BY b.id
     HAVING SUM(CASE WHEN bl."isPrimary" THEN 1 ELSE 0 END) > 1`;
 
-  const mirrorRows = await prisma.$queryRaw<Array<{ id: string }>>`
+  const parentCityRows = await prisma.$queryRaw<Array<{ id: string }>>`
     SELECT DISTINCT b.id
     FROM "Business" b
-    JOIN "BusinessLocation" bl ON bl."businessId" = b.id AND bl."isPrimary" = true
-    WHERE b."cityId" IS DISTINCT FROM bl."cityId"
-       OR b."address" IS DISTINCT FROM bl."address"
-       OR b."latitude" IS DISTINCT FROM bl."latitude"
-       OR b."longitude" IS DISTINCT FROM bl."longitude"
-       OR b."locationSource" IS DISTINCT FROM bl."locationSource"`;
+    JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
+    WHERE b."cityId" IS DISTINCT FROM bl."cityId"`;
 
   return {
     zeroLocationBusinessIds: zeroLocationRows.map((r) => r.id),
     zeroPrimaryBusinessIds: zeroPrimaryRows.map((r) => r.id),
     multiPrimaryBusinessIds: multiPrimaryRows.map((r) => r.id),
-    mirrorMismatchBusinessIds: mirrorRows.map((r) => r.id),
+    parentCityMirrorMismatchBusinessIds: parentCityRows.map((r) => r.id),
   };
 }
 
 function planItemForZeroLocation(
-  business: Business,
+  business: Pick<{ title: string }, 'title'>,
 ): Pick<
   BusinessLocationIntegrityItem,
   'problemType' | 'proposedAction' | 'result' | 'reason' | 'errorCode'
 > {
-  const assessment = assessZeroLocationReconstructability(business);
-  if (!assessment.ok) {
-    return {
-      problemType: 'ZERO_LOCATION',
-      proposedAction: 'MANUAL_REMEDIATION',
-      result: 'MANUAL_REMEDIATION',
-      reason: assessment.reason,
-      errorCode: assessment.errorCode,
-    };
-  }
   return {
     problemType: 'ZERO_LOCATION',
-    proposedAction: 'RECONSTRUCT_PRIMARY_LOCATION',
-    result: 'PLANNED',
-    reason: 'Reconstruct primary BusinessLocation from Business mirror fields',
+    proposedAction: 'MANUAL_REMEDIATION',
+    result: 'MANUAL_REMEDIATION',
+    reason:
+      'Business has no BusinessLocation rows — manual remediation required (legacy Business geo is not authoritative)',
+    errorCode: 'MANUAL_REMEDIATION',
   };
 }
 
@@ -225,7 +159,7 @@ async function applyZeroPrimaryRepair(
       businessId,
       title: business.title,
       problemType: 'ZERO_LOCATION',
-      proposedAction: 'RECONSTRUCT_PRIMARY_LOCATION',
+      proposedAction: 'MANUAL_REMEDIATION',
       result: 'SKIPPED_STALE_STATE',
       reason: 'State changed to zero-location since planning',
       errorCode: 'STALE_STATE',
@@ -275,10 +209,7 @@ async function applyZeroPrimaryRepair(
       where: { id: chosenId },
       data: { isPrimary: true },
     });
-    await primaryLocationService.syncBusinessLegacyFullMirrorFromPrimaryLocationRecord(
-      tx,
-      newPrimary,
-    );
+    await primaryLocationService.syncBusinessFromPrimaryLocationRecord(tx, newPrimary);
 
     return {
       businessId,
@@ -288,7 +219,7 @@ async function applyZeroPrimaryRepair(
       locationIds: locations.map((l) => l.id),
       chosenLocationId: chosenId,
       result: 'REPAIRED',
-      reason: 'Promoted deterministic primary and synced Business mirror',
+      reason: 'Promoted deterministic primary and synced Business city/contact compatibility',
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Repair transaction failed';
@@ -304,92 +235,12 @@ async function applyZeroPrimaryRepair(
   }
 }
 
-async function applyZeroLocationRepair(
-  tx: Prisma.TransactionClient,
-  businessId: string,
-): Promise<BusinessLocationIntegrityItem> {
-  const business = await tx.business.findUnique({ where: { id: businessId } });
-  if (!business) {
-    return {
-      businessId,
-      problemType: 'ZERO_LOCATION',
-      proposedAction: 'RECONSTRUCT_PRIMARY_LOCATION',
-      result: 'SKIPPED_NOT_FOUND',
-      reason: 'Business no longer exists',
-      errorCode: 'NOT_FOUND',
-    };
-  }
-
-  const existingCount = await tx.businessLocation.count({ where: { businessId } });
-  if (existingCount > 0) {
-    return {
-      businessId,
-      title: business.title,
-      problemType: 'ZERO_PRIMARY',
-      proposedAction: 'NONE',
-      result: 'SKIPPED_STALE_STATE',
-      reason: 'Business already has BusinessLocation rows',
-      errorCode: 'STALE_STATE',
-    };
-  }
-
-  const assessment = assessZeroLocationReconstructability(business);
-  if (!assessment.ok) {
-    return {
-      businessId,
-      title: business.title,
-      problemType: 'ZERO_LOCATION',
-      proposedAction: 'MANUAL_REMEDIATION',
-      result: 'MANUAL_REMEDIATION',
-      reason: assessment.reason,
-      errorCode: assessment.errorCode,
-    };
-  }
-
-  const city = await tx.city.findUnique({ where: { id: business.cityId } });
-  if (!city) {
-    return {
-      businessId,
-      title: business.title,
-      problemType: 'ZERO_LOCATION',
-      proposedAction: 'MANUAL_REMEDIATION',
-      result: 'MANUAL_REMEDIATION',
-      reason: 'Business.cityId does not reference an existing City',
-      errorCode: 'MANUAL_REMEDIATION',
-    };
-  }
-
-  try {
-    const snapshot = businessRowToPhysicalSnapshot(business);
-    const created = await primaryLocationService.createInitialPrimary(tx, snapshot);
-    return {
-      businessId,
-      title: business.title,
-      problemType: 'ZERO_LOCATION',
-      proposedAction: 'RECONSTRUCT_PRIMARY_LOCATION',
-      chosenLocationId: created.id,
-      result: 'REPAIRED',
-      reason: 'Created primary BusinessLocation from Business mirror fields',
-    };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Reconstruction failed';
-    return {
-      businessId,
-      title: business.title,
-      problemType: 'ZERO_LOCATION',
-      proposedAction: 'RECONSTRUCT_PRIMARY_LOCATION',
-      result: 'FAILED',
-      reason: message,
-      errorCode: 'REPAIR_FAILED',
-    };
-  }
-}
-
 export async function runBusinessLocationIntegrity(
   prisma: DbClient,
   mode: BusinessLocationIntegrityMode,
 ): Promise<BusinessLocationIntegritySummary> {
   const primaryIntegrity = await collectPrimaryIntegrityReport(prisma);
+  const blHygiene = await collectBusinessLocationBlHygieneReport(prisma);
   const ids = await loadIntegrityBusinessIds(prisma);
 
   const problemBusinessIds = new Set([
@@ -417,27 +268,18 @@ export async function runBusinessLocationIntegrity(
       items.push({
         businessId,
         problemType: 'ZERO_LOCATION',
-        proposedAction: 'RECONSTRUCT_PRIMARY_LOCATION',
+        proposedAction: 'MANUAL_REMEDIATION',
         result: 'SKIPPED_NOT_FOUND',
         reason: 'Business not found',
         errorCode: 'NOT_FOUND',
       });
       continue;
     }
-    const plan = planItemForZeroLocation(business);
-    const item: BusinessLocationIntegrityItem = {
+    items.push({
       businessId,
       title: business.title,
-      ...plan,
-    };
-    if (mode === 'APPLY' && plan.proposedAction === 'RECONSTRUCT_PRIMARY_LOCATION') {
-      const applied = await prisma.$transaction((tx) =>
-        applyZeroLocationRepair(tx, businessId),
-      );
-      items.push(applied);
-    } else {
-      items.push(item);
-    }
+      ...planItemForZeroLocation(business),
+    });
   }
 
   for (const businessId of ids.zeroPrimaryBusinessIds) {
@@ -469,21 +311,15 @@ export async function runBusinessLocationIntegrity(
         locationIds: locations.map((l) => l.id),
         chosenLocationId,
         result: 'PLANNED',
-        reason: 'Promote oldest location (createdAt ASC, id ASC) and sync Business mirror',
+        reason:
+          'Promote oldest location (createdAt ASC, id ASC) and sync Business city/contact compatibility',
       });
     }
   }
 
-  const validCount =
-    primaryIntegrity.businessesTotal -
-    ids.zeroLocationBusinessIds.length -
-    ids.zeroPrimaryBusinessIds.length -
-    ids.multiPrimaryBusinessIds.length;
-
   const repairableCount = items.filter(
     (i) =>
-      (i.proposedAction === 'RECONSTRUCT_PRIMARY_LOCATION' ||
-        i.proposedAction === 'PROMOTE_DETERMINISTIC_PRIMARY') &&
+      i.proposedAction === 'PROMOTE_DETERMINISTIC_PRIMARY' &&
       (i.result === 'PLANNED' || i.result === 'REPAIRED'),
   ).length;
 
@@ -497,17 +333,22 @@ export async function runBusinessLocationIntegrity(
 
   let finalIds = ids;
   let finalPrimaryIntegrity = primaryIntegrity;
+  let finalBlHygiene = blHygiene;
   if (mode === 'APPLY') {
     finalPrimaryIntegrity = await collectPrimaryIntegrityReport(prisma);
+    finalBlHygiene = await collectBusinessLocationBlHygieneReport(prisma);
     finalIds = await loadIntegrityBusinessIds(prisma);
   }
 
-  const pass =
+  const structuralPass =
     finalIds.zeroLocationBusinessIds.length === 0 &&
     finalIds.zeroPrimaryBusinessIds.length === 0 &&
     finalIds.multiPrimaryBusinessIds.length === 0 &&
+    finalIds.parentCityMirrorMismatchBusinessIds.length === 0 &&
     failedCount === 0 &&
     manualRemediationCount === 0;
+
+  const pass = structuralPass && finalBlHygiene.pass;
 
   return {
     mode,
@@ -523,7 +364,7 @@ export async function runBusinessLocationIntegrity(
     zeroLocationCount: finalIds.zeroLocationBusinessIds.length,
     zeroPrimaryCount: finalIds.zeroPrimaryBusinessIds.length,
     multiPrimaryCount: finalIds.multiPrimaryBusinessIds.length,
-    mirrorMismatchCount: finalIds.mirrorMismatchBusinessIds.length,
+    parentCityMirrorMismatchCount: finalIds.parentCityMirrorMismatchBusinessIds.length,
     repairableCount,
     manualRemediationCount,
     repairedCount,
@@ -531,6 +372,7 @@ export async function runBusinessLocationIntegrity(
     failedCount,
     items,
     primaryIntegrity: finalPrimaryIntegrity,
+    blHygiene: finalBlHygiene,
     pass,
   };
 }
@@ -549,7 +391,8 @@ export function formatBusinessLocationIntegritySummary(
         zeroLocationCount: summary.zeroLocationCount,
         zeroPrimaryCount: summary.zeroPrimaryCount,
         multiPrimaryCount: summary.multiPrimaryCount,
-        mirrorMismatchCount: summary.mirrorMismatchCount,
+        parentCityMirrorMismatchCount: summary.parentCityMirrorMismatchCount,
+        blHygiene: summary.blHygiene,
         manualRemediationCount: summary.manualRemediationCount,
         failedCount: summary.failedCount,
       },
@@ -559,7 +402,7 @@ export function formatBusinessLocationIntegritySummary(
   }
   return JSON.stringify(
     {
-      stage: '6.12A.9.4.2A',
+      stage: '6.12A.9.4.4C2',
       ...summary,
     },
     null,

@@ -68,7 +68,7 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
     return `${prefix}-${randomBytes(5).toString('hex')}`;
   }
 
-  it('first createLocation on zero-location Business becomes primary and syncs mirror', async () => {
+  it('first createLocation on zero-location Business becomes primary and syncs city/contact compatibility', async () => {
     if (skip) return;
     const slug = await createSlug('a942b-first');
     const business = await prisma.business.create({
@@ -98,7 +98,8 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
 
       await assertPrimaryBusinessLocationParity(prisma, business.id);
       const row = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
-      expect(row.address).toBe('Branch addr');
+      expect(row.address).toBe('Mirror target addr');
+      expect(row.phone).toBe('branch-phone');
     } finally {
       await prisma.business.delete({ where: { id: business.id } });
     }
