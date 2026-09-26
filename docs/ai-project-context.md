@@ -8,7 +8,7 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `ffeffdc3d844a183e31f46d5f776c4b49e047209` — **6.12A.9.4.5D1** |
+| **Repo HEAD (current)** | `0823ab4` (docs) — implementation **`ffeffdc3d844a183e31f46d5f776c4b49e047209`** — **6.12A.9.4.5D1** |
 | **A.9.4.5D1 implementation SHA** | `ffeffdc3d844a183e31f46d5f776c4b49e047209` |
 | **5D pre-migration gate baseline** | `d7b039dd00d062d20622b8d24420194277afc7d8` |
 | **A.9.4.5C implementation SHA** | `e661f0bc50bdc363efd50865510c4a90c9d270af` |
