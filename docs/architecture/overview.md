@@ -83,6 +83,7 @@ Country (KZ)
 
 ## Related docs
 
+- [Future extensibility contracts](./future-extensibility-contracts.md) — post-6.12A ADR (F.4 prerequisite)
 - [Modules](./modules.md)
 - [API contracts](./api-contracts.md)
 - [RBAC & AuditLog](./rbac.md)

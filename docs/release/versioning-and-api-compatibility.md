@@ -27,3 +27,7 @@
 
 - Mark endpoint/field deprecated in `api-contracts.md` with target removal release.
 - Monitor usage via client metadata headers before removal.
+
+## Public URLs (Consumer Web)
+
+- Treat canonical business paths as **external contracts** (same discipline as API). F.4 v1 shape and redirect principles: [future-extensibility-contracts.md](../architecture/future-extensibility-contracts.md) § Contract 1.

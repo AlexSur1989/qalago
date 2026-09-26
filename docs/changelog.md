@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-09-27 — Future Extensibility Architecture Gate (Phase 2 contracts)
+
+- **Status:** **FUTURE EXTENSIBILITY ARCHITECTURE GATE — AGREED / DOCUMENTED**.
+- **Scope:** **Docs / architecture only.** **No** product code, tests, schema, migrations, DB, or implementation. Prerequisite decision gate before **F.4** (not a numbered product stage such as 6.12C).
+- **Summary:** Canonical contracts locked in **`docs/architecture/future-extensibility-contracts.md`**: F.4 v1 public URL (`/{citySlug}/business/{businessSlug}` + optional `locationId` query); **NavigationTarget** cross-channel model; F.4 **hybrid typed** showcase; **Event vs Promotion** and **editorial vs Business** boundaries; **HomeLayoutConfig** vs release/feature/maintenance split; lifecycle, media, favorites, notification/analytics extension, and API evolution rules. **6.12A** invariants preserved (**Business** / **BusinessLocation** grains, no **`Business.cityId`**).
+- **Deferred / not implemented:** F.4, F.6, Event, Home CMS, NotificationPreference, media migration, generalized Favorites, new feature-flag work — unchanged.
+- **Next:** **Explicit approval required** before implementation. **F.4** is **architecturally unblocked** as a candidate next stage — **not auto-started**.
+
+---
+
 ## 2026-09-27 — 6.12A BusinessLocation architecture (umbrella closure)
 
 - **Status:** **6.12A PASS — BUSINESSLOCATION ARCHITECTURE FINALIZED**.

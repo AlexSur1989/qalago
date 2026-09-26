@@ -45,6 +45,8 @@ In-app notifications are canonical. Push/FCM (Stage 6.11E.5) is optional deliver
 
 Security: never navigate from arbitrary payload paths/URLs; supplementary `businessId` only for `REVIEW` targets per E.2 contract.
 
+Future producer categories, whitelist extensions (`locationId` / `citySlug`), and cross-channel **NavigationTarget** alignment: [future-extensibility-contracts.md](./future-extensibility-contracts.md) § Contracts 2 and 10.
+
 ## Push delivery (Stage 6.11E.5)
 
 - **Flow:** domain action → persist `Notification` → after commit, best-effort FCM fan-out to active `PushDevice` rows.

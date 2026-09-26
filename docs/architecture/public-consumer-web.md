@@ -45,9 +45,10 @@ Static App Router segments (e.g. `categories/`, `search/`) take precedence over 
 - `/categories` → `/{DEFAULT_CITY_SLUG}/categories`
 - `/categories/{categoryId}` → resolve in default city → `/{DEFAULT_CITY_SLUG}/{categorySlug}` or 404
 
-### Business links (temporary)
+### Business links (temporary → F.4)
 
-- Cards link to **`/businesses/{businessId}`**; when the API supplies **`contextLocationId`**, href adds **`?locationId=<contextLocationId>`** (A.9.3.4). Detail fetch uses the same query param. Slug/SEO branch URLs remain **F.4**.
+- **Current (temporary):** cards link to **`/businesses/{businessId}`**; when the API supplies **`contextLocationId`**, href adds **`?locationId=<contextLocationId>`** (A.9.3.4).
+- **F.4 canonical (documented, not implemented):** **`/{citySlug}/business/{businessSlug}`** with optional **`?locationId=`** — see [future-extensibility-contracts.md](./future-extensibility-contracts.md) § Contract 1. Permanent redirect from ID paths when indexable pages ship.
 
 ### Cache / rendering
 

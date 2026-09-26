@@ -8,6 +8,7 @@
 
 | Field | Value |
 |-------|--------|
+| **Last completed architecture decision gate** | **FUTURE EXTENSIBILITY ARCHITECTURE GATE — AGREED / DOCUMENTED** — **`docs/architecture/future-extensibility-contracts.md`** |
 | **Last completed architecture contour** | **6.12A PASS — BUSINESSLOCATION ARCHITECTURE FINALIZED** (umbrella — see **`docs/changelog.md`** entry **2026-09-27**) |
 | **6.12A.9.4.5E docs closure (canonical checkpoint)** | `657cfc6f1ccad2cf469d0030ade0e0d9aab5146b` |
 | **A.9.4.5D3 implementation SHA** | `7a153cdf497c711c3aeda2b60cc72588f50d7859` |
@@ -36,7 +37,9 @@
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending (6.12A)** | **None** — contour closed (**5E** finalized) |
-| **Next** | **Explicit agreement required** before starting post-**6.12A** work |
+| **Next** | **Explicit approval required** before implementation work (**F.4** candidate — not auto-started) |
+
+**Future extensibility gate:** **AGREED / DOCUMENTED** — public URL + **NavigationTarget**, F.4 typed showcase, Event/Promotion + editorial boundaries, config split, lifecycle/media/favorites/notification/analytics/API rules — details in **`docs/architecture/future-extensibility-contracts.md`**. **No product implementation** in this gate.
 
 **6.12A state:** **CLOSED** — BusinessLocation architecture finalized (**A.1–A.9.4.5E**). **Business** = brand; **BusinessLocation** = sole physical/city authority; retired **Business** physical columns including **`cityId`**; contact defaults on **Business** per policy. Grains and RBAC per **`docs/changelog.md`** umbrella entry **2026-09-27**. Dev **`qalago_dev`** baseline: **109 Business / 110 BL / 109 primary**; integrity PASS; migrations **47/47**. Pre-5D2 backup preserved: `infra/local-backups/qalago_dev_native_pg18_pre_5d2_business_cityid_retirement_20260926T131630Z.dump` (596125 bytes; uncommitted). **`a945e-*`** helpers remain local/untracked.
 
@@ -86,7 +89,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **6.12A.9.3.4 PASS (physical QA finalized)** — Consumer Web discovery/detail physical context; **QA-001 CLOSED**.
 - **6.12A.9.3.5 PASS (physical QA finalized)** — Business Web permission-safe profile PATCH; primary-branch UX; hours-only MANAGER scope verified; closes **`A.9.3.4+`** owner slice; central audit **P1 CLOSED**.
 - **6.12A.9.4.0 PASS (policy gate)** — legacy physical retirement policies & invariants frozen; **`docs/architecture/business-location.md`** § **9.4.0**; **F.4** not blocked on column drop.
-- **F.4 deferred** — final public business/branch URL architecture until explicitly staged (not A.9.3.4).
+- **F.4** — public Business URLs + showcase **architecturally unblocked** (contracts in **`future-extensibility-contracts.md`**); **implementation not started** — explicit approval required.
 
 ## BusinessLocation track
 
@@ -245,7 +248,7 @@ Future architecture should allow **backend/admin-central configuration** of cons
 - **A.9.4.5** — **`Business.cityId`** retirement — **CLOSED** (**5A–5E**); physical/manual QA **PASS** (**5E**).
 - **6.12A (umbrella)** — **CLOSED** — BusinessLocation architecture finalized (changelog **2026-09-27**).
 - **A.8.1 test debt** — **CLOSED in 5B** (branch **`businessLocationId`** contract spec).
-- **F.4** — Consumer Web business/branch URLs & SEO; **does not require** A.9.4 DB column removal (**A.9.4.0** gate); not started.
+- **F.4** — Consumer Web business/branch URLs & SEO; contracts locked (**future-extensibility-contracts.md**); **implementation not started**.
 - Post **6.12A:** User contour audit, Business Web owner contour, Admin Web contour, Admin Catalog/CMS, centralized Home config, Catalog Import, QalaGo AI, remaining Consumer Web, production monetization, analytics UX, role-based E2E, security/legal/release — **not** current track unless explicitly staged.
 
 ## Context maintenance

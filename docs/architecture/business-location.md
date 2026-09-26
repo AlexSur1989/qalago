@@ -252,8 +252,8 @@ Existing invalid rows must be **repaired** before enforcing; production writers 
 ### F.4 gate
 
 - **F.4 does not depend** on physical DB column removal.
-- **F.4 may proceed** after this policy gate because **A.9.3.x** already provides stable **`contextLocationId`**, **`locationId`**, **`effectivePhysical`**, branch-aware public reads.
-- **F.4 not started** here; roadmap sequencing is a separate explicit decision.
+- **A.9.3.x** provides stable **`contextLocationId`**, **`locationId`**, **`effectivePhysical`**, branch-aware public reads.
+- **Future Extensibility Architecture Gate (AGREED / DOCUMENTED):** public URL + **NavigationTarget** + showcase contracts — [future-extensibility-contracts.md](./future-extensibility-contracts.md). **F.4 implementation not started**; explicit approval required.
 
 ## Stage 6.12A.9.3.4 (Consumer Web physical-context closure)
 
