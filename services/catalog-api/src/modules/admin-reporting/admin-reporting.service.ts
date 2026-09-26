@@ -120,11 +120,11 @@ export class AdminReportingService {
     const where = this.scope.businessCityWhere(reportScope);
     const [summary, byCity, byCategory, recent] = await Promise.all([
       this.queries.countBusinesses(reportScope),
-      this.prisma.business.groupBy({
+      this.prisma.businessLocation.groupBy({
         by: ['cityId'],
-        where,
-        _count: { _all: true },
-        orderBy: { _count: { cityId: 'desc' } },
+        where: { isPrimary: true, business: where },
+        _count: { businessId: true },
+        orderBy: { _count: { businessId: 'desc' } },
         take: 50,
       }),
       this.prisma.business.groupBy({
@@ -139,7 +139,7 @@ export class AdminReportingService {
           ...where,
           createdAt: { gte: range.from, lte: range.to },
         },
-        select: { id: true, title: true, status: true, cityId: true, planTier: true, createdAt: true },
+        select: { id: true, title: true, status: true, planTier: true, createdAt: true },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,

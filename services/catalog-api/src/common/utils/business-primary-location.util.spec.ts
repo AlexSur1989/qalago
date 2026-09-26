@@ -4,7 +4,7 @@ import {
   primaryLocationContactUpdateDataFromBusiness,
 } from './business-primary-location.util';
 
-describe('business-primary-location.util (A.9.4.4C1/C4)', () => {
+describe('business-primary-location.util (A.9.4.4C1/C4/5D1)', () => {
   const snapshot = {
     id: 'biz-1',
     cityId: 'city-1',
@@ -19,15 +19,17 @@ describe('business-primary-location.util (A.9.4.4C1/C4)', () => {
     website: 'https://x.kz',
   };
 
-  it('compatibility update excludes geo mirror fields', () => {
+  it('compatibility update syncs contacts only (no geo or parent city mirror)', () => {
     const data = businessCompatibilityUpdateFromPrimaryLocation(snapshot);
     expect(data).toEqual(
       expect.objectContaining({
-        city: { connect: { id: 'city-1' } },
         phone: '+7000',
         whatsapp: '+7111',
+        instagram: '@x',
+        website: 'https://x.kz',
       }),
     );
+    expect(data).not.toHaveProperty('city');
     expect(data).not.toHaveProperty('address');
     expect(data).not.toHaveProperty('latitude');
     expect(data).not.toHaveProperty('longitude');

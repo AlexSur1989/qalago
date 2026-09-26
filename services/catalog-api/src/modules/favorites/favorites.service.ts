@@ -1,5 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { loadPrimaryCityPresentationByBusinessId } from '../../common/utils/business-primary-city-presentation.util';
 import {
   loadBusinessLocationsGroupedByBusinessId,
   normalizeFavoriteBusinessPhysical,
@@ -16,7 +17,6 @@ export class FavoritesService {
         business: {
           select: {
             id: true,
-            cityId: true,
             title: true,
             slug: true,
             shortDesc: true,
@@ -27,7 +27,6 @@ export class FavoritesService {
             website: true,
             workHours: true,
             category: { select: { title: true, icon: true } },
-            city: { select: { slug: true, nameRu: true } },
           },
         },
       },
@@ -39,18 +38,26 @@ export class FavoritesService {
     }
 
     const businessIds = rows.map((row) => row.business.id);
-    const locationsByBusinessId = await loadBusinessLocationsGroupedByBusinessId(
-      this.prisma,
-      businessIds,
-    );
+    const [locationsByBusinessId, primaryCityByBusinessId] = await Promise.all([
+      loadBusinessLocationsGroupedByBusinessId(this.prisma, businessIds),
+      loadPrimaryCityPresentationByBusinessId(this.prisma, businessIds),
+    ]);
 
-    return rows.map((row) => ({
-      ...row,
-      business: normalizeFavoriteBusinessPhysical(
+    return rows.map((row) => {
+      const physical = normalizeFavoriteBusinessPhysical(
         row.business,
         locationsByBusinessId.get(row.business.id) ?? [],
-      ),
-    }));
+      );
+      const city = primaryCityByBusinessId.get(row.business.id);
+      return {
+        ...row,
+        business: {
+          ...physical,
+          cityId: city?.id ?? (physical as { cityId?: string }).cityId ?? '',
+          city: city ? { slug: city.slug, nameRu: city.nameRu } : null,
+        },
+      };
+    });
   }
 
   async check(userId: string, businessId: string) {

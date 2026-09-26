@@ -32,7 +32,6 @@ export function businessRowToContactDefaults(
   business: PublicPhysicalReadBusinessSource,
 ): BusinessContactDefaults {
   return {
-    cityId: business.cityId,
     phone: business.phone ?? null,
     whatsapp: business.whatsapp ?? null,
     instagram: business.instagram ?? null,
@@ -125,7 +124,7 @@ export function applyPublicPhysicalReadFromEffectivePhysical<
   const projection = effectivePhysicalToPublicProjection(row.effectivePhysical);
   return {
     ...row,
-    cityId: row.effectivePhysical.cityId as T['cityId'],
+    ...( 'cityId' in row ? { cityId: row.effectivePhysical.cityId } : {} ),
     address: projection.address,
     latitude: projection.latitude,
     longitude: projection.longitude,

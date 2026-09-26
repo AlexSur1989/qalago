@@ -16,6 +16,7 @@ import { deriveUserAuthMethods } from '../../common/utils/auth-methods.util';
 
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { resolveBusinessPrimaryCityId } from '../../common/utils/business-context-city.util';
+import { loadPrimaryCityPresentationByBusinessId } from '../../common/utils/business-primary-city-presentation.util';
 import { SystemAccessService } from '../../common/services/system-access.service';
 
 import { PrismaService } from '../../prisma/prisma.service';
@@ -122,7 +123,7 @@ export class AdminService {
 
 
 
-    const [items, total] = await Promise.all([
+    const [rawItems, total] = await Promise.all([
 
       this.prisma.business.findMany({
 
@@ -133,8 +134,6 @@ export class AdminService {
           category: true,
 
           owner: { select: { id: true, phone: true, name: true } },
-
-          city: { select: { slug: true, nameRu: true } },
 
         },
 
@@ -150,6 +149,19 @@ export class AdminService {
 
     ]);
 
+    const primaryCityByBusinessId = await loadPrimaryCityPresentationByBusinessId(
+      this.prisma,
+      rawItems.map((row) => row.id),
+    );
+
+    const items = rawItems.map((row) => {
+      const city = primaryCityByBusinessId.get(row.id);
+      return {
+        ...row,
+        city: city ? { slug: city.slug, nameRu: city.nameRu } : null,
+      };
+    });
+
 
 
     return { items, meta: { page, limit, total } };
@@ -163,14 +175,17 @@ export class AdminService {
       select: {
         id: true,
         title: true,
-        cityId: true,
-        city: { select: { slug: true, nameRu: true, nameKk: true } },
       },
     });
     if (!business) {
       throw new NotFoundException('Business not found');
     }
     await this.cityScope.assertBusinessInAdminScope(user, business.id);
+
+    const primaryCityByBusinessId = await loadPrimaryCityPresentationByBusinessId(this.prisma, [
+      businessId,
+    ]);
+    const primaryCity = primaryCityByBusinessId.get(businessId);
 
     const [serviceItems, promotions, itemAssignments, promoAssignments] = await Promise.all([
       this.prisma.serviceItem.findMany({
@@ -229,7 +244,9 @@ export class AdminService {
       business: {
         id: business.id,
         title: business.title,
-        city: business.city,
+        city: primaryCity
+          ? { slug: primaryCity.slug, nameRu: primaryCity.nameRu, nameKk: primaryCity.nameKk }
+          : null,
       },
       serviceItems: serviceItems.map((item) => ({
         id: item.id,
@@ -474,7 +491,7 @@ export class AdminService {
 
 
 
-    return this.prisma.review.findMany({
+    const rows = await this.prisma.review.findMany({
 
       where,
 
@@ -484,7 +501,7 @@ export class AdminService {
 
         business: {
 
-          select: { id: true, title: true, city: { select: { slug: true, nameRu: true } } },
+          select: { id: true, title: true },
 
         },
 
@@ -494,6 +511,22 @@ export class AdminService {
 
       take: limit,
 
+    });
+
+    const primaryCityByBusinessId = await loadPrimaryCityPresentationByBusinessId(
+      this.prisma,
+      rows.map((row) => row.business.id),
+    );
+
+    return rows.map((row) => {
+      const city = primaryCityByBusinessId.get(row.business.id);
+      return {
+        ...row,
+        business: {
+          ...row.business,
+          city: city ? { slug: city.slug, nameRu: city.nameRu } : null,
+        },
+      };
     });
 
   }

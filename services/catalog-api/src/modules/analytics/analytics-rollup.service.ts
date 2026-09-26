@@ -1,4 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { loadPrimaryCityPresentationByBusinessId } from '../../common/utils/business-primary-city-presentation.util';
+import { DEFAULT_ANALYTICS_TIMEZONE } from '../../common/utils/analytics-timezone.util';
 import {
   AnalyticsDimensionType,
   AnalyticsEventType,
@@ -81,14 +83,20 @@ export class AnalyticsRollupService {
   async rollupYesterdayForAllBusinesses() {
     const businesses = await this.prisma.business.findMany({
       where: { status: 'ACTIVE' },
-      select: { id: true, city: { select: { timezone: true } } },
+      select: { id: true },
     });
+    const primaryCityByBusinessId = await loadPrimaryCityPresentationByBusinessId(
+      this.prisma,
+      businesses.map((row) => row.id),
+    );
 
     const yesterdayUtc = new Date();
     yesterdayUtc.setUTCDate(yesterdayUtc.getUTCDate() - 1);
 
     for (const business of businesses) {
-      const tz = business.city.timezone;
+      const tz =
+        primaryCityByBusinessId.get(business.id)?.timezone?.trim() ||
+        DEFAULT_ANALYTICS_TIMEZONE;
       const metricDate = toLocalMetricDate(yesterdayUtc, tz);
       try {
         await this.rollupBusinessDate(business.id, metricDate, tz);

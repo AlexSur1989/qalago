@@ -39,7 +39,6 @@ const businessCardSelect = {
   title: true,
   slug: true,
   shortDesc: true,
-  cityId: true,
   phone: true,
   whatsapp: true,
   instagram: true,

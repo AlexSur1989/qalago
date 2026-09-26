@@ -10,7 +10,6 @@ import { isGlobalAdmin } from '../utils/system-access.util';
 export type BusinessAccessRecord = {
   id: string;
   ownerId: string | null;
-  cityId: string;
   categoryId: string;
 };
 
@@ -137,7 +136,7 @@ export class BusinessAccessService {
   private async loadBusiness(businessId: string): Promise<BusinessAccessRecord> {
     const business = await this.prisma.business.findUnique({
       where: { id: businessId },
-      select: { id: true, ownerId: true, cityId: true, categoryId: true },
+      select: { id: true, ownerId: true, categoryId: true },
     });
     if (!business) {
       throw new NotFoundException('Business not found');

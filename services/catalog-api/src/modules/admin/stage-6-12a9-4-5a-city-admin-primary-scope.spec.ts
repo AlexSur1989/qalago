@@ -9,7 +9,10 @@ import { BusinessLocationService } from '../businesses/business-location.service
 import { BusinessPrimaryLocationService } from '../../common/services/business-primary-location.service';
 import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
 import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
-import { specCreateInitialPrimary } from '../businesses/business-with-primary.test-fixture';
+import {
+  createTestBusinessWithPrimary,
+  testPrimaryPhysical,
+} from '../businesses/business-with-primary.test-fixture';
 import { PrismaService } from '../../prisma/prisma.service';
 
 /**
@@ -123,19 +126,18 @@ describe('Stage 6.12A.9.4.5A — CITY_ADMIN primary BL authorization', () => {
 
   async function createMultiCityBusiness(slugPrefix: string) {
     const slug = `${slugPrefix}-${randomBytes(5).toString('hex')}`;
-    const business = await prisma.business.create({
-      data: {
+    const { business } = await createTestBusinessWithPrimary(prisma, {
+      brand: {
         title: 'A95A multi-city',
         slug,
         categoryId,
-        cityId: cityAId,
         ownerId,
         status: 'ACTIVE',
       },
-    });
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, cityAId, 'L1 primary A', {
-      latitude: 51.2278,
-      longitude: 51.3865,
+      primaryPhysical: testPrimaryPhysical(cityAId, 'L1 primary A', {
+        latitude: 51.2278,
+        longitude: 51.3865,
+      }),
     });
     const l2 = await prisma.businessLocation.create({
       data: {
@@ -182,15 +184,17 @@ describe('Stage 6.12A.9.4.5A — CITY_ADMIN primary BL authorization', () => {
     }
   });
 
-  it('after promote L2: Admin B pass, Admin A deny; Business.cityId mirror syncs to B', async () => {
+  it('after promote L2: Admin B pass, Admin A deny; primary BL city becomes B', async () => {
     if (skip) return;
     const { business, l2 } = await createMultiCityBusiness('a95a-promote');
     const locSvc = buildLocationService();
     const access = buildAccessService();
     try {
       await locSvc.setPrimaryLocation(owner(), business.id, l2.id);
-      const row = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
-      expect(row.cityId).toBe(cityBId);
+      const primary = await prisma.businessLocation.findFirstOrThrow({
+        where: { businessId: business.id, isPrimary: true },
+      });
+      expect(primary.cityId).toBe(cityBId);
       await expect(access.resolveAccess(cityAdminB(), business.id)).resolves.toMatchObject({
         accessRole: 'CITY_ADMIN',
       });

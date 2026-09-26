@@ -15,9 +15,8 @@ export const PRIMARY_LOCATION_PHYSICAL_FIELD_KEYS = [
   'website',
 ] as const;
 
-/** Business ↔ primary BL fields synchronized in normal production until A.9.4.5 (cityId) / ongoing (contacts). */
+/** Business ↔ primary BL contact/default fields synchronized in production (A.9.4.5D — no parent cityId). */
 export const BUSINESS_PRIMARY_COMPATIBILITY_KEYS = [
-  'cityId',
   'workHours',
   'phone',
   'whatsapp',
@@ -123,12 +122,11 @@ export function physicalSnapshotFromLocation(
   };
 }
 
-/** Normal production: primary BL → Business (cityId + contacts only; no geo — A.9.4.4C1). */
+/** Normal production: primary BL → Business contact defaults only (no geo, no parent city — A.9.4.5D). */
 export function businessCompatibilityUpdateFromPrimaryLocation(
   snapshot: BusinessPrimaryCompatibilitySnapshot,
 ): Prisma.BusinessUpdateInput {
   return {
-    city: { connect: { id: snapshot.cityId } },
     workHours: snapshot.workHours === null ? Prisma.JsonNull : snapshot.workHours,
     phone: snapshot.phone,
     whatsapp: snapshot.whatsapp,

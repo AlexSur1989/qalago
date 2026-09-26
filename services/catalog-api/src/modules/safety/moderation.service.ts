@@ -24,6 +24,7 @@ import {
   StaffPermission,
   staffRoleHasPermission,
 } from '../../common/utils/staff-access.util';
+import { loadPrimaryCityPresentationByBusinessId } from '../../common/utils/business-primary-city-presentation.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -113,7 +114,6 @@ export class ModerationService {
                 select: {
                   id: true,
                   title: true,
-                  city: { select: { id: true, slug: true, nameRu: true } },
                 },
               },
             },
@@ -131,7 +131,6 @@ export class ModerationService {
                 select: {
                   id: true,
                   title: true,
-                  city: { select: { id: true, slug: true, nameRu: true } },
                 },
               },
               branchLocation: {
@@ -154,6 +153,47 @@ export class ModerationService {
         : Promise.resolve(null),
     ]);
 
+    const businessIdsForCity = [
+      reviewRow?.business.id,
+      mediaRow?.business.id,
+    ].filter((id): id is string => Boolean(id));
+    const primaryCityByBusinessId =
+      businessIdsForCity.length > 0
+        ? await loadPrimaryCityPresentationByBusinessId(this.prisma, businessIdsForCity)
+        : new Map();
+
+    const reviewRowWithCity =
+      reviewRow == null
+        ? null
+        : {
+            ...reviewRow,
+            business: {
+              ...reviewRow.business,
+              city: (() => {
+                const cityRow = primaryCityByBusinessId.get(reviewRow.business.id);
+                return cityRow
+                  ? { id: cityRow.id, slug: cityRow.slug, nameRu: cityRow.nameRu }
+                  : null;
+              })(),
+            },
+          };
+
+    const mediaRowWithCity =
+      mediaRow == null
+        ? null
+        : {
+            ...mediaRow,
+            business: {
+              ...mediaRow.business,
+              city: (() => {
+                const cityRow = primaryCityByBusinessId.get(mediaRow.business.id);
+                return cityRow
+                  ? { id: cityRow.id, slug: cityRow.slug, nameRu: cityRow.nameRu }
+                  : null;
+              })(),
+            },
+          };
+
     const reports = reportLinks.map((link) => ({
       id: link.report.id,
       targetType: link.report.targetType,
@@ -173,11 +213,11 @@ export class ModerationService {
     }));
 
     const reviewTarget = isReviewTargetCase(moderationCase.targetType)
-      ? resolveModerationReviewTarget(reviewRow)
+      ? resolveModerationReviewTarget(reviewRowWithCity)
       : undefined;
 
     const mediaTarget = isMediaTargetCase(moderationCase.targetType)
-      ? resolveModerationMediaTarget(mediaRow)
+      ? resolveModerationMediaTarget(mediaRowWithCity)
       : undefined;
 
     return {

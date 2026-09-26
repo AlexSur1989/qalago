@@ -94,7 +94,7 @@ export class BusinessPrimaryLocationService {
   async createBusinessWithInitialPrimary(
     tx: Prisma.TransactionClient,
     params: {
-      brand: Omit<Prisma.BusinessUncheckedCreateInput, 'cityId'>;
+      brand: Prisma.BusinessUncheckedCreateInput;
       primaryPhysical: AuthoritativePrimaryPhysicalInput;
     },
   ): Promise<{ business: Business; primaryLocation: BusinessLocation }> {

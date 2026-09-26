@@ -98,7 +98,7 @@ describe('Stage 6.12A.9.3.1 — public physical read normalization', () => {
       },
     });
     createdBusinessIds.push(business.id);
-    const primary = await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Test address');
+    const primary = await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'Test address');
     await prisma.businessLocation.update({
       where: { id: primary.id },
       data: {

@@ -44,6 +44,8 @@ import {
 import { calcDiscountAmount, sumFinalPrices } from './utils/money.util';
 import { generateUniqueOrderNumber } from './utils/order-number.util';
 import { validateAndResolveCampaignLocationContext } from './utils/campaign-location-context.util';
+import { resolveBusinessAuditCityId } from '../../common/utils/business-context-city.util';
+import { loadPrimaryCityPresentationByBusinessId } from '../../common/utils/business-primary-city-presentation.util';
 import {
   readCampaignCityIdFromMetadata,
   resolveCampaignMarketCityId,
@@ -120,7 +122,7 @@ export class OrderService {
   private async createPackageOrder(
     user: AuthUser,
     dto: CreateOrderDto,
-    business: { cityId: string; categoryId: string },
+    business: { categoryId: string },
   ) {
     const pkg = await this.prisma.promotionPackage.findUnique({
       where: { code: dto.packageCode! },
@@ -245,7 +247,7 @@ export class OrderService {
 
   private async buildProductLines(
     businessId: string,
-    business: { cityId: string; categoryId: string },
+    business: { categoryId: string },
     items: CreateOrderItemDto[],
   ): Promise<PricedOrderLine[]> {
     const lines: PricedOrderLine[] = [];
@@ -422,12 +424,9 @@ export class OrderService {
         return !!existing;
       });
 
-      const businessScope = await tx.business.findUniqueOrThrow({
-        where: { id: businessId },
-        select: { cityId: true },
-      });
       const auditMarketCityId =
-        readCampaignCityIdFromMetadata(lines[0]?.metadata) ?? businessScope.cityId;
+        readCampaignCityIdFromMetadata(lines[0]?.metadata) ??
+        (await resolveBusinessAuditCityId(tx, businessId));
 
       const order = await tx.order.create({
         data: {
@@ -469,7 +468,14 @@ export class OrderService {
         const createdItem = order.items[i];
         const sourceLine = lines[i];
         const itemCityId =
-          readCampaignCityIdFromMetadata(sourceLine.metadata) ?? businessScope.cityId;
+          readCampaignCityIdFromMetadata(sourceLine.metadata) ??
+          (await resolveBusinessAuditCityId(tx, businessId));
+        if (!itemCityId) {
+          monetizationBadRequest(
+            MonetizationErrorCode.CAMPAIGN_MARKET_CITY_UNRESOLVED,
+            'Could not resolve market city for order item',
+          );
+        }
         await this.inventoryReservation.syncReservationsForOrderItem(tx, {
           orderId: order.id,
           orderItemId: createdItem.id,
@@ -841,17 +847,24 @@ export class OrderService {
           select: {
             id: true,
             title: true,
-            city: { select: { slug: true, nameRu: true } },
             category: { select: { id: true, title: true, slug: true } },
           },
         },
       },
     });
 
+    const primaryCityMap = await loadPrimaryCityPresentationByBusinessId(this.prisma, [
+      order.businessId,
+    ]);
+    const primaryCity = primaryCityMap.get(order.businessId);
+
     return {
       ...this.formatOrder(order),
       businessId: order.businessId,
-      business: order.business,
+      business: {
+        ...order.business,
+        city: primaryCity ? { slug: primaryCity.slug, nameRu: primaryCity.nameRu } : null,
+      },
       campaigns: order.items.flatMap((item) => {
         const meta =
           item.metadata && typeof item.metadata === 'object' && !Array.isArray(item.metadata)
@@ -950,10 +963,7 @@ export class OrderService {
       await this.provisioning.provisionOrderCampaigns(tx, order.id, paidAt);
       await this.inventoryReservation.convertHeldForOrder(tx, order.id);
 
-      const businessScope = await this.prisma.business.findUnique({
-        where: { id: order.businessId },
-        select: { cityId: true },
-      });
+      const auditCityId = await resolveBusinessAuditCityId(tx, order.businessId);
 
       await this.auditLog.record({
         actor: user,
@@ -961,7 +971,7 @@ export class OrderService {
         resourceType: AuditResourceType.PAYMENT,
         resourceId: paymentId,
         businessId: order.businessId,
-        cityId: businessScope?.cityId ?? null,
+        cityId: auditCityId,
         metadata: {
           paymentId,
           orderId: order.id,
@@ -1013,7 +1023,6 @@ export class OrderService {
             select: {
               id: true,
               title: true,
-              city: { select: { slug: true, nameRu: true } },
             },
           },
         },
@@ -1024,12 +1033,23 @@ export class OrderService {
       this.prisma.order.count({ where }),
     ]);
 
+    const primaryCityByBusinessId = await loadPrimaryCityPresentationByBusinessId(
+      this.prisma,
+      items.map((row) => row.businessId),
+    );
+
     return {
-      items: items.map((o) => ({
-        ...this.formatOrder(o),
-        businessId: o.businessId,
-        business: o.business,
-      })),
+      items: items.map((o) => {
+        const city = primaryCityByBusinessId.get(o.businessId);
+        return {
+          ...this.formatOrder(o),
+          businessId: o.businessId,
+          business: {
+            ...o.business,
+            city: city ? { slug: city.slug, nameRu: city.nameRu } : null,
+          },
+        };
+      }),
       total,
       page,
       limit,
@@ -1059,7 +1079,6 @@ export class OrderService {
                 select: {
                   id: true,
                   title: true,
-                  city: { select: { slug: true, nameRu: true } },
                 },
               },
             },
@@ -1072,8 +1091,25 @@ export class OrderService {
       this.prisma.payment.count({ where }),
     ]);
 
+    const primaryCityByBusinessId = await loadPrimaryCityPresentationByBusinessId(
+      this.prisma,
+      items.map((row) => row.order.business.id),
+    );
+
     return {
-      items: items.map((p) => this.formatAdminPayment(p)),
+      items: items.map((p) => {
+        const city = primaryCityByBusinessId.get(p.order.business.id);
+        return this.formatAdminPayment({
+          ...p,
+          order: {
+            ...p.order,
+            business: {
+              ...p.order.business,
+              city: city ? { slug: city.slug, nameRu: city.nameRu } : null,
+            },
+          },
+        });
+      }),
       total,
       page,
       limit,
@@ -1094,7 +1130,7 @@ export class OrderService {
       business: {
         id: string;
         title: string;
-        city: { slug: string; nameRu: string };
+        city: { slug: string; nameRu: string } | null;
       };
     };
   }) {
@@ -1123,14 +1159,26 @@ export class OrderService {
               select: {
                 id: true,
                 title: true,
-                city: { select: { slug: true, nameRu: true } },
               },
             },
           },
         },
       },
     });
-    return this.formatAdminPayment(full);
+    const primaryCityMap = await loadPrimaryCityPresentationByBusinessId(this.prisma, [
+      full.order.business.id,
+    ]);
+    const city = primaryCityMap.get(full.order.business.id);
+    return this.formatAdminPayment({
+      ...full,
+      order: {
+        ...full.order,
+        business: {
+          ...full.order.business,
+          city: city ? { slug: city.slug, nameRu: city.nameRu } : null,
+        },
+      },
+    });
   }
 
   private async assertOwnedVipCreative(

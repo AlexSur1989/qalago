@@ -130,14 +130,11 @@ describe('Stage 6.12A.9.4.2A — BusinessLocation integrity repair tooling', () 
       expect(primaries[0]?.id).toBe(older.id);
 
       await assertPrimaryBusinessCompatibilityParity(prisma, business.id);
-      const businessRow = await prisma.business.findUniqueOrThrow({
-        where: { id: business.id },
-        select: {
-          cityId: true,
-        },
+      const primaryAfter = await prisma.businessLocation.findFirstOrThrow({
+        where: { businessId: business.id, isPrimary: true },
       });
-      expect(businessRow.cityId).toBe(expectedPrimaryCityId);
-      expect(businessRow.cityId).toBe(uralskCityId);
+      expect(primaryAfter.cityId).toBe(expectedPrimaryCityId);
+      expect(primaryAfter.cityId).toBe(uralskCityId);
 
       const second = await runBusinessLocationIntegrity(prisma, 'APPLY');
       expect(second.repairedCount).toBe(0);

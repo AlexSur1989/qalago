@@ -142,14 +142,6 @@ export class AuditLogService {
   async listTeamHistory(user: AuthUser, businessId: string, query: ListTeamAuditQueryDto) {
     await this.businessAccess.assertOwner(user, businessId);
 
-    const business = await this.prisma.business.findUnique({
-      where: { id: businessId },
-      select: { cityId: true },
-    });
-    if (!business) {
-      throw new NotFoundException('Business not found');
-    }
-
     const page = query.page ?? 1;
     const limit = Math.min(query.limit ?? DEFAULT_AUDIT_PAGE_LIMIT, MAX_AUDIT_PAGE_LIMIT);
     const skip = (page - 1) * limit;

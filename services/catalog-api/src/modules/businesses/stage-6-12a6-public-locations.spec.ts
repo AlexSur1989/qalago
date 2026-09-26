@@ -60,21 +60,18 @@ describe('Stage 6.12A.6 — public BusinessLocation read', () => {
 
   async function createActiveBusiness(prefix: string) {
     const slug = `${prefix}-${randomBytes(5).toString('hex')}`;
-    const business = await prisma.business.create({
-      data: {
+    const { business } = await createTestBusinessWithPrimary(prisma, {
+      brand: {
         title: `A12A6 ${prefix}`,
         slug,
         categoryId,
-        cityId: uralskCityId,
         phone: '+77001111111',
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
+      primaryPhysical: testPrimaryPhysical(uralskCityId, 'Test address', { phone: '+77001111111' }),
     });
     createdBusinessIds.push(business.id);
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Test address', {
-      phone: '+77001111111',
-    });
     return business;
   }
 

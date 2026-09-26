@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-26 — 6.12A.9.4.5D1 Business.cityId retirement preparation (code/schema/tests; migration not applied)
+
+- **Status:** **6.12A.9.4.5D1 PASS — BUSINESS.cityId RETIREMENT PREPARED, MIGRATION NOT APPLIED**; **5D2** not started.
+- **Checkpoint (implementation):** _(set on commit)_.
+- **Baseline:** `d7b039dd00d062d20622b8d24420194277afc7d8` (**5D PRE-MIGRATION GATE** acceptance).
+- **Scope:** **`services/catalog-api`** — Prisma **Business** without **`cityId`** / **City.businesses** / **`Business_cityId_status_idx`**; forward migration **`20260926180000_stage_6_12a9_4_5d_business_city_id_retirement`** (**NOT APPLIED**); create/onboarding aggregate without parent city; primary promotion contact sync without city mirror; physical read normalization; access/reporting/monetization/moderation residuals; integrity CLI without parent mirror parity; seed/visibility tooling; focused specs. **No** `migrate deploy/dev`, **no** `db push`, **no** seed/integrity **`--apply`** on live dev DB.
+- **Summary:** Repository **CODE/PRISMA TARGET = POST-cityId**; **LIVE DEV DB = PRE-5D** until **5D2** (column may still exist with legacy values). Public **`cityId`** remains BL-projected. **5A/5B/5C** semantics preserved. Deprecated **`businessMatchesApplicationDedupe`** and **`legacyBusinessCatalogCityScope`** removed.
+- **Verified:** **`npx prisma generate`**; **`npm run build`**; focused Jest (primary sync util, physical normalization, access, **5C** scope, dedupe, visibility, campaign/analytics city utils); **`integrity:business-locations:audit`** read-only PASS (**109/110** businesses/locations).
+- **Deferred:** **5D2** migration apply (requires fresh backup immediately before deploy); full dev DB integration specs that INSERT **Business** without **`cityId`** on **PRE-5D** schema; remaining integration spec **`prisma.business.create({ cityId })`** compile migration (~30 files).
+- **Next:** **6.12A.9.4.5D2 — APPLY MIGRATION + POST-APPLY VERIFICATION** (explicit agreement only; **not auto-started**).
+
+---
+
 ## 2026-09-26 — 6.12A.9.4.5C Reporting / benchmark / moderation city semantics cutover
 
 - **Status:** **6.12A.9.4.5C PASS — REPORTING / BENCHMARK / MODERATION PARENT-CITY READS RETIRED**; **A.9.4.5D** not started.

@@ -161,7 +161,7 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
         status: 'ACTIVE',
       },
     });
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Only branch');
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'Only branch');
 
     try {
       const svc = buildLocationService();
@@ -189,7 +189,7 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
         status: 'ACTIVE',
       },
     });
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Primary addr');
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'Primary addr');
     const svc = buildLocationService();
     await svc.createLocation(owner(), business.id, {
       address: 'Branch addr',
@@ -257,7 +257,7 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
         status: 'ACTIVE',
       },
     });
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Primary base');
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'Primary base');
     const svc = buildLocationService();
     const l2 = await svc.createLocation(owner(), business.id, {
       address: 'Branch addr',

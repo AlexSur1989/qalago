@@ -135,7 +135,7 @@ describe('Stage 6.12A.9.4.3B — onboarding/create writer normalization', () => 
       expect(locations).toHaveLength(1);
       expect(locations[0]?.isPrimary).toBe(true);
       expect(locations[0]?.address).toBe(`Admin addr ${slugSuffix}`);
-      expect(business.cityId).toBe(uralskCityId);
+      expect(locations[0]?.cityId).toBe(uralskCityId);
       await assertPrimaryBusinessCompatibilityParity(prisma, business.id);
 
       const geoBefore = await prisma.businessLocation.findUniqueOrThrow({
@@ -257,7 +257,7 @@ describe('Stage 6.12A.9.4.3B — onboarding/create writer normalization', () => 
       expect(primary.locationSource).toBe(BusinessLocationSource.GEOCODED);
 
       const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: businessId } });
-      expect(businessRow.cityId).toBe(uralskCityId);
+      expect(primary.cityId).toBe(uralskCityId);
       expect(businessRow.status).toBe(BusinessStatus.ACTIVE);
       await assertPrimaryBusinessCompatibilityParity(prisma, businessId);
       const dto = buildEffectivePhysicalDto(businessRowToContactDefaults(businessRow), primary);

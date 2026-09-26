@@ -2,15 +2,9 @@ import { Prisma } from '@prisma/client';
 
 /**
  * Stage 6.12A.7.9.3A — BusinessLocation.cityId is authoritative for public discovery city C.
- * Business.cityId remains legacy/parent metadata (onboarding, admin) — not physical presence.
  *
- * Do not encode `Business.cityId = C OR branch.cityId = C` as the production predicate.
+ * Do not encode parent Business city as physical presence.
  */
-
-/** @deprecated Pre-A.7.9.3A parent-city filter; tests/docs only. */
-export function legacyBusinessCatalogCityScope(cityId: string): Prisma.BusinessWhereInput {
-  return { cityId };
-}
 
 const WGS84_LAT = { gte: -90, lte: 90 } as const;
 const WGS84_LNG = { gte: -180, lte: 180 } as const;

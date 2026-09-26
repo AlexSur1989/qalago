@@ -73,7 +73,7 @@ describe('Stage 6.12A.9.1 — Single-primary integrity hardening', () => {
         status: 'ACTIVE',
       },
     });
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Uralsk primary addr', { latitude: 51.2278, longitude: 51.3865 });
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'Uralsk primary addr', { latitude: 51.2278, longitude: 51.3865 });
     return business;
   }
 

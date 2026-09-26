@@ -37,17 +37,4 @@ export function businessLocationMatchesApplicationDedupe(
     normalizeApplicationText(location.address) === normalizeApplicationText(address)
   );
 }
-
-/**
- * @deprecated Use businessLocationMatchesApplicationDedupe — parent Business.cityId is not physical authority.
- */
-export function businessMatchesApplicationDedupe(
-  business: { cityId: string; title: string },
-  cityId: string,
-  title: string,
-  _address: string,
-): boolean {
-  if (business.cityId !== cityId) return false;
-  return normalizeApplicationText(business.title) === normalizeApplicationText(title);
-}
 

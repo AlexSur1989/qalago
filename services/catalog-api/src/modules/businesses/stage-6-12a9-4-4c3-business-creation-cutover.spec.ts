@@ -70,7 +70,7 @@ describe('Stage 6.12A.9.4.4C3 — business creation BL authority', () => {
 
         expect(primaryLocation.isPrimary).toBe(true);
         expect(primaryLocation.address).toBe('Authoritative BL addr');
-        expect(business.cityId).toBe(uralskCityId);
+        expect(primaryLocation.cityId).toBe(uralskCityId);
         expect(business.phone).toBe('+77001112233');
 
         const count = await tx.businessLocation.count({ where: { businessId: business.id } });

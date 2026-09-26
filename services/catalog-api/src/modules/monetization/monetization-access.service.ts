@@ -92,7 +92,7 @@ export class MonetizationAccessService {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        business: { select: { id: true, ownerId: true, cityId: true } },
+        business: { select: { id: true, ownerId: true } },
         items: { include: { product: true } },
         payments: true,
       },
@@ -121,7 +121,7 @@ export class MonetizationAccessService {
     const campaign = await this.prisma.adCampaign.findUnique({
       where: { id: campaignId },
       include: {
-        business: { select: { id: true, ownerId: true, cityId: true, title: true } },
+        business: { select: { id: true, ownerId: true, title: true } },
         product: true,
         creative: true,
         orderItem: { select: { metadata: true } },
@@ -163,7 +163,7 @@ export class MonetizationAccessService {
   async assertCreativeAccess(user: AuthUser, creativeId: string) {
     const creative = await this.prisma.adCreative.findUnique({
       where: { id: creativeId },
-      include: { business: { select: { id: true, ownerId: true, cityId: true } } },
+      include: { business: { select: { id: true, ownerId: true } } },
     });
     if (!creative) {
       monetizationNotFound(
@@ -212,7 +212,7 @@ export class MonetizationAccessService {
       include: {
         order: {
           include: {
-            business: { select: { cityId: true } },
+            business: { select: { id: true } },
           },
         },
       },

@@ -23,6 +23,7 @@ import { CityScopeService } from '../../common/services/city-scope.service';
 import { BusinessMembershipService } from '../../common/services/business-membership.service';
 import { OnboardingRateLimitService } from '../../common/services/onboarding-rate-limit.service';
 import { resolveBusinessAuditCityId } from '../../common/utils/business-context-city.util';
+import { loadPrimaryCityPresentationByBusinessId } from '../../common/utils/business-primary-city-presentation.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -37,8 +38,6 @@ const businessSummarySelect = {
   id: true,
   title: true,
   status: true,
-  cityId: true,
-  city: { select: { id: true, slug: true, nameRu: true } },
 } satisfies Prisma.BusinessSelect;
 
 type ClaimWithBusinessSummary = {
@@ -413,7 +412,7 @@ export class OwnershipClaimsService {
   /** Centralized eligibility for claim submission (Stage 5N.2). */
   async assertCanClaim(
     userId: string,
-    business: { id: string; status: BusinessStatus; ownerId: string | null; cityId: string },
+    business: { id: string; status: BusinessStatus; ownerId: string | null },
   ) {
     if (business.status !== BusinessStatus.ACTIVE) {
       throw new BadRequestException('Ownership claims are only allowed for active businesses');
@@ -552,38 +551,98 @@ export class OwnershipClaimsService {
 
   private async attachPrimaryAddressToBusinessSummary<T extends { id: string }>(
     business: T,
-  ): Promise<T & { address: string }> {
-    const map = await this.loadPrimaryAddressesByBusinessId([business.id]);
-    return { ...business, address: map.get(business.id) ?? '' };
+  ): Promise<
+    T & {
+      address: string;
+      cityId?: string;
+      city?: { id: string; slug: string; nameRu: string } | null;
+    }
+  > {
+    const [addressMap, cityMap] = await Promise.all([
+      this.loadPrimaryAddressesByBusinessId([business.id]),
+      loadPrimaryCityPresentationByBusinessId(this.prisma, [business.id]),
+    ]);
+    const city = cityMap.get(business.id);
+    return {
+      ...business,
+      address: addressMap.get(business.id) ?? '',
+      ...(city
+        ? { cityId: city.id, city: { id: city.id, slug: city.slug, nameRu: city.nameRu } }
+        : { cityId: undefined, city: null }),
+    };
   }
 
   private async enrichClaimWithPrimaryAddress<T extends ClaimWithBusinessSummary>(
     claim: T,
-  ): Promise<T & { business: T['business'] & { address: string } }> {
-    if (!claim.business?.id) {
-      return claim as T & { business: T['business'] & { address: string } };
+  ): Promise<
+    T & {
+      business: T['business'] & {
+        address: string;
+        cityId?: string;
+        city?: { id: string; slug: string; nameRu: string } | null;
+      };
     }
-    const map = await this.loadPrimaryAddressesByBusinessId([claim.business.id]);
+  > {
+    if (!claim.business?.id) {
+      return claim as T & {
+        business: T['business'] & {
+          address: string;
+          cityId?: string;
+          city?: { id: string; slug: string; nameRu: string } | null;
+        };
+      };
+    }
+    const [addressMap, cityMap] = await Promise.all([
+      this.loadPrimaryAddressesByBusinessId([claim.business.id]),
+      loadPrimaryCityPresentationByBusinessId(this.prisma, [claim.business.id]),
+    ]);
+    const city = cityMap.get(claim.business.id);
     return {
       ...claim,
       business: {
         ...claim.business,
-        address: map.get(claim.business.id) ?? '',
+        address: addressMap.get(claim.business.id) ?? '',
+        ...(city
+          ? { cityId: city.id, city: { id: city.id, slug: city.slug, nameRu: city.nameRu } }
+          : { cityId: undefined, city: null }),
       },
     };
   }
 
   private async enrichClaimsWithPrimaryAddress<T extends ClaimWithBusinessSummary>(
     claims: readonly T[],
-  ): Promise<Array<T & { business: T['business'] & { address: string } }>> {
-    const map = await this.loadPrimaryAddressesByBusinessId(claims.map((c) => c.business.id));
-    return claims.map((claim) => ({
-      ...claim,
-      business: {
-        ...claim.business,
-        address: map.get(claim.business.id) ?? '',
-      },
-    }));
+  ): Promise<
+    Array<
+      T & {
+        business: T['business'] & {
+          address: string;
+          cityId?: string;
+          city?: { id: string; slug: string; nameRu: string } | null;
+        };
+      }
+    >
+  > {
+    const businessIds = claims.map((c) => c.business.id);
+    const [addressMap, cityMap] = await Promise.all([
+      this.loadPrimaryAddressesByBusinessId(businessIds),
+      loadPrimaryCityPresentationByBusinessId(this.prisma, businessIds),
+    ]);
+    return claims.map((claim) => {
+      const city = cityMap.get(claim.business.id);
+      return {
+        ...claim,
+        business: {
+          ...claim.business,
+          address: addressMap.get(claim.business.id) ?? '',
+          ...(city
+            ? {
+                cityId: city.id,
+                city: { id: city.id, slug: city.slug, nameRu: city.nameRu },
+              }
+            : { cityId: undefined, city: null }),
+        },
+      };
+    });
   }
 
   private async loadBusinessForClaim(businessId: string) {
@@ -593,7 +652,6 @@ export class OwnershipClaimsService {
         id: true,
         status: true,
         ownerId: true,
-        cityId: true,
         planTier: true,
       },
     });

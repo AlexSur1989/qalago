@@ -50,16 +50,6 @@ describe('Stage 6.12A.2 — BusinessLocation backfill integrity (runtime DB)', (
     expect(Number(multiPrimary[0]?.n ?? 0)).toBe(0);
   });
 
-  it('Business.cityId matches primary BusinessLocation cityId (C2 parent city mirror)', async () => {
-    if (skip) return;
-    const [mismatch] = await prisma.$queryRaw<Array<{ n: bigint }>>`
-      SELECT COUNT(*)::bigint AS n
-      FROM "Business" b
-      JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-      WHERE b."cityId" IS DISTINCT FROM bl."cityId"`;
-    expect(Number(mismatch?.n ?? 0)).toBe(0);
-  });
-
   it('geo parity: coordinates imply location; null coords imply null location', async () => {
     if (skip) return;
     const withCoordsNullGeo = await prisma.$queryRaw<Array<{ n: bigint }>>`

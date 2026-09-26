@@ -116,7 +116,7 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         status: 'ACTIVE',
       },
     });
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, staleMirror);
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, staleMirror);
     const secondary = await locSvc.createLocation(owner(), business.id, {
       address: 'Branch addr',
       cityId: aktobeCityId,
@@ -158,7 +158,7 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         status: 'ACTIVE',
       },
     });
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Physical A', { latitude: 51.2278, longitude: 51.3865 });
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'Physical A', { latitude: 51.2278, longitude: 51.3865 });
     const l2 = await locSvc.createLocation(owner(), business.id, {
       address: 'Branch addr',
       cityId: aktobeCityId,
@@ -199,7 +199,7 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         status: 'ACTIVE',
       },
     });
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Uralsk mirror', { latitude: 51.2278, longitude: 51.3865 });
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'Uralsk mirror', { latitude: 51.2278, longitude: 51.3865 });
     const primary = await prisma.businessLocation.findFirstOrThrow({
       where: { businessId: business.id, isPrimary: true },
     });
@@ -221,7 +221,7 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         where: { businessId: business.id, isPrimary: true },
       });
       expect(Number(primaryAfter.latitude)).toBeCloseTo(50.29, 4);
-      expect(businessRow.cityId).toBe(aktobeCityId);
+      expect(primaryAfter.cityId).toBe(aktobeCityId);
       await assertPrimaryBusinessCompatibilityParity(prisma, business.id);
     } finally {
       await prisma.business.delete({ where: { id: business.id } });
@@ -242,7 +242,7 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         status: 'ACTIVE',
       },
     });
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Before invalid', { latitude: 51.2278, longitude: 51.3865 });
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'Before invalid', { latitude: 51.2278, longitude: 51.3865 });
 
     try {
       await expect(
@@ -274,7 +274,7 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         status: 'ACTIVE',
       },
     });
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Mixed addr');
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'Mixed addr');
 
     try {
       await svc.update(business.id, owner(), {
@@ -309,7 +309,7 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         status: 'ACTIVE',
       },
     });
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Perm addr');
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'Perm addr');
     const manager = {
       id: 'manager-1',
       sub: 'manager-1',
@@ -345,7 +345,7 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         status: 'ACTIVE',
       },
     });
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'L1 primary', { latitude: 51.2278, longitude: 51.3865 });
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'L1 primary', { latitude: 51.2278, longitude: 51.3865 });
     const l2 = await locSvc.createLocation(owner(), business.id, {
       address: 'Branch addr',
       cityId: aktobeCityId,

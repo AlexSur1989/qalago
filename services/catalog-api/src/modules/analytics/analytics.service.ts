@@ -56,6 +56,7 @@ import {
   resolveValidatedOrganicBusinessLocationId,
 } from '../../common/utils/analytics-branch-location.util';
 import { resolveAnalyticsEventCityId } from '../../common/utils/analytics-event-city.util';
+import { loadPrimaryCityPresentationByBusinessId } from '../../common/utils/business-primary-city-presentation.util';
 import { findPrimaryBusinessLocationCityId } from '../../common/utils/primary-business-location.util';
 
 const EVENT_TYPES = Object.values(AnalyticsEventType);
@@ -105,11 +106,11 @@ export class AnalyticsService {
       throw new BadRequestException('cityId is required for SEARCH_PERFORMED');
     }
 
-    let business: { id: string; cityId: string } | null = null;
+    let business: { id: string } | null = null;
     if (dto.businessId) {
       business = await this.prisma.business.findFirst({
         where: { id: dto.businessId, status: BusinessStatus.ACTIVE },
-        select: { id: true, cityId: true },
+        select: { id: true },
       });
       if (!business) {
         throw new NotFoundException('Business not found');
@@ -416,11 +417,10 @@ export class AnalyticsService {
 
     const requestedDays = query.days ?? 30;
     const days = clampAnalyticsDays(requestedDays, caps);
-    const business = await this.prisma.business.findUnique({
-      where: { id: businessId },
-      select: { city: { select: { timezone: true } } },
-    });
-    const timezone = business?.city?.timezone;
+    const primaryCityMap = await loadPrimaryCityPresentationByBusinessId(this.prisma, [
+      businessId,
+    ]);
+    const timezone = primaryCityMap.get(businessId)?.timezone;
 
     const rollupRows = await this.prisma.analyticsDailyMetric.findMany({
       where: {

@@ -11,6 +11,7 @@ import {
   resolveReportPeriodRange,
 } from '../../common/utils/analytics-report-period.util';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
+import { loadPrimaryCityPresentationByBusinessId } from '../../common/utils/business-primary-city-presentation.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AnalyticsDashboardBuilder } from './analytics-dashboard.builder';
 import type { BusinessAnalyticsReport } from './analytics-business-report.types';
@@ -64,7 +65,6 @@ export class AnalyticsBusinessReportBuilder {
       where: { id: params.businessId },
       select: {
         title: true,
-        city: { select: { nameRu: true, timezone: true } },
         category: { select: { title: true } },
       },
     });
@@ -72,9 +72,14 @@ export class AnalyticsBusinessReportBuilder {
       throw new NotFoundException('Business not found');
     }
 
+    const primaryCityMap = await loadPrimaryCityPresentationByBusinessId(this.prisma, [
+      params.businessId,
+    ]);
+    const primaryCity = primaryCityMap.get(params.businessId);
+
     const ctx = await this.planLimits.getBusinessPlanContext(params.businessId);
     const caps = getAnalyticsCapabilitiesForPlan(ctx.effectiveTier);
-    const timezone = business.city.timezone?.trim() || DEFAULT_ANALYTICS_TIMEZONE;
+    const timezone = primaryCity?.timezone?.trim() || DEFAULT_ANALYTICS_TIMEZONE;
 
     let periodRange = resolveReportPeriodRange({
       type: params.type,
@@ -127,7 +132,7 @@ export class AnalyticsBusinessReportBuilder {
       business: {
         id: params.businessId,
         name: business.title,
-        cityName: business.city.nameRu,
+        cityName: primaryCity?.nameRu ?? '',
         categoryTitle: business.category?.title ?? null,
       },
       period: {

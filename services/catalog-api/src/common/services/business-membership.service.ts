@@ -9,6 +9,7 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
+import { resolveBusinessAuditCityId } from '../utils/business-context-city.util';
 import { AuditLogService } from '../../modules/audit-log/audit-log.service';
 import { PlanLimitsService } from './plan-limits.service';
 
@@ -152,10 +153,10 @@ export class BusinessMembershipService {
         continue;
       }
 
-      const business = await this.prisma.business.findUnique({
-        where: { id: invitation.businessId },
-        select: { cityId: true },
-      });
+      const auditCityId = await resolveBusinessAuditCityId(
+        this.prisma,
+        invitation.businessId,
+      );
 
       await this.prisma.$transaction(async (tx) => {
         const membership = await tx.businessMembership.upsert({
@@ -185,7 +186,7 @@ export class BusinessMembershipService {
           resourceType: AuditResourceType.BUSINESS_INVITATION,
           resourceId: invitation.id,
           businessId: invitation.businessId,
-          cityId: business?.cityId ?? null,
+          cityId: auditCityId,
           targetUserId: userId,
           membershipRole: BusinessMembershipRole.MANAGER,
           metadata: {

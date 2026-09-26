@@ -18,7 +18,7 @@ export type EffectivePhysicalDto = {
 /** Business-level defaults for contact merge (not physical geo authority). */
 export type BusinessContactDefaults = Pick<
   Business,
-  'cityId' | 'phone' | 'whatsapp' | 'instagram' | 'website' | 'workHours'
+  'phone' | 'whatsapp' | 'instagram' | 'website' | 'workHours'
 >;
 
 /** @deprecated Alias for contact defaults — runtime geo comes from BusinessLocation only (A.9.4.4B). */
@@ -92,7 +92,7 @@ export function buildEffectivePhysicalDto(
     return {
       locationId: null,
       isPrimary: false,
-      cityId: contactDefaults.cityId,
+      cityId: '',
       address: '',
       latitude: null,
       longitude: null,

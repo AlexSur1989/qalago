@@ -5,7 +5,10 @@ import {
   AuditResourceType,
   NotificationTargetType,
   NotificationType,
+  Prisma,
 } from '@prisma/client';
+import { loadPrimaryCityPresentationByBusinessId } from '../../common/utils/business-primary-city-presentation.util';
+import { resolveBusinessAuditCityId } from '../../common/utils/business-context-city.util';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
@@ -79,12 +82,9 @@ export class CreativeService {
     const page = params.page ?? 1;
     const limit = params.limit ?? 20;
 
-    const where: {
-      business?: { cityId: string };
-      moderationStatus?: AdModerationStatus;
-    } = {};
+    const where: Prisma.AdCreativeWhereInput = {};
     if (cityId) {
-      where.business = { cityId };
+      where.business = { locations: { some: { cityId } } };
     }
     if (params.moderationStatus) {
       where.moderationStatus = params.moderationStatus as AdModerationStatus;
@@ -98,7 +98,6 @@ export class CreativeService {
             select: {
               id: true,
               title: true,
-              city: { select: { slug: true, nameRu: true } },
             },
           },
         },
@@ -109,11 +108,22 @@ export class CreativeService {
       this.prisma.adCreative.count({ where }),
     ]);
 
+    const primaryCityByBusinessId = await loadPrimaryCityPresentationByBusinessId(
+      this.prisma,
+      items.map((row) => row.business.id),
+    );
+
     return {
-      items: items.map((c) => ({
-        ...this.formatCreative(c),
-        business: c.business,
-      })),
+      items: items.map((c) => {
+        const city = primaryCityByBusinessId.get(c.business.id);
+        return {
+          ...this.formatCreative(c),
+          business: {
+            ...c.business,
+            city: city ? { slug: city.slug, nameRu: city.nameRu } : null,
+          },
+        };
+      }),
       total,
       page,
       limit,
@@ -129,14 +139,20 @@ export class CreativeService {
           select: {
             id: true,
             title: true,
-            city: { select: { slug: true, nameRu: true } },
           },
         },
       },
     });
+    const primaryCityMap = await loadPrimaryCityPresentationByBusinessId(this.prisma, [
+      full.business.id,
+    ]);
+    const city = primaryCityMap.get(full.business.id);
     return {
       ...this.formatCreative(full),
-      business: full.business,
+      business: {
+        ...full.business,
+        city: city ? { slug: city.slug, nameRu: city.nameRu } : null,
+      },
     };
   }
 
@@ -213,10 +229,7 @@ export class CreativeService {
 
     await this.provisioning.activateCampaignsForCreative(id);
 
-    const business = await this.prisma.business.findUnique({
-      where: { id: scope.businessId },
-      select: { cityId: true },
-    });
+    const auditCityId = await resolveBusinessAuditCityId(this.prisma, scope.businessId);
 
     await this.auditLog.record({
       actor: user,
@@ -224,7 +237,7 @@ export class CreativeService {
       resourceType: AuditResourceType.AD_CREATIVE,
       resourceId: id,
       businessId: scope.businessId,
-      cityId: business?.cityId ?? null,
+      cityId: auditCityId,
       metadata: { creativeId: id },
     });
 
@@ -257,10 +270,7 @@ export class CreativeService {
 
     await this.provisioning.rejectCampaignsForCreative(id);
 
-    const business = await this.prisma.business.findUnique({
-      where: { id: scope.businessId },
-      select: { cityId: true },
-    });
+    const auditCityId = await resolveBusinessAuditCityId(this.prisma, scope.businessId);
 
     await this.auditLog.record({
       actor: user,
@@ -268,7 +278,7 @@ export class CreativeService {
       resourceType: AuditResourceType.AD_CREATIVE,
       resourceId: id,
       businessId: scope.businessId,
-      cityId: business?.cityId ?? null,
+      cityId: auditCityId,
       metadata: { creativeId: id, hasComment: !!comment },
     });
 

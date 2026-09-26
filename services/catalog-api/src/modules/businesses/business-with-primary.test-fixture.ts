@@ -44,10 +44,7 @@ export async function specPrimaryLocation(
   });
 }
 
-export type TestBusinessBrandInput = Omit<
-  Prisma.BusinessUncheckedCreateInput,
-  'cityId'
->;
+export type TestBusinessBrandInput = Prisma.BusinessUncheckedCreateInput;
 
 /** Adds primary BL to an existing Business shell (post-C4 createInitialPrimary signature). */
 export async function specCreateInitialPrimary(

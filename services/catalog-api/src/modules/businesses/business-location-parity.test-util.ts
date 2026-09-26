@@ -6,12 +6,7 @@ export async function assertPrimaryBusinessCompatibilityParity(
   businessId: string,
 ): Promise<void> {
   const mismatches = await prisma.$queryRaw<Array<{ field: string; n: bigint }>>`
-    SELECT 'cityId' AS field, COUNT(*)::bigint AS n
-    FROM "Business" b
-    JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-    WHERE b."id" = ${businessId} AND b."cityId" IS DISTINCT FROM bl."cityId"
-    UNION ALL
-    SELECT 'phone', COUNT(*)::bigint
+    SELECT 'phone' AS field, COUNT(*)::bigint AS n
     FROM "Business" b
     JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
     WHERE b."id" = ${businessId} AND b."phone" IS DISTINCT FROM bl."phone"`;

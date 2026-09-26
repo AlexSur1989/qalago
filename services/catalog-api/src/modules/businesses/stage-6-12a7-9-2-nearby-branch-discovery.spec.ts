@@ -140,7 +140,7 @@ describe('Stage 6.12A.7.9.2 — nearby nearest BusinessLocation per Business', (
       },
     });
     createdBusinessIds.push(business.id);
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Test address');
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'Test address');
     return business;
   }
 

@@ -48,8 +48,6 @@ export type BusinessLocationIntegritySummary = {
   zeroLocationCount: number;
   zeroPrimaryCount: number;
   multiPrimaryCount: number;
-  /** Temporary Business.cityId ↔ primary BL.cityId compatibility until A.9.4.5 (not retired geo). */
-  parentCityMirrorMismatchCount: number;
   repairableCount: number;
   manualRemediationCount: number;
   repairedCount: number;
@@ -83,7 +81,6 @@ async function loadIntegrityBusinessIds(prisma: DbClient): Promise<{
   zeroLocationBusinessIds: string[];
   zeroPrimaryBusinessIds: string[];
   multiPrimaryBusinessIds: string[];
-  parentCityMirrorMismatchBusinessIds: string[];
 }> {
   const zeroLocationRows = await prisma.$queryRaw<Array<{ id: string }>>`
     SELECT b.id FROM "Business" b
@@ -102,17 +99,10 @@ async function loadIntegrityBusinessIds(prisma: DbClient): Promise<{
     GROUP BY b.id
     HAVING SUM(CASE WHEN bl."isPrimary" THEN 1 ELSE 0 END) > 1`;
 
-  const parentCityRows = await prisma.$queryRaw<Array<{ id: string }>>`
-    SELECT DISTINCT b.id
-    FROM "Business" b
-    JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
-    WHERE b."cityId" IS DISTINCT FROM bl."cityId"`;
-
   return {
     zeroLocationBusinessIds: zeroLocationRows.map((r) => r.id),
     zeroPrimaryBusinessIds: zeroPrimaryRows.map((r) => r.id),
     multiPrimaryBusinessIds: multiPrimaryRows.map((r) => r.id),
-    parentCityMirrorMismatchBusinessIds: parentCityRows.map((r) => r.id),
   };
 }
 
@@ -344,7 +334,6 @@ export async function runBusinessLocationIntegrity(
     finalIds.zeroLocationBusinessIds.length === 0 &&
     finalIds.zeroPrimaryBusinessIds.length === 0 &&
     finalIds.multiPrimaryBusinessIds.length === 0 &&
-    finalIds.parentCityMirrorMismatchBusinessIds.length === 0 &&
     failedCount === 0 &&
     manualRemediationCount === 0;
 
@@ -364,7 +353,6 @@ export async function runBusinessLocationIntegrity(
     zeroLocationCount: finalIds.zeroLocationBusinessIds.length,
     zeroPrimaryCount: finalIds.zeroPrimaryBusinessIds.length,
     multiPrimaryCount: finalIds.multiPrimaryBusinessIds.length,
-    parentCityMirrorMismatchCount: finalIds.parentCityMirrorMismatchBusinessIds.length,
     repairableCount,
     manualRemediationCount,
     repairedCount,
@@ -391,7 +379,6 @@ export function formatBusinessLocationIntegritySummary(
         zeroLocationCount: summary.zeroLocationCount,
         zeroPrimaryCount: summary.zeroPrimaryCount,
         multiPrimaryCount: summary.multiPrimaryCount,
-        parentCityMirrorMismatchCount: summary.parentCityMirrorMismatchCount,
         blHygiene: summary.blHygiene,
         manualRemediationCount: summary.manualRemediationCount,
         failedCount: summary.failedCount,

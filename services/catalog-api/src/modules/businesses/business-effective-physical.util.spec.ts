@@ -27,7 +27,6 @@ function loc(partial: Record<string, unknown> & { id: string }): BusinessLocatio
 }
 
 const businessFallback: BusinessPhysicalFallback = {
-  cityId: 'city-legacy',
   phone: '+7000',
   whatsapp: '+7111',
   instagram: '@brand',
@@ -149,7 +148,7 @@ describe('business-effective-physical.util (Stage 6.12A.7.6)', () => {
     expect(dto.address).toBe('');
     expect(dto.latitude).toBeNull();
     expect(dto.longitude).toBeNull();
-    expect(dto.cityId).toBe('city-legacy');
+    expect(dto.cityId).toBe('');
     expect(dto.phone).toBe('+7000');
   });
 });

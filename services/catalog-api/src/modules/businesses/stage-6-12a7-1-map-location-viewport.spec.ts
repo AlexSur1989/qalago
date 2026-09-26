@@ -108,7 +108,7 @@ describe('Stage 6.12A.7.1 — map forMap viewport (BusinessLocation grain)', () 
       },
     });
     createdBusinessIds.push(business.id);
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Primary Uralsk addr', {
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'Primary Uralsk addr', {
       latitude: lat,
       longitude: lng,
     });

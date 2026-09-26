@@ -96,7 +96,7 @@ export class BusinessInvitationService {
       const invitation = await tx.businessInvitation.findFirst({
         where: { tokenHash },
         include: {
-          business: { select: { id: true, title: true, cityId: true, status: true } },
+          business: { select: { id: true, title: true, status: true } },
         },
       });
 
@@ -281,7 +281,7 @@ export class BusinessInvitationService {
     const tokenHash = hashInviteToken(trimmed);
     return this.prisma.businessInvitation.findFirst({
       where: { tokenHash },
-      include: { business: { select: { title: true, status: true, cityId: true, id: true } } },
+      include: { business: { select: { title: true, status: true, id: true } } },
     });
   }
 

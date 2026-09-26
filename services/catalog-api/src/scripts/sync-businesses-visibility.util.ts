@@ -13,7 +13,8 @@ export type VisibilitySyncBusinessRow = {
   title: string;
   slug: string;
   status: BusinessStatus;
-  cityId: string;
+  /** Primary BusinessLocation city (A.9.4.5D). */
+  primaryCityId: string | null;
 };
 
 export type VisibilitySyncCityRow = {
@@ -47,7 +48,7 @@ export function planVisibilitySyncUpdates(
   let activated = 0;
 
   for (const business of businesses) {
-    const city = cityById.get(business.cityId);
+    const city = business.primaryCityId ? cityById.get(business.primaryCityId) : undefined;
     if (!city) {
       skippedUnknownCitySlugs.push(business.slug);
       continue;

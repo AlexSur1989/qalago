@@ -98,7 +98,7 @@ describe('Stage 6.12A.4 — BusinessLocation management API', () => {
         status: 'ACTIVE',
       },
     });
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Uralsk primary addr', {
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'Uralsk primary addr', {
       latitude: 51.2278,
       longitude: 51.3865,
       phone: 'primary-phone',
@@ -246,9 +246,8 @@ describe('Stage 6.12A.4 — BusinessLocation management API', () => {
     });
     expect(primaries).toHaveLength(1);
     expect(primaries[0]?.id).toBe(secondary.id);
-    const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
-    expect(businessRow.cityId).toBe(aktobeCityId);
-    // C4: Business.address retired — businessRow.address assertion removed ('Aktobe will become primary')
+    expect(primaries[0]?.cityId).toBe(aktobeCityId);
+    // C4: Business.address retired — parent city mirror retired (A.9.4.5D)
     await assertPrimaryBusinessLocationParity(prisma, business.id);
     await assertPrimaryGeoParity(prisma, business.id);
     await prisma.business.delete({ where: { id: business.id } });
@@ -431,8 +430,6 @@ describe('Stage 6.12A.4 — BusinessLocation management API', () => {
     });
     expect(primaries).toHaveLength(1);
     expect(primaries[0]?.cityId).toBe(uralskCityId);
-    const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
-    expect(businessRow.cityId).toBe(uralskCityId);
     await assertPrimaryBusinessLocationParity(prisma, business.id);
     await prisma.business.delete({ where: { id: business.id } });
   });

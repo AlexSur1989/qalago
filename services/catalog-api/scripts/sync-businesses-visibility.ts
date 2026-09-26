@@ -26,15 +26,26 @@ async function main() {
       title: true,
       slug: true,
       status: true,
-      cityId: true,
     },
     orderBy: { createdAt: 'asc' },
   });
 
-  const plan = planVisibilitySyncUpdates(businesses, cityById);
+  const primaries = await prisma.businessLocation.findMany({
+    where: { isPrimary: true, businessId: { in: businesses.map((b) => b.id) } },
+    select: { businessId: true, cityId: true },
+  });
+  const primaryCityByBusiness = new Map(primaries.map((p) => [p.businessId, p.cityId]));
+
+  const plan = planVisibilitySyncUpdates(
+    businesses.map((b) => ({
+      ...b,
+      primaryCityId: primaryCityByBusiness.get(b.id) ?? null,
+    })),
+    cityById,
+  );
 
   for (const slug of plan.skippedUnknownCitySlugs) {
-    console.warn(`SKIP ${slug}: unknown cityId`);
+    console.warn(`SKIP ${slug}: unknown primary city`);
   }
 
   for (const item of plan.updates) {
@@ -48,14 +59,24 @@ async function main() {
 
   console.log('\n=== Summary ===');
   for (const city of cities) {
+    const scopedBusinessIds = await prisma.businessLocation.findMany({
+      where: { cityId: city.id },
+      select: { businessId: true },
+      distinct: ['businessId'],
+    });
+    const ids = scopedBusinessIds.map((r) => r.businessId);
+    if (ids.length === 0) {
+      console.log(`${city.slug} (${city.nameRu}): no businesses | public ACTIVE=0`);
+      continue;
+    }
     const rows = await prisma.business.groupBy({
       by: ['status'],
-      where: { cityId: city.id },
+      where: { id: { in: ids } },
       _count: true,
     });
     const parts = rows.map((r) => `${r.status}=${r._count}`).join(', ');
     const publicCount = await prisma.business.count({
-      where: { cityId: city.id, status: BusinessStatus.ACTIVE },
+      where: { id: { in: ids }, status: BusinessStatus.ACTIVE },
     });
     console.log(
       `${city.slug} (${city.nameRu}): ${parts || 'no businesses'} | public ACTIVE=${publicCount}`,

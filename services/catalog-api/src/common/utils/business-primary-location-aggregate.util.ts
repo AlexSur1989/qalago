@@ -35,7 +35,7 @@ export async function resolvePrimaryLocationInTx(
   return { status: 'ok', location: primaries[0]! };
 }
 
-/** Normal production: sync cityId + contacts from primary BL onto Business (no geo — A.9.4.4C1). */
+/** Normal production: sync contact defaults from primary BL onto Business (no geo, no parent city — A.9.4.5D). */
 export async function syncBusinessCompatibilityFromPrimaryInTx(
   tx: Prisma.TransactionClient,
   location: Pick<BusinessLocation, 'isPrimary' | 'businessId'> &
@@ -78,12 +78,11 @@ export async function createAuthoritativeInitialPrimaryInTx(
 }
 
 function mergeBrandContactsWithPrimaryPhysical(
-  brand: Omit<Prisma.BusinessUncheckedCreateInput, 'cityId'>,
+  brand: Prisma.BusinessUncheckedCreateInput,
   primaryPhysical: AuthoritativePrimaryPhysicalInput,
 ): Prisma.BusinessUncheckedCreateInput {
   return {
     ...brand,
-    cityId: primaryPhysical.cityId,
     phone: brand.phone ?? primaryPhysical.phone ?? undefined,
     whatsapp: brand.whatsapp ?? primaryPhysical.whatsapp ?? undefined,
     instagram: brand.instagram ?? primaryPhysical.instagram ?? undefined,
@@ -95,12 +94,12 @@ function mergeBrandContactsWithPrimaryPhysical(
 
 /**
  * Production + tracked dev create (A.9.4.4C4): brand shell + authoritative primary BL atomically.
- * Physical authority: `primaryPhysical` → BusinessLocation; Business retains cityId + contacts only.
+ * Physical authority: `primaryPhysical` → BusinessLocation; Business shell holds brand + contact defaults only.
  */
 export async function createBusinessWithInitialPrimaryInTx(
   tx: Prisma.TransactionClient,
   params: {
-    brand: Omit<Prisma.BusinessUncheckedCreateInput, 'cityId'>;
+    brand: Prisma.BusinessUncheckedCreateInput;
     primaryPhysical: AuthoritativePrimaryPhysicalInput;
   },
 ): Promise<{ business: Business; primaryLocation: BusinessLocation }> {
@@ -119,7 +118,7 @@ export async function createBusinessWithInitialPrimaryInTx(
 
 export type SeedBusinessUpsertParams = {
   where: { slug: string };
-  brandCreate: Omit<Prisma.BusinessUncheckedCreateInput, 'cityId' | 'slug'>;
+  brandCreate: Omit<Prisma.BusinessUncheckedCreateInput, 'slug'>;
   brandUpdate: Prisma.BusinessUncheckedUpdateInput;
   primaryPhysical: AuthoritativePrimaryPhysicalInput;
 };

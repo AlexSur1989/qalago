@@ -1,7 +1,6 @@
 import {
   buildApplicationDedupeKey,
   businessLocationMatchesApplicationDedupe,
-  businessMatchesApplicationDedupe,
   normalizeApplicationText,
 } from './business-application-dedupe.util';
 
@@ -40,7 +39,7 @@ describe('business-application-dedupe.util', () => {
     ).toBe(true);
   });
 
-  it('does not match when only parent Business.cityId would align', () => {
+  it('does not match when branch city differs from application city', () => {
     expect(
       businessLocationMatchesApplicationDedupe(
         { cityId: 'city-a', address: 'Home A' },
@@ -51,16 +50,4 @@ describe('business-application-dedupe.util', () => {
       ),
     ).toBe(false);
   });
-
-  it('legacy businessMatchesApplicationDedupe unchanged for compatibility tests', () => {
-    expect(
-      businessMatchesApplicationDedupe(
-        { cityId: 'c1', title: 'Cafe' },
-        'c1',
-        'cafe',
-        'abay 1',
-      ),
-    ).toBe(true);
-  });
 });
-

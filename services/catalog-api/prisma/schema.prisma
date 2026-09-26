@@ -295,7 +295,6 @@ model City {
   launchDate              DateTime?
   createdAt               DateTime                  @default(now())
   updatedAt               DateTime                  @updatedAt
-  businesses              Business[]
   users                   User[]                    @relation("PreferredCity")
   cityAdmins              User[]                    @relation("ManagedCity")
   categoryCityOrders      CategoryCityOrder[]
@@ -681,7 +680,6 @@ model CategoryCityOrder {
 
 model Business {
   id                        String                          @id @default(cuid())
-  cityId                    String
   ownerId                   String?
   categoryId                String
   title                     String
@@ -703,7 +701,6 @@ model Business {
   planExpiresAt             DateTime?
   createdAt                 DateTime                        @default(now())
   updatedAt                 DateTime                        @updatedAt
-  city                      City                            @relation(fields: [cityId], references: [id], onDelete: Restrict)
   owner                     User?                           @relation("BusinessOwner", fields: [ownerId], references: [id], onDelete: SetNull)
   category                  Category                        @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   images                    BusinessImage[]
@@ -729,7 +726,6 @@ model Business {
   businessSubcategories     BusinessSubcategory[]
   locations                 BusinessLocation[]
 
-  @@index([cityId, status])
   @@index([categoryId])
 }
 

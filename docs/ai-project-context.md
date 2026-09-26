@@ -8,7 +8,9 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `e661f0bc50bdc363efd50865510c4a90c9d270af` — **6.12A.9.4.5C** |
+| **Repo HEAD (current)** | _(see `git rev-parse HEAD`)_ — **6.12A.9.4.5D1** after implementation commit |
+| **A.9.4.5D1 implementation SHA** | _(set on commit)_ |
+| **5D pre-migration gate baseline** | `d7b039dd00d062d20622b8d24420194277afc7d8` |
 | **A.9.4.5C implementation SHA** | `e661f0bc50bdc363efd50865510c4a90c9d270af` |
 | **A.9.4.5B implementation SHA** | `f459acd742f13b7406ef1ddc8be0da0408754a3d` |
 | **A.9.4.5 audit baseline** | `d34dc7071d12f0294371a6cde1b2258739d3406a` |
@@ -24,14 +26,16 @@
 | **A.9.4.4C1 implementation SHA** | `80f678a9584f2614c1aaf029e56183c48315f1bb` |
 | **A.9.4.4C2 implementation SHA** | `10c767d272e0033b25fdc93938e62727f9f89beb` |
 | **A.9.4.4C3 implementation SHA** | `a78ff95457c10e7e31ccce846906e91a1b99f670` |
-| **Last completed stage** | **6.12A.9.4.5C PASS** — benchmark/reporting/moderation/audit city from BL context; parent mirror not authority |
-| **Last product implementation** | **6.12A.9.4.5C** — reporting/benchmark/moderation cutover; **5B** `f459acd742f13b7406ef1ddc8be0da0408754a3d` |
+| **Last completed stage** | **6.12A.9.4.5D1 PASS** — **Business.cityId** retirement prepared in repo; migration **PENDING**; live dev DB **PRE-5D** |
+| **Last product implementation** | **6.12A.9.4.5D1** — post-cityId Prisma/code; **5C** `e661f0bc50bdc363efd50865510c4a90c9d270af` |
 | **A.9.4.4C4A implementation SHA** | `90cd95b89f0f72751df517c90a9785962a944024` |
 | **A.9.4.4C4B docs SHA** | `713a53f8ad9f40f5acb622c76f60017f887b7b27` |
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending** | None for **A.9.4.3** / **A.9.4.2** |
-| **Next agreed development action** | **6.12A.9.4.5D PRE-MIGRATION READ-ONLY GATE** — **`Business.cityId`** column retirement evidence (**not started**) |
+| **Next agreed development action** | **6.12A.9.4.5D2 — APPLY `20260926180000_stage_6_12a9_4_5d_business_city_id_retirement`** after fresh backup (**not started**) |
+
+**5D split:** **CODE/PRISMA = POST-cityId** (generated client + `services/catalog-api` sources). **LIVE `qalago_dev` = PRE-5D** until **5D2** — **`Business.cityId`** column may still exist; do not run post-5D integrity SQL that assumes column absence on shared dev before apply.
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 

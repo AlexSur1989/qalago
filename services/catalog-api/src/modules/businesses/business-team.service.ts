@@ -219,7 +219,7 @@ export class BusinessTeamService {
 
   private async inviteManagerByEmail(
     user: AuthUser,
-    business: { id: string; cityId: string },
+    business: { id: string },
     businessId: string,
     emailRaw: string,
     permissions: BusinessPermission[],

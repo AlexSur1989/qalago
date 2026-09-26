@@ -132,7 +132,7 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
         status: 'ACTIVE',
       },
     });
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Before');
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'Before');
     const primaryBefore = await prisma.businessLocation.findFirstOrThrow({
       where: { businessId: business.id, isPrimary: true },
     });
@@ -177,7 +177,7 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
         status: 'ACTIVE',
       },
     });
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Primary addr');
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'Primary addr');
     const secondary = await prisma.businessLocation.create({
       data: {
         address: 'Branch addr',
@@ -224,7 +224,7 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
         status: 'ACTIVE',
       },
     });
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Geo addr');
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'Geo addr');
 
     try {
       await svc.update(business.id, owner, { latitude: 51.2278, longitude: 51.3865 });
@@ -264,7 +264,7 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
         status: 'ACTIVE',
       },
     });
-    await specCreateInitialPrimary(primaryLocation, prisma, business.id, business.cityId, 'Rollback addr');
+    await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'Rollback addr');
 
     const brokenPrimary = new BusinessPrimaryLocationService();
     jest.spyOn(brokenPrimary, 'syncPrimaryFromBusinessRecord').mockRejectedValueOnce(new Error('sync failed'));

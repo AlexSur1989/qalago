@@ -33,7 +33,6 @@ function loc(partial: Record<string, unknown> & { id: string }): BusinessLocatio
 }
 
 const businessMirror: PublicPhysicalReadBusinessSource = {
-  cityId: 'city-brand',
   phone: '+7000',
   whatsapp: '+7111',
   instagram: '@brand',
@@ -92,7 +91,7 @@ describe('business-physical-read-normalization.util (A.9.3.1)', () => {
     expect(projection.address).toBe('');
     expect(projection.latitude).toBeNull();
     expect(projection.longitude).toBeNull();
-    expect(projection.cityId).toBe('city-brand');
+    expect(projection.cityId).toBe('');
   });
 
   it('A.9.4.4B — stale Business geo on row ignored when primary BL differs', () => {

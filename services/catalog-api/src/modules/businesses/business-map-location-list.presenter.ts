@@ -22,7 +22,6 @@ export type BusinessLocationMapPhysicalRow = Prisma.BusinessLocationGetPayload<{
 
 type BusinessBrandListRow = {
   id: string;
-  cityId: string;
   categoryId: string;
   title: string;
   slug: string;

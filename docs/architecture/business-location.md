@@ -4,7 +4,7 @@
 
 | Entity | Role |
 |--------|------|
-| **Business** | Brand / organization identity: title, slug, taxonomy, plan, membership, reviews, favorites, promotions, catalog, ads, analytics; **temporary** **`cityId`** + brand-level contact defaults (**A.9.4.5** retires **`cityId`**) |
+| **Business** | Brand / organization identity: title, slug, taxonomy, plan, membership, reviews, favorites, promotions, catalog, ads, analytics; brand-level contact defaults. **Target schema (A.9.4.5D1+):** no **`cityId`** on **Business**; live dev DB may remain **PRE-5D2** until migration apply |
 | **BusinessLocation** | **Authoritative** physical branch / venue: city, address, coordinates, `locationSource`, PostGIS **`location`**, hours, branch contacts |
 
 Relationship: **Business 1 → N BusinessLocation**.
@@ -109,16 +109,19 @@ Migration **`20260926120000_stage_6_12a9_4_4c4_business_geo_column_retirement`**
 
 **Retired from `Business` storage (A.9.4.4C4 — dev DB):** `address`, `latitude`, `longitude`, `location` (geography), `locationSource` — **no longer Business authority**; public projection is **BusinessLocation** only.
 
-**Separate transition debt (A.9.4.5 — not 5A):** `Business.cityId` column remains until **A.9.4.5D** schema retirement; monetization/analytics fallbacks in **5B/5C**.
+**A.9.4.5D1 (prepared, migration not applied):** repository Prisma/code target **POST-`Business.cityId`**; forward migration **`20260926180000_stage_6_12a9_4_5d_business_city_id_retirement`** is **PENDING** on dev until **5D2** (fresh backup immediately before apply). **Live dev DB** may still have **`Business.cityId` NOT NULL** while code no longer reads/writes it.
+
+**Completed cutovers before column drop:** monetization/analytics (**5B**), reporting/benchmark/moderation (**5C**), **CITY_ADMIN** primary-BL auth (**5A**).
 
 **KEEP as legitimate Business domain / default fields:** `phone`, `whatsapp`, `website`, `instagram`, `workHours` — **BusinessLocation** may override per branch; Business retains brand/default/fallback semantics (**A.3** / **`buildEffectivePhysicalDto`**).
 
-### Transitional `Business.cityId` semantics (**A.9.4.5A FROZEN**)
+### City semantics (**A.9.4.5A FROZEN**; parent mirror retired in code **5D1**)
 
-- **Physical presence:** business is in city **X** iff **∃ BusinessLocation** with `businessId` and `cityId = X`. **Never** infer presence from stored **`Business.cityId`** alone.
-- **Primary city (while column exists):** **`Business.cityId`** = **compatibility mirror** of **current primary** `BusinessLocation.cityId` (sync on create/set-primary; integrity **`parentCityMirrorMismatchCount`** until **5D**).
+- **Physical presence:** business is in city **X** iff **∃ BusinessLocation** with `businessId` and `cityId = X`. **Never** infer presence from parent **`Business.cityId`** (column dropped in **5D2**).
+- **Primary city presentation:** admin/aggregate **`city`** objects and audit stamps use **primary (or branch) BusinessLocation.city** — not a parent Business relation.
 - **NOT:** immutable home city, brand origin, all-branch city, or public discovery authority.
-- **Public API `cityId`:** effective/context **BusinessLocation** city for the response — not stored parent **`Business.cityId`** as discovery authority (**A.9.4.1B**).
+- **Public API `cityId`:** effective/context **BusinessLocation** city for the response (**A.9.4.1B**).
+- **Create/onboarding:** **Business shell** without parent city; **primary BusinessLocation** carries authoritative **`cityId`** atomically (**5D1**).
 
 ### Admin & CITY_ADMIN policies (**A.9.4.1A** + **A.9.4.5A IMPLEMENTED** — catalog-api)
 
@@ -131,7 +134,7 @@ Migration **`20260926120000_stage_6_12a9_4_4c4_business_geo_column_retirement`**
 | **Real OWNER / MANAGER** | **BusinessMembership** unchanged | `BusinessAccessService` membership paths |
 
 - **Anti-escalation:** secondary-branch presence in city B **must not** grant whole-business owner-equivalent access to **CITY_ADMIN_B** while primary remains in city A.
-- **Primary promotion:** owner-equivalent **CITY_ADMIN** scope follows **new primary** BL city; **`Business.cityId`** mirror sync remains until **5D**.
+- **Primary promotion:** owner-equivalent **CITY_ADMIN** scope follows **new primary** BL city; contact/default compatibility sync retained; **no** parent **`Business.cityId`** write (**5D1**).
 - **`assertBusinessParentCityInAdminScope`:** **deprecated** — mirror string check only; no active owner-equivalent callers.
 - **Applications:** approval scope remains **`application.cityId`** via **`assertCityInAdminScope`** (not BL visibility for approve gate).
 

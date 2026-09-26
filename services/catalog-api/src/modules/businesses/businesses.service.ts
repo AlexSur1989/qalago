@@ -84,13 +84,13 @@ import {
   businessCatalogDiscoveryCityScope,
   businessMapReadyBranchInCityScope,
 } from './business-discovery-city-membership.util';
+import { loadPrimaryCityPresentationByBusinessId } from '../../common/utils/business-primary-city-presentation.util';
 import { assertPublicCatalogBusinessStatus } from '../../common/utils/public-catalog-business-status.util';
 import { resolveCityContextLocationIds } from './business-discovery-city-context.util';
 import type { CatalogPostgisNearestRow } from './business-catalog-postgis-geo.query';
 
 const businessListSelect = {
   id: true,
-  cityId: true,
   categoryId: true,
   title: true,
   slug: true,
@@ -126,8 +126,7 @@ const businessListSelectForSearchRelevance = {
 
 const businessDetailInclude = {
   category: true,
-  city: { select: { id: true, slug: true, nameRu: true, nameKk: true, timezone: true } },
-};
+} satisfies Prisma.BusinessInclude;
 
 @Injectable()
 export class BusinessesService {
@@ -1164,7 +1163,6 @@ export class BusinessesService {
       },
       include: {
         category: true,
-        city: { select: { slug: true, nameRu: true, nameKk: true } },
         memberships: {
           where: { userId: user.id },
           select: { role: true, permissions: true, status: true },
@@ -1218,19 +1216,28 @@ export class BusinessesService {
     }
 
     const businessIds = items.map((entry) => entry.business.id);
-    const locationsByBusinessId = await loadBusinessLocationsGroupedByBusinessId(
-      this.prisma,
-      businessIds,
-    );
+    const [locationsByBusinessId, primaryCityByBusinessId] = await Promise.all([
+      loadBusinessLocationsGroupedByBusinessId(this.prisma, businessIds),
+      loadPrimaryCityPresentationByBusinessId(this.prisma, businessIds),
+    ]);
 
     return {
-      items: items.map((entry) => ({
-        ...entry,
-        business: normalizeFavoriteBusinessPhysical(
+      items: items.map((entry) => {
+        const physical = normalizeFavoriteBusinessPhysical(
           entry.business,
           locationsByBusinessId.get(entry.business.id) ?? [],
-        ),
-      })),
+        );
+        const city = primaryCityByBusinessId.get(entry.business.id);
+        return {
+          ...entry,
+          business: {
+            ...physical,
+            city: city
+              ? { slug: city.slug, nameRu: city.nameRu, nameKk: city.nameKk }
+              : null,
+          },
+        };
+      }),
     };
   }
 

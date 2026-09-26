@@ -23,6 +23,7 @@ import { MonetizationAccessService } from './monetization-access.service';
 import { PricingService } from './pricing.service';
 import { PurchaseIntegrityService } from './purchase-integrity.service';
 import { PackageSnapshotService } from './package-snapshot.service';
+import { resolveBusinessAuditCityId } from '../../common/utils/business-context-city.util';
 import { resolveCampaignMarketCityId } from './utils/campaign-market-city.util';
 
 @Injectable()
@@ -430,10 +431,7 @@ export class MonetizationService {
       },
     });
 
-    const business = await this.prisma.business.findUnique({
-      where: { id: campaign.businessId },
-      select: { cityId: true },
-    });
+    const auditCityId = await resolveBusinessAuditCityId(this.prisma, campaign.businessId);
 
     await this.auditLog.record({
       actor: user,
@@ -441,7 +439,7 @@ export class MonetizationService {
       resourceType: AuditResourceType.AD_CAMPAIGN,
       resourceId: campaignId,
       businessId: campaign.businessId,
-      cityId: business?.cityId ?? null,
+      cityId: auditCityId,
       metadata: {
         oldStatus: campaign.status,
         newStatus: AdCampaignStatus.PAUSED,
@@ -474,10 +472,7 @@ export class MonetizationService {
       },
     });
 
-    const business = await this.prisma.business.findUnique({
-      where: { id: campaign.businessId },
-      select: { cityId: true },
-    });
+    const auditCityId = await resolveBusinessAuditCityId(this.prisma, campaign.businessId);
 
     await this.auditLog.record({
       actor: user,
@@ -485,7 +480,7 @@ export class MonetizationService {
       resourceType: AuditResourceType.AD_CAMPAIGN,
       resourceId: campaignId,
       businessId: campaign.businessId,
-      cityId: business?.cityId ?? null,
+      cityId: auditCityId,
       metadata: {
         oldStatus: campaign.status,
         newStatus: status,

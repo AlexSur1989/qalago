@@ -83,35 +83,6 @@ describe('Stage 6.12A.9.4.4C2 — BusinessLocation-native integrity', () => {
     });
     if (!otherCity) return;
 
-    const slug = await createSlug('c2-city-mismatch');
-    const business = await prisma.business.create({
-      data: {
-        title: 'C2 city mismatch',
-        slug,
-        categoryId,
-        cityId: uralskCityId,
-        ownerId,
-        status: 'PENDING',
-      },
-    });
-    await prisma.businessLocation.create({
-      data: {
-        address: 'Branch addr',
-        businessId: business.id,
-        cityId: otherCity.id,
-        isPrimary: true,
-      },
-    });
-
-    try {
-      const summary = await runBusinessLocationIntegrity(prisma, 'AUDIT_ONLY');
-      expect(summary.parentCityMirrorMismatchCount).toBeGreaterThanOrEqual(1);
-      expect(summary.pass).toBe(false);
-    } finally {
-      await prisma.business.delete({ where: { id: business.id } });
-    }
-  });
-
   it('detects empty BL address in hygiene report', async () => {
     if (skip) return;
     const slug = await createSlug('c2-empty-bl-addr');
