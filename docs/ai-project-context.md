@@ -8,8 +8,7 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `5c1710fceb248852571609843d8958f01c2b3b61` — **6.12A.9.4.5E** docs closure (incl. checkpoint SHA align) |
-| **A.9.4.5E docs closure SHA** | `657cfc6f1ccad2cf469d0030ade0e0d9aab5146b` |
+| **6.12A.9.4.5 / 5E docs closure (canonical checkpoint)** | `657cfc6f1ccad2cf469d0030ade0e0d9aab5146b` — see **`docs/changelog.md`** (**6.12A.9.4.5E PASS** / umbrella **6.12A.9.4.5 PASS**); live repo tip = **`git rev-parse HEAD`** (may differ after docs-only housekeeping) |
 | **A.9.4.5D3 implementation SHA** | `7a153cdf497c711c3aeda2b60cc72588f50d7859` |
 | **A.9.4.5D1 implementation SHA** | `ffeffdc3d844a183e31f46d5f776c4b49e047209` (unchanged) |
 | **A.9.4.5D2 docs SHA** | `db82561a1dc101c1420a099a84ddb7547563f40d` |
