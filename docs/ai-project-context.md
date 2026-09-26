@@ -10,7 +10,7 @@
 |-------|--------|
 | **Last completed architecture decision gate** | **FUTURE EXTENSIBILITY ARCHITECTURE GATE — AGREED / DOCUMENTED** — **`docs/architecture/future-extensibility-contracts.md`** |
 | **F.4** | **CLOSED / PASS — PUBLIC BUSINESS PAGES FINALIZED** (Phases **0.1** → **2.1** + physical QA — **`docs/changelog.md`**) |
-| **F.5** | **Phase 0 PASS**; **Phase 1** checkpoint **`412887d577eab354255c8937f2d14963078f8ff9`**; **Phase 1.1 route-collision hotfix PASS** (middleware-only neutral compatibility; runtime smoke PASS — **`docs/changelog.md`**). **Phase 2 SEO not started.** **Physical/manual browser QA pending.** |
+| **F.5** | **Phase 0 PASS**; **Phase 1 implemented** (checkpoint **`412887d577eab354255c8937f2d14963078f8ff9`**); **Phase 1.1 PASS**; **Phase 1.2 multi-city locale-routing hotfix PASS**. Arbitrary post-locale segment = `citySlug`; only explicit `categories` / `search` shorthands insert the default city. **Phase 2 SEO not started. Physical/manual browser QA must resume.** |
 | **F.4 implementation SHA** | `52dfe1c4c32a906c964ee3e34470a511864faa84` (Phase 2); hotfix `678cb23a8e9004aa9be3aea170affaad68eb045e` |
 | **F.4 Phase 1 backend SHA** | `3bcd5cac785c5fbc9c5b5f623c96359645cf1854` |
 | **Last completed architecture contour** | **6.12A PASS — BUSINESSLOCATION ARCHITECTURE FINALIZED** (umbrella — see **`docs/changelog.md`** entry **2026-09-27**) |
@@ -41,7 +41,7 @@
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending (6.12A)** | **None** — contour closed (**5E** finalized) |
-| **Next** | **F.5 physical browser QA** (human, post–Phase 1.1); then **explicit approval** before **F.5 Phase 2** — **not auto-started** |
+| **Next** | Resume **F.5 physical browser QA** from the unknown-city case (post–Phase 1.2); then **explicit approval** before **F.5 Phase 2** — **not auto-started** |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -49,7 +49,7 @@
 
 **6.12A state:** **CLOSED** — BusinessLocation architecture finalized (**A.1–A.9.4.5E**). **Business** = brand; **BusinessLocation** = sole physical/city authority; retired **Business** physical columns including **`cityId`**; contact defaults on **Business** per policy. Grains and RBAC per **`docs/changelog.md`** umbrella entry **2026-09-27**. Dev **`qalago_dev`** baseline: **109 Business / 110 BL / 109 primary**; integrity PASS; migrations **47/47**. Pre-5D2 backup preserved: `infra/local-backups/qalago_dev_native_pg18_pre_5d2_business_cityid_retirement_20260926T131630Z.dump` (596125 bytes; uncommitted). **`a945e-*`** helpers remain local/untracked.
 
-**F.5 (Phase 1 + 1.1):** Canonical render tree **`app/[locale]/[citySlug]/…`** only; locale-neutral public URLs (**`/uralsk/…`**) are **middleware-only** compatibility redirects (no **`app/[citySlug]`** tree). Prefixed **`/ru/…`** / **`/kk/…`** SSR with URL-over-cookie. Contract: **`public-consumer-web.md`** § F.5. **Phase 2** (hreflang/locale sitemap/canonical SEO) **not started**. **Physical browser QA pending.**
+**F.5 (Phase 1 + 1.1 + 1.2):** Canonical render tree **`app/[locale]/[citySlug]/…`** only; locale-neutral public URLs (**`/uralsk/…`**) are **middleware-only** compatibility redirects (no **`app/[citySlug]`** tree). Prefixed **`/ru/…`** / **`/kk/…`** SSR with URL-over-cookie. An arbitrary second segment after a locale is a `citySlug`; middleware has no city allowlist. Only explicit `categories` / `search` shorthands insert Uralsk. Contract: **`public-consumer-web.md`** § F.5. **Phase 2** (hreflang/locale sitemap/canonical SEO) **not started**. **Physical browser QA must resume.**
 
 **Post-6.12A candidates (documented — not auto-started):** **F.5 Phase 2**; **6.12B** / Catalog Import; remaining contours — **`docs/changelog.md`** / architecture docs.
 

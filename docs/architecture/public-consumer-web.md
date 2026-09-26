@@ -4,7 +4,7 @@
 
 - Path: `apps/consumer-web`
 - Port: **3005** (`npm run dev:consumer`)
-- Stack: Next.js 15 App Router, React 19, RU/KK UI today via `qalago_locale` cookie on **locale-neutral** routes (F.4). **F.5 Phase 0** locks indexable **`/ru/`** / **`/kk/`** URL architecture — **contract only**; **implementation not started** (see § F.5).
+- Stack: Next.js 15 App Router, React 19. **F.5 Phases 1–1.2** implement indexable **`/ru/`** / **`/kk/`** URL routing with URL-authoritative locale; locale-neutral routes are compatibility entries selected by `qalago_locale` (see § F.5). Phase 2 SEO is not started.
 
 ## F.1 foundation
 
@@ -107,7 +107,7 @@ Static App Router segments (e.g. `categories/`, `search/`) take precedence over 
 
 ## F.5 locale SEO URL architecture
 
-**Status:** **F.5 PHASE 0 PASS — LOCALE SEO URL CONTRACT LOCKED** (docs only). **Product implementation not started** — do not treat `/ru/` or `/kk/` as live routes until F.5 Phase 1+ ships.
+**Status:** **F.5 PHASE 0 PASS — LOCALE SEO URL CONTRACT LOCKED**; **Phase 1 implemented**, **Phase 1.1 PASS**, **Phase 1.2 PASS**. `/ru/` and `/kk/` routing is live; Phase 2 SEO is not started.
 
 **Authority:** This section is the **canonical F.5 contract**. [api-contracts.md](./api-contracts.md) — no Catalog API changes required for locale routing.
 
@@ -138,6 +138,14 @@ First path segment is the **public locale** (lowercase, closed allowlist):
 ```
 
 Examples: `/ru/uralsk`, `/kk/uralsk/business/bar-code-51`.
+
+**Parsing invariant:** after a supported locale, the next arbitrary segment is
+`citySlug`. Middleware does not keep a city allowlist and does not use current
+backend city data to reinterpret it. Locale roots (`/ru`, `/kk`) insert the
+default city. The only locale-level default-city compatibility shorthands are
+`categories` and `search`, for example `/kk/categories` →
+`/kk/uralsk/categories`. `business` is not such a shorthand; canonical
+business URLs include the city segment.
 
 **Forbidden for indexable locale identity:**
 

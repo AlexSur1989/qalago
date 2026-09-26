@@ -8,10 +8,9 @@ export async function requireCity(citySlug: string) {
 }
 
 export async function requireCityCategories(citySlug: string) {
-  const [city, categories] = await Promise.all([
-    cachedFetchCity(citySlug),
-    cachedFetchCategories(citySlug),
-  ]);
-  if (!city) notFound();
+  // Validate the canonical city before dependent city-scoped requests.
+  // Otherwise an unknown city's categories 404 becomes an accidental 500.
+  const city = await requireCity(citySlug);
+  const categories = await cachedFetchCategories(city.slug);
   return { city, categories };
 }

@@ -10,8 +10,7 @@ import {
   isSupportedPublicLocale,
   type PublicLocale,
 } from './public-locale';
-import { DEFAULT_CITY_SLUG } from './public-config';
-import { isReservedCitySegment } from './reserved-segments';
+import { isDefaultCityLocaleShorthand } from './reserved-segments';
 
 export type MiddlewareLocaleRedirect =
   | { kind: 'none'; routeLocale?: PublicLocale }
@@ -27,16 +26,9 @@ function safeQueryFromUrl(searchParams: URLSearchParams): string {
   });
 }
 
-/** True when `/ru/...` was previously handled by misplaced `[citySlug]` compatibility pages. */
-function isMisplacedLocalePrefixedPath(parts: string[]): boolean {
-  if (parts.length < 2) return false;
-  const tail = parts[1]!;
-  if (tail === DEFAULT_CITY_SLUG) return false;
-  if (isReservedCitySegment(tail)) return true;
-  if (tail === 'business') return true;
-  // `/ru/{categorySlug}` without city segment (Phase 1 compatibility).
-  if (parts.length === 2) return true;
-  return false;
+/** Explicit `/ru|kk/{shorthand}` compatibility path with an omitted city. */
+function isDefaultCityLocaleShorthandPath(parts: string[]): boolean {
+  return parts.length === 2 && isDefaultCityLocaleShorthand(parts[1]!);
 }
 
 /**
@@ -77,7 +69,7 @@ export function resolveMiddlewareLocaleRedirect(
       };
     }
 
-    if (isMisplacedLocalePrefixedPath(parts)) {
+    if (isDefaultCityLocaleShorthandPath(parts)) {
       const tail = parts.slice(1);
       return {
         kind: 'permanent',

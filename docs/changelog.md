@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-09-27 — F.5 Phase 1.2 hotfix — multi-city locale routing corrected
+
+- **Status:** **F.5 PHASE 1.2 HOTFIX PASS — MULTI-CITY LOCALE ROUTING CORRECTED** (automated + dev/production runtime smoke PASS; **physical browser QA must resume**).
+- **Checkpoint:** this focused `fix(web): correct F.5 multi-city locale routing` commit (final SHA in handoff).
+- **Root cause:** Phase 1.1 middleware classified every supported-locale path with exactly two segments as a misplaced default-city path, so valid, future, and unknown city slugs were incorrectly nested under Uralsk.
+- **Summary:** Removed generic two-segment normalization. After `ru` / `kk`, an arbitrary next segment is always `citySlug`; middleware has no city allowlist and does not query Catalog API. Only explicit locale-level compatibility shorthands **`categories`** and **`search`** insert the default city. Locale root insertion and neutral compatibility remain unchanged. `/{locale}/business/{slug}` is not invented as a shorthand; canonical business URLs retain `/{locale}/{citySlug}/business/{businessSlug}`. Unknown cities now reach canonical city validation and return **404 without URL rewrite**; city validation runs before the dependent categories request so its API 404 cannot become an accidental 500.
+- **Verification:** focused F.5 Phase 1.2 routing tests **31 PASS**; full Consumer Web Vitest **17 files / 145 tests PASS** (F.5 Phase 1/1.1, F.2/F.3, F.4, mismatch/security, favicon included); typecheck and production build PASS; real dev and production requests verified Aktobe RU/KK, unknown-city RU/KK 404, explicit shorthands, Uralsk, neutral-cookie redirects, nested city routes, and no dynamic route collision.
+- **Deferred:** F.5 **Phase 2** (hreflang, locale sitemap expansion, canonical SEO) **not started**; physical/manual browser QA.
+- **Next:** Return to physical browser QA at the failed unknown-city scenario; explicit approval remains required before Phase 2.
+
+---
+
 ## 2026-09-27 — F.5 Phase 1.1 hotfix — Next.js route collision resolved
 
 - **Status:** **F.5 PHASE 1.1 HOTFIX PASS — NEXT.JS ROUTE COLLISION RESOLVED** (automated + **dev/production runtime smoke PASS**; **physical browser QA still pending**).

@@ -7,9 +7,7 @@ export function buildLocaleRootPrefixedPath(locale: PublicLocale): string {
   return withPublicLocalePrefix(locale, `/${DEFAULT_CITY_SLUG}`);
 }
 
-/**
- * Misplaced paths like `/ru/restaurants` (missing city) → insert default city.
- */
+/** Explicit shorthands like `/ru/categories` (missing city) → insert default city. */
 export function buildMisplacedLocalePrefixedPath(
   locale: PublicLocale,
   tailSegments: string[],

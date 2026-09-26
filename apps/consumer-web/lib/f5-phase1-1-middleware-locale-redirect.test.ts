@@ -4,6 +4,7 @@ import {
   joinRedirectTarget,
   resolveMiddlewareLocaleRedirect,
 } from './middleware-public-locale-redirect';
+import { DEFAULT_CITY_LOCALE_SHORTHANDS } from './reserved-segments';
 
 function resolve(
   pathname: string,
@@ -94,9 +95,54 @@ describe('F.5 Phase 1.1 middleware locale redirect hotfix', () => {
     expect(redirectTarget('/kk')).toBe('/kk/uralsk');
   });
 
-  it('15 misplaced supported locale path normalization', () => {
+  it('15 explicit default-city locale shorthands only', () => {
+    expect([...DEFAULT_CITY_LOCALE_SHORTHANDS]).toEqual(['categories', 'search']);
     expect(redirectTarget('/ru/categories')).toBe('/ru/uralsk/categories');
-    expect(redirectTarget('/kk/restaurants')).toBe('/kk/uralsk/restaurants');
+    expect(redirectTarget('/kk/categories')).toBe('/kk/uralsk/categories');
+    expect(redirectTarget('/ru/search')).toBe('/ru/uralsk/search');
+    expect(redirectTarget('/kk/search')).toBe('/kk/uralsk/search');
+  });
+
+  it('15a arbitrary second segment remains citySlug for current and future cities', () => {
+    for (const locale of ['ru', 'kk']) {
+      for (const citySlug of ['aktobe', 'almaty', 'astana', 'ne-sushestvuet']) {
+        const path = `/${locale}/${citySlug}`;
+        expect(redirectTarget(path)).toBeNull();
+        expect(resolve(path)).toMatchObject({ kind: 'none', routeLocale: locale });
+      }
+    }
+  });
+
+  it('15b business is not an invented default-city shorthand', () => {
+    expect(redirectTarget('/kk/business/example')).toBeNull();
+    expect(resolve('/kk/business/example')).toMatchObject({
+      kind: 'none',
+      routeLocale: 'kk',
+    });
+  });
+
+  it('15c nested canonical city routes pass through', () => {
+    for (const path of [
+      '/kk/aktobe/categories',
+      '/kk/aktobe/restaurants',
+      '/kk/aktobe/restaurants/cafes',
+      '/kk/aktobe/search',
+      '/kk/aktobe/business/example',
+      '/ru/aktobe/search',
+    ]) {
+      expect(redirectTarget(path)).toBeNull();
+    }
+  });
+
+  it('15d neutral city and unknown-city paths preserve the logical city', () => {
+    expect(redirectTarget('/aktobe', '', 'qalago_locale=kk')).toBe('/kk/aktobe');
+    expect(redirectTarget('/aktobe', '', 'qalago_locale=ru')).toBe('/ru/aktobe');
+    expect(redirectTarget('/ne-sushestvuet', '', 'qalago_locale=kk')).toBe(
+      '/kk/ne-sushestvuet',
+    );
+    expect(redirectTarget('/ne-sushestvuet', '', 'qalago_locale=ru')).toBe(
+      '/ru/ne-sushestvuet',
+    );
   });
 
   it('16 /businesses/{id} excluded from generic middleware redirect', () => {
