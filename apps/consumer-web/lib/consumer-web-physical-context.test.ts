@@ -42,7 +42,7 @@ describe('A.9.3.4 Consumer Web physical context', () => {
   });
 
   it('E — discovery card L2 href uses F.4 canonical path', () => {
-    const href = discoveryBusinessDetailHref('uralsk', {
+    const href = discoveryBusinessDetailHref('ru', 'uralsk', {
       id: 'b1',
       slug: 'brand-slug',
       title: 'T',
@@ -54,7 +54,7 @@ describe('A.9.3.4 Consumer Web physical context', () => {
       reviewCount: 0,
       contextLocationId: 'loc-l2',
     });
-    expect(href).toBe('/uralsk/business/brand-slug?locationId=loc-l2');
+    expect(href).toBe('/ru/uralsk/business/brand-slug?locationId=loc-l2');
   });
 
   it('F — detail API path with L2', () => {

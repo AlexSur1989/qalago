@@ -1,5 +1,6 @@
 import type { BusinessSummaryDto } from './catalog-api';
 import { canonicalBusinessPagePath } from './business-page-paths';
+import type { PublicLocale } from './public-locale';
 
 /** Fields safe to render on public discovery surfaces (F.2). */
 export type PublicBusinessCard = {
@@ -49,8 +50,9 @@ export function temporaryBusinessDetailPath(
 
 /** Discovery card → canonical F.4 business page (city-scoped). */
 export function discoveryBusinessDetailHref(
+  locale: PublicLocale,
   citySlug: string,
   card: PublicBusinessCard,
 ): string {
-  return canonicalBusinessPagePath(citySlug, card.slug, card.contextLocationId);
+  return canonicalBusinessPagePath(locale, citySlug, card.slug, card.contextLocationId);
 }

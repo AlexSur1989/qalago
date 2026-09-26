@@ -1,12 +1,8 @@
 import type { BreadcrumbCrumb } from '@/components/Breadcrumbs';
 import type { CategoryDto, CityDto, SubcategoryDto } from '@/lib/catalog-api';
 import { cityDisplayName } from '@/lib/localized-content';
-import {
-  UI_LABELS,
-  categoryDisplayName,
-  subcategoryDisplayName,
-  type AppLocale,
-} from '@/lib/locale';
+import { UI_LABELS, categoryDisplayName, subcategoryDisplayName } from '@/lib/locale';
+import type { PublicLocale } from '@/lib/public-locale';
 import {
   cityCategoriesPath,
   cityCategoryPath,
@@ -24,12 +20,12 @@ export function jsonLdFromCrumbs(crumbs: BreadcrumbCrumb[], currentPath: string)
   }));
 }
 
-export function breadcrumbsForCityCategories(city: CityDto, locale: AppLocale): BreadcrumbCrumb[] {
+export function breadcrumbsForCityCategories(city: CityDto, locale: PublicLocale): BreadcrumbCrumb[] {
   const labels = UI_LABELS[locale];
   const cityName = cityDisplayName(city, locale);
   return [
-    { label: SITE_LABEL, href: cityHomePath(city.slug) },
-    { label: cityName, href: cityHomePath(city.slug) },
+    { label: SITE_LABEL, href: cityHomePath(locale, city.slug) },
+    { label: cityName, href: cityHomePath(locale, city.slug) },
     { label: labels.categories },
   ];
 }
@@ -37,14 +33,14 @@ export function breadcrumbsForCityCategories(city: CityDto, locale: AppLocale): 
 export function breadcrumbsForCategory(
   city: CityDto,
   category: CategoryDto,
-  locale: AppLocale,
+  locale: PublicLocale,
 ): BreadcrumbCrumb[] {
   const cityName = cityDisplayName(city, locale);
   const catName = categoryDisplayName(category, locale);
   return [
-    { label: SITE_LABEL, href: cityHomePath(city.slug) },
-    { label: cityName, href: cityHomePath(city.slug) },
-    { label: UI_LABELS[locale].categories, href: cityCategoriesPath(city.slug) },
+    { label: SITE_LABEL, href: cityHomePath(locale, city.slug) },
+    { label: cityName, href: cityHomePath(locale, city.slug) },
+    { label: UI_LABELS[locale].categories, href: cityCategoriesPath(locale, city.slug) },
     { label: catName },
   ];
 }
@@ -52,18 +48,18 @@ export function breadcrumbsForCategory(
 export function breadcrumbsForCanonicalBusiness(
   city: CityDto,
   businessTitle: string,
-  locale: AppLocale,
+  locale: PublicLocale,
   category?: CategoryDto | null,
 ): BreadcrumbCrumb[] {
   const cityName = cityDisplayName(city, locale);
   const crumbs: BreadcrumbCrumb[] = [
-    { label: SITE_LABEL, href: cityHomePath(city.slug) },
-    { label: cityName, href: cityHomePath(city.slug) },
+    { label: SITE_LABEL, href: cityHomePath(locale, city.slug) },
+    { label: cityName, href: cityHomePath(locale, city.slug) },
   ];
   if (category) {
     crumbs.push({
       label: categoryDisplayName(category, locale),
-      href: cityCategoryPath(city.slug, category.slug),
+      href: cityCategoryPath(locale, city.slug, category.slug),
     });
   }
   crumbs.push({ label: businessTitle });
@@ -74,16 +70,16 @@ export function breadcrumbsForSubcategory(
   city: CityDto,
   category: CategoryDto,
   sub: SubcategoryDto,
-  locale: AppLocale,
+  locale: PublicLocale,
 ): BreadcrumbCrumb[] {
   const cityName = cityDisplayName(city, locale);
   const catName = categoryDisplayName(category, locale);
   const subName = subcategoryDisplayName(sub, locale);
   return [
-    { label: SITE_LABEL, href: cityHomePath(city.slug) },
-    { label: cityName, href: cityHomePath(city.slug) },
-    { label: UI_LABELS[locale].categories, href: cityCategoriesPath(city.slug) },
-    { label: catName, href: cityCategoryPath(city.slug, category.slug) },
+    { label: SITE_LABEL, href: cityHomePath(locale, city.slug) },
+    { label: cityName, href: cityHomePath(locale, city.slug) },
+    { label: UI_LABELS[locale].categories, href: cityCategoriesPath(locale, city.slug) },
+    { label: catName, href: cityCategoryPath(locale, city.slug, category.slug) },
     { label: subName },
   ];
 }

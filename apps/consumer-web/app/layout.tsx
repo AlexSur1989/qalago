@@ -5,7 +5,7 @@ import { JsonLd } from '@/components/JsonLd';
 import { PublicShell } from '@/components/PublicShell';
 import { cachedFetchCities } from '@/lib/catalog-cache';
 import { siteMetadataForLocale } from '@/lib/locale';
-import { getServerLocale } from '@/lib/locale-server';
+import { resolveLayoutLocale } from '@/lib/locale-server';
 import { webSiteJsonLd } from '@/lib/seo/json-ld';
 import { rootSiteMetadata } from '@/lib/seo/page-metadata';
 
@@ -18,13 +18,13 @@ const montserrat = Montserrat({
 export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getServerLocale();
+  const locale = await resolveLayoutLocale();
   const { title, description } = siteMetadataForLocale(locale);
   return rootSiteMetadata(locale, title, description);
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const locale = await getServerLocale();
+  const locale = await resolveLayoutLocale();
   const cities = await cachedFetchCities().catch(() => []);
   return (
     <html lang={locale} className={montserrat.variable}>

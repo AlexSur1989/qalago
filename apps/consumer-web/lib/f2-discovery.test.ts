@@ -58,11 +58,12 @@ const subs: SubcategoryDto[] = [
 
 describe('F.2 discovery', () => {
   it('root default city path', () => {
-    expect(defaultCityHomePath()).toBe('/uralsk');
-    expect(cityHomePath('astana')).toBe('/astana');
+    expect(defaultCityHomePath('ru')).toBe('/ru/uralsk');
+    expect(cityHomePath('kk', 'astana')).toBe('/kk/astana');
   });
 
   it('parseCitySlugFromPathname', () => {
+    expect(parseCitySlugFromPathname('/ru/uralsk/restaurants')).toBe('uralsk');
     expect(parseCitySlugFromPathname('/uralsk/restaurants')).toBe('uralsk');
     expect(parseCitySlugFromPathname('/categories')).toBeNull();
     expect(parseCitySlugFromPathname('/businesses/id')).toBeNull();
@@ -76,14 +77,14 @@ describe('F.2 discovery', () => {
 
   it('legacy category id maps to slug path', () => {
     const c = findCategoryById(categories, 'cat-1');
-    expect(c && cityCategoryPath('uralsk', c.slug)).toBe('/uralsk/restaurants');
+    expect(c && cityCategoryPath('ru', 'uralsk', c.slug)).toBe('/ru/uralsk/restaurants');
   });
 
   it('subcategory slug resolves under parent', () => {
     expect(findSubcategoryBySlug(subs, 'cafes', 'cat-1')?.id).toBe('sub-1');
     expect(findSubcategoryBySlug(subs, 'cafes', 'other')).toBeUndefined();
-    expect(citySubcategoryPath('uralsk', 'restaurants', 'cafes')).toBe(
-      '/uralsk/restaurants/cafes',
+    expect(citySubcategoryPath('ru', 'uralsk', 'restaurants', 'cafes')).toBe(
+      '/ru/uralsk/restaurants/cafes',
     );
   });
 
@@ -96,7 +97,7 @@ describe('F.2 discovery', () => {
   });
 
   it('city search path is shareable GET URL', () => {
-    expect(citySearchPath('uralsk', 'coffee')).toBe('/uralsk/search?q=coffee');
+    expect(citySearchPath('kk', 'uralsk', 'coffee')).toBe('/kk/uralsk/search?q=coffee');
   });
 
   it('RU/KK category labels; business title unchanged in public card', () => {
@@ -118,8 +119,8 @@ describe('F.2 discovery', () => {
     expect(temporaryBusinessDetailPath('b1', 'loc-l2')).toBe(
       '/businesses/b1?locationId=loc-l2',
     );
-    expect(discoveryBusinessDetailHref('uralsk', card)).toBe(
-      '/uralsk/business/autodrive?locationId=loc-l2',
+    expect(discoveryBusinessDetailHref('ru', 'uralsk', card)).toBe(
+      '/ru/uralsk/business/autodrive?locationId=loc-l2',
     );
   });
 

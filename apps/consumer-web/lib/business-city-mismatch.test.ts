@@ -91,9 +91,9 @@ describe('F.4 city mismatch parser (strict)', () => {
     expect(parsed?.citySlug).toBe('aktobe');
     expect(parsed).not.toHaveProperty('redirectUrl');
     expect(
-      canonicalBusinessPagePath(parsed!.citySlug, parsed!.businessSlug, parsed!.locationId),
+      canonicalBusinessPagePath('kk', parsed!.citySlug, parsed!.businessSlug, parsed!.locationId),
     ).toBe(
-      '/aktobe/business/a91-del-primary-87d3aaf452?locationId=cmugp1kz90003ulisj3hk139m',
+      '/kk/aktobe/business/a91-del-primary-87d3aaf452?locationId=cmugp1kz90003ulisj3hk139m',
     );
   });
 });

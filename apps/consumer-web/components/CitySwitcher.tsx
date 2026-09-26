@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation';
 import type { CityDto } from '@/lib/catalog-api';
 import { cityDisplayName } from '@/lib/localized-content';
 import { cityHomePath } from '@/lib/routes';
-import type { AppLocale, UiLabels } from '@/lib/locale';
+import type { UiLabels } from '@/lib/locale';
+import type { PublicLocale } from '@/lib/public-locale';
 
 export function CitySwitcher({
   cities,
@@ -14,7 +15,7 @@ export function CitySwitcher({
 }: {
   cities: CityDto[];
   currentCitySlug: string;
-  locale: AppLocale;
+  locale: PublicLocale;
   labels: UiLabels;
 }) {
   const router = useRouter();
@@ -30,7 +31,7 @@ export function CitySwitcher({
         className="city-switch__select"
         value={currentCitySlug}
         onChange={(e) => {
-          router.push(cityHomePath(e.target.value));
+          router.push(cityHomePath(locale, e.target.value));
         }}
       >
         {cities.map((c) => (

@@ -1,4 +1,7 @@
-/** F.4 canonical Consumer Web business URLs (path only, no origin). */
+import type { PublicLocale } from './public-locale';
+import { withPublicLocalePrefix } from './routes';
+
+/** F.4 canonical Consumer Web business URLs (path only, no origin). F.5 adds locale prefix. */
 
 export function parseLocationIdParam(raw: string | string[] | undefined): string | undefined {
   const value = Array.isArray(raw) ? raw[0] : raw;
@@ -19,11 +22,15 @@ export function buildBusinessBySlugRequestPath(
 
 /** Canonical page path; optional branch context via query (excluded from SEO canonical). */
 export function canonicalBusinessPagePath(
+  locale: PublicLocale,
   citySlug: string,
   businessSlug: string,
   locationId?: string | null,
 ): string {
-  const base = `/${encodeURIComponent(citySlug)}/business/${encodeURIComponent(businessSlug)}`;
+  const base = withPublicLocalePrefix(
+    locale,
+    `/${encodeURIComponent(citySlug)}/business/${encodeURIComponent(businessSlug)}`,
+  );
   const trimmed = locationId?.trim();
   if (!trimmed) return base;
   return `${base}?locationId=${encodeURIComponent(trimmed)}`;

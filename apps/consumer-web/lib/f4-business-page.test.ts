@@ -30,14 +30,14 @@ describe('F.4 canonical business routes', () => {
   });
 
   it('canonical page path uses citySlug + businessSlug', () => {
-    expect(canonicalBusinessPagePath('uralsk', 'coffee-house')).toBe(
-      '/uralsk/business/coffee-house',
+    expect(canonicalBusinessPagePath('ru', 'uralsk', 'coffee-house')).toBe(
+      '/ru/uralsk/business/coffee-house',
     );
   });
 
   it('preserves locationId in page path but not in SEO canonical', () => {
-    expect(canonicalBusinessPagePath('uralsk', 'coffee-house', 'bl-9')).toBe(
-      '/uralsk/business/coffee-house?locationId=bl-9',
+    expect(canonicalBusinessPagePath('kk', 'uralsk', 'coffee-house', 'bl-9')).toBe(
+      '/kk/uralsk/business/coffee-house?locationId=bl-9',
     );
     vi.stubEnv('NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL', 'https://qalago.kz');
     expect(canonicalForBusiness('uralsk', 'coffee-house')).toBe(
@@ -63,8 +63,8 @@ describe('F.4 canonical business routes', () => {
   });
 
   it('wrong-city normalization target path', () => {
-    const path = canonicalBusinessPagePath('aktobe', 'brand-x', 'loc-aktobe');
-    expect(path).toBe('/aktobe/business/brand-x?locationId=loc-aktobe');
+    const path = canonicalBusinessPagePath('kk', 'aktobe', 'brand-x', 'loc-aktobe');
+    expect(path).toBe('/kk/aktobe/business/brand-x?locationId=loc-aktobe');
   });
 
   it('discovery links use canonical F.4 paths', () => {
@@ -75,18 +75,18 @@ describe('F.4 canonical business routes', () => {
       address: 'A',
       contextLocationId: 'loc-2',
     });
-    expect(discoveryBusinessDetailHref('uralsk', card)).toBe(
-      '/uralsk/business/brand-slug?locationId=loc-2',
+    expect(discoveryBusinessDetailHref('ru', 'uralsk', card)).toBe(
+      '/ru/uralsk/business/brand-slug?locationId=loc-2',
     );
   });
 
   it('branch switch same city keeps citySlug', () => {
-    expect(canonicalBusinessPagePath('uralsk', 'brand', 'loc-a')).toContain('/uralsk/business/');
+    expect(canonicalBusinessPagePath('ru', 'uralsk', 'brand', 'loc-a')).toContain('/ru/uralsk/business/');
   });
 
   it('branch switch different city uses branch citySlug', () => {
-    expect(canonicalBusinessPagePath('aktobe', 'brand', 'loc-b')).toBe(
-      '/aktobe/business/brand?locationId=loc-b',
+    expect(canonicalBusinessPagePath('ru', 'aktobe', 'brand', 'loc-b')).toBe(
+      '/ru/aktobe/business/brand?locationId=loc-b',
     );
   });
 
@@ -132,8 +132,9 @@ describe('F.4 canonical business routes', () => {
         },
       ],
       'loc-2',
+      'ru',
     );
-    expect(path).toBe('/aktobe/business/brand?locationId=loc-2');
+    expect(path).toBe('/ru/aktobe/business/brand?locationId=loc-2');
   });
 
   it('sitemap dedupes business slug per city', () => {

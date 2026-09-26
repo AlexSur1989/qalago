@@ -1,44 +1,11 @@
-import type { Metadata } from 'next';
-import { Breadcrumbs } from '@/components/Breadcrumbs';
-import { BusinessBranchesSection } from '@/components/BusinessBranchesSection';
-import { BusinessShowcase } from '@/components/BusinessShowcase';
-import { JsonLd } from '@/components/JsonLd';
+import { buildSafePublicQueryString } from '@/lib/locale-path';
 import {
-  canonicalBusinessPagePath,
-  parseLocationIdParam,
-} from '@/lib/business-page-paths';
-import { loadCanonicalBusinessPageData } from '@/lib/business-page-data';
-import { cachedFetchCity } from '@/lib/catalog-cache';
-import { UI_LABELS } from '@/lib/locale';
-import { getServerLocale } from '@/lib/locale-server';
-import {
-  breadcrumbsForCanonicalBusiness,
-  jsonLdFromCrumbs,
-} from '@/lib/seo/discovery-breadcrumbs';
-import { breadcrumbListJsonLd } from '@/lib/seo/json-ld';
-import { metadataForCanonicalBusiness } from '@/lib/seo/page-metadata';
+  permanentRedirectMisplacedLocalePath,
+  permanentRedirectNeutralPublicPath,
+} from '@/lib/locale-neutral-redirect';
+import { isTopLevelLocaleSegment } from '@/lib/public-locale';
 
-export async function generateMetadata({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ citySlug: string; businessSlug: string }>;
-  searchParams: Promise<{ locationId?: string | string[] }>;
-}): Promise<Metadata> {
-  const { citySlug, businessSlug } = await params;
-  const locationId = parseLocationIdParam((await searchParams).locationId);
-  const locale = await getServerLocale();
-  const data = await loadCanonicalBusinessPageData({ citySlug, businessSlug, locationId });
-  return metadataForCanonicalBusiness(
-    citySlug,
-    businessSlug,
-    data.business.title,
-    data.business.shortDesc ?? data.business.description,
-    locale,
-  );
-}
-
-export default async function CanonicalBusinessPage({
+export default async function NeutralBusinessRedirect({
   params,
   searchParams,
 }: {
@@ -46,47 +13,12 @@ export default async function CanonicalBusinessPage({
   searchParams: Promise<{ locationId?: string | string[] }>;
 }) {
   const { citySlug, businessSlug } = await params;
-  const locationId = parseLocationIdParam((await searchParams).locationId);
-  const locale = await getServerLocale();
-  const labels = UI_LABELS[locale];
-
-  const data = await loadCanonicalBusinessPageData({ citySlug, businessSlug, locationId });
-  const city = await cachedFetchCity(citySlug);
-  const category = data.business.category
-    ? {
-        id: data.business.category.id,
-        title: data.business.category.title,
-        slug: data.business.category.slug,
-        nameRu: data.business.category.title,
-        nameKk: data.business.category.title,
-        sortOrder: 0,
-      }
-    : null;
-
-  const crumbs = breadcrumbsForCanonicalBusiness(
-    city!,
-    data.business.title,
-    locale,
-    category,
-  );
-  const currentPath = canonicalBusinessPagePath(citySlug, businessSlug);
-  const jsonLdItems = jsonLdFromCrumbs(crumbs, currentPath);
-
-  return (
-    <main className="page">
-      <Breadcrumbs items={crumbs} />
-      <JsonLd data={breadcrumbListJsonLd(jsonLdItems)} />
-      <BusinessShowcase business={data.business} locale={locale} labels={labels} />
-      <BusinessBranchesSection
-        locale={locale}
-        businessSlug={businessSlug}
-        branches={data.branches}
-        activeLocationId={data.activeLocationId}
-        labels={{
-          branchesTitle: labels.businessBranchesTitle,
-          primaryBadge: labels.businessPrimaryBranchBadge,
-        }}
-      />
-    </main>
+  const query = buildSafePublicQueryString(await searchParams);
+  if (isTopLevelLocaleSegment(citySlug)) {
+    permanentRedirectMisplacedLocalePath(citySlug, ['business', businessSlug]);
+  }
+  await permanentRedirectNeutralPublicPath(
+    `/${encodeURIComponent(citySlug)}/business/${encodeURIComponent(businessSlug)}`,
+    query,
   );
 }

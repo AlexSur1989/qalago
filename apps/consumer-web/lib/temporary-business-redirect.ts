@@ -2,12 +2,14 @@ import type { BusinessPublicDetailDto } from './catalog-api';
 import type { PublicBusinessLocation } from './public-business-location';
 import { activeLocationIdFromDetail } from './business-detail-display';
 import { canonicalBusinessPagePath } from './business-page-paths';
+import type { PublicLocale } from './public-locale';
 
-/** Legacy /businesses/{id} → F.4 canonical path (server redirect target). */
+/** Legacy /businesses/{id} → F.5 locale-prefixed canonical path (server redirect target). */
 export function resolveLegacyBusinessRedirectPath(
   business: BusinessPublicDetailDto,
   branches: PublicBusinessLocation[],
-  requestedLocationId?: string,
+  requestedLocationId: string | undefined,
+  locale: PublicLocale,
 ): string | null {
   const slug = business.slug?.trim();
   if (!slug) return null;
@@ -23,5 +25,5 @@ export function resolveLegacyBusinessRedirectPath(
   const locationForQuery =
     trimmedRequest && branch.id === trimmedRequest ? trimmedRequest : activeId ?? undefined;
 
-  return canonicalBusinessPagePath(branch.city.slug, slug, locationForQuery);
+  return canonicalBusinessPagePath(locale, branch.city.slug, slug, locationForQuery);
 }

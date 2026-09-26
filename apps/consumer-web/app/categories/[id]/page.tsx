@@ -2,6 +2,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { fetchCategories } from '@/lib/catalog-api';
 import { findCategoryById } from '@/lib/category-resolve';
 import { DEFAULT_CITY_SLUG } from '@/lib/public-config';
+import { getPreferenceLocaleFromCookies } from '@/lib/locale-preference';
 import { cityCategoryPath } from '@/lib/routes';
 
 export default async function LegacyCategoryByIdPage({
@@ -10,8 +11,9 @@ export default async function LegacyCategoryByIdPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const locale = await getPreferenceLocaleFromCookies();
   const categories = await fetchCategories(DEFAULT_CITY_SLUG);
   const category = findCategoryById(categories, id);
   if (!category) notFound();
-  permanentRedirect(cityCategoryPath(DEFAULT_CITY_SLUG, category.slug));
+  permanentRedirect(cityCategoryPath(locale, DEFAULT_CITY_SLUG, category.slug));
 }

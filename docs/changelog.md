@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-27 — F.5 Phase 1 — locale routing foundation
+
+- **Status:** **F.5 PHASE 1 IMPLEMENTED — LOCALE ROUTING FOUNDATION** (automated verification PASS; **physical/manual QA pending**).
+- **Scope:** **`apps/consumer-web` only.** **No** backend, Prisma, Flutter, Admin/Business Web, or F.5 Phase 2 SEO (hreflang/sitemap locale expansion).
+- **Summary:** Locale-prefixed public routes **`/ru/…`** / **`/kk/…`** for city discovery, categories, category/subcategory, search, canonical business page; **URL locale authoritative** over `qalago_locale` on prefixed routes (middleware **`x-qalago-route-locale`** + route params); locale-neutral paths remain **compatibility entry** → **permanent redirect** (cookie **`ru`/`kk`** or default **`ru`**); root **`/`** → **`/{locale}/uralsk`**; language switcher swaps locale segment + safe query; internal links/breadcrumbs/branches preserve locale; F.4 wrong-city redirect preserves locale; **`/businesses/{id}`** → direct locale-prefixed canonical; **`ru`/`kk`** top-level reserved.
+- **Automated verification:** consumer-web vitest **114 PASS** (incl. **`f5-phase1-locale-routing.test.ts`**); F.2/F.3/F.4/mismatch/favicon regressions updated; **`next build` PASS**.
+- **Deferred:** F.5 Phase 2 — hreflang, **x-default**, locale sitemap pairs, locale canonical metadata system; physical F.5 routing QA.
+- **Next:** **Physical/manual routing QA** (human); **explicit approval** before **F.5 Phase 2** — **not auto-started**.
+
+---
+
 ## 2026-09-27 — F.5 Phase 0 — locale SEO URL contract locked
 
 - **Status:** **F.5 PHASE 0 PASS — LOCALE SEO URL CONTRACT LOCKED**. **F.5 product implementation not started** (Phase 1+ requires explicit approval).

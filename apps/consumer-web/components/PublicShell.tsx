@@ -1,11 +1,14 @@
 'use client';
 
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { CitySwitcher } from '@/components/CitySwitcher';
 import type { CityDto } from '@/lib/catalog-api';
 import { legalPageUrl } from '@/lib/legal-links';
+import { parsePublicLocaleFromPathname } from '@/lib/locale-path';
+import { DEFAULT_PUBLIC_LOCALE } from '@/lib/public-locale';
 import { DEFAULT_CITY_SLUG } from '@/lib/public-config';
 import {
   cityCategoriesPath,
@@ -25,28 +28,35 @@ export function PublicShell({
 }) {
   const labels = UI_LABELS[locale];
   const pathname = usePathname() ?? '/';
+  const routeLocale = parsePublicLocaleFromPathname(pathname) ?? DEFAULT_PUBLIC_LOCALE;
   const citySlug = parseCitySlugFromPathname(pathname) ?? DEFAULT_CITY_SLUG;
 
   return (
     <div className="public-shell">
       <header className="public-shell__header">
         <div className="public-shell__brand">
-          <Link href={cityHomePath(citySlug)} className="public-shell__logo" aria-label={labels.navHome}>
+          <Link
+            href={cityHomePath(routeLocale, citySlug)}
+            className="public-shell__logo"
+            aria-label={labels.navHome}
+          >
             QalaGo
           </Link>
         </div>
         <nav className="public-shell__nav" aria-label={labels.mainNavAria}>
-          <Link href={cityHomePath(citySlug)}>{labels.navHome}</Link>
-          <Link href={cityCategoriesPath(citySlug)}>{labels.categories}</Link>
+          <Link href={cityHomePath(routeLocale, citySlug)}>{labels.navHome}</Link>
+          <Link href={cityCategoriesPath(routeLocale, citySlug)}>{labels.categories}</Link>
         </nav>
         <div className="public-shell__tools">
           <CitySwitcher
             cities={cities}
             currentCitySlug={citySlug}
-            locale={locale}
+            locale={routeLocale}
             labels={labels}
           />
-          <LocaleSwitcher locale={locale} labels={labels} />
+          <Suspense fallback={null}>
+            <LocaleSwitcher locale={locale} labels={labels} />
+          </Suspense>
         </div>
       </header>
       <div className="public-shell__content">{children}</div>

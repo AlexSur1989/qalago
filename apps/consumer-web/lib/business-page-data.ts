@@ -3,6 +3,7 @@ import { cachedFetchBusinessBySlug, cachedFetchCity, cachedFetchPublicBusinessLo
 import type { BusinessPublicDetailDto } from './catalog-api';
 import type { PublicBusinessLocation } from './public-business-location';
 import { canonicalBusinessPagePath } from './business-page-paths';
+import type { PublicLocale } from './public-locale';
 import { activeLocationIdFromDetail } from './business-detail-display';
 
 export type CanonicalBusinessPageData = {
@@ -16,6 +17,7 @@ export type CanonicalBusinessPageData = {
 
 /** Shared loader for F.4 page + metadata (409 → permanent redirect, 404 → notFound). */
 export async function loadCanonicalBusinessPageData(input: {
+  locale: PublicLocale;
   citySlug: string;
   businessSlug: string;
   locationId?: string;
@@ -34,6 +36,7 @@ export async function loadCanonicalBusinessPageData(input: {
   if (result.status === 'city_mismatch') {
     permanentRedirect(
       canonicalBusinessPagePath(
+        input.locale,
         result.payload.citySlug,
         result.payload.businessSlug,
         result.payload.locationId,

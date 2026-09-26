@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { parseLocationIdParam } from '@/lib/business-page-paths';
 import { cachedFetchBusiness, cachedFetchPublicBusinessLocations } from '@/lib/catalog-cache';
+import { getPreferenceLocaleFromCookies } from '@/lib/locale-preference';
 import { metadataForTemporaryBusinessDetail } from '@/lib/seo/page-metadata';
 import { resolveLegacyBusinessRedirectPath } from '@/lib/temporary-business-redirect';
 
@@ -31,7 +32,8 @@ export default async function LegacyBusinessDetailRedirect({
   if (!business) notFound();
 
   const branches = await cachedFetchPublicBusinessLocations(id);
-  const target = resolveLegacyBusinessRedirectPath(business, branches, locationId);
+  const locale = await getPreferenceLocaleFromCookies();
+  const target = resolveLegacyBusinessRedirectPath(business, branches, locationId, locale);
   if (!target) notFound();
 
   permanentRedirect(target);

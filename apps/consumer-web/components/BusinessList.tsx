@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import type { PublicBusinessCard } from '@/lib/public-business';
 import { discoveryBusinessDetailHref } from '@/lib/public-business';
-import { UI_LABELS, type AppLocale } from '@/lib/locale';
+import { UI_LABELS } from '@/lib/locale';
+import type { PublicLocale } from '@/lib/public-locale';
 import { getApiOrigin } from '@/lib/public-config';
 
 const API_ORIGIN = getApiOrigin();
@@ -19,7 +20,7 @@ export function BusinessList({
 }: {
   citySlug: string;
   items: PublicBusinessCard[];
-  locale: AppLocale;
+  locale: PublicLocale;
 }) {
   const labels = UI_LABELS[locale];
   if (!items.length) {
@@ -31,7 +32,7 @@ export function BusinessList({
         const cover = coverSrc(b.coverImageUrl);
         return (
           <li key={b.id}>
-            <Link href={discoveryBusinessDetailHref(citySlug, b)} className="biz-card">
+            <Link href={discoveryBusinessDetailHref(locale, citySlug, b)} className="biz-card">
               <div className="biz-card__media">
                 {cover ? (
                   // eslint-disable-next-line @next/next/no-img-element
