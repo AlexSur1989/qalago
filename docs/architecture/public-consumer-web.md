@@ -47,8 +47,9 @@ Static App Router segments (e.g. `categories/`, `search/`) take precedence over 
 
 ### Business links (temporary → F.4)
 
-- **Current (temporary):** cards link to **`/businesses/{businessId}`**; when the API supplies **`contextLocationId`**, href adds **`?locationId=<contextLocationId>`** (A.9.3.4).
-- **F.4 canonical (documented, not implemented):** **`/{citySlug}/business/{businessSlug}`** with optional **`?locationId=`** — [future-extensibility-contracts.md](./future-extensibility-contracts.md) § Contract 1 + **Phase 0.1 addendum** (city membership, city-default branch, redirects, canonical). Permanent redirect from ID paths when indexable pages ship.
+- **Current (temporary):** cards link to **`/businesses/{businessId}`**; when the API supplies **`contextLocationId`**, href adds **`?locationId=<contextLocationId>`** (A.9.3.4). Server fetch: **`GET /businesses/:id?locationId=`**.
+- **F.4 Phase 1 (backend, IMPLEMENTED):** Catalog API **`GET /businesses/by-slug/:businessSlug?citySlug=&locationId=`** — city membership, city-default branch, wrong-city **`409 BUSINESS_LOCATION_CITY_MISMATCH`**, foreign/invalid **`locationId`** safety — see [api-contracts.md](./api-contracts.md). **No Consumer Web route yet.**
+- **F.4 Phase 2 (not implemented):** canonical page **`/{citySlug}/business/{businessSlug}`** with optional **`?locationId=`** — [future-extensibility-contracts.md](./future-extensibility-contracts.md) § Contract 1 + **Phase 0.1 addendum** (308/301 normalize, indexable canonical/sitemap). Permanent redirect from ID paths when indexable pages ship.
 
 ### Cache / rendering
 
@@ -102,4 +103,4 @@ Static App Router segments (e.g. `categories/`, `search/`) take precedence over 
 
 ## BusinessLocation (6.12A)
 
-Database foundation (A.1): `BusinessLocation` table exists; **no consumer API or URL changes yet**. Temporary **`/businesses/{id}`** (F.3 noindex) remains until **F.4** after location backfill (A.2+). See [business-location.md](./business-location.md).
+**6.12A** location architecture is live. Temporary **`/businesses/{id}`** (F.3 noindex) remains until **F.4 Phase 2** canonical slug pages. Slug+city detail API: **`GET /businesses/by-slug/:businessSlug`**. See [business-location.md](./business-location.md).

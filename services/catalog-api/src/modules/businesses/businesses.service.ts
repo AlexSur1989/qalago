@@ -56,7 +56,17 @@ import { AuditLogService } from '../audit-log/audit-log.service';
 import { changedFieldsFromDto, toMembershipRole } from '../audit-log/audit-log.util';
 import { catalogUsesBlViewportPostgisPaging } from './catalog-bbox-routing.util';
 import { assertCatalogGeoQuery } from '../../common/utils/catalog-geo-query.util';
-import { CreateBusinessDto, ListBusinessesQueryDto, UpdateBusinessDto } from './dto/business.dto';
+import {
+  CreateBusinessDto,
+  GetBusinessBySlugQueryDto,
+  ListBusinessesQueryDto,
+  UpdateBusinessDto,
+} from './dto/business.dto';
+import {
+  F4NoCityMembershipError,
+  resolveF4PublicActiveLocation,
+} from './business-f4-public-location-resolution.util';
+import { BusinessLocationCityMismatchException } from './business-location-city-mismatch.exception';
 import {
   assertValidBusinessCoordinatePair,
   isOptionalBusinessCoordinatePairValid,
@@ -1090,10 +1100,70 @@ export class BusinessesService {
       throw new NotFoundException('Business not found');
     }
 
-    const locations = await this.prisma.businessLocation.findMany({
-      where: { businessId: id },
+    const locations = await this.loadBusinessLocationsForDetail(id);
+    return this.composePublicBusinessDetail(business, locations, options?.locationId);
+  }
+
+  /** F.4 Phase 1 — city-routed public detail by Business.slug (does not change GET /businesses/:id). */
+  async findOneBySlugAndCity(businessSlug: string, query: GetBusinessBySlugQueryDto) {
+    let cityId: string;
+    try {
+      cityId = await this.cityScope.resolveCityId({ citySlug: query.citySlug });
+    } catch {
+      throw new NotFoundException('City not found');
+    }
+
+    const business = await this.prisma.business.findFirst({
+      where: { slug: businessSlug, status: BusinessStatus.ACTIVE },
+      include: businessDetailInclude,
+    });
+    if (!business) {
+      throw new NotFoundException('Business not found');
+    }
+
+    const locations = await this.loadBusinessLocationsForDetail(business.id);
+
+    let resolution;
+    try {
+      resolution = resolveF4PublicActiveLocation(locations, cityId, query.locationId);
+    } catch (err) {
+      if (err instanceof F4NoCityMembershipError) {
+        throw new NotFoundException('Business not found');
+      }
+      throw err;
+    }
+
+    if (resolution.kind === 'wrong_city') {
+      const actualCity = await this.prisma.city.findUnique({
+        where: { id: resolution.actualCityId },
+        select: { slug: true, isActive: true },
+      });
+      if (!actualCity?.isActive) {
+        throw new NotFoundException('Business not found');
+      }
+      throw new BusinessLocationCityMismatchException({
+        businessSlug,
+        locationId: resolution.locationId,
+        citySlug: actualCity.slug,
+      });
+    }
+
+    return this.composePublicBusinessDetail(business, locations, resolution.locationId);
+  }
+
+  private async loadBusinessLocationsForDetail(businessId: string) {
+    return this.prisma.businessLocation.findMany({
+      where: { businessId },
       orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
     });
+  }
+
+  private async composePublicBusinessDetail(
+    business: Prisma.BusinessGetPayload<{ include: typeof businessDetailInclude }>,
+    locations: Awaited<ReturnType<BusinessesService['loadBusinessLocationsForDetail']>>,
+    requestedLocationId?: string | null,
+  ) {
+    const id = business.id;
 
     const [galleryPreview, catalogPreview, promotionsPreview, reviewsPreview, ratingMetrics] =
       await Promise.all([
@@ -1127,7 +1197,7 @@ export class BusinessesService {
     const withPhysical = attachEffectivePhysicalToDetail(
       withPreviews,
       locations,
-      options?.locationId,
+      requestedLocationId,
     );
 
     const withNormalizedTopLevel = applyPublicPhysicalReadFromEffectivePhysical(withPhysical);

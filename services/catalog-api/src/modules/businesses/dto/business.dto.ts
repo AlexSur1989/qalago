@@ -246,3 +246,13 @@ export class GetBusinessDetailQueryDto {
   @IsString()
   locationId?: string;
 }
+
+/** F.4 Phase 1 — public slug detail with required city context. */
+export class GetBusinessBySlugQueryDto {
+  @IsString()
+  citySlug!: string;
+
+  @IsOptional()
+  @IsString()
+  locationId?: string;
+}

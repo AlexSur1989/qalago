@@ -308,7 +308,7 @@ Env: `QALAGO_GEOCODING_PROVIDER` = `mock` (default) \| `maptiler`; `MAPTILER_API
 >
 > **Flutter consumption (A.7.9.5, IMPLEMENTED):** Mobile parses **`contextLocationId`** on catalog list/search/nearby/promotion payloads and opens **`GET /businesses/:id?locationId=<contextLocationId>`** via existing detail routing. Map marker taps continue **`locationId`** only (not list **`contextLocationId`**). Favorites/reviews/analytics remain **Business.id**.
 >
-> **Consumer Web consumption (A.9.3.4, IMPLEMENTED):** **`apps/consumer-web`** parses list **`contextLocationId`**, links temporary detail **`/businesses/{id}?locationId=`**, and fetches **`GET /businesses/:id?locationId=`** (server-side). No context → primary/effective branch. Detail remains **noindex** (F.3); slug/branch SEO deferred **F.4**. No Web map/promotions/favorites yet.
+> **Consumer Web consumption (A.9.3.4, IMPLEMENTED):** **`apps/consumer-web`** parses list **`contextLocationId`**, links temporary detail **`/businesses/{id}?locationId=`**, and fetches **`GET /businesses/:id?locationId=`** (server-side). No context → primary/effective branch. Detail remains **noindex** (F.3). **F.4 Phase 1** backend **`GET /businesses/by-slug/:businessSlug?citySlug=`** is ready; canonical **`/{citySlug}/business/{businessSlug}`** page and SEO are **F.4 Phase 2** (not implemented). No Web map/promotions/favorites yet.
 
 ### GET /businesses
 
@@ -377,13 +377,47 @@ Optional `latitude`/`longitude` (pair validated together; ranges enforced; rejec
 
 Platform admin: optional `categoryId`, `subcategoryIds`. Reconciles invalid subs on category change.
 
+### GET /businesses/by-slug/:businessSlug
+
+**F.4 Phase 1 — IMPLEMENTED.** Public business detail for future canonical Consumer Web route **`/{citySlug}/business/{businessSlug}`** (page not implemented). Resolves **`Business.slug`** + required **`citySlug`** + optional **`locationId`**; response shape matches **`GET /businesses/:id`** (same **`composePublicBusinessDetail`** — identity, slug, previews, **`effectivePhysical`**, **`effectiveMedia`**, **`effectiveCatalog`**, **`effectivePromotions`**, reviews/rating previews). **No** `:id`/slug overload.
+
+| Query | Required | Semantics |
+|-------|----------|-----------|
+| **`citySlug`** | yes | Resolved via existing public city authority; unknown/inactive city → **404**. |
+| **`locationId`** | no | Optional **`BusinessLocation.id`** for branch context (see rules below). |
+
+**Business resolution:** exact **`Business.slug`**; only **`ACTIVE`** (same public visibility as **`GET /businesses/:id`**). Unknown slug or non-public business → **404** (no status leak).
+
+**City membership:** at least one eligible public **`BusinessLocation`** for this business in the resolved city; else **404**. No fallback to primary in another city.
+
+**`locationId` absent:** active branch chosen only among eligible locations in **`citySlug`**: (1) global **primary** if in that city; else (2) deterministic city context — **`isPrimary DESC`**, **`createdAt ASC`**, **`id ASC`** (A.7.9.3A / Phase 0.1 Rule 4).
+
+**`locationId` present — same city, owned, eligible:** that branch is **`activeLocationId`**; **`effective*`** use it.
+
+**`locationId` present — owned, eligible, wrong city:** **409 Conflict** with stable machine-readable body (Consumer Web performs **308/301** later — API does not redirect):
+
+```json
+{
+  "statusCode": 409,
+  "code": "BUSINESS_LOCATION_CITY_MISMATCH",
+  "message": "Business location belongs to another city",
+  "businessSlug": "…",
+  "locationId": "…",
+  "citySlug": "<actual public city slug>"
+}
+```
+
+**Foreign `locationId`** (another business), invalid/malformed, inactive/non-public, or nonexistent: **no leak** — resolve as if **`locationId`** omitted (city-default Rule 4).
+
+**Security:** same public DTO boundaries as **`GET /businesses/:id`**; hidden media/promotions/reviews excluded per existing rules.
+
 ### GET /businesses/:id
 
 Public business detail summary (Stage 5G). Returns core business fields plus **bounded previews** — not full collections:
 
 Query (Stage 6.12A.7.6, additive): optional **`locationId`** = `BusinessLocation.id` for the requested business. When omitted, **primary** branch is the active physical context. When `locationId` is unknown or belongs to another business, response falls back to **this business’s primary** location (no cross-business physical data).
 
-> **F.4 (documented, not implemented):** City-routed Consumer Web pages **`/{citySlug}/business/{businessSlug}`** use **city-context** branch rules (membership **404**, city-default without query, wrong-city **308/301** normalize) — see [future-extensibility-contracts.md](./future-extensibility-contracts.md) § Contract 1 Phase 0.1 addendum. Expect a **separate public slug + `citySlug` resolution** endpoint; **this** `:id` route semantics are unchanged unless explicitly revised in a future stage.
+> **F.4 city-routed pages:** stricter **citySlug + slug** resolution lives on **`GET /businesses/by-slug/:businessSlug`** (Phase 0.1 addendum). **This** `:id` route keeps **global-primary** fallback when **`locationId`** is omitted — unchanged for legacy/mobile/temp Web clients.
 
 Response includes optional `subcategories[]` (active public shape) when assigned. Stage 6.8C.1.
 

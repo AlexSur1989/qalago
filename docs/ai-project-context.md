@@ -10,6 +10,7 @@
 |-------|--------|
 | **Last completed architecture decision gate** | **FUTURE EXTENSIBILITY ARCHITECTURE GATE — AGREED / DOCUMENTED** — **`docs/architecture/future-extensibility-contracts.md`** |
 | **F.4 Phase 0.1** | **PASS — MULTI-CITY PUBLIC BUSINESS URL CONTRACT LOCKED** (same doc, Contract 1 addendum) |
+| **F.4 Phase 1** | **PASS — PUBLIC BUSINESS SLUG/CITY RESOLUTION BACKEND** (`GET /businesses/by-slug/:businessSlug`) |
 | **Last completed architecture contour** | **6.12A PASS — BUSINESSLOCATION ARCHITECTURE FINALIZED** (umbrella — see **`docs/changelog.md`** entry **2026-09-27**) |
 | **6.12A.9.4.5E docs closure (canonical checkpoint)** | `657cfc6f1ccad2cf469d0030ade0e0d9aab5146b` |
 | **A.9.4.5D3 implementation SHA** | `7a153cdf497c711c3aeda2b60cc72588f50d7859` |
@@ -38,7 +39,7 @@
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending (6.12A)** | **None** — contour closed (**5E** finalized) |
-| **Next** | **Explicit approval** for **F.4 backend** (public **slug + citySlug + optional locationId** resolution) — **F.4 implementation not started** |
+| **Next** | **Explicit approval** for **F.4 Phase 2** Consumer Web canonical Business page — **not implemented** |
 
 **F.4 Phase 0.1 (locked):** city-routed default branch, city membership **404**, wrong-city **`locationId`** redirect, foreign/invalid normalization, canonical excludes query — **`docs/architecture/future-extensibility-contracts.md`** § Contract 1 addendum.
 
@@ -92,7 +93,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **6.12A.9.3.4 PASS (physical QA finalized)** — Consumer Web discovery/detail physical context; **QA-001 CLOSED**.
 - **6.12A.9.3.5 PASS (physical QA finalized)** — Business Web permission-safe profile PATCH; primary-branch UX; hours-only MANAGER scope verified; closes **`A.9.3.4+`** owner slice; central audit **P1 CLOSED**.
 - **6.12A.9.4.0 PASS (policy gate)** — legacy physical retirement policies & invariants frozen; **`docs/architecture/business-location.md`** § **9.4.0**; **F.4** not blocked on column drop.
-- **F.4** — URLs + showcase contracts + **Phase 0.1 multi-city semantics** locked; **implementation not started** — backend slug/city resolution next after explicit approval.
+- **F.4** — **Phase 1 backend** slug + **`citySlug`** + optional **`locationId`** resolution **IMPLEMENTED**; **Phase 2** canonical Consumer Web page **not started**.
 
 ## BusinessLocation track
 
@@ -251,7 +252,7 @@ Future architecture should allow **backend/admin-central configuration** of cons
 - **A.9.4.5** — **`Business.cityId`** retirement — **CLOSED** (**5A–5E**); physical/manual QA **PASS** (**5E**).
 - **6.12A (umbrella)** — **CLOSED** — BusinessLocation architecture finalized (changelog **2026-09-27**).
 - **A.8.1 test debt** — **CLOSED in 5B** (branch **`businessLocationId`** contract spec).
-- **F.4** — Consumer Web business/branch URLs & SEO; contracts locked (**future-extensibility-contracts.md**); **implementation not started**.
+- **F.4** — Backend slug/city detail **done**; Consumer Web canonical page & SEO **Phase 2** pending approval.
 - Post **6.12A:** User contour audit, Business Web owner contour, Admin Web contour, Admin Catalog/CMS, centralized Home config, Catalog Import, QalaGo AI, remaining Consumer Web, production monetization, analytics UX, role-based E2E, security/legal/release — **not** current track unless explicitly staged.
 
 ## Context maintenance

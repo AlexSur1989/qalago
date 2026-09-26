@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-09-27 — F.4 Phase 1 public business slug/city resolution (backend)
+
+- **Status:** **F.4 PHASE 1 PASS — PUBLIC BUSINESS SLUG/CITY RESOLUTION BACKEND**.
+- **Scope:** **`services/catalog-api`** — explicit public slug endpoint; shared detail composition; focused tests; contract docs. **No** Consumer Web page, SEO, Flutter, map, Admin/Business Web, schema migration, or **`Business.cityId`**.
+- **Summary:** **`GET /api/v1/businesses/by-slug/:businessSlug?citySlug=`** (required) + optional **`locationId`**. Resolves **`Business.slug`** + city + branch per Phase 0.1: membership **404**; city-default (**primary in city**, else A.7.9.3A ordering); same-city **`locationId`** → **`effective*`**; wrong-city owned **`locationId`** → **409** **`BUSINESS_LOCATION_CITY_MISMATCH`** with public **`citySlug`**; foreign/invalid **`locationId`** → city-default without leak. Refactored **`composePublicBusinessDetail`** shared with **`GET /businesses/:id`** (ID route semantics unchanged). Tests: **`business-f4-public-location-resolution.util.spec.ts`**, **`stage-6-12a-f4-slug-city-detail.spec.ts`**.
+- **Deferred:** **F.4 Phase 2** Consumer Web canonical **`/{citySlug}/business/{businessSlug}`** page, redirects, indexable SEO — **explicit approval required**.
+- **Next:** **F.4 Phase 2** Consumer Web canonical Business page — **not auto-started**.
+
+---
+
 ## 2026-09-27 — F.4 Phase 0.1 multi-city public Business URL contract
 
 - **Status:** **F.4 PHASE 0.1 PASS — MULTI-CITY PUBLIC BUSINESS URL CONTRACT LOCKED**.

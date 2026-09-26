@@ -8,6 +8,7 @@ import { BusinessTeamService } from './business-team.service';
 import { BusinessPublicContentService } from './business-public-content.service';
 import {
   CreateBusinessDto,
+  GetBusinessBySlugQueryDto,
   GetBusinessDetailQueryDto,
   ListBusinessesQueryDto,
   UpdateBusinessDto,
@@ -156,6 +157,16 @@ export class BusinessesController {
     @Param('invitationId') invitationId: string,
   ) {
     return this.teamService.revokeInvitation(user, businessId, invitationId);
+  }
+
+  /** F.4 Phase 1 — explicit slug + city context (must not collide with `:id`). */
+  @Public()
+  @Get('by-slug/:businessSlug')
+  findOneBySlug(
+    @Param('businessSlug') businessSlug: string,
+    @Query() query: GetBusinessBySlugQueryDto,
+  ) {
+    return this.businessesService.findOneBySlugAndCity(businessSlug, query);
   }
 
   @Public()
