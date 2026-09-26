@@ -48,7 +48,7 @@ Static App Router segments (e.g. `categories/`, `search/`) take precedence over 
 ### Business links (temporary → F.4)
 
 - **Current (temporary):** cards link to **`/businesses/{businessId}`**; when the API supplies **`contextLocationId`**, href adds **`?locationId=<contextLocationId>`** (A.9.3.4).
-- **F.4 canonical (documented, not implemented):** **`/{citySlug}/business/{businessSlug}`** with optional **`?locationId=`** — see [future-extensibility-contracts.md](./future-extensibility-contracts.md) § Contract 1. Permanent redirect from ID paths when indexable pages ship.
+- **F.4 canonical (documented, not implemented):** **`/{citySlug}/business/{businessSlug}`** with optional **`?locationId=`** — [future-extensibility-contracts.md](./future-extensibility-contracts.md) § Contract 1 + **Phase 0.1 addendum** (city membership, city-default branch, redirects, canonical). Permanent redirect from ID paths when indexable pages ship.
 
 ### Cache / rendering
 

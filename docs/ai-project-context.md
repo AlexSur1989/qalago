@@ -9,6 +9,7 @@
 | Field | Value |
 |-------|--------|
 | **Last completed architecture decision gate** | **FUTURE EXTENSIBILITY ARCHITECTURE GATE — AGREED / DOCUMENTED** — **`docs/architecture/future-extensibility-contracts.md`** |
+| **F.4 Phase 0.1** | **PASS — MULTI-CITY PUBLIC BUSINESS URL CONTRACT LOCKED** (same doc, Contract 1 addendum) |
 | **Last completed architecture contour** | **6.12A PASS — BUSINESSLOCATION ARCHITECTURE FINALIZED** (umbrella — see **`docs/changelog.md`** entry **2026-09-27**) |
 | **6.12A.9.4.5E docs closure (canonical checkpoint)** | `657cfc6f1ccad2cf469d0030ade0e0d9aab5146b` |
 | **A.9.4.5D3 implementation SHA** | `7a153cdf497c711c3aeda2b60cc72588f50d7859` |
@@ -37,7 +38,9 @@
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending (6.12A)** | **None** — contour closed (**5E** finalized) |
-| **Next** | **Explicit approval required** before implementation work (**F.4** candidate — not auto-started) |
+| **Next** | **Explicit approval** for **F.4 backend** (public **slug + citySlug + optional locationId** resolution) — **F.4 implementation not started** |
+
+**F.4 Phase 0.1 (locked):** city-routed default branch, city membership **404**, wrong-city **`locationId`** redirect, foreign/invalid normalization, canonical excludes query — **`docs/architecture/future-extensibility-contracts.md`** § Contract 1 addendum.
 
 **Future extensibility gate:** **AGREED / DOCUMENTED** — public URL + **NavigationTarget**, F.4 typed showcase, Event/Promotion + editorial boundaries, config split, lifecycle/media/favorites/notification/analytics/API rules — details in **`docs/architecture/future-extensibility-contracts.md`**. **No product implementation** in this gate.
 
@@ -89,7 +92,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **6.12A.9.3.4 PASS (physical QA finalized)** — Consumer Web discovery/detail physical context; **QA-001 CLOSED**.
 - **6.12A.9.3.5 PASS (physical QA finalized)** — Business Web permission-safe profile PATCH; primary-branch UX; hours-only MANAGER scope verified; closes **`A.9.3.4+`** owner slice; central audit **P1 CLOSED**.
 - **6.12A.9.4.0 PASS (policy gate)** — legacy physical retirement policies & invariants frozen; **`docs/architecture/business-location.md`** § **9.4.0**; **F.4** not blocked on column drop.
-- **F.4** — public Business URLs + showcase **architecturally unblocked** (contracts in **`future-extensibility-contracts.md`**); **implementation not started** — explicit approval required.
+- **F.4** — URLs + showcase contracts + **Phase 0.1 multi-city semantics** locked; **implementation not started** — backend slug/city resolution next after explicit approval.
 
 ## BusinessLocation track
 

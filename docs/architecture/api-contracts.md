@@ -383,6 +383,8 @@ Public business detail summary (Stage 5G). Returns core business fields plus **b
 
 Query (Stage 6.12A.7.6, additive): optional **`locationId`** = `BusinessLocation.id` for the requested business. When omitted, **primary** branch is the active physical context. When `locationId` is unknown or belongs to another business, response falls back to **this business’s primary** location (no cross-business physical data).
 
+> **F.4 (documented, not implemented):** City-routed Consumer Web pages **`/{citySlug}/business/{businessSlug}`** use **city-context** branch rules (membership **404**, city-default without query, wrong-city **308/301** normalize) — see [future-extensibility-contracts.md](./future-extensibility-contracts.md) § Contract 1 Phase 0.1 addendum. Expect a **separate public slug + `citySlug` resolution** endpoint; **this** `:id` route semantics are unchanged unless explicitly revised in a future stage.
+
 Response includes optional `subcategories[]` (active public shape) when assigned. Stage 6.8C.1.
 
 Add **`activeLocationId`** (nullable), **`effectivePhysical`**, and **`effectiveMedia`** (Stage 6.12A.7.7.3) — server-resolved branch context for detail UI:

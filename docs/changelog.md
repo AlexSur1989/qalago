@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-09-27 — F.4 Phase 0.1 multi-city public Business URL contract
+
+- **Status:** **F.4 PHASE 0.1 PASS — MULTI-CITY PUBLIC BUSINESS URL CONTRACT LOCKED**.
+- **Scope:** **Documentation only.** **No** runtime/API/schema/DB/product changes.
+- **Summary:** Multi-city F.4 URL semantics added to **`docs/architecture/future-extensibility-contracts.md`** (Contract 1 addendum): **`citySlug`** is required city context; **404** when no eligible branch in city; **no `locationId`** → city-scoped default (**global primary in city**, else **A.7.9.3A** ordering); same-city **`locationId`** honored; wrong-city owned **`locationId`** → **308/301** to actual city; foreign/invalid **`locationId`** → city-default without leak; **canonical/sitemap** exclude branch query variants; multi-city indexable **one URL per real city**; temp **`/businesses/{id}`** redirect rules documented; explicit **slug + city** public API boundary (no accidental `:id` overload).
+- **6.12A:** Invariants preserved — no **`Business.cityId`**, no **cityPrimary**, global primary unchanged.
+- **Next:** **Explicit approval** for **F.4 backend** slug + city-context resolution — **F.4 implementation not started**.
+
+---
+
 ## 2026-09-27 — Future Extensibility Architecture Gate (Phase 2 contracts)
 
 - **Status:** **FUTURE EXTENSIBILITY ARCHITECTURE GATE — AGREED / DOCUMENTED**.

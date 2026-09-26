@@ -51,13 +51,89 @@ If a future change contradicts this table, stop and reopen 6.12A only with a con
 - Use **`locationId` query** for v1 branch selection.
 - **Do not introduce `locationSlug`** in v1.
 
-### Semantics
+### Semantics (summary)
 
-1. **`citySlug`** scopes routing/SEO context; a multi-city Business may appear under different city contexts while sharing one **`businessSlug`**.
-2. **`businessSlug`** resolves to one Business regardless of which city route led to the page (subject to product rules for inactive/blocked businesses).
-3. **`locationId`** optionally selects an **owned** BusinessLocation for **`effectivePhysical`**, branch-effective catalog/promotions/media, and map CTA — same safe fallback rules as **`GET /businesses/:id?locationId=`** (foreign/invalid → documented safe fallback to primary/effective branch; no cross-business leak).
-4. **Canonical vs branch context for SEO:** the **identity URL** is the path without requiring `locationId`. Branch query expresses **context**, not a duplicate Business identity. Indexing policy for `?locationId=` (include/exclude/canonicalize) is an **F.4 implementation** detail but must not treat each branch as a separate Business slug.
-5. **BusinessLocation** remains physical authority; public **`cityId`** on detail/list projections continues to come from effective branch semantics per 6.12A — not from a revived parent **`Business.cityId`**.
+1. **`citySlug`** is meaningful **city context**, not decorative SEO (see **F.4 Phase 0.1 addendum** below).
+2. **`businessSlug`** resolves to one **Business** (ACTIVE public rules); a multi-city brand may have **separate indexable pages per city** where it has a branch.
+3. **`locationId`** is **branch context** only; resolution rules for city-routed pages are in the addendum (not identical to legacy **`GET /businesses/:id`** when `locationId` is omitted — that path remains **global primary** until F.4 city-context API exists).
+4. **Canonical identity** path omits **`locationId`**; branch query must not create a second indexed Business identity.
+5. **BusinessLocation** remains physical authority; no **`Business.cityId`**.
+
+### F.4 Phase 0.1 addendum — multi-city public Business URL (LOCKED)
+
+**Status:** **AGREED / DOCUMENTED** (docs only — no runtime change). Closes F.4 Phase 0 audit contract gap.
+
+**Locked identity:** `/{citySlug}/business/{businessSlug}` — **Business** is the entity; **BusinessLocation** is physical/city context only.
+
+#### Rule 1 — City route means city context
+
+`/{citySlug}/business/{businessSlug}` means: this **Business** viewed in the context of **citySlug**.
+
+- Resolve **citySlug** to an active catalog **City**.
+- The Business must have at least one **eligible** (public) **BusinessLocation** in that city.
+- If **no** eligible branch in **citySlug** → **404**. Do **not** silently show the global primary in another city.
+
+#### Rule 2 — Default branch without `locationId`
+
+For `/{citySlug}/business/{businessSlug}` with **no** `locationId`, select the active branch **only among eligible locations of this Business in citySlug**:
+
+1. If the **global primary** **BusinessLocation** is in **citySlug** → use that primary.
+2. Else → deterministic default in **citySlug** using the same ordering as discovery city context (**A.7.9.3A** — `resolveCityContextLocationIds`): among branches in **C**, order **`isPrimary DESC`, `createdAt ASC`, `id ASC`**, first row wins.
+
+No **cityPrimary** flag; no change to exactly-one **global** primary invariant; selection is **page context** only.
+
+#### Rule 3 — Valid `locationId` in same city
+
+`?locationId=L` when **L** is owned by this Business, public-eligible, and **`L.cityId` matches citySlug** → use **L** for **`effective*`** context. URL may keep `?locationId=L`. **Canonical** for SEO remains the path **without** requiring the query (see Rule 9).
+
+#### Rule 4 — Valid owned `locationId` in another city
+
+When **L** is owned by this Business and public-eligible but **`L`’s city ≠ citySlug** → do **not** render **L** under the wrong city path. **Normalize** with a **permanent redirect** (**HTTP 308** preferred, **301** acceptable per [versioning-and-api-compatibility.md](../release/versioning-and-api-compatibility.md)) to:
+
+`/{actualCitySlug}/business/{businessSlug}?locationId={L}`
+
+Route normalization only — **Business** identity unchanged.
+
+#### Rule 5 — Foreign `locationId`
+
+When **L** belongs to **another Business** → never expose **L**; treat as unusable context. Resolve this Business with **Rule 2** city-default. If no eligible branch in **citySlug** → **404**. **Canonical metadata** and sitemap URLs **exclude** invalid/foreign `locationId` (prefer **render** with city-default and **canonical without** the bad query; optional **302/307** strip of query is implementation detail — must be deterministic and leak-free).
+
+Does **not** weaken 6.12A foreign-location safety on existing **`GET /businesses/:id`**.
+
+#### Rule 6 — Invalid / nonexistent / inactive `locationId`
+
+Invalid, nonexistent, or non-public **L** → unusable; apply **Rule 2**. No branch in **citySlug** → **404**. Do not leak hidden/inactive location state.
+
+#### Rule 7 — Multiple locations in same city
+
+When global primary is **outside citySlug** but several branches exist **in citySlug** → **Rule 2 step 2** (**A.7.9.3A** ordering). Same rule as non-geo discovery **`contextLocationId`**.
+
+#### Rule 8 — Internal discovery links
+
+When list/search/category supplies **`contextLocationId`** in **citySlug**:
+
+`/{citySlug}/business/{businessSlug}?locationId={contextLocationId}`
+
+Business grain remains the slug path; **`locationId`** preserves discovered branch context.
+
+#### Rule 9 — SEO / canonical
+
+- **Indexable identity:** `/{citySlug}/business/{businessSlug}` (canonical **excludes** `locationId`).
+- **`?locationId=`** variants are **not** separate indexed identities; **`rel=canonical`** points to path without query (unless a future SEO stage documents otherwise).
+- **Sitemap:** city + business slug URLs **only** — no `?locationId=` variants.
+- Multi-city Business may appear in sitemap **once per city** where it has a branch (e.g. `/uralsk/business/{slug}` and `/aktobe/business/{slug}`) — **not** **`Business.cityId`**.
+
+#### Rule 10 — Temporary ID route (migration — not implemented)
+
+`/businesses/{businessId}` → resolve Business + effective/context location → **`citySlug` from that location** + **`businessSlug`** → redirect to canonical URL. Preserve valid owned **`locationId`** on query when present. Without **`locationId`**, use **legacy global primary** (or effective location) **only for this redirect target**, not for city-routed page semantics.
+
+#### Rule 11 — Backend implementation boundary (F.4 — not this task)
+
+F.4 requires a **public slug-aware** resolution path that accepts **`businessSlug`**, **`citySlug`**, optional **`locationId`**, and returns **Business** + **effective BusinessLocation** + city-membership validity while preserving existing **`effective*`** pipelines.
+
+- Do **not** overload **`GET /businesses/:id`** to accept slug and city semantics without a separate agreed change.
+- Prefer an **explicit** public contract, e.g. **`GET /businesses/by-slug/{businessSlug}`** with query **`citySlug`** (required for F.4 page) and optional **`locationId`**, or equivalent documented endpoint.
+- Existing **`GET /businesses/:id?locationId=`** remains for **id + optional branch** clients until deprecated with a window.
 
 ### Temporary path (current)
 
@@ -298,7 +374,8 @@ Reaffirmed for production growth ([versioning-and-api-compatibility.md](../relea
 |------|--------|
 | Phase 1 read-only audit | PASS — gate required before F.4 |
 | Phase 2 contracts (this document) | **AGREED / DOCUMENTED** |
-| F.4 implementation | **Not started** — requires explicit next-stage approval |
+| F.4 Phase 0.1 multi-city URL addendum | **LOCKED** (§ Contract 1 addendum) |
+| F.4 implementation | **Not started** — backend slug + city-context resolution is next prerequisite after explicit approval |
 | 6.12A | **CLOSED** — preserved |
 
-**Next:** Explicit approval before any implementation work (**F.4** is an architecturally unblocked **candidate** only).
+**Next:** Explicit approval for **F.4 backend** (slug + city-context public resolution), then Consumer Web + SEO.
