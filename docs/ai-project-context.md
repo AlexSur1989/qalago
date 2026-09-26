@@ -8,7 +8,8 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `7a153cdf497c711c3aeda2b60cc72588f50d7859` — **6.12A.9.4.5D3** |
+| **Repo HEAD (current)** | `6bc1d5d8816292562a2b07480974a2cd26088c89` — **6.12A.9.4.5E** docs closure |
+| **A.9.4.5E docs closure SHA** | `6bc1d5d8816292562a2b07480974a2cd26088c89` |
 | **A.9.4.5D3 implementation SHA** | `7a153cdf497c711c3aeda2b60cc72588f50d7859` |
 | **A.9.4.5D1 implementation SHA** | `ffeffdc3d844a183e31f46d5f776c4b49e047209` (unchanged) |
 | **A.9.4.5D2 docs SHA** | `db82561a1dc101c1420a099a84ddb7547563f40d` |
@@ -28,16 +29,16 @@
 | **A.9.4.4C1 implementation SHA** | `80f678a9584f2614c1aaf029e56183c48315f1bb` |
 | **A.9.4.4C2 implementation SHA** | `10c767d272e0033b25fdc93938e62727f9f89beb` |
 | **A.9.4.4C3 implementation SHA** | `a78ff95457c10e7e31ccce846906e91a1b99f670` |
-| **Last completed stage** | **6.12A.9.4.5D PASS** — **`Business.cityId`** retirement finalized (**5D1** code + **5D2** dev DB + **5D3** regression/fixtures) |
-| **Last product implementation** | **6.12A.9.4.5D1** `ffeffdc3…` (column retirement code); **5D2** dev DB apply; **5D3** test/fixture cutover only |
+| **Last completed stage** | **6.12A.9.4.5 PASS** — **`Business.cityId`** retirement finalized (**5A–5E**); **5E** physical/manual QA closed |
+| **Last product implementation** | **6.12A.9.4.5D1** `ffeffdc3…` (column retirement code); **5D2** dev DB; **5D3** regression/fixtures; **5E** QA-only (no product diff) |
 | **A.9.4.4C4A implementation SHA** | `90cd95b89f0f72751df517c90a9785962a944024` |
 | **A.9.4.4C4B docs SHA** | `713a53f8ad9f40f5acb622c76f60017f887b7b27` |
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending** | None for **A.9.4.3** / **A.9.4.2** |
-| **Next agreed development action** | **6.12A.9.4.5E — physical/manual QA** (**not started**; explicit agreement only) |
+| **Next agreed development action** | **None under A.9.4.5** — pick next stage from roadmap (**F.4**, post–**6.12A** contours, etc.) with **explicit agreement only** |
 
-**5D state:** **CLOSED — CODE + `qalago_dev` = POST-cityId** (migration **`20260926180000_stage_6_12a9_4_5d_business_city_id_retirement`** applied). **BusinessLocation** is sole business physical/city authority; **Business** has no city FK. Pre-5D2 backup: `infra/local-backups/qalago_dev_native_pg18_pre_5d2_business_cityid_retirement_20260926T131630Z.dump` (596125 bytes; uncommitted). Full **`catalog-api`** regression PASS after fixture cutover (**5D3**).
+**A.9.4.5 state:** **CLOSED** — **`Business.cityId`** retired from schema/dev DB/product semantics (**5D**); physical/manual QA finalized (**5E**). **BusinessLocation** is physical/city authority. **Admin CITY_ADMIN visibility** = **ANY BL** in managed city; **CITY_ADMIN owner-equivalent** = **primary BL city**; **OWNER** membership = business-wide. Public effective location verified (primary default + explicit `locationId` + safe foreign fallback). Dev **`qalago_dev`** canonical baseline restored: **109 Business / 110 BL / 109 primary** after **5E** fixture cleanup. Pre-5D2 backup preserved: `infra/local-backups/qalago_dev_native_pg18_pre_5d2_business_cityid_retirement_20260926T131630Z.dump` (596125 bytes; uncommitted). **`a945e-*`** helpers/manifest remain local/untracked.
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 
@@ -171,7 +172,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **Business detail (A.7.6–A.7.9.6 CLOSED):** optional **`locationId`** selects active branch; **`effectivePhysical`** / **`effectiveMedia`** / **`effectiveCatalog`** / **`effectivePromotions`**; consumer **`/business/:id/catalog|promotions?locationId=`**; in-detail **«Филиалы»** switch via **`context.replace`**. Reviews/favorites/analytics stay **`Business.id`**. Branch-specific media physical QA = **A.7.7**, not re-tested in **A.7.9.6**.
 - **Discovery grain (A.7.9 CLOSED via A.7.9.6):** list/search/category/nearby/promotions feed = **Business-grain** card + backend **`contextLocationId`**; **map** = **BusinessLocation-grain** (**`locationId`** per marker).
 - **Primary:** default active context when `locationId` omitted; **`isPrimary` badge ≠ forced active** when user/map selects another branch.
-- **Primary sync:** legacy **Business** physical **columns** remain until **A.9.4.4C4** (**A.9.4.5** **`Business.cityId`** deferred). **A.9.4.4C1 CLOSED:** normal production no longer mirrors **address/lat/lng/locationSource** onto **Business**; **cityId + contacts** compatibility sync remains. **A.9.4.4C2 CLOSED:** integrity/repair **BL-native**. **A.9.4.4C3 CLOSED:** create/admin approval/seed use **BL-authoritative** aggregate; **INSERT-only** legacy geo via **`legacyBusinessInsertGeoBootstrapFromPrimaryPhysical`** until **C4**. **A.9.4.4B CLOSED:** runtime reads from **BusinessLocation**. Branch assignments in **A.7.8.2**; **public branch-effective** catalog/promotions in **A.7.8.3**; legacy previews stay business-wide; branch reviews deferred.
+- **Primary sync:** legacy **Business** geo **columns** retired (**A.9.4.4C4**); **`Business.cityId`** retired (**A.9.4.5D/E**). **A.9.4.4C1–C3 / 4B CLOSED:** **BL-authoritative** writes/reads; public **`cityId`** = effective **BusinessLocation** projection. Branch assignments **A.7.8.2**; branch-effective catalog/promotions **A.7.8.3**; branch reviews deferred.
 - **Branch catalog/promotion invariants (A.7.8 CLOSED):** **ServiceMenuGroup** = business-wide. **ServiceItem** / **Promotion:** **0** assignment rows = all branches; **≥1** = only assigned **`BusinessLocation`** ids. Owner edits via **Business Web** (**ALL/SELECTED**); **Admin** read-only content inspection (no branch editing). Public/Flutter use **`effectiveCatalog`** / **`effectivePromotions`**; legacy **`catalogPreview`** / **`promotionsPreview`** + city **`GET /promotions`** remain business-grain until **A.7.9**. Assignments = availability only. **BusinessLocation** delete **RESTRICT** while assignments exist.
 - **Branch media invariants (A.7.7 CLOSED):** shared = **`BusinessImage.locationId` null**; branch = **`locationId` = `BusinessLocation.id`** (same business); public branch view = **active branch media + shared brand** (never sibling branches); **`effectiveMedia`** is branch-aware public truth; legacy **`galleryPreview`** on detail is **compatibility-only** (not branch truth); **`Business.coverImageUrl`** remains **brand-level**; owner **Business Web** + consumer **Flutter** + **Admin MEDIA** moderation aligned; plan quota Business-wide; **`moderationHidden`** never on public surfaces.
 - **Branch media deferred / debt:** legacy business-wide **`galleryPreview`**; full Admin gallery manager; Admin upload/reorder; owner Flutter branch upload; Consumer Web branch media (**F.4**); orphan file GC; reorder API/UX; explicit branch cover column; branch-level moderation status; CDN migration.
@@ -239,7 +240,7 @@ Future architecture should allow **backend/admin-central configuration** of cons
 - **A.9.4.4** — **PASS** — legacy **Business** physical geo storage retired (**C4**); **`Business.cityId`** remains **A.9.4.5** track.
 - **A.9.4.5B** — **PASS** — campaign/analytics/order paths use BL/explicit/primary only; **`metadata.campaignCityId`** stable on orders.
 - **A.9.4.5C** — **PASS** — benchmark/reporting/moderation/audit city attribution uses BL/explicit context.
-- **A.9.4.5D** — **`Business.cityId`** retirement — **CLOSED** (**5D1** code, **5D2** dev DB, **5D3** regression). **5E** physical QA — **NOT STARTED**.
+- **A.9.4.5** — **`Business.cityId`** retirement — **CLOSED** (**5A–5E**); physical/manual QA **PASS** (**5E**).
 - **A.8.1 test debt** — **CLOSED in 5B** (branch **`businessLocationId`** contract spec).
 - **F.4** — Consumer Web business/branch URLs & SEO; **does not require** A.9.4 DB column removal (**A.9.4.0** gate); not started.
 - Post **6.12A:** User contour audit, Business Web owner contour, Admin Web contour, Admin Catalog/CMS, centralized Home config, Catalog Import, QalaGo AI, remaining Consumer Web, production monetization, analytics UX, role-based E2E, security/legal/release — **not** current track unless explicitly staged.

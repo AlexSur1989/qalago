@@ -6,6 +6,21 @@
 
 ---
 
+## 2026-09-26 — 6.12A.9.4.5E Business.cityId retirement physical/manual QA + fixture cleanup
+
+- **Status:** **6.12A.9.4.5E PASS — BUSINESS.cityId RETIREMENT PHYSICAL QA FINALIZED**; **6.12A.9.4.5 PASS — BUSINESS.cityId RETIREMENT FINALIZED** (umbrella — **5A**, **5B**, **5C**, **5D1**, **5D2**, **5D3**, **5E** complete).
+- **Checkpoint (docs closure):** `6bc1d5d8816292562a2b07480974a2cd26088c89`.
+- **Scope:** **Docs-only closure** after completed physical/manual QA. **No** product-code, schema, migration, or DB changes in this commit. Temporary dev fixture helpers under **`infra/local-backups/a945e-*`** (uncommitted; preserved).
+- **Fixture (dev, removed):** multi-city QA Business **`cmuiletaq0002ul380paca4ab`** (L1 Uralsk + L2 Aktobe); branch-scoped services/promotions; OWNER + CITY_ADMIN test accounts. **Fixture plan correction:** QA Business temporarily set from **FREE** → **BASIC** so **FREE `maxActivePromotions=1`** did not hide a branch promotion during QA — **fixture-only**, not a product defect.
+- **Physical QA (Samsung SM-J610FN):** discovery/search/map one card per city; Uralsk default **L1** / Aktobe **L2**; branch switch; branch-effective catalog/promotions (**SELECTED + ALL** per branch); marker preview → detail context preserved; post–primary-promotion behavior unchanged for city/branch context. **Favorites:** **NOT TESTED** (auth required). **Reviews:** guest-readable; fixture had **zero** reviews.
+- **Primary promotion (dev helper):** L1 → secondary, L2 Aktobe → **primary**; structural invariants PASS; **`Business.cityId`** absent.
+- **API / authorization QA (real paths):** Admin **`GET /admin/businesses`** + content read — CITY_ADMIN visibility = **ANY BusinessLocation** in managed city (Uralsk via secondary L1; Aktobe via L2). Owner-equivalent gate **`GET /businesses/:id/locations`** — Uralsk CITY_ADMIN **403**, Aktobe **200** (**primary BL city**). OWNER membership **200**, both branches, business-wide. Public detail **`GET /businesses/:id?locationId=`** — default primary **L2**, explicit L1/L2, foreign BL id safe fallback to own primary; no cross-business leak; no empty **`cityId`** on responses.
+- **Cleanup:** **`a945e-physical-cleanup.mjs`** — pre **110/112/110** primary BL → post canonical **109/110/109**; integrity audit PASS; seed CITY_ADMIN accounts preserved; D2 backup preserved (**596125** bytes).
+- **Deferred:** **F.4** and post–**6.12A** contour work per roadmap — **not** auto-started.
+- **Next:** Per **`docs/ai-project-context.md`** — **explicit agreement only** (no substage under **A.9.4.5** remains).
+
+---
+
 ## 2026-09-26 — 6.12A.9.4.5D3 Post-cityId regression + fixture cutover + 5D closure
 
 - **Status:** **6.12A.9.4.5D3 PASS — POST-cityId REGRESSION FINALIZED**; **6.12A.9.4.5D PASS — BUSINESS.cityId RETIREMENT FINALIZED**; **5E** not started.
