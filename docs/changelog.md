@@ -9,7 +9,7 @@
 ## 2026-09-26 — 6.12A.9.4.4C4C Post-migration regression + C4 closure
 
 - **Status:** **6.12A.9.4.4C4C PASS — POST-MIGRATION REGRESSION FINALIZED**; **6.12A.9.4.4C4 PASS — LEGACY BUSINESS GEO STORAGE RETIRED** (subordinate: **C4A PASS** prepared `90cd95b…`; **C4B PASS** applied; **C4C PASS** regression finalized). **A.9.4.5** not started.
-- **Checkpoint (implementation + docs):** `b3120717e0c93707835d52b3129088e6cb836dee`.
+- **Checkpoint (implementation + docs):** `d7738c58a071a35537de66d5bb3d14e1877687ff`.
 - **Baseline:** `431833b40531f0a3525c0096cf250087e6f419c7` (**C4B** docs).
 - **Scope:** Post-C4 dev **`qalago_dev`** read-only schema re-verify; **`prisma migrate status`**; static retired-**Business**-geo recheck; full **`catalog-api`** Jest; focused BL/C1–C3/create/owner/discovery regressions; C2 **`integrity:business-locations:audit`** (no **`--apply`**); client static/build smoke; architecture alignment for **BL physical authority**; integration spec updates for post-C4 DB (no schema/migration edits).
 - **Summary:** Dev DB post-C4 invariants hold (**109/110**, primary **109**, **`Business.cityId` NULL 0**, BL PostGIS + hygiene PASS). Active runtime paths use **BusinessLocation** projection; remaining spec failures classified **pre-existing** (**A.8.1** analytics `businessLocationId` count — product evolved post spec). Three parallel-test fixture businesses removed after suite (slug audit) to restore baseline counts. Preserved backup **`qalago_dev_native_pg18_pre_c4b_business_geo_retirement_20260926T084201Z.dump`** (600552 bytes, untracked).
