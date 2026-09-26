@@ -2,7 +2,7 @@
 
 **Gate:** FUTURE EXTENSIBILITY ARCHITECTURE GATE  
 **Status:** **AGREED / DOCUMENTED** (Phase 2 — contracts only)  
-**Prerequisite for:** **F.4** public Business Pages (implementation not started)  
+**Prerequisite for:** **F.4** public Business Pages — **CLOSED / PASS**; **F.5** locale SEO URLs — Phase 0 contract locked in [public-consumer-web.md](./public-consumer-web.md) § F.5 (**implementation not started**)  
 **Depends on:** **6.12A PASS — BUSINESSLOCATION ARCHITECTURE FINALIZED** (invariants non-negotiable)
 
 This document is the **canonical source** for post-6.12A extensibility decisions locked before F.4 makes public URLs and cross-channel navigation externally stable. Other architecture docs **reference** this file; they must not duplicate full contract text.
@@ -375,7 +375,9 @@ Reaffirmed for production growth ([versioning-and-api-compatibility.md](../relea
 | Phase 1 read-only audit | PASS — gate required before F.4 |
 | Phase 2 contracts (this document) | **AGREED / DOCUMENTED** |
 | F.4 Phase 0.1 multi-city URL addendum | **LOCKED** (§ Contract 1 addendum) |
-| F.4 implementation | **Not started** — backend slug + city-context resolution is next prerequisite after explicit approval |
+| F.4 implementation | **CLOSED / PASS** — public Business Pages finalized |
+| F.5 Phase 0 locale SEO URL contract | **LOCKED** — [public-consumer-web.md](./public-consumer-web.md) § F.5 |
+| F.5 implementation (Phase 1+) | **Not started** |
 | 6.12A | **CLOSED** — preserved |
 
-**Next:** Explicit approval for **F.4 backend** (slug + city-context public resolution), then Consumer Web + SEO.
+**Next:** Explicit approval for **F.5 Phase 1** (Consumer Web locale routes + redirects) — **not auto-started**.

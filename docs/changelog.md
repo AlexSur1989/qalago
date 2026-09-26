@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-27 — F.5 Phase 0 — locale SEO URL contract locked
+
+- **Status:** **F.5 PHASE 0 PASS — LOCALE SEO URL CONTRACT LOCKED**. **F.5 product implementation not started** (Phase 1+ requires explicit approval).
+- **Scope:** **Documentation only.** **No** Consumer Web routes, backend, Flutter, DB, or migrations.
+- **Summary:** Locked indexable public locale prefixes **`/ru/`** and **`/kk/`**; URL locale authoritative over cookie/`Accept-Language` on prefixed pages; locale-neutral paths remain **compatibility entry** → permanent redirect to prefixed URL (cookie **`ru`/`kk`** or default **`ru`**); self-canonical per locale; reciprocal **hreflang** + **`x-default` → RU** prefixed URL; sitemap emits both locales; F.4 **`locationId`** / multi-city / wrong-city rules preserved under locale; internal links preserve locale; **zero** schema/API requirement. Canonical authority: **`docs/architecture/public-consumer-web.md`** § F.5.
+- **Stale doc fix (factual only):** **`future-extensibility-contracts.md`**, **`business-location.md`** — F.4 **CLOSED / PASS** (removed “implementation not started” where current-state was wrong). Historical changelog entries unchanged.
+- **Deferred:** F.5 Phase 1 routing/redirects/metadata/sitemap; F.6 deep links; Web auth/favorites; all other F.5 out-of-scope items in contract § F.5.
+- **Next:** **Explicit approval required** before **F.5 Phase 1** — **not auto-started**.
+
+---
+
 ## 2026-09-27 — F.4 PASS — public business pages finalized
 
 - **Status:** **F.4 PASS — PUBLIC BUSINESS PAGES FINALIZED**. **F.4 is CLOSED** (reopen only on confirmed defect or explicit new scope).

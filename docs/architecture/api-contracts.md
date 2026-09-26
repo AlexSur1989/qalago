@@ -309,6 +309,8 @@ Env: `QALAGO_GEOCODING_PROVIDER` = `mock` (default) \| `maptiler`; `MAPTILER_API
 > **Flutter consumption (A.7.9.5, IMPLEMENTED):** Mobile parses **`contextLocationId`** on catalog list/search/nearby/promotion payloads and opens **`GET /businesses/:id?locationId=<contextLocationId>`** via existing detail routing. Map marker taps continue **`locationId`** only (not list **`contextLocationId`**). Favorites/reviews/analytics remain **Business.id**.
 >
 > **Consumer Web consumption (F.4 Phase 2, IMPLEMENTED):** Discovery links **`/{citySlug}/business/{businessSlug}?locationId=`** when **`contextLocationId`** present. Canonical page fetches **`GET /businesses/by-slug/:businessSlug?citySlug=&locationId=`**; wrong-city **`409`** → permanent redirect to actual city. Legacy **`/businesses/{id}`** redirects to canonical (still noindex). Indexable canonical excludes **`?locationId=`**. No Web map/auth/favorites yet.
+>
+> **F.5 Phase 0 (contract locked — not implemented):** Indexable public URLs gain locale prefix **`/ru/`** / **`/kk/`** per [public-consumer-web.md](./public-consumer-web.md) § F.5. **No Catalog API or schema changes** for locale routing; same public endpoints and DTOs. Wrong-city normalization preserves locale segment on Consumer Web redirects.
 
 ### GET /businesses
 

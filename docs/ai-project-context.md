@@ -10,6 +10,7 @@
 |-------|--------|
 | **Last completed architecture decision gate** | **FUTURE EXTENSIBILITY ARCHITECTURE GATE — AGREED / DOCUMENTED** — **`docs/architecture/future-extensibility-contracts.md`** |
 | **F.4** | **CLOSED / PASS — PUBLIC BUSINESS PAGES FINALIZED** (Phases **0.1** → **2.1** + physical QA — **`docs/changelog.md`**) |
+| **F.5** | **Phase 0 PASS — LOCALE SEO URL CONTRACT LOCKED** (docs only — **`public-consumer-web.md`** § F.5). **Implementation not started.** |
 | **F.4 implementation SHA** | `52dfe1c4c32a906c964ee3e34470a511864faa84` (Phase 2); hotfix `678cb23a8e9004aa9be3aea170affaad68eb045e` |
 | **F.4 Phase 1 backend SHA** | `3bcd5cac785c5fbc9c5b5f623c96359645cf1854` |
 | **Last completed architecture contour** | **6.12A PASS — BUSINESSLOCATION ARCHITECTURE FINALIZED** (umbrella — see **`docs/changelog.md`** entry **2026-09-27**) |
@@ -40,7 +41,7 @@
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending (6.12A)** | **None** — contour closed (**5E** finalized) |
-| **Next** | **Explicit agreement required** before next stage — **not auto-started** |
+| **Next** | **Explicit approval required** before **F.5 Phase 1** (or other stage) — **not auto-started** |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -48,7 +49,9 @@
 
 **6.12A state:** **CLOSED** — BusinessLocation architecture finalized (**A.1–A.9.4.5E**). **Business** = brand; **BusinessLocation** = sole physical/city authority; retired **Business** physical columns including **`cityId`**; contact defaults on **Business** per policy. Grains and RBAC per **`docs/changelog.md`** umbrella entry **2026-09-27**. Dev **`qalago_dev`** baseline: **109 Business / 110 BL / 109 primary**; integrity PASS; migrations **47/47**. Pre-5D2 backup preserved: `infra/local-backups/qalago_dev_native_pg18_pre_5d2_business_cityid_retirement_20260926T131630Z.dump` (596125 bytes; uncommitted). **`a945e-*`** helpers remain local/untracked.
 
-**Post-6.12A candidates (documented — not auto-started):** **6.12B** / Catalog Import; **F.5+** locale/SEO depth; remaining Admin / Business Web / Consumer Web contours; backlog in **`docs/changelog.md`** / architecture docs.
+**F.5 (Phase 0 closed):** Indexable **`/ru/`** / **`/kk/`** public URLs, hreflang, canonical/sitemap/switcher/redirect contract — full rules in **`docs/architecture/public-consumer-web.md`** § F.5. Runtime still F.3/F.4 locale-neutral until Phase 1.
+
+**Post-6.12A candidates (documented — not auto-started):** **F.5 Phase 1+**; **6.12B** / Catalog Import; remaining Admin / Business Web / Consumer Web contours; backlog in **`docs/changelog.md`** / architecture docs.
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 
@@ -95,6 +98,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **6.12A.9.3.5 PASS (physical QA finalized)** — Business Web permission-safe profile PATCH; primary-branch UX; hours-only MANAGER scope verified; closes **`A.9.3.4+`** owner slice; central audit **P1 CLOSED**.
 - **6.12A.9.4.0 PASS (policy gate)** — legacy physical retirement policies & invariants frozen; **`docs/architecture/business-location.md`** § **9.4.0**; **F.4** not blocked on column drop.
 - **F.4** — **CLOSED / PASS** — canonical public Business pages implemented + physically verified; **LocalBusiness** / **AggregateRating** JSON-LD still deferred.
+- **F.5 Phase 0** — **PASS** — locale SEO URL contract locked (docs); **`/ru/`** / **`/kk/`** architecture not implemented in product code yet.
 
 ## BusinessLocation track
 
