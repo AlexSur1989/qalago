@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-26 — 6.12A.9.4.4C4B Business geo column retirement (dev DB apply)
+
+- **Status:** **6.12A.9.4.4C4B PASS — BUSINESS GEO COLUMNS RETIRED FROM DEV DATABASE** (overall **A.9.4.4C4** not closed — **C4C** full regression remains).
+- **Checkpoint (docs):** _(recorded after docs commit)_.
+- **C4A implementation baseline:** `90cd95b89f0f72751df517c90a9785962a944024`.
+- **Scope:** Dev **`qalago_dev`** only — fresh **`pg_dump`** custom backup, **`prisma migrate deploy`** for **`20260926120000_stage_6_12a9_4_4c4_business_geo_column_retirement`**. No product code/schema/migration SQL edits; no seed; no integrity **`--apply`**; **C4C not started**.
+- **Summary:** Live DB post-C4: **Business** no longer stores **address/latitude/longitude/locationSource/location** or Business-only spatial trigger/GiST/function; **Business.cityId** + contact defaults retained; **BusinessLocation** PostGIS trigger/function/GiST/columns preserved; entity counts **109/110** unchanged.
+- **Backup (uncommitted):** `infra/local-backups/qalago_dev_native_pg18_pre_c4b_business_geo_retirement_20260926T084201Z.dump` (~587 KiB; **`pg_restore --list`** verified).
+- **Verified:** pre-apply PRE-C4 catalog + unique legacy-only **0**; post-apply catalog gate; **`integrity:business-locations:audit`** PASS; **`npm run build`**; **`prisma generate`**.
+- **Next:** **6.12A.9.4.4C4C** — full regression on migrated DB (**not auto-started**).
+
+---
+
 ## 2026-09-26 — 6.12A.9.4.4C4A Destructive migration preparation (not applied)
 
 - **Status:** **6.12A.9.4.4C4A PASS — DESTRUCTIVE MIGRATION PREPARED, NOT APPLIED** (overall **A.9.4.4C4** not closed — **C4B** apply + **C4C** regression remain).
