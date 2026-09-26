@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-26 — 6.12A.9.4.5B Monetization / analytics parent-city fallback cutover
+
+- **Status:** **6.12A.9.4.5B PASS — MONETIZATION / ANALYTICS PARENT-CITY FALLBACKS RETIRED**; **A.9.4.5C** not started.
+- **Checkpoint (implementation):** `f459acd742f13b7406ef1ddc8be0da0408754a3d`.
+- **Baseline:** `c96c3220f88d025528cf84c794f335e085aae678` (**A.9.4.5A** docs closure).
+- **Scope:** **`services/catalog-api`** — `resolveCampaignMarketCityId` / `resolveAnalyticsEventCityId` / order provisioning / product purchase schedule; **`resolvePersistedOrderItemMarketCityId`** for purchase-time stable **`metadata.campaignCityId`**; **A.8.1** stale analytics spec corrected. **No** schema migration; **`Business.cityId`** column retained.
+- **Summary:** Campaign market city = target/destination BL → explicit city (branch presence) → primary BL → fail closed. Analytics new events = explicit → BL → campaign → primary BL → omit; no parent **`Business.cityId`**. Orders/provisioning use persisted metadata before live resolver. Purchase schedule preview uses primary BL. **A.8.1** test debt closed (branch **`businessLocationId`** allowed).
+- **Verified:** focused Jest (campaign/analytics utils, monetization suite, **A.8.1**, **analytics.service**); **`npm run build`**; **`integrity:business-locations:audit`** read-only PASS (109/110, mirror **0**, BL hygiene PASS).
+- **Deferred:** **A.9.4.5C** reporting/benchmark/moderation **`Business.cityId`** stamps; **5D** column retirement.
+- **Next:** **6.12A.9.4.5C** (explicit agreement only; **not auto-started**).
+
+---
+
 ## 2026-09-26 — 6.12A.9.4.5A CITY_ADMIN authorization semantics + A.9.4.4 formal closure
 
 - **Status:** **6.12A.9.4.5A PASS — CITY_ADMIN AUTHORIZATION SEMANTICS FINALIZED**; **6.12A.9.4.4 PASS — LEGACY BUSINESS PHYSICAL GEO AUTHORITY RETIRED** (formal umbrella — geo columns dropped **C4**; **`Business.cityId`** is separate **A.9.4.5** debt). **A.9.4.5B** not started.

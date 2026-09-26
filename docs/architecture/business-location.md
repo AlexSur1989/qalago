@@ -144,15 +144,17 @@ Migration **`20260926120000_stage_6_12a9_4_4c4_business_geo_column_retirement`**
 - **A.9.4.1B (IMPLEMENTED — catalog-api):** campaign/order market city via **`resolveCampaignMarketCityId`**; new analytics events via **`resolveAnalyticsEventCityId`**; application dedupe against **`BusinessLocation`** in application city; public list/detail top-level **`cityId`** from effective physical branch context; admin reporting **`businessCityWhere`** = BL presence (not parent **`Business.cityId`** alone). Historical analytics rows not rewritten; admin analytics rollups remain business-grain visibility — not per-event **`AnalyticsEvent.cityId`** filters.
 - **Address display:** prefer **BusinessLocation** — city-scoped context → effective branch in that city; explicit location → that row; business-global → **primary**; legacy **`Business.address`** only as temporary compatibility fallback until invariant migration completes.
 
-### Monetization / campaign city (**A.9.4.1B IMPLEMENTED** — catalog-api)
+### Monetization / campaign city (**A.9.4.1B** + **A.9.4.5B IMPLEMENTED** — catalog-api)
 
 - **`AdCampaign.cityId`** remains **first-class** explicit campaign targeting context.
-- **Resolution priority (`resolveCampaignMarketCityId`):** (1) **`targetBusinessLocationId` / `destinationBusinessLocationId`** → that BL’s **`cityId`**; (2) explicit quote/order **`cityId`** → validate business has a branch in that city; (3) no explicit target → **primary** **`BusinessLocation.cityId`**; (4) **`Business.cityId`** only when BL resolution unavailable (compatibility). Order lines store resolved city in metadata for inventory/scheduling consistency. **A.8** serving unchanged.
+- **Resolution priority (`resolveCampaignMarketCityId`):** (1) **`targetBusinessLocationId` / `destinationBusinessLocationId`** → that BL’s **`cityId`**; (2) explicit quote/order **`cityId`** → validate business has a branch in that city; (3) **primary** **`BusinessLocation.cityId`**; **fail closed** if none — **`Business.cityId` is not a fallback (5B)**.
+- **Order stability:** persisted **`metadata.campaignCityId`** (purchase-time resolution) wins on revalidation/provisioning over live primary BL — primary promotion must not retroactively change settled order market city.
+- **Product purchase schedule preview:** primary BL city only (not **`Business.cityId`**).
 
-### Analytics city (**A.9.4.1B IMPLEMENTED** — catalog-api)
+### Analytics city (**A.9.4.1B** + **A.9.4.5B IMPLEMENTED** — catalog-api)
 
 - **`AnalyticsEvent.cityId`** = **event context**, not Business parent identity.
-- **New events (`resolveAnalyticsEventCityId`):** (1) explicit request/discovery city, (2) **`businessLocationId`** branch city, (3) campaign city, (4) primary BL city, (5) parent **`Business.cityId`** fallback. Historical rows **not** rewritten. **A.8** ad **`businessLocationId`** / platform attribution unchanged.
+- **New events (`resolveAnalyticsEventCityId`):** (1) explicit request/discovery city, (2) **`businessLocationId`** branch city, (3) campaign city, (4) primary BL city, (5) **null/omit** — **no** **`Business.cityId`** fallback (5B). Historical rows **not** rewritten. **A.8** **`businessLocationId`** / platform attribution unchanged.
 
 ### Application / onboarding
 
