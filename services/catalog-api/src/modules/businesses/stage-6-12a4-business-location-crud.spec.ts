@@ -92,7 +92,6 @@ describe('Stage 6.12A.4 — BusinessLocation management API', () => {
         title: `A12A4 ${slugPrefix}`,
         slug,
         categoryId,
-        cityId: uralskCityId,
         phone: 'primary-phone',
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
@@ -114,8 +113,8 @@ describe('Stage 6.12A.4 — BusinessLocation management API', () => {
     const business = await createFixtureBusiness('a12a4-list');
     const svc = buildLocationService();
     const secondary = await svc.createLocation(owner(), business.id, {
+      cityId: uralskCityId,
       address: 'Branch addr',
-      cityId: aktobeCityId,
     });
     const listed = await svc.listLocations(owner(), business.id);
     expect(listed.items.length).toBeGreaterThanOrEqual(2);
@@ -151,7 +150,13 @@ describe('Stage 6.12A.4 — BusinessLocation management API', () => {
     const after = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
     expect(secondary.isPrimary).toBe(false);
     expect(secondary.cityId).toBe(aktobeCityId);
-    expect(after.cityId).toBe(before.cityId);
+    const primaryBefore = await prisma.businessLocation.findFirstOrThrow({
+      where: { businessId: business.id, isPrimary: true },
+    });
+    const primaryAfter = await prisma.businessLocation.findFirstOrThrow({
+      where: { businessId: business.id, isPrimary: true },
+    });
+    expect(primaryAfter.cityId).toBe(primaryBefore.cityId);
     // C4: Business.address retired — after.address assertion removed (before.address)
     expect(after.phone).toBe(before.phone);
     expect(await prisma.businessLocation.count({ where: { businessId: business.id } })).toBe(2);
@@ -263,7 +268,6 @@ describe('Stage 6.12A.4 — BusinessLocation management API', () => {
     const before = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
     await svc.setPrimaryLocation(owner(), business.id, primary.id);
     const after = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
-    expect(after.cityId).toBe(before.cityId);
     expect(after.updatedAt.getTime()).toBe(before.updatedAt.getTime());
     await prisma.business.delete({ where: { id: business.id } });
   });

@@ -17,6 +17,7 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
   const primaryLocation = new BusinessPrimaryLocationService();
   let skip = false;
   let fixtureOwnerId = '';
+  let uralskCityId = '';
 
   beforeAll(async () => {
     try {
@@ -28,8 +29,12 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
         ) AS exists`;
       skip = !table[0]?.exists;
       const user = await prisma.user.findFirst({ select: { id: true } });
-      if (!user) skip = true;
-      else fixtureOwnerId = user.id;
+      const uralsk = await prisma.city.findFirst({ where: { slug: 'uralsk' }, select: { id: true } });
+      if (!user || !uralsk) skip = true;
+      else {
+        fixtureOwnerId = user.id;
+        uralskCityId = uralsk.id;
+      }
     } catch {
       skip = true;
     }
@@ -126,7 +131,6 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
         title: 'Patch sync',
         slug,
         categoryId: category.id,
-        cityId: city.id,
         phone: '111',
         ownerId: owner.id,
         status: 'ACTIVE',
@@ -171,7 +175,6 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
         title: 'Multi branch',
         slug,
         categoryId: category.id,
-        cityId: city.id,
         phone: 'primary-phone',
         ownerId: owner.id,
         status: 'ACTIVE',
@@ -182,7 +185,7 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
       data: {
         address: 'Branch addr',
         businessId: business.id,
-        cityId: city.id,
+        cityId: uralskCityId,
         phone: 'secondary-phone',
         isPrimary: false,
       },
@@ -219,7 +222,6 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
         title: 'Geo sync',
         slug,
         categoryId: category.id,
-        cityId: city.id,
         ownerId: owner.id,
         status: 'ACTIVE',
       },
@@ -258,7 +260,6 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
         title: 'Rollback test',
         slug,
         categoryId: category.id,
-        cityId: city.id,
         phone: 'before-rollback',
         ownerId: owner.id,
         status: 'ACTIVE',
@@ -309,8 +310,7 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
             title: 'Missing primary',
             slug,
             categoryId: category.id,
-            cityId: city.id,
-            ownerId: fixtureOwnerId,
+        ownerId: fixtureOwnerId,
             status: 'ACTIVE',
           },
         });

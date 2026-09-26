@@ -111,15 +111,14 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         title: 'A943A secondary safety',
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
     });
     await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, staleMirror);
     const secondary = await locSvc.createLocation(owner(), business.id, {
-      address: 'Branch addr',
-      cityId: aktobeCityId,
+      cityId: uralskCityId,
+      address: 'Secondary addr',
     });
 
     try {
@@ -134,6 +133,7 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
       // C4: Business.address retired — secondaryAfter.address assertion removed ('Secondary addr')
 
       await locSvc.updateLocation(owner(), business.id, secondary.id, {
+        address: 'Secondary addr updated',
       });
       const businessRow = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
       // C4: Business.address retired — businessRow.address assertion removed (staleMirror)
@@ -153,22 +153,24 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         title: 'A943A set-primary',
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
     });
     await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'Physical A', { latitude: 51.2278, longitude: 51.3865 });
     const l2 = await locSvc.createLocation(owner(), business.id, {
-      address: 'Branch addr',
       cityId: aktobeCityId,
+      address: 'Physical B',
+      latitude: 50.2839,
+      longitude: 57.167,
     });
 
     try {
       await locSvc.setPrimaryLocation(owner(), business.id, l2.id);
-      const afterPromote = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
-      // C4: Business.address retired — afterPromote.address assertion removed ('Physical A')
-      expect(afterPromote.cityId).toBe(aktobeCityId);
+      const primaryAfterPromote = await prisma.businessLocation.findFirstOrThrow({
+        where: { businessId: business.id, isPrimary: true },
+      });
+      expect(primaryAfterPromote.cityId).toBe(aktobeCityId);
 
       await svc.update(business.id, owner(), { address: 'Physical B patched' });
       const l1 = await prisma.businessLocation.findFirstOrThrow({
@@ -194,7 +196,6 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         title: 'A943A multicity',
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
@@ -205,9 +206,7 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
     });
     await prisma.businessLocation.update({
       where: { id: primary.id },
-      data: {
-        cityId: aktobeCityId,
-      },
+      data: { cityId: aktobeCityId },
     });
 
     try {
@@ -237,7 +236,6 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         title: 'A943A invalid coords',
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
@@ -268,7 +266,6 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         title: 'Before mixed',
         slug,
         categoryId,
-        cityId: uralskCityId,
         phone: '111',
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
@@ -304,7 +301,6 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         title: 'A943A perms',
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
@@ -340,15 +336,14 @@ describe('Stage 6.12A.9.4.3A — owner primary physical write inversion', () => 
         title: 'A943A concurrent',
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
     });
     await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'L1 primary', { latitude: 51.2278, longitude: 51.3865 });
     const l2 = await locSvc.createLocation(owner(), business.id, {
-      address: 'Branch addr',
       cityId: aktobeCityId,
+      address: 'L2 branch',
     });
 
     const lockHeld = createDeferred();

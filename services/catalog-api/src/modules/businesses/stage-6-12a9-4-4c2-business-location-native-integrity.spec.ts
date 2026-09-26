@@ -49,7 +49,6 @@ describe('Stage 6.12A.9.4.4C2 — BusinessLocation-native integrity', () => {
         title: 'C2 stale geo drift',
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId,
         status: 'PENDING',
       },
@@ -75,14 +74,6 @@ describe('Stage 6.12A.9.4.4C2 — BusinessLocation-native integrity', () => {
     }
   });
 
-  it('reports parent city mismatch separately from BL hygiene', async () => {
-    if (skip) return;
-    const otherCity = await prisma.city.findFirst({
-      where: { NOT: { id: uralskCityId } },
-      select: { id: true },
-    });
-    if (!otherCity) return;
-
   it('detects empty BL address in hygiene report', async () => {
     if (skip) return;
     const slug = await createSlug('c2-empty-bl-addr');
@@ -91,7 +82,6 @@ describe('Stage 6.12A.9.4.4C2 — BusinessLocation-native integrity', () => {
         title: 'C2 empty BL address',
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId,
         status: 'PENDING',
       },
@@ -125,7 +115,6 @@ describe('Stage 6.12A.9.4.4C2 — BusinessLocation-native integrity', () => {
         title: 'C2 partial coords',
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId,
         status: 'PENDING',
       },

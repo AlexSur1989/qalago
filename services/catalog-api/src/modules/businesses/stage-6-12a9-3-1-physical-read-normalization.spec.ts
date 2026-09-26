@@ -91,7 +91,6 @@ describe('Stage 6.12A.9.3.1 — public physical read normalization', () => {
         title: `A931 ${slug}`,
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId,
         status: BusinessStatus.ACTIVE,
         businessSubcategories: { create: { subcategoryId } },

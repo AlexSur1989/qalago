@@ -39,11 +39,28 @@ describe('Stage 6.6B analytics entitlements', () => {
     const prisma = {
       business: {
         findUnique: jest.fn().mockResolvedValue({
-          city: { timezone: 'Asia/Oral' },
           category: { title: 'Кафе' },
           categoryId: 'c1',
-          cityId: 'city-1',
         }),
+      },
+      businessLocation: {
+        findFirst: jest.fn().mockResolvedValue({ city: { timezone: 'Asia/Oral' } }),
+        findMany: jest.fn().mockResolvedValue([
+          {
+            id: 'bl-1',
+            businessId: 'biz-1',
+            cityId: 'city-1',
+            isPrimary: true,
+            createdAt: new Date(0),
+            city: {
+              id: 'city-1',
+              slug: 'uralsk',
+              nameRu: 'Уральск',
+              nameKk: null,
+              timezone: 'Asia/Oral',
+            },
+          },
+        ]),
       },
       analyticsEvent: { findMany: jest.fn().mockResolvedValue([]), groupBy: jest.fn().mockResolvedValue([]) },
       analyticsDailyMetric: {
@@ -184,17 +201,37 @@ describe('Stage 6.6B analytics entitlements', () => {
         business: {
           findUnique: jest.fn().mockResolvedValue({
             title: 'T',
-            city: { nameRu: 'U', timezone: 'Asia/Oral' },
             category: { title: 'C' },
             categoryId: 'c1',
-            cityId: 'city-1',
           }),
+        },
+        businessLocation: {
+          findFirst: jest.fn().mockResolvedValue({ city: { timezone: 'Asia/Oral' } }),
+          findMany: jest.fn().mockResolvedValue([
+            {
+              id: 'bl-1',
+              businessId: 'biz-1',
+              cityId: 'city-1',
+              isPrimary: true,
+              createdAt: new Date(0),
+              city: {
+                id: 'city-1',
+                slug: 'uralsk',
+                nameRu: 'U',
+                nameKk: null,
+                timezone: 'Asia/Oral',
+              },
+            },
+          ]),
         },
         analyticsEvent: {
           groupBy: jest.fn().mockResolvedValue([]),
           findMany: jest.fn().mockResolvedValue([]),
         },
-        analyticsDailyMetric: { findMany: jest.fn().mockResolvedValue([dailyRow()]) },
+        analyticsDailyMetric: {
+          findMany: jest.fn().mockResolvedValue([dailyRow()]),
+          groupBy: jest.fn().mockResolvedValue([]),
+        },
         analyticsDailyDimensionMetric: { findMany: jest.fn().mockResolvedValue([]) },
       };
       const planLimits = {

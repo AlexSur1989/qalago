@@ -30,7 +30,29 @@ describe('Stage 5J audience geography analytics', () => {
     const prisma = {
       business: {
         findFirst: jest.fn(),
-        findUnique: jest.fn().mockResolvedValue({ city: { timezone: 'Asia/Oral' } }),
+        findUnique: jest.fn().mockResolvedValue({
+          category: { title: 'Test' },
+          categoryId: 'c1',
+        }),
+      },
+      businessLocation: {
+        findFirst: jest.fn().mockResolvedValue({ city: { timezone: 'Asia/Oral' } }),
+        findMany: jest.fn().mockResolvedValue([
+          {
+            id: 'bl-1',
+            businessId: 'business-1',
+            cityId: 'city-1',
+            isPrimary: true,
+            createdAt: new Date(0),
+            city: {
+              id: 'city-1',
+              slug: 'uralsk',
+              nameRu: 'Уральск',
+              nameKk: null,
+              timezone: 'Asia/Oral',
+            },
+          },
+        ]),
       },
       analyticsEvent: {
         create: jest.fn(),
@@ -40,6 +62,7 @@ describe('Stage 5J audience geography analytics', () => {
       },
       analyticsDailyMetric: {
         findMany: jest.fn().mockResolvedValue([]),
+        groupBy: jest.fn().mockResolvedValue([]),
       },
       analyticsDailyDimensionMetric: {
         findMany: jest.fn().mockResolvedValue([]),

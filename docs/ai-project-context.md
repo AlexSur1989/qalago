@@ -8,7 +8,8 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `db82561a1dc101c1420a099a84ddb7547563f40d` — **6.12A.9.4.5D2** |
+| **Repo HEAD (current)** | _(update at **5D3** commit)_ — **6.12A.9.4.5D3** |
+| **A.9.4.5D3 implementation SHA** | _(update at commit)_ |
 | **A.9.4.5D1 implementation SHA** | `ffeffdc3d844a183e31f46d5f776c4b49e047209` (unchanged) |
 | **A.9.4.5D2 docs SHA** | `db82561a1dc101c1420a099a84ddb7547563f40d` |
 | **5D pre-migration gate baseline** | `d7b039dd00d062d20622b8d24420194277afc7d8` |
@@ -27,16 +28,16 @@
 | **A.9.4.4C1 implementation SHA** | `80f678a9584f2614c1aaf029e56183c48315f1bb` |
 | **A.9.4.4C2 implementation SHA** | `10c767d272e0033b25fdc93938e62727f9f89beb` |
 | **A.9.4.4C3 implementation SHA** | `a78ff95457c10e7e31ccce846906e91a1b99f670` |
-| **Last completed stage** | **6.12A.9.4.5D2 PASS** — **`Business.cityId`** retired on dev **`qalago_dev`**; repo + DB both **POST-cityId** |
-| **Last product implementation** | **6.12A.9.4.5D1** `ffeffdc3…` (code); **5D2** = dev DB apply only (docs checkpoint) |
+| **Last completed stage** | **6.12A.9.4.5D PASS** — **`Business.cityId`** retirement finalized (**5D1** code + **5D2** dev DB + **5D3** regression/fixtures) |
+| **Last product implementation** | **6.12A.9.4.5D1** `ffeffdc3…` (column retirement code); **5D2** dev DB apply; **5D3** test/fixture cutover only |
 | **A.9.4.4C4A implementation SHA** | `90cd95b89f0f72751df517c90a9785962a944024` |
 | **A.9.4.4C4B docs SHA** | `713a53f8ad9f40f5acb622c76f60017f887b7b27` |
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending** | None for **A.9.4.3** / **A.9.4.2** |
-| **Next agreed development action** | **6.12A.9.4.5D3 — POST-5D integration spec migration + regression** (**not started**) |
+| **Next agreed development action** | **6.12A.9.4.5E — physical/manual QA** (**not started**; explicit agreement only) |
 
-**5D state:** **CODE + `qalago_dev` = POST-cityId** (migration **`20260926180000_stage_6_12a9_4_5d_business_city_id_retirement`** applied). Pre-5D2 backup: `infra/local-backups/qalago_dev_native_pg18_pre_5d2_business_cityid_retirement_20260926T131630Z.dump` (uncommitted). Many integration specs still use legacy **`Business { cityId }`** fixtures — fix in **5D3**, not a D2 blocker.
+**5D state:** **CLOSED — CODE + `qalago_dev` = POST-cityId** (migration **`20260926180000_stage_6_12a9_4_5d_business_city_id_retirement`** applied). **BusinessLocation** is sole business physical/city authority; **Business** has no city FK. Pre-5D2 backup: `infra/local-backups/qalago_dev_native_pg18_pre_5d2_business_cityid_retirement_20260926T131630Z.dump` (596125 bytes; uncommitted). Full **`catalog-api`** regression PASS after fixture cutover (**5D3**).
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 
@@ -224,7 +225,7 @@ Future architecture should allow **backend/admin-central configuration** of cons
 - **A.9.3.4+ owner slice** — **closed in A.9.3.5** (Business Web); Consumer Web closed in **A.9.3.4**.
 - **A.9.4.0** — retirement **policy gate finalized** (docs).
 - **A.9.4.1A** — Admin **ANY-BL** visibility **IMPLEMENTED** (catalog-api).
-- **A.9.4.5A** — Owner-equivalent **CITY_ADMIN** uses **`assertBusinessPrimaryLocationCityInAdminScope`** (primary BL city); secondary branch anti-escalation **IMPLEMENTED**; **`Business.cityId`** mirror unchanged until **5D**.
+- **A.9.4.5A** — Owner-equivalent **CITY_ADMIN** uses **`assertBusinessPrimaryLocationCityInAdminScope`** (primary BL city); secondary branch anti-escalation **IMPLEMENTED**.
 - **A.9.4.1B** — campaign city, analytics attribution, BL dedupe, public **`cityId`** projection **IMPLEMENTED** (catalog-api).
 - **A.9.4.2A** — integrity auditor + repair CLI **IMPLEMENTED** (catalog-api).
 - **A.9.4.2B** — runtime location invariant enforcement **IMPLEMENTED** (catalog-api).
@@ -238,7 +239,7 @@ Future architecture should allow **backend/admin-central configuration** of cons
 - **A.9.4.4** — **PASS** — legacy **Business** physical geo storage retired (**C4**); **`Business.cityId`** remains **A.9.4.5** track.
 - **A.9.4.5B** — **PASS** — campaign/analytics/order paths use BL/explicit/primary only; **`metadata.campaignCityId`** stable on orders.
 - **A.9.4.5C** — **PASS** — benchmark/reporting/moderation/audit city attribution uses BL/explicit context.
-- **A.9.4.5D–5E** — schema **`Business.cityId`** retirement — **NOT STARTED** (**5D read-only gate** next when agreed).
+- **A.9.4.5D** — **`Business.cityId`** retirement — **CLOSED** (**5D1** code, **5D2** dev DB, **5D3** regression). **5E** physical QA — **NOT STARTED**.
 - **A.8.1 test debt** — **CLOSED in 5B** (branch **`businessLocationId`** contract spec).
 - **F.4** — Consumer Web business/branch URLs & SEO; **does not require** A.9.4 DB column removal (**A.9.4.0** gate); not started.
 - Post **6.12A:** User contour audit, Business Web owner contour, Admin Web contour, Admin Catalog/CMS, centralized Home config, Catalog Import, QalaGo AI, remaining Consumer Web, production monetization, analytics UX, role-based E2E, security/legal/release — **not** current track unless explicitly staged.

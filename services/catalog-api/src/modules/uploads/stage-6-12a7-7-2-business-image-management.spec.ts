@@ -75,7 +75,6 @@ describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () =>
         title: 'A772',
         slug: slugA,
         categoryId,
-        cityId,
         status: 'ACTIVE',
         locations: {
           create: [
@@ -91,7 +90,6 @@ describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () =>
         title: 'A772B',
         slug: slugB,
         categoryId,
-        cityId,
         status: 'ACTIVE',
         locations: { create: { cityId, address: 'B1', isPrimary: true } },
       },
@@ -260,7 +258,6 @@ describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () =>
         title: 'Pub',
         slug,
         categoryId,
-        cityId,
         status: 'ACTIVE',
         planTier: 'VIP',
         images: {

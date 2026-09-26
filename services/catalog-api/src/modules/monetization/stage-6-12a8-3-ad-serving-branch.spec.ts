@@ -77,8 +77,7 @@ describe('Stage 6.12A.8.3 — branch-aware ad serving', () => {
             title: 'A.8.3 multi',
             slug,
             categoryId,
-            cityId: cityUralskId,
-            phone: 'legacy-phone',
+        phone: 'legacy-phone',
             status: 'ACTIVE',
             locations: {
               create: [
@@ -307,7 +306,6 @@ describe('Stage 6.12A.8.3 — branch-aware ad serving', () => {
         title: 'Serve filter',
         slug,
         categoryId,
-        cityId: cityUralskId,
         status: 'ACTIVE',
         locations: {
           create: [

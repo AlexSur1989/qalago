@@ -133,7 +133,6 @@ describe('Stage 6.12A.7.9.2 — nearby nearest BusinessLocation per Business', (
         title: `${titlePrefix} ${slug}`,
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId,
         status: BusinessStatus.ACTIVE,
         businessSubcategories: { create: { subcategoryId } },

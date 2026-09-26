@@ -57,7 +57,7 @@ describe('Stage 6.12A.1 — BusinessLocation foundation (runtime DB)', () => {
         )`;
     const names = cols.map((c) => c.column_name).sort();
     expect(names).toEqual(
-      ['cityId', 'instagram', 'phone', 'website', 'whatsapp', 'workHours'].sort(),
+      ['instagram', 'phone', 'website', 'whatsapp', 'workHours'].sort(),
     );
   });
 
@@ -79,7 +79,6 @@ describe('Stage 6.12A.1 — BusinessLocation foundation (runtime DB)', () => {
         title: 'A.1 Fixture',
         slug,
         categoryId,
-        cityId,
         status: 'PENDING',
       },
       select: { id: true },

@@ -136,7 +136,6 @@ describe('Stage 6.12A.9.3.2 — discovery SQL physical read cleanup', () => {
         title: `A932 ${slug}`,
         slug,
         categoryId,
-        cityId: options.businessCityId,
         ownerId,
         status: BusinessStatus.ACTIVE,
         businessSubcategories: { create: { subcategoryId } },
@@ -148,7 +147,7 @@ describe('Stage 6.12A.9.3.2 — discovery SQL physical read cleanup', () => {
       data: {
         address: 'Branch addr',
         businessId: business.id,
-        cityId: uralskCityId,
+        cityId: options.businessCityId,
         isPrimary: true,
       },
     });
@@ -290,7 +289,6 @@ describe('Stage 6.12A.9.3.2 — discovery SQL physical read cleanup', () => {
         title: `Ghost ${slug}`,
         slug,
         categoryId,
-        cityId: aktobeCityId,
         ownerId,
         status: BusinessStatus.ACTIVE,
         businessSubcategories: { create: { subcategoryId } },
@@ -373,12 +371,12 @@ describe('Stage 6.12A.9.3.2 — discovery SQL physical read cleanup', () => {
   it('active bbox SQL does not reference Business.location or Business.cityId', () => {
     const bbox = { minLat: 51.1, maxLat: 51.3, minLng: 51.2, maxLng: 51.5 };
     const businessGrain = buildCatalogBusinessGrainBboxJoinWhereSql({
-      cityId: 'city-1',
+      cityId: 'city-fixture',
       status: BusinessStatus.ACTIVE,
       mapBbox: bbox,
     });
     const locationGrain = buildCatalogMapLocationViewportWhereSql({
-      cityId: 'city-1',
+      cityId: 'city-fixture',
       status: BusinessStatus.ACTIVE,
       mapBbox: bbox,
     });

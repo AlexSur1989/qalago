@@ -101,7 +101,6 @@ describe('Stage 6.12A.9.3.2b — legacy Prisma geo filter cleanup', () => {
         title: `Cross ${slug}`,
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId,
         status: BusinessStatus.ACTIVE,
         businessSubcategories: { create: { subcategoryId } },
@@ -182,7 +181,6 @@ describe('Stage 6.12A.9.3.2b — legacy Prisma geo filter cleanup', () => {
         title: `Ghost ${slug}`,
         slug,
         categoryId,
-        cityId: aktobeCityId,
         ownerId,
         status: BusinessStatus.ACTIVE,
         businessSubcategories: { create: { subcategoryId } },
@@ -220,7 +218,6 @@ describe('Stage 6.12A.9.3.2b — legacy Prisma geo filter cleanup', () => {
         title: `MapReady ${slug}`,
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId,
         status: BusinessStatus.ACTIVE,
         businessSubcategories: { create: { subcategoryId } },
@@ -254,7 +251,6 @@ describe('Stage 6.12A.9.3.2b — legacy Prisma geo filter cleanup', () => {
         title: `NotReady ${slug}`,
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId,
         status: BusinessStatus.ACTIVE,
         businessSubcategories: { create: { subcategoryId } },
@@ -334,13 +330,10 @@ describe('Stage 6.12A.9.3.2b — legacy Prisma geo filter cleanup', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
-  it('K: Business.cityId Uralsk does not block Aktobe BL physical membership', async () => {
+  it('K: primary Uralsk BL does not block Aktobe BL physical membership', async () => {
     if (skip) return;
-    const { business, aktobeBbox } = await createCrossCityBrand();
-    expect(
-      (await prisma.business.findUnique({ where: { id: business.id }, select: { cityId: true } }))
-        ?.cityId,
-    ).toBe(uralskCityId);
+    const { business, lPrimary, aktobeBbox } = await createCrossCityBrand();
+    expect(lPrimary.cityId).toBe(uralskCityId);
     const service = buildService(aktobeCityId);
     const result = await service.findAll({ citySlug: 'aktobe', ...aktobeBbox, limit: 50 });
     expect(result.items.some((i) => i.id === business.id)).toBe(true);

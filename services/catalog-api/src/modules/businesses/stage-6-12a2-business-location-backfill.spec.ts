@@ -90,7 +90,6 @@ describe('Stage 6.12A.2 — BusinessLocation backfill integrity (runtime DB)', (
             title: 'Skip test',
             slug,
             categoryId: category.id,
-            cityId: city.id,
             status: 'PENDING',
           },
         });
@@ -108,11 +107,17 @@ describe('Stage 6.12A.2 — BusinessLocation backfill integrity (runtime DB)', (
           )
           SELECT
             'bl' || substr(md5(b."id" || ':6.12A.2-primary'), 1, 22),
-            b."id", b."cityId", 'duplicate attempt', true, b."createdAt", CURRENT_TIMESTAMP
+            b."id",
+            bl."cityId",
+            'duplicate attempt',
+            true,
+            b."createdAt",
+            CURRENT_TIMESTAMP
           FROM "Business" b
+          INNER JOIN "BusinessLocation" bl ON bl."businessId" = b."id" AND bl."isPrimary" = true
           WHERE b."id" = ${biz.id}
             AND NOT EXISTS (
-              SELECT 1 FROM "BusinessLocation" bl WHERE bl."businessId" = b."id"
+              SELECT 1 FROM "BusinessLocation" bl2 WHERE bl2."businessId" = b."id"
             )`;
         expect(n).toBe(0);
         expect(await tx.businessLocation.count({ where: { businessId: biz.id } })).toBe(1);

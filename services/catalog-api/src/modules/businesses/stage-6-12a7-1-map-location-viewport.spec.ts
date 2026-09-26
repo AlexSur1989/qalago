@@ -101,7 +101,6 @@ describe('Stage 6.12A.7.1 — map forMap viewport (BusinessLocation grain)', () 
         title: `${options?.titlePrefix ?? 'A7 Map'} ${slug}`,
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId,
         status: options?.status ?? BusinessStatus.ACTIVE,
         businessSubcategories: { create: { subcategoryId } },

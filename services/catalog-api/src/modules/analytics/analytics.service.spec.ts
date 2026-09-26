@@ -37,7 +37,20 @@ describe('AnalyticsService', () => {
       },
       businessLocation: {
         findMany: jest.fn().mockResolvedValue([
-          { id: 'bl-1', cityId: 'city-primary', isPrimary: true, createdAt: new Date(0) },
+          {
+            id: 'bl-1',
+            businessId: 'business-1',
+            cityId: 'city-primary',
+            isPrimary: true,
+            createdAt: new Date(0),
+            city: {
+              id: 'city-primary',
+              slug: 'uralsk',
+              nameRu: 'Уральск',
+              nameKk: null,
+              timezone: 'Asia/Oral',
+            },
+          },
         ]),
         findFirst: jest.fn(),
       },
@@ -153,7 +166,6 @@ describe('AnalyticsService', () => {
     const { prisma, service } = createService();
     prisma.business.findUnique.mockResolvedValue({
       ownerId: 'other-owner',
-      city: { timezone: 'Asia/Oral' },
     });
     prisma.analyticsEvent.findMany.mockResolvedValue([
       { type: AnalyticsEventType.VIEW_BUSINESS, createdAt: new Date('2026-08-29T01:00:00.000Z') },
@@ -198,7 +210,6 @@ describe('AnalyticsService', () => {
     const { prisma, planLimits, service } = createService();
     prisma.business.findUnique.mockResolvedValue({
       ownerId: owner.id,
-      city: { timezone: 'Asia/Oral' },
     });
     planLimits.getBusinessPlanContext = jest.fn().mockResolvedValue({
       effectiveTier: 'FREE',

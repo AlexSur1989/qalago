@@ -65,11 +65,28 @@ describe('Stage 6.6A.1 business intent action semantics', () => {
     const prisma = {
       business: {
         findUnique: jest.fn().mockResolvedValue({
-          city: { timezone: 'Asia/Oral' },
           category: { title: 'Test' },
           categoryId: 'c1',
-          cityId: 'city-1',
         }),
+      },
+      businessLocation: {
+        findFirst: jest.fn().mockResolvedValue({ city: { timezone: 'Asia/Oral' } }),
+        findMany: jest.fn().mockResolvedValue([
+          {
+            id: 'bl-1',
+            businessId: 'biz-1',
+            cityId: 'city-1',
+            isPrimary: true,
+            createdAt: new Date(0),
+            city: {
+              id: 'city-1',
+              slug: 'uralsk',
+              nameRu: 'Уральск',
+              nameKk: null,
+              timezone: 'Asia/Oral',
+            },
+          },
+        ]),
       },
       analyticsEvent: {
         findMany: jest.fn(),

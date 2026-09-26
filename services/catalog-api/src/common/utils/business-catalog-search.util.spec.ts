@@ -27,7 +27,7 @@ describe('business-catalog-search.util (6.11B.1 / 6.11B.2)', () => {
       businessLocation: { findMany: jest.fn().mockResolvedValue([]) },
     };
     const where: Prisma.BusinessWhereInput = {
-      cityId: 'city-uralsk',
+      locations: { some: { cityId: 'city-uralsk' } },
       status: BusinessStatus.ACTIVE,
       categoryId: 'cat-beauty',
     };
@@ -36,7 +36,7 @@ describe('business-catalog-search.util (6.11B.1 / 6.11B.2)', () => {
       status: BusinessStatus.ACTIVE,
       categoryId: 'cat-beauty',
     });
-    expect(where.cityId).toBe('city-uralsk');
+    expect(where.locations).toEqual({ some: { cityId: 'city-uralsk' } });
     expect(where.categoryId).toBe('cat-beauty');
     expect(where.OR).toHaveLength(5);
     expect(where.OR![0]).toEqual(
@@ -46,7 +46,7 @@ describe('business-catalog-search.util (6.11B.1 / 6.11B.2)', () => {
 
   it('does not set OR when normalized search is empty', async () => {
     const prisma = { serviceItem: { findMany: jest.fn() } };
-    const where: Prisma.BusinessWhereInput = { cityId: 'x' };
+    const where: Prisma.BusinessWhereInput = { locations: { some: { cityId: 'x' } } };
     await expect(
       appendBusinessCatalogTextSearch(prisma, where, '   ', {
         cityId: 'x',

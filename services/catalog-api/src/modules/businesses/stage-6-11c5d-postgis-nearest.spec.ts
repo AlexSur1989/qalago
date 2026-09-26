@@ -141,7 +141,6 @@ describe('Stage 6.11C.5D — PostGIS nearest (runtime DB)', () => {
           data: {
             title: 'C5D Null Loc',
             slug,
-            cityId,
             categoryId: category.id,
             status: BusinessStatus.ACTIVE,
           },

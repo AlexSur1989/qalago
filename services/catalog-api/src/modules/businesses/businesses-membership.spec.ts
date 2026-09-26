@@ -41,6 +41,24 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
         findMany: jest.fn(),
         findUnique: jest.fn(),
       },
+      businessLocation: {
+        findMany: jest.fn().mockResolvedValue([
+          {
+            id: 'bl-1',
+            businessId: 'b1',
+            cityId: 'city-uralsk',
+            isPrimary: true,
+            createdAt: new Date(0),
+            city: {
+              id: 'city-uralsk',
+              slug: 'uralsk',
+              nameRu: 'Уральск',
+              nameKk: null,
+              timezone: 'Asia/Oral',
+            },
+          },
+        ]),
+      },
       category: { findUnique: jest.fn().mockResolvedValue({ id: 'cat-1' }) },
     } as unknown as PrismaService;
 
@@ -95,7 +113,6 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
         title: 'Cafe',
         memberships: [],
         category: null,
-        city: null,
       },
     ]);
 
@@ -119,7 +136,6 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
         title: 'Cafe',
         memberships: [{ role: 'OWNER', status: 'REVOKED', permissions: [] }],
         category: null,
-        city: null,
       },
     ]);
 
@@ -142,7 +158,6 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
         title: 'Cafe',
         memberships: [{ role: 'MANAGER', status: 'ACTIVE', permissions: ['CATALOG_EDIT'] }],
         category: null,
-        city: null,
       },
     ]);
 
@@ -167,7 +182,6 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
           },
         ],
         category: null,
-        city: null,
       },
     ]);
 

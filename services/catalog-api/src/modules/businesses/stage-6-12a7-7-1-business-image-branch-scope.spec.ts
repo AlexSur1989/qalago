@@ -61,7 +61,6 @@ describe('Stage 6.12A.7.7.1 — BusinessImage branch scope (runtime DB)', () => 
             title: 'A.7.7.1 A',
             slug: slugA,
             categoryId,
-            cityId,
             status: 'ACTIVE',
             locations: {
               create: [
@@ -85,7 +84,6 @@ describe('Stage 6.12A.7.7.1 — BusinessImage branch scope (runtime DB)', () => 
             title: 'A.7.7.1 B',
             slug: slugB,
             categoryId,
-            cityId,
             status: 'ACTIVE',
             locations: {
               create: {
@@ -177,7 +175,6 @@ describe('Stage 6.12A.7.7.1 — BusinessImage branch scope (runtime DB)', () => 
         title: 'A.7.7.1 delete',
         slug,
         categoryId,
-        cityId,
         status: 'ACTIVE',
         images: {
           create: [{ imageUrl: '/uploads/a771-del.jpg', locationId: null }],

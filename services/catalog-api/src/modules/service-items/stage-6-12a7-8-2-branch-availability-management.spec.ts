@@ -108,7 +108,6 @@ describe('Stage 6.12A.7.8.2 — branch availability management', () => {
         title: 'A782 fixture',
         slug,
         categoryId,
-        cityId,
         status: 'ACTIVE',
         ownerId,
         locations: {

@@ -77,7 +77,6 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
         title: 'A942B first location',
         slug,
         categoryId,
-        cityId: uralskCityId,
         phone: 'first-phone',
         ownerId: fixtureOwnerId,
         status: 'PENDING',
@@ -87,8 +86,8 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
     try {
       const svc = buildLocationService();
       const created = await svc.createLocation(owner(), business.id, {
-        address: 'Branch addr',
         cityId: uralskCityId,
+        address: 'Branch addr',
         phone: 'branch-phone',
       });
       expect(created.isPrimary).toBe(true);
@@ -99,7 +98,7 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
       await assertPrimaryBusinessLocationParity(prisma, business.id);
       const row = await prisma.business.findUniqueOrThrow({ where: { id: business.id } });
       expect(row.phone).toBe('branch-phone');
-      expect(row.cityId).toBe(uralskCityId);
+      expect(created.cityId).toBe(uralskCityId);
     } finally {
       await prisma.business.delete({ where: { id: business.id } });
     }
@@ -113,7 +112,6 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
         title: 'A942B parallel first',
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId: fixtureOwnerId,
         status: 'PENDING',
       },
@@ -123,12 +121,12 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
       const svc = buildLocationService();
       const results = await Promise.allSettled([
         svc.createLocation(owner(), business.id, {
-          address: 'Branch addr',
           cityId: uralskCityId,
+          address: 'Branch addr',
         }),
         svc.createLocation(owner(), business.id, {
-          address: 'Branch addr',
           cityId: uralskCityId,
+          address: 'Branch addr',
         }),
       ]);
 
@@ -156,7 +154,6 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
         title: 'A942B last delete',
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
@@ -184,7 +181,6 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
         title: 'A942B del primary',
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
@@ -192,8 +188,8 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
     await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'Primary addr');
     const svc = buildLocationService();
     await svc.createLocation(owner(), business.id, {
+      cityId: uralskCityId,
       address: 'Branch addr',
-      cityId: aktobeCityId,
     });
     const primary = await prisma.businessLocation.findFirstOrThrow({
       where: { businessId: business.id, isPrimary: true },
@@ -216,7 +212,6 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
         title: 'A942B zero primary set',
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId: fixtureOwnerId,
         status: 'PENDING',
       },
@@ -252,7 +247,6 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
         title: 'A942B set-primary concurrent',
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
       },
@@ -260,12 +254,12 @@ describe('Stage 6.12A.9.4.2B — BusinessLocation runtime invariant enforcement'
     await specCreateInitialPrimary(primaryLocation, prisma, business.id, uralskCityId, 'Primary base');
     const svc = buildLocationService();
     const l2 = await svc.createLocation(owner(), business.id, {
+      cityId: uralskCityId,
       address: 'Branch addr',
-      cityId: aktobeCityId,
     });
     const l3 = await svc.createLocation(owner(), business.id, {
+      cityId: uralskCityId,
       address: 'Branch addr',
-      cityId: aktobeCityId,
     });
 
     try {

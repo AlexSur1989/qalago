@@ -101,7 +101,6 @@ describe('Stage 6.12A.7.9.3A — BusinessLocation city membership + city context
         title: `${options.titlePrefix} ${slug}`,
         slug,
         categoryId,
-        cityId: options.businessCityId,
         ownerId,
         status: options.status ?? BusinessStatus.ACTIVE,
         businessSubcategories: { create: { subcategoryId } },
@@ -122,7 +121,7 @@ describe('Stage 6.12A.7.9.3A — BusinessLocation city membership + city context
     for (const branch of options.extraBranches ?? []) {
       const row = await prisma.businessLocation.create({
         data: {
-          address: 'Branch addr',
+          address: branch.address,
           businessId: business.id,
           cityId: branch.cityId,
           isPrimary: false,

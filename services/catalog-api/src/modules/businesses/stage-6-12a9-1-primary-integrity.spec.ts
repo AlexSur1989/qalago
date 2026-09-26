@@ -67,7 +67,6 @@ describe('Stage 6.12A.9.1 — Single-primary integrity hardening', () => {
         title: `A12A9.1 ${slugPrefix}`,
         slug,
         categoryId,
-        cityId: uralskCityId,
         phone: 'primary-phone',
         ownerId: fixtureOwnerId,
         status: 'ACTIVE',
@@ -85,8 +84,8 @@ describe('Stage 6.12A.9.1 — Single-primary integrity hardening', () => {
     const business = await createFixtureBusiness('a91-del-primary');
     const svc = buildLocationService();
     const secondary = await svc.createLocation(owner(), business.id, {
+      cityId: uralskCityId,
       address: 'Branch addr',
-      cityId: aktobeCityId,
     });
     const primary = await prisma.businessLocation.findFirstOrThrow({
       where: { businessId: business.id, isPrimary: true },
@@ -168,7 +167,6 @@ describe('Stage 6.12A.9.1 — Single-primary integrity hardening', () => {
         title: 'A91 zero primary fixture',
         slug,
         categoryId,
-        cityId: uralskCityId,
         ownerId: fixtureOwnerId,
         status: 'PENDING',
       },

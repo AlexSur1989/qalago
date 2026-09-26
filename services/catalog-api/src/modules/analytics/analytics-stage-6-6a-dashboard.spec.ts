@@ -34,11 +34,12 @@ describe('Stage 6.6A rollup-backed dashboard', () => {
     const prisma = {
       business: {
         findUnique: jest.fn().mockResolvedValue({
-          city: { timezone: 'Asia/Oral' },
           category: { title: 'Кафе' },
           categoryId: 'cat-1',
-          cityId: 'city-1',
         }),
+      },
+      businessLocation: {
+        findFirst: jest.fn().mockResolvedValue({ city: { timezone: 'Asia/Oral' } }),
       },
       analyticsEvent: {
         findMany: jest.fn().mockResolvedValue([]),
