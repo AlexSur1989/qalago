@@ -8,7 +8,7 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | _(C4B docs pending)_ |
+| **Repo HEAD (current)** | `713a53f` — **A.9.4.4C4B** docs closure |
 | **A.9.4.3D docs closure** | `75d58f6bb477a0a295029a867fd225989544c172` — physical QA finalized |
 | **A.9.4.3C implementation SHA** | `91284804547a78c1b4b6521ffe648e63508c2fe9` |
 | **A.9.4.3B implementation SHA** | `cde02e6d0faee3b5b6831ba479d6f4dcdff14b17` |
@@ -23,7 +23,7 @@
 | **Last completed stage** | **6.12A.9.4.4C4B PASS** — dev DB migrated; **Business** legacy geo columns retired |
 | **Last product implementation** | **6.12A.9.4.4C4A** `90cd95b89f0f72751df517c90a9785962a944024` (C4B = DB apply + docs only) |
 | **A.9.4.4C4A implementation SHA** | `90cd95b89f0f72751df517c90a9785962a944024` |
-| **A.9.4.4C4B docs SHA** | _(after docs commit)_ |
+| **A.9.4.4C4B docs SHA** | `713a53f8ad9f40f5acb622c76f60017f887b7b27` |
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending** | None for **A.9.4.3** / **A.9.4.2** |

@@ -9,7 +9,7 @@
 ## 2026-09-26 — 6.12A.9.4.4C4B Business geo column retirement (dev DB apply)
 
 - **Status:** **6.12A.9.4.4C4B PASS — BUSINESS GEO COLUMNS RETIRED FROM DEV DATABASE** (overall **A.9.4.4C4** not closed — **C4C** full regression remains).
-- **Checkpoint (docs):** _(recorded after docs commit)_.
+- **Checkpoint (docs):** `713a53f8ad9f40f5acb622c76f60017f887b7b27`.
 - **C4A implementation baseline:** `90cd95b89f0f72751df517c90a9785962a944024`.
 - **Scope:** Dev **`qalago_dev`** only — fresh **`pg_dump`** custom backup, **`prisma migrate deploy`** for **`20260926120000_stage_6_12a9_4_4c4_business_geo_column_retirement`**. No product code/schema/migration SQL edits; no seed; no integrity **`--apply`**; **C4C not started**.
 - **Summary:** Live DB post-C4: **Business** no longer stores **address/latitude/longitude/locationSource/location** or Business-only spatial trigger/GiST/function; **Business.cityId** + contact defaults retained; **BusinessLocation** PostGIS trigger/function/GiST/columns preserved; entity counts **109/110** unchanged.
