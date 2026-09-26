@@ -26,6 +26,7 @@ import {
   normalizeBusinessPermissions,
   validatePermissionDependencies,
 } from '../../common/utils/business-permission.util';
+import { resolveBusinessAuditCityId } from '../../common/utils/business-context-city.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -161,7 +162,7 @@ export class BusinessTeamService {
           resourceType: AuditResourceType.BUSINESS_MEMBERSHIP,
           resourceId: membership.id,
           businessId,
-          cityId: business.cityId,
+          cityId: (await resolveBusinessAuditCityId(tx, businessId)) ?? undefined,
           targetUserId: existingUser.id,
           membershipRole: BusinessMembershipRole.OWNER,
           metadata: {
@@ -197,13 +198,14 @@ export class BusinessTeamService {
       },
     });
 
+    const inviteAuditCityId = await resolveBusinessAuditCityId(this.prisma, businessId);
     await this.auditLog.record({
       actor: user,
       action: AuditAction.TEAM_INVITE,
       resourceType: AuditResourceType.BUSINESS_INVITATION,
       resourceId: invitation.id,
       businessId,
-      cityId: business.cityId,
+      cityId: inviteAuditCityId ?? undefined,
       membershipRole: BusinessMembershipRole.OWNER,
       metadata: {
         invitationId: invitation.id,
@@ -252,13 +254,14 @@ export class BusinessTeamService {
       },
     });
 
+    const emailInviteAuditCityId = await resolveBusinessAuditCityId(this.prisma, businessId);
     await this.auditLog.record({
       actor: user,
       action: AuditAction.TEAM_INVITE,
       resourceType: AuditResourceType.BUSINESS_INVITATION,
       resourceId: invitation.id,
       businessId,
-      cityId: business.cityId,
+      cityId: emailInviteAuditCityId ?? undefined,
       membershipRole: BusinessMembershipRole.OWNER,
       metadata: {
         invitationId: invitation.id,
@@ -321,7 +324,8 @@ export class BusinessTeamService {
     membershipId: string,
     dto: UpdateTeamMemberDto,
   ) {
-    const business = await this.businessAccess.assertOwner(user, businessId);
+    await this.businessAccess.assertOwner(user, businessId);
+    const memberAuditCityId = await resolveBusinessAuditCityId(this.prisma, businessId);
 
     const membership = await this.prisma.businessMembership.findFirst({
       where: { id: membershipId, businessId },
@@ -406,7 +410,7 @@ export class BusinessTeamService {
         resourceType: AuditResourceType.BUSINESS_MEMBERSHIP,
         resourceId: membershipId,
         businessId,
-        cityId: business.cityId,
+        cityId: memberAuditCityId ?? undefined,
         targetUserId: membership.userId,
         membershipRole: BusinessMembershipRole.OWNER,
         metadata: entry.metadata,
@@ -417,7 +421,8 @@ export class BusinessTeamService {
   }
 
   async revokeInvitation(user: AuthUser, businessId: string, invitationId: string) {
-    const business = await this.businessAccess.assertOwner(user, businessId);
+    await this.businessAccess.assertOwner(user, businessId);
+    const revokeAuditCityId = await resolveBusinessAuditCityId(this.prisma, businessId);
 
     const invitation = await this.prisma.businessInvitation.findFirst({
       where: { id: invitationId, businessId, status: BusinessInvitationStatus.PENDING },
@@ -437,7 +442,7 @@ export class BusinessTeamService {
       resourceType: AuditResourceType.BUSINESS_INVITATION,
       resourceId: invitationId,
       businessId,
-      cityId: business.cityId,
+      cityId: revokeAuditCityId ?? undefined,
       membershipRole: BusinessMembershipRole.OWNER,
       metadata: {
         invitationId,

@@ -15,6 +15,7 @@ import { AuthUser } from '../../common/types/jwt-payload.type';
 import { deriveUserAuthMethods } from '../../common/utils/auth-methods.util';
 
 import { CityScopeService } from '../../common/services/city-scope.service';
+import { resolveBusinessPrimaryCityId } from '../../common/utils/business-context-city.util';
 import { SystemAccessService } from '../../common/services/system-access.service';
 
 import { PrismaService } from '../../prisma/prisma.service';
@@ -505,7 +506,7 @@ export class AdminService {
 
       where: { id },
 
-      include: { business: { select: { cityId: true, title: true } } },
+      include: { business: { select: { title: true } } },
 
     });
 
@@ -513,12 +514,13 @@ export class AdminService {
 
     await this.cityScope.assertBusinessInAdminScope(user, review.businessId);
 
+    const auditCityId = await resolveBusinessPrimaryCityId(this.prisma, review.businessId);
     await this.auditLog.record({
       actor: user,
       action: AuditAction.REVIEW_DELETE,
       resourceType: AuditResourceType.REVIEW,
       resourceId: id,
-      cityId: review.business.cityId,
+      cityId: auditCityId ?? undefined,
       metadata: {
         businessId: review.businessId,
         source: 'admin_hard_delete',

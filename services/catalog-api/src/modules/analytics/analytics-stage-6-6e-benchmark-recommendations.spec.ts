@@ -57,6 +57,23 @@ describe('Stage 6.6E category benchmark (rollup cohort)', () => {
     subjectTotals: emptyDailyTotals(),
   };
 
+  it('peer cohort uses BL presence in market city (multi-city brand eligible via secondary BL)', async () => {
+    const groupBy = jest.fn().mockResolvedValue(fivePeers());
+    const prisma = { analyticsDailyMetric: { groupBy } } as unknown as PrismaService;
+
+    await buildCategoryBenchmark({
+      ...baseParams,
+      prisma,
+      subjectBusinessId: 'subject-stale-parent',
+      cityId: 'city-b',
+    });
+
+    expect(groupBy.mock.calls[0][0].where.business.locations).toEqual({
+      some: { cityId: 'city-b' },
+    });
+    expect(groupBy.mock.calls[0][0].where.business.cityId).toBeUndefined();
+  });
+
   it('excludes subject business from peer query (where.id.not)', async () => {
     const groupBy = jest.fn().mockResolvedValue(fivePeers());
     const prisma = { analyticsDailyMetric: { groupBy } } as unknown as PrismaService;
@@ -66,7 +83,7 @@ describe('Stage 6.6E category benchmark (rollup cohort)', () => {
     const where = groupBy.mock.calls[0][0].where;
     expect(where.business.id).toEqual({ not: 'subject-a' });
     expect(where.business.categoryId).toBe('cat-1');
-    expect(where.business.cityId).toBe('city-1');
+    expect(where.business.locations).toEqual({ some: { cityId: 'city-1' } });
     expect(where.business.status).toBe(BusinessStatus.ACTIVE);
     expect(where.metricDate).toEqual({ gte: '2026-08-01', lte: '2026-09-09' });
   });
@@ -194,11 +211,15 @@ describe('Stage 6.6E category benchmark (rollup cohort)', () => {
     const prisma = {
       business: {
         findUnique: jest.fn().mockResolvedValue({
-          city: { timezone: 'Asia/Oral' },
           category: { title: 'Кафе' },
           categoryId: 'cat-1',
-          cityId: 'city-1',
         }),
+      },
+      businessLocation: {
+        findMany: jest.fn().mockResolvedValue([
+          { id: 'bl-1', cityId: 'city-1', isPrimary: true, createdAt: new Date(0) },
+        ]),
+        findFirst: jest.fn().mockResolvedValue({ city: { timezone: 'Asia/Oral' } }),
       },
       analyticsEvent: { findMany: jest.fn(), groupBy: jest.fn() },
       analyticsDailyMetric: {
@@ -502,11 +523,15 @@ describe('Stage 6.6E deterministic recommendations', () => {
     const prisma = {
       business: {
         findUnique: jest.fn().mockResolvedValue({
-          city: { timezone: 'Asia/Oral' },
           category: { title: 'C' },
           categoryId: 'c1',
-          cityId: 'city-1',
         }),
+      },
+      businessLocation: {
+        findMany: jest.fn().mockResolvedValue([
+          { id: 'bl-1', cityId: 'city-1', isPrimary: true, createdAt: new Date(0) },
+        ]),
+        findFirst: jest.fn().mockResolvedValue({ city: { timezone: 'Asia/Oral' } }),
       },
       analyticsEvent: { findMany: jest.fn().mockResolvedValue([]), groupBy: jest.fn() },
       analyticsDailyMetric: {

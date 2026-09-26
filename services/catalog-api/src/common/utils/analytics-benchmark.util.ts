@@ -1,4 +1,5 @@
 import { BusinessStatus } from '@prisma/client';
+import { businessHasLocationInCityWhere } from './business-context-city.util';
 import { deltaPercent } from './analytics-capabilities.util';
 import {
   periodCtrPercent,
@@ -90,8 +91,9 @@ function meanCtr(peers: PeerPeriodTotals[]): number | null {
 }
 
 /**
- * Rollup-backed category benchmark: same city + primary category, ACTIVE peers only,
- * subject excluded, same local metricDate range as dashboard period.
+ * Rollup-backed category benchmark: same market city (BL presence) + primary category,
+ * ACTIVE peers only, subject excluded, same local metricDate range as dashboard period.
+ * A.9.4.5C — peer membership uses BusinessLocation presence, not Business.cityId.
  */
 export async function buildCategoryBenchmark(params: {
   prisma: PrismaService;
@@ -121,8 +123,8 @@ export async function buildCategoryBenchmark(params: {
       business: {
         id: { not: subjectBusinessId },
         categoryId,
-        cityId,
         status: BusinessStatus.ACTIVE,
+        ...businessHasLocationInCityWhere(cityId),
       },
     },
     _sum: {

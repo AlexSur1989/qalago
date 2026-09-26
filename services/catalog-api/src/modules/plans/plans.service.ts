@@ -26,6 +26,7 @@ import { BusinessAccessService } from '../../common/services/business-access.ser
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
+import { resolveBusinessPrimaryCityId } from '../../common/utils/business-context-city.util';
 import { toMembershipRole } from '../audit-log/audit-log.util';
 
 const PAID_PERIOD_DAYS = 30;
@@ -68,13 +69,14 @@ export class PlansService {
 
     await this.assertCanManage(user, businessId);
     const access = await this.businessAccess.resolveAccess(user, businessId);
+    const auditCityId = await resolveBusinessPrimaryCityId(this.prisma, businessId);
     return this.setBusinessTier(businessId, tier, {
       isMock: true,
       message: 'Тариф подключён (тестовая оплата без списания)',
       audit: {
         actor: user,
         action: AuditAction.PLAN_CHECKOUT,
-        cityId: access.business.cityId,
+        cityId: auditCityId ?? '',
         membershipRole: toMembershipRole(access.accessRole),
       },
     });
@@ -83,7 +85,7 @@ export class PlansService {
   async adminSetTier(user: AuthUser, businessId: string, tier: BusinessPlanTier) {
     const business = await this.prisma.business.findUnique({
       where: { id: businessId },
-      select: { cityId: true, planTier: true },
+      select: { planTier: true },
     });
     if (!business) {
       throw new NotFoundException('Business not found');
@@ -92,6 +94,7 @@ export class PlansService {
       throw new ForbiddenException('Admin only');
     }
 
+    const auditCityId = await resolveBusinessPrimaryCityId(this.prisma, businessId);
     return this.setBusinessTier(businessId, tier, {
       isMock: false,
       skipPayment: true,
@@ -99,7 +102,7 @@ export class PlansService {
       audit: {
         actor: user,
         action: AuditAction.PLAN_OVERRIDE,
-        cityId: business.cityId,
+        cityId: auditCityId ?? '',
       },
     });
   }

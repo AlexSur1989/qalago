@@ -17,6 +17,7 @@ import {
   TEAM_AUDIT_ACTIONS,
 } from './audit-log.constants';
 import { ListAuditLogsQueryDto, ListTeamAuditQueryDto } from './dto/audit-log.dto';
+import { resolveBusinessPrimaryCityId } from '../../common/utils/business-context-city.util';
 import { sanitizeAuditMetadata, toMembershipRole } from './audit-log.util';
 
 export type AuditRecordInput = {
@@ -72,11 +73,12 @@ export class AuditLogService {
     >,
   ) {
     const access = await this.businessAccess.resolveAccess(user, businessId);
+    const cityId = await resolveBusinessPrimaryCityId(this.prisma, businessId);
     return this.record({
       ...input,
       actor: user,
       businessId,
-      cityId: access.business.cityId,
+      cityId: cityId ?? undefined,
       membershipRole: toMembershipRole(access.accessRole),
     });
   }

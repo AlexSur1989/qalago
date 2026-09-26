@@ -21,6 +21,7 @@ import {
 } from '../../common/constants/review.constants';
 import { publicPlanLabelRu } from '../../common/utils/plan-display.util';
 import { normalizeReviewText } from '../../common/utils/review-text.util';
+import { resolveBusinessAuditCityId } from '../../common/utils/business-context-city.util';
 import { BusinessAccessService } from '../../common/services/business-access.service';
 import { BusinessMembershipService } from '../../common/services/business-membership.service';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
@@ -104,6 +105,7 @@ export class ReviewsService {
     });
     if (!business) throw new NotFoundException('Business not found');
 
+    const auditCityId = await resolveBusinessAuditCityId(this.prisma, business.id);
     await this.assertCanSubmitConsumerReview(user.id, business.id, business.ownerId);
 
     const text = normalizeReviewText(dto.text);
@@ -136,7 +138,7 @@ export class ReviewsService {
         resourceType: AuditResourceType.REVIEW,
         resourceId: restored.id,
         businessId: business.id,
-        cityId: business.cityId,
+        cityId: auditCityId ?? undefined,
         metadata: {
           businessId: business.id,
           rating: dto.rating,
@@ -168,7 +170,7 @@ export class ReviewsService {
         resourceType: AuditResourceType.REVIEW,
         resourceId: review.id,
         businessId: business.id,
-        cityId: business.cityId,
+        cityId: auditCityId ?? undefined,
         metadata: { businessId: business.id, rating: dto.rating },
       });
 
@@ -255,7 +257,7 @@ export class ReviewsService {
   async reply(user: AuthUser, id: string, dto: ReplyReviewDto) {
     const review = await this.prisma.review.findUnique({
       where: { id },
-      include: { business: { select: { id: true, cityId: true } } },
+      include: { business: { select: { id: true } } },
     });
     if (!review || review.deletedAt !== null) {
       throw new NotFoundException('Review not found');
@@ -278,13 +280,17 @@ export class ReviewsService {
       data: { ownerReply: dto.ownerReply },
     });
 
+    const replyAuditCityId = await resolveBusinessAuditCityId(
+      this.prisma,
+      review.business.id,
+    );
     await this.auditLog.record({
       actor: user,
       action: AuditAction.REVIEW_REPLY_CREATE,
       resourceType: AuditResourceType.REVIEW,
       resourceId: id,
       businessId: review.business.id,
-      cityId: review.business.cityId,
+      cityId: replyAuditCityId ?? undefined,
       membershipRole: toMembershipRole(access.accessRole),
       metadata: { reviewId: id },
     });

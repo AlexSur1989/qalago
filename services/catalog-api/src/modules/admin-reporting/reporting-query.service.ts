@@ -251,7 +251,7 @@ export class ReportingQueryService {
 
   async financeReport(scope: ReportScope, range: ReportRange) {
     if (scope.cityIds?.length) {
-      // finance by city uses order.business.cityId
+      // finance by city: business BL presence via scope.businessCityWhere (A.9.4.5C)
     }
     const orderWhere: Prisma.OrderWhereInput = {
       business: this.businessRelationFilter(scope),

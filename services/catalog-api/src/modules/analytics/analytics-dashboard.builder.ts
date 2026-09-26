@@ -35,6 +35,7 @@ import { aggregateTrafficSources } from '../../common/utils/business-traffic-sou
 import { aggregateSearchQueries } from '../../common/utils/search-query-analytics.util';
 import { aggregateAudienceGeography } from '../../common/utils/audience-geography.util';
 import { buildCategoryBenchmark } from '../../common/utils/analytics-benchmark.util';
+import { resolveBusinessPrimaryCityId } from '../../common/utils/business-context-city.util';
 import { buildDeterministicRecommendations } from '../../common/utils/analytics-recommendations.util';
 import { enumerateInclusiveLocalMetricDates } from '../../common/utils/analytics-report-period.util';
 import {
@@ -79,16 +80,21 @@ export class AnalyticsDashboardBuilder {
     const days = clampAnalyticsDays(requestedDays, caps);
     const end = new Date();
 
-    const businessMeta = await this.prisma.business.findUnique({
-      where: { id: businessId },
-      select: {
-        city: { select: { timezone: true } },
-        category: { select: { title: true } },
-        categoryId: true,
-        cityId: true,
-      },
-    });
-    const timezone = businessMeta?.city.timezone ?? null;
+    const [businessMeta, benchmarkMarketCityId, primaryCityRow] = await Promise.all([
+      this.prisma.business.findUnique({
+        where: { id: businessId },
+        select: {
+          category: { select: { title: true } },
+          categoryId: true,
+        },
+      }),
+      resolveBusinessPrimaryCityId(this.prisma, businessId),
+      this.prisma.businessLocation.findFirst({
+        where: { businessId, isPrimary: true },
+        select: { city: { select: { timezone: true } } },
+      }),
+    ]);
+    const timezone = primaryCityRow?.city.timezone ?? null;
 
     const dateRange = options?.localMetricRange
       ? enumerateInclusiveLocalMetricDates(
@@ -196,7 +202,7 @@ export class AnalyticsDashboardBuilder {
     if (
       caps.benchmark &&
       businessMeta?.categoryId &&
-      businessMeta.cityId &&
+      benchmarkMarketCityId &&
       businessMeta.category &&
       dateRange.length > 0
     ) {
@@ -206,7 +212,7 @@ export class AnalyticsDashboardBuilder {
         prisma: this.prisma,
         subjectBusinessId: businessId,
         categoryId: businessMeta.categoryId,
-        cityId: businessMeta.cityId,
+        cityId: benchmarkMarketCityId,
         categoryTitle: businessMeta.category.title,
         rangeStart,
         rangeEnd,

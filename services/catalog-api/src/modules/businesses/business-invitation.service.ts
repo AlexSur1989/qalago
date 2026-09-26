@@ -20,6 +20,7 @@ import { SlidingWindowRateLimitService } from '../../common/services/sliding-win
 import { generateInviteToken, hashInviteToken } from '../../common/utils/invite-token.util';
 import { maskInvitationEmail, normalizeInvitationEmail } from '../../common/utils/email-normalize.util';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
+import { resolveBusinessAuditCityId } from '../../common/utils/business-context-city.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -194,13 +195,14 @@ export class BusinessInvitationService {
         },
       });
 
+      const auditCityId = await resolveBusinessAuditCityId(tx, invitation.businessId);
       await this.auditLog.record({
         actor: user,
         action: AuditAction.TEAM_INVITATION_ACCEPT,
         resourceType: AuditResourceType.BUSINESS_INVITATION,
         resourceId: invitation.id,
         businessId: invitation.businessId,
-        cityId: invitation.business.cityId,
+        cityId: auditCityId ?? undefined,
         targetUserId: user.id,
         membershipRole: BusinessMembershipRole.MANAGER,
         metadata: {

@@ -48,6 +48,7 @@ import {
   compareBusinessBySearchRelevance,
   type BusinessSearchRelevanceRow,
 } from '../../common/utils/business-catalog-search-relevance.util';
+import { resolveBusinessAuditCityId } from '../../common/utils/business-context-city.util';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { isGlobalAdmin } from '../../common/utils/system-access.util';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -1378,6 +1379,7 @@ export class BusinessesService {
     const membershipRole = toMembershipRole(access.accessRole);
     const profileChanged = changedKeys.filter((k) => PROFILE_FIELDS.has(k));
     const hoursChanged = changedKeys.filter((k) => HOURS_FIELDS.has(k));
+    const auditCityId = await resolveBusinessAuditCityId(this.prisma, id);
 
     if (profileChanged.length > 0) {
       await this.auditLog.record({
@@ -1386,7 +1388,7 @@ export class BusinessesService {
         resourceType: AuditResourceType.BUSINESS,
         resourceId: id,
         businessId: id,
-        cityId: business.cityId,
+        cityId: auditCityId ?? undefined,
         membershipRole,
         metadata: { changedFields: profileChanged },
       });
@@ -1398,7 +1400,7 @@ export class BusinessesService {
         resourceType: AuditResourceType.BUSINESS,
         resourceId: id,
         businessId: id,
-        cityId: business.cityId,
+        cityId: auditCityId ?? undefined,
         membershipRole,
         metadata: { changedFields: hoursChanged },
       });

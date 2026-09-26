@@ -22,6 +22,7 @@ import { AuthUser } from '../../common/types/jwt-payload.type';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { BusinessMembershipService } from '../../common/services/business-membership.service';
 import { OnboardingRateLimitService } from '../../common/services/onboarding-rate-limit.service';
+import { resolveBusinessAuditCityId } from '../../common/utils/business-context-city.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -87,13 +88,14 @@ export class OwnershipClaimsService {
         include: claimInclude,
       });
 
+      const auditCityId = await resolveBusinessAuditCityId(tx, businessId);
       await this.auditLog.record({
         actor: user,
         action: AuditAction.BUSINESS_OWNERSHIP_CLAIM_SUBMIT,
         resourceType: AuditResourceType.BUSINESS_OWNERSHIP_CLAIM,
         resourceId: claim.id,
         businessId,
-        cityId: business.cityId,
+        cityId: auditCityId ?? undefined,
         targetUserId: user.id,
         metadata: {
           claimId: claim.id,
@@ -161,13 +163,14 @@ export class OwnershipClaimsService {
         throw new ConflictException('Claim is no longer pending');
       }
 
+      const auditCityId = await resolveBusinessAuditCityId(tx, claim.businessId);
       await this.auditLog.record({
         actor: user,
         action: AuditAction.BUSINESS_OWNERSHIP_CLAIM_CANCEL,
         resourceType: AuditResourceType.BUSINESS_OWNERSHIP_CLAIM,
         resourceId: id,
         businessId: claim.businessId,
-        cityId: claim.business.cityId,
+        cityId: auditCityId ?? undefined,
         targetUserId: user.id,
         metadata: {
           claimId: id,
@@ -253,13 +256,14 @@ export class OwnershipClaimsService {
         throw new ConflictException('Claim is no longer pending');
       }
 
+      const auditCityId = await resolveBusinessAuditCityId(tx, claim.businessId);
       await this.auditLog.record({
         actor: user,
         action: AuditAction.BUSINESS_OWNERSHIP_CLAIM_REJECT,
         resourceType: AuditResourceType.BUSINESS_OWNERSHIP_CLAIM,
         resourceId: id,
         businessId: claim.businessId,
-        cityId: claim.business.cityId,
+        cityId: auditCityId ?? undefined,
         targetUserId: claim.claimantUserId,
         metadata: {
           claimId: id,
@@ -345,13 +349,14 @@ export class OwnershipClaimsService {
         throw new ConflictException('Claim approval race detected');
       }
 
+      const auditCityId = await resolveBusinessAuditCityId(tx, businessBefore.id);
       await this.auditLog.record({
         actor: user,
         action: AuditAction.BUSINESS_OWNERSHIP_CLAIM_APPROVE,
         resourceType: AuditResourceType.BUSINESS_OWNERSHIP_CLAIM,
         resourceId: id,
         businessId: businessBefore.id,
-        cityId: businessBefore.cityId,
+        cityId: auditCityId ?? undefined,
         targetUserId: locked.claimantUserId,
         metadata: {
           claimId: id,

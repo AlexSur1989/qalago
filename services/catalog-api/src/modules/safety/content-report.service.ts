@@ -115,11 +115,7 @@ export class ContentReportService {
         case ContentReportTargetType.REVIEW: {
           const row = await this.prisma.review.findUnique({
             where: { id: targetId },
-            select: {
-              id: true,
-              deletedAt: true,
-              business: { select: { cityId: true } },
-            },
+            select: { id: true, deletedAt: true },
           });
           if (!row) return null;
           if (row.deletedAt) {
@@ -128,7 +124,7 @@ export class ContentReportService {
               code: SafetyErrorCode.CONTENT_NOT_REPORTABLE,
             });
           }
-          return { id: row.id, cityId: row.business.cityId };
+          return { id: row.id };
         }
         case ContentReportTargetType.PROMOTION:
           return this.prisma.promotion.findUnique({ where: { id: targetId }, select: { id: true } });
@@ -146,13 +142,8 @@ export class ContentReportService {
         code: SafetyErrorCode.CONTENT_NOT_REPORTABLE,
       });
     }
-    if (
-      targetType === ContentReportTargetType.REVIEW &&
-      found &&
-      typeof found === 'object' &&
-      'cityId' in found
-    ) {
-      return (found as { cityId: string }).cityId;
+    if (targetType === ContentReportTargetType.REVIEW) {
+      return resolveModerationTargetCityId(this.prisma, targetType, targetId);
     }
     return null;
   }

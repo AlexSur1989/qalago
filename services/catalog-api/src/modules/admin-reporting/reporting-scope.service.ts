@@ -29,7 +29,7 @@ export class ReportingScopeService {
     if (businessId) {
       const business = await this.prisma.business.findUnique({
         where: { id: businessId },
-        select: { id: true, cityId: true },
+        select: { id: true },
       });
       if (!business) {
         throw new NotFoundException('Business not found');
@@ -39,7 +39,7 @@ export class ReportingScopeService {
         const cityIds = await this.cityScope.getCityAdminScopeCityIds(user.id);
         return { cityIds, businessId };
       }
-      return { cityIds: filters.cityId ? [business.cityId] : null, businessId };
+      return { cityIds: filters.cityId ? [filters.cityId] : null, businessId };
     }
 
     if (user.role === UserRole.CITY_ADMIN) {
