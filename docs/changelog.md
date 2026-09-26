@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-26 — 6.12A.9.4.5A CITY_ADMIN authorization semantics + A.9.4.4 formal closure
+
+- **Status:** **6.12A.9.4.5A PASS — CITY_ADMIN AUTHORIZATION SEMANTICS FINALIZED**; **6.12A.9.4.4 PASS — LEGACY BUSINESS PHYSICAL GEO AUTHORITY RETIRED** (formal umbrella — geo columns dropped **C4**; **`Business.cityId`** is separate **A.9.4.5** debt). **A.9.4.5B** not started.
+- **Checkpoint (implementation):** `a47c67268b4faddb1b15179b65c15efe9cfeb514`.
+- **Baseline:** `d34dc7071d12f0294371a6cde1b2258739d3406a` (**A.9.4.5** read-only audit acceptance).
+- **Scope:** **`services/catalog-api`** — `CityScopeService.assertBusinessPrimaryLocationCityInAdminScope`; **`BusinessAccessService`** owner-equivalent **CITY_ADMIN** gate by **primary BL** city; preserve **ANY-BL** admin visibility; deprecate **`assertBusinessParentCityInAdminScope`** for auth; focused Jest + runtime multi-city integration spec; **`apps/admin-web`** primary-city labels on claims/order detail where **`business.city`** mirrors primary. **No** schema/migration; **no** **`Business.cityId`** removal; **no** monetization/analytics fallback cutover.
+- **Summary:** Frozen city model: physical membership = **BL-only**; **`Business.cityId`** = compatibility mirror of primary BL until **5D**; public **`cityId`** = effective BL context. **CITY_ADMIN:** Admin staff sees businesses with **any** branch in scope; Business Web owner-equivalent access requires **primary** branch city in scope — secondary branch alone does not escalate. Primary promotion switches owner-equivalent scope; mirror **`Business.cityId`** sync unchanged. **A.9.4.4 closure:** **`address` / `latitude` / `longitude` / `location` / `locationSource`** are not **Business** storage/authority (**C4**).
+- **Verified:** focused Jest (**city-scope**, **business-access**, **A.9.4.1A**, **A.9.4.5A** integration); **`npm run build`** catalog-api.
+- **Deferred:** **6.12A.9.4.5B** monetization/analytics **`Business.cityId`** fallback cutover; **5C–5E**; **`stage-6-12a8-1-ad-campaign-location-context.spec.ts`** historical null **`businessLocationId`** expectation (**A.8.1** — fix before/during **5B**).
+- **Next:** **6.12A.9.4.5B — MONETIZATION / ANALYTICS FALLBACK CUTOVER** (explicit agreement only; **not auto-started**).
+
+---
+
 ## 2026-09-26 — 6.12A.9.4.4C4C Post-migration regression + C4 closure
 
 - **Status:** **6.12A.9.4.4C4C PASS — POST-MIGRATION REGRESSION FINALIZED**; **6.12A.9.4.4C4 PASS — LEGACY BUSINESS GEO STORAGE RETIRED** (subordinate: **C4A PASS** prepared `90cd95b…`; **C4B PASS** applied; **C4C PASS** regression finalized). **A.9.4.5** not started.

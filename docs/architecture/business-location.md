@@ -107,23 +107,40 @@ Migration **`20260926120000_stage_6_12a9_4_4c4_business_geo_column_retirement`**
 
 ### A.9.4 boundary (what retires vs what stays)
 
-**Target retirement family (staged DB migration — not immediate):** `Business.cityId`, `Business.address`, `Business.latitude`, `Business.longitude`, `Business.location` (geography), `Business.locationSource` as **physical-authority / compatibility storage**.
+**Retired from `Business` storage (A.9.4.4C4 — dev DB):** `address`, `latitude`, `longitude`, `location` (geography), `locationSource` — **no longer Business authority**; public projection is **BusinessLocation** only.
 
-**KEEP as legitimate Business domain / default fields (not scheduled for legacy deletion):** `phone`, `whatsapp`, `website`, `instagram`, `workHours` — **BusinessLocation** may override per branch; Business retains brand/default/fallback semantics (**A.3** / **`buildEffectivePhysicalDto`**).
+**Separate transition debt (A.9.4.5 — not 5A):** `Business.cityId` column remains until **A.9.4.5D** schema retirement; monetization/analytics fallbacks in **5B/5C**.
 
-### Transitional `Business.cityId` semantics
+**KEEP as legitimate Business domain / default fields:** `phone`, `whatsapp`, `website`, `instagram`, `workHours` — **BusinessLocation** may override per branch; Business retains brand/default/fallback semantics (**A.3** / **`buildEffectivePhysicalDto`**).
 
-- **Role during transition:** **HOME / PARENT / COMPATIBILITY CITY** — normally mirrors **primary** `BusinessLocation.cityId` when a primary exists.
-- **NOT authoritative for:** public city presence, discovery, search/category membership, map presence, nearby, branch physical city (**`BusinessLocation.cityId`** is authoritative for presence).
-- **Multi-city brands:** `Business.cityId` = primary/home city; additional cities exist via other **`BusinessLocation`** rows — code must **not** infer “no presence in city C” from `Business.cityId ≠ C`.
-- **Long-term:** parent/home city may later be **derived** or column retired (**A.9.4.5** proposed) after blockers cleared.
+### Transitional `Business.cityId` semantics (**A.9.4.5A FROZEN**)
 
-### Admin policies (**A.9.4.1A IMPLEMENTED** — catalog-api)
+- **Physical presence:** business is in city **X** iff **∃ BusinessLocation** with `businessId` and `cityId = X`. **Never** infer presence from stored **`Business.cityId`** alone.
+- **Primary city (while column exists):** **`Business.cityId`** = **compatibility mirror** of **current primary** `BusinessLocation.cityId` (sync on create/set-primary; integrity **`parentCityMirrorMismatchCount`** until **5D**).
+- **NOT:** immutable home city, brand origin, all-branch city, or public discovery authority.
+- **Public API `cityId`:** effective/context **BusinessLocation** city for the response — not stored parent **`Business.cityId`** as discovery authority (**A.9.4.1B**).
 
-- **City scope (visibility):** `CITY_ADMIN` / city-scoped staff **Admin routes** use **physical presence** — `Business.locations.some(cityId IN staff scope)` / `assertBusinessInAdminScope(user, businessId)` — not **`Business.cityId` alone**. Multi-city brands may appear in **multiple** city admin scopes (primary in A, secondary in B → visible to both).
-- **Owner routes (Business Web / `BusinessAccessService`):** `CITY_ADMIN` **does not** gain owner-equivalent access from secondary-branch presence alone — **`assertBusinessParentCityInAdminScope`** keeps parent **`Business.cityId`** gate on `resolveAccess` (P0 anti-escalation).
+### Admin & CITY_ADMIN policies (**A.9.4.1A** + **A.9.4.5A IMPLEMENTED** — catalog-api)
+
+**Dual model (do not unify):**
+
+| Contour | Rule | Helpers |
+|---------|------|---------|
+| **Staff Admin** (list/search, moderation, claims filter, admin business visibility, branch visibility) | Visible iff **any** **BusinessLocation** in a managed city | `buildAdminBusinessScopeWhere`, `assertBusinessInAdminScope` |
+| **Owner-equivalent Business Web** (`BusinessAccessService` for `CITY_ADMIN`) | Allowed iff **primary** **BusinessLocation.cityId** ∈ managed cities | `assertBusinessPrimaryLocationCityInAdminScope` — **not** `Business.cityId` as auth source |
+| **Real OWNER / MANAGER** | **BusinessMembership** unchanged | `BusinessAccessService` membership paths |
+
+- **Anti-escalation:** secondary-branch presence in city B **must not** grant whole-business owner-equivalent access to **CITY_ADMIN_B** while primary remains in city A.
+- **Primary promotion:** owner-equivalent **CITY_ADMIN** scope follows **new primary** BL city; **`Business.cityId`** mirror sync remains until **5D**.
+- **`assertBusinessParentCityInAdminScope`:** **deprecated** — mirror string check only; no active owner-equivalent callers.
 - **Applications:** approval scope remains **`application.cityId`** via **`assertCityInAdminScope`** (not BL visibility for approve gate).
-- **City scope (mutation):** business-wide Admin actions (status, featured, plan) remain **business-wide** when BL visibility passes; branch-level staff RBAC deferred. Moderation cases keep explicit **case `cityId`** where present.
+
+**Action classification (explicit, no full RBAC redesign in 5A):**
+
+- **Branch-scoped (natural BL context):** branch CRUD, set-primary, branch hours/contacts/address, branch media assignments, per-location admin read where keyed by **`businessLocationId`**.
+- **Business-wide (aggregate):** business **status**, plan/global subscription, whole-business block/delete, brand/global catalog fields, business-wide ads/featured, **membership/staff** authority — Admin staff may act when **ANY-BL visibility** passes; **Business Web owner-equivalent** for **CITY_ADMIN** still requires **primary BL** city in scope.
+- **Ambiguous routes:** prefer reporting over broadening permissions; document in stage audits if gate unclear.
+
 - **A.9.4.1B (IMPLEMENTED — catalog-api):** campaign/order market city via **`resolveCampaignMarketCityId`**; new analytics events via **`resolveAnalyticsEventCityId`**; application dedupe against **`BusinessLocation`** in application city; public list/detail top-level **`cityId`** from effective physical branch context; admin reporting **`businessCityWhere`** = BL presence (not parent **`Business.cityId`** alone). Historical analytics rows not rewritten; admin analytics rollups remain business-grain visibility — not per-event **`AnalyticsEvent.cityId`** filters.
 - **Address display:** prefer **BusinessLocation** — city-scoped context → effective branch in that city; explicit location → that row; business-global → **primary**; legacy **`Business.address`** only as temporary compatibility fallback until invariant migration completes.
 
