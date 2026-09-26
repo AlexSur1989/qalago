@@ -8,8 +8,9 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `0823ab4` (docs) — implementation **`ffeffdc3d844a183e31f46d5f776c4b49e047209`** — **6.12A.9.4.5D1** |
-| **A.9.4.5D1 implementation SHA** | `ffeffdc3d844a183e31f46d5f776c4b49e047209` |
+| **Repo HEAD (current)** | _(docs D2 closure)_ — **6.12A.9.4.5D2** |
+| **A.9.4.5D1 implementation SHA** | `ffeffdc3d844a183e31f46d5f776c4b49e047209` (unchanged) |
+| **A.9.4.5D2 docs SHA** | _(set on commit)_ |
 | **5D pre-migration gate baseline** | `d7b039dd00d062d20622b8d24420194277afc7d8` |
 | **A.9.4.5C implementation SHA** | `e661f0bc50bdc363efd50865510c4a90c9d270af` |
 | **A.9.4.5B implementation SHA** | `f459acd742f13b7406ef1ddc8be0da0408754a3d` |
@@ -26,16 +27,16 @@
 | **A.9.4.4C1 implementation SHA** | `80f678a9584f2614c1aaf029e56183c48315f1bb` |
 | **A.9.4.4C2 implementation SHA** | `10c767d272e0033b25fdc93938e62727f9f89beb` |
 | **A.9.4.4C3 implementation SHA** | `a78ff95457c10e7e31ccce846906e91a1b99f670` |
-| **Last completed stage** | **6.12A.9.4.5D1 PASS** — **Business.cityId** retirement prepared in repo; migration **PENDING**; live dev DB **PRE-5D** |
-| **Last product implementation** | **6.12A.9.4.5D1** — post-cityId Prisma/code (`ffeffdc3…`); prior **5C** `e661f0bc50bdc363efd50865510c4a90c9d270af` |
+| **Last completed stage** | **6.12A.9.4.5D2 PASS** — **`Business.cityId`** retired on dev **`qalago_dev`**; repo + DB both **POST-cityId** |
+| **Last product implementation** | **6.12A.9.4.5D1** `ffeffdc3…` (code); **5D2** = dev DB apply only (docs checkpoint) |
 | **A.9.4.4C4A implementation SHA** | `90cd95b89f0f72751df517c90a9785962a944024` |
 | **A.9.4.4C4B docs SHA** | `713a53f8ad9f40f5acb622c76f60017f887b7b27` |
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending** | None for **A.9.4.3** / **A.9.4.2** |
-| **Next agreed development action** | **6.12A.9.4.5D2 — APPLY `20260926180000_stage_6_12a9_4_5d_business_city_id_retirement`** after fresh backup (**not started**) |
+| **Next agreed development action** | **6.12A.9.4.5D3 — POST-5D integration spec migration + regression** (**not started**) |
 
-**5D split:** **CODE/PRISMA = POST-cityId** (generated client + `services/catalog-api` sources). **LIVE `qalago_dev` = PRE-5D** until **5D2** — **`Business.cityId`** column may still exist; do not run post-5D integrity SQL that assumes column absence on shared dev before apply.
+**5D state:** **CODE + `qalago_dev` = POST-cityId** (migration **`20260926180000_stage_6_12a9_4_5d_business_city_id_retirement`** applied). Pre-5D2 backup: `infra/local-backups/qalago_dev_native_pg18_pre_5d2_business_cityid_retirement_20260926T131630Z.dump` (uncommitted). Many integration specs still use legacy **`Business { cityId }`** fixtures — fix in **5D3**, not a D2 blocker.
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 

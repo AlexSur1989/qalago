@@ -109,7 +109,7 @@ Migration **`20260926120000_stage_6_12a9_4_4c4_business_geo_column_retirement`**
 
 **Retired from `Business` storage (A.9.4.4C4 — dev DB):** `address`, `latitude`, `longitude`, `location` (geography), `locationSource` — **no longer Business authority**; public projection is **BusinessLocation** only.
 
-**A.9.4.5D1 (prepared, migration not applied):** repository Prisma/code target **POST-`Business.cityId`**; forward migration **`20260926180000_stage_6_12a9_4_5d_business_city_id_retirement`** is **PENDING** on dev until **5D2** (fresh backup immediately before apply). **Live dev DB** may still have **`Business.cityId` NOT NULL** while code no longer reads/writes it.
+**A.9.4.5D2 (dev DB applied):** migration **`20260926180000_stage_6_12a9_4_5d_business_city_id_retirement`** applied on dev **`qalago_dev`** — **`Business.cityId`** column, FK, and status index physically removed. Pre-apply backup: `infra/local-backups/qalago_dev_native_pg18_pre_5d2_business_cityid_retirement_20260926T131630Z.dump` (uncommitted). **5D3** = integration regression on POST-5D DB.
 
 **Completed cutovers before column drop:** monetization/analytics (**5B**), reporting/benchmark/moderation (**5C**), **CITY_ADMIN** primary-BL auth (**5A**).
 

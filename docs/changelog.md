@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-09-26 — 6.12A.9.4.5D2 Business.cityId retirement (dev DB apply)
+
+- **Status:** **6.12A.9.4.5D2 PASS — BUSINESS.cityId RETIRED FROM DEV DATABASE**; **5D3** not started.
+- **Checkpoint (docs):** _(set on docs commit)_.
+- **Baseline:** `18cb01c6d8c2128a629643e0e7e8a424bb52d4e2` (**5D1** closure); implementation **`ffeffdc3d844a183e31f46d5f776c4b49e047209`** unchanged.
+- **Scope:** Dev **`qalago_dev`** only — fresh native **`pg_dump`** backup, **`prisma migrate deploy`** for **`20260926180000_stage_6_12a9_4_5d_business_city_id_retirement`**. No product code changes; no seed; no integrity **`--apply`**; no **5D3** / **5E**.
+- **Summary:** **`Business.cityId`**, **`Business_cityId_fkey`**, and **`Business_cityId_status_idx`** removed from live dev DB. **BusinessLocation** city FK/indexes, PostGIS trigger/GiST, and independent city fields (**BusinessApplication**, **AdCampaign**, **AnalyticsEvent**) preserved. Entity counts unchanged (**109/110** businesses/locations, **109** primaries, **3** cities).
+- **Backup (uncommitted):** `infra/local-backups/qalago_dev_native_pg18_pre_5d2_business_cityid_retirement_20260926T131630Z.dump` (596125 bytes; **`pg_dump` 0**, **`pg_restore --list` 0**, TOC **557** lines).
+- **Verified:** pre-apply invariants green; **47/47** migrations applied; post-apply schema gate; **`integrity:business-locations:audit`** PASS; primary-city derivation **0** unresolved; ACTIVE primary **`cityId`** smoke **0** empty; **`npx prisma generate`**; **`npm run build`**; focused unit tests (physical normalization, primary sync util, visibility util).
+- **Deferred:** **6.12A.9.4.5D3** — integration spec migration + full regression on POST-5D DB.
+- **Next:** **6.12A.9.4.5D3** (explicit agreement only; **not auto-started**).
+
+---
+
 ## 2026-09-26 — 6.12A.9.4.5D1 Business.cityId retirement preparation (code/schema/tests; migration not applied)
 
 - **Status:** **6.12A.9.4.5D1 PASS — BUSINESS.cityId RETIREMENT PREPARED, MIGRATION NOT APPLIED**; **5D2** not started.
