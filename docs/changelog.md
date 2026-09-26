@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-27 — 6.12A BusinessLocation architecture (umbrella closure)
+
+- **Status:** **6.12A PASS — BUSINESSLOCATION ARCHITECTURE FINALIZED**.
+- **Scope:** **Docs-only umbrella closure** after read-only audit (**READY FOR FORMAL CLOSURE**). **No** product-code, schema, migration, DB, or test changes in this entry.
+- **Summary:** All required **6.12A** implementation, hardening, and legacy retirement through **6.12A.9.4.5E** is complete. **Business** = brand/entity; **BusinessLocation** = sole physical/city authority. Retired from **Business:** **`cityId`**, **address**, **lat/lng**, **location**, **locationSource**. **Business** retains documented contact defaults (**phone**, **whatsapp**, **instagram**, **website**, **workHours**). Final grains: map = **BusinessLocation**; discovery/search/category/home = **Business** + **`contextLocationId`**; reviews/favorites/membership = **Business**-wide; branch-effective catalog/promotions/media; **CITY_ADMIN** admin visibility = **ANY BL** in city; owner-equivalent = **primary BL city**; public effective location + safe foreign **`locationId`** fallback verified. **No material ACTIVE_RUNTIME** dependency on retired **Business** physical columns.
+- **Evidence (canonical checkpoints — do not rewrite substage history):** **6.12A.9.4.5D3** implementation `7a153cdf497c711c3aeda2b60cc72588f50d7859` — **205/205** suites, **1403/1403** tests, build PASS; **6.12A.9.4.5E** docs closure `657cfc6f1ccad2cf469d0030ade0e0d9aab5146b` — Samsung + API/manual QA, multi-city fixture, primary promotion, cleanup to **109/110/109** primary BL, integrity PASS, **`Business.cityId`** absent, migrations **47/47**; D2 backup preserved (`infra/local-backups/qalago_dev_native_pg18_pre_5d2_business_cityid_retirement_20260926T131630Z.dump`, 596125 bytes); **`a945e-*`** helpers local/untracked.
+- **Deferred (post-6.12A — does not block closure):** production coordinate hygiene; optional DB hardening where explicitly deferred; Admin branch-management expansion; **6.12B** / Catalog Import; **F.4** Business Pages; remaining Consumer Web depth; production monetization; map/provider work; broader Admin/Business Web audits; other documented backlog — **explicit agreement required** before start.
+- **Next:** **Explicit agreement required** before any post-**6.12A** work (**F.4**, **6.12B**, remaining contours — not auto-started).
+
+---
+
 ## 2026-09-26 — 6.12A.9.4.5E Business.cityId retirement physical/manual QA + fixture cleanup
 
 - **Status:** **6.12A.9.4.5E PASS — BUSINESS.cityId RETIREMENT PHYSICAL QA FINALIZED**; **6.12A.9.4.5 PASS — BUSINESS.cityId RETIREMENT FINALIZED** (umbrella — **5A**, **5B**, **5C**, **5D1**, **5D2**, **5D3**, **5E** complete).

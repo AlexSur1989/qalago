@@ -8,7 +8,8 @@
 
 | Field | Value |
 |-------|--------|
-| **6.12A.9.4.5 / 5E docs closure (canonical checkpoint)** | `657cfc6f1ccad2cf469d0030ade0e0d9aab5146b` — see **`docs/changelog.md`** (**6.12A.9.4.5E PASS** / umbrella **6.12A.9.4.5 PASS**); live repo tip = **`git rev-parse HEAD`** (may differ after docs-only housekeeping) |
+| **Last completed architecture contour** | **6.12A PASS — BUSINESSLOCATION ARCHITECTURE FINALIZED** (umbrella — see **`docs/changelog.md`** entry **2026-09-27**) |
+| **6.12A.9.4.5E docs closure (canonical checkpoint)** | `657cfc6f1ccad2cf469d0030ade0e0d9aab5146b` |
 | **A.9.4.5D3 implementation SHA** | `7a153cdf497c711c3aeda2b60cc72588f50d7859` |
 | **A.9.4.5D1 implementation SHA** | `ffeffdc3d844a183e31f46d5f776c4b49e047209` (unchanged) |
 | **A.9.4.5D2 docs SHA** | `db82561a1dc101c1420a099a84ddb7547563f40d` |
@@ -28,16 +29,18 @@
 | **A.9.4.4C1 implementation SHA** | `80f678a9584f2614c1aaf029e56183c48315f1bb` |
 | **A.9.4.4C2 implementation SHA** | `10c767d272e0033b25fdc93938e62727f9f89beb` |
 | **A.9.4.4C3 implementation SHA** | `a78ff95457c10e7e31ccce846906e91a1b99f670` |
-| **Last completed stage** | **6.12A.9.4.5 PASS** — **`Business.cityId`** retirement finalized (**5A–5E**); **5E** physical/manual QA closed |
-| **Last product implementation** | **6.12A.9.4.5D1** `ffeffdc3…` (column retirement code); **5D2** dev DB; **5D3** regression/fixtures; **5E** QA-only (no product diff) |
+| **Last completed substage (cityId track)** | **6.12A.9.4.5 PASS** — **`Business.cityId`** retirement (**5A–5E**); **5E** physical/manual QA closed |
+| **Last product implementation (6.12A)** | **6.12A.9.4.5D1** `ffeffdc3…` (column retirement); **5D2** dev DB; **5D3** `7a153cdf…` regression/fixtures; **5E** QA-only (no product diff) |
 | **A.9.4.4C4A implementation SHA** | `90cd95b89f0f72751df517c90a9785962a944024` |
 | **A.9.4.4C4B docs SHA** | `713a53f8ad9f40f5acb622c76f60017f887b7b27` |
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
-| **Physical QA pending** | None for **A.9.4.3** / **A.9.4.2** |
-| **Next agreed development action** | **None under A.9.4.5** — pick next stage from roadmap (**F.4**, post–**6.12A** contours, etc.) with **explicit agreement only** |
+| **Physical QA pending (6.12A)** | **None** — contour closed (**5E** finalized) |
+| **Next** | **Explicit agreement required** before starting post-**6.12A** work |
 
-**A.9.4.5 state:** **CLOSED** — **`Business.cityId`** retired from schema/dev DB/product semantics (**5D**); physical/manual QA finalized (**5E**). **BusinessLocation** is physical/city authority. **Admin CITY_ADMIN visibility** = **ANY BL** in managed city; **CITY_ADMIN owner-equivalent** = **primary BL city**; **OWNER** membership = business-wide. Public effective location verified (primary default + explicit `locationId` + safe foreign fallback). Dev **`qalago_dev`** canonical baseline restored: **109 Business / 110 BL / 109 primary** after **5E** fixture cleanup. Pre-5D2 backup preserved: `infra/local-backups/qalago_dev_native_pg18_pre_5d2_business_cityid_retirement_20260926T131630Z.dump` (596125 bytes; uncommitted). **`a945e-*`** helpers/manifest remain local/untracked.
+**6.12A state:** **CLOSED** — BusinessLocation architecture finalized (**A.1–A.9.4.5E**). **Business** = brand; **BusinessLocation** = sole physical/city authority; retired **Business** physical columns including **`cityId`**; contact defaults on **Business** per policy. Grains and RBAC per **`docs/changelog.md`** umbrella entry **2026-09-27**. Dev **`qalago_dev`** baseline: **109 Business / 110 BL / 109 primary**; integrity PASS; migrations **47/47**. Pre-5D2 backup preserved: `infra/local-backups/qalago_dev_native_pg18_pre_5d2_business_cityid_retirement_20260926T131630Z.dump` (596125 bytes; uncommitted). **`a945e-*`** helpers remain local/untracked.
+
+**Post-6.12A candidates (documented — not auto-started):** **F.4** Business Pages; **6.12B** / Catalog Import; remaining Admin / Business Web / Consumer Web contours; other backlog in **`docs/changelog.md`** / architecture docs.
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 
@@ -240,6 +243,7 @@ Future architecture should allow **backend/admin-central configuration** of cons
 - **A.9.4.5B** — **PASS** — campaign/analytics/order paths use BL/explicit/primary only; **`metadata.campaignCityId`** stable on orders.
 - **A.9.4.5C** — **PASS** — benchmark/reporting/moderation/audit city attribution uses BL/explicit context.
 - **A.9.4.5** — **`Business.cityId`** retirement — **CLOSED** (**5A–5E**); physical/manual QA **PASS** (**5E**).
+- **6.12A (umbrella)** — **CLOSED** — BusinessLocation architecture finalized (changelog **2026-09-27**).
 - **A.8.1 test debt** — **CLOSED in 5B** (branch **`businessLocationId`** contract spec).
 - **F.4** — Consumer Web business/branch URLs & SEO; **does not require** A.9.4 DB column removal (**A.9.4.0** gate); not started.
 - Post **6.12A:** User contour audit, Business Web owner contour, Admin Web contour, Admin Catalog/CMS, centralized Home config, Catalog Import, QalaGo AI, remaining Consumer Web, production monetization, analytics UX, role-based E2E, security/legal/release — **not** current track unless explicitly staged.
