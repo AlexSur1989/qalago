@@ -135,6 +135,14 @@ Migration **`20260926120000_stage_6_12a9_4_4c4_business_geo_column_retirement`**
 - **`assertBusinessParentCityInAdminScope`:** **deprecated** — mirror string check only; no active owner-equivalent callers.
 - **Applications:** approval scope remains **`application.cityId`** via **`assertCityInAdminScope`** (not BL visibility for approve gate).
 
+### Reporting / benchmark / moderation (**A.9.4.5C IMPLEMENTED** — catalog-api)
+
+- **Category benchmark peers:** market city membership = **BusinessLocation presence** in market city (not **`Business.cityId`**).
+- **Owner analytics benchmark market:** **primary BL `cityId`** via **`resolveBusinessPrimaryCityId`** (dashboard builder).
+- **Admin reporting scope:** **`businessCityWhere`** = ANY-BL presence; business-scoped explicit **`filters.cityId`** wins over parent mirror.
+- **Moderation target city:** branch **`BusinessLocation.cityId`** when media is branch-scoped; else **primary BL**.
+- **Audit stamps (plans, team, reviews, claims, profile):** **`resolveBusinessAuditCityId`** — explicit action city when provided, else **primary BL**; historical rows not backfilled.
+
 **Action classification (explicit, no full RBAC redesign in 5A):**
 
 - **Branch-scoped (natural BL context):** branch CRUD, set-primary, branch hours/contacts/address, branch media assignments, per-location admin read where keyed by **`businessLocationId`**.

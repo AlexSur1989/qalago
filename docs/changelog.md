@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-26 — 6.12A.9.4.5C Reporting / benchmark / moderation city semantics cutover
+
+- **Status:** **6.12A.9.4.5C PASS — REPORTING / BENCHMARK / MODERATION PARENT-CITY READS RETIRED**; **A.9.4.5D** not started.
+- **Checkpoint (implementation):** `e661f0bc50bdc363efd50865510c4a90c9d270af`.
+- **Baseline:** `d57920aa144758455280caaffee2bb42e76ccfaa` (**A.9.4.5B** docs closure).
+- **Scope:** **`services/catalog-api`** — category benchmark BL market membership; reporting scope explicit city filter; moderation target city via primary/branch BL; audit stamps (plans, team, reviews, claims, profile, admin review delete); analytics dashboard benchmark market from primary BL; **`business-context-city.util`**. **No** schema migration; **`Business.cityId`** retained.
+- **Summary:** Benchmark peers qualify by **BusinessLocation presence** in market city. Reporting **`businessCityWhere`** unchanged (ANY-BL); business-scoped admin reports use **explicit `filters.cityId`**, not parent mirror. Moderation/audit attribution uses **primary BL** or **branch BL** (media); **`resolveBusinessAuditCityId`** for business-wide stamps. Remaining **`Business.cityId`** uses classified for **5D** compatibility (create/sync/integrity, deprecated dedupe helper, compatibility projection util, dev scripts).
+- **Verified:** focused Jest (benchmark **6.6E**, **5C** scope, context util, moderation); **`npm run build`**; **`integrity:business-locations:audit`** read-only PASS.
+- **Deferred:** **6.12A.9.4.5D PRE-MIGRATION READ-ONLY GATE** (column retirement); **5E** if scoped separately.
+- **Next:** **6.12A.9.4.5D PRE-MIGRATION READ-ONLY GATE** only when explicitly agreed (**not auto-started**).
+
+---
+
 ## 2026-09-26 — 6.12A.9.4.5B Monetization / analytics parent-city fallback cutover
 
 - **Status:** **6.12A.9.4.5B PASS — MONETIZATION / ANALYTICS PARENT-CITY FALLBACKS RETIRED**; **A.9.4.5C** not started.

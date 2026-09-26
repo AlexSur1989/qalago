@@ -8,7 +8,8 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `f459acd742f13b7406ef1ddc8be0da0408754a3d` — **6.12A.9.4.5B** |
+| **Repo HEAD (current)** | `e661f0bc50bdc363efd50865510c4a90c9d270af` — **6.12A.9.4.5C** |
+| **A.9.4.5C implementation SHA** | `e661f0bc50bdc363efd50865510c4a90c9d270af` |
 | **A.9.4.5B implementation SHA** | `f459acd742f13b7406ef1ddc8be0da0408754a3d` |
 | **A.9.4.5 audit baseline** | `d34dc7071d12f0294371a6cde1b2258739d3406a` |
 | **A.9.4.5A implementation SHA** | `a47c67268b4faddb1b15179b65c15efe9cfeb514` |
@@ -23,14 +24,14 @@
 | **A.9.4.4C1 implementation SHA** | `80f678a9584f2614c1aaf029e56183c48315f1bb` |
 | **A.9.4.4C2 implementation SHA** | `10c767d272e0033b25fdc93938e62727f9f89beb` |
 | **A.9.4.4C3 implementation SHA** | `a78ff95457c10e7e31ccce846906e91a1b99f670` |
-| **Last completed stage** | **6.12A.9.4.5B PASS** — monetization/analytics no longer fall back to **`Business.cityId`**; purchase metadata city stability |
-| **Last product implementation** | **6.12A.9.4.5B** — campaign/analytics resolvers + order/provisioning; **5A** `a47c67268b4faddb1b15179b65c15efe9cfeb514` |
+| **Last completed stage** | **6.12A.9.4.5C PASS** — benchmark/reporting/moderation/audit city from BL context; parent mirror not authority |
+| **Last product implementation** | **6.12A.9.4.5C** — reporting/benchmark/moderation cutover; **5B** `f459acd742f13b7406ef1ddc8be0da0408754a3d` |
 | **A.9.4.4C4A implementation SHA** | `90cd95b89f0f72751df517c90a9785962a944024` |
 | **A.9.4.4C4B docs SHA** | `713a53f8ad9f40f5acb622c76f60017f887b7b27` |
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending** | None for **A.9.4.3** / **A.9.4.2** |
-| **Next agreed development action** | **6.12A.9.4.5C** — reporting/benchmark/moderation city stamps (**not started**); column retirement **5D** |
+| **Next agreed development action** | **6.12A.9.4.5D PRE-MIGRATION READ-ONLY GATE** — **`Business.cityId`** column retirement evidence (**not started**) |
 
 **Distinction:** **Implemented** = merged code/docs checkpoint. **Verified audit** = read-only evidence only until implementation commit.
 
@@ -231,7 +232,8 @@ Future architecture should allow **backend/admin-central configuration** of cons
 - **A.9.4.4C3** — **PASS** — business creation cut over to **BusinessLocation** authority.
 - **A.9.4.4** — **PASS** — legacy **Business** physical geo storage retired (**C4**); **`Business.cityId`** remains **A.9.4.5** track.
 - **A.9.4.5B** — **PASS** — campaign/analytics/order paths use BL/explicit/primary only; **`metadata.campaignCityId`** stable on orders.
-- **A.9.4.5C–5E** — reporting/moderation stamps, schema **`Business.cityId`** retirement — **NOT STARTED** (**5C** next when agreed).
+- **A.9.4.5C** — **PASS** — benchmark/reporting/moderation/audit city attribution uses BL/explicit context.
+- **A.9.4.5D–5E** — schema **`Business.cityId`** retirement — **NOT STARTED** (**5D read-only gate** next when agreed).
 - **A.8.1 test debt** — **CLOSED in 5B** (branch **`businessLocationId`** contract spec).
 - **F.4** — Consumer Web business/branch URLs & SEO; **does not require** A.9.4 DB column removal (**A.9.4.0** gate); not started.
 - Post **6.12A:** User contour audit, Business Web owner contour, Admin Web contour, Admin Catalog/CMS, centralized Home config, Catalog Import, QalaGo AI, remaining Consumer Web, production monetization, analytics UX, role-based E2E, security/legal/release — **not** current track unless explicitly staged.
