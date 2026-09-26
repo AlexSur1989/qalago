@@ -211,7 +211,7 @@ Preserve the **current logical page** by swapping locale segment only:
 - `/ru/uralsk/restaurants` ⇄ `/kk/uralsk/restaurants`
 - `/ru/uralsk/business/bar-code-51?locationId=ABC` ⇄ `/kk/uralsk/business/bar-code-51?locationId=ABC`
 
-Preserve **only** explicitly supported safe query context (e.g. **`locationId`**, validated **`page`** where applicable). Do **not** preserve arbitrary tracking/unknown query params unless current routing policy explicitly allows them.
+Preserve **only** explicitly supported safe query context: **`locationId`**, validated **`page`** where applicable, and trimmed **`q`** on search (and anywhere **`q`** defines page state). Do **not** preserve arbitrary tracking/unknown query params unless current routing policy explicitly allows them.
 
 Update `qalago_locale` on explicit switch. **Do not** navigate to Home when an equivalent page exists.
 

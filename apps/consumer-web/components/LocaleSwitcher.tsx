@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
-import { swapLocaleInPathname } from '@/lib/locale-path';
+import { buildLocaleSwitchTarget } from '@/lib/locale-path';
 import { LOCALE_COOKIE_NAME, type AppLocale, type UiLabels } from '@/lib/locale';
 import type { PublicLocale } from '@/lib/public-locale';
 
@@ -17,10 +17,7 @@ export function LocaleSwitcher({ locale, labels }: { locale: AppLocale; labels: 
   function switchTo(next: PublicLocale) {
     if (next === locale) return;
     setLocaleCookie(next);
-    const target = swapLocaleInPathname(pathname, {
-      locationId: searchParams.get('locationId'),
-      page: searchParams.get('page'),
-    }, next);
+    const target = buildLocaleSwitchTarget(pathname, searchParams, next);
     router.push(target);
   }
 

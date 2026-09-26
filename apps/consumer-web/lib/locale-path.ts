@@ -12,11 +12,35 @@ export function parsePublicLocaleFromPathname(pathname: string): PublicLocale | 
   return null;
 }
 
-type PublicQueryInput = {
+export type PublicQueryInput = {
   locationId?: string | string[] | null;
   page?: string | string[] | null;
   q?: string | string[] | null;
 };
+
+/** Allowlisted query fields for locale switch / neutral redirects (F.5). */
+export function pickSafePublicQueryFromUrlSearchParams(searchParams: {
+  get(name: string): string | null;
+}): PublicQueryInput {
+  return {
+    locationId: searchParams.get('locationId'),
+    page: searchParams.get('page'),
+    q: searchParams.get('q'),
+  };
+}
+
+/** Same target URL construction as LocaleSwitcher (path + safe query). */
+export function buildLocaleSwitchTarget(
+  pathname: string,
+  searchParams: { get(name: string): string | null },
+  targetLocale: PublicLocale,
+): string {
+  return swapLocaleInPathname(
+    pathname,
+    pickSafePublicQueryFromUrlSearchParams(searchParams),
+    targetLocale,
+  );
+}
 
 /** Safe query params preserved across locale switch / neutral redirects (F.5). */
 export function buildSafePublicQueryString(searchParams: PublicQueryInput): string {

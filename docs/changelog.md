@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-09-27 — F.5 Phase 1.3 hotfix — locale switch safe query preservation fixed
+
+- **Status:** **F.5 PHASE 1.3 HOTFIX PASS — LOCALE SWITCH SAFE QUERY PRESERVATION FIXED** (automated regression PASS; **physical browser QA still pending / must resume**).
+- **Checkpoint:** `b6ccbc9628b8cd2a043e6cd39eae9375776f0a54`.
+- **Root cause:** Physical QA on **`/ru/aktobe/search?q=coffee`** → KK switch dropped **`q`** because **`LocaleSwitcher`** passed only **`locationId`** and **`page`** into **`swapLocaleInPathname()`**; **`buildSafePublicQueryString()`** already supported **`q`**.
+- **Summary:** Shared **`pickSafePublicQueryFromUrlSearchParams()`** + **`buildLocaleSwitchTarget()`** (same path as switcher); **`LocaleSwitcher`** now preserves allowlisted **`q`** with **`locationId`** / validated **`page`**; arbitrary params (e.g. **`utm_*`**) still filtered. **Phase 1.2 unchanged.** Middleware / Search SSR untouched.
+- **Automated verification:** **`f5-phase1-3-locale-switch-query.test.ts`** **8 PASS**; full Consumer Web Vitest **18 files / 153 PASS**; typecheck + **`next build` PASS**; production start smoke PASS.
+- **Deferred:** F.5 **Phase 2** not started; **physical/manual browser QA** (locale switch + search **`q`** scenario).
+- **Next:** Resume physical browser QA from **`/ru/aktobe/search?q=coffee`** → KK; explicit approval before Phase 2.
+
+---
+
 ## 2026-09-27 — F.5 Phase 1.2 hotfix — multi-city locale routing corrected
 
 - **Status:** **F.5 PHASE 1.2 HOTFIX PASS — MULTI-CITY LOCALE ROUTING CORRECTED** (automated + dev/production runtime smoke PASS; **physical browser QA must resume**).
