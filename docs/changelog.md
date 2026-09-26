@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-25 — 6.12A.9.4.4C1 Stop normal Business geo mirror writes
+
+- **Status:** **6.12A.9.4.4C1 PASS — NORMAL BUSINESS GEO MIRROR WRITES RETIRED** (overall **A.9.4.4C** not closed — **C2** integrity + **C3/C4** bootstrap/schema remain).
+- **Checkpoint (implementation):** `80f678a9584f2614c1aaf029e56183c48315f1bb`.
+- **Baseline:** `4fc0ffecc8db5fb390cf69b0f1d6dc61a338366c` (**A.9.4.4B** docs alignment).
+- **Scope:** **`services/catalog-api`** — split primary-location mirror helpers; production paths sync **cityId + contacts** only from primary **BusinessLocation** → **Business**; **BL → Business** geo mirror retired; **Business → BL** contact sync no longer pushes stale **Business** geo; ownership-claim summaries use primary **BL** address. No schema/migration.
+- **Summary:** **BusinessLocation** is the sole normal application write authority for **address/lat/lng/locationSource**. Owner **PATCH**, **BL CRUD**, and **set-primary** no longer mirror geo onto **Business** (legacy columns may drift until **C4**). **Integrity `--apply`** still uses legacy full geo mirror on zero-primary repair until **C2**. **CREATE** bootstrap geo on **Business** INSERT unchanged until **C3**.
+- **Verified:** focused Jest (util, primary-location service, **C1** integration, **3A/3B** regression, ownership claims, **4.4B** normalization); **`npm run build`**; **`integrity:business-locations:audit`** read-only **PASS** (109/110, `mirrorMismatchCount=0`).
+- **Deferred:** **A.9.4.4C2** integrity/repair redesign; **C3** create/seed bootstrap; **C4** column/trigger drop; **A.9.4.5** **`Business.cityId`**.
+- **Next:** **6.12A.9.4.4C2** — integrity tooling transition (**not auto-started**).
+
+---
+
 ## 2026-09-25 — 6.12A.9.4.4B Runtime Business geo read cutover
 
 - **Status:** **6.12A.9.4.4B PASS — RUNTIME BUSINESS GEO READS CUT OVER TO BUSINESSLOCATION** (overall **A.9.4.4** not closed — **4.4C** mirror/column retirement remains).
