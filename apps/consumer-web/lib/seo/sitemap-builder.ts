@@ -12,6 +12,7 @@ export function buildDiscoverySitemapEntries(input: {
   cities: CityDto[];
   categoriesByCitySlug: Record<string, CategoryDto[]>;
   subcategoriesByCategoryId: Record<string, SubcategoryDto[]>;
+  businessUrlsByCitySlug?: Record<string, string[]>;
 }): SitemapEntry[] {
   const entries: SitemapEntry[] = [];
   const seen = new Set<string>();
@@ -32,6 +33,10 @@ export function buildDiscoverySitemapEntries(input: {
       for (const sub of subs) {
         add(canonicalForSubcategory(city.slug, cat.slug, sub.slug));
       }
+    }
+    const businessUrls = input.businessUrlsByCitySlug?.[city.slug] ?? [];
+    for (const url of businessUrls) {
+      add(url);
     }
   }
 

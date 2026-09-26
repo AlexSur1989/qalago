@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import {
+  canonicalForBusiness,
   canonicalForCategory,
   canonicalForCity,
   canonicalForCityCategories,
@@ -115,6 +116,27 @@ export function metadataForTemporaryBusinessDetail(title: string): Metadata {
   return {
     title: `${title} | QalaGo`,
     robots: NOINDEX_FOLLOW,
+  };
+}
+
+/** F.4 canonical business page — indexable; canonical excludes ?locationId=. */
+export function metadataForCanonicalBusiness(
+  citySlug: string,
+  businessSlug: string,
+  businessTitle: string,
+  description: string | null | undefined,
+  locale: AppLocale,
+): Metadata {
+  const title = businessTitle;
+  const desc =
+    description?.trim() ||
+    (locale === 'kk'
+      ? `${businessTitle} — QalaGo қалалық нұсқауы.`
+      : `${businessTitle} — городской гид QalaGo.`);
+  const url = canonicalForBusiness(citySlug, businessSlug);
+  return {
+    ...ogBasics(title, desc, url),
+    robots: { index: true, follow: true },
   };
 }
 

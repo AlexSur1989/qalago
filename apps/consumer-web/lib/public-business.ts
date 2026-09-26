@@ -1,8 +1,10 @@
 import type { BusinessSummaryDto } from './catalog-api';
+import { canonicalBusinessPagePath } from './business-page-paths';
 
 /** Fields safe to render on public discovery surfaces (F.2). */
 export type PublicBusinessCard = {
   id: string;
+  slug: string;
   title: string;
   address: string;
   shortDesc: string | null;
@@ -10,7 +12,7 @@ export type PublicBusinessCard = {
   categoryLabel: string | null;
   averageRating: number | null;
   reviewCount: number;
-  /** Discovery branch context for detail navigation (A.9.3.4). */
+  /** Discovery branch context for detail navigation (A.9.3.4 / F.4). */
   contextLocationId: string | null;
 };
 
@@ -21,6 +23,7 @@ export function toPublicBusinessCard(
   const ctx = raw.contextLocationId?.trim();
   return {
     id: raw.id,
+    slug: raw.slug,
     title: raw.title,
     address: raw.address,
     shortDesc: raw.shortDesc ?? null,
@@ -33,7 +36,7 @@ export function toPublicBusinessCard(
   };
 }
 
-/** Temporary F.2 rule — final slug URLs wait for F.4. */
+/** Legacy ID detail path (redirects to F.4 canonical). */
 export function temporaryBusinessDetailPath(
   businessId: string,
   locationId?: string | null,
@@ -44,7 +47,10 @@ export function temporaryBusinessDetailPath(
   return `${base}?locationId=${encodeURIComponent(trimmed)}`;
 }
 
-/** Discovery card → temporary detail href (Business-grain, optional branch context). */
-export function discoveryBusinessDetailHref(card: PublicBusinessCard): string {
-  return temporaryBusinessDetailPath(card.id, card.contextLocationId);
+/** Discovery card → canonical F.4 business page (city-scoped). */
+export function discoveryBusinessDetailHref(
+  citySlug: string,
+  card: PublicBusinessCard,
+): string {
+  return canonicalBusinessPagePath(citySlug, card.slug, card.contextLocationId);
 }

@@ -1,5 +1,9 @@
 import { parsePublicBusinessLocationsResponse } from './public-business-location';
 import {
+  buildBusinessBySlugRequestPath,
+  parseBusinessCityMismatchBody,
+} from './business-page-paths';
+import {
   REVALIDATE_BUSINESS_DETAIL_SECONDS,
   REVALIDATE_BUSINESS_LIST_SECONDS,
   REVALIDATE_CATEGORIES_SECONDS,
@@ -58,14 +62,76 @@ export type EffectivePhysicalDto = {
   workHours: Record<string, unknown> | null;
 };
 
+export type BusinessSubcategoryDto = {
+  id: string;
+  slug: string;
+  nameRu: string;
+  nameKk: string;
+};
+
+export type EffectiveMediaItemDto = {
+  id: string;
+  imageUrl: string;
+  sortOrder: number;
+  locationId: string | null;
+  scope: 'brand' | 'branch';
+};
+
+export type EffectiveMediaDto = {
+  activeLocationId: string | null;
+  coverImageUrl: string | null;
+  galleryPreview: { items: EffectiveMediaItemDto[]; totalCount: number };
+};
+
+export type EffectiveCatalogItemDto = {
+  id: string;
+  title: string;
+  description?: string | null;
+  price?: number | null;
+  imageUrl?: string | null;
+  sortOrder: number;
+  sectionId?: string | null;
+};
+
+export type EffectiveCatalogDto = {
+  activeLocationId: string | null;
+  sections: { id: string; title: string; sortOrder: number }[];
+  items: EffectiveCatalogItemDto[];
+  totalCount: number;
+};
+
+export type EffectivePromotionItemDto = {
+  id: string;
+  title: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  discountText?: string | null;
+};
+
+export type EffectivePromotionsDto = {
+  activeLocationId: string | null;
+  items: EffectivePromotionItemDto[];
+  totalCount: number;
+};
+
+export type ReviewPreviewItemDto = {
+  id: string;
+  rating: number;
+  text?: string | null;
+  createdAt: string;
+  user?: { id: string; name: string | null };
+};
+
 export type BusinessSummaryDto = {
   id: string;
   title: string;
   slug: string;
   address: string;
   shortDesc?: string | null;
+  description?: string | null;
   coverImageUrl?: string | null;
   category?: { id: string; title: string; slug: string } | null;
+  subcategories?: BusinessSubcategoryDto[];
   averageRating?: number | null;
   reviewCount?: number;
   /** Stage 6.12A.7.6 — optional branch context (additive). */
@@ -73,7 +139,14 @@ export type BusinessSummaryDto = {
   /** Discovery navigation hint (A.7.9.1+) — open detail with ?locationId=. */
   contextLocationId?: string | null;
   effectivePhysical?: EffectivePhysicalDto;
+  effectiveMedia?: EffectiveMediaDto;
+  effectiveCatalog?: EffectiveCatalogDto;
+  effectivePromotions?: EffectivePromotionsDto;
+  reviewsPreview?: { items: ReviewPreviewItemDto[]; totalCount: number };
 };
+
+/** Public detail from F.4 slug endpoint or legacy ID detail (same shape). */
+export type BusinessPublicDetailDto = BusinessSummaryDto;
 
 /** Relative API path for detail fetch (tests + fetchBusiness). */
 export function buildBusinessDetailRequestPath(
@@ -152,13 +225,46 @@ export async function fetchBusinesses(
 export async function fetchBusiness(
   id: string,
   locationId?: string | null,
-): Promise<BusinessSummaryDto | null> {
+): Promise<BusinessPublicDetailDto | null> {
   const res = await fetch(`${API_BASE}${buildBusinessDetailRequestPath(id, locationId)}`, {
     next: { revalidate: REVALIDATE_BUSINESS_DETAIL_SECONDS },
   });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(await res.text());
-  return res.json() as Promise<BusinessSummaryDto>;
+  return res.json() as Promise<BusinessPublicDetailDto>;
+}
+
+export type FetchBusinessBySlugResult =
+  | { status: 'ok'; business: BusinessPublicDetailDto }
+  | { status: 'not_found' }
+  | {
+      status: 'city_mismatch';
+      payload: { businessSlug: string; locationId: string; citySlug: string };
+    };
+
+export async function fetchBusinessBySlug(input: {
+  businessSlug: string;
+  citySlug: string;
+  locationId?: string | null;
+}): Promise<FetchBusinessBySlugResult> {
+  const path = buildBusinessBySlugRequestPath(
+    input.businessSlug,
+    input.citySlug,
+    input.locationId,
+  );
+  const res = await fetch(`${API_BASE}${path}`, {
+    next: { revalidate: REVALIDATE_BUSINESS_DETAIL_SECONDS },
+  });
+  if (res.status === 404) return { status: 'not_found' };
+  if (res.status === 409) {
+    const body = await res.json().catch(() => null);
+    const payload = parseBusinessCityMismatchBody(body);
+    if (payload) return { status: 'city_mismatch', payload };
+    throw new Error('Unexpected city mismatch response');
+  }
+  if (!res.ok) throw new Error(await res.text());
+  const business = (await res.json()) as BusinessPublicDetailDto;
+  return { status: 'ok', business };
 }
 
 export async function fetchPublicBusinessLocations(businessId: string) {

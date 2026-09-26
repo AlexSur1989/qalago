@@ -49,6 +49,27 @@ export function breadcrumbsForCategory(
   ];
 }
 
+export function breadcrumbsForCanonicalBusiness(
+  city: CityDto,
+  businessTitle: string,
+  locale: AppLocale,
+  category?: CategoryDto | null,
+): BreadcrumbCrumb[] {
+  const cityName = cityDisplayName(city, locale);
+  const crumbs: BreadcrumbCrumb[] = [
+    { label: SITE_LABEL, href: cityHomePath(city.slug) },
+    { label: cityName, href: cityHomePath(city.slug) },
+  ];
+  if (category) {
+    crumbs.push({
+      label: categoryDisplayName(category, locale),
+      href: cityCategoryPath(city.slug, category.slug),
+    });
+  }
+  crumbs.push({ label: businessTitle });
+  return crumbs;
+}
+
 export function breadcrumbsForSubcategory(
   city: CityDto,
   category: CategoryDto,

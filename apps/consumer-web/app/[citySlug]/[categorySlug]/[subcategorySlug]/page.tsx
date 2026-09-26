@@ -116,7 +116,7 @@ export default async function CitySubcategoryPage({
       <h1 className="page-title">{subcategoryDisplayName(sub, locale)}</h1>
       <p style={{ color: 'var(--muted)' }}>{categoryDisplayName(category, locale)}</p>
       <h2 style={{ marginTop: 28 }}>{labels.businesses}</h2>
-      <BusinessList items={publicItems} locale={locale} />
+      <BusinessList citySlug={citySlug} items={publicItems} locale={locale} />
       <PaginationLinks
         basePath={citySubcategoryPath(city.slug, category.slug, sub.slug)}
         page={safePage}

@@ -13,9 +13,11 @@ function coverSrc(url: string | null | undefined): string | null {
 }
 
 export function BusinessList({
+  citySlug,
   items,
   locale,
 }: {
+  citySlug: string;
   items: PublicBusinessCard[];
   locale: AppLocale;
 }) {
@@ -29,7 +31,7 @@ export function BusinessList({
         const cover = coverSrc(b.coverImageUrl);
         return (
           <li key={b.id}>
-            <Link href={discoveryBusinessDetailHref(b)} className="biz-card">
+            <Link href={discoveryBusinessDetailHref(citySlug, b)} className="biz-card">
               <div className="biz-card__media">
                 {cover ? (
                   // eslint-disable-next-line @next/next/no-img-element

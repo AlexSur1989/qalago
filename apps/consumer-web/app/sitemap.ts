@@ -1,5 +1,9 @@
 import type { MetadataRoute } from 'next';
 import { fetchCategories, fetchCities, fetchSubcategories } from '@/lib/catalog-api';
+import {
+  dedupeBusinessCitySitemapUrls,
+  fetchAllPublicBusinessesInCity,
+} from '@/lib/business-sitemap';
 import { buildDiscoverySitemapEntries } from '@/lib/seo/sitemap-builder';
 
 /**
@@ -14,6 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       string,
       Awaited<ReturnType<typeof fetchSubcategories>>
     > = {};
+    const businessUrlsByCitySlug: Record<string, string[]> = {};
 
     await Promise.all(
       cities.map(async (city) => {
@@ -24,6 +29,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             subcategoriesByCategoryId[cat.id] = await fetchSubcategories(cat.id);
           }),
         );
+        const businesses = await fetchAllPublicBusinessesInCity(city.slug);
+        businessUrlsByCitySlug[city.slug] = dedupeBusinessCitySitemapUrls(city.slug, businesses);
       }),
     );
 
@@ -31,6 +38,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       cities,
       categoriesByCitySlug,
       subcategoriesByCategoryId,
+      businessUrlsByCitySlug,
     });
 
     return entries.map((e) => ({

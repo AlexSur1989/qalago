@@ -5,7 +5,11 @@ import {
   findSubcategoryBySlug,
 } from './category-resolve';
 import type { CategoryDto, SubcategoryDto } from './catalog-api';
-import { toPublicBusinessCard, temporaryBusinessDetailPath } from './public-business';
+import {
+  discoveryBusinessDetailHref,
+  toPublicBusinessCard,
+  temporaryBusinessDetailPath,
+} from './public-business';
 import { isReservedCitySegment } from './reserved-segments';
 import {
   cityCategoryPath,
@@ -114,6 +118,9 @@ describe('F.2 discovery', () => {
     expect(temporaryBusinessDetailPath('b1', 'loc-l2')).toBe(
       '/businesses/b1?locationId=loc-l2',
     );
+    expect(discoveryBusinessDetailHref('uralsk', card)).toBe(
+      '/uralsk/business/autodrive?locationId=loc-l2',
+    );
   });
 
   it('public card omits internal fields', () => {
@@ -122,7 +129,6 @@ describe('F.2 discovery', () => {
       title: 'T',
       slug: 't',
       address: 'A',
-      // @ts-expect-error simulate API leak
       ownerId: 'secret',
       planTier: 'PRO',
     } as never);

@@ -1,6 +1,7 @@
 import { cache } from 'react';
 import {
   fetchBusiness,
+  fetchBusinessBySlug,
   fetchPublicBusinessLocations,
   fetchCategories,
   fetchCity,
@@ -20,3 +21,8 @@ export const cachedFetchBusiness = cache((id: string, locationId?: string | null
   fetchBusiness(id, locationId),
 );
 export const cachedFetchPublicBusinessLocations = cache(fetchPublicBusinessLocations);
+/** F.4 — dedupe slug detail fetch between metadata and page (citySlug + slug + locationId). */
+export const cachedFetchBusinessBySlug = cache(
+  (citySlug: string, businessSlug: string, locationId?: string | null) =>
+    fetchBusinessBySlug({ citySlug, businessSlug, locationId }),
+);

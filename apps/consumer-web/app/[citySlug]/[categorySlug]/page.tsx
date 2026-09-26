@@ -130,7 +130,7 @@ export default async function CityCategoryPage({
         </>
       ) : null}
       <h2 style={{ marginTop: 28 }}>{labels.businesses}</h2>
-      <BusinessList items={publicItems} locale={locale} />
+      <BusinessList citySlug={citySlug} items={publicItems} locale={locale} />
       <PaginationLinks
         basePath={cityCategoryPath(city.slug, category.slug)}
         page={safePage}

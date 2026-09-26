@@ -86,3 +86,11 @@ export function canonicalForSearch(citySlug: string, query: string): string {
   if (!query.trim()) return base;
   return `${base}?q=${encodeURIComponent(query.trim())}`;
 }
+
+/** F.4 indexable business page — never includes ?locationId=. */
+export function canonicalForBusiness(citySlug: string, businessSlug: string): string {
+  return buildCanonicalUrl({
+    citySlug,
+    pathSegments: ['business', businessSlug],
+  });
+}

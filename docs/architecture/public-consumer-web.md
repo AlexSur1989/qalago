@@ -45,11 +45,15 @@ Static App Router segments (e.g. `categories/`, `search/`) take precedence over 
 - `/categories` → `/{DEFAULT_CITY_SLUG}/categories`
 - `/categories/{categoryId}` → resolve in default city → `/{DEFAULT_CITY_SLUG}/{categorySlug}` or 404
 
-### Business links (temporary → F.4)
+### Business pages (F.4)
 
-- **Current (temporary):** cards link to **`/businesses/{businessId}`**; when the API supplies **`contextLocationId`**, href adds **`?locationId=<contextLocationId>`** (A.9.3.4). Server fetch: **`GET /businesses/:id?locationId=`**.
-- **F.4 Phase 1 (backend, IMPLEMENTED):** Catalog API **`GET /businesses/by-slug/:businessSlug?citySlug=&locationId=`** — city membership, city-default branch, wrong-city **`409 BUSINESS_LOCATION_CITY_MISMATCH`**, foreign/invalid **`locationId`** safety — see [api-contracts.md](./api-contracts.md). **No Consumer Web route yet.**
-- **F.4 Phase 2 (not implemented):** canonical page **`/{citySlug}/business/{businessSlug}`** with optional **`?locationId=`** — [future-extensibility-contracts.md](./future-extensibility-contracts.md) § Contract 1 + **Phase 0.1 addendum** (308/301 normalize, indexable canonical/sitemap). Permanent redirect from ID paths when indexable pages ship.
+- **Canonical route (F.4 Phase 2, IMPLEMENTED):** **`/{citySlug}/business/{businessSlug}`** with optional **`?locationId=`** for branch context. Server fetch: **`GET /businesses/by-slug/:businessSlug?citySlug=&locationId=`** (Phase 1 backend). Wrong-city owned **`locationId`** → **`permanentRedirect`** to **`/{actualCitySlug}/business/{businessSlug}?locationId=`** (409 normalization). **404** for unknown city/slug, non-public business, or no branch in city.
+- **Discovery links (F.2):** category/search/subcategory **`BusinessList`** → canonical URLs with **`contextLocationId`** preserved in query when present.
+- **Legacy compatibility:** **`/businesses/{id}?locationId=`** → **308 permanent redirect** to canonical URL (still **`noindex`** + **`robots.txt` disallow**). Resolves city via active/public branch data — not **`Business.cityId`**.
+- **SEO canonical:** indexable business pages use **`/{citySlug}/business/{businessSlug}`** only — **no `?locationId=`** in canonical or sitemap. One sitemap URL per **(citySlug, businessSlug)** membership (deduped multi-branch same city).
+- **Showcase (typed v1):** hero, contacts, branches, **`effectiveMedia`**, **`effectiveCatalog`**, **`effectivePromotions`**, read-only reviews preview, OSM map link when coords exist — no Web map, auth, or write review.
+- **Structured data:** **`BreadcrumbList`** on business page; **`LocalBusiness` / `AggregateRating`** deferred.
+- **Contract reference:** [future-extensibility-contracts.md](./future-extensibility-contracts.md) § Contract 1 + Phase 0.1 addendum; [api-contracts.md](./api-contracts.md) **`GET /businesses/by-slug/:businessSlug`**.
 
 ### Cache / rendering
 
@@ -70,7 +74,7 @@ Static App Router segments (e.g. `categories/`, `search/`) take precedence over 
 - Root layout: `metadataBase`, title template `%s | QalaGo`, RU/KK description from cookie locale, site-level Open Graph / Twitter (no invented @handles).
 - Dynamic: city, city categories, category, subcategory (RU/KK names from API + cookie locale).
 - **Search** `/{citySlug}/search?q=`: **`robots: noindex, follow`**; canonical reflects city search path + encoded `q` when present.
-- **Temporary business** `/businesses/{id}`: **`noindex, follow`** until **6.12A + F.4**; **no** canonical to future slug URLs.
+- **Legacy business** `/businesses/{id}`: **`noindex, follow`** (redirect-only); canonical business metadata on **`/{citySlug}/business/{businessSlug}`** only.
 
 ### Locale SEO limitation (F.5 handoff)
 
@@ -87,15 +91,15 @@ Static App Router segments (e.g. `categories/`, `search/`) take precedence over 
 ### sitemap.xml (`app/sitemap.ts`)
 
 - **Sources:** `GET /cities`, per city `GET /categories?citySlug=`, per category `GET /categories/:id/subcategories` (bounded parallel per city).
-- **Includes:** `/{citySlug}`, `/{citySlug}/categories`, `/{citySlug}/{categorySlug}`, `/{citySlug}/{categorySlug}/{subcategorySlug}`.
-- **Excludes:** search, legacy `/categories*`, `/businesses/{id}`, owner/admin paths, paginated list URLs (`?page=`).
+- **Includes:** `/{citySlug}`, `/{citySlug}/categories`, `/{citySlug}/{categorySlug}`, `/{citySlug}/{categorySlug}/{subcategorySlug}`, **`/{citySlug}/business/{businessSlug}`** (per city membership, deduped).
+- **Excludes:** search, legacy `/categories*`, `/businesses/{id}`, business URLs with **`?locationId=`**, owner/admin paths, paginated list URLs (`?page=`).
 - **Failure:** API error → **empty sitemap** (no fabricated URLs, no stack traces).
 - **Scale:** single sitemap today; structure allows future sitemap index / segmented business sitemap when catalog grows.
 
 ### Structured data
 
-- **Implemented:** root `WebSite` JSON-LD; `BreadcrumbList` on city categories / category / subcategory (visible breadcrumbs + JSON-LD).
-- **Deferred:** `LocalBusiness`, branch/location schema, `AggregateRating`, `SearchAction` until URLs and semantics are final (**6.12A**, F.4).
+- **Implemented:** root `WebSite` JSON-LD; `BreadcrumbList` on city categories / category / subcategory / **canonical business** pages.
+- **Deferred:** `LocalBusiness`, branch/location schema, `AggregateRating`, `SearchAction` (F.4 Phase 2 did not add rich snippets).
 
 ### Pagination canonical
 
@@ -103,4 +107,4 @@ Static App Router segments (e.g. `categories/`, `search/`) take precedence over 
 
 ## BusinessLocation (6.12A)
 
-**6.12A** location architecture is live. Temporary **`/businesses/{id}`** (F.3 noindex) remains until **F.4 Phase 2** canonical slug pages. Slug+city detail API: **`GET /businesses/by-slug/:businessSlug`**. See [business-location.md](./business-location.md).
+**6.12A** location architecture is live. Canonical **`/{citySlug}/business/{businessSlug}`** (F.4 Phase 2) uses slug+city API; legacy **`/businesses/{id}`** redirects permanently. See [business-location.md](./business-location.md).

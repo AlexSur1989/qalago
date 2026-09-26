@@ -308,7 +308,7 @@ Env: `QALAGO_GEOCODING_PROVIDER` = `mock` (default) \| `maptiler`; `MAPTILER_API
 >
 > **Flutter consumption (A.7.9.5, IMPLEMENTED):** Mobile parses **`contextLocationId`** on catalog list/search/nearby/promotion payloads and opens **`GET /businesses/:id?locationId=<contextLocationId>`** via existing detail routing. Map marker taps continue **`locationId`** only (not list **`contextLocationId`**). Favorites/reviews/analytics remain **Business.id**.
 >
-> **Consumer Web consumption (A.9.3.4, IMPLEMENTED):** **`apps/consumer-web`** parses list **`contextLocationId`**, links temporary detail **`/businesses/{id}?locationId=`**, and fetches **`GET /businesses/:id?locationId=`** (server-side). No context → primary/effective branch. Detail remains **noindex** (F.3). **F.4 Phase 1** backend **`GET /businesses/by-slug/:businessSlug?citySlug=`** is ready; canonical **`/{citySlug}/business/{businessSlug}`** page and SEO are **F.4 Phase 2** (not implemented). No Web map/promotions/favorites yet.
+> **Consumer Web consumption (F.4 Phase 2, IMPLEMENTED):** Discovery links **`/{citySlug}/business/{businessSlug}?locationId=`** when **`contextLocationId`** present. Canonical page fetches **`GET /businesses/by-slug/:businessSlug?citySlug=&locationId=`**; wrong-city **`409`** → permanent redirect to actual city. Legacy **`/businesses/{id}`** redirects to canonical (still noindex). Indexable canonical excludes **`?locationId=`**. No Web map/auth/favorites yet.
 
 ### GET /businesses
 

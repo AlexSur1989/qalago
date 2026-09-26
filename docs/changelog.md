@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-09-27 — F.4 Phase 2 canonical Consumer Web business page
+
+- **Status:** **F.4 PHASE 2 IMPLEMENTED — CANONICAL CONSUMER WEB BUSINESS PAGE** (manual QA pending — **F.4 not FINALIZED**).
+- **Scope:** **`apps/consumer-web`** — canonical route, typed showcase, discovery link migration, legacy ID redirect, sitemap/SEO/metadata, tests, docs. **No** backend/schema/Flutter/Admin/Business Web changes.
+- **Summary:** **`/{citySlug}/business/{businessSlug}`** + optional **`?locationId=`** via **`GET /businesses/by-slug/...`**; **409** → **`permanentRedirect`** to correct city; **404**/`notFound()` per Phase 0.1; sections (hero, contacts, branches, **`effectiveMedia`**, **`effectiveCatalog`**, **`effectivePromotions`**, reviews read-only, OSM CTA); canonical/sitemap **without** query; **`/businesses/{id}`** permanent redirect (noindex preserved); **`BusinessList`** canonical hrefs; **`BreadcrumbList`** JSON-LD; tests **`f4-business-page.test.ts`** + F.2/F.3 regression.
+- **Deferred:** F.4 **manual/physical QA**; **LocalBusiness** / **AggregateRating** JSON-LD; F.4 Phase 3+; overall **F.4 FINALIZED** gate.
+- **Next:** **F.4 manual QA** (human) — explicit scenarios in implementation report; then agreement on closure / any follow-up stage.
+
+---
+
 ## 2026-09-27 — F.4 Phase 1 public business slug/city resolution (backend)
 
 - **Status:** **F.4 PHASE 1 PASS — PUBLIC BUSINESS SLUG/CITY RESOLUTION BACKEND**.

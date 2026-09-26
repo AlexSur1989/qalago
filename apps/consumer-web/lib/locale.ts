@@ -72,6 +72,15 @@ export type UiLabels = {
   paginationNext: string;
   paginationPage: string;
   ratingLabel: string;
+  businessGalleryTitle: string;
+  businessServicesTitle: string;
+  businessPromotionsTitle: string;
+  businessReviewsTitle: string;
+  businessContactsTitle: string;
+  businessLocationTitle: string;
+  businessOpenMap: string;
+  businessNoReviews: string;
+  businessReadMoreReviews: string;
 };
 
 export const UI_LABELS: Record<AppLocale, UiLabels> = {
@@ -123,6 +132,15 @@ export const UI_LABELS: Record<AppLocale, UiLabels> = {
     paginationNext: 'Далее →',
     paginationPage: 'Страницы результатов',
     ratingLabel: 'Рейтинг',
+    businessGalleryTitle: 'Фото',
+    businessServicesTitle: 'Услуги',
+    businessPromotionsTitle: 'Акции',
+    businessReviewsTitle: 'Отзывы',
+    businessContactsTitle: 'Контакты',
+    businessLocationTitle: 'Адрес',
+    businessOpenMap: 'Открыть на карте',
+    businessNoReviews: 'Отзывов пока нет.',
+    businessReadMoreReviews: 'и ещё отзывы',
   },
   kk: {
     siteTitle: 'QalaGo',
@@ -172,6 +190,15 @@ export const UI_LABELS: Record<AppLocale, UiLabels> = {
     paginationNext: 'Алға →',
     paginationPage: 'Нәтиже беттері',
     ratingLabel: 'Рейтинг',
+    businessGalleryTitle: 'Фото',
+    businessServicesTitle: 'Қызметтер',
+    businessPromotionsTitle: 'Акциялар',
+    businessReviewsTitle: 'Пікірлер',
+    businessContactsTitle: 'Байланыс',
+    businessLocationTitle: 'Мекенжай',
+    businessOpenMap: 'Картада ашу',
+    businessNoReviews: 'Пікірлер әлі жоқ.',
+    businessReadMoreReviews: 'тағы пікірлер',
   },
 };
 

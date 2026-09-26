@@ -1,12 +1,12 @@
 import Link from 'next/link';
 import type { PublicBusinessLocation } from '@/lib/public-business-location';
 import { cityNameForLocale } from '@/lib/public-business-location';
-import { temporaryBusinessDetailPath } from '@/lib/public-business';
+import { canonicalBusinessPagePath } from '@/lib/business-page-paths';
 import type { AppLocale } from '@/lib/locale';
 
 type Props = {
   locale: AppLocale;
-  businessId: string;
+  businessSlug: string;
   branches: PublicBusinessLocation[];
   activeLocationId: string | null;
   labels: {
@@ -17,7 +17,7 @@ type Props = {
 
 export function BusinessBranchesSection({
   locale,
-  businessId,
+  businessSlug,
   branches,
   activeLocationId,
   labels,
@@ -30,7 +30,11 @@ export function BusinessBranchesSection({
       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
         {branches.map((branch) => {
           const isActive = activeLocationId != null && branch.id === activeLocationId;
-          const href = temporaryBusinessDetailPath(businessId, branch.id);
+          const href = canonicalBusinessPagePath(
+            branch.city.slug,
+            businessSlug,
+            branch.id,
+          );
           return (
             <li
               key={branch.id}

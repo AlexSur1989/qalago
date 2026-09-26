@@ -93,7 +93,7 @@ export default async function CitySearchPage({
         <p style={{ color: 'var(--muted)' }}>{labels.searchNoResults}</p>
       ) : (
         <>
-          <BusinessList items={publicItems} locale={locale} />
+          <BusinessList citySlug={citySlug} items={publicItems} locale={locale} />
           <PaginationLinks
             basePath={basePath}
             page={safePage}
