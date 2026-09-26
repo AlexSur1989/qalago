@@ -9,7 +9,7 @@
 ## 2026-09-26 — 6.12A.9.4.5E Business.cityId retirement physical/manual QA + fixture cleanup
 
 - **Status:** **6.12A.9.4.5E PASS — BUSINESS.cityId RETIREMENT PHYSICAL QA FINALIZED**; **6.12A.9.4.5 PASS — BUSINESS.cityId RETIREMENT FINALIZED** (umbrella — **5A**, **5B**, **5C**, **5D1**, **5D2**, **5D3**, **5E** complete).
-- **Checkpoint (docs closure):** `6bc1d5d8816292562a2b07480974a2cd26088c89`.
+- **Checkpoint (docs closure):** `657cfc6f1ccad2cf469d0030ade0e0d9aab5146b`.
 - **Scope:** **Docs-only closure** after completed physical/manual QA. **No** product-code, schema, migration, or DB changes in this commit. Temporary dev fixture helpers under **`infra/local-backups/a945e-*`** (uncommitted; preserved).
 - **Fixture (dev, removed):** multi-city QA Business **`cmuiletaq0002ul380paca4ab`** (L1 Uralsk + L2 Aktobe); branch-scoped services/promotions; OWNER + CITY_ADMIN test accounts. **Fixture plan correction:** QA Business temporarily set from **FREE** → **BASIC** so **FREE `maxActivePromotions=1`** did not hide a branch promotion during QA — **fixture-only**, not a product defect.
 - **Physical QA (Samsung SM-J610FN):** discovery/search/map one card per city; Uralsk default **L1** / Aktobe **L2**; branch switch; branch-effective catalog/promotions (**SELECTED + ALL** per branch); marker preview → detail context preserved; post–primary-promotion behavior unchanged for city/branch context. **Favorites:** **NOT TESTED** (auth required). **Reviews:** guest-readable; fixture had **zero** reviews.
