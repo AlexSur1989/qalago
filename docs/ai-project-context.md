@@ -8,7 +8,7 @@
 
 | Field | Value |
 |-------|--------|
-| **Repo HEAD (current)** | `c842e99` — **A.9.4.4B** docs closure (**4.4B** impl `34032806…`) |
+| **Repo HEAD (current)** | `3f2757f` — **A.9.4.4C1** docs closure (**C1** impl `80f678a…`) |
 | **A.9.4.3D docs closure** | `75d58f6bb477a0a295029a867fd225989544c172` — physical QA finalized |
 | **A.9.4.3C implementation SHA** | `91284804547a78c1b4b6521ffe648e63508c2fe9` |
 | **A.9.4.3B implementation SHA** | `cde02e6d0faee3b5b6831ba479d6f4dcdff14b17` |
