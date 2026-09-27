@@ -6,9 +6,17 @@ const CYRILLIC = /[\u0400-\u04FF]/;
 /** Product UI strings must live in lib/locale.ts only. */
 const DICTIONARY_FILES = new Set([
   'locale.ts',
+  'legal-ui.ts',
   'localized-content.ts',
   'metadata-copy.ts',
   'page-metadata.ts',
+]);
+
+/** Legal body copy stays RU until counsel review (F.7 — same as Business Web). */
+const LEGAL_BODY_PAGE_FILES = new Set([
+  'app/privacy/page.tsx',
+  'app/terms/page.tsx',
+  'app/account-deletion/page.tsx',
 ]);
 
 const SCAN_ROOTS = ['app', 'components', 'lib'];
@@ -52,6 +60,7 @@ function lineAllowed(line: string): boolean {
 function scanFile(absPath: string, rootDir: string): HardcodedUiViolation[] {
   const relative = path.relative(rootDir, absPath).replace(/\\/g, '/');
   if (isDictionaryFile(relative)) return [];
+  if (LEGAL_BODY_PAGE_FILES.has(relative)) return [];
 
   const content = fs.readFileSync(absPath, 'utf8');
   const lines = content.split(/\r?\n/);

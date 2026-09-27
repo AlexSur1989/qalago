@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — F.7 Phase 1 — Consumer Web legal routes
+
+- **Status:** **F.7 PHASE 1 PASS — CONSUMER WEB LEGAL ROUTES IMPLEMENTED**. F.7 umbrella: **IN PROGRESS / NOT CLOSED**. **F.8 NOT STARTED**.
+- **Checkpoint:** Pre-Phase-1 HEAD **`7f30a7783970136d8c44331c69178df8048b8582`**; implementation commit in git log immediately after.
+- **Scope:** Consumer Web only — `/privacy`, `/terms`, `/account-deletion` static pages; middleware exemption for locale-neutral legal roots; **no** PublicShell footer migration, **no** Business Web redirects, **no** Phase 4 SEO, **no** API/Prisma/Flutter changes.
+- **Summary:** Migrated Business Web legal content pattern to `apps/consumer-web`; shared `LegalPageLayout`, `legal-config`, `legal-ui`; F.7 tests + UI guard allowlist; Consumer Web **205/205** vitest; **`next build`** OK.
+- **Deferred:** Phase **2** same-origin footer; Phase **3** Business Web redirects; Phase **4** SEO; Phase **5** physical QA; production legal approval (`docs/legal-review-required.md`).
+- **Next:** **F.7 Phase 2** — PublicShell/footer same-origin — **explicit approval required** — **do not auto-start**.
+
+---
+
 ## 2026-09-28 — F.7 Phase 0 — legal migration contract lock
 
 - **Status:** **F.7 PHASE 0 PASS — LEGAL MIGRATION CONTRACT LOCKED**. F.7 umbrella: **IN PROGRESS / NOT CLOSED**. **F.8 NOT STARTED**.

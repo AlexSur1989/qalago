@@ -9,9 +9,15 @@ import { fileURLToPath } from 'node:url';
 const CYRILLIC = /[\u0400-\u04FF]/;
 const DICTIONARY_FILES = new Set([
   'locale.ts',
+  'legal-ui.ts',
   'localized-content.ts',
   'metadata-copy.ts',
   'page-metadata.ts',
+]);
+const LEGAL_BODY_PAGE_FILES = new Set([
+  'app/privacy/page.tsx',
+  'app/terms/page.tsx',
+  'app/account-deletion/page.tsx',
 ]);
 const SCAN_ROOTS = ['app', 'components', 'lib'];
 const SKIP_DIR_NAMES = new Set(['node_modules', '.next', 'dist']);
@@ -43,6 +49,7 @@ function lineAllowed(line) {
 function scanFile(absPath, root) {
   const relative = path.relative(root, absPath).replace(/\\/g, '/');
   if (DICTIONARY_FILES.has(path.basename(relative))) return [];
+  if (LEGAL_BODY_PAGE_FILES.has(relative)) return [];
 
   const lines = fs.readFileSync(absPath, 'utf8').split(/\r?\n/);
   const violations = [];

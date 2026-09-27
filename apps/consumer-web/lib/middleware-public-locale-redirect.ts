@@ -11,6 +11,7 @@ import {
   type PublicLocale,
 } from './public-locale';
 import { isDefaultCityLocaleShorthand } from './reserved-segments';
+import { isPublicLegalRootPath } from './legal-paths';
 import { isWellKnownAssociationPath } from './well-known-path';
 
 export type MiddlewareLocaleRedirect =
@@ -57,6 +58,10 @@ export function resolveMiddlewareLocaleRedirect(
   const first = parts[0]!;
 
   if (LEGACY_TOP_LEVEL_PREFIXES.has(first)) {
+    return { kind: 'none' };
+  }
+
+  if (isPublicLegalRootPath(pathname)) {
     return { kind: 'none' };
   }
 

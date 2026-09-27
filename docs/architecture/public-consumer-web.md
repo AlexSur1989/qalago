@@ -477,15 +477,15 @@ Web authentication; favorites; Consumer Web interactive map; City Discovery; Hom
 
 ### 13. Implementation phases (LOCKED — not started)
 
-| Phase | Scope |
-|-------|--------|
-| **0** | Contract lock — **docs only** — **PASS** |
-| **1** | Consumer Web legal routes/pages (static migration from Business Web pattern) |
-| **2** | PublicShell / footer / config **same-origin** migration |
-| **3** | Business Web legacy legal-route **redirects** to Consumer Web origin |
-| **4** | Legal page localization chrome + SEO metadata/robots/sitemap policy implementation |
-| **5** | Cross-app + store-compliance regression + physical browser QA |
-| **Final** | Closure audit + docs (**F.7 CLOSED / PASS**) |
+| Phase | Scope | Status |
+|-------|--------|--------|
+| **0** | Contract lock — **docs only** | **PASS** |
+| **1** | Consumer Web legal routes/pages (static migration from Business Web pattern) | **PASS** |
+| **2** | PublicShell / footer / config **same-origin** migration | Not started |
+| **3** | Business Web legacy legal-route **redirects** to Consumer Web origin | Not started |
+| **4** | Legal page localization chrome + SEO metadata/robots/sitemap policy implementation | Not started |
+| **5** | Cross-app + store-compliance regression + physical browser QA | Not started |
+| **Final** | Closure audit + docs (**F.7 CLOSED / PASS**) | Not started |
 
 **Do not** start Phase **1** without explicit approval.
 
