@@ -12,6 +12,31 @@ export function parsePublicLocaleFromPathname(pathname: string): PublicLocale | 
   return null;
 }
 
+/** F.5: URL locale is authoritative on prefixed routes; layout prop may lag after client nav. */
+export function resolveEffectivePublicLocale(
+  pathname: string,
+  layoutFallbackLocale: PublicLocale,
+): PublicLocale {
+  return parsePublicLocaleFromPathname(pathname) ?? layoutFallbackLocale;
+}
+
+/** LocaleSwitcher guard + target (tested; mirrors client switchTo). */
+export function evaluateLocaleSwitch(
+  pathname: string,
+  searchParams: { get(name: string): string | null },
+  targetLocale: PublicLocale,
+  layoutFallbackLocale: PublicLocale,
+): { shouldNavigate: boolean; target: string } {
+  const activeLocale = resolveEffectivePublicLocale(pathname, layoutFallbackLocale);
+  if (targetLocale === activeLocale) {
+    return { shouldNavigate: false, target: '' };
+  }
+  return {
+    shouldNavigate: true,
+    target: buildLocaleSwitchTarget(pathname, searchParams, targetLocale),
+  };
+}
+
 export type PublicQueryInput = {
   locationId?: string | string[] | null;
   page?: string | string[] | null;

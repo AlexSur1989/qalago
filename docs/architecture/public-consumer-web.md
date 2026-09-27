@@ -215,6 +215,8 @@ Preserve **only** explicitly supported safe query context: **`locationId`**, val
 
 Update `qalago_locale` on explicit switch. **Do not** navigate to Home when an equivalent page exists.
 
+**Implemented (Phase 1.4):** Client **`LocaleSwitcher`** treats **pathname locale** as the current active locale (layout/cookie may lag after soft navigation); fallback layout locale only when the path has no supported prefix.
+
 ### 8. Canonical (LOCKED)
 
 Each **locale-prefixed indexable** page is **self-canonical**:

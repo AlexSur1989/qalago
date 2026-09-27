@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-09-27 — F.5 Phase 1.4 hotfix — URL-derived locale state fixed
+
+- **Status:** **F.5 PHASE 1.4 HOTFIX PASS — URL-DERIVED LOCALE STATE FIXED** (automated regression PASS; **physical browser QA must resume**).
+- **Checkpoint:** `727dbdd69d0e189feb695508cbe2fdc7faa94e48`.
+- **Root cause:** After soft **`/ru/…` → `/kk/…`** navigation, **`LocaleSwitcher`** still used stale **`locale`** from root **`PublicShell`** (SSR **`resolveLayoutLocale()`**); **`next === locale`** early-return blocked reverse switch with no error.
+- **Summary:** **`resolveEffectivePublicLocale(pathname, layoutFallback)`** + **`evaluateLocaleSwitch()`**; switcher guard, **`aria-pressed`**, and active styling use **URL-derived** locale; layout prop is fallback only. No **`router.refresh()`**, reload, or middleware change. Phase **1.3** safe **`q`/`page`/`locationId`** preserved.
+- **Automated verification:** **`f5-phase1-4-locale-switch-state.test.ts`** **10 PASS**; full Consumer Web Vitest **19 files / 163 PASS**; typecheck + **`next build` PASS**; dev/production HTTP smoke PASS.
+- **Deferred:** F.5 **Phase 2** not started; **physical/manual browser QA** (**RU → KK → RU** and **KK → RU → KK** on search with **`q`**).
+- **Next:** Resume physical browser QA from **`/ru/aktobe/search?q=coffee`**; explicit approval before Phase 2.
+
+---
+
 ## 2026-09-27 — F.5 Phase 1.3 hotfix — locale switch safe query preservation fixed
 
 - **Status:** **F.5 PHASE 1.3 HOTFIX PASS — LOCALE SWITCH SAFE QUERY PRESERVATION FIXED** (automated regression PASS; **physical browser QA still pending / must resume**).

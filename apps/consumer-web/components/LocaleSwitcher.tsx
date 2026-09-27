@@ -1,21 +1,26 @@
 'use client';
 
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
-import { buildLocaleSwitchTarget } from '@/lib/locale-path';
-import { LOCALE_COOKIE_NAME, type AppLocale, type UiLabels } from '@/lib/locale';
+import {
+  buildLocaleSwitchTarget,
+  resolveEffectivePublicLocale,
+} from '@/lib/locale-path';
+import { LOCALE_COOKIE_NAME, UI_LABELS, type AppLocale } from '@/lib/locale';
 import type { PublicLocale } from '@/lib/public-locale';
 
 function setLocaleCookie(next: AppLocale) {
   document.cookie = `${LOCALE_COOKIE_NAME}=${next};path=/;max-age=31536000;SameSite=Lax`;
 }
 
-export function LocaleSwitcher({ locale, labels }: { locale: AppLocale; labels: UiLabels }) {
+export function LocaleSwitcher({ locale: layoutLocale }: { locale: AppLocale }) {
   const pathname = usePathname() ?? '/';
   const searchParams = useSearchParams();
   const router = useRouter();
+  const activeLocale = resolveEffectivePublicLocale(pathname, layoutLocale);
+  const labels = UI_LABELS[activeLocale];
 
   function switchTo(next: PublicLocale) {
-    if (next === locale) return;
+    if (next === activeLocale) return;
     setLocaleCookie(next);
     const target = buildLocaleSwitchTarget(pathname, searchParams, next);
     router.push(target);
@@ -25,16 +30,16 @@ export function LocaleSwitcher({ locale, labels }: { locale: AppLocale; labels: 
     <div className="locale-switch" role="group" aria-label={labels.languageSwitcherAria}>
       <button
         type="button"
-        className={locale === 'ru' ? 'locale-switch__btn locale-switch__btn--active' : 'locale-switch__btn'}
-        aria-pressed={locale === 'ru'}
+        className={activeLocale === 'ru' ? 'locale-switch__btn locale-switch__btn--active' : 'locale-switch__btn'}
+        aria-pressed={activeLocale === 'ru'}
         onClick={() => switchTo('ru')}
       >
         {labels.localeRu}
       </button>
       <button
         type="button"
-        className={locale === 'kk' ? 'locale-switch__btn locale-switch__btn--active' : 'locale-switch__btn'}
-        aria-pressed={locale === 'kk'}
+        className={activeLocale === 'kk' ? 'locale-switch__btn locale-switch__btn--active' : 'locale-switch__btn'}
+        aria-pressed={activeLocale === 'kk'}
         onClick={() => switchTo('kk')}
       >
         {labels.localeKk}

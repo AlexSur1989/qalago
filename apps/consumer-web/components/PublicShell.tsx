@@ -55,7 +55,7 @@ export function PublicShell({
             labels={labels}
           />
           <Suspense fallback={null}>
-            <LocaleSwitcher locale={locale} labels={labels} />
+            <LocaleSwitcher locale={locale} />
           </Suspense>
         </div>
       </header>
