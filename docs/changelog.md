@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-27 — F.6 Phase 5 — iOS Universal Links
+
+- **Status:** **F.6 PHASE 5 IMPLEMENTATION PASS — iOS UNIVERSAL LINKS CONFIGURED**. F.6 umbrella: **IN PROGRESS / NOT CLOSED**. **Production Universal Links: NOT VERIFIED**.
+- **Checkpoint:** *(record after implementation commit)*.
+- **Scope:** iOS-only — `Runner.entitlements` `applinks:qalago.kz`; `FlutterDeepLinkingEnabled=false`; **6** static config tests; Phase **1–2** + Android manifest regression (**65** total). **No** AppDelegate changes; **no** fabricated Team ID; **no** Web/API/Flutter coordinator changes.
+- **Summary:** Universal Links enter via **app_links** → existing Phase **2** pipeline. AASA remains Phase **3** `QALAGO_APPLE_TEAM_ID` env on Consumer Web.
+- **Deferred:** macOS/Xcode signed build; physical iOS QA; production AASA deploy; Phase **6** closure.
+- **Next:** **F.6 Phase 6** — explicit approval required — **do not auto-start**.
+
+---
+
 ## 2026-09-27 — F.6 Phase 4 — Android App Links
 
 - **Status:** **F.6 PHASE 4 IMPLEMENTATION PASS — ANDROID APP LINKS CONFIGURED**. F.6 umbrella: **IN PROGRESS / NOT CLOSED**. **Production Verified App Links: NOT VERIFIED** (requires `qalago.kz` `assetlinks.json` + Play App Signing SHA-256).

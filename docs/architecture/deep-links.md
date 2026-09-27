@@ -1,8 +1,8 @@
 # F.6 — Deep Links / App Links / Universal Links / NavigationTarget
 
 **Gate:** F.6 — Deep Links / App Links / Universal Links  
-**Status:** **F.6 PHASE 0 — CONTRACT LOCKED**; **Phase 1–2 — PASS**; **Phase 3 — PASS** (Consumer Web `/.well-known` + middleware exemption)  
-**Umbrella:** **IN PROGRESS / NOT CLOSED** (Phases **4–6** not started; **no** production OS link verification yet)
+**Status:** **F.6 Phases 0–5 — IMPLEMENTED** (parser, Flutter nav, Web association, Android App Links, iOS Universal Links config)  
+**Umbrella:** **IN PROGRESS / NOT CLOSED** (Phase **6** pending; **no** production Verified App/Universal Links)
 
 **Authority:** This document is the **canonical F.6 contract**. Other architecture docs **reference** this file; they must not duplicate full contract text.
 
@@ -367,7 +367,7 @@ Minimum: reuse existing analytics (`VIEW_BUSINESS`, `BusinessTrafficSource`, `An
 | **2** | Flutter: HTTPS receiver, pending target, slug resolution, go_router, locale/city/locationId policies | **PASS** |
 | **3** | Consumer Web: association endpoints + `/.well-known` middleware exemption | **PASS** |
 | **4** | Android App Links + QA | **PASS (configured)** — manifest + `autoVerify`; **not** production domain verified |
-| **5** | iOS Universal Links + QA | Not started |
+| **5** | iOS Universal Links + QA | **PASS (configured)** — Associated Domains + app_links; **not** production verified |
 | **6** | Cross-platform closure QA + E-contour regression | Not started |
 
 **Do not** start Phase 1 without explicit approval.
@@ -425,8 +425,9 @@ Implementation must follow this matrix; details in Phase 1 tests.
 | F.6 Phase 1.1 `locationId` terminology | **PASS** — `BusinessLocation.id` (CUID), not RFC UUID |
 | F.6 Phase 2 Flutter navigation integration | **IMPLEMENTED / TESTED** |
 | F.6 Phase 3 Web association endpoints | **IMPLEMENTED / TESTED** |
-| F.6 Phase 4 Android App Links manifest | **CONFIGURED / TESTED** (manifest inspection + Phase 1–2 regression); **production Verified Links pending** |
-| F.6 Phases 5–6 | **NOT STARTED** |
+| F.6 Phase 4 Android App Links manifest | **CONFIGURED / TESTED** |
+| F.6 Phase 5 iOS Universal Links | **CONFIGURED / TESTED** (entitlements + static QA); **production verification pending** |
+| F.6 Phase 6 | **NOT STARTED** |
 
 **Phase 1 query policy (implemented):** Only **`locationId`** on business URLs and **`q`** on search URLs; any other query key → **invalid**. Forbidden navigation keys (`route`, `url`, `deeplink`, `link`, `redirect`, `next`, `callback`) → **invalid** on all URLs.
 
@@ -450,4 +451,10 @@ Implementation must follow this matrix; details in Phase 1 tests.
 - Package `kz.qalago.qalago_mobile`; paths `/ru*`, `/kk*` under `https://qalago.kz`
 - **`QALAGO_ANDROID_SHA256_CERT_FINGERPRINTS`** on Consumer Web must include the certificate of the **installed** APK (debug ≠ Play production)
 
-**Next:** **F.6 Phase 5** — explicit approval required — iOS Universal Links (not started).
+**Phase 5 iOS (implemented):**
+
+- `Runner.entitlements`: `applinks:qalago.kz` (with existing Sign in with Apple)
+- `Info.plist`: `FlutterDeepLinkingEnabled=false` — **app_links** sole Flutter HTTPS path
+- AASA remains Phase **3** Web endpoint + **`QALAGO_APPLE_TEAM_ID`** (no Team ID in repo)
+
+**Next:** **F.6 Phase 6** — explicit approval required — cross-platform closure QA (not started).

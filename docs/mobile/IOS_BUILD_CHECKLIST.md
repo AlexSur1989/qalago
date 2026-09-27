@@ -19,7 +19,7 @@ Stage 3C static audit. **Real iOS build was not executed on Windows.** Verify al
 |------|--------|
 | `Info.plist` location permission | `NSLocationWhenInUseUsageDescription` present (geolocator) |
 | App Transport Security (ATS) | Default — **blocks cleartext HTTP** unless exception added |
-| Deep links / universal links | Not configured |
+| Universal Links (F.6) | `Runner.entitlements` — `applinks:qalago.kz`; `FlutterDeepLinkingEnabled=false` (app_links) |
 | Push notifications | Not configured |
 | Background modes | Not configured |
 | URL schemes | Not configured |
