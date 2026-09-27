@@ -9,7 +9,7 @@
 ## 2026-09-27 — F.6 Phase 3 — Web association endpoints
 
 - **Status:** **F.6 PHASE 3 IMPLEMENTATION PASS — WEB ASSOCIATION ENDPOINTS PREPARED**. F.6 umbrella: **IN PROGRESS / NOT CLOSED**.
-- **Checkpoint:** *(record after implementation commit)*.
+- **Checkpoint:** `f2d60b314ce1559e3fff560a0d7615d01f4a6502`.
 - **Scope:** Consumer Web only — `/.well-known/assetlinks.json` + `/.well-known/apple-app-site-association` route handlers; F.5 middleware exemption for `/.well-known/*`; env-gated Android/iOS association JSON; **15** focused vitest cases; **193/193** consumer-web tests; **`next build`** PASS. **No** Flutter/Android/iOS manifest/entitlement changes; **no** API/Prisma changes.
 - **Summary:** Before Phase **3**, neutral middleware treated `/.well-known/…` like any path → **308** to `/ru/.well-known/…` (or `/kk/…`). Now root association URLs stay at `/.well-known/*` with `application/json`. Without env config: assetlinks `[]` (200); AASA empty details (404). **Not** production App/Universal Links verification.
 - **Deferred:** F.6 Phases **4–6**; real Play App Signing SHA-256; Apple Team ID; `qalago.kz` production deployment check.
