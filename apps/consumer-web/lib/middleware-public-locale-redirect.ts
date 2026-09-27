@@ -11,6 +11,7 @@ import {
   type PublicLocale,
 } from './public-locale';
 import { isDefaultCityLocaleShorthand } from './reserved-segments';
+import { isWellKnownAssociationPath } from './well-known-path';
 
 export type MiddlewareLocaleRedirect =
   | { kind: 'none'; routeLocale?: PublicLocale }
@@ -40,6 +41,10 @@ export function resolveMiddlewareLocaleRedirect(
   searchParams: URLSearchParams,
   cookieHeader: string | null | undefined,
 ): MiddlewareLocaleRedirect {
+  if (isWellKnownAssociationPath(pathname)) {
+    return { kind: 'none' };
+  }
+
   if (pathname === '/') {
     return { kind: 'none' };
   }

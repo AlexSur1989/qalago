@@ -5,10 +5,15 @@ import {
   joinRedirectTarget,
   resolveMiddlewareLocaleRedirect,
 } from '@/lib/middleware-public-locale-redirect';
+import { isWellKnownAssociationPath } from '@/lib/well-known-path';
 
 /** Browsers request /favicon.ico — rewrite to App Router icon (avoids dynamic segment capture). */
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (isWellKnownAssociationPath(pathname)) {
+    return NextResponse.next();
+  }
 
   if (pathname === '/favicon.ico') {
     return NextResponse.rewrite(new URL('/icon', request.url));

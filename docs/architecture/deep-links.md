@@ -1,8 +1,8 @@
 # F.6 — Deep Links / App Links / Universal Links / NavigationTarget
 
 **Gate:** F.6 — Deep Links / App Links / Universal Links  
-**Status:** **F.6 PHASE 0 — AGREED / CONTRACT LOCKED**; **Phase 1 — IMPLEMENTATION PASS**; **Phase 2 — IMPLEMENTATION PASS** (Flutter receiver + coordinator + navigation)  
-**Umbrella:** **IN PROGRESS / NOT CLOSED** (Phases **3–6** not started; **no** verified OS App/Universal Links yet)
+**Status:** **F.6 PHASE 0 — CONTRACT LOCKED**; **Phase 1–2 — PASS**; **Phase 3 — PASS** (Consumer Web `/.well-known` + middleware exemption)  
+**Umbrella:** **IN PROGRESS / NOT CLOSED** (Phases **4–6** not started; **no** production OS link verification yet)
 
 **Authority:** This document is the **canonical F.6 contract**. Other architecture docs **reference** this file; they must not duplicate full contract text.
 
@@ -318,7 +318,7 @@ https://qalago.kz/.well-known/assetlinks.json
 https://qalago.kz/.well-known/apple-app-site-association
 ```
 
-They **must not** be locale-redirected. Current Consumer Web middleware would redirect `/.well-known/*` to `/ru/.well-known/…` or `/kk/.well-known/…`; a **later F.6 phase** must **exempt** `/.well-known/*` from locale middleware. **Not implemented in Phase 0.**
+They **must not** be locale-redirected. **Phase 3 (implemented):** Consumer Web exempts `/.well-known/*` from F.5 locale middleware; route handlers serve association JSON at domain root. **Prepared/configurable ≠ OS verified** until real SHA-256 / Team ID and Phases **4–5**.
 
 Association files must contain **real** platform identifiers and signing data only. **Do not fabricate** certificate fingerprints or Apple Team ID in the repository.
 
@@ -364,8 +364,8 @@ Minimum: reuse existing analytics (`VIEW_BUSINESS`, `BusinessTrafficSource`, `An
 |-------|--------|--------|
 | **0** | Contract lock — **docs only** | **PASS — CONTRACT LOCKED** |
 | **1** | Public URL parser + typed target + automated tests | **PASS** — `apps/mobile/lib/core/deep_links/` + `test/core/deep_links/public_deep_link_parser_test.dart` |
-| **2** | Flutter: HTTPS receiver, pending target, slug resolution, go_router, locale/city/locationId policies | Not started |
-| **3** | Consumer Web: association endpoints + `/.well-known` middleware exemption | Not started |
+| **2** | Flutter: HTTPS receiver, pending target, slug resolution, go_router, locale/city/locationId policies | **PASS** |
+| **3** | Consumer Web: association endpoints + `/.well-known` middleware exemption | **PASS** |
 | **4** | Android App Links + QA | Not started |
 | **5** | iOS Universal Links + QA | Not started |
 | **6** | Cross-platform closure QA + E-contour regression | Not started |
@@ -423,8 +423,9 @@ Implementation must follow this matrix; details in Phase 1 tests.
 | F.6 Phase 0 contract (this document) | **AGREED / CONTRACT LOCKED** |
 | F.6 Phase 1 mobile URL parser | **IMPLEMENTED / TESTED** |
 | F.6 Phase 1.1 `locationId` terminology | **PASS** — `BusinessLocation.id` (CUID), not RFC UUID |
-| F.6 Phase 2 Flutter navigation integration | **IMPLEMENTED / TESTED** — `app_links` receiver, coordinator, executor, session city; **no** Android/iOS verified association |
-| F.6 Phases 3–6 | **NOT STARTED** |
+| F.6 Phase 2 Flutter navigation integration | **IMPLEMENTED / TESTED** |
+| F.6 Phase 3 Web association endpoints | **IMPLEMENTED / TESTED** — env-gated `assetlinks.json` + AASA; middleware exemption; **not** OS verified |
+| F.6 Phases 4–6 | **NOT STARTED** |
 
 **Phase 1 query policy (implemented):** Only **`locationId`** on business URLs and **`q`** on search URLs; any other query key → **invalid**. Forbidden navigation keys (`route`, `url`, `deeplink`, `link`, `redirect`, `next`, `callback`) → **invalid** on all URLs.
 
@@ -435,4 +436,11 @@ Implementation must follow this matrix; details in Phase 1 tests.
 3. **`PublicDeepLinkExecutor`** — locale via **`appLocaleProvider`**; **`deepLinkSessionCitySlugProvider`** for link city (not persisted **`cityProvider`**); go_router routes; business via **`GET /businesses/by-slug/:businessSlug?citySlug=`**; category/subcategory slug resolution via existing catalog APIs.
 4. Discovery surfaces (home, categories, search, catalog providers) read **`discoveryCitySlugProvider`** / **`discoveryCityProvider`**.
 
-**Next:** **F.6 Phase 3** — explicit approval required — Consumer Web / middleware / well-known coordination (not started).
+**Phase 3 Web association (implemented):**
+
+- Routes: `app/.well-known/assetlinks.json/route.ts`, `app/.well-known/apple-app-site-association/route.ts`
+- Config: `QALAGO_ANDROID_SHA256_CERT_FINGERPRINTS`, `QALAGO_APPLE_TEAM_ID` (see `apps/consumer-web/README.md`)
+- Missing config: `assetlinks.json` → `[]` (200); AASA → empty `details` (404)
+- Middleware: `isWellKnownAssociationPath` bypass in `middleware.ts` + redirect matrix
+
+**Next:** **F.6 Phase 4** — explicit approval required — Android App Links + QA (not started).
