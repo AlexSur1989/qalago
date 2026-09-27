@@ -1,8 +1,8 @@
 # F.6 — Deep Links / App Links / Universal Links / NavigationTarget
 
 **Gate:** F.6 — Deep Links / App Links / Universal Links  
-**Status:** **F.6 PHASE 0 — AGREED / CONTRACT LOCKED** (docs only)  
-**Umbrella:** **AGREED / NOT IMPLEMENTED** (no product code in Phase 0)
+**Status:** **F.6 PHASE 0 — AGREED / CONTRACT LOCKED**; **Phase 1 — IMPLEMENTATION PASS** (mobile parser + tests)  
+**Umbrella:** **IN PROGRESS / NOT CLOSED** (Phases **2–6** not started)
 
 **Authority:** This document is the **canonical F.6 contract**. Other architecture docs **reference** this file; they must not duplicate full contract text.
 
@@ -361,7 +361,7 @@ Minimum: reuse existing analytics (`VIEW_BUSINESS`, `BusinessTrafficSource`, `An
 | Phase | Scope | Status |
 |-------|--------|--------|
 | **0** | Contract lock — **docs only** | **PASS — CONTRACT LOCKED** |
-| **1** | Public URL parser + typed target + automated tests | **Not started** — explicit approval required |
+| **1** | Public URL parser + typed target + automated tests | **PASS** — `apps/mobile/lib/core/deep_links/` + `test/core/deep_links/public_deep_link_parser_test.dart` |
 | **2** | Flutter: HTTPS receiver, pending target, slug resolution, go_router, locale/city/locationId policies | Not started |
 | **3** | Consumer Web: association endpoints + `/.well-known` middleware exemption | Not started |
 | **4** | Android App Links + QA | Not started |
@@ -419,6 +419,9 @@ Implementation must follow this matrix; details in Phase 1 tests.
 |------|--------|
 | F.6 Phase 0 read-only audit | PASS |
 | F.6 Phase 0 contract (this document) | **AGREED / CONTRACT LOCKED** |
-| F.6 Phases 1–6 implementation | **NOT IMPLEMENTED** |
+| F.6 Phase 1 mobile URL parser | **IMPLEMENTED / TESTED** |
+| F.6 Phases 2–6 | **NOT STARTED** |
 
-**Next:** **F.6 Phase 1** — explicit approval required — public URL parser + typed target + automated tests.
+**Phase 1 query policy (implemented):** Only **`locationId`** on business URLs and **`q`** on search URLs; any other query key → **invalid**. Forbidden navigation keys (`route`, `url`, `deeplink`, `link`, `redirect`, `next`, `callback`) → **invalid** on all URLs.
+
+**Next:** **F.6 Phase 2** — explicit approval required — HTTPS receiver, deferred navigation, slug resolution, go_router integration.

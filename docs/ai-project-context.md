@@ -11,7 +11,7 @@
 | **Last completed architecture decision gate** | **FUTURE EXTENSIBILITY ARCHITECTURE GATE — AGREED / DOCUMENTED** — **`docs/architecture/future-extensibility-contracts.md`** |
 | **F.4** | **CLOSED / PASS — PUBLIC BUSINESS PAGES FINALIZED** (Phases **0.1** → **2.1** + physical QA — **`docs/changelog.md`**) |
 | **F.5** | **CLOSED / PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED** (Phases **0**, **1** + **1.1–1.4**, **2**, PublicShell hotfix — **`docs/changelog.md`** umbrella entry **2026-09-27**). Non-blocking deferred: legacy **`/businesses/{id}`** / real **`locationId`** manual QA gaps; **`<html lang>`** on soft nav (not verified). |
-| **F.6** | **Phase 0 PASS — DEEP LINK CONTRACT LOCKED** (`docs/architecture/deep-links.md`). Umbrella **AGREED / NOT IMPLEMENTED** (Phases **1–6** not started). **Next:** Phase **1** requires **explicit approval** — do not auto-start. |
+| **F.6** | **Phase 0 PASS — CONTRACT LOCKED**; **Phase 1 PASS — PUBLIC URL PARSER** (`apps/mobile/lib/core/deep_links/`). Umbrella **IN PROGRESS / NOT CLOSED** (Phases **2–6** not started). **Next:** Phase **2** requires **explicit approval**. |
 | **F.4 implementation SHA** | `52dfe1c4c32a906c964ee3e34470a511864faa84` (Phase 2); hotfix `678cb23a8e9004aa9be3aea170affaad68eb045e` |
 | **F.4 Phase 1 backend SHA** | `3bcd5cac785c5fbc9c5b5f623c96359645cf1854` |
 | **Last completed architecture contour** | **6.12A PASS — BUSINESSLOCATION ARCHITECTURE FINALIZED** (umbrella — see **`docs/changelog.md`** entry **2026-09-27**) |
@@ -42,7 +42,7 @@
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending (6.12A)** | **None** — contour closed (**5E** finalized) |
-| **Next** | **F.6 Phase 1** (parser + typed target + tests) — **explicit approval only**; optional non-blocking **`<html lang>`** URL alignment on soft nav |
+| **Next** | **F.6 Phase 2** (HTTPS receiver + deferred nav + slug resolution) — **explicit approval only**; optional non-blocking **`<html lang>`** URL alignment on soft nav |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -52,9 +52,9 @@
 
 **F.5:** **CLOSED / PASS** — locale SEO URL architecture implemented and verified (routing, SEO, PublicShell URL-locale UI). Milestone: **F.5 PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED**. Non-blocking: **`<html lang>`** vs URL on soft nav (not verified); Phase **1** manual QA gaps (legacy redirect, **`locationId`** UI). No backend change.
 
-**Consumer Web F-series (canonical order):** F.5 **CLOSED** → **F.6 Phase 0 LOCKED** (implementation not started) → F.7 legal migration → F.8 OG image pipeline — see **`docs/changelog.md`** and **`docs/architecture/deep-links.md`**. Broader QA contours (User/Business/Admin/role E2E, 6.12B, City Discovery) remain **separately staged** unless explicitly ordered.
+**Consumer Web F-series (canonical order):** F.5 **CLOSED** → **F.6 IN PROGRESS** (Phase **0–1** done; **2–6** not started) → F.7 → F.8 — **`docs/architecture/deep-links.md`**.
 
-**F.6 (Phase 0 locked):** HTTPS App/Universal Links on **`qalago.kz`**; F.5 URLs authoritative; locale from URL persists; deep-link city ≠ persisted city overwrite; business via **`by-slug`**; deferred navigation required; E contour unchanged.
+**F.6 (current):** Phase **1** mobile pure HTTPS URL → typed target parser (no OS links yet). Phase **2+:** receiver, deferred nav, well-known, App/Universal Links per contract.
 
 **Post-6.12A candidates (documented — not auto-started):** **6.12B** / Catalog Import; remaining contours — **`docs/changelog.md`** / architecture docs.
 

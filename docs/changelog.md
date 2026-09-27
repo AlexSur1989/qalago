@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-27 — F.6 Phase 1 — public URL parser
+
+- **Status:** **F.6 PHASE 1 IMPLEMENTATION PASS — PUBLIC URL PARSER AND TYPED TARGET VERIFIED**. F.6 umbrella: **IN PROGRESS / NOT CLOSED**.
+- **Checkpoint:** `527b96e5a1ebe7b5a1c4e2782e05a1e243a2ba5d`.
+- **Scope:** Mobile-only pure parser — **`apps/mobile/lib/core/deep_links/`** (`parsePublicDeepLink`, sealed **`PublicDeepLinkTarget`**, **`PublicDeepLinkParseResult`**); **37** focused unit tests; full **`flutter test`** PASS; **`flutter analyze`** on module PASS. **No** navigation, packages, native config, Web, API, or Notifications E changes.
+- **Summary:** Canonical **`https://qalago.kz`** `/ru|kk/…` families → typed targets (city, categories, category, subcategory, business + optional **`locationId`**, search + **`q`**); strict host/scheme; reserved-segment precedence; legacy neutral URLs **unsupported**; query allowlist per contract.
+- **Deferred:** Phases **2–6** (receiver, deferred nav, well-known, App Links, Universal Links, closure QA).
+- **Next:** **F.6 Phase 2** — explicit approval required — **do not auto-start**.
+
+---
+
 ## 2026-09-27 — F.6 Phase 0 — deep link contract lock
 
 - **Status:** **F.6 PHASE 0 PASS — DEEP LINK CONTRACT LOCKED**. F.6 umbrella: **AGREED / NOT IMPLEMENTED** (Phases **1–6** not started).
