@@ -98,7 +98,8 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **6.12A.9.3.5 PASS (physical QA finalized)** — Business Web permission-safe profile PATCH; primary-branch UX; hours-only MANAGER scope verified; closes **`A.9.3.4+`** owner slice; central audit **P1 CLOSED**.
 - **6.12A.9.4.0 PASS (policy gate)** — legacy physical retirement policies & invariants frozen; **`docs/architecture/business-location.md`** § **9.4.0**; **F.4** not blocked on column drop.
 - **F.4** — **CLOSED / PASS** — canonical public Business pages implemented + physically verified; **LocalBusiness** / **AggregateRating** JSON-LD still deferred.
-- **F.5 Phase 1** — **IMPLEMENTED** — locale routing foundation in Consumer Web; **physical QA pending**; Phase 2 SEO not started.
+- **F.5 Phase 1** — **VERIFIED / PHYSICAL QA PASS** — locale routing foundation in Consumer Web.
+- **F.5 Phase 2** — **IMPLEMENTED / AUTOMATED VERIFIED** — locale canonical, hreflang, dual-locale sitemap; **physical QA pending**.
 
 ## BusinessLocation track
 
