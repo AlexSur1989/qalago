@@ -12,7 +12,7 @@
 | **F.4** | **CLOSED / PASS — PUBLIC BUSINESS PAGES FINALIZED** (Phases **0.1** → **2.1** + physical QA — **`docs/changelog.md`**) |
 | **F.5** | **CLOSED / PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED** (Phases **0**, **1** + **1.1–1.4**, **2**, PublicShell hotfix — **`docs/changelog.md`** umbrella entry **2026-09-27**). Non-blocking deferred: legacy **`/businesses/{id}`** / real **`locationId`** manual QA gaps; **`<html lang>`** on soft nav (not verified). |
 | **F.6** | **CLOSED / PASS — DEEP LINKS ARCHITECTURE FINALIZED** (Phases **0–6**). Production Verified App Links / Universal Links: **external verification debt** (not claimed). |
-| **F.7** | **PHASE 5 PASS — CROSS-APP REGRESSION AND PHYSICAL BROWSER QA VERIFIED**. Umbrella **IN PROGRESS / NOT CLOSED** (final closure audit not started). Contract: **`docs/architecture/public-consumer-web.md`** § **F.7**. Implementation checkpoint **`30ab33f033a6dca52dd57c90e263559081b08a98`**. |
+| **F.7** | **CLOSED / PASS — LEGAL MIGRATION FINALIZED** (**F.7 PASS — LEGAL MIGRATION FINALIZED**). Contract: **`docs/architecture/public-consumer-web.md`** § **F.7**. Implementation checkpoint **`30ab33f033a6dca52dd57c90e263559081b08a98`**; umbrella closure docs at git log after **`ece46c26…`**. |
 | **F.4 implementation SHA** | `52dfe1c4c32a906c964ee3e34470a511864faa84` (Phase 2); hotfix `678cb23a8e9004aa9be3aea170affaad68eb045e` |
 | **F.4 Phase 1 backend SHA** | `3bcd5cac785c5fbc9c5b5f623c96359645cf1854` |
 | **Last completed architecture contour** | **6.12A PASS — BUSINESSLOCATION ARCHITECTURE FINALIZED** (umbrella — see **`docs/changelog.md`** entry **2026-09-27**) |
@@ -43,7 +43,7 @@
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending (6.12A)** | **None** — contour closed (**5E** finalized) |
-| **Next** | **F.7 final umbrella closure audit** — **explicit approval only**; optional non-blocking **`<html lang>`** URL alignment on soft nav |
+| **Next** | **Explicit agreement** before **F.8** or other stages — **do not auto-start**; optional non-blocking **`<html lang>`** URL alignment on soft nav |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -53,11 +53,11 @@
 
 **F.5:** **CLOSED / PASS** — locale SEO URL architecture implemented and verified (routing, SEO, PublicShell URL-locale UI). Milestone: **F.5 PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED**. Non-blocking: **`<html lang>`** vs URL on soft nav (not verified); Phase **1** manual QA gaps (legacy redirect, **`locationId`** UI). No backend change.
 
-**Consumer Web F-series (canonical order):** F.5 **CLOSED** → **F.6 CLOSED / PASS** → **F.7 IN PROGRESS** (Phases **0–5** done; **final closure** not started) → **F.8 NOT STARTED** — **`docs/architecture/public-consumer-web.md`** § **F.7**.
+**Consumer Web F-series (canonical order):** F.5 **CLOSED** → **F.6 CLOSED / PASS** → **F.7 CLOSED / PASS** → **F.8 NOT STARTED** — **`docs/architecture/public-consumer-web.md`** § **F.7**.
 
 **F.6 (closed):** Canonical HTTPS → parser → coordinator → session city / locale → go_router; Web `/.well-known`; Android/iOS configured. **Production** association verification deferred (Play SHA / Apple Team ID / device QA). Android release debug signing remains general release debt.
 
-**F.7 (current):** Phases **0–5** complete (physical browser QA verified **2026-09-28**); Hotfix **1** for legal-page PublicShell nav at **`30ab33f…`**. Locale-neutral legal URLs; Business Web redirects; RU/KK chrome; legal body RU until counsel KK. **`/help`** deferred. **Not** F.7 umbrella closed — final audit pending. Production legal approval gate unchanged (**`docs/legal-review-required.md`**). **F.8 not started**.
+**F.7 (closed):** **Canonical public legal host:** Consumer Web / **`qalago.kz`**. **Paths:** locale-neutral **`/privacy`**, **`/terms`**, **`/account-deletion`**. **Business Web:** legacy legal routes redirect to Consumer Web. **Localization:** RU/KK QalaGo chrome; **Russian** source-language legal body until approved translation (no machine translation). **SEO:** self-canonical legal pages; index/follow; no legal RU/KK hreflang; one sitemap entry per legal page. **Physical QA:** PASS (**2026-09-28**). **External legal/content debt:** **`docs/legal-review-required.md`** — does **not** reopen technical F.7. **F.8:** NOT STARTED.
 
 **Post-6.12A candidates (documented — not auto-started):** **6.12B** / Catalog Import; remaining contours — **`docs/changelog.md`** / architecture docs.
 

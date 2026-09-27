@@ -8,7 +8,7 @@
 
 ## F.1 foundation
 
-- **PublicShell:** header nav, locale switcher, footer legal links (external to business-web until F.7 **implementation** — contract **§ F.7**).
+- **PublicShell:** header nav, locale switcher, footer — migrated legal links (**`/privacy`**, **`/terms`**, **`/account-deletion`**) are **same-origin** on Consumer Web (**F.7** closed); **`/help`** remains external/deferred per **`getPublicSiteBaseUrl()`** (contract **§ F.7**).
 - **Config:** `lib/public-config.ts` — API base, public site base, `DEFAULT_CITY_SLUG`.
 - **Cache:** `lib/cache-policy.ts` — ISR-friendly catalog fetches; layout `revalidate = 60`.
 - **Branding:** Montserrat, tokens `--blue` / `--accent`, `app/icon.tsx`.
@@ -341,8 +341,8 @@ Locale allowlist: **`ru`**, **`kk`** only. No redirect to user-supplied arbitrar
 ## F.7 — Legal migration
 
 **Gate:** F.7 — Legal migration  
-**Status:** **F.7 IN PROGRESS** — Phases **0–5 PASS** (Phase **5:** cross-app regression + physical browser QA verified). Umbrella **not closed** until **Final** closure audit.  
-**Umbrella:** **IN PROGRESS / NOT CLOSED** (Phases **1+** not started)
+**Status:** **F.7 CLOSED / PASS — LEGAL MIGRATION FINALIZED**  
+**Umbrella:** **CLOSED / PASS** (Phases **0–5** + Hotfix **1** + final read-only audit + umbrella docs closure)
 
 **Authority:** This section is the **canonical F.7 contract**. Other docs **reference** this section; they must not duplicate full contract text.
 
@@ -475,7 +475,7 @@ F.7 **must not** merge these concepts.
 
 Web authentication; favorites; Consumer Web interactive map; City Discovery; Home CMS; Events; ads engine; BusinessLocation changes; Prisma changes; Catalog API changes; generalized saves/bookmarks; notification preferences; F.6 deep-link architecture changes; **F.8** OG image pipeline; **`/support`** implementation; legal API integration for page body; Admin legal redesign; **production legal approval itself**.
 
-### 13. Implementation phases (LOCKED — not started)
+### 13. Implementation phases — COMPLETED
 
 | Phase | Scope | Status |
 |-------|--------|--------|
@@ -484,12 +484,14 @@ Web authentication; favorites; Consumer Web interactive map; City Discovery; Hom
 | **2** | PublicShell / footer / config **same-origin** migration | **PASS** |
 | **3** | Business Web legacy legal-route **redirects** to Consumer Web origin | **PASS** |
 | **4** | Legal page localization chrome + SEO metadata/robots/sitemap policy implementation | **PASS** |
-| **5** | Cross-app + store-compliance regression + physical browser QA | **PASS** |
-| **Final** | Closure audit + docs (**F.7 CLOSED / PASS**) | Not started |
+| **5** | Cross-app + store-compliance regression + physical browser QA (+ Hotfix **1**) | **PASS** |
+| **Final** | Read-only umbrella audit + docs closure (**F.7 CLOSED / PASS**) | **PASS** |
 
-**Do not** start Phase **1** without explicit approval.
+**Milestone:** **F.7 PASS — LEGAL MIGRATION FINALIZED**. **F.8 NOT STARTED**.
 
-**Next:** **F.7 Final** — closure audit + docs (**F.7 CLOSED / PASS**) — **requires explicit approval** — **do not** conflate with production legal counsel approval.
+**External production legal/content debt** ([legal-review-required.md](../legal-review-required.md)) remains **separate** — operator identity, legal address, privacy/support contacts, jurisdiction/retention/liability/processors/log policy review, approved KK legal translation, production **`LEGAL_*`** values, HTTPS/deploy-dependent claims, documented store/product gaps. **Not** unfinished F.7 technical architecture.
+
+**Next:** **Explicit agreement** before **F.8** or other stages — **do not auto-start**.
 
 ---
 

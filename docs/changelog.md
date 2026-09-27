@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-09-28 — F.7 — Legal migration finalized (umbrella closure)
+
+- **Status:** **F.7 PASS — LEGAL MIGRATION FINALIZED**. **F.7 CLOSED / PASS**. **F.8 NOT STARTED**.
+- **Checkpoint:** Pre-closure HEAD **`ece46c260a178f3b2b96b03a569f8b0093391343`** (Phase **5** physical QA sign-off); final implementation code checkpoint **`30ab33f033a6dca52dd57c90e263559081b08a98`** (Hotfix **1**); closure docs commit in git log immediately after.
+- **Scope:** **Documentation only** — umbrella closure after Phases **0–5** PASS, Hotfix **1** physically verified, and final read-only umbrella audit (**F.7 READY FOR UMBRELLA CLOSURE**; technical blockers **NONE**).
+- **Summary:** Consumer Web is the **canonical public legal host** (`qalago.kz` origin). Locale-neutral **`/privacy`**, **`/terms`**, **`/account-deletion`**; Business Web legacy routes **308** redirect to Consumer Web; RU/KK QalaGo chrome; legal body **Russian** source-language draft (no machine translation); self-canonical/indexable legal SEO; robots/sitemap verified; physical browser QA **PASS**; F.4/F.5/F.6 compatibility preserved. **Do not** interpret as production legal counsel approval, approved Kazakh legal body, or production publication clearance.
+- **External production legal/content debt:** unchanged — **`docs/legal-review-required.md`** (operator, contacts, jurisdiction, retention, KK translation, HTTPS/deploy claims, store gaps, etc.) — **separate from** technical F.7 closure.
+- **Valid post-F.7 technical debt:** Business Web dead legal layout cleanup; **`/support` vs `/help`**; **F.8** OG pipeline; broader Web contours; **6.12B**; F.6 production association verification; unrelated Business Web UI-guard failures — see phase entries and architecture doc.
+- **Next:** **Explicit agreement** before any new stage (**F.8** or other) — **do not auto-start**.
+
+---
+
 ## 2026-09-28 — F.7 Phase 5 — Cross-app regression and physical browser QA
 
 - **Status:** **F.7 PHASE 5 PASS — CROSS-APP REGRESSION AND PHYSICAL BROWSER QA VERIFIED**. F.7 umbrella: **IN PROGRESS / NOT CLOSED** (final umbrella closure audit not performed). **F.8 NOT STARTED**.
