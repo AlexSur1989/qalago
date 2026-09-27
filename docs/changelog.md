@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — F.6 Phase 6 — cross-platform closure QA
+
+- **Status:** **F.6 PASS — DEEP LINKS ARCHITECTURE FINALIZED**. **F.6 CLOSED / PASS**. **F.7 NOT STARTED**.
+- **Checkpoint:** `2bccb92` (Phase 6 closure QA tests); umbrella docs closure in this commit series.
+- **Scope:** Closure QA only — automated F.6 matrix, session-city lifecycle tests, Notifications E regression, Consumer Web well-known + F.5 middleware regression; **no** production Verified App Links / Universal Links; **no** F.7.
+- **Summary:** Phases **0–6** complete. Flutter deep-link pipeline verified (**71** targeted tests; **1126/1126** full mobile). Consumer Web **193/193**. Notifications E **PASS** (typed destinations; no FCM raw URL path). Session city semantics verified (persisted city preserved; City Picker clears session). Android physical E2E **not run** (ADB unavailable in closure environment).
+- **Deferred:** Production Android Verified App Links (Play App Signing SHA on `assetlinks.json`); production iOS Universal Links (`QALAGO_APPLE_TEAM_ID`, signed build, physical device); Android release signing TODO; non-blocking debt (pathPrefix breadth, session timeout, failed pending retention, full attribution).
+- **Next:** **F.7** — explicit approval required — **do not auto-start**.
+
+---
+
 ## 2026-09-27 — F.6 Phase 5 — iOS Universal Links
 
 - **Status:** **F.6 PHASE 5 IMPLEMENTATION PASS — iOS UNIVERSAL LINKS CONFIGURED**. F.6 umbrella: **IN PROGRESS / NOT CLOSED**. **Production Universal Links: NOT VERIFIED**.

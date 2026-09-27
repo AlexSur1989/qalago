@@ -1,8 +1,8 @@
 # F.6 — Deep Links / App Links / Universal Links / NavigationTarget
 
 **Gate:** F.6 — Deep Links / App Links / Universal Links  
-**Status:** **F.6 Phases 0–5 — IMPLEMENTED** (parser, Flutter nav, Web association, Android App Links, iOS Universal Links config)  
-**Umbrella:** **IN PROGRESS / NOT CLOSED** (Phase **6** pending; **no** production Verified App/Universal Links)
+**Status:** **F.6 PASS — DEEP LINKS ARCHITECTURE FINALIZED** (Phases **0–6** complete)  
+**Umbrella:** **CLOSED / PASS** — production Verified App Links / Universal Links remain **external verification debt** (not claimed)
 
 **Authority:** This document is the **canonical F.6 contract**. Other architecture docs **reference** this file; they must not duplicate full contract text.
 
@@ -368,7 +368,7 @@ Minimum: reuse existing analytics (`VIEW_BUSINESS`, `BusinessTrafficSource`, `An
 | **3** | Consumer Web: association endpoints + `/.well-known` middleware exemption | **PASS** |
 | **4** | Android App Links + QA | **PASS (configured)** — manifest + `autoVerify`; **not** production domain verified |
 | **5** | iOS Universal Links + QA | **PASS (configured)** — Associated Domains + app_links; **not** production verified |
-| **6** | Cross-platform closure QA + E-contour regression | Not started |
+| **6** | Cross-platform closure QA + E-contour regression | **PASS** — automated matrix + session-city lifecycle tests; Notifications E regression; **no** production OS association verification in scope |
 
 **Do not** start Phase 1 without explicit approval.
 
@@ -427,7 +427,8 @@ Implementation must follow this matrix; details in Phase 1 tests.
 | F.6 Phase 3 Web association endpoints | **IMPLEMENTED / TESTED** |
 | F.6 Phase 4 Android App Links manifest | **CONFIGURED / TESTED** |
 | F.6 Phase 5 iOS Universal Links | **CONFIGURED / TESTED** (entitlements + static QA); **production verification pending** |
-| F.6 Phase 6 | **NOT STARTED** |
+| F.6 Phase 6 | **PASS** — closure QA + Notifications E regression |
+| F.6 umbrella | **CLOSED / PASS** |
 
 **Phase 1 query policy (implemented):** Only **`locationId`** on business URLs and **`q`** on search URLs; any other query key → **invalid**. Forbidden navigation keys (`route`, `url`, `deeplink`, `link`, `redirect`, `next`, `callback`) → **invalid** on all URLs.
 
@@ -457,4 +458,13 @@ Implementation must follow this matrix; details in Phase 1 tests.
 - `Info.plist`: `FlutterDeepLinkingEnabled=false` — **app_links** sole Flutter HTTPS path
 - AASA remains Phase **3** Web endpoint + **`QALAGO_APPLE_TEAM_ID`** (no Team ID in repo)
 
-**Next:** **F.6 Phase 6** — explicit approval required — cross-platform closure QA (not started).
+**Phase 6 closure QA (verified):**
+
+- Flutter deep-link suite **71** tests (parser/coordinator/executor + Android/iOS config + Phase **6** session-city lifecycle)
+- Full mobile suite **1126/1126** at closure run
+- Consumer Web **193/193** (incl. F.6 well-known **15/15**, F.5 middleware regression)
+- Notifications E mobile tests **40/40** (typed destination; separate from `app_links`)
+- Session city: link city = session context; persisted city unchanged; City Picker clears session (automated)
+- Production Verified App Links / Universal Links: **NOT VERIFIED** — external debt
+
+**Next:** **F.7** — legal migration — **NOT STARTED** — requires explicit approval.
