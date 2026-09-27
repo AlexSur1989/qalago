@@ -57,7 +57,7 @@
 
 **F.6 (closed):** Canonical HTTPS → parser → coordinator → session city / locale → go_router; Web `/.well-known`; Android/iOS configured. **Production** association verification deferred (Play SHA / Apple Team ID / device QA). Android release debug signing remains general release debt.
 
-**F.7 (current):** Phases **1–4** — locale-neutral legal URLs with self-canonical SEO (no legal hreflang); RU/KK chrome via cookie preference; legal **body** Russian until counsel-approved KK; sitemap includes three legal URLs once; Business Web legacy redirects unchanged. **`/help`** unchanged. Production legal approval gate unchanged (**`docs/legal-review-required.md`**). **F.8 OG pipeline not started**.
+**F.7 (current):** Phases **1–4** complete; Phase **5** automated gate PASS; **physical QA in progress** — hotfix: PublicShell header nav on legal pages no longer treats `/privacy` etc. as city slug (logo → `/ru|kk/{defaultCity}` not `/ru/privacy`). Legal URLs/canonicals unchanged. **`/help`** unchanged. Production legal approval gate unchanged (**`docs/legal-review-required.md`**). **F.8 OG pipeline not started**.
 
 **Post-6.12A candidates (documented — not auto-started):** **6.12B** / Catalog Import; remaining contours — **`docs/changelog.md`** / architecture docs.
 

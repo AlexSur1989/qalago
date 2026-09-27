@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — F.7 Phase 5 hotfix — legal PublicShell navigation
+
+- **Status:** **F.7 PHASE 5 HOTFIX — LEGAL PUBLICSHELL NAVIGATION CORRECTED**. F.7 umbrella: **IN PROGRESS / NOT CLOSED**; Phase **5 physical QA not closed** (retest required). **F.8 NOT STARTED**.
+- **Checkpoint:** Pre-hotfix HEAD **`bc26dae5fcaf3727a88407a907b412fc7d19d96e`**; implementation commit in git log immediately after.
+- **Scope:** Consumer Web — `parseCitySlugFromPathname` must not treat F.7 legal roots as city slugs; PublicShell logo/home/categories on `/privacy`, `/terms`, `/account-deletion` use default city discovery paths again.
+- **Summary:** Physical QA defect: logo from `/privacy` linked to `/ru/privacy` (404). Root cause: first path segment `privacy` parsed as `citySlug`. Footer legal links unchanged (locale-neutral).
+- **Deferred:** Phase **5** manual browser sign-off; F.7 final closure; production legal content debt.
+- **Next:** **Physical retest** of legal page PublicShell navigation — **do not claim Phase 5 physical PASS** until user verifies.
+
+---
+
 ## 2026-09-28 — F.7 Phase 4 — Legal localization and SEO completion
 
 - **Status:** **F.7 PHASE 4 PASS — LEGAL LOCALIZATION AND SEO COMPLETED**. F.7 umbrella: **IN PROGRESS / NOT CLOSED**. **F.8 NOT STARTED**.

@@ -67,6 +67,9 @@ describe('F.2 discovery', () => {
     expect(parseCitySlugFromPathname('/uralsk/restaurants')).toBe('uralsk');
     expect(parseCitySlugFromPathname('/categories')).toBeNull();
     expect(parseCitySlugFromPathname('/businesses/id')).toBeNull();
+    expect(parseCitySlugFromPathname('/privacy')).toBeNull();
+    expect(parseCitySlugFromPathname('/terms')).toBeNull();
+    expect(parseCitySlugFromPathname('/account-deletion')).toBeNull();
   });
 
   it('reserved segments block category resolution', () => {
