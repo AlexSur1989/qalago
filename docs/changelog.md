@@ -9,7 +9,7 @@
 ## 2026-09-27 — F.5 — formal umbrella closure
 
 - **Status:** **F.5 PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED**. **F.5 is CLOSED / PASS** (reopen only on confirmed defect or explicit new scope).
-- **Checkpoint:** (this commit — see git log SHA).
+- **Checkpoint:** `b6dc9f92aed8ec7ad06f6c73876d348918e04459`.
 - **Scope:** **Documentation only** — formal closure after Phase **0** contract, Phase **1** (+ **1.1–1.4**), Phase **2** SEO, and **PublicShell** locale UI hotfix — all **VERIFIED / PHYSICAL QA PASS** per **`docs/changelog.md`** entries **2026-09-27**.
 - **Summary:** Consumer Web indexable **`/ru/`** / **`/kk/`** architecture; URL locale authoritative; neutral compatibility redirects; locale-aware navigation and safe locale switching; F.4 business routes under locale prefixes; locale-prefixed **canonical**, reciprocal **hreflang**, **`x-default`→RU**, dual-locale **sitemap**, **OG URL**, search **noindex**; **PublicShell** QalaGo-owned UI follows URL locale. **6.12A** / **F.4** contracts preserved. Implementation checkpoints: Phase **2** **`3fc822f…`**; Phase **2** physical QA **`7968113…`**; PublicShell hotfix **`e7bb8e1…`** / QA **`1bdd422…`**.
 - **Deferred (non-blocking):** Legacy **`/businesses/{id}`** redirect not manually exercised (Phase **1** QA; automated PASS); real **`locationId`** branch UI not manually exercised (automated PASS); root **`<html lang>`** vs URL on soft nav — **not verified**, optional follow-up; production crawl validation; **LocalBusiness** / **AggregateRating** JSON-LD (not F.5); **F.6** / **F.7** / **F.8** and other out-of-scope items per § F.5.
