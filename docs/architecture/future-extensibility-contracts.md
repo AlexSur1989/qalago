@@ -2,7 +2,7 @@
 
 **Gate:** FUTURE EXTENSIBILITY ARCHITECTURE GATE  
 **Status:** **AGREED / DOCUMENTED** (Phase 2 — contracts only)  
-**Prerequisite for:** **F.4** public Business Pages — **CLOSED / PASS**; **F.5** locale SEO URLs — Phase 0 contract locked in [public-consumer-web.md](./public-consumer-web.md) § F.5 (**implementation not started**)  
+**Prerequisite for:** **F.4** public Business Pages — **CLOSED / PASS**; **F.5** locale SEO URLs — **CLOSED / PASS** ([public-consumer-web.md](./public-consumer-web.md) § F.5; **`docs/changelog.md`** umbrella closure **2026-09-27**)  
 **Depends on:** **6.12A PASS — BUSINESSLOCATION ARCHITECTURE FINALIZED** (invariants non-negotiable)
 
 This document is the **canonical source** for post-6.12A extensibility decisions locked before F.4 makes public URLs and cross-channel navigation externally stable. Other architecture docs **reference** this file; they must not duplicate full contract text.
@@ -377,7 +377,8 @@ Reaffirmed for production growth ([versioning-and-api-compatibility.md](../relea
 | F.4 Phase 0.1 multi-city URL addendum | **LOCKED** (§ Contract 1 addendum) |
 | F.4 implementation | **CLOSED / PASS** — public Business Pages finalized |
 | F.5 Phase 0 locale SEO URL contract | **LOCKED** — [public-consumer-web.md](./public-consumer-web.md) § F.5 |
-| F.5 implementation (Phase 1+) | **Not started** |
+| F.5 implementation (Phases 1–2 + hotfix) | **CLOSED / PASS** — **`docs/changelog.md`** F.5 umbrella **2026-09-27** |
+| F.6 deep links / NavigationTarget | **Not started** |
 | 6.12A | **CLOSED** — preserved |
 
-**Next:** Explicit approval for **F.5 Phase 1** (Consumer Web locale routes + redirects) — **not auto-started**.
+**Next:** **F.6** — explicit staged approval + READ-ONLY audit before implementation — **not auto-started**.

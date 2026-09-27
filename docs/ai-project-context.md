@@ -10,7 +10,8 @@
 |-------|--------|
 | **Last completed architecture decision gate** | **FUTURE EXTENSIBILITY ARCHITECTURE GATE — AGREED / DOCUMENTED** — **`docs/architecture/future-extensibility-contracts.md`** |
 | **F.4** | **CLOSED / PASS — PUBLIC BUSINESS PAGES FINALIZED** (Phases **0.1** → **2.1** + physical QA — **`docs/changelog.md`**) |
-| **F.5** | **Phase 0 PASS**; **Phase 1 VERIFIED / PHYSICAL QA PASS**; **Phase 1.1–1.4 PASS**; **Phase 2 VERIFIED / PHYSICAL QA PASS** (SEO); **PublicShell locale UI hotfix VERIFIED / PHYSICAL QA PASS** (implementation **`e7bb8e1…`**). Manual gaps unchanged: legacy **`/businesses/{id}`** redirect; real **`locationId`** UI. **Full F.5 umbrella not auto-closed.** |
+| **F.5** | **CLOSED / PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED** (Phases **0**, **1** + **1.1–1.4**, **2**, PublicShell hotfix — **`docs/changelog.md`** umbrella entry **2026-09-27**). Non-blocking deferred: legacy **`/businesses/{id}`** / real **`locationId`** manual QA gaps; **`<html lang>`** on soft nav (not verified). |
+| **F.6** | **NOT STARTED** — Deep Links / App Links / Universal Links (**NavigationTarget**). Next canonical Consumer Web stage; **explicit staged approval** + **READ-ONLY audit** before implementation — **not auto-started**. |
 | **F.4 implementation SHA** | `52dfe1c4c32a906c964ee3e34470a511864faa84` (Phase 2); hotfix `678cb23a8e9004aa9be3aea170affaad68eb045e` |
 | **F.4 Phase 1 backend SHA** | `3bcd5cac785c5fbc9c5b5f623c96359645cf1854` |
 | **Last completed architecture contour** | **6.12A PASS — BUSINESSLOCATION ARCHITECTURE FINALIZED** (umbrella — see **`docs/changelog.md`** entry **2026-09-27**) |
@@ -41,7 +42,7 @@
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending (6.12A)** | **None** — contour closed (**5E** finalized) |
-| **Next** | Roadmap / explicit approval only — full F.5 closure only if separately agreed; optional non-blocking **`<html lang>`** URL alignment on soft nav |
+| **Next** | **F.6** READ-ONLY audit / explicit staged approval — **do not** auto-start implementation; optional non-blocking **`<html lang>`** URL alignment on soft nav |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -49,7 +50,9 @@
 
 **6.12A state:** **CLOSED** — BusinessLocation architecture finalized (**A.1–A.9.4.5E**). **Business** = brand; **BusinessLocation** = sole physical/city authority; retired **Business** physical columns including **`cityId`**; contact defaults on **Business** per policy. Grains and RBAC per **`docs/changelog.md`** umbrella entry **2026-09-27**. Dev **`qalago_dev`** baseline: **109 Business / 110 BL / 109 primary**; integrity PASS; migrations **47/47**. Pre-5D2 backup preserved: `infra/local-backups/qalago_dev_native_pg18_pre_5d2_business_cityid_retirement_20260926T131630Z.dump` (596125 bytes; uncommitted). **`a945e-*`** helpers remain local/untracked.
 
-**F.5:** Phase **0 PASS**; Phase **1** routing **VERIFIED / PHYSICAL QA PASS**; Phase **2** locale SEO **VERIFIED / PHYSICAL QA PASS**; **PublicShell locale UI hotfix VERIFIED / PHYSICAL QA PASS** (**`resolveEffectivePublicLocale`** for shell **`UI_LABELS`**). Non-blocking: **`<html lang>`** vs URL on soft nav (not verified). No backend change. **Full F.5 contour closure** not declared unless separately agreed.
+**F.5:** **CLOSED / PASS** — locale SEO URL architecture implemented and verified (routing, SEO, PublicShell URL-locale UI). Milestone: **F.5 PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED**. Non-blocking: **`<html lang>`** vs URL on soft nav (not verified); Phase **1** manual QA gaps (legacy redirect, **`locationId`** UI). No backend change.
+
+**Consumer Web F-series (canonical order):** F.5 **CLOSED** → **F.6** (not started) → F.7 legal migration → F.8 OG image pipeline — see **`docs/changelog.md`** 6.11F.0 roadmap. Broader QA contours (User/Business/Admin/role E2E, 6.12B, City Discovery) remain **separately staged** unless explicitly ordered.
 
 **Post-6.12A candidates (documented — not auto-started):** **6.12B** / Catalog Import; remaining contours — **`docs/changelog.md`** / architecture docs.
 
@@ -98,9 +101,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **6.12A.9.3.5 PASS (physical QA finalized)** — Business Web permission-safe profile PATCH; primary-branch UX; hours-only MANAGER scope verified; closes **`A.9.3.4+`** owner slice; central audit **P1 CLOSED**.
 - **6.12A.9.4.0 PASS (policy gate)** — legacy physical retirement policies & invariants frozen; **`docs/architecture/business-location.md`** § **9.4.0**; **F.4** not blocked on column drop.
 - **F.4** — **CLOSED / PASS** — canonical public Business pages implemented + physically verified; **LocalBusiness** / **AggregateRating** JSON-LD still deferred.
-- **F.5 Phase 1** — **VERIFIED / PHYSICAL QA PASS** — locale routing foundation in Consumer Web.
-- **F.5 Phase 2** — **VERIFIED / PHYSICAL QA PASS** — locale canonical, hreflang, dual-locale sitemap, OG URL (see changelog Phase 2 physical QA entry).
-- **F.5 locale UI hotfix** — **VERIFIED / PHYSICAL QA PASS** — PublicShell URL-authoritative **`UI_LABELS`** (see changelog hotfix physical QA entry).
+- **F.5** — **CLOSED / PASS** — **F.5 PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED** (Phase **0** contract; Phase **1** + **1.1–1.4** routing; Phase **2** SEO; PublicShell hotfix — **`docs/changelog.md`**).
 
 ## BusinessLocation track
 
@@ -201,7 +202,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **Map (A.7.1–A.7.4):** backend **BusinessLocation** grain + **`locationId`**; Flutter map layer uses **physical key**; category map renders **`mapLayerItems`** (fetch bounds); detail accepts optional **`locationId`** for branch address/route; reviews/favorites/analytics remain **Business.id**.
 - **Nearest/radius/list discovery:** **Business-grain** card; branch context via **`contextLocationId`** (A.7.9.2+).
 - **Public discovery:** Backend **A.7.9.3A–3B/4** + Flutter **A.7.9.5** passes **`contextLocationId`** into detail **`locationId`**. Map unchanged (**marker `locationId`**). **A.7.9.6 CLOSED** (physical QA PASS). **A.7 BusinessLocation architecture complete** (A.7.QA audit PASS).
-- **F.5+ (not started):** locale SEO URLs (hreflang), branch JSON-LD richness — beyond closed **F.4** v1 — not A.6.
+- **Post-F.5 Consumer Web (not started):** **F.6** deep links; branch **LocalBusiness** / **AggregateRating** JSON-LD richness — beyond closed **F.4** / **F.5** — not A.6.
 - **Branch-level membership, location favorites, branch reviews:** deferred.
 
 ## A.7.QA outstanding debt (not implemented)

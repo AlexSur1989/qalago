@@ -72,14 +72,13 @@ Static App Router segments (e.g. `categories/`, `search/`) take precedence over 
 ### Metadata
 
 - Root layout: `metadataBase`, title template `%s | QalaGo`, RU/KK description from cookie locale, site-level Open Graph / Twitter (no invented @handles).
-- Dynamic: city, city categories, category, subcategory (RU/KK names from API + cookie locale).
-- **Search** `/{citySlug}/search?q=`: **`robots: noindex, follow`**; canonical reflects city search path + encoded `q` when present.
-- **Legacy business** `/businesses/{id}`: **`noindex, follow`** (redirect-only); canonical business metadata on **`/{citySlug}/business/{businessSlug}`** only.
+- Dynamic: city, city categories, category, subcategory (RU/KK names from API + **URL locale** on **`/ru/`** / **`/kk/`** routes).
+- **Search** `/{locale}/{citySlug}/search?q=`: **`robots: noindex, follow`**; locale-prefixed canonical reflects search path + encoded `q` when present.
+- **Legacy business** `/businesses/{id}`: **`noindex, follow`** (redirect-only); indexable canonical business metadata on **`/{locale}/{citySlug}/business/{businessSlug}`** only.
 
-### Locale SEO (current runtime vs F.5 contract)
+### Locale SEO (F.5 — implemented)
 
-- **Implemented (F.3/F.4):** Canonical URLs are **locale-neutral**; RU/KK UI from `qalago_locale` cookie on the same URL. **No hreflang** yet.
-- **Locked contract (F.5 Phase 0 — not implemented):** Indexable **locale-prefixed** URLs, hreflang, and rules in § **F.5** below. Phase 1+ will redirect locale-neutral indexable paths to `/ru/…` or `/kk/…`.
+- **F.5 CLOSED / PASS:** Indexable **locale-prefixed** URLs (**`/ru/`**, **`/kk/`**), reciprocal **hreflang**, locale **canonical/sitemap**, neutral entry **redirects**, URL-authoritative UI/SEO — see § **F.5** below and **`docs/changelog.md`** umbrella closure **2026-09-27**.
 
 ### robots.txt (`app/robots.ts`)
 
@@ -91,7 +90,7 @@ Static App Router segments (e.g. `categories/`, `search/`) take precedence over 
 ### sitemap.xml (`app/sitemap.ts`)
 
 - **Sources:** `GET /cities`, per city `GET /categories?citySlug=`, per category `GET /categories/:id/subcategories` (bounded parallel per city).
-- **Includes:** `/{citySlug}`, `/{citySlug}/categories`, `/{citySlug}/{categorySlug}`, `/{citySlug}/{categorySlug}/{subcategorySlug}`, **`/{citySlug}/business/{businessSlug}`** (per city membership, deduped).
+- **Includes (F.5):** **`/ru/…`** and **`/kk/…`** pairs for each indexable path — city home, categories index, category, subcategory, **`/business/{businessSlug}`** (per city membership, deduped).
 - **Excludes:** search, legacy `/categories*`, `/businesses/{id}`, business URLs with **`?locationId=`**, owner/admin paths, paginated list URLs (`?page=`).
 - **Failure:** API error → **empty sitemap** (no fabricated URLs, no stack traces).
 - **Scale:** single sitemap today; structure allows future sitemap index / segmented business sitemap when catalog grows.
@@ -107,7 +106,7 @@ Static App Router segments (e.g. `categories/`, `search/`) take precedence over 
 
 ## F.5 locale SEO URL architecture
 
-**Status:** **F.5 PHASE 0 PASS**; **Phase 1 VERIFIED / PHYSICAL QA PASS**; **Phase 2 VERIFIED / PHYSICAL QA PASS** (locale SEO); **PublicShell locale UI hotfix VERIFIED / PHYSICAL QA PASS** (shell **`UI_LABELS`** follow URL locale on direct load and soft **RU ↔ KK** nav — **`docs/changelog.md`**). **Non-blocking follow-up:** root **`<html lang>`** vs URL on soft nav not verified here. **Full F.5 umbrella closure** not implied unless separately agreed.
+**Status:** **F.5 CLOSED / PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED** (Phase **0** contract; Phase **1** + **1.1–1.4** routing; Phase **2** SEO; PublicShell locale UI hotfix — physical QA **`docs/changelog.md`** **2026-09-27**). **Non-blocking follow-up:** root **`<html lang>`** vs URL on soft nav — **not verified**; does not block F.5 closure. **Next canonical Consumer Web stage:** **F.6** (not started).
 
 **Authority:** This section is the **canonical F.5 contract**. [api-contracts.md](./api-contracts.md) — no Catalog API changes required for locale routing.
 
