@@ -10,7 +10,7 @@
 |-------|--------|
 | **Last completed architecture decision gate** | **FUTURE EXTENSIBILITY ARCHITECTURE GATE — AGREED / DOCUMENTED** — **`docs/architecture/future-extensibility-contracts.md`** |
 | **F.4** | **CLOSED / PASS — PUBLIC BUSINESS PAGES FINALIZED** (Phases **0.1** → **2.1** + physical QA — **`docs/changelog.md`**) |
-| **F.5** | **Phase 0 PASS**; **Phase 1 implemented**; **Phase 1.1–1.2 PASS**; **Phase 1.3** safe query wiring; **Phase 1.4 URL-derived switcher locale PASS** (automated). **Phase 2 not started. Physical browser QA pending/resume.** |
+| **F.5** | **Phase 0 PASS**; **Phase 1 VERIFIED / PHYSICAL QA PASS** (implementation **`412887d…`** + hotfixes through **`8a61ce1…`**); **Phase 1.1–1.4 PASS** (1.3–1.4 physically verified). **Phase 2 NOT started.** Manual gaps: legacy **`/businesses/{id}`** redirect, real **`locationId`** branch switch — automated only, non-blocking. |
 | **F.4 implementation SHA** | `52dfe1c4c32a906c964ee3e34470a511864faa84` (Phase 2); hotfix `678cb23a8e9004aa9be3aea170affaad68eb045e` |
 | **F.4 Phase 1 backend SHA** | `3bcd5cac785c5fbc9c5b5f623c96359645cf1854` |
 | **Last completed architecture contour** | **6.12A PASS — BUSINESSLOCATION ARCHITECTURE FINALIZED** (umbrella — see **`docs/changelog.md`** entry **2026-09-27**) |
@@ -41,7 +41,7 @@
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending (6.12A)** | **None** — contour closed (**5E** finalized) |
-| **Next** | Resume **F.5 physical browser QA** — **`/ru/aktobe/search?q=coffee`** → KK → RU **without reload** (post–Phase 1.4); then **explicit approval** before **F.5 Phase 2** — **not auto-started** |
+| **Next** | **Explicit approval** before **F.5 Phase 2** (hreflang, locale sitemap, canonical SEO) — **not auto-started** |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -49,7 +49,7 @@
 
 **6.12A state:** **CLOSED** — BusinessLocation architecture finalized (**A.1–A.9.4.5E**). **Business** = brand; **BusinessLocation** = sole physical/city authority; retired **Business** physical columns including **`cityId`**; contact defaults on **Business** per policy. Grains and RBAC per **`docs/changelog.md`** umbrella entry **2026-09-27**. Dev **`qalago_dev`** baseline: **109 Business / 110 BL / 109 primary**; integrity PASS; migrations **47/47**. Pre-5D2 backup preserved: `infra/local-backups/qalago_dev_native_pg18_pre_5d2_business_cityid_retirement_20260926T131630Z.dump` (596125 bytes; uncommitted). **`a945e-*`** helpers remain local/untracked.
 
-**F.5 (Phase 1 + 1.1–1.4):** Canonical render tree **`app/[locale]/[citySlug]/…`** only; locale-neutral URLs → middleware. Locale switcher: **URL-derived active locale** + **`buildLocaleSwitchTarget()`** (safe **`q`**, **`locationId`**, **`page`**). **Phase 2** not started. **Physical browser QA pending.**
+**F.5 (Phase 1 closed):** **`/ru/`** / **`/kk/`** routing **physically verified** (multi-city, preference, safe query, consecutive switch). Locale switcher: URL-derived active locale + safe query allowlist. **Phase 2** not started. **Manual QA not done:** legacy **`/businesses/{id}`** redirect, real **`locationId`** on branch UI — covered by automation only.
 
 **Post-6.12A candidates (documented — not auto-started):** **F.5 Phase 2**; **6.12B** / Catalog Import; remaining contours — **`docs/changelog.md`** / architecture docs.
 

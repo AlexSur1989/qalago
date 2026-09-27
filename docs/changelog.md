@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-09-27 — F.5 Phase 1 — physical QA closure
+
+- **Status:** **F.5 PHASE 1 PHYSICAL QA PASS — LOCALE ROUTING VERIFIED**.
+- **Checkpoint:** `97f31af17cbe350c0a3c86facf4c326d29da0fc6`.
+- **Scope:** **Documentation only** — records user-verified manual browser QA (Chrome, Consumer Web **localhost:3005**). **No** application/test/backend changes. **F.5 Phase 2 not started.**
+- **Summary:** Multi-city locale routing, locale preference vs explicit URL precedence, safe search **`q`** / **`page`** / unsupported-query filtering, and consecutive **RU ↔ KK** switches **without reload** (Phase **1.4**) are **physically verified**. Phase **1.1** (route collision), **1.2** (multi-city middleware), **1.3** (safe query on switch), **1.4** (URL-derived switcher state) remain **PASS**. Historical defect (reverse switch no-op on stale layout locale) confirmed **fixed** post–1.4.
+- **Physical QA limitations (non-blocking for Phase 1 closure):** (1) legacy **`/businesses/{id}`** redirect — **not** manually exercised (no convenient UUID); automated F.4/F.5 regressions **PASS**. (2) real **BusinessLocation `locationId`** locale switching — **not** manually exercised (no branch selector in session); automated **`locationId`** regressions **PASS**.
+- **Deferred:** **F.5 Phase 2** (hreflang, locale sitemap expansion, full locale canonical metadata) — **explicit approval required**, **not auto-started**.
+- **Next:** Agree scope and start **F.5 Phase 2** only after explicit approval.
+
+---
+
 ## 2026-09-27 — F.5 Phase 1.4 hotfix — URL-derived locale state fixed
 
 - **Status:** **F.5 PHASE 1.4 HOTFIX PASS — URL-DERIVED LOCALE STATE FIXED** (automated regression PASS; **physical browser QA must resume**).

@@ -107,7 +107,7 @@ Static App Router segments (e.g. `categories/`, `search/`) take precedence over 
 
 ## F.5 locale SEO URL architecture
 
-**Status:** **F.5 PHASE 0 PASS — LOCALE SEO URL CONTRACT LOCKED**; **Phase 1 implemented**, **Phase 1.1 PASS**, **Phase 1.2 PASS**. `/ru/` and `/kk/` routing is live; Phase 2 SEO is not started.
+**Status:** **F.5 PHASE 0 PASS**; **Phase 1 VERIFIED / PHYSICAL QA PASS** (Phases **1.1–1.4** incl. hotfixes); **`/ru/`** and **`/kk/`** routing live and manually verified. **Phase 2 SEO not started.**
 
 **Authority:** This section is the **canonical F.5 contract**. [api-contracts.md](./api-contracts.md) — no Catalog API changes required for locale routing.
 
