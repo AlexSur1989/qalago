@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — Flutter Web disposition — DEV/QA only (Option B)
+
+- **Status:** **FLUTTER WEB DISPOSITION PASS — DEV/QA ONLY**. **F.7 CLOSED / PASS** (unchanged). **F.8 NOT STARTED**.
+- **Checkpoint:** Pre-checkpoint HEAD **`8a9d3ca7c642151243e69b6ee491b6ce8052b75b`**; implementation commit in git log immediately after.
+- **Scope:** **Documentation / architecture only** — no application code, deployment, redirects, or Flutter target removal.
+- **Summary:** **Option B approved.** **Flutter Mobile** remains the production **Android/iOS** native client. **Consumer Web** remains the **canonical public browser** client; **`https://qalago.kz`** belongs to Consumer Web. **Flutter Web** retained for **DEV/QA / local demo / compile-regression** (local **`:8080`** may remain via `dev:all`); **not** production/public, **not** SEO owner. Read-only audit: **no** repository evidence of production Flutter Web deployment; **no** redirect required from repository evidence; **Android/iOS do not depend** on Flutter Web; shared Catalog API / PostgreSQL unchanged.
+- **Deferred:** Optional future full Flutter Web retirement — requires **separate audit** (shared `apps/mobile/lib` also serves Android/iOS). **F.8** and other stages — explicit agreement before start.
+- **Next:** Review checkpoint report; **do not auto-start F.8**.
+
+---
+
 ## 2026-09-28 — F.7 — Legal migration finalized (umbrella closure)
 
 - **Status:** **F.7 PASS — LEGAL MIGRATION FINALIZED**. **F.7 CLOSED / PASS**. **F.8 NOT STARTED**.

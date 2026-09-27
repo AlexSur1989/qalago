@@ -1,6 +1,10 @@
 # QalaGo Mobile (Flutter)
 
-Consumer + owner Flutter app for QalaGo.
+**Production native client:** **Android** and **iOS** (`apps/mobile`).
+
+**Public browser / `qalago.kz`:** **`apps/consumer-web`** (Next.js) — not a Flutter Web deployment.
+
+**Flutter Web** (same codebase, `web/` target): **DEV / QA / local demo / compile-regression only**. A Flutter Web build is **not** the production public QalaGo website.
 
 ## API configuration
 
@@ -8,6 +12,7 @@ Development defaults (no flags):
 
 ```powershell
 cd apps/mobile
+# Flutter Web — local DEV/QA only (not production public site)
 flutter run -d chrome
 # API: http://localhost:3002/api/v1 (web) or http://127.0.0.1:3002/api/v1
 ```
@@ -18,7 +23,7 @@ Android emulator (host machine from emulator):
 flutter run --dart-define=QALAGO_DEV_HOST=10.0.2.2
 ```
 
-Production-like web compile check:
+DEV/QA web compile check (not production public hosting):
 
 ```powershell
 flutter build web --dart-define=QALAGO_API_BASE_URL=https://api.qalago.kz/api/v1 --dart-define=QALAGO_AI_BASE_URL=https://ai.qalago.kz/api/v1
@@ -57,5 +62,5 @@ When the native business flag is **off** (default), MapLibre uses Flutter-projec
 ```powershell
 flutter test
 flutter analyze
-flutter build web
+flutter build web   # compile-regression for web target (DEV/QA — not production public site)
 ```

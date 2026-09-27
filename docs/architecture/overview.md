@@ -7,26 +7,38 @@ QalaGo — единая платформа для городской жизни 
 **Launch:** один город (Уральск).  
 **Scale:** добавление городов через данные (`City`), без форка приложения.
 
+## Client surfaces (canonical)
+
+All product clients consume the **same** Catalog API and **PostgreSQL** data — no separate per-channel catalogs or databases.
+
+| Surface | Path | Role |
+|---------|------|------|
+| **Flutter Mobile** | `apps/mobile` | **Production native app** — **Android** and **iOS** |
+| **Consumer Web** | `apps/consumer-web` | **Canonical public browser** — desktop and mobile browsers; production host **`https://qalago.kz`** when configured |
+| **Flutter Web** | same `apps/mobile` codebase, `web/` target | **DEV / QA / local demo / compile-regression only** — e.g. local **`http://127.0.0.1:8080`** via `npm run dev:all`; **not** a production public frontend, **not** SEO owner, **not** an alternative host for `qalago.kz` |
+| **Business Web** | `apps/business-web` | Owner cabinet (authenticated) |
+| **Admin Web** | `apps/admin-web` | Staff moderation |
+
+Flutter remains the **native mobile** technology. **Public Flutter Web is not part of the production browser architecture.**
+
 ## System context
 
 ```text
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│ apps/mobile │     │ admin-web   │     │ business-web│
-│  (Flutter)  │     │  (Next.js)  │     │  (Next.js)  │
-└──────┬──────┘     └──────┬──────┘     └──────┬──────┘
-       │                   │                   │
-       └───────────────────┼───────────────────┘
-                           │ HTTPS /api/v1
-                    ┌──────▼──────┐
-                    │ catalog-api │  NestJS + Prisma
-                    │  (monolith) │
-                    └──────┬──────┘
-                           │
-              ┌────────────┼────────────┐
-              │            │            │
-        ┌─────▼─────┐ ┌────▼────┐ ┌─────▼─────┐
-        │ PostgreSQL│ │  Redis  │ │ S3 (later)│
-        └───────────┘ └─────────┘ └───────────┘
+                    Catalog API + PostgreSQL
+                              |
+              +---------------+---------------+
+              |                               |
+       Flutter Mobile                   Consumer Web
+       (Android / iOS)                  (Next.js)
+              |                               |
+        native store apps              qalago.kz (public)
+              |                               |
+              +---------------+---------------+
+                              |
+              +---------------+---------------+
+              |               |               |
+       business-web    admin-web      (Flutter Web: local DEV only)
+       (Next.js)       (Next.js)      not shown in prod topology
 
 Future:
        apps/mobile ──► ai-orchestrator ──► packages/agents ──► LLM provider
@@ -59,7 +71,9 @@ Country (KZ)
 
 | Concern | Choice | Rationale |
 |---------|--------|-----------|
-| Mobile | Flutter | Single codebase iOS/Android/Web |
+| Flutter Mobile | Flutter | Native **Android + iOS** (`apps/mobile`) |
+| Public browser | Next.js | **Consumer Web** — canonical public site (`apps/consumer-web`) |
+| Flutter Web | Flutter `web` target | **DEV/QA only** — same repo as mobile; not production public |
 | API | NestJS + Prisma | Typed backend, migrations |
 | DB | PostgreSQL | Relations, geo, scale |
 | Cache/queue | Redis (phase 2) | OTP, sessions, jobs |

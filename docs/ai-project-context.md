@@ -43,6 +43,7 @@
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending (6.12A)** | **None** — contour closed (**5E** finalized) |
+| **Flutter Web disposition** | **PASS — DEV/QA ONLY** (Option **B**); docs checkpoint — no app/runtime change; see **`docs/changelog.md`** |
 | **Next** | **Explicit agreement** before **F.8** or other stages — **do not auto-start**; optional non-blocking **`<html lang>`** URL alignment on soft nav |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
@@ -75,6 +76,30 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **Mobile:** Flutter `apps/mobile`
 - **Web:** Next.js — `apps/business-web`, `apps/admin-web`, `apps/consumer-web`
 - **Monorepo:** npm workspaces
+
+## Client surfaces (architecture — durable)
+
+**Flutter Mobile**
+
+- **Android** and **iOS** — production native application (`apps/mobile`).
+- Store builds, MapLibre mobile map, push, F.6 App Links / Universal Links to **`https://qalago.kz`** (Consumer Web origin for HTTPS links).
+
+**Consumer Web**
+
+- **Next.js** — **`apps/consumer-web`**
+- **Canonical public browser experience** — desktop and mobile browsers.
+- Production public host: **`https://qalago.kz`** when configured (local dev default **http://localhost:3005**, `npm run dev:consumer`).
+- Owns public discovery, SEO, and F.7 legal pages on the public origin — see **`docs/architecture/public-consumer-web.md`**.
+
+**Flutter Web**
+
+- **DEV / QA / local demo / compile-regression only** — optional Flutter **`web`** target in the same `apps/mobile` codebase.
+- May remain available locally (e.g. **`http://127.0.0.1:8080`** when using `npm run dev:all` / `scripts/dev/start-all.ps1`).
+- **Not** production/public, **not** canonical, **no** SEO ownership — **not** a competing public frontend for `qalago.kz`.
+
+**Safety rule (shared Dart):** Do **not** remove or alter Flutter **`lib/`** shared code merely because the public browser product is Consumer Web. Any future **full Flutter Web retirement** requires a **separate audit** — shared Dart is also used by Android/iOS.
+
+**Disposition checkpoint:** **Option B approved** — Flutter Web retained for local DEV/QA; **FLUTTER WEB DISPOSITION PASS — DEV/QA ONLY** — **`docs/changelog.md`**.
 
 ## Shared catalog / data principle
 

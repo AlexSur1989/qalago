@@ -11,7 +11,8 @@
 | Компонент | Состояние |
 |-----------|-----------|
 | `services/catalog-api` | Production-ready MVP backend |
-| `apps/mobile` | Consumer + membership-aware owner |
+| `apps/mobile` | Flutter **Android/iOS** — consumer + membership-aware owner |
+| `apps/consumer-web` | **Public browser** (Next.js) — canonical site target **`qalago.kz`** |
 | `apps/admin-web` | City/platform moderation + audit logs |
 | `apps/business-web` | Owner cabinet + team management + team history |
 | `services/ai-orchestrator` | Dev scaffold, proxied via catalog-api |
@@ -30,13 +31,16 @@
 ## Структура monorepo
 
 ```text
-apps/           mobile, admin-web, business-web
+apps/           mobile (Flutter Android/iOS), consumer-web (public browser),
+                admin-web, business-web
 services/       catalog-api, ai-orchestrator
 packages/       shared-types, api-client, ai-core
 docs/           architecture, contracts, status
 infra/          docker, env examples
 scripts/dev/    local setup
 ```
+
+**Клиенты:** **Flutter Mobile** = нативные Android/iOS. **Consumer Web** = публичный браузер (`apps/consumer-web`, локально **:3005**). **Flutter Web** = тот же `apps/mobile`, только **локальный DEV/QA** (часто **:8080** через `dev:all`) — **не** production-сайт и **не** `qalago.kz`.
 
 ## Быстрый старт
 
@@ -58,14 +62,16 @@ npm run seed
 npm run start:dev
 # → http://localhost:3002/api/v1/health
 
-# 4. Admin + Business web (из корня)
+# 4. Admin + Business + Consumer web (из корня)
 npm run dev:admin      # :3001
 npm run dev:business   # :3003
+npm run dev:consumer   # :3005 — public browser (Consumer Web)
 
-# 5. Mobile
+# 5. Flutter Mobile / Flutter Web (local DEV/QA only — not production public site)
 cd apps\mobile
 flutter pub get
-flutter run -d chrome
+flutter run -d chrome   # Flutter Web — local DEV/QA only
+# Native Android/iOS: flutter run -d <device>
 ```
 
 Полный стек: `npm run dev:all` — см. [scripts/dev/SETUP.md](scripts/dev/SETUP.md).

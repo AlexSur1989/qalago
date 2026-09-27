@@ -44,7 +44,8 @@ npm run start:dev
 | Admin web | http://localhost:3001 |
 | Business web | http://localhost:3003 |
 | AI orchestrator | http://localhost:3004/api/v1 |
-| Mobile (Flutter web) | http://localhost:8080 |
+| Flutter Web DEV/QA preview | http://localhost:8080 (local only — not production public site) |
+| Consumer Web (public browser) | http://localhost:3005 |
 
 Полный стек одной командой из корня репозитория:
 
@@ -54,12 +55,15 @@ npm run dev:all
 .\scripts\dev\restart-all.ps1
 ```
 
-## 3. Mobile
+## 3. Flutter Mobile / Flutter Web
+
+- **`:3005`** — Consumer Web — local stand-in for the **public browser** frontend (`npm run dev:consumer`).
+- **`:8080`** — Flutter Web DEV/QA preview when using `npm run dev:all` (full app in browser; **not** `qalago.kz`).
 
 ```powershell
 cd apps\mobile
 flutter pub get
-flutter run -d chrome
+flutter run -d chrome   # Flutter Web — local DEV/QA only
 ```
 
 Тестовый вход: `+77000000003`, OTP из ответа API (при `OTP_DEBUG=true`).

@@ -5,6 +5,7 @@
 - Path: `apps/consumer-web`
 - Port: **3005** (`npm run dev:consumer`)
 - Stack: Next.js 15 App Router, React 19. **F.5 Phase 1** implements indexable **`/ru/`** / **`/kk/`** URL routing with URL-authoritative locale; locale-neutral routes are compatibility entries (see § F.5). **F.5 Phase 2** locale SEO (canonical, hreflang, sitemap) **physically verified**. **PublicShell** locale UI hotfix (**URL-authoritative shell labels**) **physically verified** — **`docs/changelog.md`**.
+- **Client architecture:** Consumer Web is the **canonical public browser surface** (`https://qalago.kz` when configured). **Flutter Web** (`apps/mobile` web target, local e.g. `:8080`) is **DEV/QA only** — **not** a competing production public frontend. Native **Android/iOS** remain **`apps/mobile`** store clients — see **`docs/architecture/overview.md`**.
 
 ## F.1 foundation
 

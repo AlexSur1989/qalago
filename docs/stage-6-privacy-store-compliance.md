@@ -1,6 +1,13 @@
 # Stage 6.3 — Privacy, Terms, Account Deletion & Store Compliance
 
-## Summary
+## Current state (post-F.7 — authoritative for hosting)
+
+- **Canonical public legal host:** Consumer Web / **`https://qalago.kz`**
+- **Canonical routes:** **`/privacy`**, **`/terms`**, **`/account-deletion`** on Consumer Web (`apps/consumer-web`)
+- **Business Web:** legacy legal routes **308 redirect** to Consumer Web — not a competing canonical host
+- **External legal/content debt:** unchanged — **`docs/legal-review-required.md`** (not production legal approval)
+
+## Summary (Stage 6.3 historical snapshot)
 
 Prepared legal/store **foundation** aligned with repository behavior:
 
@@ -11,16 +18,18 @@ Prepared legal/store **foundation** aligned with repository behavior:
 
 **Not lawyer-approved.** Placeholders must be replaced before production publication.
 
-## Public host
+## Public host (Stage 6.3 snapshot — superseded for hosting by F.7)
 
-No standalone qalago.kz marketing app in repo. Legal pages live in **business-web** until dedicated public site exists. Configure:
+At Stage 6.3, legal pages were first implemented on Business Web. **Current hosting** is Consumer Web — see **Current state (post-F.7)** above and **`docs/architecture/public-consumer-web.md`** § F.7.
+
+Configure:
 
 - `NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL=https://qalago.kz`
-- Flutter: `QALAGO_PUBLIC_BASE_URL`
+- Flutter: `QALAGO_PUBLIC_BASE_URL` / **`LegalConstants`** → Consumer Web URLs
 
 ## Account deletion truth
 
-See [account-deletion page content](../apps/business-web/app/account-deletion/page.tsx) and [privacy-data-inventory.md](./privacy-data-inventory.md).
+Current page: [apps/consumer-web/app/account-deletion](../apps/consumer-web/app/account-deletion/page.tsx). Inventory: [privacy-data-inventory.md](./privacy-data-inventory.md).
 
 ## Apple revocation
 

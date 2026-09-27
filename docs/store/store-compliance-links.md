@@ -2,22 +2,26 @@
 
 ## Intended production URLs
 
-| Resource | URL | Local implementation | Deploy status |
-|----------|-----|----------------------|---------------|
-| Privacy Policy | https://qalago.kz/privacy | `apps/business-web/app/privacy` | NEEDS DEPLOYMENT |
-| Terms of Use | https://qalago.kz/terms | `apps/business-web/app/terms` | NEEDS DEPLOYMENT |
-| Account deletion | https://qalago.kz/account-deletion | `apps/business-web/app/account-deletion` | NEEDS DEPLOYMENT |
+| Resource | URL | Canonical implementation (current) | Deploy status |
+|----------|-----|-----------------------------------|---------------|
+| Privacy Policy | https://qalago.kz/privacy | `apps/consumer-web/app/privacy` | NEEDS DEPLOYMENT |
+| Terms of Use | https://qalago.kz/terms | `apps/consumer-web/app/terms` | NEEDS DEPLOYMENT |
+| Account deletion | https://qalago.kz/account-deletion | `apps/consumer-web/app/account-deletion` | NEEDS DEPLOYMENT |
 | Support | https://qalago.kz/support | Not implemented (placeholder in help) | NEEDS LEGAL DATA |
-| Marketing site | https://qalago.kz | Not in repo | FUTURE |
+| Public marketing / discovery | https://qalago.kz | `apps/consumer-web` (Consumer Web) | NEEDS DEPLOYMENT |
+
+**Canonical public host:** Consumer Web / **`https://qalago.kz`**. Business Web legacy **`/privacy`**, **`/terms`**, **`/account-deletion`** routes **308 redirect** to Consumer Web (F.7).
 
 ## Dev / staging
 
-Business Web serves pages at `{host}/privacy`, `/terms`, `/account-deletion` (e.g. `http://localhost:3003/privacy`).
+- **Consumer Web:** `{host}/privacy`, `/terms`, `/account-deletion` (e.g. `http://localhost:3005/privacy`).
+- **Business Web:** same paths on `:3003` redirect to Consumer Web origin — do not treat Business Web as canonical legal host.
 
-Flutter/Business Web link config:
+Flutter / link config:
 
 - `QALAGO_PUBLIC_BASE_URL` / `NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL` → default `https://qalago.kz`
+- Flutter **`LegalConstants`** opens Consumer Web legal URLs in the system browser.
 
 ## App deep links
 
-Flutter opens HTTPS URLs in external browser (`url_launcher`).
+Flutter opens HTTPS URLs in external browser (`url_launcher`). F.6 App Links / Universal Links target **`https://qalago.kz`** (Consumer Web), not a Flutter Web origin.
