@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — F.7 Phase 0 — legal migration contract lock
+
+- **Status:** **F.7 PHASE 0 PASS — LEGAL MIGRATION CONTRACT LOCKED**. F.7 umbrella: **IN PROGRESS / NOT CLOSED**. **F.8 NOT STARTED**.
+- **Checkpoint:** Pre-lock HEAD **`70b12d49b446510bd84851d88572d1993b794169`**; Phase **0** docs lock commit in git log immediately after.
+- **Scope:** **Documentation only** — canonical F.7 contract in **`docs/architecture/public-consumer-web.md`** § **F.7** after read-only Phase **0** audit.
+- **Summary:** Lock locale-neutral canonical legal URLs (`/privacy`, `/terms`, `/account-deletion` on Consumer Web origin); static page migration from Business Web; no Prisma/API/Admin redesign; no `/support` in F.7; Business Web redirects policy; Flutter URLs stable; production legal approval remains **`docs/legal-review-required.md`** gate.
+- **Deferred:** F.7 Phases **1–5** + final closure; legal API→Web rendering; `/support` vs `/help`; production counsel-approved copy.
+- **Next:** **F.7 Phase 1** — Consumer Web legal routes — **explicit approval required** — **do not auto-start**.
+
+---
+
 ## 2026-09-28 — F.6 Phase 6 — cross-platform closure QA
 
 - **Status:** **F.6 PASS — DEEP LINKS ARCHITECTURE FINALIZED**. **F.6 CLOSED / PASS**. **F.7 NOT STARTED**.

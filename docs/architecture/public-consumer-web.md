@@ -8,7 +8,7 @@
 
 ## F.1 foundation
 
-- **PublicShell:** header nav, locale switcher, footer legal links (external to business-web until F.7).
+- **PublicShell:** header nav, locale switcher, footer legal links (external to business-web until F.7 **implementation** — contract **§ F.7**).
 - **Config:** `lib/public-config.ts` — API base, public site base, `DEFAULT_CITY_SLUG`.
 - **Cache:** `lib/cache-policy.ts` — ISR-friendly catalog fetches; layout `revalidate = 60`.
 - **Branding:** Montserrat, tokens `--blue` / `--accent`, `app/icon.tsx`.
@@ -114,7 +114,7 @@ Static App Router segments (e.g. `categories/`, `search/`) take precedence over 
 
 F.5 = indexable RU/KK public URL variants, **hreflang**, locale-aware canonical/sitemap rules, language-switcher URL semantics, compatibility redirects from locale-neutral entry URLs.
 
-**Not F.5:** Web auth, favorites, interactive map, F.6 deep links / App Links / Universal Links, F.7 legal migration, F.8 OG image pipeline, Home CMS, Events, City Discovery, 6.12B import, localized Business schema, machine translation of business-generated content.
+**Not F.5:** Web auth, favorites, interactive map, F.6 deep links / App Links / Universal Links, F.7 legal migration (separate stage — **§ F.7**), F.8 OG image pipeline, Home CMS, Events, City Discovery, 6.12B import, localized Business schema, machine translation of business-generated content.
 
 ### 1. Locale URL structure (LOCKED)
 
@@ -335,6 +335,161 @@ Locale allowlist: **`ru`**, **`kk`** only. No redirect to user-supplied arbitrar
 |-------|--------|
 | **0** | This contract — **PASS** |
 | **1+** | Routes, redirects, metadata, hreflang, sitemap — **explicit approval required** |
+
+---
+
+## F.7 — Legal migration
+
+**Gate:** F.7 — Legal migration  
+**Status:** **F.7 PHASE 0 PASS — LEGAL MIGRATION CONTRACT LOCKED**  
+**Umbrella:** **IN PROGRESS / NOT CLOSED** (Phases **1+** not started)
+
+**Authority:** This section is the **canonical F.7 contract**. Other docs **reference** this section; they must not duplicate full contract text.
+
+**Purpose:** Move **public / store-facing legal pages** from **Business Web** to **Consumer Web** so **`qalago.kz`** (Consumer Web origin) is the **canonical public legal host**. This is **not** a broad Consumer Web feature stage.
+
+**Depends on:** F.5 **CLOSED** (discovery locale URLs unchanged); F.6 **CLOSED** (no new deep-link families); Stage **6.3** / **6.9** legal foundation (static pages, API/admin orthogonal).
+
+### 1. Canonical legal URLs (LOCKED)
+
+Production canonical URLs are **locale-neutral** at site root:
+
+```text
+https://qalago.kz/privacy
+https://qalago.kz/terms
+https://qalago.kz/account-deletion
+```
+
+**Do not** make **`/ru/privacy`**, **`/kk/privacy`**, or other locale-prefixed paths the **canonical** legal URLs in F.7.
+
+**Reason:** Flutter (`LegalConstants`), store compliance ([store-compliance-links.md](../store/store-compliance-links.md)), and existing configs already target root paths.
+
+Legal pages may render **localized QalaGo-owned chrome** (RU/KK) via the **existing locale preference mechanism** (cookie / client preference — same family as Business Web legal chrome today). **URL path locale prefixes are not introduced** for legal pages in F.7.
+
+**F.5** locale-prefixed **discovery** architecture (`/ru/{citySlug}/…`, `/kk/{citySlug}/…`) remains unchanged.
+
+### 2. Content model (LOCKED)
+
+F.7 **migrates** the existing **static** legal-page implementation and content pattern from **`apps/business-web`** (`/privacy`, `/terms`, `/account-deletion` TSX + env placeholders) to **`apps/consumer-web`**.
+
+**Do not** in F.7:
+
+- Switch Consumer Web legal body rendering to **`GET /legal/documents/:type`**
+- Change **Prisma** or run migrations
+- Change **Catalog API**
+- Redesign **Admin** legal publishing
+
+**`GET /legal/documents/:type`**, acceptance APIs, and **admin-web** legal tooling remain **orthogonal**. A **future separate stage** may connect published legal documents to Consumer Web.
+
+### 3. Legal review / production publication (LOCKED)
+
+**Technical migration** may proceed **before** production legal/counsel approval.
+
+**Do not** claim production legal approval in F.7 milestones.
+
+**Do not** invent operator name, legal address, support/privacy emails, jurisdiction, company identifiers, or other legal facts in code/docs.
+
+**[legal-review-required.md](../legal-review-required.md)** remains the **production publication gate** for real operator data and counsel-approved copy.
+
+Draft notices and env placeholders may remain until that gate clears.
+
+### 4. Support / help (LOCKED — OUT OF SCOPE)
+
+**Do not** expand F.7 into support/help architecture.
+
+The **`/support`** vs **`/help`** discrepancy remains **deferred**.
+
+F.7 migrated pages are **only**:
+
+- `/privacy`
+- `/terms`
+- `/account-deletion`
+
+**No** new **`/support`** implementation in F.7.
+
+### 5. Business Web transition (LOCKED)
+
+Consumer Web becomes the **canonical public legal host**.
+
+Business Web **must not** remain a **competing canonical** public legal origin after F.7 implementation.
+
+**Policy:** Business Web legacy public routes **`/privacy`**, **`/terms`**, **`/account-deletion`** **redirect** to the configured **Consumer Web public origin** once migration is implemented (exact redirect mechanism — Phase **3** implementation detail).
+
+Use existing **public-site / base URL configuration** (`NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL`, `getConsumerWebOrigin()` / `getPublicSiteBaseUrl()` family — **environment-safe**; do not hardcode production `qalago.kz` into local dev where helpers already exist).
+
+### 6. Localization (LOCKED)
+
+- **Chrome** (titles, nav labels, draft notices, footer labels): **RU/KK capable** (QalaGo-owned strings).
+- **Legal body:** preserve existing **source language** (RU draft today; KK requires proper legal/content approval per [ru-kk-glossary.md](../localization/ru-kk-glossary.md)).
+- **Do not** machine-translate legal text.
+- **Do not** auto-translate legal body because UI locale is KK.
+
+### 7. SEO (LOCKED)
+
+- **Canonical:** each legal page **self-canonicalizes** to its locale-neutral URL (`/privacy`, `/terms`, `/account-deletion`) on **`getConsumerWebOrigin()`**.
+- **Do not** create F.5-style **`/ru/` / `/kk/` hreflang URL pairs** for legal pages in F.7.
+- **Do not** add locale-prefixed legal duplicates to **`sitemap.xml`**.
+- **Indexability:** legal pages are **indexable** public compliance documents (aligned with store listing requirements in [store-compliance-links.md](../store/store-compliance-links.md)); **one canonical URL per legal type**. Optional: include the three locale-neutral legal URLs in sitemap as **single entries** in a later F.7 phase — **must not** alter F.5 discovery sitemap rules for `/ru/` / `/kk/` catalog paths.
+- **Do not** regress F.5 discovery **canonical / hreflang / sitemap** behavior.
+
+### 8. PublicShell (LOCKED)
+
+After F.7 implementation, **PublicShell** footer legal links **must resolve on the same Consumer Web public origin** (same-origin paths or origin from Consumer Web config).
+
+They **must not** depend on Business Web as the legal host.
+
+**Do not** alter unrelated footer navigation (discovery links).
+
+### 9. Flutter (LOCKED)
+
+Flutter legal URLs **remain stable**:
+
+```text
+https://qalago.kz/privacy
+https://qalago.kz/terms
+https://qalago.kz/account-deletion
+```
+
+(`QALAGO_PUBLIC_BASE_URL` / `LegalConstants` — no routing redesign.)
+
+**No** F.6 deep-link changes. **No** auth changes for F.7.
+
+### 10. Account deletion boundary (LOCKED)
+
+**`/account-deletion`** on the public site is a **public information** page (process, rights, contacts).
+
+**Authenticated account deletion** remains the existing **in-app / API** flow ([api-contracts.md](./api-contracts.md) account deletion).
+
+F.7 **must not** merge these concepts.
+
+### 11. Compatibility (LOCKED)
+
+| Contour | F.7 impact |
+|---------|------------|
+| **6.12A** | **None** — no Business / BusinessLocation catalog semantics |
+| **F.4** | **None** — no change to public business URLs or slug API |
+| **F.5** | **None** — discovery locale-prefixed routes unchanged |
+| **F.6** | Legal root URLs are **Web/legal destinations** only; **not** new mobile **`PublicDeepLinkTarget`** families (reserved city segments `privacy` / `terms` / `account-deletion` under `/{locale}/{citySlug}/` remain invalid as category slugs — unchanged) |
+
+### 12. Out of scope (LOCKED)
+
+Web authentication; favorites; Consumer Web interactive map; City Discovery; Home CMS; Events; ads engine; BusinessLocation changes; Prisma changes; Catalog API changes; generalized saves/bookmarks; notification preferences; F.6 deep-link architecture changes; **F.8** OG image pipeline; **`/support`** implementation; legal API integration for page body; Admin legal redesign; **production legal approval itself**.
+
+### 13. Implementation phases (LOCKED — not started)
+
+| Phase | Scope |
+|-------|--------|
+| **0** | Contract lock — **docs only** — **PASS** |
+| **1** | Consumer Web legal routes/pages (static migration from Business Web pattern) |
+| **2** | PublicShell / footer / config **same-origin** migration |
+| **3** | Business Web legacy legal-route **redirects** to Consumer Web origin |
+| **4** | Legal page localization chrome + SEO metadata/robots/sitemap policy implementation |
+| **5** | Cross-app + store-compliance regression + physical browser QA |
+| **Final** | Closure audit + docs (**F.7 CLOSED / PASS**) |
+
+**Do not** start Phase **1** without explicit approval.
+
+**Next:** **F.7 Phase 1** — Consumer Web legal routes — **requires explicit approval**.
 
 ---
 
