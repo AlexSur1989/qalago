@@ -330,7 +330,7 @@ Association files must contain **real** platform identifiers and signing data on
 
 **Primary mechanism:** Android App Links over HTTPS.
 
-Future manifest: `android:autoVerify="true"` for canonical `qalago.kz` HTTPS paths. Exact intent-filter path policy finalized in **F.6 Phase 4**.
+**Phase 4 (implemented):** `AndroidManifest.xml` — single `VIEW` intent-filter with `android:autoVerify="true"`, `https` + `qalago.kz`, `pathPrefix` `/ru` and `/kk`; `flutter_deeplinking_enabled=false` so **app_links** is the sole Flutter HTTPS receiver. Production OS verification still requires matching **`assetlinks.json`** on `qalago.kz` with the **installed app signing certificate** (Play App Signing SHA-256 for store builds).
 
 **assetlinks.json** requires actual Android signing **SHA-256** fingerprint(s). **Do not assume** upload-key fingerprint equals **Play App Signing** fingerprint. Treat debug and production verification separately.
 
@@ -366,7 +366,7 @@ Minimum: reuse existing analytics (`VIEW_BUSINESS`, `BusinessTrafficSource`, `An
 | **1** | Public URL parser + typed target + automated tests | **PASS** — `apps/mobile/lib/core/deep_links/` + `test/core/deep_links/public_deep_link_parser_test.dart` |
 | **2** | Flutter: HTTPS receiver, pending target, slug resolution, go_router, locale/city/locationId policies | **PASS** |
 | **3** | Consumer Web: association endpoints + `/.well-known` middleware exemption | **PASS** |
-| **4** | Android App Links + QA | Not started |
+| **4** | Android App Links + QA | **PASS (configured)** — manifest + `autoVerify`; **not** production domain verified |
 | **5** | iOS Universal Links + QA | Not started |
 | **6** | Cross-platform closure QA + E-contour regression | Not started |
 
@@ -424,8 +424,9 @@ Implementation must follow this matrix; details in Phase 1 tests.
 | F.6 Phase 1 mobile URL parser | **IMPLEMENTED / TESTED** |
 | F.6 Phase 1.1 `locationId` terminology | **PASS** — `BusinessLocation.id` (CUID), not RFC UUID |
 | F.6 Phase 2 Flutter navigation integration | **IMPLEMENTED / TESTED** |
-| F.6 Phase 3 Web association endpoints | **IMPLEMENTED / TESTED** — env-gated `assetlinks.json` + AASA; middleware exemption; **not** OS verified |
-| F.6 Phases 4–6 | **NOT STARTED** |
+| F.6 Phase 3 Web association endpoints | **IMPLEMENTED / TESTED** |
+| F.6 Phase 4 Android App Links manifest | **CONFIGURED / TESTED** (manifest inspection + Phase 1–2 regression); **production Verified Links pending** |
+| F.6 Phases 5–6 | **NOT STARTED** |
 
 **Phase 1 query policy (implemented):** Only **`locationId`** on business URLs and **`q`** on search URLs; any other query key → **invalid**. Forbidden navigation keys (`route`, `url`, `deeplink`, `link`, `redirect`, `next`, `callback`) → **invalid** on all URLs.
 
@@ -443,4 +444,10 @@ Implementation must follow this matrix; details in Phase 1 tests.
 - Missing config: `assetlinks.json` → `[]` (200); AASA → empty `details` (404)
 - Middleware: `isWellKnownAssociationPath` bypass in `middleware.ts` + redirect matrix
 
-**Next:** **F.6 Phase 4** — explicit approval required — Android App Links + QA (not started).
+**Phase 4 Android (implemented):**
+
+- Manifest App Links filter on `MainActivity` (`singleTop`, `exported=true` unchanged)
+- Package `kz.qalago.qalago_mobile`; paths `/ru*`, `/kk*` under `https://qalago.kz`
+- **`QALAGO_ANDROID_SHA256_CERT_FINGERPRINTS`** on Consumer Web must include the certificate of the **installed** APK (debug ≠ Play production)
+
+**Next:** **F.6 Phase 5** — explicit approval required — iOS Universal Links (not started).

@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-27 — F.6 Phase 4 — Android App Links
+
+- **Status:** **F.6 PHASE 4 IMPLEMENTATION PASS — ANDROID APP LINKS CONFIGURED**. F.6 umbrella: **IN PROGRESS / NOT CLOSED**. **Production Verified App Links: NOT VERIFIED** (requires `qalago.kz` `assetlinks.json` + Play App Signing SHA-256).
+- **Checkpoint:** *(record after implementation commit)*.
+- **Scope:** Android-only — `AndroidManifest.xml` HTTPS App Links for `qalago.kz` `/ru` + `/kk` with `autoVerify`; `flutter_deeplinking_enabled=false`; manifest inspection tests (**6**); Phase **1–2** deep-link regression (**53**). **No** iOS, Flutter parser/coordinator changes, Web/API/Prisma changes.
+- **Summary:** URI delivery path remains **app_links → Phase 1 parser → Phase 2 coordinator**. Debug keystore SHA-256 available for optional local association QA only — **not** committed to production env.
+- **Deferred:** Production domain verification; Play App Signing fingerprint on Consumer Web; physical navigation QA when debug APK install blocked/slow.
+- **Next:** **F.6 Phase 5** — explicit approval required — **do not auto-start**.
+
+---
+
 ## 2026-09-27 — F.6 Phase 3 — Web association endpoints
 
 - **Status:** **F.6 PHASE 3 IMPLEMENTATION PASS — WEB ASSOCIATION ENDPOINTS PREPARED**. F.6 umbrella: **IN PROGRESS / NOT CLOSED**.

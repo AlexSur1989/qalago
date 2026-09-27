@@ -38,6 +38,7 @@ If `flutter doctor` still reports missing SDK, verify `platform-tools`, `build-t
 | `INTERNET` | `android/app/src/debug/AndroidManifest.xml`, `profile/` | Present for debug/profile only |
 | `INTERNET` | `android/app/src/main/AndroidManifest.xml` | **Not present** — add before release APK/AAB |
 | Location | `main/AndroidManifest.xml` | `ACCESS_FINE/COARSE_LOCATION` for geolocator |
+| App Links (F.6) | `main/AndroidManifest.xml` | `https://qalago.kz/ru*` + `/kk*` VIEW filter, `autoVerify=true`; `flutter_deeplinking_enabled=false` (app_links) |
 | Cleartext HTTP | Not configured | Required for DEV `http://` API on Android 9+ |
 
 ### DEV cleartext HTTP
