@@ -54,7 +54,7 @@
 
 **Consumer Web F-series (canonical order):** F.5 **CLOSED** → **F.6 IN PROGRESS** (Phase **0–1** done; **2–6** not started) → F.7 → F.8 — **`docs/architecture/deep-links.md`**.
 
-**F.6 (current):** Phase **1** mobile pure HTTPS URL → typed target parser (no OS links yet). Phase **2+:** receiver, deferred nav, well-known, App/Universal Links per contract.
+**F.6 (current):** Phase **1** mobile pure HTTPS URL → typed target parser (no OS links yet). Public **`locationId`** = **`BusinessLocation.id`** (CUID-backed `String`, **not** RFC UUID); Phase **1** parser = syntactic validation only — ownership/semantics via **6.12A** / API. Phase **2+:** receiver, deferred nav, well-known, App/Universal Links per contract.
 
 **Post-6.12A candidates (documented — not auto-started):** **6.12B** / Catalog Import; remaining contours — **`docs/changelog.md`** / architecture docs.
 

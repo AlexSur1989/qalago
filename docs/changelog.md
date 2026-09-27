@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-27 — F.6 Phase 1.1 — locationId contract terminology
+
+- **Status:** **F.6 PHASE 1.1 PASS — LOCATIONID CONTRACT TERMINOLOGY ALIGNED**. F.6 Phase **1** remains **PASS**; umbrella **IN PROGRESS / NOT CLOSED**.
+- **Checkpoint:** `174560d6661ca6f0a98bcb882bd30e8e9f86a572`.
+- **Scope:** **Documentation only** — align F.6 architecture wording with Prisma source of truth: **`BusinessLocation.id`** = `String @id @default(cuid())`.
+- **Summary:** Removed incorrect **UUID** terminology for public **`locationId`** / **`BusinessLocation.id`** in **`docs/architecture/deep-links.md`**. Phase **1** parser already accepted canonical CUID-shaped branch ids; **no** runtime, parser, test, API, or DB change. **6.12A** semantics unchanged.
+- **Deferred:** F.6 Phases **2–6** unchanged.
+- **Next:** **F.6 Phase 2** — explicit approval required — **do not auto-start**.
+
+---
+
 ## 2026-09-27 — F.6 Phase 1 — public URL parser
 
 - **Status:** **F.6 PHASE 1 IMPLEMENTATION PASS — PUBLIC URL PARSER AND TYPED TARGET VERIFIED**. F.6 umbrella: **IN PROGRESS / NOT CLOSED**.

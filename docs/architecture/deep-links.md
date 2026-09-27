@@ -52,7 +52,7 @@ F.6 parser families are based on **existing F.5 URLs** (do not add new public ro
 | Category | `/{locale}/{citySlug}/{categorySlug}` |
 | Subcategory | `/{locale}/{citySlug}/{categorySlug}/{subcategorySlug}` |
 | Business | `/{locale}/{citySlug}/business/{businessSlug}` |
-| Business + branch | `/{locale}/{citySlug}/business/{businessSlug}?locationId={uuid}` |
+| Business + branch | `/{locale}/{citySlug}/business/{businessSlug}?locationId={BusinessLocation.id}` |
 | Search | `/{locale}/{citySlug}/search?q=…` |
 
 Query keys beyond those already used on Consumer Web (e.g. `locationId`, `q`, and existing search params) must not be interpreted as navigation instructions unless explicitly added to this contract in a future phase.
@@ -200,7 +200,7 @@ A **permanent** city preference change requires an **explicit** user city-select
 Preserve branch context:
 
 ```text
-?locationId={BusinessLocation UUID}
+?locationId={BusinessLocation.id}
 ```
 
 **Pipeline:**
@@ -212,6 +212,8 @@ canonical business URL
 → navigate to internal /business/:id
 → preserve valid locationId query on internal routes
 ```
+
+**Identifier contract:** public `locationId` query values are **`BusinessLocation.id`** — Prisma `String @id @default(cuid())` (PostgreSQL `TEXT`), **not** an RFC UUID. Phase 1 mobile parser applies **syntactic** validation only (bounded alphanumeric/`_`/`-` shape compatible with catalog cuids); **do not** require RFC UUID or add `@IsUUID()` for this contract.
 
 **6.12A** remains authoritative. **Do not** duplicate branch ownership validation in the URL parser; backend and business-detail contracts handle foreign/invalid `locationId`. Malformed `locationId` must fail safely. **Do not reopen** BusinessLocation architecture.
 
@@ -285,7 +287,7 @@ Only approved **HTTPS** host(s) may enter the parser.
 
 **Production host:** `qalago.kz` (staging hosts may be documented in implementation phases; must not weaken production rules).
 
-Parser must validate: scheme, host, locale, path family, segment count, percent decoding, slug syntax/limits, UUID syntax where applicable, supported query keys, query length/limits.
+Parser must validate: scheme, host, locale, path family, segment count, percent decoding, slug syntax/limits, **`locationId` syntactic shape** (when present — see §9; **not** RFC UUID), supported query keys, query length/limits.
 
 **Reject:** `javascript:`, `data:`, `file:`, arbitrary custom schemes, unknown hosts, unsupported locale, unsupported route families, malformed encoding.
 
@@ -420,6 +422,7 @@ Implementation must follow this matrix; details in Phase 1 tests.
 | F.6 Phase 0 read-only audit | PASS |
 | F.6 Phase 0 contract (this document) | **AGREED / CONTRACT LOCKED** |
 | F.6 Phase 1 mobile URL parser | **IMPLEMENTED / TESTED** |
+| F.6 Phase 1.1 `locationId` terminology | **PASS** — `BusinessLocation.id` (CUID), not RFC UUID |
 | F.6 Phases 2–6 | **NOT STARTED** |
 
 **Phase 1 query policy (implemented):** Only **`locationId`** on business URLs and **`q`** on search URLs; any other query key → **invalid**. Forbidden navigation keys (`route`, `url`, `deeplink`, `link`, `redirect`, `next`, `callback`) → **invalid** on all URLs.
