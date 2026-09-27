@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/location/user_location_provider.dart';
 import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/locale/l10n_extension.dart';
+import '../../../core/deep_links/deep_link_session_city.dart';
 import '../../../core/providers/city_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/qalago_spacing.dart';
@@ -281,9 +282,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     });
 
     try {
-      final city = ref.read(cityProvider);
+      final citySlug = ref.read(discoveryCitySlugProvider);
       final page = await ref.read(catalogRepositoryProvider).fetchBusinesses(
-            citySlug: city.slug,
+            citySlug: citySlug,
             search: query.search,
             categoryId: query.categoryId,
             subcategoryId: query.subcategoryId,
@@ -500,7 +501,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
     final cities = ref.read(citiesProvider).valueOrNull;
     if (cities == null || cities.isEmpty) return;
-    final citySlug = ref.read(cityProvider).slug;
+    final citySlug = ref.read(discoveryCitySlugProvider);
     Map<String, dynamic>? cityMatch;
     for (final entry in cities) {
       if (entry['slug'] == citySlug) {

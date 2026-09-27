@@ -6,6 +6,7 @@ import 'core/release/app_release_shell.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/push/push_bootstrap.dart';
+import 'core/deep_links/public_deep_link_bootstrap.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'l10n/app_localizations.dart';
 
@@ -18,6 +19,7 @@ class QalaGoApp extends ConsumerWidget {
     ref.watch(authSessionGuardProvider);
     ref.watch(userScopedCacheCleanupProvider);
     ref.watch(pushLifecycleProvider);
+    ref.watch(publicDeepLinkBootstrapProvider);
     final router = ref.watch(appRouterProvider);
     final locale = ref.watch(appLocaleProvider);
     return AppReleaseShell(

@@ -1,8 +1,8 @@
 # F.6 — Deep Links / App Links / Universal Links / NavigationTarget
 
 **Gate:** F.6 — Deep Links / App Links / Universal Links  
-**Status:** **F.6 PHASE 0 — AGREED / CONTRACT LOCKED**; **Phase 1 — IMPLEMENTATION PASS** (mobile parser + tests)  
-**Umbrella:** **IN PROGRESS / NOT CLOSED** (Phases **2–6** not started)
+**Status:** **F.6 PHASE 0 — AGREED / CONTRACT LOCKED**; **Phase 1 — IMPLEMENTATION PASS**; **Phase 2 — IMPLEMENTATION PASS** (Flutter receiver + coordinator + navigation)  
+**Umbrella:** **IN PROGRESS / NOT CLOSED** (Phases **3–6** not started; **no** verified OS App/Universal Links yet)
 
 **Authority:** This document is the **canonical F.6 contract**. Other architecture docs **reference** this file; they must not duplicate full contract text.
 
@@ -423,8 +423,16 @@ Implementation must follow this matrix; details in Phase 1 tests.
 | F.6 Phase 0 contract (this document) | **AGREED / CONTRACT LOCKED** |
 | F.6 Phase 1 mobile URL parser | **IMPLEMENTED / TESTED** |
 | F.6 Phase 1.1 `locationId` terminology | **PASS** — `BusinessLocation.id` (CUID), not RFC UUID |
-| F.6 Phases 2–6 | **NOT STARTED** |
+| F.6 Phase 2 Flutter navigation integration | **IMPLEMENTED / TESTED** — `app_links` receiver, coordinator, executor, session city; **no** Android/iOS verified association |
+| F.6 Phases 3–6 | **NOT STARTED** |
 
 **Phase 1 query policy (implemented):** Only **`locationId`** on business URLs and **`q`** on search URLs; any other query key → **invalid**. Forbidden navigation keys (`route`, `url`, `deeplink`, `link`, `redirect`, `next`, `callback`) → **invalid** on all URLs.
 
-**Next:** **F.6 Phase 2** — explicit approval required — HTTPS receiver, deferred navigation, slug resolution, go_router integration.
+**Phase 2 runtime pipeline (implemented):**
+
+1. **`app_links`** — initial + stream URIs (no production host association / autoVerify / Associated Domains).
+2. **`PublicDeepLinkCoordinator`** — single entry: parse → pending or execute; onboarding gate; 2s fingerprint dedupe.
+3. **`PublicDeepLinkExecutor`** — locale via **`appLocaleProvider`**; **`deepLinkSessionCitySlugProvider`** for link city (not persisted **`cityProvider`**); go_router routes; business via **`GET /businesses/by-slug/:businessSlug?citySlug=`**; category/subcategory slug resolution via existing catalog APIs.
+4. Discovery surfaces (home, categories, search, catalog providers) read **`discoveryCitySlugProvider`** / **`discoveryCityProvider`**.
+
+**Next:** **F.6 Phase 3** — explicit approval required — Consumer Web / middleware / well-known coordination (not started).

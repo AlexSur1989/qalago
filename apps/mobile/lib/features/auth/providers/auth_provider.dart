@@ -6,6 +6,7 @@ import '../../../core/network/dio_provider.dart';
 import '../../../core/providers/city_catalog_provider.dart';
 import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/providers/city_provider.dart';
+import '../../../core/deep_links/deep_link_session_city.dart';
 import '../../../core/storage/auth_storage.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/models/business_branch_location.dart';
@@ -428,8 +429,8 @@ class AuthNotifier extends Notifier<AuthState> {
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);
 
 final categoriesProvider = FutureProvider<List<CategoryModel>>((ref) async {
-  final city = ref.watch(cityProvider);
-  return ref.watch(catalogRepositoryProvider).fetchCategories(citySlug: city.slug);
+  final citySlug = ref.watch(discoveryCitySlugProvider);
+  return ref.watch(catalogRepositoryProvider).fetchCategories(citySlug: citySlug);
 });
 
 final subcategoriesProvider =
@@ -498,9 +499,9 @@ final businessesProvider = FutureProvider.family<PaginatedBusinesses, Businesses
     }
     final cancelToken = CancelToken();
     ref.onDispose(cancelToken.cancel);
-    final city = ref.watch(cityProvider);
+    final citySlug = ref.watch(discoveryCitySlugProvider);
     return ref.watch(catalogRepositoryProvider).fetchBusinesses(
-          citySlug: city.slug,
+          citySlug: citySlug,
           search: query.search,
           categoryId: query.categoryId,
           subcategoryId: query.subcategoryId,
@@ -516,19 +517,19 @@ final businessesProvider = FutureProvider.family<PaginatedBusinesses, Businesses
 );
 
 final featuredBusinessesProvider = FutureProvider((ref) async {
-  final city = ref.watch(cityProvider);
+  final citySlug = ref.watch(discoveryCitySlugProvider);
   return ref.watch(catalogRepositoryProvider).fetchBusinesses(
-        citySlug: city.slug,
+        citySlug: citySlug,
       );
 });
 
 final recommendedBusinessesProvider = FutureProvider<List<RecommendedBusiness>>((ref) async {
-  final city = ref.watch(cityProvider);
+  final citySlug = ref.watch(discoveryCitySlugProvider);
   final catalog = ref.watch(catalogRepositoryProvider);
   final ai = ref.watch(aiRepositoryProvider);
 
   try {
-    final items = await ai.fetchRecommendations(citySlug: city.slug, limit: 10);
+    final items = await ai.fetchRecommendations(citySlug: citySlug, limit: 10);
     if (items.isEmpty) {
       throw StateError('empty recommendations');
     }
@@ -545,7 +546,7 @@ final recommendedBusinessesProvider = FutureProvider<List<RecommendedBusiness>>(
     return businesses;
   } catch (_) {
     final organic = await catalog.fetchBusinesses(
-      citySlug: city.slug,
+      citySlug: citySlug,
       limit: 10,
     );
     return organic.items
@@ -615,8 +616,8 @@ final businessFavoriteProvider = FutureProvider.family<bool, String>((ref, busin
 });
 
 final promotionsProvider = FutureProvider((ref) async {
-  final city = ref.watch(cityProvider);
-  return ref.watch(catalogRepositoryProvider).fetchPromotions(citySlug: city.slug);
+  final citySlug = ref.watch(discoveryCitySlugProvider);
+  return ref.watch(catalogRepositoryProvider).fetchPromotions(citySlug: citySlug);
 });
 
 final reviewsProvider = FutureProvider.family<List<ReviewModel>, String>((ref, businessId) async {

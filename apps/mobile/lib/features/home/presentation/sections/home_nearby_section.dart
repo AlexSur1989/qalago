@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import '../../../../core/locale/consumer_api_errors.dart';
 import '../../../../core/locale/l10n_extension.dart';
 import '../../../../core/location/user_location_provider.dart';
+import '../../../../core/deep_links/deep_link_session_city.dart';
 import '../../../../core/providers/city_provider.dart';
 import '../../../../shared/models/models.dart';
 import '../../../../shared/widgets/business_card.dart';
@@ -35,7 +36,7 @@ class HomeNearbySection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final city = ref.watch(cityProvider);
+    final city = ref.watch(discoveryCityProvider);
     final userPos = ref.watch(userLocationProvider).valueOrNull;
     final usesGps = homeNearbyUsesUserGps(city, userPos);
     final nearbyPosition = ref.watch(nearbySearchPositionProvider);

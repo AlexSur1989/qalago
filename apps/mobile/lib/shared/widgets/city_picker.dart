@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/locale/l10n_extension.dart';
+import '../../core/deep_links/deep_link_session_city.dart';
 import '../../core/providers/city_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../features/auth/providers/auth_provider.dart';
@@ -90,9 +91,15 @@ Future<void> showCityPickerSheet(BuildContext context, WidgetRef ref) async {
                         } catch (_) {
                           await ref.read(cityProvider.notifier).selectCityFromApi(c);
                         }
+                        ref
+                            .read(deepLinkSessionCitySlugProvider.notifier)
+                            .clearSessionCitySlug();
                       } else {
                         await ref.read(cityProvider.notifier).selectCityFromApi(c);
                       }
+                      ref
+                          .read(deepLinkSessionCitySlugProvider.notifier)
+                          .clearSessionCitySlug();
                       if (ctx.mounted) Navigator.pop(ctx);
                     },
                   );

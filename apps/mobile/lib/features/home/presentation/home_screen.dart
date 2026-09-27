@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/navigation/open_business.dart';
 import '../../../core/providers/city_catalog_provider.dart';
-import '../../../core/providers/city_provider.dart';
+import '../../../core/deep_links/deep_link_session_city.dart';
 import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/locale/localized_content.dart';
 import '../../auth/presentation/dev_quick_login_panel.dart';
@@ -34,7 +34,7 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final city = ref.watch(cityProvider);
+    final city = ref.watch(discoveryCityProvider);
     final catalogTotalAsync = ref.watch(cityCatalogTotalProvider);
     final isEmptyCity =
         catalogTotalAsync.hasValue && catalogTotalAsync.value == 0;

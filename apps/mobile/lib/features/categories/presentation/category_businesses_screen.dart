@@ -11,7 +11,7 @@ import '../../search/search_geo_policy.dart';
 import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/locale/consumer_api_errors.dart';
 import '../../../core/locale/l10n_extension.dart';
-import '../../../core/providers/city_provider.dart';
+import '../../../core/deep_links/deep_link_session_city.dart';
 import '../../../core/theme/qalago_spacing.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../l10n/app_localizations.dart';
@@ -53,9 +53,9 @@ typedef CategoryRecommendedQuery = ({
 final categoryRecommendedProvider =
     FutureProvider.family<List<BusinessModel>, CategoryRecommendedQuery>(
         (ref, query) async {
-  final city = ref.watch(cityProvider);
+  final citySlug = ref.watch(discoveryCitySlugProvider);
   final page = await ref.watch(catalogRepositoryProvider).fetchBusinesses(
-        citySlug: city.slug,
+        citySlug: citySlug,
         categoryId: query.categoryId,
         subcategoryId: query.subcategoryId,
         sort: CategoryCatalogSort.recommended.apiValue,
@@ -67,9 +67,9 @@ final categoryRecommendedProvider =
 final categoryBusinessesProvider =
     FutureProvider.family<PaginatedBusinesses, CategoryBusinessesQuery>(
         (ref, query) async {
-  final city = ref.watch(cityProvider);
+  final citySlug = ref.watch(discoveryCitySlugProvider);
   return ref.watch(catalogRepositoryProvider).fetchBusinesses(
-        citySlug: city.slug,
+        citySlug: citySlug,
         categoryId: query.categoryId,
         subcategoryId: query.subcategoryId,
         sort: query.sort.apiValue,

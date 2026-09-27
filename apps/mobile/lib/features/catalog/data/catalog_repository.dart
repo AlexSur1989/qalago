@@ -217,6 +217,22 @@ class CatalogRepository {
         .toList();
   }
 
+  /// F.4 / F.6 — public slug resolution with required city context.
+  Future<Map<String, dynamic>> fetchBusinessBySlug({
+    required String businessSlug,
+    required String citySlug,
+    String? locationId,
+  }) async {
+    final response = await _dio.get(
+      '/businesses/by-slug/${Uri.encodeComponent(businessSlug)}',
+      queryParameters: {
+        'citySlug': citySlug,
+        if (locationId != null && locationId.isNotEmpty) 'locationId': locationId,
+      },
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> fetchBusinessDetails(
     String id, {
     String? locationId,

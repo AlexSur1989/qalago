@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/providers/city_catalog_provider.dart';
 import '../../../core/locale/app_locale_provider.dart';
-import '../../../core/providers/city_provider.dart';
+import '../../../core/deep_links/deep_link_session_city.dart';
 import '../../../core/locale/consumer_api_errors.dart';
 import '../../../core/locale/l10n_extension.dart';
 import '../../../core/theme/qalago_spacing.dart';
@@ -60,7 +60,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final city = ref.watch(cityProvider);
+    final city = ref.watch(discoveryCityProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
     final unreadAsync = ref.watch(unreadNotificationsProvider);
     final catalogTotalAsync = ref.watch(cityCatalogTotalProvider);
