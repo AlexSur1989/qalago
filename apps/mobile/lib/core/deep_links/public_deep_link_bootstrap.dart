@@ -12,7 +12,11 @@ final publicDeepLinkBootstrapProvider = Provider<void>((ref) {
   final coordinator = ref.read(publicDeepLinkCoordinatorProvider);
   StreamSubscription<Uri>? subscription;
 
-  ref.listen<AsyncValue<OnboardingSnapshot>>(onboardingProvider, (_, next) {
+  ref.listen<AsyncValue<OnboardingSnapshot>>(onboardingProvider, (previous, next) {
+    // Flush pending deep links when onboarding becomes ready.
+    if (next case AsyncData(:final value)) {
+      if (value.requiresOnboarding) return;
+    }
     unawaited(coordinator.tryExecutePending());
   });
 
