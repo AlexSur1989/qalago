@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-09-27 — F.5 locale UI hotfix — PublicShell physical QA closure
+
+- **Status:** **F.5 LOCALE UI HOTFIX PHYSICAL QA PASS — PUBLICSHELL LOCALE VERIFIED**.
+- **Checkpoint:** (this commit — see git log SHA).
+- **Scope:** **Documentation only** — records user-verified manual browser QA (Consumer Web **localhost:3005**). **No** application/test/backend changes. Phase **2** SEO **not** reimplemented or reopened.
+- **Summary:** On **`/ru/aktobe`**, soft switch to KK **without reload** → URL **`/kk/aktobe`**, shell **Басты бет** / **Санаттар**; reverse KK → RU restores **Главная** / **Категории** without reload. Direct load **`/kk/aktobe`** shows KK shell labels immediately. KK footer and city-switcher QalaGo-owned UI confirmed Kazakh (not stale RU). Implementation at **`e7bb8e1…`**.
+- **Non-blocking follow-up (not verified here):** root **`<html lang>`** may still follow persistent root-layout locale on soft nav — separate from PublicShell defect; **not** physically verified in this session.
+- **Deferred:** Full **F.5** umbrella closure only if separately agreed; Phase **1** manual gaps unchanged (legacy **`/businesses/{id}`** redirect; real **`locationId`** UI).
+- **Next:** Roadmap / explicit approval only — **do not** auto-start another F.5 phase or contour.
+
+---
+
 ## 2026-09-27 — F.5 locale UI hotfix — PublicShell URL locale
 
 - **Status:** **F.5 LOCALE UI HOTFIX IMPLEMENTATION PASS — PUBLICSHELL URL LOCALE FIXED** (automated verification PASS; **hotfix physical/browser QA not yet performed**).
