@@ -42,20 +42,22 @@ describe('F.3 canonical URL builder', () => {
     expect(() => normalizeConsumerWebOrigin('javascript:alert(1)')).toThrow(/Unsafe/);
   });
 
-  it('builds city and category paths with encoded segments', () => {
+  it('builds locale-prefixed city and category paths with encoded segments', () => {
     vi.stubEnv('NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL', 'https://qalago.kz');
-    expect(canonicalForCity('uralsk')).toBe('https://qalago.kz/uralsk');
-    expect(canonicalForCategory('uralsk', 'restaurants', 2)).toBe(
-      'https://qalago.kz/uralsk/restaurants?page=2',
+    expect(canonicalForCity('ru', 'uralsk')).toBe('https://qalago.kz/ru/uralsk');
+    expect(canonicalForCategory('ru', 'uralsk', 'restaurants', 2)).toBe(
+      'https://qalago.kz/ru/uralsk/restaurants?page=2',
     );
   });
 
   it('omits page=1 and normalizes invalid page via builder', () => {
     vi.stubEnv('NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL', 'https://qalago.kz');
-    expect(canonicalForCategory('uralsk', 'food', 1)).toBe('https://qalago.kz/uralsk/food');
-    expect(buildCanonicalUrl({ citySlug: 'uralsk', pathSegments: ['food'], page: 0 })).toBe(
-      'https://qalago.kz/uralsk/food',
+    expect(canonicalForCategory('ru', 'uralsk', 'food', 1)).toBe(
+      'https://qalago.kz/ru/uralsk/food',
     );
+    expect(
+      buildCanonicalUrl({ locale: 'ru', citySlug: 'uralsk', pathSegments: ['food'], page: 0 }),
+    ).toBe('https://qalago.kz/ru/uralsk/food');
   });
 
   it('parsePageParam normalizes invalid values', () => {
@@ -66,17 +68,17 @@ describe('F.3 canonical URL builder', () => {
     expect(parsePageParam('2')).toBe(2);
   });
 
-  it('search canonical encodes query safely', () => {
+  it('search canonical encodes query safely with locale prefix', () => {
     vi.stubEnv('NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL', 'https://qalago.kz');
-    expect(canonicalForSearch('uralsk', 'café & tea')).toBe(
-      'https://qalago.kz/uralsk/search?q=caf%C3%A9%20%26%20tea',
+    expect(canonicalForSearch('ru', 'uralsk', 'café & tea')).toBe(
+      'https://qalago.kz/ru/uralsk/search?q=caf%C3%A9%20%26%20tea',
     );
   });
 
   it('does not leak localhost when production origin configured', () => {
     vi.stubEnv('NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL', 'https://qalago.kz');
     expect(getConsumerWebOrigin()).toBe('https://qalago.kz');
-    expect(canonicalForCity('uralsk')).not.toContain('localhost');
+    expect(canonicalForCity('ru', 'uralsk')).not.toContain('localhost');
   });
 });
 
@@ -85,7 +87,7 @@ describe('F.3 metadata', () => {
     vi.stubEnv('NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL', 'https://qalago.kz');
     const m = metadataForCity('uralsk', 'Уральск', 'ru');
     expect(m.title).toContain('Уральск');
-    expect(m.alternates?.canonical).toBe('https://qalago.kz/uralsk');
+    expect(m.alternates?.canonical).toBe('https://qalago.kz/ru/uralsk');
   });
 
   it('city metadata KK', () => {
@@ -93,13 +95,14 @@ describe('F.3 metadata', () => {
     const m = metadataForCity('uralsk', 'Орал', 'kk');
     expect(String(m.title)).toContain('Орал');
     expect(String(m.title)).toContain('қаласындағы');
+    expect(m.alternates?.canonical).toBe('https://qalago.kz/kk/uralsk');
   });
 
   it('category and subcategory metadata', () => {
     vi.stubEnv('NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL', 'https://qalago.kz');
     const cat = metadataForCategory('uralsk', 'Уральск', 'restaurants', 'Рестораны', 'ru', 1);
     expect(cat.title).toContain('Рестораны');
-    expect(cat.alternates?.canonical).toBe('https://qalago.kz/uralsk/restaurants');
+    expect(cat.alternates?.canonical).toBe('https://qalago.kz/ru/uralsk/restaurants');
     const sub = metadataForSubcategory(
       'uralsk',
       'Уральск',
@@ -110,7 +113,9 @@ describe('F.3 metadata', () => {
       'ru',
       3,
     );
-    expect(sub.alternates?.canonical).toBe('https://qalago.kz/uralsk/restaurants/cafes?page=3');
+    expect(sub.alternates?.canonical).toBe(
+      'https://qalago.kz/ru/uralsk/restaurants/cafes?page=3',
+    );
   });
 
   it('search and temporary business use noindex,follow', () => {
@@ -133,7 +138,7 @@ describe('F.3 robots and sitemap', () => {
     expect(rules?.disallow).toContain('/businesses/');
   });
 
-  it('sitemap includes discovery routes and excludes search/business legacy', () => {
+  it('sitemap includes locale-prefixed discovery routes and excludes search/business legacy', () => {
     vi.stubEnv('NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL', 'https://qalago.kz');
     const entries = buildDiscoverySitemapEntries({
       cities: [{ id: 'c1', slug: 'uralsk', nameRu: 'Уральск', nameKk: 'Орал' }],
@@ -163,13 +168,14 @@ describe('F.3 robots and sitemap', () => {
       },
     });
     const urls = entries.map((e) => e.url);
-    expect(urls).toContain('https://qalago.kz/uralsk');
-    expect(urls).toContain('https://qalago.kz/uralsk/categories');
-    expect(urls).toContain('https://qalago.kz/uralsk/food');
-    expect(urls).toContain('https://qalago.kz/uralsk/food/cafes');
+    expect(urls).toContain('https://qalago.kz/ru/uralsk');
+    expect(urls).toContain('https://qalago.kz/kk/uralsk');
+    expect(urls).toContain('https://qalago.kz/ru/uralsk/categories');
+    expect(urls).toContain('https://qalago.kz/ru/uralsk/food');
+    expect(urls).toContain('https://qalago.kz/kk/uralsk/food/cafes');
     expect(urls.some((u) => u.includes('/search'))).toBe(false);
     expect(urls.some((u) => u.includes('/businesses/'))).toBe(false);
-    expect(urls.some((u) => u.includes('/categories'))).toBe(true);
+    expect(urls.some((u) => u === 'https://qalago.kz/uralsk')).toBe(false);
   });
 
   it('sitemap skips unknown city categories bucket', () => {
@@ -179,7 +185,13 @@ describe('F.3 robots and sitemap', () => {
       categoriesByCitySlug: {},
       subcategoriesByCategoryId: {},
     });
-    expect(entries.map((e) => e.url)).toEqual(['https://qalago.kz/ghost', 'https://qalago.kz/ghost/categories']);
+    const urls = entries.map((e) => e.url);
+    expect(urls).toEqual([
+      'https://qalago.kz/ru/ghost',
+      'https://qalago.kz/kk/ghost',
+      'https://qalago.kz/ru/ghost/categories',
+      'https://qalago.kz/kk/ghost/categories',
+    ]);
   });
 });
 
@@ -190,18 +202,18 @@ describe('F.3 JSON-LD safety and breadcrumbs', () => {
     expect(raw).toContain('\\u003c');
   });
 
-  it('breadcrumb JSON-LD uses controlled paths', () => {
+  it('breadcrumb JSON-LD uses controlled locale-prefixed paths', () => {
     vi.stubEnv('NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL', 'https://qalago.kz');
     const items = jsonLdFromCrumbs(
       [
-        { label: 'QalaGo', href: '/uralsk' },
-        { label: 'Uralsk', href: '/uralsk' },
+        { label: 'QalaGo', href: '/ru/uralsk' },
+        { label: 'Uralsk', href: '/ru/uralsk' },
         { label: 'Food' },
       ],
-      '/uralsk/food',
+      '/ru/uralsk/food',
     );
     const ld = breadcrumbListJsonLd(items);
     const json = JSON.stringify(ld);
-    expect(json).toContain('https://qalago.kz/uralsk/food');
+    expect(json).toContain('https://qalago.kz/ru/uralsk/food');
   });
 });

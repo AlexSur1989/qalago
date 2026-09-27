@@ -1,4 +1,5 @@
 import { fetchBusinesses, type BusinessSummaryDto } from './catalog-api';
+import { SUPPORTED_PUBLIC_LOCALES } from './public-locale';
 import { canonicalForBusiness } from './seo/canonical';
 
 const PAGE_LIMIT = 50;
@@ -19,7 +20,7 @@ export async function fetchAllPublicBusinessesInCity(citySlug: string): Promise<
   return items;
 }
 
-/** One sitemap URL per (citySlug, businessSlug) — dedupe multi-branch same city. */
+/** One sitemap URL per (locale, citySlug, businessSlug) — dedupe multi-branch same city. */
 export function dedupeBusinessCitySitemapUrls(
   citySlug: string,
   businesses: { slug: string }[],
@@ -32,7 +33,9 @@ export function dedupeBusinessCitySitemapUrls(
     const key = `${citySlug}:${slug}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    urls.push(canonicalForBusiness(citySlug, slug));
+    for (const locale of SUPPORTED_PUBLIC_LOCALES) {
+      urls.push(canonicalForBusiness(locale, citySlug, slug));
+    }
   }
   return urls;
 }

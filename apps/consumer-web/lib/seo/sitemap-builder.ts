@@ -1,9 +1,6 @@
 import type { CategoryDto, CityDto, SubcategoryDto } from '@/lib/catalog-api';
 import {
-  canonicalForCategory,
-  canonicalForCity,
-  canonicalForCityCategories,
-  canonicalForSubcategory,
+  localizedIndexableSitemapUrls,
 } from './canonical';
 
 export type SitemapEntry = { url: string; lastModified?: Date };
@@ -23,15 +20,21 @@ export function buildDiscoverySitemapEntries(input: {
     entries.push({ url });
   }
 
+  function addLocalized(citySlug: string, pathSegments?: string[]) {
+    for (const url of localizedIndexableSitemapUrls({ citySlug, pathSegments })) {
+      add(url);
+    }
+  }
+
   for (const city of input.cities) {
-    add(canonicalForCity(city.slug));
-    add(canonicalForCityCategories(city.slug));
+    addLocalized(city.slug);
+    addLocalized(city.slug, ['categories']);
     const categories = input.categoriesByCitySlug[city.slug] ?? [];
     for (const cat of categories) {
-      add(canonicalForCategory(city.slug, cat.slug));
+      addLocalized(city.slug, [cat.slug]);
       const subs = input.subcategoriesByCategoryId[cat.id] ?? [];
       for (const sub of subs) {
-        add(canonicalForSubcategory(city.slug, cat.slug, sub.slug));
+        addLocalized(city.slug, [cat.slug, sub.slug]);
       }
     }
     const businessUrls = input.businessUrlsByCitySlug?.[city.slug] ?? [];

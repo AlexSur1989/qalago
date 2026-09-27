@@ -1,11 +1,7 @@
 import type { Metadata } from 'next';
 import {
-  canonicalForBusiness,
-  canonicalForCategory,
-  canonicalForCity,
-  canonicalForCityCategories,
+  buildIndexableLocaleSeoAlternates,
   canonicalForSearch,
-  canonicalForSubcategory,
   getConsumerWebOrigin,
 } from './canonical';
 import {
@@ -20,8 +16,41 @@ import {
   subcategorySeoTitle,
 } from './metadata-copy';
 import type { AppLocale } from '@/lib/locale';
+import type { PublicLocale } from '@/lib/public-locale';
 
 const NOINDEX_FOLLOW = { index: false as const, follow: true as const };
+
+function indexableOgBasics(
+  title: string,
+  description: string,
+  pageLocale: PublicLocale,
+  citySlug: string,
+  pathSegments?: string[],
+  page?: number,
+): Metadata {
+  const { canonical, languages } = buildIndexableLocaleSeoAlternates(pageLocale, {
+    citySlug,
+    pathSegments,
+    page,
+  });
+  return {
+    title,
+    description,
+    alternates: { canonical, languages },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      siteName: 'QalaGo',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
+    },
+  };
+}
 
 function ogBasics(title: string, description: string, url: string): Metadata {
   return {
@@ -50,7 +79,7 @@ export function metadataForCity(
 ): Metadata {
   const title = citySeoTitle(cityName, locale);
   const description = citySeoDescription(cityName, locale);
-  return ogBasics(title, description, canonicalForCity(citySlug));
+  return indexableOgBasics(title, description, locale, citySlug);
 }
 
 export function metadataForCityCategories(
@@ -60,7 +89,7 @@ export function metadataForCityCategories(
 ): Metadata {
   const title = cityCategoriesSeoTitle(cityName, locale);
   const description = cityCategoriesSeoDescription(cityName, locale);
-  return ogBasics(title, description, canonicalForCityCategories(citySlug));
+  return indexableOgBasics(title, description, locale, citySlug, ['categories']);
 }
 
 export function metadataForCategory(
@@ -73,8 +102,7 @@ export function metadataForCategory(
 ): Metadata {
   const title = categorySeoTitle(categoryName, cityName, locale);
   const description = categorySeoDescription(categoryName, cityName, locale);
-  const canonical = canonicalForCategory(citySlug, categorySlug, page);
-  return ogBasics(title, description, canonical);
+  return indexableOgBasics(title, description, locale, citySlug, [categorySlug], page);
 }
 
 export function metadataForSubcategory(
@@ -89,8 +117,14 @@ export function metadataForSubcategory(
 ): Metadata {
   const title = subcategorySeoTitle(subName, categoryName, cityName, locale);
   const description = subcategorySeoDescription(subName, categoryName, cityName, locale);
-  const canonical = canonicalForSubcategory(citySlug, categorySlug, subSlug, page);
-  return ogBasics(title, description, canonical);
+  return indexableOgBasics(
+    title,
+    description,
+    locale,
+    citySlug,
+    [categorySlug, subSlug],
+    page,
+  );
 }
 
 export function metadataForSearch(
@@ -104,7 +138,7 @@ export function metadataForSearch(
     locale === 'kk'
       ? `${cityName} қаласындағы мекемелерді іздеу — QalaGo.`
       : `Поиск заведений в ${cityName} на QalaGo.`;
-  const url = canonicalForSearch(citySlug, query);
+  const url = canonicalForSearch(locale, citySlug, query);
   return {
     ...ogBasics(title, description, url),
     robots: NOINDEX_FOLLOW,
@@ -133,9 +167,8 @@ export function metadataForCanonicalBusiness(
     (locale === 'kk'
       ? `${businessTitle} — QalaGo қалалық нұсқауы.`
       : `${businessTitle} — городской гид QalaGo.`);
-  const url = canonicalForBusiness(citySlug, businessSlug);
   return {
-    ...ogBasics(title, desc, url),
+    ...indexableOgBasics(title, desc, locale, citySlug, ['business', businessSlug]),
     robots: { index: true, follow: true },
   };
 }

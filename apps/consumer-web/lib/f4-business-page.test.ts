@@ -40,10 +40,10 @@ describe('F.4 canonical business routes', () => {
       '/kk/uralsk/business/coffee-house?locationId=bl-9',
     );
     vi.stubEnv('NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL', 'https://qalago.kz');
-    expect(canonicalForBusiness('uralsk', 'coffee-house')).toBe(
-      'https://qalago.kz/uralsk/business/coffee-house',
+    expect(canonicalForBusiness('ru', 'uralsk', 'coffee-house')).toBe(
+      'https://qalago.kz/ru/uralsk/business/coffee-house',
     );
-    expect(canonicalForBusiness('uralsk', 'coffee-house')).not.toContain('locationId');
+    expect(canonicalForBusiness('ru', 'uralsk', 'coffee-house')).not.toContain('locationId');
   });
 
   it('parses wrong-city mismatch payload safely', () => {
@@ -144,7 +144,8 @@ describe('F.4 canonical business routes', () => {
       { slug: 'a' },
       { slug: 'b' },
     ]);
-    expect(urls).toHaveLength(2);
+    expect(urls).toHaveLength(4);
+    expect(urls.filter((u) => u.includes('/business/a'))).toHaveLength(2);
     expect(urls.every((u) => !u.includes('locationId'))).toBe(true);
     expect(urls.every((u) => !u.includes('/businesses/'))).toBe(true);
   });
@@ -156,7 +157,10 @@ describe('F.4 canonical business routes', () => {
       categoriesByCitySlug: { uralsk: [] },
       subcategoriesByCategoryId: {},
       businessUrlsByCitySlug: {
-        uralsk: ['https://qalago.kz/uralsk/business/foo'],
+        uralsk: [
+          'https://qalago.kz/ru/uralsk/business/foo',
+          'https://qalago.kz/kk/uralsk/business/foo',
+        ],
       },
     });
     expect(entries.some((e) => e.url.includes('locationId'))).toBe(false);
@@ -182,7 +186,10 @@ describe('F.4 canonical business routes', () => {
       'ru',
     );
     expect(meta.robots).toEqual({ index: true, follow: true });
-    expect(meta.alternates?.canonical).toBe('https://qalago.kz/uralsk/business/brand');
+    expect(meta.alternates?.canonical).toBe('https://qalago.kz/ru/uralsk/business/brand');
+    expect(meta.alternates?.languages?.['x-default']).toBe(
+      'https://qalago.kz/ru/uralsk/business/brand',
+    );
   });
 
   it('RU and KK business section labels exist', () => {

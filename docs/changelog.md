@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-09-27 — F.5 Phase 2 — locale SEO implementation
+
+- **Status:** **F.5 PHASE 2 IMPLEMENTATION PASS — LOCALE SEO CONTRACT IMPLEMENTED** (automated verification PASS; **Phase 2 physical/browser QA not yet performed**).
+- **Checkpoint:** `414e51cc2fe0486e42b6d1b224b53a7680cba493`.
+- **Scope:** **`apps/consumer-web` SEO layer only** — canonical, hreflang, sitemap, Open Graph URL. **No** backend/Prisma/DB/routing redesign. **No** LocalBusiness/AggregateRating JSON-LD.
+- **Summary:** Extended **`lib/seo/canonical.ts`** with locale-prefixed indexable URLs; **`buildIndexableLocaleSeoAlternates()`** emits **canonical + `languages` (`ru`, `kk`, `x-default`→RU)** on city/categories/category/subcategory/business metadata; OG **`url`** matches locale canonical; search stays **noindex** with locale-prefixed canonical URL; sitemap emits **both `/ru/` and `/kk/`** per indexable discovery/business URL (dynamic cities; F.4 per-city business dedupe × locales); neutral/search/legacy/query variants excluded.
+- **Automated verification:** **`f5-phase2-locale-seo.test.ts`** **9 PASS**; updated F.3/F.4 SEO tests; full Consumer Web Vitest **20 files / 172 PASS**; **`tsc --noEmit` PASS**; **`next build` PASS**.
+- **Deferred:** Phase **2 physical QA** (view-source hreflang/canonical/sitemap); hreflang/sitemap production crawl validation; deferred JSON-LD types per F.4.
+- **Next:** **Physical/browser QA** for Phase 2 SEO tags; do **not** treat as full F.5 contour closure unless separately agreed.
+
+---
+
 ## 2026-09-27 — F.5 Phase 1 — physical QA closure
 
 - **Status:** **F.5 PHASE 1 PHYSICAL QA PASS — LOCALE ROUTING VERIFIED**.
