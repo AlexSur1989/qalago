@@ -341,7 +341,7 @@ Locale allowlist: **`ru`**, **`kk`** only. No redirect to user-supplied arbitrar
 ## F.7 — Legal migration
 
 **Gate:** F.7 — Legal migration  
-**Status:** **F.7 PHASE 0 PASS — LEGAL MIGRATION CONTRACT LOCKED**  
+**Status:** **F.7 IN PROGRESS** — Phases **0–3 PASS** (Phase **3:** Business Web legal host retired via redirects). Umbrella **not closed** until Phases **4–5** + final audit.  
 **Umbrella:** **IN PROGRESS / NOT CLOSED** (Phases **1+** not started)
 
 **Authority:** This section is the **canonical F.7 contract**. Other docs **reference** this section; they must not duplicate full contract text.
@@ -482,14 +482,14 @@ Web authentication; favorites; Consumer Web interactive map; City Discovery; Hom
 | **0** | Contract lock — **docs only** | **PASS** |
 | **1** | Consumer Web legal routes/pages (static migration from Business Web pattern) | **PASS** |
 | **2** | PublicShell / footer / config **same-origin** migration | **PASS** |
-| **3** | Business Web legacy legal-route **redirects** to Consumer Web origin | Not started |
+| **3** | Business Web legacy legal-route **redirects** to Consumer Web origin | **PASS** |
 | **4** | Legal page localization chrome + SEO metadata/robots/sitemap policy implementation | Not started |
 | **5** | Cross-app + store-compliance regression + physical browser QA | Not started |
 | **Final** | Closure audit + docs (**F.7 CLOSED / PASS**) | Not started |
 
 **Do not** start Phase **1** without explicit approval.
 
-**Next:** **F.7 Phase 1** — Consumer Web legal routes — **requires explicit approval**.
+**Next:** **F.7 Phase 4** — legal localization/SEO completion — **requires explicit approval**.
 
 ---
 

@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — F.7 Phase 3 — Business Web legacy legal redirects
+
+- **Status:** **F.7 PHASE 3 PASS — BUSINESS WEB LEGAL HOST RETIRED**. F.7 umbrella: **IN PROGRESS / NOT CLOSED**. **F.8 NOT STARTED**.
+- **Checkpoint:** Pre-Phase-3 HEAD **`6e314045054921a8d19f89f1054fd0bf1d8b646c`**; implementation commit in git log immediately after.
+- **Scope:** Business Web only — `/privacy`, `/terms`, `/account-deletion` **permanentRedirect** to Consumer Web origin via `getConsumerWebOrigin()` (`NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL` → `NEXT_PUBLIC_CONSUMER_WEB_URL` → `http://localhost:3005`); **no** Consumer Web page changes, **no** `/help` redirect, **no** Flutter/API/Prisma, **no** Phase 4–5.
+- **Summary:** Legacy Business Web legal routes no longer render competing canonical documents; `publicLegalUrl()` for migrated paths aligns with Consumer Web origin. Business Web legal/F.7 tests PASS; **`next build`** OK. Full Business Web vitest **201/203** — **2 pre-existing** hardcoded-UI failures in `app/business/[id]/reviews/page.tsx` (unrelated to F.7). Consumer Web F.7 regression **17/17** PASS.
+- **Deferred:** Phase **4** localization/SEO; Phase **5** cross-app + physical browser QA; dead `legal-page-layout` / placeholder cleanup on Business Web; production legal counsel approval.
+- **Next:** **F.7 Phase 4** — legal localization/SEO completion — **explicit approval required** — **do not auto-start**.
+
+---
+
 ## 2026-09-28 — F.7 Phase 2 — Consumer Web same-origin legal links
 
 - **Status:** **F.7 PHASE 2 PASS — CONSUMER WEB LEGAL LINKS MIGRATED SAME-ORIGIN**. F.7 umbrella: **IN PROGRESS / NOT CLOSED**. **F.8 NOT STARTED**.

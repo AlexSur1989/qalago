@@ -3,6 +3,8 @@
  * Production values must be set before store submission — see docs/legal-review-required.md
  */
 
+import { consumerWebLegalUrl } from './consumer-web-legal-redirect';
+
 export type LegalPlaceholderKey =
   | 'operatorName'
   | 'legalAddress'
@@ -24,7 +26,7 @@ export const LEGAL_PLACEHOLDERS: Record<LegalPlaceholderKey, string> = {
     process.env.NEXT_PUBLIC_LEGAL_JURISDICTION ?? '[LEGAL_JURISDICTION]',
 };
 
-/** Intended production public site (pages may be hosted from business-web until qalago.kz deploy). */
+/** Store/compliance absolute URLs (production default qalago.kz). */
 export const publicSiteBaseUrl =
   (process.env.NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL ?? 'https://qalago.kz').replace(
     /\/$/,
@@ -34,6 +36,9 @@ export const publicSiteBaseUrl =
 export type PublicLegalPath = '/privacy' | '/terms' | '/account-deletion' | '/support';
 
 export function publicLegalUrl(path: PublicLegalPath): string {
+  if (path === '/privacy' || path === '/terms' || path === '/account-deletion') {
+    return consumerWebLegalUrl(path);
+  }
   return `${publicSiteBaseUrl}${path}`;
 }
 
