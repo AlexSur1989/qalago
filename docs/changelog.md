@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — F.7 Phase 5 — Cross-app regression and physical browser QA
+
+- **Status:** **F.7 PHASE 5 PASS — CROSS-APP REGRESSION AND PHYSICAL BROWSER QA VERIFIED**. F.7 umbrella: **IN PROGRESS / NOT CLOSED** (final umbrella closure audit not performed). **F.8 NOT STARTED**.
+- **Checkpoint:** Phase **5** sign-off at HEAD **`30ab33f033a6dca52dd57c90e263559081b08a98`** (includes Hotfix **1** commit); pre–Phase **5** automated gate baseline **`bc26dae5fcaf3727a88407a907b412fc7d19d96e`**.
+- **Scope:** QA sign-off only — records user physical browser QA (Chrome, Consumer Web **localhost:3005**, Business Web **localhost:3003**); **no** application code in this entry.
+- **Summary:** Automated Phase **5** gate PASS (**236/236** Consumer Web vitest at hotfix HEAD). Physical QA: Consumer legal pages, Business Web **308** redirects, robots/sitemap, locale-prefixed legal URLs **404** — PASS. Initial PublicShell logo defect (**/ru/privacy**) found in physical QA; **Hotfix 1** (`parseCitySlugFromPathname` + legal roots) corrected; first user retest failed due to **stale `next start` on :3005**; after rebuild/restart from hotfix HEAD, RU/KK logo → **`/ru|kk/uralsk`**, categories → **`/ru|kk/uralsk/categories`**, footer legal links locale-neutral — PASS. KK chrome PASS; legal body remained Russian per contract.
+- **Deferred:** **F.7 final umbrella closure** (explicit approval); production legal/content approval (**`docs/legal-review-required.md`**); `/help` vs `/support`; F.8 OG pipeline; Business Web unrelated **201/203** UI-guard debt.
+- **Next:** **F.7 final umbrella closure audit** — **explicit approval required** — **do not auto-start**. **Do not** claim **F.7 CLOSED / PASS** or production legal approval.
+
+---
+
 ## 2026-09-28 — F.7 Phase 5 hotfix — legal PublicShell navigation
 
 - **Status:** **F.7 PHASE 5 HOTFIX — LEGAL PUBLICSHELL NAVIGATION CORRECTED**. F.7 umbrella: **IN PROGRESS / NOT CLOSED**; Phase **5 physical QA not closed** (retest required). **F.8 NOT STARTED**.
