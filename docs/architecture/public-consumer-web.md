@@ -4,7 +4,7 @@
 
 - Path: `apps/consumer-web`
 - Port: **3005** (`npm run dev:consumer`)
-- Stack: Next.js 15 App Router, React 19. **F.5 Phases 1–1.2** implement indexable **`/ru/`** / **`/kk/`** URL routing with URL-authoritative locale; locale-neutral routes are compatibility entries selected by `qalago_locale` (see § F.5). Phase 2 SEO is not started.
+- Stack: Next.js 15 App Router, React 19. **F.5 Phase 1** implements indexable **`/ru/`** / **`/kk/`** URL routing with URL-authoritative locale; locale-neutral routes are compatibility entries (see § F.5). **F.5 Phase 2** locale SEO (canonical, hreflang, sitemap) **implemented and physically verified** (local QA — **`docs/changelog.md`**).
 
 ## F.1 foundation
 
@@ -107,7 +107,7 @@ Static App Router segments (e.g. `categories/`, `search/`) take precedence over 
 
 ## F.5 locale SEO URL architecture
 
-**Status:** **F.5 PHASE 0 PASS**; **Phase 1 VERIFIED / PHYSICAL QA PASS**; **Phase 2 IMPLEMENTED** — locale-prefixed canonical, hreflang (`ru`/`kk`/`x-default`→RU), sitemap RU+KK pairs (automated verification PASS; **Phase 2 physical QA not yet performed**).
+**Status:** **F.5 PHASE 0 PASS**; **Phase 1 VERIFIED / PHYSICAL QA PASS**; **Phase 2 VERIFIED / PHYSICAL QA PASS** — locale-prefixed canonical, hreflang (`ru`/`kk`/`x-default`→RU), sitemap RU+KK pairs, OG URL aligned (implementation + automated tests; **physical browser QA PASS** — **`docs/changelog.md`**). **Full F.5 umbrella closure** not implied unless separately agreed.
 
 **Authority:** This section is the **canonical F.5 contract**. [api-contracts.md](./api-contracts.md) — no Catalog API changes required for locale routing.
 

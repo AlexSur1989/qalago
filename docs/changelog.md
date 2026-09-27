@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-27 — F.5 Phase 2 — physical QA closure
+
+- **Status:** **F.5 PHASE 2 PHYSICAL QA PASS — LOCALE SEO VERIFIED**.
+- **Checkpoint:** `ab3b86adfc157bfd935c1f6ebc596b37277cf65b`.
+- **Scope:** **Documentation only** — records user-verified manual browser QA (Chrome, Consumer Web **localhost:3005**). **No** application/test/backend changes.
+- **Summary:** View-source and sitemap checks confirm locale-prefixed **canonical** on **`/ru/aktobe`** and **`/kk/aktobe`**; city **hreflang** (`ru`, `kk`, **`x-default`→RU**) reciprocal on KK city page; business canonical and hreflang on **`/kk/aktobe/business/aktobe-coffee-lab`**; search **`/kk/aktobe/search?q=coffee`** remains **`noindex, follow`**; **`/sitemap.xml`** loads with **`/ru/`** and **`/kk/`** entries (incl. business RU+KK), excludes neutral **`/aktobe`**, **`/search`**, **`/businesses/`**, and query strings; **OG `url`** matches KK business canonical; category pagination **`/kk/aktobe/bars?page=2`** canonical preserves **`?page=2`** with locale prefix; neutral **`/aktobe`** → **`/ru/aktobe`** redirect verified.
+- **Physical QA limitations (non-blocking):** real **`?locationId=`** branch context on business page — **not** manually exercised (no branch selector / usable **`locationId`** in session); automated F.4/F.5 **`locationId`** canonical exclusion regressions remain **PASS**.
+- **Local dev note (not a product defect):** stale **`apps/consumer-web/.next`** cache caused **`Cannot find module './901.js'`** before QA; resolved by stopping dev server, deleting **only** **`.next`**, and restarting — **no** source change.
+- **Deferred:** Full **F.5** umbrella closure only if separately agreed; production crawl validation; deferred JSON-LD types per F.4; Phase **1** manual gaps unchanged (legacy **`/businesses/{id}`** redirect).
+- **Next:** Follow roadmap / explicit approval — **do not** auto-start another F.5 phase or contour.
+
+---
+
 ## 2026-09-27 — F.5 Phase 2 — locale SEO implementation
 
 - **Status:** **F.5 PHASE 2 IMPLEMENTATION PASS — LOCALE SEO CONTRACT IMPLEMENTED** (automated verification PASS; **Phase 2 physical/browser QA not yet performed**).
