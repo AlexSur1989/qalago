@@ -6,10 +6,22 @@
 
 ---
 
+## 2026-09-27 — F.5 locale UI hotfix — PublicShell URL locale
+
+- **Status:** **F.5 LOCALE UI HOTFIX IMPLEMENTATION PASS — PUBLICSHELL URL LOCALE FIXED** (automated verification PASS; **hotfix physical/browser QA not yet performed**).
+- **Checkpoint:** (this commit — see git log SHA).
+- **Scope:** **`apps/consumer-web` only** — **`PublicShell`** client labels/links. **No** SEO/routing/backend/Prisma/Flutter changes.
+- **Summary:** Post–Phase 2 physical QA regression: after soft **RU → KK** navigation, header/footer shell labels (**`Главная`**, **`Категории`**, etc.) stayed RU while URL was **`/kk/…`**. Root cause: **`UI_LABELS[layoutLocale]`** from persistent root layout prop; links already used pathname locale. Fix: **`resolveEffectivePublicLocale(pathname, layoutFallback)`** (same contract as Phase **1.4** **`LocaleSwitcher`**) drives **`UI_LABELS`**, nav links, and **`CitySwitcher`** locale/labels. Phase **2** SEO physical QA remains **PASS**.
+- **Automated verification:** **`f5-public-shell-locale.test.ts`**; full Consumer Web Vitest; **`tsc --noEmit`**; **`next build`** (see commit report).
+- **Deferred:** Hotfix physical QA; optional **`<html lang>`** alignment with URL locale on soft nav (non-blocking follow-up); full F.5 umbrella closure only if separately agreed.
+- **Next:** **Physical/browser QA** for shell label switch (**RU ↔ KK** without reload); do **not** auto-start another contour.
+
+---
+
 ## 2026-09-27 — F.5 Phase 2 — physical QA closure
 
 - **Status:** **F.5 PHASE 2 PHYSICAL QA PASS — LOCALE SEO VERIFIED**.
-- **Checkpoint:** `ab3b86adfc157bfd935c1f6ebc596b37277cf65b`.
+- **Checkpoint:** `7968113aa88eee1622388adc337dba1d305e6347`.
 - **Scope:** **Documentation only** — records user-verified manual browser QA (Chrome, Consumer Web **localhost:3005**). **No** application/test/backend changes.
 - **Summary:** View-source and sitemap checks confirm locale-prefixed **canonical** on **`/ru/aktobe`** and **`/kk/aktobe`**; city **hreflang** (`ru`, `kk`, **`x-default`→RU**) reciprocal on KK city page; business canonical and hreflang on **`/kk/aktobe/business/aktobe-coffee-lab`**; search **`/kk/aktobe/search?q=coffee`** remains **`noindex, follow`**; **`/sitemap.xml`** loads with **`/ru/`** and **`/kk/`** entries (incl. business RU+KK), excludes neutral **`/aktobe`**, **`/search`**, **`/businesses/`**, and query strings; **OG `url`** matches KK business canonical; category pagination **`/kk/aktobe/bars?page=2`** canonical preserves **`?page=2`** with locale prefix; neutral **`/aktobe`** → **`/ru/aktobe`** redirect verified.
 - **Physical QA limitations (non-blocking):** real **`?locationId=`** branch context on business page — **not** manually exercised (no branch selector / usable **`locationId`** in session); automated F.4/F.5 **`locationId`** canonical exclusion regressions remain **PASS**.

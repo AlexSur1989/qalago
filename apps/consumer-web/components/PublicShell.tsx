@@ -7,8 +7,7 @@ import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { CitySwitcher } from '@/components/CitySwitcher';
 import type { CityDto } from '@/lib/catalog-api';
 import { legalPageUrl } from '@/lib/legal-links';
-import { parsePublicLocaleFromPathname } from '@/lib/locale-path';
-import { DEFAULT_PUBLIC_LOCALE } from '@/lib/public-locale';
+import { resolveEffectivePublicLocale } from '@/lib/locale-path';
 import { DEFAULT_CITY_SLUG } from '@/lib/public-config';
 import {
   cityCategoriesPath,
@@ -26,9 +25,9 @@ export function PublicShell({
   cities: CityDto[];
   children: React.ReactNode;
 }) {
-  const labels = UI_LABELS[locale];
   const pathname = usePathname() ?? '/';
-  const routeLocale = parsePublicLocaleFromPathname(pathname) ?? DEFAULT_PUBLIC_LOCALE;
+  const activeLocale = resolveEffectivePublicLocale(pathname, locale);
+  const labels = UI_LABELS[activeLocale];
   const citySlug = parseCitySlugFromPathname(pathname) ?? DEFAULT_CITY_SLUG;
 
   return (
@@ -36,7 +35,7 @@ export function PublicShell({
       <header className="public-shell__header">
         <div className="public-shell__brand">
           <Link
-            href={cityHomePath(routeLocale, citySlug)}
+            href={cityHomePath(activeLocale, citySlug)}
             className="public-shell__logo"
             aria-label={labels.navHome}
           >
@@ -44,14 +43,14 @@ export function PublicShell({
           </Link>
         </div>
         <nav className="public-shell__nav" aria-label={labels.mainNavAria}>
-          <Link href={cityHomePath(routeLocale, citySlug)}>{labels.navHome}</Link>
-          <Link href={cityCategoriesPath(routeLocale, citySlug)}>{labels.categories}</Link>
+          <Link href={cityHomePath(activeLocale, citySlug)}>{labels.navHome}</Link>
+          <Link href={cityCategoriesPath(activeLocale, citySlug)}>{labels.categories}</Link>
         </nav>
         <div className="public-shell__tools">
           <CitySwitcher
             cities={cities}
             currentCitySlug={citySlug}
-            locale={routeLocale}
+            locale={activeLocale}
             labels={labels}
           />
           <Suspense fallback={null}>

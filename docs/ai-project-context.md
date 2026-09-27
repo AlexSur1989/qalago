@@ -10,7 +10,7 @@
 |-------|--------|
 | **Last completed architecture decision gate** | **FUTURE EXTENSIBILITY ARCHITECTURE GATE — AGREED / DOCUMENTED** — **`docs/architecture/future-extensibility-contracts.md`** |
 | **F.4** | **CLOSED / PASS — PUBLIC BUSINESS PAGES FINALIZED** (Phases **0.1** → **2.1** + physical QA — **`docs/changelog.md`**) |
-| **F.5** | **Phase 0 PASS**; **Phase 1 VERIFIED / PHYSICAL QA PASS**; **Phase 1.1–1.4 PASS**; **Phase 2 VERIFIED / PHYSICAL QA PASS** — locale canonical, hreflang, sitemap RU/KK (implementation **`3fc822f…`**; physical QA **`docs/changelog.md`**). Manual gaps unchanged: legacy **`/businesses/{id}`** redirect (Phase 1); real **`locationId`** UI (Phase 1 + Phase 2 SEO session). **Full F.5 umbrella not auto-closed.** |
+| **F.5** | **Phase 0 PASS**; **Phase 1 VERIFIED / PHYSICAL QA PASS**; **Phase 1.1–1.4 PASS**; **Phase 2 VERIFIED / PHYSICAL QA PASS** (SEO). **Locale UI hotfix IMPLEMENTED** — **`PublicShell`** URL-authoritative labels (post–Phase 2 regression; automated PASS; **hotfix physical QA pending**). Manual gaps unchanged: legacy **`/businesses/{id}`** redirect; real **`locationId`** UI. **Full F.5 umbrella not auto-closed.** |
 | **F.4 implementation SHA** | `52dfe1c4c32a906c964ee3e34470a511864faa84` (Phase 2); hotfix `678cb23a8e9004aa9be3aea170affaad68eb045e` |
 | **F.4 Phase 1 backend SHA** | `3bcd5cac785c5fbc9c5b5f623c96359645cf1854` |
 | **Last completed architecture contour** | **6.12A PASS — BUSINESSLOCATION ARCHITECTURE FINALIZED** (umbrella — see **`docs/changelog.md`** entry **2026-09-27**) |
@@ -41,7 +41,7 @@
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending (6.12A)** | **None** — contour closed (**5E** finalized) |
-| **Next** | Roadmap / explicit approval only — **no** auto-start of further F.5 phases or contours; full F.5 closure only if separately agreed |
+| **Next** | **F.5 PublicShell hotfix physical QA** (RU ↔ KK shell labels without reload); then roadmap / explicit approval only — full F.5 closure only if separately agreed |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -49,7 +49,7 @@
 
 **6.12A state:** **CLOSED** — BusinessLocation architecture finalized (**A.1–A.9.4.5E**). **Business** = brand; **BusinessLocation** = sole physical/city authority; retired **Business** physical columns including **`cityId`**; contact defaults on **Business** per policy. Grains and RBAC per **`docs/changelog.md`** umbrella entry **2026-09-27**. Dev **`qalago_dev`** baseline: **109 Business / 110 BL / 109 primary**; integrity PASS; migrations **47/47**. Pre-5D2 backup preserved: `infra/local-backups/qalago_dev_native_pg18_pre_5d2_business_cityid_retirement_20260926T131630Z.dump` (596125 bytes; uncommitted). **`a945e-*`** helpers remain local/untracked.
 
-**F.5:** Phase **0 PASS**; Phase **1** routing **VERIFIED / PHYSICAL QA PASS**; Phase **2** locale SEO **VERIFIED / PHYSICAL QA PASS** (canonical, hreflang, sitemap, OG URL — **`lib/seo/canonical.ts`**, **`page-metadata.ts`**, sitemap builders). No backend change. **Full F.5 contour closure** not declared unless separately agreed.
+**F.5:** Phase **0 PASS**; Phase **1** routing **VERIFIED / PHYSICAL QA PASS**; Phase **2** locale SEO **VERIFIED / PHYSICAL QA PASS**; **PublicShell locale UI hotfix IMPLEMENTED** ( **`resolveEffectivePublicLocale`** for shell **`UI_LABELS`** — see changelog). Hotfix physical QA **pending**. No backend change. **Full F.5 contour closure** not declared unless separately agreed.
 
 **Post-6.12A candidates (documented — not auto-started):** **6.12B** / Catalog Import; remaining contours — **`docs/changelog.md`** / architecture docs.
 
@@ -100,6 +100,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 - **F.4** — **CLOSED / PASS** — canonical public Business pages implemented + physically verified; **LocalBusiness** / **AggregateRating** JSON-LD still deferred.
 - **F.5 Phase 1** — **VERIFIED / PHYSICAL QA PASS** — locale routing foundation in Consumer Web.
 - **F.5 Phase 2** — **VERIFIED / PHYSICAL QA PASS** — locale canonical, hreflang, dual-locale sitemap, OG URL (see changelog Phase 2 physical QA entry).
+- **F.5 locale UI hotfix** — **IMPLEMENTED / AUTOMATED VERIFIED** — PublicShell URL-authoritative **`UI_LABELS`**; **physical QA pending**.
 
 ## BusinessLocation track
 
