@@ -9,7 +9,7 @@
 ## 2026-09-27 — F.6 Phase 2 — Flutter deep link navigation
 
 - **Status:** **F.6 PHASE 2 IMPLEMENTATION PASS — FLUTTER DEEP LINK NAVIGATION INTEGRATED**. F.6 umbrella: **IN PROGRESS / NOT CLOSED**.
-- **Checkpoint:** *(record after implementation commit)*.
+- **Checkpoint:** `a94bc23002b5ecf6df483c7a878b581cc464baef`.
 - **Scope:** Mobile-only — **`app_links`** receiver; **`PublicDeepLinkCoordinator`** / **`PublicDeepLinkExecutor`**; session city (**`deepLinkSessionCitySlugProvider`**, **`discoveryCitySlugProvider`**); catalog **`fetchBusinessBySlug`**; discovery surfaces wired to link city context; **53** deep-link tests (parser + coordinator + executor). **No** Consumer Web middleware, **no** `/.well-known`, **no** Android autoVerify / iOS Associated Domains, **no** API/Prisma/Notifications E changes.
 - **Summary:** Canonical HTTPS URIs → Phase **1** parser → typed target → deferred execution after onboarding → locale persist (**ru/kk**); business slug resolution with link **`citySlug`**; category/subcategory slug → existing routes; invalid/unsupported links no-op without locale/city mutation.
 - **Deferred:** F.6 Phases **3–6** (Web association, manifests, physical OS link QA).
