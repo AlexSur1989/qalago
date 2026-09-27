@@ -1,5 +1,10 @@
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
-import { legalPageUrl } from './legal-links';
+import { UI_LABELS } from './locale';
+import {
+  consumerLegalHref,
+  isSameOriginLegalLink,
+  legalPageUrl,
+} from './legal-links';
 
 describe('legal-links', () => {
   const env = process.env;
@@ -12,8 +17,39 @@ describe('legal-links', () => {
     process.env = env;
   });
 
-  it('builds privacy URL from public base', () => {
+  it('privacy/terms/account-deletion are same-origin paths', () => {
+    expect(legalPageUrl('privacy')).toBe('/privacy');
+    expect(legalPageUrl('terms')).toBe('/terms');
+    expect(legalPageUrl('accountDeletion')).toBe('/account-deletion');
+    expect(consumerLegalHref('privacy')).toBe('/privacy');
+  });
+
+  it('migrated legal links do not use Business Web origin', () => {
+    process.env.NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL = 'http://localhost:3003';
+    expect(legalPageUrl('privacy')).toBe('/privacy');
+    expect(legalPageUrl('terms')).not.toContain('3003');
+    expect(legalPageUrl('accountDeletion')).not.toContain('localhost');
+  });
+
+  it('help still uses configured external public base (unchanged semantics)', () => {
     process.env.NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL = 'https://qalago.kz';
-    expect(legalPageUrl('privacy')).toBe('https://qalago.kz/privacy');
+    expect(legalPageUrl('help')).toBe('https://qalago.kz/help');
+    expect(isSameOriginLegalLink('help')).toBe(false);
+  });
+
+  it('isSameOriginLegalLink identifies migrated pages only', () => {
+    expect(isSameOriginLegalLink('privacy')).toBe(true);
+    expect(isSameOriginLegalLink('terms')).toBe(true);
+    expect(isSameOriginLegalLink('accountDeletion')).toBe(true);
+    expect(isSameOriginLegalLink('help')).toBe(false);
+  });
+
+  it('footer labels remain defined for RU and KK', () => {
+    expect(UI_LABELS.ru.footerPrivacy).toBeTruthy();
+    expect(UI_LABELS.ru.footerTerms).toBeTruthy();
+    expect(UI_LABELS.ru.footerAccountDeletion).toBeTruthy();
+    expect(UI_LABELS.kk.footerPrivacy).toBeTruthy();
+    expect(UI_LABELS.kk.footerTerms).toBeTruthy();
+    expect(UI_LABELS.kk.footerAccountDeletion).toBeTruthy();
   });
 });

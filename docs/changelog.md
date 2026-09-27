@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — F.7 Phase 2 — Consumer Web same-origin legal links
+
+- **Status:** **F.7 PHASE 2 PASS — CONSUMER WEB LEGAL LINKS MIGRATED SAME-ORIGIN**. F.7 umbrella: **IN PROGRESS / NOT CLOSED**. **F.8 NOT STARTED**.
+- **Checkpoint:** Pre-Phase-2 HEAD **`4426de41cf88f202bf680c80bf0560f5cb47862f`**; implementation commit in git log immediately after.
+- **Scope:** Consumer Web only — PublicShell footer `/privacy`, `/terms`, `/account-deletion` via same-origin `Link`; `legal-links.ts` + docs; **help** still external via `getPublicSiteBaseUrl()`; **no** Business Web, Flutter, API, Phase 3–5.
+- **Summary:** Footer no longer uses Business Web as legal host for migrated pages; `NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL` retained for deferred `/help`. Consumer Web **211/211** vitest; **`next build`** OK.
+- **Deferred:** Phase **3** Business Web redirects; Phase **4** SEO; Phase **5** physical QA; `/support` architecture.
+- **Next:** **F.7 Phase 3** — Business Web legacy redirects — **explicit approval required** — **do not auto-start**.
+
+---
+
 ## 2026-09-28 — F.7 Phase 1 — Consumer Web legal routes
 
 - **Status:** **F.7 PHASE 1 PASS — CONSUMER WEB LEGAL ROUTES IMPLEMENTED**. F.7 umbrella: **IN PROGRESS / NOT CLOSED**. **F.8 NOT STARTED**.

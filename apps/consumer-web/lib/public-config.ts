@@ -11,8 +11,8 @@ export function getApiOrigin(): string {
 }
 
 /**
- * Canonical public site base for legal/store links until F.7 migrates pages here.
- * Dev default: business-web (hosts /privacy, /terms, /account-deletion).
+ * External public-site base for deferred Consumer Web links (e.g. Business Web /help).
+ * F.7 canonical legal pages (/privacy, /terms, /account-deletion) are same-origin on Consumer Web.
  */
 export function getPublicSiteBaseUrl(): string {
   const raw =

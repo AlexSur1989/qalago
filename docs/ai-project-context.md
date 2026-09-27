@@ -12,7 +12,7 @@
 | **F.4** | **CLOSED / PASS — PUBLIC BUSINESS PAGES FINALIZED** (Phases **0.1** → **2.1** + physical QA — **`docs/changelog.md`**) |
 | **F.5** | **CLOSED / PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED** (Phases **0**, **1** + **1.1–1.4**, **2**, PublicShell hotfix — **`docs/changelog.md`** umbrella entry **2026-09-27**). Non-blocking deferred: legacy **`/businesses/{id}`** / real **`locationId`** manual QA gaps; **`<html lang>`** on soft nav (not verified). |
 | **F.6** | **CLOSED / PASS — DEEP LINKS ARCHITECTURE FINALIZED** (Phases **0–6**). Production Verified App Links / Universal Links: **external verification debt** (not claimed). |
-| **F.7** | **PHASE 1 PASS — CONSUMER WEB LEGAL ROUTES IMPLEMENTED**. Umbrella **IN PROGRESS / NOT CLOSED** (Phases **2+** not started). Contract: **`docs/architecture/public-consumer-web.md`** § **F.7**. |
+| **F.7** | **PHASE 2 PASS — CONSUMER WEB LEGAL LINKS SAME-ORIGIN**. Umbrella **IN PROGRESS / NOT CLOSED** (Phases **3+** not started). Contract: **`docs/architecture/public-consumer-web.md`** § **F.7**. |
 | **F.4 implementation SHA** | `52dfe1c4c32a906c964ee3e34470a511864faa84` (Phase 2); hotfix `678cb23a8e9004aa9be3aea170affaad68eb045e` |
 | **F.4 Phase 1 backend SHA** | `3bcd5cac785c5fbc9c5b5f623c96359645cf1854` |
 | **Last completed architecture contour** | **6.12A PASS — BUSINESSLOCATION ARCHITECTURE FINALIZED** (umbrella — see **`docs/changelog.md`** entry **2026-09-27**) |
@@ -43,7 +43,7 @@
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending (6.12A)** | **None** — contour closed (**5E** finalized) |
-| **Next** | **F.7 Phase 2** — PublicShell/footer same-origin — **explicit approval only**; optional non-blocking **`<html lang>`** URL alignment on soft nav |
+| **Next** | **F.7 Phase 3** — Business Web legacy legal redirects — **explicit approval only**; optional non-blocking **`<html lang>`** URL alignment on soft nav |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -53,11 +53,11 @@
 
 **F.5:** **CLOSED / PASS** — locale SEO URL architecture implemented and verified (routing, SEO, PublicShell URL-locale UI). Milestone: **F.5 PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED**. Non-blocking: **`<html lang>`** vs URL on soft nav (not verified); Phase **1** manual QA gaps (legacy redirect, **`locationId`** UI). No backend change.
 
-**Consumer Web F-series (canonical order):** F.5 **CLOSED** → **F.6 CLOSED / PASS** → **F.7 IN PROGRESS** (Phase **1** done; **2+** not started) → **F.8 NOT STARTED** — **`docs/architecture/public-consumer-web.md`** § **F.7**.
+**Consumer Web F-series (canonical order):** F.5 **CLOSED** → **F.6 CLOSED / PASS** → **F.7 IN PROGRESS** (Phases **0–2** done; **3+** not started) → **F.8 NOT STARTED** — **`docs/architecture/public-consumer-web.md`** § **F.7**.
 
 **F.6 (closed):** Canonical HTTPS → parser → coordinator → session city / locale → go_router; Web `/.well-known`; Android/iOS configured. **Production** association verification deferred (Play SHA / Apple Team ID / device QA). Android release debug signing remains general release debt.
 
-**F.7 (current):** Phase **1** — Consumer Web serves **`/privacy`**, **`/terms`**, **`/account-deletion`** (static migration). PublicShell footer still points at configured external legal host until Phase **2**. Production legal copy gate unchanged.
+**F.7 (current):** Phases **1–2** — Consumer Web serves legal pages; PublicShell footer uses same-origin **`/privacy`**, **`/terms`**, **`/account-deletion`**. **`/help`** footer link still uses external public base (deferred). Production legal copy gate unchanged.
 
 **Post-6.12A candidates (documented — not auto-started):** **6.12B** / Catalog Import; remaining contours — **`docs/changelog.md`** / architecture docs.
 

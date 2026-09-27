@@ -1,6 +1,6 @@
 /**
  * Canonical public consumer-web origin (Stage 6.11F.3).
- * Distinct from business-web legal host in getPublicSiteBaseUrl().
+ * Distinct from getPublicSiteBaseUrl() (external/deferred links such as /help).
  */
 import {
   DEFAULT_PUBLIC_LOCALE,
