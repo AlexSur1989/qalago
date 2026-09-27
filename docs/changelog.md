@@ -9,7 +9,7 @@
 ## 2026-09-27 — F.5 locale UI hotfix — PublicShell URL locale
 
 - **Status:** **F.5 LOCALE UI HOTFIX IMPLEMENTATION PASS — PUBLICSHELL URL LOCALE FIXED** (automated verification PASS; **hotfix physical/browser QA not yet performed**).
-- **Checkpoint:** (this commit — see git log SHA).
+- **Checkpoint:** `e7bb8e1243b3fba541d376812fb6ada99800005c`.
 - **Scope:** **`apps/consumer-web` only** — **`PublicShell`** client labels/links. **No** SEO/routing/backend/Prisma/Flutter changes.
 - **Summary:** Post–Phase 2 physical QA regression: after soft **RU → KK** navigation, header/footer shell labels (**`Главная`**, **`Категории`**, etc.) stayed RU while URL was **`/kk/…`**. Root cause: **`UI_LABELS[layoutLocale]`** from persistent root layout prop; links already used pathname locale. Fix: **`resolveEffectivePublicLocale(pathname, layoutFallback)`** (same contract as Phase **1.4** **`LocaleSwitcher`**) drives **`UI_LABELS`**, nav links, and **`CitySwitcher`** locale/labels. Phase **2** SEO physical QA remains **PASS**.
 - **Automated verification:** **`f5-public-shell-locale.test.ts`**; full Consumer Web Vitest; **`tsc --noEmit`**; **`next build`** (see commit report).
