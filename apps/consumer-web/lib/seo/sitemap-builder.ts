@@ -1,7 +1,6 @@
 import type { CategoryDto, CityDto, SubcategoryDto } from '@/lib/catalog-api';
-import {
-  localizedIndexableSitemapUrls,
-} from './canonical';
+import { PUBLIC_LEGAL_ROOT_SEGMENTS } from '@/lib/legal-paths';
+import { canonicalForLegalPage, localizedIndexableSitemapUrls } from './canonical';
 
 export type SitemapEntry = { url: string; lastModified?: Date };
 
@@ -44,4 +43,25 @@ export function buildDiscoverySitemapEntries(input: {
   }
 
   return entries;
+}
+
+/** F.7 — one locale-neutral URL per legal document (no /ru|kk/ duplicates). */
+export function buildLegalSitemapEntries(): SitemapEntry[] {
+  return PUBLIC_LEGAL_ROOT_SEGMENTS.map((segment) => ({
+    url: canonicalForLegalPage(segment),
+  }));
+}
+
+export function mergeDiscoveryAndLegalSitemapEntries(
+  discovery: SitemapEntry[],
+  legal: SitemapEntry[] = buildLegalSitemapEntries(),
+): SitemapEntry[] {
+  const seen = new Set<string>();
+  const merged: SitemapEntry[] = [];
+  for (const entry of [...discovery, ...legal]) {
+    if (seen.has(entry.url)) continue;
+    seen.add(entry.url);
+    merged.push(entry);
+  }
+  return merged;
 }

@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — F.7 Phase 4 — Legal localization and SEO completion
+
+- **Status:** **F.7 PHASE 4 PASS — LEGAL LOCALIZATION AND SEO COMPLETED**. F.7 umbrella: **IN PROGRESS / NOT CLOSED**. **F.8 NOT STARTED**.
+- **Checkpoint:** Pre-Phase-4 HEAD **`0aa29641cc0de1ab0da5039fd30905e34684acb4`**; implementation commit in git log immediately after.
+- **Scope:** Consumer Web only — locale-neutral **`/privacy`**, **`/terms`**, **`/account-deletion`** canonical metadata (no RU/KK hreflang); RU/KK **chrome** via `LEGAL_UI` + cookie preference; legal **body** remains Russian (not machine-translated); sitemap adds three canonical legal URLs once; robots indexable; **no** F.8 OG pipeline; **no** Business Web/Flutter/API changes.
+- **Summary:** `metadataForLegalPage`, `canonicalForLegalPage`, `buildLegalSitemapEntries`; `LegalPageLayout` uses localized headings; Consumer Web **222/222** vitest; **`next build`** OK. Business Web redirect tests **11/11** PASS (unchanged redirects).
+- **Deferred:** Phase **5** cross-app + physical browser QA; counsel-approved Kazakh legal body; F.7 final closure; Business Web pre-existing UI-guard failures (reviews page).
+- **Next:** **F.7 Phase 5** — regression + physical browser QA — **explicit approval required** — **do not auto-start**.
+
+---
+
 ## 2026-09-28 — F.7 Phase 3 — Business Web legacy legal redirects
 
 - **Status:** **F.7 PHASE 3 PASS — BUSINESS WEB LEGAL HOST RETIRED**. F.7 umbrella: **IN PROGRESS / NOT CLOSED**. **F.8 NOT STARTED**.

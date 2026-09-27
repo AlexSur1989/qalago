@@ -1,16 +1,19 @@
+import type { Metadata } from 'next';
 import { LegalPageLayout } from '@/components/LegalPageLayout';
 import { LEGAL_PLACEHOLDERS } from '@/lib/legal-config';
+import { getServerLocale } from '@/lib/locale-server';
+import { metadataForLegalPage } from '@/lib/seo/page-metadata';
 
-export const metadata = {
-  title: 'Политика конфиденциальности — QalaGo',
-  description: 'Политика конфиденциальности сервиса QalaGo',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getServerLocale();
+  return metadataForLegalPage('privacy', locale);
+}
 
 export default function PrivacyPage() {
   const p = LEGAL_PLACEHOLDERS;
 
   return (
-    <LegalPageLayout title="Политика конфиденциальности" lastUpdated="2026-09-10">
+    <LegalPageLayout page="privacy" lastUpdated="2026-09-10">
       <p>
         Настоящая Политика описывает, как сервис <strong>QalaGo</strong> обрабатывает данные
         пользователей и бизнеса. Текст основан на фактическом поведении приложения и API на

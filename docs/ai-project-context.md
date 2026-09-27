@@ -12,7 +12,7 @@
 | **F.4** | **CLOSED / PASS — PUBLIC BUSINESS PAGES FINALIZED** (Phases **0.1** → **2.1** + physical QA — **`docs/changelog.md`**) |
 | **F.5** | **CLOSED / PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED** (Phases **0**, **1** + **1.1–1.4**, **2**, PublicShell hotfix — **`docs/changelog.md`** umbrella entry **2026-09-27**). Non-blocking deferred: legacy **`/businesses/{id}`** / real **`locationId`** manual QA gaps; **`<html lang>`** on soft nav (not verified). |
 | **F.6** | **CLOSED / PASS — DEEP LINKS ARCHITECTURE FINALIZED** (Phases **0–6**). Production Verified App Links / Universal Links: **external verification debt** (not claimed). |
-| **F.7** | **PHASE 3 PASS — BUSINESS WEB LEGAL HOST RETIRED**. Umbrella **IN PROGRESS / NOT CLOSED** (Phases **4–5** + final closure not started). Contract: **`docs/architecture/public-consumer-web.md`** § **F.7**. |
+| **F.7** | **PHASE 4 PASS — LEGAL LOCALIZATION AND SEO COMPLETED**. Umbrella **IN PROGRESS / NOT CLOSED** (Phase **5** + final closure not started). Contract: **`docs/architecture/public-consumer-web.md`** § **F.7**. |
 | **F.4 implementation SHA** | `52dfe1c4c32a906c964ee3e34470a511864faa84` (Phase 2); hotfix `678cb23a8e9004aa9be3aea170affaad68eb045e` |
 | **F.4 Phase 1 backend SHA** | `3bcd5cac785c5fbc9c5b5f623c96359645cf1854` |
 | **Last completed architecture contour** | **6.12A PASS — BUSINESSLOCATION ARCHITECTURE FINALIZED** (umbrella — see **`docs/changelog.md`** entry **2026-09-27**) |
@@ -43,7 +43,7 @@
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending (6.12A)** | **None** — contour closed (**5E** finalized) |
-| **Next** | **F.7 Phase 4** — legal localization/SEO completion — **explicit approval only**; optional non-blocking **`<html lang>`** URL alignment on soft nav |
+| **Next** | **F.7 Phase 5** — cross-app/store regression + physical browser QA — **explicit approval only**; optional non-blocking **`<html lang>`** URL alignment on soft nav |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -53,11 +53,11 @@
 
 **F.5:** **CLOSED / PASS** — locale SEO URL architecture implemented and verified (routing, SEO, PublicShell URL-locale UI). Milestone: **F.5 PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED**. Non-blocking: **`<html lang>`** vs URL on soft nav (not verified); Phase **1** manual QA gaps (legacy redirect, **`locationId`** UI). No backend change.
 
-**Consumer Web F-series (canonical order):** F.5 **CLOSED** → **F.6 CLOSED / PASS** → **F.7 IN PROGRESS** (Phases **0–3** done; **4–5** + closure not started) → **F.8 NOT STARTED** — **`docs/architecture/public-consumer-web.md`** § **F.7**.
+**Consumer Web F-series (canonical order):** F.5 **CLOSED** → **F.6 CLOSED / PASS** → **F.7 IN PROGRESS** (Phases **0–4** done; **5** + closure not started) → **F.8 NOT STARTED** — **`docs/architecture/public-consumer-web.md`** § **F.7**.
 
 **F.6 (closed):** Canonical HTTPS → parser → coordinator → session city / locale → go_router; Web `/.well-known`; Android/iOS configured. **Production** association verification deferred (Play SHA / Apple Team ID / device QA). Android release debug signing remains general release debt.
 
-**F.7 (current):** Phases **1–3** — Consumer Web is canonical legal host; PublicShell same-origin legal links; Business Web **`/privacy`**, **`/terms`**, **`/account-deletion`** redirect to Consumer Web origin (308 via **`permanentRedirect`**). **`/help`** unchanged (deferred). Production legal copy gate unchanged.
+**F.7 (current):** Phases **1–4** — locale-neutral legal URLs with self-canonical SEO (no legal hreflang); RU/KK chrome via cookie preference; legal **body** Russian until counsel-approved KK; sitemap includes three legal URLs once; Business Web legacy redirects unchanged. **`/help`** unchanged. Production legal approval gate unchanged (**`docs/legal-review-required.md`**). **F.8 OG pipeline not started**.
 
 **Post-6.12A candidates (documented — not auto-started):** **6.12B** / Catalog Import; remaining contours — **`docs/changelog.md`** / architecture docs.
 

@@ -1,25 +1,26 @@
 import Link from 'next/link';
 import { ReactNode } from 'react';
 import { getServerLocale } from '@/lib/locale-server';
-import { LEGAL_UI } from '@/lib/legal-ui';
+import { LEGAL_UI, legalPageHeading } from '@/lib/legal-ui';
 import { getConsumerWebOrigin } from '@/lib/seo/canonical';
-import { publicLegalPath } from '@/lib/legal-paths';
+import { publicLegalPath, type PublicLegalRootSegment } from '@/lib/legal-paths';
 
 type LegalPageLayoutProps = {
-  title: string;
+  page: PublicLegalRootSegment;
   lastUpdated: string;
   children: ReactNode;
   draftNotice?: boolean;
 };
 
 export async function LegalPageLayout({
-  title,
+  page,
   lastUpdated,
   children,
   draftNotice = true,
 }: LegalPageLayoutProps) {
   const locale = await getServerLocale();
   const ui = LEGAL_UI[locale];
+  const title = legalPageHeading(locale, page);
   const origin = getConsumerWebOrigin();
   const sampleProductionUrl = `${origin}${publicLegalPath('privacy')}`;
 

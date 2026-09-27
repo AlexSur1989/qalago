@@ -1,16 +1,19 @@
+import type { Metadata } from 'next';
 import { LegalPageLayout } from '@/components/LegalPageLayout';
 import { LEGAL_PLACEHOLDERS } from '@/lib/legal-config';
+import { getServerLocale } from '@/lib/locale-server';
+import { metadataForLegalPage } from '@/lib/seo/page-metadata';
 
-export const metadata = {
-  title: 'Условия использования — QalaGo',
-  description: 'Условия использования сервиса QalaGo',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getServerLocale();
+  return metadataForLegalPage('terms', locale);
+}
 
 export default function TermsPage() {
   const p = LEGAL_PLACEHOLDERS;
 
   return (
-    <LegalPageLayout title="Условия использования" lastUpdated="2026-09-10">
+    <LegalPageLayout page="terms" lastUpdated="2026-09-10">
       <p>
         Настоящие Условия регулируют использование сервиса <strong>QalaGo</strong>. Черновик
         отражает фактические возможности продукта и требует юридической проверки перед

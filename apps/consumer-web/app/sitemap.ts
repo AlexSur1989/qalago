@@ -4,7 +4,10 @@ import {
   dedupeBusinessCitySitemapUrls,
   fetchAllPublicBusinessesInCity,
 } from '@/lib/business-sitemap';
-import { buildDiscoverySitemapEntries } from '@/lib/seo/sitemap-builder';
+import {
+  buildDiscoverySitemapEntries,
+  mergeDiscoveryAndLegalSitemapEntries,
+} from '@/lib/seo/sitemap-builder';
 
 /**
  * Public discovery sitemap (F.3). On API failure returns empty list (no fabricated URLs).
@@ -34,12 +37,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }),
     );
 
-    const entries = buildDiscoverySitemapEntries({
+    const discoveryEntries = buildDiscoverySitemapEntries({
       cities,
       categoriesByCitySlug,
       subcategoriesByCategoryId,
       businessUrlsByCitySlug,
     });
+    const entries = mergeDiscoveryAndLegalSitemapEntries(discoveryEntries);
 
     return entries.map((e) => ({
       url: e.url,

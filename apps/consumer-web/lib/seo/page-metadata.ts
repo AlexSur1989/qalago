@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
+import type { PublicLegalRootSegment } from '@/lib/legal-paths';
+import { legalPageMetadataCopy } from '@/lib/legal-ui';
 import {
   buildIndexableLocaleSeoAlternates,
+  canonicalForLegalPage,
   canonicalForSearch,
   getConsumerWebOrigin,
 } from './canonical';
@@ -170,6 +173,33 @@ export function metadataForCanonicalBusiness(
   return {
     ...indexableOgBasics(title, desc, locale, citySlug, ['business', businessSlug]),
     robots: { index: true, follow: true },
+  };
+}
+
+/** F.7 — indexable legal pages: locale-neutral canonical, no RU/KK hreflang alternates. */
+export function metadataForLegalPage(
+  page: PublicLegalRootSegment,
+  locale: AppLocale,
+): Metadata {
+  const { title, description } = legalPageMetadataCopy(locale, page);
+  const canonical = canonicalForLegalPage(page);
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    robots: { index: true, follow: true },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      siteName: 'QalaGo',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
+    },
   };
 }
 

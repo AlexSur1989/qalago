@@ -2,6 +2,7 @@
  * Canonical public consumer-web origin (Stage 6.11F.3).
  * Distinct from getPublicSiteBaseUrl() (external/deferred links such as /help).
  */
+import { publicLegalPath, type PublicLegalRootSegment } from '../legal-paths';
 import {
   DEFAULT_PUBLIC_LOCALE,
   SUPPORTED_PUBLIC_LOCALES,
@@ -142,6 +143,11 @@ export function canonicalForBusiness(
 /** Emit both /ru/ and /kk/ sitemap URLs for one logical indexable path. */
 export function localizedIndexableSitemapUrls(options: IndexablePathOptions): string[] {
   return SUPPORTED_PUBLIC_LOCALES.map((locale) => buildCanonicalUrl({ locale, ...options }));
+}
+
+/** F.7 — locale-neutral legal pages; no /ru|kk/ prefix. */
+export function canonicalForLegalPage(segment: PublicLegalRootSegment): string {
+  return `${getConsumerWebOrigin()}${publicLegalPath(segment)}`;
 }
 
 export { DEFAULT_PUBLIC_LOCALE, SUPPORTED_PUBLIC_LOCALES };
