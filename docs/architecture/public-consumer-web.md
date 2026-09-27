@@ -106,7 +106,7 @@ Static App Router segments (e.g. `categories/`, `search/`) take precedence over 
 
 ## F.5 locale SEO URL architecture
 
-**Status:** **F.5 CLOSED / PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED** (Phase **0** contract; Phase **1** + **1.1–1.4** routing; Phase **2** SEO; PublicShell locale UI hotfix — physical QA **`docs/changelog.md`** **2026-09-27**). **Non-blocking follow-up:** root **`<html lang>`** vs URL on soft nav — **not verified**; does not block F.5 closure. **Next canonical Consumer Web stage:** **F.6** (not started).
+**Status:** **F.5 CLOSED / PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED** (Phase **0** contract; Phase **1** + **1.1–1.4** routing; Phase **2** SEO; PublicShell locale UI hotfix — physical QA **`docs/changelog.md`** **2026-09-27**). **Non-blocking follow-up:** root **`<html lang>`** vs URL on soft nav — **not verified**; does not block F.5 closure. **F.6 Phase 0** contract locked — [deep-links.md](./deep-links.md) (**AGREED / NOT IMPLEMENTED**).
 
 **Authority:** This section is the **canonical F.5 contract**. [api-contracts.md](./api-contracts.md) — no Catalog API changes required for locale routing.
 
@@ -315,7 +315,7 @@ F.8 OG **image asset pipeline** out of scope. OG/Twitter **URLs and text metadat
 
 ### 20. F.6 deep-link compatibility (LOCKED)
 
-F.6 (App Links, Universal Links, NavigationTarget API) **not implemented in F.5**. Locale-prefixed URLs are the **stable public URLs** F.6 should later resolve to — do not introduce a routing model that forces another public URL breaking change.
+F.6 (App Links, Universal Links, NavigationTarget) **not implemented in F.5**. Locale-prefixed URLs are the **stable public URLs** F.6 resolves — do not introduce a routing model that forces another public URL breaking change. **Canonical F.6 contract:** [deep-links.md](./deep-links.md) (**Phase 0 — AGREED / CONTRACT LOCKED**).
 
 ### 21. Cache / SSR (LOCKED)
 

@@ -193,7 +193,7 @@ One **conceptual** navigation target must eventually map to:
 | **AD_CAMPAIGN** | `campaignId` | Owner monetization | N/A | Owner campaign route |
 | **EVENT** | — | **Reserved**; not implemented | Future `/{citySlug}/events/…` | Future route TBD |
 
-See also [notification-producers.md](./notification-producers.md) (E.4 routing) and [public-consumer-web.md](./public-consumer-web.md) (F.4 routes).
+See also [notification-producers.md](./notification-producers.md) (E.4 routing), [public-consumer-web.md](./public-consumer-web.md) (F.4/F.5 routes), and [deep-links.md](./deep-links.md) (F.6 HTTPS → NavigationTarget pipeline).
 
 ---
 
@@ -378,7 +378,8 @@ Reaffirmed for production growth ([versioning-and-api-compatibility.md](../relea
 | F.4 implementation | **CLOSED / PASS** — public Business Pages finalized |
 | F.5 Phase 0 locale SEO URL contract | **LOCKED** — [public-consumer-web.md](./public-consumer-web.md) § F.5 |
 | F.5 implementation (Phases 1–2 + hotfix) | **CLOSED / PASS** — **`docs/changelog.md`** F.5 umbrella **2026-09-27** |
-| F.6 deep links / NavigationTarget | **Not started** |
+| F.6 Phase 0 deep link contract | **LOCKED** — [deep-links.md](./deep-links.md) |
+| F.6 Phases 1–6 implementation | **Not started** |
 | 6.12A | **CLOSED** — preserved |
 
-**Next:** **F.6** — explicit staged approval + READ-ONLY audit before implementation — **not auto-started**.
+**Next:** **F.6 Phase 1** — explicit approval required — public URL parser + typed target + tests — **not auto-started**.

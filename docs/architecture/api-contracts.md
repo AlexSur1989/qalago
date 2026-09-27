@@ -311,6 +311,8 @@ Env: `QALAGO_GEOCODING_PROVIDER` = `mock` (default) \| `maptiler`; `MAPTILER_API
 > **Consumer Web consumption (F.4 Phase 2, IMPLEMENTED):** Discovery links **`/{citySlug}/business/{businessSlug}?locationId=`** when **`contextLocationId`** present. Canonical page fetches **`GET /businesses/by-slug/:businessSlug?citySlug=&locationId=`**; wrong-city **`409`** → permanent redirect to actual city. Legacy **`/businesses/{id}`** redirects to canonical (still noindex). Indexable canonical excludes **`?locationId=`**. No Web map/auth/favorites yet.
 >
 > **F.5 (CLOSED / PASS — Consumer Web):** Indexable public URLs use locale prefix **`/ru/`** / **`/kk/`** per [public-consumer-web.md](./public-consumer-web.md) § F.5. **No Catalog API or schema changes** for locale routing; same public endpoints and DTOs. Wrong-city normalization preserves locale segment on Consumer Web redirects.
+>
+> **F.6 Phase 0 (CONTRACT LOCKED — not implemented):** Mobile deep links resolve F.5 HTTPS URLs to in-app navigation; business slug resolution continues to use **`GET /businesses/by-slug/:businessSlug?citySlug=`** only — [deep-links.md](./deep-links.md). **No API changes** in Phase 0.
 
 ### GET /businesses
 

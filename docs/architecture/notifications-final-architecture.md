@@ -66,6 +66,7 @@ No UGC, secrets, payment data, or arbitrary URLs.
 - **Navigation:** `resolveNotificationDestination` — no arbitrary payload URLs; `MODERATION_CASE` / `ORDER` / `PAYMENT` unsupported (mark-read only).
 - **Legacy alias:** `REVIEW_NEW` treated like `NEW_REVIEW` in presentation/navigation for old rows.
 - **Push:** optional Firebase; builds without `google-services.json`; tap reuses E.4 resolver.
+- **F.6 (not implemented):** HTTPS App/Universal Links use a separate parser → typed target pipeline — [deep-links.md](./deep-links.md). **Do not** add arbitrary URL fields to FCM; E contour remains closed.
 
 ## Business Web
 

@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-27 — F.6 Phase 0 — deep link contract lock
+
+- **Status:** **F.6 PHASE 0 PASS — DEEP LINK CONTRACT LOCKED**. F.6 umbrella: **AGREED / NOT IMPLEMENTED** (Phases **1–6** not started).
+- **Checkpoint:** `7e57430eedf53dae68e71ca147511bf36ba34ace`.
+- **Scope:** **Documentation only** — canonical F.6 contract after read-only Phase 0 audit at HEAD **`64cb9061443c4492f56bf432b8f525bc1efa7839`**.
+- **Summary:** Locked **`docs/architecture/deep-links.md`**: HTTPS **`https://qalago.kz`** public links; F.5 URL families unchanged; **NavigationTarget** conceptual (no DB); single trust boundary (parser → typed target → existing router); **E.4/E.5/E.6** contour preserved (no FCM URL navigation); **locale** URL-authoritative with persist via existing app locale mechanism; **city** link context without silent overwrite of persisted city; **locationId** + **by-slug** API; deferred deep-link queue required for cold start; **/.well-known** must not be locale-redirected (implementation deferred); Android **`kz.qalago.qalago_mobile`** / iOS **`kz.qalago.qalagoMobile`**; locked implementation Phases **0–6**. Cross-refs in **`public-consumer-web.md`**, **`future-extensibility-contracts.md`**, **`business-location.md`**, **`notifications-final-architecture.md`**, **`api-contracts.md`**.
+- **Deferred:** All F.6 product implementation (Phases **1–6**); association files; middleware exemption; manifest/entitlements; signing SHA-256 / Apple Team ID (production verification gates).
+- **Next:** **F.6 Phase 1** — public URL parser + typed target + automated tests — **requires explicit approval** — **do not auto-start**.
+
+---
+
 ## 2026-09-27 — F.5 — formal umbrella closure
 
 - **Status:** **F.5 PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED**. **F.5 is CLOSED / PASS** (reopen only on confirmed defect or explicit new scope).
