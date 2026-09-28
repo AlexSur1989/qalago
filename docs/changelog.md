@@ -6,25 +6,36 @@
 
 ---
 
+## 2026-09-28 — Public help — physical QA closure (umbrella)
+
+- **Status:** **PUBLIC HELP PASS — CONSUMER WEB PUBLIC SUPPORT FINALIZED**. **PHYSICAL QA PASS / CLOSED**. **F.7 CLOSED / PASS**. **F.8 NOT STARTED**.
+- **Checkpoint:** Implementation **`840a842ec4c38b290bbc30020b3cac7b1231929d`**; locale-switch hotfix **`08b53405ed7c6aa8240e06de01bed2e12fa51127`**; closure docs commit in git log immediately after.
+- **Scope:** **Documentation only** — user physical browser QA sign-off (Consumer Web **localhost:3005**); no application code.
+- **Summary:** **Physical QA PASS:** footer **Поддержка** → same-origin **`/help`**; **`/support` → `/help`**; **`/help`** RU ↔ KK locale switch keeps **`/help`** (200, localized chrome/content) — defect **`/kk/help`** **404** confirmed **FIXED** after hotfix **`08b5340…`**; F.7 legal **`/privacy`**, **`/terms`**, **`/account-deletion`** locale switches remain locale-neutral (no **404**). Business Web owner **`/help`** out of scope (unchanged).
+- **Deferred:** Production support contact / legal content approval (**`docs/legal-review-required.md`**) — not production legal clearance.
+- **Next:** **Explicit agreement** before **F.8** or other stages — **do not auto-start F.8**.
+
+---
+
 ## 2026-09-28 — Public help hotfix — locale switch on locale-neutral routes
 
-- **Status:** **PUBLIC HELP LOCALE SWITCH HOTFIX — IMPLEMENTED / AUTOMATED PASS**. **Physical retest: PENDING**. **F.7 CLOSED / PASS**. **F.8 NOT STARTED**.
-- **Checkpoint:** Pre-hotfix HEAD **`840a842ec4c38b290bbc30020b3cac7b1231929d`**; implementation commit in git log immediately after.
+- **Status:** **PUBLIC HELP LOCALE SWITCH HOTFIX — IMPLEMENTED / AUTOMATED PASS**. **Physical retest: PASS** (umbrella closure entry **2026-09-28**). **F.7 CLOSED / PASS**. **F.8 NOT STARTED**.
+- **Checkpoint:** Pre-hotfix HEAD **`840a842ec4c38b290bbc30020b3cac7b1231929d`**; hotfix commit **`08b53405ed7c6aa8240e06de01bed2e12fa51127`**.
 - **Scope:** Consumer Web — `swapLocaleInPathname` + `LocaleSwitcher` refresh when pathname unchanged; regression tests for **`/help`** and F.7 legal roots.
 - **Summary:** Physical QA on **`/help`**: language switcher navigated to **`/kk/help`** / **`/ru/help`** → **404**. **Root cause:** `swapLocaleInPathname` prefixed locale onto neutral segments (`help`, `privacy`, etc.). **Fix:** locale-neutral roots keep path; cookie updates + **`router.refresh()`** re-render RU/KK chrome/content. Discovery **`/ru|kk/…`** switching unchanged.
-- **Deferred:** User physical retest on **`/help`** and legal pages; full **PUBLIC HELP** physical QA sign-off still **PENDING**.
-- **Next:** Physical retest locale switch on **`/help`**; **do not auto-start F.8**.
+- **Deferred:** None (physical retest closed in umbrella entry).
+- **Next:** Umbrella physical QA closure — **completed**.
 
 ---
 
 ## 2026-09-28 — Public help — Consumer Web public support
 
-- **Status:** **PUBLIC HELP PASS — CONSUMER WEB PUBLIC SUPPORT** (automated verified). **Physical QA: PENDING**. **F.7 CLOSED / PASS** (not reopened). **F.8 NOT STARTED**.
+- **Status:** **PUBLIC HELP PASS — CONSUMER WEB PUBLIC SUPPORT** (implementation). **Physical QA: PASS** (umbrella closure **2026-09-28**). **F.7 CLOSED / PASS** (not reopened). **F.8 NOT STARTED**.
 - **Checkpoint:** Pre-stage HEAD **`d5d007d23e95c693f83cac658051972ffa802a22`**; implementation commit in git log immediately after.
 - **Scope:** Consumer Web public **`/help`** (guest-safe static FAQ + support contact placeholders); PublicShell footer same-origin **Поддержка/Қолдау**; SEO canonical + sitemap entry; **`/support` → `/help`** compat redirect; Business Web **`/help`** preserved as authenticated owner help; docs/store URL sync to **`https://qalago.kz/help`**. **No** Flutter/Android/iOS/F.6/deployment changes.
 - **Summary:** Canonical public support URL **`/help`** on Consumer Web. Content from Flutter **`ProfileHelpScreen`** RU/KK ARB consumer FAQ; contact via **`NEXT_PUBLIC_SUPPORT_CONTACT_EMAIL`** placeholder architecture. Footer no longer sends users to Business Web for support. Owner cabinet help unchanged on Business Web origin.
-- **Deferred:** Physical browser QA; production support contact approval (**`docs/legal-review-required.md`**). **F.8** — explicit agreement before start.
-- **Next:** Physical QA of **`/help`**, footer link, **`/support`** redirect; **do not auto-start F.8**.
+- **Deferred:** Production support contact approval (**`docs/legal-review-required.md`**). **F.8** — explicit agreement before start.
+- **Next:** Umbrella physical QA closure — **completed**; **do not auto-start F.8**.
 
 ---
 
