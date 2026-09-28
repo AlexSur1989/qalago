@@ -20,6 +20,7 @@ import {
   subcategorySeoDescription,
   subcategorySeoTitle,
 } from './metadata-copy';
+import { withDefaultSocialPreview } from './social-preview';
 import type { AppLocale } from '@/lib/locale';
 import type { PublicLocale } from '@/lib/public-locale';
 
@@ -38,7 +39,7 @@ function indexableOgBasics(
     pathSegments,
     page,
   });
-  return {
+  return withDefaultSocialPreview({
     title,
     description,
     alternates: { canonical, languages },
@@ -50,15 +51,14 @@ function indexableOgBasics(
       type: 'website',
     },
     twitter: {
-      card: 'summary',
       title,
       description,
     },
-  };
+  });
 }
 
 function ogBasics(title: string, description: string, url: string): Metadata {
-  return {
+  return withDefaultSocialPreview({
     title,
     description,
     alternates: { canonical: url },
@@ -70,11 +70,10 @@ function ogBasics(title: string, description: string, url: string): Metadata {
       type: 'website',
     },
     twitter: {
-      card: 'summary',
       title,
       description,
     },
-  };
+  });
 }
 
 export function metadataForCity(
@@ -182,7 +181,7 @@ export function metadataForCanonicalBusiness(
 export function metadataForHelpPage(locale: AppLocale): Metadata {
   const { pageTitle, pageDescription } = HELP_UI[locale];
   const canonical = canonicalForHelpPage();
-  return {
+  return withDefaultSocialPreview({
     title: pageTitle,
     description: pageDescription,
     alternates: { canonical },
@@ -195,11 +194,10 @@ export function metadataForHelpPage(locale: AppLocale): Metadata {
       type: 'website',
     },
     twitter: {
-      card: 'summary',
       title: pageTitle,
       description: pageDescription,
     },
-  };
+  });
 }
 
 export function metadataForLegalPage(
@@ -208,7 +206,7 @@ export function metadataForLegalPage(
 ): Metadata {
   const { title, description } = legalPageMetadataCopy(locale, page);
   const canonical = canonicalForLegalPage(page);
-  return {
+  return withDefaultSocialPreview({
     title,
     description,
     alternates: { canonical },
@@ -221,16 +219,15 @@ export function metadataForLegalPage(
       type: 'website',
     },
     twitter: {
-      card: 'summary',
       title,
       description,
     },
-  };
+  });
 }
 
 export function rootSiteMetadata(locale: AppLocale, defaultTitle: string, description: string): Metadata {
   const origin = getConsumerWebOrigin();
-  return {
+  return withDefaultSocialPreview({
     metadataBase: new URL(origin),
     title: {
       default: defaultTitle,
@@ -245,9 +242,8 @@ export function rootSiteMetadata(locale: AppLocale, defaultTitle: string, descri
       description,
     },
     twitter: {
-      card: 'summary',
       title: defaultTitle,
       description,
     },
-  };
+  });
 }

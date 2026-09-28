@@ -483,18 +483,18 @@ Web authentication; favorites; Consumer Web interactive map; City Discovery; Hom
 | **5** | Cross-app + store-compliance regression + physical browser QA (+ Hotfix **1**) | **PASS** |
 | **Final** | Read-only umbrella audit + docs closure (**F.7 CLOSED / PASS**) | **PASS** |
 
-**Milestone:** **F.7 PASS — LEGAL MIGRATION FINALIZED**. **F.8** contract — **`§ F.8`** (**F.8.0 PASS**); **F.8.1+ NOT STARTED**.
+**Milestone:** **F.7 PASS — LEGAL MIGRATION FINALIZED**. **F.8** — **`§ F.8`** (**F.8.0 PASS**, **F.8.1 PASS**); **F.8.2+ NOT STARTED**.
 
 **External production legal/content debt** ([legal-review-required.md](../legal-review-required.md)) remains **separate** — operator identity, legal address, privacy/support contacts, jurisdiction/retention/liability/processors/log policy review, approved KK legal translation, production **`LEGAL_*`** values, HTTPS/deploy-dependent claims, documented store/product gaps. **Not** unfinished F.7 technical architecture.
 
-**Next:** **F.8** contract — **`§ F.8`**; implementation phases **F.8.1+** require **explicit approval** — **do not auto-start F.8.1**.
+**Next:** **F.8.2+** require **explicit approval** — **`§ F.8`**; **do not auto-start F.8.2**.
 
 ---
 
 ## F.8 — Social preview / OG image pipeline
 
 **Gate:** F.8 — Social preview / OG image pipeline  
-**Status:** **F.8 IN PROGRESS** — **F.8.0 PASS — CONTRACT LOCKED**; **F.8.1+ NOT STARTED**
+**Status:** **F.8 IN PROGRESS** — **F.8.0 PASS — CONTRACT LOCKED**; **F.8.1 PASS — DEFAULT OG + METADATA PLUMBING**; **F.8.2+ NOT STARTED**
 
 **Authority:** This section is the **canonical F.8 contract**. Other docs **reference** this section; they must not duplicate full contract text.
 
@@ -561,7 +561,7 @@ F.8 must provide **one** canonical QalaGo fallback preview.
 - Media URL unavailable
 - Media rejected by **§8** safety policy
 
-**Implementation method NOT locked in F.8.0.** **F.8.1** may choose **static asset** **OR** **Next.js `ImageResponse`** after build/runtime inspection. **No image asset is created in F.8.0.**
+**F.8.1 implementation (LOCKED):** **static PNG** at **`/og/qalago-default.png`** (**1200×630**) under **`apps/consumer-web/public/`**, composed from repository **`qalago_wordmark.png`** + brand **`#00a8d6`** background. Regenerate via **`apps/consumer-web/tool/generate-default-og.ps1`** when branding changes. Shared metadata: **`lib/seo/social-preview.ts`** + **`withDefaultSocialPreview()`** in **`page-metadata.ts`**. **No** `ImageResponse` OG route in F.8.1.
 
 ### 6. Route matrix (LOCKED)
 
@@ -656,7 +656,7 @@ Prefer **cacheable / stable** preview assets. **No** per-request random output. 
 | Phase | Scope | Status |
 |-------|--------|--------|
 | **F.8.0** | Contract lock — **docs only** | **PASS** |
-| **F.8.1** | Default QalaGo OG image + shared metadata plumbing | **NOT STARTED** |
+| **F.8.1** | Default QalaGo OG image + shared metadata plumbing | **PASS** |
 | **F.8.2** | Shared fallback on indexable public route families; preserve F.5/F.7 canonical behavior | **NOT STARTED** |
 | **F.8.3** | Business-specific eligible cover + strict trusted-media fallback | **NOT STARTED** |
 | **F.8.4** | Full automated regression (metadata, canonical, locale, legal/help, business fallback, build) | **NOT STARTED** |
@@ -692,9 +692,9 @@ F.8 umbrella **CLOSED / PASS** requires **all** of:
 
 Local tests and localhost builds **cannot** prove external social previews. Final production verification requires **deployed HTTPS** origin and may include Telegram, WhatsApp, Facebook/Open Graph debugger, X/Twitter-compatible preview tools. **Do not** claim these verified during local implementation-only milestones.
 
-**Milestone:** **F.8.0 PASS — OG IMAGE PIPELINE CONTRACT LOCKED**. **F.8 overall: IN PROGRESS**.
+**Milestone:** **F.8.1 PASS — DEFAULT QALAGO OG IMAGE + SHARED METADATA PLUMBING**. **F.8 overall: IN PROGRESS**.
 
-**Next:** **Explicit agreement** before **F.8.1** — **do not auto-start**.
+**Next:** **Explicit agreement** before **F.8.2** — **do not auto-start F.8.2**.
 
 ---
 

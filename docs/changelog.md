@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — F.8.1 — Default QalaGo OG image + shared metadata plumbing
+
+- **Status:** **F.8.1 PASS — DEFAULT QALAGO OG IMAGE + SHARED METADATA PLUMBING**. **F.8 IN PROGRESS** (not CLOSED). **F.8.2 NOT STARTED**. **F.7 / PUBLIC HELP** unchanged.
+- **Checkpoint:** Pre-phase HEAD **`97aa5a54529b82a306b3ad52308e7a92b40da3e7`**; implementation commit in git log immediately after.
+- **Scope:** **`apps/consumer-web`** only — static **`public/og/qalago-default.png`** (**1200×630**, wordmark + brand **`#00a8d6`**); **`lib/seo/social-preview.ts`**; **`page-metadata.ts`** shared **`withDefaultSocialPreview()`**; **`f8-phase1-social-preview.test.ts`**; regen script **`tool/generate-default-og.ps1`**. **No** Business media selection; **no** canonical/hreflang/sitemap/routing/API/DB changes.
+- **Summary:** Chose **static asset** (deterministic, cacheable, no runtime fetch). All routes using central metadata helpers inherit default **`og:image`** / **`twitter:image`** + **`summary_large_image`**; **`openGraph.url`** / canonical unchanged. **267** vitest PASS; **`next build`** PASS.
+- **Deferred:** **F.8.2** route-family rollout audit; **F.8.3** Business cover; production Telegram/WhatsApp/Facebook/X preview (**F.8.5**).
+- **Next:** **Explicit agreement** before **F.8.2** — **do not auto-start F.8.2**.
+
+---
+
 ## 2026-09-28 — F.8.0 — OG image pipeline contract lock
 
 - **Status:** **F.8.0 PASS — OG IMAGE PIPELINE CONTRACT LOCKED**. **F.8 IN PROGRESS** (not CLOSED). **F.7 CLOSED / PASS** (unchanged). **PUBLIC HELP CLOSED / PASS** (unchanged). **F.8.1 NOT STARTED**.
