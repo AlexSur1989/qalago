@@ -45,7 +45,8 @@
 | **Physical QA pending (6.12A)** | **None** — contour closed (**5E** finalized) |
 | **Flutter Web disposition** | **PASS — DEV/QA ONLY** (Option **B**); see **`docs/changelog.md`** |
 | **Public help** | **CLOSED / PASS — PUBLIC HELP FINALIZED** — Consumer Web guest **`/help`**; hotfix **`08b5340…`**; physical QA **PASS** (**2026-09-28**); Business Web **`/help`** = authenticated owner only |
-| **Next** | **Explicit agreement** before **F.8** or other stages — **do not auto-start F.8**; optional **`<html lang>`** soft nav |
+| **F.8** | **IN PROGRESS** — **F.8.0 PASS — OG IMAGE PIPELINE CONTRACT LOCKED**; contract **`docs/architecture/public-consumer-web.md`** § **F.8**; **F.8.1+ NOT STARTED** |
+| **Next** | **Explicit agreement** before **F.8.1** — **do not auto-start F.8.1**; optional **`<html lang>`** soft nav |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -55,11 +56,13 @@
 
 **F.5:** **CLOSED / PASS** — locale SEO URL architecture implemented and verified (routing, SEO, PublicShell URL-locale UI). Milestone: **F.5 PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED**. Non-blocking: **`<html lang>`** vs URL on soft nav (not verified); Phase **1** manual QA gaps (legacy redirect, **`locationId`** UI). No backend change.
 
-**Consumer Web F-series (canonical order):** F.5 **CLOSED** → **F.6 CLOSED / PASS** → **F.7 CLOSED / PASS** → **F.8 NOT STARTED** — **`docs/architecture/public-consumer-web.md`** § **F.7**.
+**Consumer Web F-series (canonical order):** F.5 **CLOSED** → **F.6 CLOSED / PASS** → **F.7 CLOSED / PASS** → **F.8 IN PROGRESS** (**F.8.0** contract locked) — **`docs/architecture/public-consumer-web.md`** § **F.8**.
 
 **F.6 (closed):** Canonical HTTPS → parser → coordinator → session city / locale → go_router; Web `/.well-known`; Android/iOS configured. **Production** association verification deferred (Play SHA / Apple Team ID / device QA). Android release debug signing remains general release debt.
 
-**F.7 (closed):** **Canonical public legal host:** Consumer Web / **`qalago.kz`**. **Paths:** locale-neutral **`/privacy`**, **`/terms`**, **`/account-deletion`**. **Business Web:** legacy legal routes redirect to Consumer Web. **Localization:** RU/KK QalaGo chrome; **Russian** source-language legal body until approved translation (no machine translation). **SEO:** self-canonical legal pages; index/follow; no legal RU/KK hreflang; one sitemap entry per legal page. **Physical QA:** PASS (**2026-09-28**). **External legal/content debt:** **`docs/legal-review-required.md`** — does **not** reopen technical F.7. **F.8:** NOT STARTED.
+**F.7 (closed):** **Canonical public legal host:** Consumer Web / **`qalago.kz`**. **Paths:** locale-neutral **`/privacy`**, **`/terms`**, **`/account-deletion`**. **Business Web:** legacy legal routes redirect to Consumer Web. **Localization:** RU/KK QalaGo chrome; **Russian** source-language legal body until approved translation (no machine translation). **SEO:** self-canonical legal pages; index/follow; no legal RU/KK hreflang; one sitemap entry per legal page. **Physical QA:** PASS (**2026-09-28**). **External legal/content debt:** **`docs/legal-review-required.md`** — does **not** reopen technical F.7.
+
+**F.8 (in progress):** Completes social-preview **images** deferred from F.3/F.5/F.7/Public Help. **1200×630**; **`summary_large_image`**; QalaGo fallback; Business-grain cover with **trusted-media only** (no arbitrary remote server fetch); locale-neutral legal/help unchanged; **6.12A** preserved (**no `locationId` OG identity**). **F.8.0** contract locked; **F.8.1+** not started. Production social crawler QA = **external verification debt** until F.8.5.
 
 **Post-6.12A candidates (documented — not auto-started):** **6.12B** / Catalog Import; remaining contours — **`docs/changelog.md`** / architecture docs.
 

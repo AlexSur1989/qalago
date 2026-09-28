@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — F.8.0 — OG image pipeline contract lock
+
+- **Status:** **F.8.0 PASS — OG IMAGE PIPELINE CONTRACT LOCKED**. **F.8 IN PROGRESS** (not CLOSED). **F.7 CLOSED / PASS** (unchanged). **PUBLIC HELP CLOSED / PASS** (unchanged). **F.8.1 NOT STARTED**.
+- **Checkpoint:** Pre-lock HEAD **`248f45ff0518aa1e8354020e524aaa0581cc14ee`**; docs commit in git log immediately after.
+- **Scope:** **Documentation only** — canonical **§ F.8** in **`docs/architecture/public-consumer-web.md`**; **`docs/ai-project-context.md`**; this entry. **No application code**, **no tests**, **no image assets**.
+- **Summary:** **F.8** completes Consumer Web **social preview images** started as text/URL metadata in **F.3/F.4/F.5/F.7/Public Help**. Locked: **1200×630** canvas; **`twitter:card` = `summary_large_image`**; single QalaGo **fallback** (branding only — no prices/ads/PII); route matrix (discovery → fallback; business → eligible cover → fallback); **Business-grain** (not BusinessLocation); **`locationId`** does not change OG identity; locale-neutral **`/privacy`**, **`/terms`**, **`/account-deletion`**, **`/help`**; **no arbitrary server-side remote image fetch**; fail-safe fallback; absolute URLs via configured public origin; phases **F.8.0–F.8.5**; **19-point** final acceptance checklist; production Telegram/WhatsApp/Facebook/X preview = **verification debt** until **F.8.5**.
+- **Deferred:** **F.8.1+** implementation (static vs **`ImageResponse`** for fallback decided in **F.8.1**); trusted-media allowlist detail; physical/public crawler QA.
+- **Next:** **Explicit agreement** before **F.8.1** — **do not auto-start F.8.1**.
+
+---
+
 ## 2026-09-28 — Public help — physical QA closure (umbrella)
 
 - **Status:** **PUBLIC HELP PASS — CONSUMER WEB PUBLIC SUPPORT FINALIZED**. **PHYSICAL QA PASS / CLOSED**. **F.7 CLOSED / PASS**. **F.8 NOT STARTED**.

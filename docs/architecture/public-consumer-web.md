@@ -312,7 +312,7 @@ F.3 **noindex** for search remains. **`/ru/{citySlug}/search`** and **`/kk/{city
 
 ### 19. OG / social (LOCKED)
 
-F.8 OG **image asset pipeline** out of scope. OG/Twitter **URLs and text metadata** must stay consistent with active locale canonical. No new OG image generation in F.5.
+F.8 OG **image asset pipeline** out of scope for **F.5** (deferred to **`§ F.8`**). OG/Twitter **URLs and text metadata** must stay consistent with active locale canonical. No new OG image generation in F.5.
 
 ### 20. F.6 deep-link compatibility (LOCKED)
 
@@ -483,11 +483,218 @@ Web authentication; favorites; Consumer Web interactive map; City Discovery; Hom
 | **5** | Cross-app + store-compliance regression + physical browser QA (+ Hotfix **1**) | **PASS** |
 | **Final** | Read-only umbrella audit + docs closure (**F.7 CLOSED / PASS**) | **PASS** |
 
-**Milestone:** **F.7 PASS — LEGAL MIGRATION FINALIZED**. **F.8 NOT STARTED**.
+**Milestone:** **F.7 PASS — LEGAL MIGRATION FINALIZED**. **F.8** contract — **`§ F.8`** (**F.8.0 PASS**); **F.8.1+ NOT STARTED**.
 
 **External production legal/content debt** ([legal-review-required.md](../legal-review-required.md)) remains **separate** — operator identity, legal address, privacy/support contacts, jurisdiction/retention/liability/processors/log policy review, approved KK legal translation, production **`LEGAL_*`** values, HTTPS/deploy-dependent claims, documented store/product gaps. **Not** unfinished F.7 technical architecture.
 
-**Next:** **Explicit agreement** before **F.8** or other stages — **do not auto-start**.
+**Next:** **F.8** contract — **`§ F.8`**; implementation phases **F.8.1+** require **explicit approval** — **do not auto-start F.8.1**.
+
+---
+
+## F.8 — Social preview / OG image pipeline
+
+**Gate:** F.8 — Social preview / OG image pipeline  
+**Status:** **F.8 IN PROGRESS** — **F.8.0 PASS — CONTRACT LOCKED**; **F.8.1+ NOT STARTED**
+
+**Authority:** This section is the **canonical F.8 contract**. Other docs **reference** this section; they must not duplicate full contract text.
+
+**Purpose:** Complete the **social-preview metadata** work already started by **F.3** (origin, text OG/Twitter), **F.4** (business page metadata text), **F.5** (locale canonical + **`openGraph.url`**), **F.7** (locale-neutral legal metadata text), and **Public Help** (`/help` metadata text). **F.8** adds **preview images** and **`summary_large_image`** card type only — **not** canonical, hreflang, or sitemap redesign.
+
+**Depends on:** F.3 **CLOSED**; F.4 **CLOSED**; F.5 **CLOSED**; F.6 **CLOSED** (no deep-link changes); F.7 **CLOSED**; Public Help **CLOSED**; **6.12A** BusinessLocation semantics unchanged.
+
+### 1. Scope — IN (LOCKED)
+
+- Open Graph preview images (`og:image`)
+- Twitter/X card images (`twitter:image`)
+- Default **QalaGo** social preview fallback
+- Optional **safe Business-specific** social preview image (Business grain)
+- **Absolute**, crawler-visible image URLs
+- Automated **social-preview regression** coverage (implementation phases)
+- **Physical / public** social-preview verification against deployed HTTPS origin (closure phase — separate from local implementation PASS)
+
+### 2. Scope — OUT (LOCKED)
+
+Canonical URL redesign; hreflang redesign; sitemap redesign except image-related metadata if truly necessary; **LocalBusiness / AggregateRating JSON-LD**; Web auth; favorites; Consumer Web interactive map; write reviews; Home CMS; Events; City Discovery; ads engine; notification preferences; Admin CMS; Business Web redesign; **Flutter Web** (DEV/QA only); **F.6** deep-link architecture changes; **BusinessLocation** schema/API changes; **6.12B**; **DB migrations**; **Catalog API** changes unless a **separately approved** dependency becomes necessary.
+
+Historical deferrals in **F.3 / F.5 / F.7** (“F.8 OG image pipeline out of scope”) remain valid history — **F.8** is the stage that implements what those stages deferred.
+
+### 3. Card type (LOCKED)
+
+Participating Consumer Web public pages use:
+
+```text
+twitter:card = summary_large_image
+```
+
+**Existing** metadata governed by closed SEO stages remains unchanged:
+
+- **title**
+- **description**
+- **canonical** / **`openGraph.url`** (must stay **equal** to active page canonical)
+
+**F.8** may add **images** and **card type** only. **F.8 MUST NOT** redefine canonical URLs, hreflang pairs, or F.7 locale-neutral legal/help URL policy.
+
+### 4. Image dimensions (LOCKED)
+
+Standard social preview canvas:
+
+```text
+1200 × 630 px
+```
+
+Aspect ratio approximately **1.91:1** — canonical QalaGo social-preview size.
+
+**One** compatible OG image contract serves **Open Graph** and **Twitter/X**. **No** multiple platform-specific image generators in F.8.
+
+### 5. Default QalaGo fallback (LOCKED)
+
+F.8 must provide **one** canonical QalaGo fallback preview.
+
+**Conceptual content:** QalaGo branding; logo/wordmark; clean branded background; short product identity only.
+
+**Must NOT** include: prices; ads; promotions; dynamic statistics; review ratings; user data; branch-specific information.
+
+**Fallback applies when:**
+
+- Route has no custom image
+- Business has no safe eligible cover
+- Media URL unavailable
+- Media rejected by **§8** safety policy
+
+**Implementation method NOT locked in F.8.0.** **F.8.1** may choose **static asset** **OR** **Next.js `ImageResponse`** after build/runtime inspection. **No image asset is created in F.8.0.**
+
+### 6. Route matrix (LOCKED)
+
+| Route family | Initial F.8 behavior |
+|--------------|----------------------|
+| **Root / home** (`/` → city landing) | QalaGo fallback |
+| **City** `/{locale}/{citySlug}` | QalaGo fallback |
+| **Category** `/{locale}/{citySlug}/{categorySlug}` | QalaGo fallback |
+| **Subcategory** `/{locale}/{citySlug}/{categorySlug}/{subcategorySlug}` | QalaGo fallback |
+| **Search / non-indexable** | **No** special F.8 social contract; preserve existing **noindex** / canonical behavior |
+| **Business** `/{locale}/{citySlug}/business/{businessSlug}` | Preferred image order: **(1)** eligible public Business **cover**; **(2)** eligible public **effective Business media** only if explicitly approved by implementation safety rules; **(3)** QalaGo fallback. **Grain: Business** — not BusinessLocation |
+| **Legal / help** (see **§10**) | QalaGo fallback; no separate legal/support image generator required for initial F.8 |
+
+### 7. BusinessLocation (LOCKED)
+
+Preserve **6.12A**: **Business** = brand/entity; **BusinessLocation** = physical branch.
+
+- **No** location-specific **canonical** social URLs
+- For `...?locationId=...`: **`openGraph.url`** remains canonical Business URL **without** `locationId`
+- Social preview identity remains **Business-grain**
+- **`locationId`** must **not** select a separate canonical OG identity
+- **No** BusinessLocation schema/API changes for F.8
+- **No** sibling BusinessLocation media leakage into Business OG image
+
+### 8. Business media safety (LOCKED)
+
+**Mandatory:**
+
+- F.8 **must NOT** introduce unrestricted server-side fetching/compositing of arbitrary **`http(s)`** business image URLs
+- An arbitrary remote URL must **never** automatically become a server-side **`ImageResponse`** fetch target
+
+Before Business media may appear in social previews, implementation **must classify media origin**. Eligible media is limited to **QalaGo-controlled / publicly trusted** media origins per existing upload/media architecture (e.g. same-origin Consumer Web, configured API **`/uploads/`** rewrite family — exact allowlist is an **F.8.1+** implementation detail).
+
+If safety cannot be proven → **QalaGo fallback**. **Do not** fail page metadata or page render when Business media is invalid. **No** private/authenticated media. **No** PII in preview images.
+
+### 9. Locale — discovery / business (LOCKED)
+
+RU and KK keep existing **locale-prefixed canonical URLs** (e.g. `/ru/uralsk/…`, `/kk/uralsk/…`).
+
+**`openGraph.url`** continues to equal the **active locale canonical**.
+
+The **image URL** **may** be shared across RU/KK when the image contains **no locale-dependent text**. F.8 does **not** require duplicate RU/KK image assets unless a later phase has a real locale-specific requirement.
+
+### 10. Locale-neutral public pages (LOCKED)
+
+These remain **locale-neutral** (no `/ru/privacy`, `/kk/help`, etc. via F.8):
+
+```text
+/privacy
+/terms
+/account-deletion
+/help
+```
+
+**`openGraph.url`** remains each page’s **neutral canonical** URL. Initial F.8: **common QalaGo fallback image** for all four.
+
+### 11. Twitter / X (LOCKED)
+
+**`twitter:card` = `summary_large_image`**. Twitter/X image uses the **same eligible preview image** as Open Graph. **No** separate visual pipeline unless a **future** requirement justifies it.
+
+### 12. Absolute URL (LOCKED)
+
+Crawler-facing image metadata resolves to **absolute** URLs under:
+
+- Configured public **Consumer Web** origin (`getConsumerWebOrigin()` / **`NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL`**, **`NEXT_PUBLIC_CONSUMER_WEB_URL`**), **or**
+- An **explicitly trusted** public QalaGo media origin per **§8**
+
+Production public origin: **`https://qalago.kz`** when configured — **not** hardcoded into components; **not** derived from arbitrary request **Host** headers. Local dev may emit **localhost** URLs for automated/local validation; that does **not** count as production social-preview verification.
+
+### 13. Failure (LOCKED)
+
+OG image handling is **fail-safe**. On missing/invalid/untrusted/unsupported media, lookup failure, or unsafe metadata construction → **QalaGo fallback**. Public page **must** continue rendering. F.8 image failure **must not** convert a valid public page into **500**.
+
+### 14. Cache (LOCKED)
+
+Prefer **cacheable / stable** preview assets. **No** per-request random output. **No** timestamps or volatile content in generated previews. Business image updates may change referenced media naturally; **no** artificial cache busting unless technically necessary.
+
+### 15. Security / privacy (LOCKED)
+
+- No arbitrary server-side remote image fetching
+- No private or authenticated resources in previews
+- No secrets in metadata
+- No user PII in previews
+- No raw HTML rendering into generated images
+- Cap/sanitize dynamic textual content if dynamic images are introduced later
+- Invalid media → fallback
+- Use configured public origin
+- Page availability independent of OG image availability
+
+### 16. Implementation phases (LOCKED)
+
+| Phase | Scope | Status |
+|-------|--------|--------|
+| **F.8.0** | Contract lock — **docs only** | **PASS** |
+| **F.8.1** | Default QalaGo OG image + shared metadata plumbing | **NOT STARTED** |
+| **F.8.2** | Shared fallback on indexable public route families; preserve F.5/F.7 canonical behavior | **NOT STARTED** |
+| **F.8.3** | Business-specific eligible cover + strict trusted-media fallback | **NOT STARTED** |
+| **F.8.4** | Full automated regression (metadata, canonical, locale, legal/help, business fallback, build) | **NOT STARTED** |
+| **F.8.5** | Physical/public social-preview QA + F.8 closure | **NOT STARTED** |
+
+**Do not auto-start F.8.1** without explicit approval.
+
+### 17. Final F.8 acceptance (LOCKED)
+
+F.8 umbrella **CLOSED / PASS** requires **all** of:
+
+1. Participating public pages expose **`og:image`**
+2. Participating public pages expose **`twitter:image`**
+3. Twitter card is **`summary_large_image`**
+4. Image dimensions contract = **1200×630**
+5. Absolute production image URLs valid under configured public origin / trusted media origin
+6. Existing **`openGraph.url`** remains equal to **canonical**
+7. RU/KK canonical behavior unchanged
+8. Legal/help routes remain locale-neutral
+9. Business pages safely use eligible Business image or fallback
+10. **`locationId`** does not change Business OG identity
+11. Missing/invalid/untrusted Business media falls back safely
+12. No arbitrary server-side remote image fetch
+13. **F.4** regression PASS
+14. **F.5** regression PASS
+15. **F.7** regression PASS
+16. **Public Help** regression PASS
+17. Consumer Web full tests PASS
+18. Consumer Web production **build** PASS
+19. **Physical/public crawler preview verification** recorded separately (**§18**)
+
+### 18. Production verification debt (LOCKED)
+
+Local tests and localhost builds **cannot** prove external social previews. Final production verification requires **deployed HTTPS** origin and may include Telegram, WhatsApp, Facebook/Open Graph debugger, X/Twitter-compatible preview tools. **Do not** claim these verified during local implementation-only milestones.
+
+**Milestone:** **F.8.0 PASS — OG IMAGE PIPELINE CONTRACT LOCKED**. **F.8 overall: IN PROGRESS**.
+
+**Next:** **Explicit agreement** before **F.8.1** — **do not auto-start**.
 
 ---
 
