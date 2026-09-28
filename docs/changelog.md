@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-28 — KZ-C.0 — Kazakhstan compliance contract lock
+
+- **Status:** **KZ-C.0 PASS — COMPLIANCE CONTRACT LOCKED**. **Not** “KZ compliance complete” / **not** legal approval / **not** production compliant.
+- **Starting HEAD:** **`9b6b55a83b8733d8b38236ae94d10bdb65c5ed9d`** (KZ-COMPLIANCE.0 audit baseline).
+- **Checkpoint:** KZ-C.0 docs commit in git log immediately after starting HEAD.
+- **Scope:** **Documentation only** — canonical contract **`docs/architecture/kazakhstan-compliance-contract.md`**; **`docs/ai-project-context.md`**; cross-link **`docs/legal/stage-6-9-legal-safety-foundation.md`**. **No application code**, **no Prisma**, **no DB**, **no UI/API implementation**.
+- **Decisions locked:** Legal baseline scope (counsel review flags); **KK-first** as **QALAGO PRODUCT POLICY (P0 pre-public launch)** with explicit preference wins; F.5/F.7 compatibility constraints; operator identity pending; legal doc set + KK/RU approval target; **LegalDocument** version authority vs Consumer Web presentation vs **LegalAcceptance**; acceptance/reacceptance principles; PD + public DTO (`ownerId` P0 hardening); provider/data-location register; user rights/deletion/push/geo; online-platform classification **LEGAL REVIEW REQUIRED**; ad engine cross-surface contract; AI/minors/analytics/logging/cookies/payments/IP; production compliance gate; AOP.0 intersection without inflating AOP; closed stages remain closed; phase plan **KZ-C.1–KZ-C.9**.
+- **Tests/checks:** `git diff --check` on docs; no product test run (docs-only).
+- **Deferred implementation:** All KZ-C.1+ stages; counsel sign-off; operator env values; client legal acceptance wiring; KK-first code; DTO hardening; ad compliance; flags verification; production provider register.
+- **Next:** **Explicit agreement** before **KZ-C.1** (Kazakh-first + localization baseline) or **AOP.0** — **do not auto-start**.
+
+---
+
 ## 2026-09-28 — F.8 — Social preview / OG image pipeline finalized (umbrella)
 
 - **Status:** **F.8 PASS — SOCIAL PREVIEW / OG IMAGE PIPELINE FINALIZED**. **F.8 CLOSED / PASS**. **F.8.5 LOCAL PHYSICAL QA PASS**. **F.7 / PUBLIC HELP** unchanged.

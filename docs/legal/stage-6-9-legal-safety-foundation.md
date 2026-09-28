@@ -21,3 +21,5 @@
 - Full data export ZIP generation (service boundary + request states only unless extended).
 
 See also: [moderation-system.md](../safety/moderation-system.md), [data-inventory.md](./data-inventory.md), [kazakhstan-legal-review-checklist.md](./kazakhstan-legal-review-checklist.md).
+
+**Kazakhstan compliance contract (target architecture, post–6.9):** [kazakhstan-compliance-contract.md](../architecture/kazakhstan-compliance-contract.md) — **KZ-C.0** lock; does not replace this stage’s implemented scope.

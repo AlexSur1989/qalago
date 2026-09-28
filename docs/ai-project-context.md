@@ -8,6 +8,7 @@
 
 | Field | Value |
 |-------|--------|
+| **Kazakhstan compliance** | **KZ-C.0 PASS — COMPLIANCE CONTRACT LOCKED** — **`docs/architecture/kazakhstan-compliance-contract.md`** (docs only; **not** legal approval / **not** production compliant). Audit baseline **`9b6b55a…`**. |
 | **Last completed architecture decision gate** | **FUTURE EXTENSIBILITY ARCHITECTURE GATE — AGREED / DOCUMENTED** — **`docs/architecture/future-extensibility-contracts.md`** |
 | **F.4** | **CLOSED / PASS — PUBLIC BUSINESS PAGES FINALIZED** (Phases **0.1** → **2.1** + physical QA — **`docs/changelog.md`**) |
 | **F.5** | **CLOSED / PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED** (Phases **0**, **1** + **1.1–1.4**, **2**, PublicShell hotfix — **`docs/changelog.md`** umbrella entry **2026-09-27**). Non-blocking deferred: legacy **`/businesses/{id}`** / real **`locationId`** manual QA gaps; **`<html lang>`** on soft nav (not verified). |
@@ -47,7 +48,7 @@
 | **Public help** | **CLOSED / PASS — PUBLIC HELP FINALIZED** — Consumer Web guest **`/help`**; hotfix **`08b5340…`**; physical QA **PASS** (**2026-09-28**); Business Web **`/help`** = authenticated owner only |
 | **F.8** | **CLOSED / PASS — SOCIAL PREVIEW / OG IMAGE PIPELINE FINALIZED** — **`docs/architecture/public-consumer-web.md`** § **F.8**; implementation checkpoint **`4ab630c…`** (+ docs closure after); local physical QA **PASS** (**2026-09-28**, **localhost:3005**) |
 | **F.8 external debt** | **Public HTTPS social crawler previews** (Telegram/WhatsApp/Facebook/X on **`qalago.kz`**) — **NOT VERIFIED**; trusted **`/uploads/…`** Business cover — **NOT OBSERVED** physically (automated PASS) |
-| **Next** | **Explicit agreement** before next Consumer Web / catalog stage; optional **`<html lang>`** soft nav |
+| **Next** | **Explicit agreement** before **KZ-C.1** (KK-first + localization baseline) or **AOP.0** (catalog ops contract); do not auto-start either |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -64,6 +65,25 @@
 **F.7 (closed):** **Canonical public legal host:** Consumer Web / **`qalago.kz`**. **Paths:** locale-neutral **`/privacy`**, **`/terms`**, **`/account-deletion`**. **Business Web:** legacy legal routes redirect to Consumer Web. **Localization:** RU/KK QalaGo chrome; **Russian** source-language legal body until approved translation (no machine translation). **SEO:** self-canonical legal pages; index/follow; no legal RU/KK hreflang; one sitemap entry per legal page. **Physical QA:** PASS (**2026-09-28**). **External legal/content debt:** **`docs/legal-review-required.md`** — does **not** reopen technical F.7.
 
 **F.8 (closed):** Static fallback **`/og/qalago-default.png`**; trusted Business **`coverImageUrl`** (`/uploads/…` only); **F.8.0–F.8.4** automated gates; **F.8.5** local physical browser QA **PASS**. **External:** public HTTPS crawler previews **NOT VERIFIED**; physical trusted **`/uploads/`** Business cover **NOT OBSERVED** (dataset gap).
+
+## Kazakhstan compliance (KZ-C)
+
+**Contract:** **`docs/architecture/kazakhstan-compliance-contract.md`**. **KZ-COMPLIANCE.0** read-only audit PASS; **KZ-C.0** locks target architecture (**no implementation** in KZ-C.0).
+
+| Topic | Contract (summary) |
+|-------|-------------------|
+| **KK-first** | **QALAGO PRODUCT POLICY (P0 before public launch):** no saved language → **kk**; explicit user choice **wins forever**; Russian fully supported. **Not** documented as statutory default without counsel. |
+| **Operator** | **`OPERATOR_IDENTITY = PENDING BUSINESS DECISION`** — P0 **production** blocker for legal publication; **not** internal dev blocker. |
+| **Legal KK/RU** | Target: **approved** KK + RU where applicable; no uncontrolled MT as final legal text. **Current:** RU draft bodies on Consumer Web (F.7). |
+| **Legal source of truth** | **Backend `LegalDocument`** = version authority for tracked docs; **Consumer Web** = public presentation (F.7 neutral URLs); **`LegalAcceptance`** = proof — **clients not wired yet** (KZ-C.2). |
+| **Providers / location** | Production **register** required; UNKNOWN dev OK; UNKNOWN prod PD systems **not** OK — **KZ-C.7** gate. |
+| **Public DTO privacy** | **`Business.ownerId`** must be removed/minimized pre-production (**P0**, KZ-C.3); review **`user.id`** in public previews lower priority unless escalated. |
+| **Ads** | Shared Ad Engine; locale-aware labels + transparency + separate retention class — **KZ-C.4**; fixed API **`Реклама`** is not final. |
+| **AI** | Consumer AI **not launched**; external LLM / content-origin schema — **KZ-C.6** gate before launch. |
+| **Production gate** | Do **not** claim LEGAL READY / COMPLIANCE COMPLETE until §30 checklist in contract (+ **KZ-C.9**). |
+| **AOP.0** | Informed by this contract (auditability, no public owner/staff PD, ownerless catalog create OK); AOP ≠ full legal admin. |
+
+**Phases:** KZ-C.1 … KZ-C.9 per contract; **AOP.0** may proceed in parallel where compatible; **public production** gated by P0 compliance work.
 
 **Post-6.12A candidates (documented — not auto-started):** **6.12B** / Catalog Import; remaining contours — **`docs/changelog.md`** / architecture docs.
 
