@@ -10,7 +10,7 @@
 
 - **Status:** **AOP.4 PASS — ADMIN CATALOG RBAC / CITY SCOPE ENFORCED**. **AOP.5 NOT STARTED**. **Mass catalog population remains BLOCKED**.
 - **Starting HEAD:** **`0b336fa`** (post AOP.3 docs checkpoint).
-- **Checkpoint (commit):** see git log — `fix(admin): enforce catalog rbac and city scope`.
+- **Checkpoint (commit):** **`6b6de8be5d62f6f7a5805d5c139dde2b8c0d5ad2`** — `fix(admin): enforce catalog rbac and city scope`.
 - **Summary:** Closed **CITY_ADMIN set-primary anti-escalation** — requires **current primary-city** authority plus target branch city scope; BL update checks **existing** branch city; **taxonomy** patch uses **`CATEGORY_EDIT`** + **primary-city** scope (removed erroneous global-admin-only service gate). Documented **§5.3** matrix in **`admin-catalog-operations.md`**. Tests: **`admin-aop4-catalog-rbac.spec.ts`** (13) + AOP.1/AOP.3 + **6.12A.9.4.5A** regression PASS; admin-web **84/84** + build PASS; catalog-api build PASS.
 - **Deferred:** Taxonomy Admin Web wiring; lifecycle/featured/plan audit completeness (**AOP.5**); **KZ-C.1 NOT CLOSED**.
 - **Next:** **AOP.5** audit/lifecycle — explicit agreement only.
