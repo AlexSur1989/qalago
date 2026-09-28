@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — AOP.1 — Backend Admin catalog core
+
+- **Status:** **AOP.1 PASS — BACKEND ADMIN CATALOG CORE IMPLEMENTED**. **AOP.2 NOT STARTED**. **Mass catalog population remains BLOCKED**.
+- **Starting HEAD:** **`bb36bf95580f9174e74e126979321190ea7151fb`** (post AOP.0 contract lock).
+- **Checkpoint (commit):** **`33a452294c7101c1e14d711853c73a32f2ebd33e`** — `feat(admin): add catalog operations backend core`.
+- **Summary:** Catalog API **staff** plane: **`POST /api/v1/admin/businesses`** (`BUSINESS_CREATE`) creates **ownerless** `Business` (`ownerId` null, **no** acting-staff membership) + **one PRIMARY** `BusinessLocation` via **`createBusinessWithInitialPrimaryInTx`** / `BusinessPrimaryLocationService`; default **`PENDING`**; slug conflict **409**; taxonomy/subcategory/city/coordinate validation; **CITY_ADMIN** initial primary city scope; **`GET /admin/businesses/:id`**, **`GET …/locations`**, **`PATCH …/catalog`** (allowlisted core fields); **`AuditAction.BUSINESS_CREATE`** + **`BUSINESS_PROFILE_UPDATE`** on catalog patch; **`StaffPermission.BUSINESS_CREATE`** in **`packages/shared-types`**. Prisma migration adds audit enum value only. Tests: **`admin-aop1-staff-catalog-core.spec.ts`** + admin module regression.
+- **Deferred:** Admin Web UI (**AOP.2**); staff BL CRUD beyond list (**AOP.3**); Admin status/featured audit gaps (**AOP.5**); **KZ-C.1 NOT CLOSED**; pre-existing public **`ownerId`** exposure unchanged (compliance debt).
+- **Next:** **AOP.2** Admin Web business list/detail/catalog edit — **explicit agreement** only.
+
+---
+
 ## 2026-09-28 — AOP.0 — Admin catalog / operations contract lock
 
 - **Status:** **AOP.0 PASS — ADMIN CATALOG / OPERATIONS CONTRACT LOCKED** (documentation only). **AOP.1+ NOT STARTED**. **No** application code, Prisma migration, or DB mutation in this stage.

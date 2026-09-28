@@ -13,6 +13,8 @@ import {
   AdminListBusinessesQueryDto,
   AdminListCategoriesQueryDto,
   AdminListReviewsQueryDto,
+  AdminCreateBusinessDto,
+  AdminPatchBusinessCatalogDto,
   GeoSearchQueryDto,
   UpdateBusinessFeaturedDto,
   UpdateBusinessPlanDto,
@@ -42,6 +44,34 @@ export class AdminController {
     @Query() query: AdminListBusinessesQueryDto,
   ) {
     return this.adminService.listBusinesses(user, query);
+  }
+
+  @RequireStaffPermission(StaffPermission.BUSINESS_CREATE)
+  @Post('businesses')
+  createBusiness(@CurrentUser() user: AuthUser, @Body() dto: AdminCreateBusinessDto) {
+    return this.adminService.createStaffBusiness(user, dto);
+  }
+
+  @RequireStaffPermission(StaffPermission.BUSINESS_VIEW)
+  @Get('businesses/:id')
+  getBusiness(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.adminService.getBusinessDetail(user, id);
+  }
+
+  @RequireStaffPermission(StaffPermission.BUSINESS_VIEW)
+  @Get('businesses/:id/locations')
+  listBusinessLocations(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.adminService.listBusinessLocations(user, id);
+  }
+
+  @RequireStaffPermission(StaffPermission.BUSINESS_EDIT)
+  @Patch('businesses/:id/catalog')
+  patchBusinessCatalog(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: AdminPatchBusinessCatalogDto,
+  ) {
+    return this.adminService.patchBusinessCatalog(user, id, dto);
   }
 
   @RequireStaffPermission(StaffPermission.BUSINESS_VIEW)

@@ -1,4 +1,10 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { isStaffRole } from '@qalago/shared-types';
 import {
   AuditAction,
@@ -12,9 +18,19 @@ import {
 } from '@prisma/client';
 
 import { AuthUser } from '../../common/types/jwt-payload.type';
+import type { AuthoritativePrimaryPhysicalInput } from '../../common/utils/business-primary-location.util';
 import { deriveUserAuthMethods } from '../../common/utils/auth-methods.util';
 
 import { CityScopeService } from '../../common/services/city-scope.service';
+import { BusinessPrimaryLocationService } from '../../common/services/business-primary-location.service';
+import {
+  assertValidBusinessCoordinatePair,
+  isOptionalBusinessCoordinatePairValid,
+} from '../../common/utils/business-coordinates.util';
+import { assertBusinessCoordinatesWithinCity } from '../../common/utils/city-geocoding-persistence.util';
+import { patchTouchesBusinessToPrimaryContactSync } from '../../common/utils/business-primary-location.util';
+import { changedFieldsFromDto } from '../audit-log/audit-log.util';
+import { toBusinessLocationResponse } from '../businesses/business-location.presenter';
 import { resolveBusinessPrimaryCityId } from '../../common/utils/business-context-city.util';
 import { loadPrimaryCityPresentationByBusinessId } from '../../common/utils/business-primary-city-presentation.util';
 import { SystemAccessService } from '../../common/services/system-access.service';
@@ -51,6 +67,8 @@ import {
 
   AdminListBusinessesQueryDto,
   AdminListReviewsQueryDto,
+  AdminCreateBusinessDto,
+  AdminPatchBusinessCatalogDto,
   UpdateBusinessFeaturedDto,
 
   UpdateBusinessPlanDto,
@@ -94,6 +112,8 @@ export class AdminService {
     private readonly businessSubcategories: BusinessSubcategoryService,
 
     private readonly staffStepUp: StaffStepUpService,
+
+    private readonly primaryLocation: BusinessPrimaryLocationService,
 
   ) {}
 
@@ -683,6 +703,251 @@ export class AdminService {
 
   deleteSubcategory(user: AuthUser, id: string) {
     return this.subcategories.remove(user, id);
+  }
+
+  /**
+   * Staff catalog create — ownerless Business + one PRIMARY BusinessLocation (AOP.1).
+   */
+  async createStaffBusiness(actor: AuthUser, dto: AdminCreateBusinessDto) {
+    const slug = dto.slug.trim().toLowerCase();
+    if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+      throw new BadRequestException('Invalid business slug');
+    }
+
+    const slugTaken = await this.prisma.business.findUnique({
+      where: { slug },
+      select: { id: true },
+    });
+    if (slugTaken) {
+      throw new ConflictException('Business slug already exists');
+    }
+
+    const category = await this.prisma.category.findUnique({ where: { id: dto.categoryId } });
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+
+    const loc = dto.initialLocation;
+    await this.assertActiveCityId(loc.cityId);
+    await this.cityScope.assertCityInAdminScope(actor, loc.cityId);
+
+    if (!isOptionalBusinessCoordinatePairValid(loc.latitude, loc.longitude)) {
+      throw new BadRequestException(
+        'latitude and longitude must be provided together and form a valid coordinate pair',
+      );
+    }
+    if (loc.latitude !== undefined && loc.longitude !== undefined) {
+      assertValidBusinessCoordinatePair(loc.latitude, loc.longitude);
+      await assertBusinessCoordinatesWithinCity(
+        this.prisma,
+        loc.cityId,
+        loc.latitude,
+        loc.longitude,
+      );
+    }
+
+    await this.businessSubcategories.assertSubcategoriesForCategory(
+      dto.categoryId,
+      dto.subcategoryIds,
+    );
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      const { business, primaryLocation } = await this.primaryLocation.createBusinessWithInitialPrimary(
+        tx,
+        {
+          brand: {
+            title: dto.title.trim(),
+            slug,
+            categoryId: dto.categoryId,
+            shortDesc: dto.shortDesc?.trim(),
+            description: dto.description?.trim(),
+            phone: dto.phone,
+            whatsapp: dto.whatsapp,
+            instagram: dto.instagram,
+            website: dto.website,
+            workHours: dto.workHours ?? undefined,
+            ownerId: null,
+            status: BusinessStatus.PENDING,
+          },
+          primaryPhysical: {
+            cityId: loc.cityId,
+            address: loc.address.trim(),
+            latitude: (loc.latitude ?? null) as AuthoritativePrimaryPhysicalInput['latitude'],
+            longitude: (loc.longitude ?? null) as AuthoritativePrimaryPhysicalInput['longitude'],
+            locationSource: loc.locationSource ?? null,
+            workHours: loc.workHours ?? dto.workHours ?? null,
+            phone: loc.phone ?? dto.phone ?? null,
+            whatsapp: loc.whatsapp ?? dto.whatsapp ?? null,
+            instagram: loc.instagram ?? dto.instagram ?? null,
+            website: loc.website ?? dto.website ?? null,
+          },
+        },
+      );
+
+      if (dto.subcategoryIds !== undefined) {
+        await this.businessSubcategories.syncForBusinessInTx(
+          tx,
+          business.id,
+          dto.categoryId,
+          dto.subcategoryIds,
+        );
+      }
+
+      await this.auditLog.record({
+        actor,
+        action: AuditAction.BUSINESS_CREATE,
+        resourceType: AuditResourceType.BUSINESS,
+        resourceId: business.id,
+        businessId: business.id,
+        cityId: primaryLocation.cityId,
+        metadata: {
+          slug: business.slug,
+          title: business.title,
+          categoryId: business.categoryId,
+          ownerId: null,
+          status: business.status,
+          primaryLocationId: primaryLocation.id,
+        },
+        tx,
+      });
+
+      return { business, primaryLocation };
+    });
+
+    const subcategories = await this.businessSubcategories.listForBusiness(result.business.id);
+
+    return {
+      business: {
+        id: result.business.id,
+        title: result.business.title,
+        slug: result.business.slug,
+        status: result.business.status,
+        ownerId: result.business.ownerId,
+        categoryId: result.business.categoryId,
+        shortDesc: result.business.shortDesc,
+        description: result.business.description,
+        phone: result.business.phone,
+        whatsapp: result.business.whatsapp,
+        instagram: result.business.instagram,
+        website: result.business.website,
+        workHours: result.business.workHours,
+        createdAt: result.business.createdAt,
+        updatedAt: result.business.updatedAt,
+      },
+      primaryLocation: toBusinessLocationResponse(result.primaryLocation),
+      subcategories,
+    };
+  }
+
+  async getBusinessDetail(user: AuthUser, businessId: string) {
+    const business = await this.prisma.business.findUnique({
+      where: { id: businessId },
+      include: {
+        category: { select: { id: true, title: true, slug: true } },
+        owner: { select: { id: true, phone: true, name: true } },
+      },
+    });
+    if (!business) {
+      throw new NotFoundException('Business not found');
+    }
+    await this.cityScope.assertBusinessInAdminScope(user, business.id);
+
+    const primaryCityByBusinessId = await loadPrimaryCityPresentationByBusinessId(this.prisma, [
+      businessId,
+    ]);
+    const primaryCity = primaryCityByBusinessId.get(businessId);
+    const subcategories = await this.businessSubcategories.listForBusiness(businessId);
+
+    return {
+      id: business.id,
+      title: business.title,
+      slug: business.slug,
+      status: business.status,
+      ownerId: business.ownerId,
+      owner: business.owner,
+      category: business.category,
+      shortDesc: business.shortDesc,
+      description: business.description,
+      phone: business.phone,
+      whatsapp: business.whatsapp,
+      instagram: business.instagram,
+      website: business.website,
+      workHours: business.workHours,
+      planTier: business.planTier,
+      isFeatured: business.isFeatured,
+      createdAt: business.createdAt,
+      updatedAt: business.updatedAt,
+      city: primaryCity
+        ? { slug: primaryCity.slug, nameRu: primaryCity.nameRu, nameKk: primaryCity.nameKk }
+        : null,
+      subcategories,
+    };
+  }
+
+  async listBusinessLocations(user: AuthUser, businessId: string) {
+    await this.ensureBusiness(businessId);
+    await this.cityScope.assertBusinessInAdminScope(user, businessId);
+
+    const items = await this.prisma.businessLocation.findMany({
+      where: { businessId },
+      orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
+    });
+    return { items: items.map(toBusinessLocationResponse) };
+  }
+
+  async patchBusinessCatalog(user: AuthUser, businessId: string, dto: AdminPatchBusinessCatalogDto) {
+    const business = await this.ensureBusiness(businessId);
+    await this.cityScope.assertBusinessPrimaryLocationCityInAdminScope(user, businessId);
+
+    const changedKeys = changedFieldsFromDto(dto as Record<string, unknown>);
+    if (changedKeys.length === 0) {
+      throw new BadRequestException('No catalog fields to update');
+    }
+
+    const syncContactsToPrimary = patchTouchesBusinessToPrimaryContactSync(changedKeys);
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const row = await tx.business.update({
+        where: { id: businessId },
+        data: {
+          title: dto.title?.trim(),
+          shortDesc: dto.shortDesc?.trim(),
+          description: dto.description?.trim(),
+          phone: dto.phone,
+          whatsapp: dto.whatsapp,
+          instagram: dto.instagram,
+          website: dto.website,
+          workHours: dto.workHours,
+        },
+      });
+
+      if (syncContactsToPrimary) {
+        await this.primaryLocation.syncPrimaryFromBusinessRecord(tx, row);
+      }
+
+      await this.auditLog.record({
+        actor: user,
+        action: AuditAction.BUSINESS_PROFILE_UPDATE,
+        resourceType: AuditResourceType.BUSINESS,
+        resourceId: businessId,
+        businessId,
+        cityId: (await resolveBusinessPrimaryCityId(tx, businessId)) ?? undefined,
+        metadata: { changedFields: changedKeys, source: 'admin_catalog_patch' },
+        tx,
+      });
+
+      return row;
+    });
+
+    return this.getBusinessDetail(user, updated.id);
+  }
+
+  private async assertActiveCityId(cityId: string) {
+    const city = await this.prisma.city.findUnique({ where: { id: cityId } });
+    if (!city || !city.isActive) {
+      throw new NotFoundException('City not found');
+    }
+    return city;
   }
 
   async updateBusinessTaxonomy(user: AuthUser, businessId: string, dto: UpdateBusinessTaxonomyDto) {

@@ -113,6 +113,7 @@ describe('Stage 6.12A.9.4.5A — CITY_ADMIN primary BL authorization', () => {
       {} as never,
       {} as never,
       {} as never,
+      {} as never,
     );
   }
 

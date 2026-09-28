@@ -51,6 +51,7 @@ describe('AdminService.getBusinessContent (Stage 6.12A.7.8.6)', () => {
       {} as never,
       {} as never,
       {} as never,
+      {} as never,
     );
   });
 

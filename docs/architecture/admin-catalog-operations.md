@@ -1,7 +1,7 @@
 # AOP — Admin Catalog / Operations Management Plane
 
-**Gate:** **AOP.0 PASS — ADMIN CATALOG / OPERATIONS CONTRACT LOCKED**  
-**Status:** Architecture contract only — **no implementation** in AOP.0  
+**Gate:** **AOP.0 PASS — ADMIN CATALOG / OPERATIONS CONTRACT LOCKED** · **AOP.1 PASS — BACKEND ADMIN CATALOG CORE IMPLEMENTED** (Catalog API)  
+**Status:** Architecture contract (AOP.0) + **AOP.1 backend** staff catalog primitives (see §2.2 implementation note).  
 **Depends on:** **6.12A PASS** — [business-location.md](./business-location.md) (authoritative; **must not** redesign); [kazakhstan-compliance-contract.md](./kazakhstan-compliance-contract.md) §31; Stage **6.9.1** staff RBAC (`StaffPermission`, `@RequireStaffPermission`); existing Admin Web surfaces (moderation, applications, claims, monetization, reports, taxonomy, read-only branch content).
 
 **History:** `docs/changelog.md`. **AOP Phase 0 read-only audit:** PASS (accepted before this lock).
@@ -48,13 +48,25 @@ Today **`POST /api/v1/businesses`** (privileged global admin only) **must not** 
 
 **Admin Web** currently has **no** end-to-end UI to create **Business + initial primary BusinessLocation**.
 
-### 2.2 Target API (contract — **not implemented** in AOP.0)
+### 2.2 Target API
 
 ```http
 POST /api/v1/admin/businesses
 ```
 
-Staff-only (`@AdminStaffRoute` + dedicated permission — see §5). **Do not** implement in AOP.0.
+Staff-only (`@AdminStaffRoute` + **`StaffPermission.BUSINESS_CREATE`** — see §5). **Implemented in AOP.1** (`AdminService.createStaffBusiness` → `createBusinessWithInitialPrimaryInTx`, `ownerId: null`, default **`PENDING`**).
+
+**AOP.1 Admin read/update (backend):**
+
+| Method | Route | Permission |
+|--------|-------|------------|
+| GET | `/api/v1/admin/businesses` | `BUSINESS_VIEW` (existing) |
+| GET | `/api/v1/admin/businesses/:id` | `BUSINESS_VIEW` |
+| GET | `/api/v1/admin/businesses/:id/locations` | `BUSINESS_VIEW` |
+| PATCH | `/api/v1/admin/businesses/:id/catalog` | `BUSINESS_EDIT` (allowlisted core fields; no slug/owner/status) |
+| GET | `/api/v1/admin/businesses/:businessId/content` | `BUSINESS_VIEW` (existing) |
+
+BusinessLocation staff CRUD beyond initial create remains **AOP.3** backend/UI scope.
 
 ### 2.3 Staff-created Business rules (locked)
 
@@ -148,7 +160,7 @@ Canonical permissions: `packages/shared-types/src/staff-permissions.ts`. Enforce
 | Operation | Permission (existing or AOP.1 debt) |
 |-----------|-----------------------------------|
 | View catalog / businesses / BL read | `BUSINESS_VIEW` |
-| Create Business (staff) | **`BUSINESS_EDIT`** at minimum; consider **`BUSINESS_CREATE`** enum in AOP.1 if split needed |
+| Create Business (staff) | **`BUSINESS_CREATE`** (AOP.1 — also granted to **ADMIN**, **CITY_ADMIN**, **CONTENT_MANAGER**) |
 | Edit Business core/content | `BUSINESS_EDIT`, `CONTENT_EDIT` |
 | Taxonomy assign | `CATEGORY_EDIT` + business taxonomy patch |
 | Manage BusinessLocations (staff) | `BUSINESS_EDIT` (+ city scope) |
@@ -201,7 +213,7 @@ AOP is a **privileged** plane. Mutations **should** emit **`AuditLog`** rows whe
 
 | Event | Audit expectation | Current gap (AOP.5) |
 |-------|-------------------|---------------------|
-| Staff Business create | `BUSINESS_*` create action | **New** action may be required in AOP.1 |
+| Staff Business create | **`AuditAction.BUSINESS_CREATE`** | **Implemented AOP.1** |
 | Business core edit | `BUSINESS_PROFILE_UPDATE` pattern | Partial via owner paths; Admin patch audit **incomplete** |
 | Status / featured / plan | Distinct actions | **e.g.** `updateBusinessStatus` **no audit today** — fix in AOP.5 |
 | Taxonomy change | Category/business taxonomy audit | Extend as needed |

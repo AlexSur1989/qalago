@@ -15,6 +15,8 @@ export enum StaffPermission {
 
   BUSINESS_VIEW = 'BUSINESS_VIEW',
   BUSINESS_EDIT = 'BUSINESS_EDIT',
+  /** Privileged staff catalog create (AOP.1 — ownerless Business + primary BL). */
+  BUSINESS_CREATE = 'BUSINESS_CREATE',
   BUSINESS_APPLICATION_REVIEW = 'BUSINESS_APPLICATION_REVIEW',
   BUSINESS_CLAIM_REVIEW = 'BUSINESS_CLAIM_REVIEW',
   BUSINESS_OWNERSHIP_CHANGE = 'BUSINESS_OWNERSHIP_CHANGE',
@@ -122,6 +124,7 @@ const ROLE_PERMISSIONS: Record<UserRole, ReadonlySet<StaffPermission>> = {
     StaffPermission.USER_SUSPEND,
     StaffPermission.BUSINESS_VIEW,
     StaffPermission.BUSINESS_EDIT,
+    StaffPermission.BUSINESS_CREATE,
     StaffPermission.BUSINESS_APPLICATION_REVIEW,
     StaffPermission.BUSINESS_CLAIM_REVIEW,
     StaffPermission.MODERATION_VIEW,
@@ -147,6 +150,7 @@ const ROLE_PERMISSIONS: Record<UserRole, ReadonlySet<StaffPermission>> = {
   [UserRole.CITY_ADMIN]: new Set([
     StaffPermission.BUSINESS_VIEW,
     StaffPermission.BUSINESS_EDIT,
+    StaffPermission.BUSINESS_CREATE,
     StaffPermission.BUSINESS_APPLICATION_REVIEW,
     StaffPermission.BUSINESS_CLAIM_REVIEW,
     StaffPermission.MODERATION_VIEW,
@@ -191,6 +195,7 @@ const ROLE_PERMISSIONS: Record<UserRole, ReadonlySet<StaffPermission>> = {
     StaffPermission.CONTENT_EDIT,
     StaffPermission.BUSINESS_VIEW,
     StaffPermission.BUSINESS_EDIT,
+    StaffPermission.BUSINESS_CREATE,
     StaffPermission.REPORT_CATEGORIES_VIEW,
     StaffPermission.REPORT_PROMOTIONS_VIEW,
   ]),

@@ -70,6 +70,7 @@ describe('AdminService.updateUserRole (Stage 6.9.1.1)', () => {
       {} as never,
       {} as never,
       staffStepUp as never,
+      {} as never,
     );
   });
 
