@@ -26,8 +26,8 @@ function redirectTarget(
 }
 
 describe('F.5 Phase 1.1 middleware locale redirect hotfix', () => {
-  it('1 neutral /uralsk + no cookie → /ru/uralsk', () => {
-    expect(redirectTarget('/uralsk')).toBe('/ru/uralsk');
+  it('1 neutral /uralsk + no cookie → /kk/uralsk', () => {
+    expect(redirectTarget('/uralsk')).toBe('/kk/uralsk');
   });
 
   it('2 neutral /uralsk + ru cookie → /ru/uralsk', () => {
@@ -38,39 +38,39 @@ describe('F.5 Phase 1.1 middleware locale redirect hotfix', () => {
     expect(redirectTarget('/uralsk', '', 'qalago_locale=kk')).toBe('/kk/uralsk');
   });
 
-  it('4 invalid cookie → /ru/uralsk', () => {
-    expect(redirectTarget('/uralsk', '', 'qalago_locale=nope')).toBe('/ru/uralsk');
+  it('4 invalid cookie → /kk/uralsk', () => {
+    expect(redirectTarget('/uralsk', '', 'qalago_locale=nope')).toBe('/kk/uralsk');
   });
 
   it('5 nested neutral path preserved', () => {
-    expect(redirectTarget('/uralsk/restaurants/cafes')).toBe('/ru/uralsk/restaurants/cafes');
+    expect(redirectTarget('/uralsk/restaurants/cafes')).toBe('/kk/uralsk/restaurants/cafes');
   });
 
   it('6 business neutral path preserved', () => {
     expect(redirectTarget('/uralsk/business/bar-code-51')).toBe(
-      '/ru/uralsk/business/bar-code-51',
+      '/kk/uralsk/business/bar-code-51',
     );
   });
 
   it('7 locationId preserved', () => {
     expect(redirectTarget('/uralsk/business/example', '?locationId=L1')).toBe(
-      '/ru/uralsk/business/example?locationId=L1',
+      '/kk/uralsk/business/example?locationId=L1',
     );
   });
 
   it('8 supported safe page preserved', () => {
     expect(redirectTarget('/uralsk/restaurants', '?page=3')).toBe(
-      '/ru/uralsk/restaurants?page=3',
+      '/kk/uralsk/restaurants?page=3',
     );
   });
 
   it('9 search q preserved', () => {
-    expect(redirectTarget('/uralsk/search', '?q=coffee')).toBe('/ru/uralsk/search?q=coffee');
+    expect(redirectTarget('/uralsk/search', '?q=coffee')).toBe('/kk/uralsk/search?q=coffee');
   });
 
   it('10 arbitrary unsupported query not propagated', () => {
     expect(redirectTarget('/uralsk/business/example', '?locationId=L1&utm_bad=x')).toBe(
-      '/ru/uralsk/business/example?locationId=L1',
+      '/kk/uralsk/business/example?locationId=L1',
     );
   });
 
@@ -176,7 +176,7 @@ describe('F.5 Phase 1.1 middleware locale redirect hotfix', () => {
   });
 
   it('23 unknown neutral path redirects once', () => {
-    expect(redirectTarget('/unknown-slug')).toBe('/ru/unknown-slug');
+    expect(redirectTarget('/unknown-slug')).toBe('/kk/unknown-slug');
   });
 
   it('24 unsupported locale is not accepted as supported locale', () => {

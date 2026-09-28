@@ -20,9 +20,10 @@ describe('business-web i18n stage 6.10B.5', () => {
     expect(normalizeLocale('kk-KZ')).toBe('kk');
   });
 
-  it('falls back invalid locale to ru', () => {
-    expect(normalizeLocale('en')).toBe('ru');
-    expect(normalizeLocale('')).toBe('ru');
+  it('falls back invalid locale to kk product default', () => {
+    expect(normalizeLocale('en')).toBe('kk');
+    expect(normalizeLocale('')).toBe('kk');
+    expect(normalizeLocale(undefined)).toBe('kk');
   });
 
   it('uses canonical cookie name', () => {

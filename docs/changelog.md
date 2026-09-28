@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-09-28 — KZ-C.1C — Consumer + Business Web Kazakh-first default locale
+
+- **Status:** **KZ-C.1C PASS — CONSUMER + BUSINESS WEB KK-FIRST IMPLEMENTED** (automated tests + builds). **KZ-C.1 NOT CLOSED** (KZ-C.1D push optional; KZ-C.1F physical QA pending). **Not** production compliance sign-off.
+- **Starting HEAD:** **`047aa330b982d59b323812884c413a5e52a2f238`** (KZ-C.1B Flutter).
+- **Checkpoint:** KZ-C.1C implementation commit in git log immediately after starting HEAD.
+- **Scope:** Consumer Web — `DEFAULT_PUBLIC_LOCALE = kk`, `normalizeLocale` / client SSR fallback → **kk**; neutral entry + `/` redirect follow cookie absence → **kk** without auto-setting `qalago_locale`. Business Web — same cookie/normalize/client semantics. **No** Flutter; **no** Admin Web; **no** backend/Prisma; **no** legal body copy; **no** F.5 canonical/hreflang/sitemap/**x-default** change (**x-default remains RU** intentionally).
+- **Tests:** Consumer Web vitest **323/323 PASS** (F.5/F.7 locale regressions updated for product default only). Business Web locale tests **PASS**; full business-web suite **204/206 PASS** — **2 pre-existing** hardcoded-ui-guard failures in `reviews/page.tsx` (out of scope).
+- **Build:** `@qalago/consumer-web` **next build PASS**; `@qalago/business-web` **next build PASS**.
+- **Physical QA:** **NOT PERFORMED** (deferred **KZ-C.1F**).
+- **Deferred:** KZ-C.1D notification template localization; KZ-C.2 legal KK bodies; Admin Web RU ops (Option B); Business Web RU-hardcoded operational strings (non-blocker); Montserrat Kazakh glyph browser check; soft-nav `<html lang>` debt.
+- **Next:** **Explicit agreement** before **KZ-C.1D** / **KZ-C.1E** / **KZ-C.1F** or **AOP.0** — **do not auto-start**.
+
+---
+
 ## 2026-09-28 — KZ-C.1B — Flutter Kazakh-first default locale
 
 - **Status:** **KZ-C.1B PASS — FLUTTER KK-FIRST IMPLEMENTED**. **KZ-C.1 NOT CLOSED** (Web KZ-C.1C pending; physical QA pending). **Not** full KZ-C.1 / not production compliance sign-off.

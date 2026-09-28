@@ -5,7 +5,7 @@ export const LOCALE_COOKIE_NAME = 'qalago_locale';
 export function normalizeLocale(value: string | null | undefined): AppLocale {
   if (value === 'kk' || value?.startsWith('kk')) return 'kk';
   if (value === 'ru' || value?.startsWith('ru')) return 'ru';
-  return 'ru';
+  return 'kk';
 }
 
 export type UiLabels = {

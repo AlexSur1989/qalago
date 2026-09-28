@@ -66,7 +66,7 @@ describe('F.6 Phase 3 well-known paths', () => {
     });
 
     it('C — neutral public route still redirects', () => {
-      expect(redirectTarget('/uralsk')).toBe('/ru/uralsk');
+      expect(redirectTarget('/uralsk')).toBe('/kk/uralsk');
     });
 
     it('D — RU/KK canonical routes unchanged', () => {

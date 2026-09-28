@@ -61,7 +61,7 @@ describe('F.7 Phase 1 legal routes', () => {
 
     it('does not treat nested paths as legal roots', () => {
       expect(isPublicLegalRootPath('/uralsk/privacy')).toBe(false);
-      expect(redirectTarget('/uralsk/privacy')).toBe('/ru/uralsk/privacy');
+      expect(redirectTarget('/uralsk/privacy')).toBe('/kk/uralsk/privacy');
     });
 
     it('does not introduce /ru/privacy as canonical redirect target', () => {

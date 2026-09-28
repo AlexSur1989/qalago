@@ -31,11 +31,11 @@ describe('F.5 Phase 1 locale routing foundation', () => {
     expect(isSupportedPublicLocale('RU')).toBe(false);
   });
 
-  it('default locale is ru', () => {
-    expect(DEFAULT_PUBLIC_LOCALE).toBe('ru');
-    expect(preferenceLocaleFromCookieValue(undefined)).toBe('ru');
-    expect(preferenceLocaleFromCookieValue('')).toBe('ru');
-    expect(preferenceLocaleFromCookieValue('bad')).toBe('ru');
+  it('default locale is kk (KZ-C.1C product default)', () => {
+    expect(DEFAULT_PUBLIC_LOCALE).toBe('kk');
+    expect(preferenceLocaleFromCookieValue(undefined)).toBe('kk');
+    expect(preferenceLocaleFromCookieValue('')).toBe('kk');
+    expect(preferenceLocaleFromCookieValue('bad')).toBe('kk');
   });
 
   it('cookie preference ru and kk', () => {

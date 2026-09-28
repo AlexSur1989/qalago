@@ -5,7 +5,8 @@ export const SUPPORTED_PUBLIC_LOCALES = ['ru', 'kk'] as const;
 
 export type PublicLocale = (typeof SUPPORTED_PUBLIC_LOCALES)[number];
 
-export const DEFAULT_PUBLIC_LOCALE: PublicLocale = 'ru';
+/** Product default when no explicit `qalago_locale` preference (KZ-C.1C). */
+export const DEFAULT_PUBLIC_LOCALE: PublicLocale = 'kk';
 
 export function isSupportedPublicLocale(value: string): value is PublicLocale {
   return value === 'ru' || value === 'kk';
