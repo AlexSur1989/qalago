@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — AOP.5 — Admin catalog audit / lifecycle integration
+
+- **Status:** **AOP.5 PASS — ADMIN CATALOG AUDIT / LIFECYCLE INTEGRATED**. **AOP.6 NOT STARTED**. **Mass catalog population remains BLOCKED**.
+- **Starting HEAD:** **`8ed4f1b`** (post AOP.4 docs checkpoint).
+- **Checkpoint (commit):** see git log — `feat(admin): complete catalog audit and lifecycle integration`.
+- **Summary:** Additive **`AuditAction`** enum migration (**`20260928230000_aop5_catalog_audit_actions`**) — taxonomy/status/featured/BL dedicated actions; **`AdminService`** audits status (tx), featured (tx), taxonomy; **`AdminBusinessLocationService`** uses **`BUSINESS_LOCATION_*`** + set-primary before/after metadata; lifecycle verified **PENDING** not public-active, **ACTIVE**/**BLOCKED** transitions audited. Admin Web catalog detail — **taxonomy editor** (`CATEGORY_EDIT`), **lifecycle** activate/block (`BUSINESS_EDIT`, dedicated status API). Plan audit remains **`PLAN_OVERRIDE`**. Tests: **`admin-aop5-catalog-audit-lifecycle.spec.ts`** (6) + AOP.1/3/4 regression; admin-web **87/87** + build PASS.
+- **Deferred:** Full AOP.6 regression gate; featured/plan UI on catalog detail (remain dashboard); audit log UI filters for new actions; **KZ-C.1 NOT CLOSED**.
+- **Next:** **AOP.6** automated regression — explicit agreement only.
+
+---
+
 ## 2026-09-28 — AOP.4 — Admin catalog RBAC / CITY_ADMIN enforcement
 
 - **Status:** **AOP.4 PASS — ADMIN CATALOG RBAC / CITY SCOPE ENFORCED**. **AOP.5 NOT STARTED**. **Mass catalog population remains BLOCKED**.

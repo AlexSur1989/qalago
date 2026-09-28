@@ -128,4 +128,20 @@ export const adminCatalogApi = {
       `/admin/businesses/${encodeURIComponent(businessId)}/locations/${encodeURIComponent(locationId)}`,
       { method: 'DELETE', token },
     ),
+
+  updateStatus: (token: string, businessId: string, status: string) =>
+    api<{ id: string; status: string }>(
+      `/admin/businesses/${encodeURIComponent(businessId)}/status`,
+      { method: 'PATCH', token, body: JSON.stringify({ status }) },
+    ),
+
+  updateTaxonomy: (
+    token: string,
+    businessId: string,
+    body: { categoryId?: string; subcategoryIds?: string[] },
+  ) =>
+    api<AdminCatalogSubcategoryRow[]>(
+      `/admin/businesses/${encodeURIComponent(businessId)}/taxonomy`,
+      { method: 'PATCH', token, body: JSON.stringify(body) },
+    ),
 };

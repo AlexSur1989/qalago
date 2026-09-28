@@ -70,6 +70,12 @@ const labels = {
     statusPending: 'На модерации',
     statusActive: 'Активно',
     statusBlocked: 'Заблокировано',
+    actionActivate: 'Опубликовать (ACTIVE)',
+    actionBlock: 'Заблокировать',
+    confirmActivate: 'Опубликовать заведение в каталоге?',
+    confirmBlock: 'Заблокировать заведение? Оно исчезнет из публичного каталога.',
+    saveTaxonomy: 'Сохранить таксономию',
+    taxonomySaved: 'Таксономия обновлена.',
   },
   kk: {
     navCatalog: 'Каталог',
@@ -139,6 +145,12 @@ const labels = {
     statusPending: 'Модерацияда',
     statusActive: 'Белсенді',
     statusBlocked: 'Блокталған',
+    actionActivate: 'Жариялау (ACTIVE)',
+    actionBlock: 'Блоктау',
+    confirmActivate: 'Заведениені каталогта жариялау керек пе?',
+    confirmBlock: 'Заведениені блоктау керек пе? Ол жария каталогтан жойылады.',
+    saveTaxonomy: 'Таксономияны сақтау',
+    taxonomySaved: 'Таксономия жаңартылды.',
   },
 } as const;
 

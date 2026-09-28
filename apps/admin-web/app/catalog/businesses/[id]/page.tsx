@@ -12,13 +12,18 @@ import {
 } from '@/lib/admin-catalog-labels';
 import { parseAdminCatalogApiError } from '@/lib/admin-catalog-errors';
 import { buildAdminCatalogPatchPayload } from '@/lib/admin-catalog-form';
-import { canEditAdminCatalogBusiness } from '@/lib/admin-catalog-rbac';
+import {
+  canEditAdminCatalogBusiness,
+  canEditCatalogTaxonomy,
+} from '@/lib/admin-catalog-rbac';
 import { statusClass } from '@/lib/admin-utils';
+import { adminApi, type CategoryRow, type SubcategoryAdminRow } from '@/lib/api';
 
 export default function CatalogBusinessDetailPage() {
   const params = useParams<{ id: string }>();
-  const { token, user, locale, cities } = useCatalogContext();
+  const { token, user, locale, cities, citySlug } = useCatalogContext();
   const canEdit = canEditAdminCatalogBusiness(user.role);
+  const canTaxonomy = canEditCatalogTaxonomy(user.role);
 
   const [detail, setDetail] = useState<AdminCatalogBusinessDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,6 +39,14 @@ export default function CatalogBusinessDetailPage() {
   const [editWorkHoursJson, setEditWorkHoursJson] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [statusBusy, setStatusBusy] = useState(false);
+  const [categories, setCategories] = useState<CategoryRow[]>([]);
+  const [subcategories, setSubcategories] = useState<SubcategoryAdminRow[]>([]);
+  const [taxCategoryId, setTaxCategoryId] = useState('');
+  const [taxSubIds, setTaxSubIds] = useState<string[]>([]);
+  const [taxSaving, setTaxSaving] = useState(false);
+  const [taxError, setTaxError] = useState<string | null>(null);
+  const [taxOk, setTaxOk] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -50,6 +63,8 @@ export default function CatalogBusinessDetailPage() {
         setEditInstagram(d.instagram ?? '');
         setEditWebsite(d.website ?? '');
         setEditWorkHoursJson(d.workHours ? JSON.stringify(d.workHours) : '');
+        setTaxCategoryId(d.category.id);
+        setTaxSubIds(d.subcategories.map((s) => s.id));
       })
       .catch((err) => setError(parseAdminCatalogApiError(err, locale).message))
       .finally(() => setLoading(false));
@@ -58,6 +73,70 @@ export default function CatalogBusinessDetailPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    if (!canTaxonomy || !token) return;
+    adminApi
+      .listCategoriesAdmin(token, citySlug)
+      .then(setCategories)
+      .catch(() => undefined);
+  }, [canTaxonomy, token, citySlug]);
+
+  useEffect(() => {
+    if (!canTaxonomy || !token || !taxCategoryId) {
+      setSubcategories([]);
+      return;
+    }
+    adminApi.listSubcategoriesAdmin(token, taxCategoryId).then(setSubcategories).catch(() => undefined);
+  }, [canTaxonomy, token, taxCategoryId]);
+
+  const subsForCategory = subcategories.filter(
+    (s) => s.categoryId === taxCategoryId && s.isActive,
+  );
+
+  function toggleTaxSub(id: string) {
+    setTaxSubIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
+
+  async function onSaveTaxonomy(e: FormEvent) {
+    e.preventDefault();
+    if (!canTaxonomy || taxSaving) return;
+    setTaxError(null);
+    setTaxOk(false);
+    setTaxSaving(true);
+    try {
+      await adminCatalogApi.updateTaxonomy(token, params.id, {
+        categoryId: taxCategoryId,
+        subcategoryIds: taxSubIds,
+      });
+      setTaxOk(true);
+      await load();
+    } catch (err) {
+      setTaxError(parseAdminCatalogApiError(err, locale).message);
+    } finally {
+      setTaxSaving(false);
+    }
+  }
+
+  async function changeStatus(next: 'ACTIVE' | 'BLOCKED' | 'PENDING') {
+    if (!canEdit || statusBusy || !detail) return;
+    const confirmMsg =
+      next === 'BLOCKED'
+        ? adminCatalogLabel(locale, 'confirmBlock')
+        : next === 'ACTIVE'
+          ? adminCatalogLabel(locale, 'confirmActivate')
+          : adminCatalogLabel(locale, 'confirmActivate');
+    if (!window.confirm(confirmMsg)) return;
+    setStatusBusy(true);
+    try {
+      await adminCatalogApi.updateStatus(token, params.id, next);
+      await load();
+    } catch (err) {
+      setError(parseAdminCatalogApiError(err, locale).message);
+    } finally {
+      setStatusBusy(false);
+    }
+  }
 
   async function onSaveCatalog(e: FormEvent) {
     e.preventDefault();
@@ -123,19 +202,90 @@ export default function CatalogBusinessDetailPage() {
 
       <div className="card" style={{ marginTop: 16 }}>
         <h3 style={{ marginTop: 0 }}>{adminCatalogLabel(locale, 'sectionTaxonomy')}</h3>
-        <p>{categoryLabel}</p>
-        {detail.subcategories.length > 0 && (
-          <ul>
-            {detail.subcategories.map((s) => (
-              <li key={s.id}>{locale === 'kk' ? s.nameKk : s.nameRu}</li>
-            ))}
-          </ul>
+        {!canTaxonomy && (
+          <>
+            <p>{categoryLabel}</p>
+            {detail.subcategories.length > 0 && (
+              <ul>
+                {detail.subcategories.map((s) => (
+                  <li key={s.id}>{locale === 'kk' ? s.nameKk : s.nameRu}</li>
+                ))}
+              </ul>
+            )}
+          </>
+        )}
+        {canTaxonomy && (
+          <form onSubmit={onSaveTaxonomy} style={{ maxWidth: 640 }}>
+            {taxError && <p className="muted">{taxError}</p>}
+            {taxOk && <p className="muted">{adminCatalogLabel(locale, 'taxonomySaved')}</p>}
+            <label style={{ display: 'block' }}>
+              {adminCatalogLabel(locale, 'fieldCategory')}
+              <select
+                required
+                value={taxCategoryId}
+                onChange={(e) => {
+                  setTaxCategoryId(e.target.value);
+                  setTaxSubIds([]);
+                }}
+                style={{ width: '100%' }}
+              >
+                <option value="">—</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {locale === 'kk' ? c.nameKk : c.nameRu}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {subsForCategory.length > 0 && (
+              <fieldset style={{ marginTop: 12, border: 'none', padding: 0 }}>
+                <legend>{adminCatalogLabel(locale, 'fieldSubcategories')}</legend>
+                {subsForCategory.map((s) => (
+                  <label key={s.id} style={{ display: 'block' }}>
+                    <input
+                      type="checkbox"
+                      checked={taxSubIds.includes(s.id)}
+                      onChange={() => toggleTaxSub(s.id)}
+                    />{' '}
+                    {locale === 'kk' ? s.nameKk : s.nameRu}
+                  </label>
+                ))}
+              </fieldset>
+            )}
+            <button type="submit" className="btn btn-primary btn-sm" style={{ marginTop: 12 }} disabled={taxSaving}>
+              {taxSaving ? adminCatalogLabel(locale, 'saving') : adminCatalogLabel(locale, 'saveTaxonomy')}
+            </button>
+          </form>
         )}
       </div>
 
       <div className="card" style={{ marginTop: 16 }}>
         <h3 style={{ marginTop: 0 }}>{adminCatalogLabel(locale, 'sectionLifecycle')}</h3>
         <p>{adminCatalogStatusLabel(locale, detail.status)}</p>
+        {canEdit && (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {(detail.status === 'PENDING' || detail.status === 'BLOCKED') && (
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                disabled={statusBusy}
+                onClick={() => changeStatus('ACTIVE')}
+              >
+                {adminCatalogLabel(locale, 'actionActivate')}
+              </button>
+            )}
+            {detail.status === 'ACTIVE' && (
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                disabled={statusBusy}
+                onClick={() => changeStatus('BLOCKED')}
+              >
+                {adminCatalogLabel(locale, 'actionBlock')}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <div style={{ marginTop: 16 }}>

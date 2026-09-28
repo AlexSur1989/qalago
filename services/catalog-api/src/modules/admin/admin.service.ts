@@ -300,14 +300,31 @@ export class AdminService {
 
     await this.cityScope.assertBusinessInAdminScope(user, business.id);
 
+    const auditCityId = await resolveBusinessPrimaryCityId(this.prisma, business.id);
+    const fromStatus = business.status;
 
-
-    const updated = await this.prisma.business.update({
-
-      where: { id },
-
-      data: { status: dto.status },
-
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const row = await tx.business.update({
+        where: { id },
+        data: { status: dto.status },
+      });
+      if (fromStatus !== dto.status) {
+        await this.auditLog.record({
+          actor: user,
+          action: AuditAction.BUSINESS_STATUS_UPDATE,
+          resourceType: AuditResourceType.BUSINESS,
+          resourceId: id,
+          businessId: id,
+          cityId: auditCityId ?? undefined,
+          metadata: {
+            source: 'admin_status',
+            fromStatus,
+            toStatus: dto.status,
+          },
+          tx,
+        });
+      }
+      return row;
     });
 
 
@@ -374,20 +391,33 @@ export class AdminService {
 
     await this.cityScope.assertBusinessInAdminScope(user, business.id);
 
+    const auditCityId = await resolveBusinessPrimaryCityId(this.prisma, business.id);
 
-
-    return this.prisma.business.update({
-
-      where: { id },
-
-      data: {
-
-        isFeatured: dto.isFeatured,
-
-        featuredSlot: dto.featuredSlot,
-
-      },
-
+    return this.prisma.$transaction(async (tx) => {
+      const row = await tx.business.update({
+        where: { id },
+        data: {
+          isFeatured: dto.isFeatured,
+          featuredSlot: dto.featuredSlot,
+        },
+      });
+      await this.auditLog.record({
+        actor: user,
+        action: AuditAction.BUSINESS_FEATURED_UPDATE,
+        resourceType: AuditResourceType.BUSINESS,
+        resourceId: id,
+        businessId: id,
+        cityId: auditCityId ?? undefined,
+        metadata: {
+          source: 'admin_featured',
+          fromFeatured: business.isFeatured,
+          toFeatured: dto.isFeatured,
+          fromFeaturedSlot: business.featuredSlot,
+          toFeaturedSlot: dto.featuredSlot ?? null,
+        },
+        tx,
+      });
+      return row;
     });
 
   }
@@ -955,6 +985,10 @@ export class AdminService {
     await this.cityScope.assertBusinessInAdminScope(user, business.id);
     await this.cityScope.assertBusinessPrimaryLocationCityInAdminScope(user, businessId);
 
+    const priorSubcategories = await this.businessSubcategories.listForBusiness(businessId);
+    const fromCategoryId = business.categoryId;
+    const fromSubcategoryIds = priorSubcategories.map((s) => s.id);
+
     let categoryId = business.categoryId;
     if (dto.categoryId && dto.categoryId !== business.categoryId) {
       const category = await this.prisma.category.findUnique({ where: { id: dto.categoryId } });
@@ -978,7 +1012,25 @@ export class AdminService {
       await this.businessSubcategories.reconcileAfterCategoryChange(businessId, categoryId);
     }
 
-    return this.businessSubcategories.listForBusiness(businessId);
+    const result = await this.businessSubcategories.listForBusiness(businessId);
+    const auditCityId = await resolveBusinessPrimaryCityId(this.prisma, businessId);
+    await this.auditLog.record({
+      actor: user,
+      action: AuditAction.BUSINESS_TAXONOMY_UPDATE,
+      resourceType: AuditResourceType.BUSINESS,
+      resourceId: businessId,
+      businessId,
+      cityId: auditCityId ?? undefined,
+      metadata: {
+        source: 'admin_taxonomy',
+        fromCategoryId,
+        toCategoryId: categoryId,
+        fromSubcategoryIds,
+        toSubcategoryIds: result.map((s) => s.id),
+      },
+    });
+
+    return result;
   }
 
   private async ensureBusiness(id: string) {

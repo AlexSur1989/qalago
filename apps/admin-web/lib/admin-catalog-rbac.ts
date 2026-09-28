@@ -11,3 +11,7 @@ export function canCreateAdminCatalogBusiness(role: string): boolean {
 export function canEditAdminCatalogBusiness(role: string): boolean {
   return staffRoleHasPermission(role as UserRole, StaffPermission.BUSINESS_EDIT);
 }
+
+export function canEditCatalogTaxonomy(role: string): boolean {
+  return staffRoleHasPermission(role as UserRole, StaffPermission.CATEGORY_EDIT);
+}

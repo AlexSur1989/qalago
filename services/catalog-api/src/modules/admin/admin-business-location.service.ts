@@ -32,12 +32,17 @@ export class AdminBusinessLocationService {
     const created = await this.locations.createLocationForAdmin(businessId, dto);
     await this.auditLog.record({
       actor: staff,
-      action: AuditAction.BUSINESS_PROFILE_UPDATE,
+      action: AuditAction.BUSINESS_LOCATION_CREATE,
       resourceType: AuditResourceType.BUSINESS,
-      resourceId: businessId,
+      resourceId: created.id,
       businessId,
       cityId: dto.cityId,
-      metadata: { source: 'admin_location_create', locationId: created.id },
+      metadata: {
+        locationId: created.id,
+        cityId: dto.cityId,
+        isPrimary: created.isPrimary,
+        source: 'admin_location_create',
+      },
     });
     return created;
   }
@@ -66,12 +71,14 @@ export class AdminBusinessLocationService {
     const auditCityId = await resolveBusinessPrimaryCityId(this.prisma, businessId);
     await this.auditLog.record({
       actor: staff,
-      action: AuditAction.BUSINESS_PROFILE_UPDATE,
+      action: AuditAction.BUSINESS_LOCATION_UPDATE,
       resourceType: AuditResourceType.BUSINESS,
       resourceId: locationId,
       businessId,
       cityId: auditCityId ?? undefined,
       metadata: {
+        locationId,
+        cityId: updated.cityId,
         source: 'admin_location_update',
         changedFields: changedFieldsFromDto(dto as Record<string, unknown>),
       },
@@ -91,16 +98,28 @@ export class AdminBusinessLocationService {
     }
     await this.cityScope.assertCityInAdminScope(staff, target.cityId);
 
+    const previousPrimary = await this.prisma.businessLocation.findFirst({
+      where: { businessId, isPrimary: true },
+      select: { id: true, cityId: true },
+    });
+
     const updated = await this.locations.setPrimaryLocationForAdmin(businessId, locationId);
     const auditCityId = await resolveBusinessPrimaryCityId(this.prisma, businessId);
     await this.auditLog.record({
       actor: staff,
-      action: AuditAction.BUSINESS_PROFILE_UPDATE,
+      action: AuditAction.BUSINESS_LOCATION_SET_PRIMARY,
       resourceType: AuditResourceType.BUSINESS,
       resourceId: locationId,
       businessId,
       cityId: auditCityId ?? undefined,
-      metadata: { source: 'admin_location_set_primary', locationId },
+      metadata: {
+        source: 'admin_location_set_primary',
+        locationId,
+        previousPrimaryLocationId: previousPrimary?.id ?? null,
+        previousPrimaryCityId: previousPrimary?.cityId ?? null,
+        newPrimaryLocationId: updated.id,
+        newPrimaryCityId: updated.cityId,
+      },
     });
     return updated;
   }
@@ -119,12 +138,17 @@ export class AdminBusinessLocationService {
     const auditCityId = await resolveBusinessPrimaryCityId(this.prisma, businessId);
     await this.auditLog.record({
       actor: staff,
-      action: AuditAction.BUSINESS_PROFILE_UPDATE,
+      action: AuditAction.BUSINESS_LOCATION_DELETE,
       resourceType: AuditResourceType.BUSINESS,
       resourceId: locationId,
       businessId,
       cityId: auditCityId ?? undefined,
-      metadata: { source: 'admin_location_delete', locationId },
+      metadata: {
+        source: 'admin_location_delete',
+        locationId,
+        cityId: target.cityId,
+        wasPrimary: target.isPrimary,
+      },
     });
     return result;
   }

@@ -201,7 +201,21 @@ If an AOP operation cannot be expressed with current permissions: record **AOP.1
 
 **Legacy bypass audit:** `POST /api/v1/businesses` (owner plane) remains **global ADMIN/SUPER_ADMIN only** — not staff `BUSINESS_CREATE`. Admin catalog mutations use `@AdminStaffRoute` + `StaffPermission` + `CityScopeService`.
 
-**AOP.5 debt:** dedicated audit actions for status/featured/plan/location mutations; lifecycle policy defaults.
+### 5.4 AOP.5 — audit action matrix (implemented)
+
+| Mutation | AuditAction | Notes |
+|----------|-------------|--------|
+| Staff create Business | `BUSINESS_CREATE` | AOP.1 |
+| Catalog core patch | `BUSINESS_PROFILE_UPDATE` | metadata `source: admin_catalog_patch` |
+| Taxonomy patch | `BUSINESS_TAXONOMY_UPDATE` | from/to category + subcategory ids |
+| Status patch | `BUSINESS_STATUS_UPDATE` | fromStatus → toStatus; tx with mutation |
+| Featured patch | `BUSINESS_FEATURED_UPDATE` | featured + slot before/after |
+| Plan tier (admin) | `PLAN_OVERRIDE` | existing `PlansService.adminSetTier` |
+| BL create/update/set-primary/delete | `BUSINESS_LOCATION_*` | dedicated enum values; set-primary records old/new primary ids |
+
+**Lifecycle:** staff create defaults **`PENDING`**; public discovery queries require **`ACTIVE`**; **`BLOCKED`** excluded. Status changes via **`PATCH …/status`** only (not catalog PATCH). **Moderation:** `BLOCKED` is **Business lifecycle state**; staff may reactivate via status endpoint (audited) — no second moderation gate added in AOP.5.
+
+**Admin Web:** catalog detail — **lifecycle** actions (`BUSINESS_EDIT`); **taxonomy** editor (`CATEGORY_EDIT`). Featured/plan remain on legacy **dashboard** (audited backend).
 
 ---
 
@@ -295,7 +309,7 @@ All Admin catalog mutations go through **Catalog API** → **PostgreSQL**. Flutt
 | **AOP.2** | Admin Web: **`/catalog/businesses`** list/detail/create/catalog edit; locations **read-only** (superseded on detail by AOP.3 manager) | AOP.1 | vitest + build **PASS** | — |
 | **AOP.3** | Admin Web + API: BusinessLocation CRUD + set-primary (delegates **`BusinessLocationService.*ForAdmin`**) | AOP.1 | vitest + build + **`admin-aop3-business-location.spec.ts`** | Mass import |
 | **AOP.4** | RBAC + CITY_ADMIN enforcement matrix (**§5.3**) | AOP.1–3 | **`admin-aop4-catalog-rbac.spec.ts`** + 6.12A.9.4.5A | New roles |
-| **AOP.5** | Audit + lifecycle policy (status defaults, audit gaps) | AOP.1 | audit log tests | Legal CMS |
+| **AOP.5** | Audit + lifecycle + catalog detail taxonomy/lifecycle UX (**§5.4**) | AOP.1–4 | **`admin-aop5-catalog-audit-lifecycle.spec.ts`** | Legal CMS |
 | **AOP.6** | Full automated regression (admin + catalog-api) | AOP.1–5 | CI green | Mobile/consumer |
 | **AOP.7** | Physical Admin browser QA + **AOP CLOSURE** | AOP.6 | Manual checklist | Population |
 
