@@ -44,7 +44,7 @@
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending (6.12A)** | **None** — contour closed (**5E** finalized) |
 | **Flutter Web disposition** | **PASS — DEV/QA ONLY** (Option **B**); see **`docs/changelog.md`** |
-| **Public help** | **PUBLIC HELP PASS — CONSUMER WEB PUBLIC SUPPORT** (automated); **`/help`** guest public support on Consumer Web; Business Web **`/help`** = owner only; physical QA **PENDING** |
+| **Public help** | **PUBLIC HELP PASS** (automated); locale-switch hotfix on neutral routes (**`/help`**, F.7 legal) — physical retest **PENDING**; Business Web **`/help`** = owner only |
 | **Next** | **Explicit agreement** before **F.8** or other stages — **do not auto-start**; public help physical QA; optional **`<html lang>`** soft nav |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.

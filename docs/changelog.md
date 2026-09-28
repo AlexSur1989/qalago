@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — Public help hotfix — locale switch on locale-neutral routes
+
+- **Status:** **PUBLIC HELP LOCALE SWITCH HOTFIX — IMPLEMENTED / AUTOMATED PASS**. **Physical retest: PENDING**. **F.7 CLOSED / PASS**. **F.8 NOT STARTED**.
+- **Checkpoint:** Pre-hotfix HEAD **`840a842ec4c38b290bbc30020b3cac7b1231929d`**; implementation commit in git log immediately after.
+- **Scope:** Consumer Web — `swapLocaleInPathname` + `LocaleSwitcher` refresh when pathname unchanged; regression tests for **`/help`** and F.7 legal roots.
+- **Summary:** Physical QA on **`/help`**: language switcher navigated to **`/kk/help`** / **`/ru/help`** → **404**. **Root cause:** `swapLocaleInPathname` prefixed locale onto neutral segments (`help`, `privacy`, etc.). **Fix:** locale-neutral roots keep path; cookie updates + **`router.refresh()`** re-render RU/KK chrome/content. Discovery **`/ru|kk/…`** switching unchanged.
+- **Deferred:** User physical retest on **`/help`** and legal pages; full **PUBLIC HELP** physical QA sign-off still **PENDING**.
+- **Next:** Physical retest locale switch on **`/help`**; **do not auto-start F.8**.
+
+---
+
 ## 2026-09-28 — Public help — Consumer Web public support
 
 - **Status:** **PUBLIC HELP PASS — CONSUMER WEB PUBLIC SUPPORT** (automated verified). **Physical QA: PENDING**. **F.7 CLOSED / PASS** (not reopened). **F.8 NOT STARTED**.

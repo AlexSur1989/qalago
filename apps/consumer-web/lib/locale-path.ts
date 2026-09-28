@@ -1,3 +1,4 @@
+import { isPublicLocaleNeutralRootPath } from './legal-paths';
 import { parsePageParam } from './search-query';
 import { isSupportedPublicLocale, type PublicLocale } from './public-locale';
 
@@ -92,7 +93,11 @@ export function swapLocaleInPathname(
   searchParams: PublicQueryInput,
   targetLocale: PublicLocale,
 ): string {
-  const parts = pathname.split('/').filter(Boolean);
+  const normalized = pathname.startsWith('/') ? pathname : `/${pathname}`;
+  if (isPublicLocaleNeutralRootPath(normalized)) {
+    return `${normalized}${buildSafePublicQueryString(searchParams)}`;
+  }
+  const parts = normalized.split('/').filter(Boolean);
   const rest = isSupportedPublicLocale(parts[0] ?? '') ? parts.slice(1) : parts;
   const path = rest.length ? `/${targetLocale}/${rest.join('/')}` : `/${targetLocale}`;
   return `${path}${buildSafePublicQueryString(searchParams)}`;

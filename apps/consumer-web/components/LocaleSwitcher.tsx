@@ -23,6 +23,11 @@ export function LocaleSwitcher({ locale: layoutLocale }: { locale: AppLocale }) 
     if (next === activeLocale) return;
     setLocaleCookie(next);
     const target = buildLocaleSwitchTarget(pathname, searchParams, next);
+    const targetPath = target.split('?')[0] ?? target;
+    if (targetPath === pathname) {
+      router.refresh();
+      return;
+    }
     router.push(target);
   }
 
