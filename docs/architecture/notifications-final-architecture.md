@@ -83,3 +83,15 @@ List, pagination, type labels, mark read / mark all, unread badge via `lib/api.t
 ## Deferred product scope
 
 Push preference center, marketing/guest push, delivery analytics/outbox, Web notification target navigation, scheduled plan-expiry job (lazy sync remains).
+
+---
+
+## KZ-C.1D — Localized presentation (contract lock)
+
+**Status:** **KZ-C.1D.1 PASS — architecture locked** (docs only; **not implemented**). Full contract: **[notification-localization.md](./notification-localization.md)**.
+
+**Decision (summary):** **Server-side typed bilingual templates (Option B)** at push send time and for Business Web inbox. **One** persisted `Notification` row; **per-device** push locale via `PushDevice.locale` (null/invalid → **kk**). Persisted `title`/`body` remain **legacy/API fallback**, not authoritative for typed OS/Web display. **Flutter in-app** keeps E.3 `presentAppNotification` + ARB; parity via tests.
+
+**Unchanged from E:** FCM **data** whitelist, E.4 navigation, single `NotificationsService` create path, no client create API, no Prisma migration for KZ-C.1D.
+
+**Implementation deferred** until agreed **KZ-C.1D** code stage; physical push QA deferred **KZ-C.1F**.

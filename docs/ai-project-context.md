@@ -50,7 +50,8 @@
 | **F.8 external debt** | **Public HTTPS social crawler previews** (Telegram/WhatsApp/Facebook/X on **`qalago.kz`**) — **NOT VERIFIED**; trusted **`/uploads/…`** Business cover — **NOT OBSERVED** physically (automated PASS) |
 | **KZ-C.1B** | **PASS — FLUTTER KK-FIRST IMPLEMENTED** (automated tests; **physical QA NOT YET**) — see **`docs/changelog.md`** |
 | **KZ-C.1C** | **PASS — CONSUMER + BUSINESS WEB KK-FIRST IMPLEMENTED** (automated tests + builds; **physical QA NOT YET**; **x-default RU** unchanged) — see **`docs/changelog.md`** |
-| **Next** | **Explicit agreement** before **KZ-C.1D** / **KZ-C.1E** / **KZ-C.1F** or **AOP.0**; do not auto-start |
+| **KZ-C.1D.1** | **PASS — NOTIFICATION LOCALIZATION ARCHITECTURE LOCKED** (docs only; Option B server typed templates; **no DB migration**) — **`docs/architecture/notification-localization.md`** |
+| **Next** | **Explicit agreement** before **KZ-C.1D implementation** / **KZ-C.1E** / **KZ-C.1F** or **AOP.0**; do not auto-start |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -74,7 +75,7 @@
 
 | Topic | Contract (summary) |
 |-------|-------------------|
-| **KK-first** | **QALAGO PRODUCT POLICY (P0 before public launch):** no saved language → **kk**; explicit user choice **wins forever**; Russian fully supported. **Flutter IMPLEMENTED (KZ-C.1B)**; **Consumer + Business Web IMPLEMENTED (KZ-C.1C)** — `qalago_locale` only on explicit switch; **Admin Web deferred**. |
+| **KK-first** | **QALAGO PRODUCT POLICY (P0 before public launch):** no saved language → **kk**; explicit user choice **wins forever**; Russian fully supported. **Flutter IMPLEMENTED (KZ-C.1B)**; **Consumer + Business Web IMPLEMENTED (KZ-C.1C)**; **Notifications push/Web presentation ARCHITECTURE LOCKED (KZ-C.1D.1)**, implementation pending. |
 | **Operator** | **`OPERATOR_IDENTITY = PENDING BUSINESS DECISION`** — P0 **production** blocker for legal publication; **not** internal dev blocker. |
 | **Legal KK/RU** | Target: **approved** KK + RU where applicable; no uncontrolled MT as final legal text. **Current:** RU draft bodies on Consumer Web (F.7). |
 | **Legal source of truth** | **Backend `LegalDocument`** = version authority for tracked docs; **Consumer Web** = public presentation (F.7 neutral URLs); **`LegalAcceptance`** = proof — **clients not wired yet** (KZ-C.2). |

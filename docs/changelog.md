@@ -6,6 +6,28 @@
 
 ---
 
+## 2026-09-28 — KZ-C.1D.1 — Notification localization architecture lock
+
+- **Status:** **KZ-C.1D.1 PASS — NOTIFICATION LOCALIZATION ARCHITECTURE LOCKED** (documentation only). **KZ-C.1D implementation NOT STARTED**. **Not** production compliance sign-off.
+- **Starting HEAD:** **`27d73d56ac47def5665ed1e5c3d4d0624b2b597f`**
+- **Checkpoint:** KZ-C.1D.1 docs commit in git log immediately after starting HEAD.
+- **Scope:** **Docs only** — canonical contract **`docs/architecture/notification-localization.md`**; cross-links in **`notifications-final-architecture.md`**, **`notification-producers.md`**, **`kazakhstan-compliance-contract.md`**, **`docs/ai-project-context.md`**. **No** application code, **no** Prisma/DB.
+- **Decision:** **Option B** — centralized server-side typed **KK/RU** renderer for push OS copy (per-device `PushDevice.locale`, null/invalid → **kk**) and Business Web `/messages`; persisted `title`/`body` = legacy fallback; Flutter E.3 ARB presentation preserved with parity tests; FCM data whitelist unchanged; **no migration**.
+- **Rejected:** Option A (data-only client OS copy) — platform/reliability risk, no Business Web fix, reopens E.5 push display assumptions.
+- **Physical QA:** **NOT PERFORMED** (deferred **KZ-C.1F**).
+- **Deferred:** KZ-C.1D code, KZ-C.1E automated tests, payload field additions in producers, optional shared TS package, push preference center.
+- **Next:** **Explicit agreement** before **KZ-C.1D implementation** — **do not auto-start**.
+
+---
+
+## 2026-09-28 — KZ-C.1D.0 — Notification locale read-only audit
+
+- **Status:** **KZ-C.1D.0 PASS — READ-ONLY AUDIT** (no code/docs). Findings: Flutter in-app typed notifications KK/RU OK; push + Business Web use persisted RU; recommend design before implementation (**C** → addressed by KZ-C.1D.1 Option B).
+- **Starting HEAD:** **`27d73d56ac47def5665ed1e5c3d4d0624b2b597f`**
+- **Next:** KZ-C.1D.1 architecture lock (this changelog entry follows).
+
+---
+
 ## 2026-09-28 — KZ-C.1C — Consumer + Business Web Kazakh-first default locale
 
 - **Status:** **KZ-C.1C PASS — CONSUMER + BUSINESS WEB KK-FIRST IMPLEMENTED** (automated tests + builds). **KZ-C.1 NOT CLOSED** (KZ-C.1D push optional; KZ-C.1F physical QA pending). **Not** production compliance sign-off.

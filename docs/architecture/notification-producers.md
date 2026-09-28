@@ -53,9 +53,22 @@ Future producer categories, whitelist extensions (`locationId` / `citySlug`), an
 - **Never** call FCM inside Prisma `$transaction` (tx-bound producers schedule push after commit).
 - **Eligibility:** all meaningful E.2 types except `GENERAL` and `NEW_PROMOTION`.
 - **Payload (data):** `notificationId`, `type`, optional `targetType`, `targetId`, optional `businessId` (REVIEW only). No UGC, secrets, or arbitrary routes.
-- **Localization:** OS title/body use persisted notification strings; device `locale` hint on registration for future copy. No server-side user locale preference yet.
+- **Localization (E.5 as shipped):** OS title/body use persisted notification strings; device `locale` hint stored but not applied to copy.
+- **Localization (KZ-C.1D target — [notification-localization.md](./notification-localization.md)):** Central typed **KK/RU renderer** at push send + Business Web inbox; persisted strings = legacy fallback only; producers add **safe payload** fields; **no** per-producer bilingual strings.
 - **Client tap:** whitelisted data → `AppNotification` → E.4 `resolveNotificationDestination`.
 - **Config:** `PUSH_ENABLED=false` by default; Firebase Admin creds via env. Mobile requires external `google-services.json` / `GoogleService-Info.plist`.
+
+## Producer contract (KZ-C.1D target)
+
+When KZ-C.1D is implemented, producers emit:
+
+- `type`, `targetType`, `targetId`, `userId`(s)
+- **`payload`** with presentation-safe fields (`businessName`, `publicReason`, `planTier`, etc. — see notification-localization.md §9)
+- **`title` / `body`:** legacy compatibility (RU placeholders acceptable); **not** used for typed push/Web display
+
+Producers **must not** branch on locale or embed KK copy.
+
+---
 
 ## Deferred (E.3+ / infrastructure)
 
