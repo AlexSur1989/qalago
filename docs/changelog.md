@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — F.8 — Social preview / OG image pipeline finalized (umbrella)
+
+- **Status:** **F.8 PASS — SOCIAL PREVIEW / OG IMAGE PIPELINE FINALIZED**. **F.8 CLOSED / PASS**. **F.8.5 LOCAL PHYSICAL QA PASS**. **F.7 / PUBLIC HELP** unchanged.
+- **Checkpoint:** Pre-closure HEAD **`4ab630c95c8d7c011efd0a2e107298e25e2ef086`**; docs closure commit in git log immediately after. **Implementation code:** **`4ab630c…`** (F.8.4); F.8.0–F.8.3 commits in git log.
+- **Scope:** **Documentation only** — record user physical QA on **`http://localhost:3005`**; § **F.8** closure assessment; **no application/API/DB changes**.
+- **Summary:** **Local physical PASS:** RU/KK city, help, privacy, terms, account-deletion, search (**noindex**), **`/support` → `/help`**, canonical Business + real **`locationId`** (OG URL without query; fallback image), external Unsplash cover → fallback (**coffee-house-uralsk**), direct fallback PNG. **NOT OBSERVED:** trusted **`/uploads/…`** Business cover in live catalog (automated F.8.3/F.8.4 PASS). **NOT VERIFIED:** **`https://qalago.kz`** Telegram/WhatsApp/Facebook/X crawler previews. § **F.8.17** criterion **19** recorded per § **18** (local QA + separate external debt) — aligned with **F.6** closure pattern.
+- **Deferred (external production debt):** Public HTTPS social crawler verification on deployed Consumer Web origin.
+- **Next:** **Explicit agreement** before next stage — **do not auto-start** post-F.8 work.
+
+---
+
 ## 2026-09-28 — F.8.4 — Automated social preview regression gate
 
 - **Status:** **F.8.4 PASS — AUTOMATED SOCIAL PREVIEW REGRESSION GATE**. **F.8 IN PROGRESS** (not CLOSED). **F.8.5 NOT STARTED**. **F.7 / PUBLIC HELP** unchanged.

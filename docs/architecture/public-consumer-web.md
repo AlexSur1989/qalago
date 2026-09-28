@@ -494,7 +494,7 @@ Web authentication; favorites; Consumer Web interactive map; City Discovery; Hom
 ## F.8 — Social preview / OG image pipeline
 
 **Gate:** F.8 — Social preview / OG image pipeline  
-**Status:** **F.8 IN PROGRESS** — **F.8.0–F.8.3 PASS**; **F.8.4 PASS — AUTOMATED SOCIAL PREVIEW REGRESSION GATE**; **F.8.5 NOT STARTED**
+**Status:** **F.8 CLOSED / PASS — SOCIAL PREVIEW / OG IMAGE PIPELINE FINALIZED** (Phases **F.8.0–F.8.5**). **Public HTTPS social crawler previews:** **NOT VERIFIED** — external production debt (**§18**).
 
 **Authority:** This section is the **canonical F.8 contract**. Other docs **reference** this section; they must not duplicate full contract text.
 
@@ -660,7 +660,7 @@ Prefer **cacheable / stable** preview assets. **No** per-request random output. 
 | **F.8.2** | Shared fallback on indexable public route families; preserve F.5/F.7 canonical behavior | **PASS** (F.8.1 plumbing + route matrix verified; **`f8-phase2-route-rollout.test.ts`**) |
 | **F.8.3** | Business-specific eligible cover + strict trusted-media fallback | **PASS** — **`lib/seo/business-social-preview.ts`**; **`coverImageUrl` only**; **`effectiveMedia` deferred** (branch-grain ambiguity) |
 | **F.8.4** | Full automated regression (metadata, canonical, locale, legal/help, business fallback, build) | **PASS** — **`f8-phase4-automated-gate.test.ts`**; § **F.8.17** criteria **1–18** automated (**19** = F.8.5 external) |
-| **F.8.5** | Physical/public social-preview QA + F.8 closure | **NOT STARTED** |
+| **F.8.5** | Physical/public social-preview QA + F.8 closure | **PASS** — local physical browser QA (**localhost:3005**, **2026-09-28**); public crawler QA **NOT VERIFIED** (**§18**) |
 
 **Do not auto-start F.8.1** without explicit approval.
 
@@ -692,11 +692,15 @@ F.8 umbrella **CLOSED / PASS** requires **all** of:
 
 Local tests and localhost builds **cannot** prove external social previews. Final production verification requires **deployed HTTPS** origin and may include Telegram, WhatsApp, Facebook/Open Graph debugger, X/Twitter-compatible preview tools. **Do not** claim these verified during local implementation-only milestones.
 
-**Milestone:** **F.8.4 PASS — AUTOMATED SOCIAL PREVIEW REGRESSION GATE**. **F.8 overall: IN PROGRESS** (not CLOSED until **F.8.5**).
+**Criterion 19 closure interpretation (LOCKED intent, not a contract rewrite):** § **F.8.17** item **19** is satisfied when **physical/local** social-preview QA is **recorded** and **public HTTPS crawler** verification is **recorded separately** as **external production debt** — same pattern as **F.6** (implementation **CLOSED / PASS** with production association verification deferred). **Do not** conflate localhost view-source QA with Telegram/WhatsApp/Facebook/X crawler PASS.
 
-**F.8.3 trusted media (implemented):** Only **`/uploads/…`** paths on **`getConsumerWebOrigin()`** or **`getApiOrigin()`** (normalized); pathname decode + **`..`** rejection; emitted as **Consumer Web absolute** URLs. **No** fetch. **`coverImageUrl` only** — **`effectiveMedia` not used**.
+**F.8.5 local physical QA (recorded — 2026-09-28, Consumer Web `http://localhost:3005`):** **PASS** on tested surfaces: **`/ru/uralsk`**, **`/kk/uralsk`**, **`/help`**, **`/privacy`**, **`/terms`**, **`/account-deletion`**, **`/ru/uralsk/search`** (**noindex** preserved), **`/support` → `/help`**, **`/ru/uralsk/business/bar-code-51`** (with and without real **`locationId`** — OG URL without query; fallback image), **`/ru/uralsk/business/coffee-house-uralsk`** (external Unsplash **`coverImageUrl`** → QalaGo fallback). Direct **`/og/qalago-default.png`** render **PASS**. **Trusted `/uploads/…` Business cover:** **NOT OBSERVED** in catalog during manual QA (automated **F.8.3/F.8.4** remain authoritative for that path). Legacy **`/businesses/test`** invalid id → **404** (not a full legacy redirect matrix sign-off).
 
-**Next:** **Explicit agreement** before **F.8.5** physical/public crawler QA — **do not auto-start F.8.5**.
+**External production debt (NOT VERIFIED):** deployed **`https://qalago.kz`** HTTPS social crawlers (Telegram, WhatsApp, Facebook/Open Graph debugger, X/Twitter-compatible preview). **No** claim of production or crawler verification in F.8 closure.
+
+**Milestone:** **F.8 PASS — SOCIAL PREVIEW / OG IMAGE PIPELINE FINALIZED**.
+
+**Next:** **Explicit agreement** before any new Consumer Web stage — **do not auto-start** post-F.8 work.
 
 ---
 
