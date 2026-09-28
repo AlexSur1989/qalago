@@ -7,10 +7,11 @@ import { GeoModule } from '../geo/geo.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
+import { AdminBusinessLocationService } from './admin-business-location.service';
 
 @Module({
   imports: [NotificationsModule, CategoriesModule, CitiesModule, GeoModule, BusinessesModule],
   controllers: [AdminController],
-  providers: [AdminService, CityScopeService],
+  providers: [AdminService, AdminBusinessLocationService, CityScopeService],
 })
 export class AdminModule {}

@@ -63,10 +63,14 @@ Staff-only (`@AdminStaffRoute` + **`StaffPermission.BUSINESS_CREATE`** — see �
 | GET | `/api/v1/admin/businesses` | `BUSINESS_VIEW` (existing) |
 | GET | `/api/v1/admin/businesses/:id` | `BUSINESS_VIEW` |
 | GET | `/api/v1/admin/businesses/:id/locations` | `BUSINESS_VIEW` |
+| POST | `/api/v1/admin/businesses/:id/locations` | `BUSINESS_EDIT` |
+| PATCH | `/api/v1/admin/businesses/:id/locations/:locationId` | `BUSINESS_EDIT` |
+| POST | `/api/v1/admin/businesses/:id/locations/:locationId/set-primary` | `BUSINESS_EDIT` |
+| DELETE | `/api/v1/admin/businesses/:id/locations/:locationId` | `BUSINESS_EDIT` |
 | PATCH | `/api/v1/admin/businesses/:id/catalog` | `BUSINESS_EDIT` (allowlisted core fields; no slug/owner/status) |
 | GET | `/api/v1/admin/businesses/:businessId/content` | `BUSINESS_VIEW` (existing) |
 
-BusinessLocation staff CRUD beyond initial create remains **AOP.3** backend/UI scope.
+**AOP.3 (implemented):** Admin BusinessLocation mutations delegate to **`BusinessLocationService.*ForAdmin`** via **`AdminBusinessLocationService`** (staff city scope + audit metadata `admin_location_*`). Owner plane **`/businesses/:id/locations`** unchanged.
 
 ### 2.3 Staff-created Business rules (locked)
 
@@ -252,7 +256,7 @@ All Admin catalog mutations go through **Catalog API** → **PostgreSQL**. Flutt
 |------|----------------|
 | Staff **Business + primary BL** create | AOP.1 + AOP.7 |
 | Business core edit | AOP.2 |
-| BusinessLocation Admin management | AOP.3 |
+| BusinessLocation Admin management | AOP.3 + AOP.7 |
 | Taxonomy assignment | AOP.2/4 |
 | Safe lifecycle / publication | AOP.5 |
 | RBAC + **CITY_ADMIN** | AOP.4 |
@@ -270,8 +274,8 @@ All Admin catalog mutations go through **Catalog API** → **PostgreSQL**. Flutt
 |-------|--------|------------|--------------|--------------|
 | **AOP.0** | **This contract** | Phase 0 audit | Docs PASS | Code/DB |
 | **AOP.1** | Backend: `POST /admin/businesses`, staff create aggregate (ownerless), Admin BL staff routes, DTOs, tests | 6.12A aggregate | API/integration tests | Admin UI |
-| **AOP.2** | Admin Web: **`/catalog/businesses`** list/detail/create/catalog edit; locations **read-only** | AOP.1 | vitest + build **PASS** | BL mutation UI |
-| **AOP.3** | Admin Web: BusinessLocation CRUD + set-primary | AOP.1 BL APIs | vitest + build | Mass import |
+| **AOP.2** | Admin Web: **`/catalog/businesses`** list/detail/create/catalog edit; locations **read-only** (superseded on detail by AOP.3 manager) | AOP.1 | vitest + build **PASS** | — |
+| **AOP.3** | Admin Web + API: BusinessLocation CRUD + set-primary (delegates **`BusinessLocationService.*ForAdmin`**) | AOP.1 | vitest + build + **`admin-aop3-business-location.spec.ts`** | Mass import |
 | **AOP.4** | RBAC + CITY_ADMIN enforcement matrix tests | AOP.1 | jest specs (extend 6.12A.9.4.5A patterns) | New roles |
 | **AOP.5** | Audit + lifecycle policy (status defaults, audit gaps) | AOP.1 | audit log tests | Legal CMS |
 | **AOP.6** | Full automated regression (admin + catalog-api) | AOP.1–5 | CI green | Mobile/consumer |

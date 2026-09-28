@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { CatalogLocationsReadonly } from '@/components/catalog/catalog-locations-readonly';
+import { CatalogLocationsManager } from '@/components/catalog/catalog-locations-manager';
 import { useCatalogContext } from '@/components/catalog/catalog-layout-client';
 import { adminCatalogApi, type AdminCatalogBusinessDetail } from '@/lib/admin-catalog-api';
 import {
@@ -139,11 +139,12 @@ export default function CatalogBusinessDetailPage() {
       </div>
 
       <div style={{ marginTop: 16 }}>
-        <CatalogLocationsReadonly
+        <CatalogLocationsManager
           token={token}
           businessId={detail.id}
           locale={locale}
           cities={cities}
+          canEdit={canEdit}
         />
       </div>
 

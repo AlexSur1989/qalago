@@ -60,6 +60,12 @@ export class BusinessLocationService {
 
   async listLocations(user: AuthUser, businessId: string) {
     await this.assertLocationReadAccess(user, businessId);
+    return this.listLocationsForAdmin(businessId);
+  }
+
+  /** Staff admin plane (AOP.3) — caller enforces staff RBAC + business scope. */
+  async listLocationsForAdmin(businessId: string) {
+    await this.assertBusinessExists(businessId);
     const items = await this.prisma.businessLocation.findMany({
       where: { businessId },
       orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
@@ -79,6 +85,11 @@ export class BusinessLocationService {
       businessId,
       BusinessPermission.BUSINESS_PROFILE_EDIT,
     );
+    return this.createLocationForAdmin(businessId, dto);
+  }
+
+  /** Staff admin plane (AOP.3) — caller enforces staff RBAC + city scope. */
+  async createLocationForAdmin(businessId: string, dto: CreateBusinessLocationDto) {
     await this.assertBusinessExists(businessId);
     await this.assertActiveCity(dto.cityId);
     const { latitude, longitude } = await this.resolveCoordinatesForWrite(
@@ -129,14 +140,22 @@ export class BusinessLocationService {
     locationId: string,
     dto: UpdateBusinessLocationDto,
   ) {
-    const existing = await this.findScopedLocation(businessId, locationId);
     const requiredPermissions = getRequiredPermissionsForLocationPatch(
       dto as Record<string, unknown>,
     );
     for (const permission of requiredPermissions) {
       await this.businessAccess.assertBusinessPermission(user, businessId, permission);
     }
+    return this.updateLocationForAdmin(businessId, locationId, dto);
+  }
 
+  /** Staff admin plane (AOP.3) — caller enforces staff RBAC + city scope. */
+  async updateLocationForAdmin(
+    businessId: string,
+    locationId: string,
+    dto: UpdateBusinessLocationDto,
+  ) {
+    const existing = await this.findScopedLocation(businessId, locationId);
     const changedKeys = changedFieldsFromDto(dto as Record<string, unknown>);
     const effectiveCityId = dto.cityId ?? existing.cityId;
     if (dto.cityId !== undefined) {
@@ -191,6 +210,11 @@ export class BusinessLocationService {
       businessId,
       BusinessPermission.BUSINESS_PROFILE_EDIT,
     );
+    return this.deleteLocationForAdmin(businessId, locationId);
+  }
+
+  /** Staff admin plane (AOP.3) — caller enforces staff RBAC + city scope. */
+  async deleteLocationForAdmin(businessId: string, locationId: string) {
     const location = await this.findScopedLocation(businessId, locationId);
 
     await this.prisma.$transaction(async (tx) => {
@@ -214,6 +238,11 @@ export class BusinessLocationService {
       businessId,
       BusinessPermission.BUSINESS_PROFILE_EDIT,
     );
+    return this.setPrimaryLocationForAdmin(businessId, locationId);
+  }
+
+  /** Staff admin plane (AOP.3) — caller enforces staff RBAC + city scope. */
+  async setPrimaryLocationForAdmin(businessId: string, locationId: string) {
     await this.findScopedLocation(businessId, locationId);
 
     const result = await this.prisma.$transaction(async (tx) => {

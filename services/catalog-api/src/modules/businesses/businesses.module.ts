@@ -25,6 +25,11 @@ import { BusinessLocationService } from './business-location.service';
     BusinessLocationService,
     CityScopeService,
   ],
-  exports: [BusinessesService, BusinessPublicContentService, BusinessSubcategoryService],
+  exports: [
+    BusinessesService,
+    BusinessPublicContentService,
+    BusinessSubcategoryService,
+    BusinessLocationService,
+  ],
 })
 export class BusinessesModule {}

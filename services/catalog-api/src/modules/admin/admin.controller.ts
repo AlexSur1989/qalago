@@ -26,7 +26,12 @@ import {
 } from './dto/admin.dto';
 import { CreateSubcategoryDto, UpdateSubcategoryDto } from '../categories/dto/subcategory.dto';
 import { CreateCityDto, UpdateCityDto } from '../cities/dto/city.dto';
+import {
+  CreateBusinessLocationDto,
+  UpdateBusinessLocationDto,
+} from '../businesses/dto/business-location.dto';
 import { AdminService } from './admin.service';
+import { AdminBusinessLocationService } from './admin-business-location.service';
 import { SystemAccessService } from '../../common/services/system-access.service';
 
 @Controller('admin')
@@ -34,6 +39,7 @@ import { SystemAccessService } from '../../common/services/system-access.service
 export class AdminController {
   constructor(
     private readonly adminService: AdminService,
+    private readonly adminBusinessLocations: AdminBusinessLocationService,
     private readonly systemAccess: SystemAccessService,
   ) {}
 
@@ -61,7 +67,48 @@ export class AdminController {
   @RequireStaffPermission(StaffPermission.BUSINESS_VIEW)
   @Get('businesses/:id/locations')
   listBusinessLocations(@CurrentUser() user: AuthUser, @Param('id') id: string) {
-    return this.adminService.listBusinessLocations(user, id);
+    return this.adminBusinessLocations.list(user, id);
+  }
+
+  @RequireStaffPermission(StaffPermission.BUSINESS_EDIT)
+  @Post('businesses/:id/locations')
+  createBusinessLocation(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: CreateBusinessLocationDto,
+  ) {
+    return this.adminBusinessLocations.create(user, id, dto);
+  }
+
+  @RequireStaffPermission(StaffPermission.BUSINESS_EDIT)
+  @Patch('businesses/:id/locations/:locationId')
+  updateBusinessLocation(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Param('locationId') locationId: string,
+    @Body() dto: UpdateBusinessLocationDto,
+  ) {
+    return this.adminBusinessLocations.update(user, id, locationId, dto);
+  }
+
+  @RequireStaffPermission(StaffPermission.BUSINESS_EDIT)
+  @Post('businesses/:id/locations/:locationId/set-primary')
+  setPrimaryBusinessLocation(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Param('locationId') locationId: string,
+  ) {
+    return this.adminBusinessLocations.setPrimary(user, id, locationId);
+  }
+
+  @RequireStaffPermission(StaffPermission.BUSINESS_EDIT)
+  @Delete('businesses/:id/locations/:locationId')
+  deleteBusinessLocation(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Param('locationId') locationId: string,
+  ) {
+    return this.adminBusinessLocations.remove(user, id, locationId);
   }
 
   @RequireStaffPermission(StaffPermission.BUSINESS_EDIT)

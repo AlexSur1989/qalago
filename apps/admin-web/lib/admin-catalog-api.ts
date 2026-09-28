@@ -99,4 +99,33 @@ export const adminCatalogApi = {
       token,
       body: JSON.stringify(body),
     }),
+
+  createLocation: (token: string, businessId: string, body: Record<string, unknown>) =>
+    api<AdminBusinessLocationRow>(
+      `/admin/businesses/${encodeURIComponent(businessId)}/locations`,
+      { method: 'POST', token, body: JSON.stringify(body) },
+    ),
+
+  updateLocation: (
+    token: string,
+    businessId: string,
+    locationId: string,
+    body: Record<string, unknown>,
+  ) =>
+    api<AdminBusinessLocationRow>(
+      `/admin/businesses/${encodeURIComponent(businessId)}/locations/${encodeURIComponent(locationId)}`,
+      { method: 'PATCH', token, body: JSON.stringify(body) },
+    ),
+
+  setPrimaryLocation: (token: string, businessId: string, locationId: string) =>
+    api<AdminBusinessLocationRow>(
+      `/admin/businesses/${encodeURIComponent(businessId)}/locations/${encodeURIComponent(locationId)}/set-primary`,
+      { method: 'POST', token, body: JSON.stringify({}) },
+    ),
+
+  deleteLocation: (token: string, businessId: string, locationId: string) =>
+    api<{ success: boolean }>(
+      `/admin/businesses/${encodeURIComponent(businessId)}/locations/${encodeURIComponent(locationId)}`,
+      { method: 'DELETE', token },
+    ),
 };
