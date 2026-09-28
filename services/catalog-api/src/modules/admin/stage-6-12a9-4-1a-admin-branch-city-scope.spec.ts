@@ -147,18 +147,31 @@ describe('Stage 6.12A.9.4.1A admin branch city scope', () => {
         resolveAdminCityId: jest.fn(),
         buildAdminBusinessScopeWhere: jest.fn(),
       };
-      const prisma = {
-        business: {
-          findUnique: jest.fn().mockResolvedValue({
-            id: businessId,
-            cityId: cityA,
-            ownerId: null,
-            title: 'Cross',
-            status: 'ACTIVE',
-          }),
-          update: jest.fn().mockResolvedValue({}),
-        },
+      const businessRow = {
+        id: businessId,
+        cityId: cityA,
+        ownerId: null,
+        title: 'Cross',
+        status: 'ACTIVE',
       };
+      const prisma: {
+        business: { findUnique: jest.Mock; update: jest.Mock };
+        businessLocation: { findFirst: jest.Mock };
+        $transaction: jest.Mock;
+      } = {
+        business: {
+          findUnique: jest.fn().mockResolvedValue(businessRow),
+          update: jest.fn().mockResolvedValue({ ...businessRow, status: 'BLOCKED' }),
+        },
+        businessLocation: {
+          findFirst: jest.fn().mockResolvedValue({ cityId: cityA }),
+        },
+        $transaction: jest.fn(),
+      };
+      prisma.$transaction.mockImplementation(async (fn: (tx: typeof prisma) => Promise<unknown>) =>
+        fn(prisma),
+      );
+      const auditLog = { record: jest.fn().mockResolvedValue({}) };
       const service = new AdminService(
         prisma as never,
         cityScope as never,
@@ -167,7 +180,7 @@ describe('Stage 6.12A.9.4.1A admin branch city scope', () => {
         {} as never,
         {} as never,
         {} as never,
-        {} as never,
+        auditLog as never,
         {} as never,
         {} as never,
         {} as never,

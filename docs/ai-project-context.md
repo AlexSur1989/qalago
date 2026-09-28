@@ -59,7 +59,8 @@
 | **AOP.3** | **PASS — ADMIN BUSINESSLOCATION MANAGEMENT** — detail **Locations** CRUD + set-primary |
 | **AOP.4** | **PASS — ADMIN CATALOG RBAC / CITY SCOPE ENFORCED** |
 | **AOP.5** | **PASS — ADMIN CATALOG AUDIT / LIFECYCLE INTEGRATED** — audit matrix **§5.4**; catalog detail taxonomy + lifecycle UX |
-| **Next** | **KZ-C.1F** notification QA; **AOP.6** regression gate; **mass catalog population BLOCKED**; do not auto-start **KZ-C.2** |
+| **AOP.6** | **PASS — ADMIN CATALOG FULL AUTOMATED REGRESSION VERIFIED** — AOP.0–5 integrated gate; **AOP.7** physical QA **NOT STARTED**; overall **AOP NOT CLOSED** |
+| **Next** | **AOP.7** physical Admin catalog QA; **KZ-C.1F** notification QA; **mass catalog population BLOCKED**; do not auto-start **KZ-C.2** |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
