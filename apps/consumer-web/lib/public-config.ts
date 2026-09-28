@@ -11,8 +11,8 @@ export function getApiOrigin(): string {
 }
 
 /**
- * External public-site base for deferred Consumer Web links (e.g. Business Web /help).
- * F.7 canonical legal pages (/privacy, /terms, /account-deletion) are same-origin on Consumer Web.
+ * Legacy/deferred external public-site base (Business Web origin for non-migrated tooling).
+ * F.7 legal pages and public /help are same-origin on Consumer Web via legalPageUrl().
  */
 export function getPublicSiteBaseUrl(): string {
   const raw =

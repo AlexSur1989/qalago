@@ -1,4 +1,4 @@
-import { isPublicLegalRootPath } from './legal-paths';
+import { isPublicLocaleNeutralRootPath } from './legal-paths';
 import { DEFAULT_CITY_SLUG } from './public-config';
 import { isSupportedPublicLocale, type PublicLocale } from './public-locale';
 
@@ -52,7 +52,7 @@ export function citySearchPath(locale: PublicLocale, citySlug: string, query?: s
 export function parseCitySlugFromPathname(pathname: string): string | null {
   const parts = pathname.split('/').filter(Boolean);
   if (!parts.length) return null;
-  if (isPublicLegalRootPath(pathname)) {
+  if (isPublicLocaleNeutralRootPath(pathname)) {
     return null;
   }
   if (isSupportedPublicLocale(parts[0]!)) {

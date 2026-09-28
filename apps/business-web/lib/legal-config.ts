@@ -3,7 +3,7 @@
  * Production values must be set before store submission — see docs/legal-review-required.md
  */
 
-import { consumerWebLegalUrl } from './consumer-web-legal-redirect';
+import { consumerWebHelpUrl, consumerWebLegalUrl } from './consumer-web-legal-redirect';
 
 export type LegalPlaceholderKey =
   | 'operatorName'
@@ -38,6 +38,9 @@ export type PublicLegalPath = '/privacy' | '/terms' | '/account-deletion' | '/su
 export function publicLegalUrl(path: PublicLegalPath): string {
   if (path === '/privacy' || path === '/terms' || path === '/account-deletion') {
     return consumerWebLegalUrl(path);
+  }
+  if (path === '/support') {
+    return consumerWebHelpUrl();
   }
   return `${publicSiteBaseUrl}${path}`;
 }

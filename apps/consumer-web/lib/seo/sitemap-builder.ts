@@ -1,6 +1,10 @@
 import type { CategoryDto, CityDto, SubcategoryDto } from '@/lib/catalog-api';
 import { PUBLIC_LEGAL_ROOT_SEGMENTS } from '@/lib/legal-paths';
-import { canonicalForLegalPage, localizedIndexableSitemapUrls } from './canonical';
+import {
+  canonicalForHelpPage,
+  canonicalForLegalPage,
+  localizedIndexableSitemapUrls,
+} from './canonical';
 
 export type SitemapEntry = { url: string; lastModified?: Date };
 
@@ -52,9 +56,18 @@ export function buildLegalSitemapEntries(): SitemapEntry[] {
   }));
 }
 
+/** Public help — single locale-neutral /help entry. */
+export function buildHelpSitemapEntry(): SitemapEntry {
+  return { url: canonicalForHelpPage() };
+}
+
+export function buildLocaleNeutralPublicSitemapEntries(): SitemapEntry[] {
+  return [...buildLegalSitemapEntries(), buildHelpSitemapEntry()];
+}
+
 export function mergeDiscoveryAndLegalSitemapEntries(
   discovery: SitemapEntry[],
-  legal: SitemapEntry[] = buildLegalSitemapEntries(),
+  legal: SitemapEntry[] = buildLocaleNeutralPublicSitemapEntries(),
 ): SitemapEntry[] {
   const seen = new Set<string>();
   const merged: SitemapEntry[] = [];

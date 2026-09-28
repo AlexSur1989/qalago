@@ -7,6 +7,7 @@ const CYRILLIC = /[\u0400-\u04FF]/;
 const DICTIONARY_FILES = new Set([
   'locale.ts',
   'legal-ui.ts',
+  'help-ui.ts',
   'localized-content.ts',
   'metadata-copy.ts',
   'page-metadata.ts',

@@ -1,8 +1,12 @@
 /**
  * Canonical public consumer-web origin (Stage 6.11F.3).
- * Distinct from getPublicSiteBaseUrl() (external/deferred links such as /help).
+ * Distinct from getPublicSiteBaseUrl() (legacy Business Web origin helper).
  */
-import { publicLegalPath, type PublicLegalRootSegment } from '../legal-paths';
+import {
+  publicHelpPath,
+  publicLegalPath,
+  type PublicLegalRootSegment,
+} from '../legal-paths';
 import {
   DEFAULT_PUBLIC_LOCALE,
   SUPPORTED_PUBLIC_LOCALES,
@@ -148,6 +152,11 @@ export function localizedIndexableSitemapUrls(options: IndexablePathOptions): st
 /** F.7 — locale-neutral legal pages; no /ru|kk/ prefix. */
 export function canonicalForLegalPage(segment: PublicLegalRootSegment): string {
   return `${getConsumerWebOrigin()}${publicLegalPath(segment)}`;
+}
+
+/** Public consumer help — locale-neutral; no RU/KK hreflang pair. */
+export function canonicalForHelpPage(): string {
+  return `${getConsumerWebOrigin()}${publicHelpPath()}`;
 }
 
 export { DEFAULT_PUBLIC_LOCALE, SUPPORTED_PUBLIC_LOCALES };

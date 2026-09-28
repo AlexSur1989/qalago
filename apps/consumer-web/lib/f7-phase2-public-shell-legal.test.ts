@@ -10,8 +10,8 @@ describe('F.7 Phase 2 PublicShell legal same-origin', () => {
     const src = readFileSync(join(APP_ROOT, 'components/PublicShell.tsx'), 'utf8');
     expect(src).toContain('legalPageUrl(key)');
     expect(src).toContain('<Link key={key} href={href}');
-    expect(src).toContain("legalPageUrl('help')");
-    expect(src).toContain('rel="noopener noreferrer"');
+    expect(src).toContain("'help'");
+    expect(src).not.toContain('rel="noopener noreferrer"');
   });
 
   it('legal routes remain available from Phase 1', () => {

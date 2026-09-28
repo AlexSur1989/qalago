@@ -31,17 +31,17 @@ describe('legal-links', () => {
     expect(legalPageUrl('accountDeletion')).not.toContain('localhost');
   });
 
-  it('help still uses configured external public base (unchanged semantics)', () => {
+  it('help is same-origin on Consumer Web regardless of public base env', () => {
     process.env.NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL = 'https://qalago.kz';
-    expect(legalPageUrl('help')).toBe('https://qalago.kz/help');
-    expect(isSameOriginLegalLink('help')).toBe(false);
+    expect(legalPageUrl('help')).toBe('/help');
+    expect(isSameOriginLegalLink('help')).toBe(true);
   });
 
-  it('isSameOriginLegalLink identifies migrated pages only', () => {
+  it('isSameOriginLegalLink identifies public footer pages', () => {
     expect(isSameOriginLegalLink('privacy')).toBe(true);
     expect(isSameOriginLegalLink('terms')).toBe(true);
     expect(isSameOriginLegalLink('accountDeletion')).toBe(true);
-    expect(isSameOriginLegalLink('help')).toBe(false);
+    expect(isSameOriginLegalLink('help')).toBe(true);
   });
 
   it('footer labels remain defined for RU and KK', () => {

@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — Public help — Consumer Web public support
+
+- **Status:** **PUBLIC HELP PASS — CONSUMER WEB PUBLIC SUPPORT** (automated verified). **Physical QA: PENDING**. **F.7 CLOSED / PASS** (not reopened). **F.8 NOT STARTED**.
+- **Checkpoint:** Pre-stage HEAD **`d5d007d23e95c693f83cac658051972ffa802a22`**; implementation commit in git log immediately after.
+- **Scope:** Consumer Web public **`/help`** (guest-safe static FAQ + support contact placeholders); PublicShell footer same-origin **Поддержка/Қолдау**; SEO canonical + sitemap entry; **`/support` → `/help`** compat redirect; Business Web **`/help`** preserved as authenticated owner help; docs/store URL sync to **`https://qalago.kz/help`**. **No** Flutter/Android/iOS/F.6/deployment changes.
+- **Summary:** Canonical public support URL **`/help`** on Consumer Web. Content from Flutter **`ProfileHelpScreen`** RU/KK ARB consumer FAQ; contact via **`NEXT_PUBLIC_SUPPORT_CONTACT_EMAIL`** placeholder architecture. Footer no longer sends users to Business Web for support. Owner cabinet help unchanged on Business Web origin.
+- **Deferred:** Physical browser QA; production support contact approval (**`docs/legal-review-required.md`**). **F.8** — explicit agreement before start.
+- **Next:** Physical QA of **`/help`**, footer link, **`/support`** redirect; **do not auto-start F.8**.
+
+---
+
 ## 2026-09-28 — Flutter Web disposition — DEV/QA only (Option B)
 
 - **Status:** **FLUTTER WEB DISPOSITION PASS — DEV/QA ONLY**. **F.7 CLOSED / PASS** (unchanged). **F.8 NOT STARTED**.

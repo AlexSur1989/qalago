@@ -89,6 +89,8 @@ describe('F.7 Phase 4 legal SEO and localization', () => {
     expect(urls.some((u) => u.includes('/ru/privacy'))).toBe(false);
     expect(urls.some((u) => u.includes('/kk/privacy'))).toBe(false);
     expect(urls).toContain('https://qalago.kz/ru/aktobe');
+    expect(urls).toContain('https://qalago.kz/help');
+    expect(urls.filter((u) => u.endsWith('/help'))).toHaveLength(1);
   });
 
   it('robots allows legal roots (not disallowed)', () => {

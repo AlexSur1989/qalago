@@ -61,6 +61,7 @@ describe('F.7 Phase 5 hotfix — PublicShell nav on legal pages', () => {
     expect(parseCitySlugFromPathname('/privacy')).toBeNull();
     expect(parseCitySlugFromPathname('/terms')).toBeNull();
     expect(parseCitySlugFromPathname('/account-deletion')).toBeNull();
+    expect(parseCitySlugFromPathname('/help')).toBeNull();
   });
 
   it('discovery city parsing unchanged', () => {

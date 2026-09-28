@@ -43,8 +43,9 @@
 | **Prior** | **6.12A.9.4.2 PASS** (invariants + **2E** physical QA); **6.12A.9.4.1** city context |
 | **A.9.4.2C** | **NOT REQUIRED** (2A/2B + physical QA sufficient; no new gap) |
 | **Physical QA pending (6.12A)** | **None** — contour closed (**5E** finalized) |
-| **Flutter Web disposition** | **PASS — DEV/QA ONLY** (Option **B**); docs checkpoint — no app/runtime change; see **`docs/changelog.md`** |
-| **Next** | **Explicit agreement** before **F.8** or other stages — **do not auto-start**; optional non-blocking **`<html lang>`** URL alignment on soft nav |
+| **Flutter Web disposition** | **PASS — DEV/QA ONLY** (Option **B**); see **`docs/changelog.md`** |
+| **Public help** | **PUBLIC HELP PASS — CONSUMER WEB PUBLIC SUPPORT** (automated); **`/help`** guest public support on Consumer Web; Business Web **`/help`** = owner only; physical QA **PENDING** |
+| **Next** | **Explicit agreement** before **F.8** or other stages — **do not auto-start**; public help physical QA; optional **`<html lang>`** soft nav |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 

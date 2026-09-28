@@ -15,7 +15,7 @@ describe('legal-config', () => {
 
   it('support path still uses public site base', () => {
     process.env.NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL = 'https://qalago.kz';
-    expect(publicLegalUrl('/support')).toBe('https://qalago.kz/support');
+    expect(publicLegalUrl('/support')).toBe('https://qalago.kz/help');
   });
 
   it('detects unresolved placeholders by default in dev', () => {

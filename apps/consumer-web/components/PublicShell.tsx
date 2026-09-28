@@ -61,23 +61,22 @@ export function PublicShell({
       <div className="public-shell__content">{children}</div>
       <footer className="public-shell__footer">
         <nav className="public-shell__legal" aria-label={labels.footerLegalAria}>
-          {(['privacy', 'terms', 'accountDeletion'] as const).map((key) => {
+          {(['privacy', 'terms', 'accountDeletion', 'help'] as const).map((key) => {
             const href = legalPageUrl(key);
             const label =
               key === 'privacy'
                 ? labels.footerPrivacy
                 : key === 'terms'
                   ? labels.footerTerms
-                  : labels.footerAccountDeletion;
+                  : key === 'accountDeletion'
+                    ? labels.footerAccountDeletion
+                    : labels.footerSupport;
             return (
               <Link key={key} href={href}>
                 {label}
               </Link>
             );
           })}
-          <a href={legalPageUrl('help')} rel="noopener noreferrer">
-            {labels.footerSupport}
-          </a>
         </nav>
         <p className="public-shell__copyright">{labels.footerCopyright}</p>
       </footer>

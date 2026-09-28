@@ -11,7 +11,7 @@ import {
   type PublicLocale,
 } from './public-locale';
 import { isDefaultCityLocaleShorthand } from './reserved-segments';
-import { isPublicLegalRootPath } from './legal-paths';
+import { isPublicLocaleNeutralRootPath } from './legal-paths';
 import { isWellKnownAssociationPath } from './well-known-path';
 
 export type MiddlewareLocaleRedirect =
@@ -61,7 +61,7 @@ export function resolveMiddlewareLocaleRedirect(
     return { kind: 'none' };
   }
 
-  if (isPublicLegalRootPath(pathname)) {
+  if (isPublicLocaleNeutralRootPath(pathname)) {
     return { kind: 'none' };
   }
 

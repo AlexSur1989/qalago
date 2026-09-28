@@ -9,7 +9,7 @@
 
 ## F.1 foundation
 
-- **PublicShell:** header nav, locale switcher, footer — migrated legal links (**`/privacy`**, **`/terms`**, **`/account-deletion`**) are **same-origin** on Consumer Web (**F.7** closed); **`/help`** remains external/deferred per **`getPublicSiteBaseUrl()`** (contract **§ F.7**).
+- **PublicShell:** header nav, locale switcher, footer — legal links (**`/privacy`**, **`/terms`**, **`/account-deletion`**) and public support (**`/help`**) are **same-origin** on Consumer Web. **Business Web `/help`** remains **authenticated owner cabinet help** on the Business Web origin (not public support).
 - **Config:** `lib/public-config.ts` — API base, public site base, `DEFAULT_CITY_SLUG`.
 - **Cache:** `lib/cache-policy.ts` — ISR-friendly catalog fetches; layout `revalidate = 60`.
 - **Branding:** Montserrat, tokens `--blue` / `--accent`, `app/icon.tsx`.
@@ -394,19 +394,14 @@ F.7 **migrates** the existing **static** legal-page implementation and content p
 
 Draft notices and env placeholders may remain until that gate clears.
 
-### 4. Support / help (LOCKED — OUT OF SCOPE)
+### 4. Support / help
 
-**Do not** expand F.7 into support/help architecture.
+**F.7** migrated legal pages only (`/privacy`, `/terms`, `/account-deletion`). **Public help** was implemented in a **separate post-F.7 stage** (**PUBLIC HELP PASS** — **`docs/changelog.md`**):
 
-The **`/support`** vs **`/help`** discrepancy remains **deferred**.
-
-F.7 migrated pages are **only**:
-
-- `/privacy`
-- `/terms`
-- `/account-deletion`
-
-**No** new **`/support`** implementation in F.7.
+- **Canonical public support:** locale-neutral **`/help`** on Consumer Web (`https://qalago.kz/help` when configured).
+- **Guest-safe** static consumer FAQ (aligned with Flutter **`ProfileHelpScreen`** RU/KK copy); support contact via env placeholders — not production legal approval.
+- **`/support`** on Consumer Web: **compat redirect** to **`/help`** (no duplicate page).
+- **Business Web `/help`:** authenticated **owner cabinet help** — unchanged; not a substitute for public browser support.
 
 ### 5. Business Web transition (LOCKED)
 

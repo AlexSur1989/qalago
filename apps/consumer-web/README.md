@@ -17,7 +17,7 @@ Requires catalog-api (`npm run dev:api`) for live data.
 | Variable | Purpose |
 |----------|---------|
 | `NEXT_PUBLIC_API_URL` | Catalog API base (default `http://localhost:3002/api/v1`) |
-| `NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL` | External public base for deferred links (e.g. Business Web `/help`); canonical legal pages are on Consumer Web (`/privacy`, `/terms`, `/account-deletion`) |
+| `NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL` | Consumer Web public origin in production; locale-neutral `/privacy`, `/terms`, `/account-deletion`, `/help` are same-origin on this app |
 | `QALAGO_ANDROID_SHA256_CERT_FINGERPRINTS` | **Optional** — comma-separated SHA-256 cert fingerprints for `/.well-known/assetlinks.json` (production App Links verification) |
 | `QALAGO_APPLE_TEAM_ID` | **Optional** — 10-character Apple Team ID for `/.well-known/apple-app-site-association` (production Universal Links) |
 

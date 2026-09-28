@@ -15,3 +15,8 @@ export function consumerWebLegalUrl(path: ConsumerWebMigratedLegalPath): string 
   }
   return `${getConsumerWebOrigin()}${path}`;
 }
+
+/** Canonical public consumer support (locale-neutral /help on Consumer Web). */
+export function consumerWebHelpUrl(): string {
+  return `${getConsumerWebOrigin()}/help`;
+}
