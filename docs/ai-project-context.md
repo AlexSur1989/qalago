@@ -93,7 +93,7 @@
 | **Ads** | Shared Ad Engine; locale-aware labels + transparency + separate retention class — **KZ-C.4**; fixed API **`Реклама`** is not final. |
 | **AI** | Consumer AI **not launched**; external LLM / content-origin schema — **KZ-C.6** gate before launch. |
 | **Production gate** | Do **not** claim LEGAL READY / COMPLIANCE COMPLETE until §30 checklist in contract (+ **KZ-C.9**). |
-| **AOP.0–AOP.5** | **AOP.0** contract through **AOP.5 PASS** audit/lifecycle — [admin-catalog-operations.md](./architecture/admin-catalog-operations.md) §5.4; **AOP.6+** not started; mass population **BLOCKED**. |
+| **AOP.0–AOP.6** | **AOP.0** contract through **AOP.6 PASS** automated regression — [admin-catalog-operations.md](./architecture/admin-catalog-operations.md) §5.4; **AOP.7** physical QA **NOT STARTED**; overall **AOP NOT CLOSED**; mass population **BLOCKED**. |
 
 **Phases:** KZ-C.1 … KZ-C.9 per contract; **AOP.0** may proceed in parallel where compatible; **public production** gated by P0 compliance work.
 
