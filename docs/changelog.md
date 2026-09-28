@@ -10,7 +10,7 @@
 
 - **Status:** **AOP.3 PASS — ADMIN BUSINESSLOCATION MANAGEMENT IMPLEMENTED**. **AOP.4 NOT STARTED**. **Mass catalog population remains BLOCKED**.
 - **Starting HEAD:** **`e81b8009dde121834dc0c5d384cf0aed90724802`** (AOP.2).
-- **Checkpoint (commit):** see git log — `feat(admin-web): add business location management` (+ catalog-api Admin BL routes in same commit when applicable).
+- **Checkpoint (commit):** **`33c5a9794b19abc33ed0c225aa5e716d7c7ec7f4`** — `feat(admin): add staff business location management`.
 - **Summary:** Catalog API **`AdminBusinessLocationService`** — staff-scoped wrappers on **`BusinessLocationService.*ForAdmin`** (`POST/PATCH/DELETE` + **`POST …/set-primary`**, permissions **`BUSINESS_EDIT`** / list **`BUSINESS_VIEW`**); **`CityScopeService`** on create/update/delete/set-primary; audit **`BUSINESS_PROFILE_UPDATE`** metadata `admin_location_*`. Admin Web **`CatalogLocationsManager`** on business detail — list, add/edit, make primary, delete (non-primary), RU/KK labels, allowlisted payloads. Tests: **`admin-aop3-business-location.spec.ts`** (6), admin-web vitest **84/84**, **`next build` PASS**, catalog-api **`nest build` PASS**.
 - **Deferred:** Dedicated audit enum/actions for location mutations (**AOP.5**); **AOP.4** RBAC matrix; physical Admin QA (**AOP.7**); **KZ-C.1 NOT CLOSED**.
 - **Next:** **AOP.4** / **AOP.5** per roadmap — explicit agreement only.
