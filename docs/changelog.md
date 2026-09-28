@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — F.8.4 — Automated social preview regression gate
+
+- **Status:** **F.8.4 PASS — AUTOMATED SOCIAL PREVIEW REGRESSION GATE**. **F.8 IN PROGRESS** (not CLOSED). **F.8.5 NOT STARTED**. **F.7 / PUBLIC HELP** unchanged.
+- **Checkpoint:** Pre-gate HEAD **`41b41673892b374f0222e6023ea194e25cdea5fc`**; commit in git log immediately after.
+- **Scope:** **`f8-phase4-automated-gate.test.ts`** (§ **F.8.17** mapping, route matrix, extended trust matrix, SSRF static audit, default asset); minimal fix **`business-social-preview.ts`** — reject **`decodeURIComponent`** path **`..`**; docs. **No** feature expansion.
+- **Summary:** Participating routes: **`og:image`/`twitter:image`**, **`summary_large_image`**, **`openGraph.url` = canonical**, RU/KK + legal/help neutrality, search **noindex**, redirect routes without independent OG identity, Business trusted **`/uploads/…`** vs fallback, no fetch. **315** vitest PASS; **`next build`** PASS. External crawler previews = **F.8.5 / EXTERNAL-PENDING**.
+- **Deferred:** **F.8.5** physical/public HTTPS social preview QA.
+- **Next:** **Explicit agreement** before **F.8.5** — **do not auto-start F.8.5**.
+
+---
+
 ## 2026-09-28 — F.8.3 — Safe Business social preview selection
 
 - **Status:** **F.8.3 PASS — SAFE BUSINESS SOCIAL PREVIEW SELECTION**. **F.8 IN PROGRESS**. **F.8.4 NOT STARTED**. **F.7 / PUBLIC HELP** unchanged.

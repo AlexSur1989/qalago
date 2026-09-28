@@ -24,6 +24,13 @@ function isSafeUploadsPathname(pathname: string): boolean {
   if (!pathname.startsWith(UPLOADS_PREFIX)) return false;
   if (pathname.includes('..') || pathname.includes('\\')) return false;
   if (pathname.includes('//')) return false;
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(pathname);
+  } catch {
+    return false;
+  }
+  if (decoded.includes('..') || decoded.includes('\\')) return false;
   return /^\/uploads\/[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*$/.test(pathname);
 }
 

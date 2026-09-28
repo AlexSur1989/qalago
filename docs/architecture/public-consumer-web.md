@@ -494,7 +494,7 @@ Web authentication; favorites; Consumer Web interactive map; City Discovery; Hom
 ## F.8 — Social preview / OG image pipeline
 
 **Gate:** F.8 — Social preview / OG image pipeline  
-**Status:** **F.8 IN PROGRESS** — **F.8.0–F.8.2 PASS**; **F.8.3 PASS — SAFE BUSINESS SOCIAL PREVIEW SELECTION**; **F.8.4+ NOT STARTED**
+**Status:** **F.8 IN PROGRESS** — **F.8.0–F.8.3 PASS**; **F.8.4 PASS — AUTOMATED SOCIAL PREVIEW REGRESSION GATE**; **F.8.5 NOT STARTED**
 
 **Authority:** This section is the **canonical F.8 contract**. Other docs **reference** this section; they must not duplicate full contract text.
 
@@ -659,7 +659,7 @@ Prefer **cacheable / stable** preview assets. **No** per-request random output. 
 | **F.8.1** | Default QalaGo OG image + shared metadata plumbing | **PASS** |
 | **F.8.2** | Shared fallback on indexable public route families; preserve F.5/F.7 canonical behavior | **PASS** (F.8.1 plumbing + route matrix verified; **`f8-phase2-route-rollout.test.ts`**) |
 | **F.8.3** | Business-specific eligible cover + strict trusted-media fallback | **PASS** — **`lib/seo/business-social-preview.ts`**; **`coverImageUrl` only**; **`effectiveMedia` deferred** (branch-grain ambiguity) |
-| **F.8.4** | Full automated regression (metadata, canonical, locale, legal/help, business fallback, build) | **NOT STARTED** |
+| **F.8.4** | Full automated regression (metadata, canonical, locale, legal/help, business fallback, build) | **PASS** — **`f8-phase4-automated-gate.test.ts`**; § **F.8.17** criteria **1–18** automated (**19** = F.8.5 external) |
 | **F.8.5** | Physical/public social-preview QA + F.8 closure | **NOT STARTED** |
 
 **Do not auto-start F.8.1** without explicit approval.
@@ -692,11 +692,11 @@ F.8 umbrella **CLOSED / PASS** requires **all** of:
 
 Local tests and localhost builds **cannot** prove external social previews. Final production verification requires **deployed HTTPS** origin and may include Telegram, WhatsApp, Facebook/Open Graph debugger, X/Twitter-compatible preview tools. **Do not** claim these verified during local implementation-only milestones.
 
-**Milestone:** **F.8.3 PASS — SAFE BUSINESS SOCIAL PREVIEW SELECTION**. **F.8 overall: IN PROGRESS**.
+**Milestone:** **F.8.4 PASS — AUTOMATED SOCIAL PREVIEW REGRESSION GATE**. **F.8 overall: IN PROGRESS** (not CLOSED until **F.8.5**).
 
-**F.8.3 trusted media (implemented):** Only **`/uploads/…`** paths on **`getConsumerWebOrigin()`** or **`getApiOrigin()`** (normalized); emitted as **Consumer Web absolute** URLs for crawlers (`/uploads` rewrite). **No** arbitrary external http(s). **No** server-side fetch. **Business `coverImageUrl` only** — **`effectiveMedia` not used** (branch-specific cover risk under **`locationId`**). Upload dimensions **not** declared unless known (fallback keeps **1200×630**).
+**F.8.3 trusted media (implemented):** Only **`/uploads/…`** paths on **`getConsumerWebOrigin()`** or **`getApiOrigin()`** (normalized); pathname decode + **`..`** rejection; emitted as **Consumer Web absolute** URLs. **No** fetch. **`coverImageUrl` only** — **`effectiveMedia` not used**.
 
-**Next:** **Explicit agreement** before **F.8.4** — **do not auto-start F.8.4**.
+**Next:** **Explicit agreement** before **F.8.5** physical/public crawler QA — **do not auto-start F.8.5**.
 
 ---
 
