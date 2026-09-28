@@ -67,19 +67,15 @@ describe('AOP.1 — staff admin catalog core', () => {
         where: { slug: 'aktobe', isActive: true },
         select: { id: true },
       });
-      const category = await prisma.category.findFirst({ select: { id: true } });
-      const otherCategory = await prisma.category.findFirst({
-        where: category ? { id: { not: category.id } } : undefined,
-        select: { id: true },
-      });
-      if (!uralsk || !aktobe || !category || !otherCategory) {
+      const categories = await prisma.category.findMany({ take: 2, select: { id: true } });
+      if (!uralsk || !aktobe || categories.length === 0) {
         skip = true;
         return;
       }
       cityId = uralsk.id;
       otherCityId = aktobe.id;
-      categoryId = category.id;
-      otherCategoryId = otherCategory.id;
+      categoryId = categories[0]!.id;
+      otherCategoryId = categories[1]?.id ?? categories[0]!.id;
 
       const sub = await prisma.subcategory.findFirst({
         where: { categoryId },
@@ -102,23 +98,16 @@ describe('AOP.1 — staff admin catalog core', () => {
       cityAdminOtherId = `aop1-city-b-${randomBytes(3).toString('hex')}`;
       consumerId = `aop1-user-${randomBytes(3).toString('hex')}`;
 
-      await prisma.user.createMany({
-        data: [
-          { id: staffAdminId, phone: `+7701${randomBytes(3).toString('hex')}`, role: UserRole.ADMIN },
-          {
-            id: staffContentId,
-            phone: `+7702${randomBytes(3).toString('hex')}`,
-            role: UserRole.CONTENT_MANAGER,
-          },
-          { id: cityAdminId, phone: `+7703${randomBytes(3).toString('hex')}`, role: UserRole.CITY_ADMIN },
-          {
-            id: cityAdminOtherId,
-            phone: `+7704${randomBytes(3).toString('hex')}`,
-            role: UserRole.CITY_ADMIN,
-          },
-          { id: consumerId, phone: `+7705${randomBytes(3).toString('hex')}`, role: UserRole.USER },
-        ],
-      });
+      const phoneSuffix = randomBytes(4).toString('hex');
+      for (const row of [
+        { id: staffAdminId, phone: `+7701${phoneSuffix}0`, role: UserRole.ADMIN },
+        { id: staffContentId, phone: `+7702${phoneSuffix}1`, role: UserRole.CONTENT_MANAGER },
+        { id: cityAdminId, phone: `+7703${phoneSuffix}2`, role: UserRole.CITY_ADMIN },
+        { id: cityAdminOtherId, phone: `+7704${phoneSuffix}3`, role: UserRole.CITY_ADMIN },
+        { id: consumerId, phone: `+7705${phoneSuffix}4`, role: UserRole.USER },
+      ]) {
+        await prisma.user.create({ data: row });
+      }
       await prisma.staffAccess.createMany({
         data: [
           { userId: staffAdminId, staffRole: UserRole.ADMIN, isActive: true },
@@ -133,8 +122,9 @@ describe('AOP.1 — staff admin catalog core', () => {
           { userId: cityAdminOtherId, cityId: otherCityId },
         ],
       });
-    } catch {
+    } catch (error) {
       skip = true;
+      console.warn('AOP.1 spec skipped (dev DB fixture):', error);
     }
   });
 
