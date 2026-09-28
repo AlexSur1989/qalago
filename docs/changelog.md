@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-28 — KZ-C.1B — Flutter Kazakh-first default locale
+
+- **Status:** **KZ-C.1B PASS — FLUTTER KK-FIRST IMPLEMENTED**. **KZ-C.1 NOT CLOSED** (Web KZ-C.1C pending; physical QA pending). **Not** full KZ-C.1 / not production compliance sign-off.
+- **Starting HEAD:** **`12922bdf494d5e377cf558c09b1306f34831b7e5`**
+- **Checkpoint:** KZ-C.1B implementation commit in git log immediately after starting HEAD.
+- **Scope:** **Flutter/mobile only** — `AppLocaleNotifier` product default **kk** when no explicit `qalago_ui_locale`; explicit **kk**/**ru** persisted choice wins; invalid/missing pref → **kk** without auto-persist; removed device-locale initial UI authority. Tests: `app_locale_notifier_test.dart`, onboarding/launch test updates. **No** Consumer/Business/Admin Web; **no** Prisma/DB.
+- **Tests:** Focused flutter test suite (locale, 6.10B.1, ui_10b launch, deep-link locale) **PASS**; hardcoded UI guard **PASS**; `flutter analyze` pre-existing repo warnings (unchanged scope).
+- **Physical QA:** **NOT PERFORMED** (deferred KZ-C.1F).
+- **Deferred:** KZ-C.1C web defaults; KZ-C.1D push copy; KZ-C.1E/F automated+physical closure.
+- **Next:** **Explicit agreement** before **KZ-C.1C** — **do not auto-start**.
+
+---
+
 ## 2026-09-28 — KZ-C.0 — Kazakhstan compliance contract lock
 
 - **Status:** **KZ-C.0 PASS — COMPLIANCE CONTRACT LOCKED**. **Not** “KZ compliance complete” / **not** legal approval / **not** production compliant.

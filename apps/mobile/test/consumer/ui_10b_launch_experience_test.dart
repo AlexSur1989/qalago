@@ -183,17 +183,17 @@ void main() {
   testWidgets('first launch shows Welcome', (tester) async {
     await _pumpApp(tester, firstLaunch: true);
     expect(find.byType(WelcomeScreen), findsOneWidget);
-    expect(find.text('Ваш город рядом'), findsOneWidget);
+    expect(find.text('Қалаңыз жаныңызда'), findsOneWidget);
   });
 
   testWidgets('Welcome to City to Home flow completes onboarding', (tester) async {
     await _pumpApp(tester, firstLaunch: true);
-    await tester.tap(find.text('Начать'));
+    await tester.tap(find.text('Бастау'));
     await tester.pumpAndSettle();
     expect(find.byType(OnboardingCityScreen), findsOneWidget);
-    await tester.tap(find.text('Продолжить'));
+    await tester.tap(find.text('Жалғастыру'));
     await tester.pumpAndSettle();
-    expect(find.text('Поиск заведений и услуг...'), findsOneWidget);
+    expect(find.text('Мекемелер мен қызметтерді іздеу...'), findsOneWidget);
 
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getBool(OnboardingPrefs.completedKey), isTrue);
@@ -237,8 +237,17 @@ void main() {
     expect(find.textContaining('Кабинет'), findsNothing);
   });
 
+  testWidgets('first launch Welcome defaults to KK without persisting pref', (tester) async {
+    await _pumpApp(tester, firstLaunch: true);
+    expect(find.text('Қалаңыз жаныңызда'), findsOneWidget);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString(kUiLocalePrefsKey), isNull);
+  });
+
   testWidgets('KK language selection persists on Welcome', (tester) async {
     await _pumpApp(tester, firstLaunch: true);
+    await tester.tap(find.text('Русский'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Қазақша'));
     await tester.pumpAndSettle();
     expect(find.text('Қалаңыз жаныңызда'), findsOneWidget);
@@ -248,8 +257,6 @@ void main() {
 
   testWidgets('RU language selection persists on Welcome', (tester) async {
     await _pumpApp(tester, firstLaunch: true);
-    await tester.tap(find.text('Қазақша'));
-    await tester.pumpAndSettle();
     await tester.tap(find.text('Русский'));
     await tester.pumpAndSettle();
     final prefs = await SharedPreferences.getInstance();
@@ -412,7 +419,7 @@ void main() {
 
   testWidgets('City back returns to Welcome', (tester) async {
     await _pumpApp(tester, firstLaunch: true);
-    await tester.tap(find.text('Начать'));
+    await tester.tap(find.text('Бастау'));
     await tester.pumpAndSettle();
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();

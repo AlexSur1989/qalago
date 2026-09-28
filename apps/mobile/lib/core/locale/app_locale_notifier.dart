@@ -5,29 +5,30 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 const kUiLocalePrefsKey = 'qalago_ui_locale';
 
-Locale resolveDeviceLocale() {
-  final code = PlatformDispatcher.instance.locale.languageCode.toLowerCase();
-  if (code.startsWith('kk')) return const Locale('kk');
-  if (code.startsWith('ru')) return const Locale('ru');
-  return const Locale('ru');
+/// QalaGo product default when the user has not explicitly chosen a language (KZ-C.1B).
+const kQalagoProductDefaultLocale = Locale('kk');
+
+/// Reads an explicit saved UI locale (`kk` / `ru`). Absent or invalid → null (no explicit choice).
+Locale? parseExplicitUiLocalePreference(String? saved) {
+  if (saved == 'kk') return const Locale('kk');
+  if (saved == 'ru') return const Locale('ru');
+  return null;
 }
 
 String localeToCode(Locale locale) =>
     locale.languageCode.startsWith('kk') ? 'kk' : 'ru';
 
 class AppLocaleNotifier extends StateNotifier<Locale> {
-  AppLocaleNotifier() : super(resolveDeviceLocale()) {
+  AppLocaleNotifier() : super(kQalagoProductDefaultLocale) {
     _loadSaved();
   }
 
   Future<void> _loadSaved() async {
     final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getString(kUiLocalePrefsKey);
-    if (saved == 'kk') {
-      state = const Locale('kk');
-    } else if (saved == 'ru') {
-      state = const Locale('ru');
-    }
+    final explicit = parseExplicitUiLocalePreference(
+      prefs.getString(kUiLocalePrefsKey),
+    );
+    state = explicit ?? kQalagoProductDefaultLocale;
   }
 
   Future<void> setLocale(Locale locale) async {

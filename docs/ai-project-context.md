@@ -48,7 +48,8 @@
 | **Public help** | **CLOSED / PASS — PUBLIC HELP FINALIZED** — Consumer Web guest **`/help`**; hotfix **`08b5340…`**; physical QA **PASS** (**2026-09-28**); Business Web **`/help`** = authenticated owner only |
 | **F.8** | **CLOSED / PASS — SOCIAL PREVIEW / OG IMAGE PIPELINE FINALIZED** — **`docs/architecture/public-consumer-web.md`** § **F.8**; implementation checkpoint **`4ab630c…`** (+ docs closure after); local physical QA **PASS** (**2026-09-28**, **localhost:3005**) |
 | **F.8 external debt** | **Public HTTPS social crawler previews** (Telegram/WhatsApp/Facebook/X on **`qalago.kz`**) — **NOT VERIFIED**; trusted **`/uploads/…`** Business cover — **NOT OBSERVED** physically (automated PASS) |
-| **Next** | **Explicit agreement** before **KZ-C.1** (KK-first + localization baseline) or **AOP.0** (catalog ops contract); do not auto-start either |
+| **KZ-C.1B** | **PASS — FLUTTER KK-FIRST IMPLEMENTED** (automated tests; **physical QA NOT YET**) — see **`docs/changelog.md`** |
+| **Next** | **Explicit agreement** before **KZ-C.1C** (Consumer/Business Web KK-first) or **AOP.0**; do not auto-start either |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -72,7 +73,7 @@
 
 | Topic | Contract (summary) |
 |-------|-------------------|
-| **KK-first** | **QALAGO PRODUCT POLICY (P0 before public launch):** no saved language → **kk**; explicit user choice **wins forever**; Russian fully supported. **Not** documented as statutory default without counsel. |
+| **KK-first** | **QALAGO PRODUCT POLICY (P0 before public launch):** no saved language → **kk**; explicit user choice **wins forever**; Russian fully supported. **Flutter IMPLEMENTED (KZ-C.1B)** — `app_locale_notifier.dart`; **Web NOT YET (KZ-C.1C)**. |
 | **Operator** | **`OPERATOR_IDENTITY = PENDING BUSINESS DECISION`** — P0 **production** blocker for legal publication; **not** internal dev blocker. |
 | **Legal KK/RU** | Target: **approved** KK + RU where applicable; no uncontrolled MT as final legal text. **Current:** RU draft bodies on Consumer Web (F.7). |
 | **Legal source of truth** | **Backend `LegalDocument`** = version authority for tracked docs; **Consumer Web** = public presentation (F.7 neutral URLs); **`LegalAcceptance`** = proof — **clients not wired yet** (KZ-C.2). |

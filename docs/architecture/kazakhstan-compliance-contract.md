@@ -75,14 +75,14 @@ Do **not** copy statutory texts into the repository.
 
 | Surface | CURRENT STATE (audit) | AGREED TARGET |
 |---------|----------------------|---------------|
-| Flutter Android / iOS | Device locale → kk if device kk, else ru; saved pref in SharedPreferences | No saved pref → **kk**; saved pref wins |
+| Flutter Android / iOS | **IMPLEMENTED (KZ-C.1B):** `kQalagoProductDefaultLocale` = **kk**; explicit `qalago_ui_locale` wins; device locale not used for initial UI; default not auto-persisted | Consumer/Business Web still **KZ-C.1C** |
 | Consumer Web | `DEFAULT_PUBLIC_LOCALE = 'ru'`; cookie/route F.5 | No cookie + neutral entry → **kk** preference path without breaking `/ru/` `/kk/` routes |
 | Business Web | Default normalize → ru | Same KK-first when no explicit preference |
 | Admin Web | Operational UI largely RU | Admin ops localization **phased**; public/user/business **legal/compliance** surfaces must not silently stay RU-only for production |
 | Notifications | Push copy uses client locale hint | KK/RU copy; align with user preference where known |
 | Legal documents | F.7 neutral URLs; body largely RU draft | Approved **KK + RU** where required (§8) |
 
-**DEFERRED:** KZ-C.1 implementation.
+**DEFERRED:** KZ-C.1C web; KZ-C.1F physical QA.
 
 ### 4.2 F.5 SEO compatibility (do not reopen F.5)
 

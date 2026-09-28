@@ -33,8 +33,9 @@ void main() {
       );
     });
 
-    test('device kk resolves to kk on first launch', () {
-      expect(resolveDeviceLocale().languageCode, isNotEmpty);
+    test('product default locale is kk when no explicit preference', () {
+      expect(kQalagoProductDefaultLocale, const Locale('kk'));
+      expect(parseExplicitUiLocalePreference(null), isNull);
     });
 
     test('localeToCode maps kk and ru', () {
