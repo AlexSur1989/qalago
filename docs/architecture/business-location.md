@@ -125,6 +125,8 @@ Migration **`20260926120000_stage_6_12a9_4_4c4_business_geo_column_retirement`**
 
 ### Admin & CITY_ADMIN policies (**A.9.4.1A** + **A.9.4.5A IMPLEMENTED** — catalog-api)
 
+**Staff catalog operations plane (AOP):** future Admin create/edit workflows — **`docs/architecture/admin-catalog-operations.md`** (AOP.0 contract lock). Do not weaken rules below.
+
 **Dual model (do not unify):**
 
 | Contour | Rule | Helpers |

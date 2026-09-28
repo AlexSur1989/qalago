@@ -53,7 +53,8 @@
 | **KZ-C.1F** | **PARTIAL PHYSICAL QA PASS / NOTIFICATION QA DEFERRED** — deep-link hotfix **`346ab5d…`** device **PASS**; Android/Consumer/Business locale authority **PASS**; notification inbox + live FCM **not** verified; fixture user-id/DB mismatch **unresolved** |
 | **KZ-C.1E** | **PASS — KAZAKH-FIRST AUTOMATED REGRESSION GATE** |
 | **KZ-C.1 (umbrella)** | **NOT CLOSED** — notification physical QA + FCM debt remain |
-| **Next** | **KZ-C.1F — DATABASE TARGET MISMATCH DIAGNOSIS** (read-only) → resume notification physical QA; then **AOP.0** contract lock (**documented**, **not** started); do not auto-start **KZ-C.2** / **AOP.0** implementation |
+| **AOP.0** | **PASS — ADMIN CATALOG / OPERATIONS CONTRACT LOCKED** — **`docs/architecture/admin-catalog-operations.md`**; **AOP.1+ NOT STARTED** |
+| **Next** | **KZ-C.1F** notification DB-target diagnosis (read-only) → notification physical QA; **AOP.1** Admin catalog backend (**explicit agreement**); do not auto-start **KZ-C.2** |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -86,7 +87,7 @@
 | **Ads** | Shared Ad Engine; locale-aware labels + transparency + separate retention class — **KZ-C.4**; fixed API **`Реклама`** is not final. |
 | **AI** | Consumer AI **not launched**; external LLM / content-origin schema — **KZ-C.6** gate before launch. |
 | **Production gate** | Do **not** claim LEGAL READY / COMPLIANCE COMPLETE until §30 checklist in contract (+ **KZ-C.9**). |
-| **AOP.0** | Informed by this contract (auditability, no public owner/staff PD, ownerless catalog create OK); AOP ≠ full legal admin. |
+| **AOP.0** | **PASS — contract locked** — [admin-catalog-operations.md](./architecture/admin-catalog-operations.md) (auditability, ownerless staff create, BusinessLocation authoritative); AOP ≠ full legal admin; **AOP.1+** not started. |
 
 **Phases:** KZ-C.1 … KZ-C.9 per contract; **AOP.0** may proceed in parallel where compatible; **public production** gated by P0 compliance work.
 

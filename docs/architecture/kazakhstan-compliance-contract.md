@@ -471,7 +471,7 @@ Minimum launch gate checklist:
 
 ## 31. Relation to AOP.0
 
-**AOP read-only audit:** PASS. **AOP.0:** not started.
+**AOP read-only audit:** PASS. **AOP.0:** **PASS — ADMIN CATALOG / OPERATIONS CONTRACT LOCKED** — **`docs/architecture/admin-catalog-operations.md`** (implementation **AOP.1+** not started).
 
 **KZ-C.0 informs AOP.0.** AOP.0 must preserve:
 

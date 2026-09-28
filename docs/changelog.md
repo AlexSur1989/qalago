@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — AOP.0 — Admin catalog / operations contract lock
+
+- **Status:** **AOP.0 PASS — ADMIN CATALOG / OPERATIONS CONTRACT LOCKED** (documentation only). **AOP.1+ NOT STARTED**. **No** application code, Prisma migration, or DB mutation in this stage.
+- **Starting HEAD:** **`26d410c150a72706e3d1b12661de13989c8f980b`** (post KZ-C.1F partial QA docs).
+- **Checkpoint:** AOP.0 docs commit in git log immediately after starting HEAD.
+- **Summary:** Locked Admin Web as internal **catalog operations plane** (not Business Web / not public surfaces). Staff create via future **`POST /api/v1/admin/businesses`**: **ownerless** (`ownerId` null), **no** acting-staff OWNER membership, atomic **Business + primary BusinessLocation** via **`createBusinessWithInitialPrimaryInTx`**. **`POST /businesses`** rejected as Admin workflow (assigns admin as owner). Business/BL edit, RBAC/CITY_ADMIN (ANY-BL visibility vs primary-city mutation), lifecycle (`PENDING`/`ACTIVE`/`BLOCKED`), shared taxonomy, audit expectations, KZ-C intersection, mass population **BLOCKED** until **AOP.1–AOP.7**. Canonical doc: **`docs/architecture/admin-catalog-operations.md`**.
+- **Deferred:** **AOP.1** backend Admin catalog core; notification **KZ-C.1F** DB-target diagnosis; **KZ-C.1 NOT CLOSED**.
+- **Next:** **Explicit agreement** before **AOP.1** — do **not** auto-start implementation.
+
+---
+
 ## 2026-09-28 — KZ-C.1F — Partial physical QA / notification QA deferred
 
 - **Status:** **KZ-C.1F — PARTIAL PHYSICAL QA PASS / NOTIFICATION QA DEFERRED**. **KZ-C.1 NOT CLOSED** (core KK-first + locale authority verified on device/browsers; typed notification inbox + live FCM **not** physically verified).
