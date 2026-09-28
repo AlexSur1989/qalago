@@ -45,8 +45,8 @@
 | **Physical QA pending (6.12A)** | **None** — contour closed (**5E** finalized) |
 | **Flutter Web disposition** | **PASS — DEV/QA ONLY** (Option **B**); see **`docs/changelog.md`** |
 | **Public help** | **CLOSED / PASS — PUBLIC HELP FINALIZED** — Consumer Web guest **`/help`**; hotfix **`08b5340…`**; physical QA **PASS** (**2026-09-28**); Business Web **`/help`** = authenticated owner only |
-| **F.8** | **IN PROGRESS** — **F.8.0 PASS** + **F.8.1 PASS — DEFAULT OG + METADATA PLUMBING**; static **`/og/qalago-default.png`**; **`lib/seo/social-preview.ts`**; **F.8.2+ NOT STARTED** |
-| **Next** | **Explicit agreement** before **F.8.2** — **do not auto-start F.8.2**; optional **`<html lang>`** soft nav |
+| **F.8** | **IN PROGRESS** — **F.8.0–F.8.2 PASS**; route rollout verified (**`f8-phase2-route-rollout.test.ts`**); Business cover still **F.8.3** |
+| **Next** | **Explicit agreement** before **F.8.3** — **do not auto-start F.8.3**; optional **`<html lang>`** soft nav |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -56,7 +56,7 @@
 
 **F.5:** **CLOSED / PASS** — locale SEO URL architecture implemented and verified (routing, SEO, PublicShell URL-locale UI). Milestone: **F.5 PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED**. Non-blocking: **`<html lang>`** vs URL on soft nav (not verified); Phase **1** manual QA gaps (legacy redirect, **`locationId`** UI). No backend change.
 
-**Consumer Web F-series (canonical order):** F.5 **CLOSED** → **F.6 CLOSED / PASS** → **F.7 CLOSED / PASS** → **F.8 IN PROGRESS** (**F.8.0** + **F.8.1** PASS) — **`docs/architecture/public-consumer-web.md`** § **F.8**.
+**Consumer Web F-series (canonical order):** F.5 **CLOSED** → **F.6 CLOSED / PASS** → **F.7 CLOSED / PASS** → **F.8 IN PROGRESS** (**F.8.0–F.8.2** PASS) — **`docs/architecture/public-consumer-web.md`** § **F.8**.
 
 **F.6 (closed):** Canonical HTTPS → parser → coordinator → session city / locale → go_router; Web `/.well-known`; Android/iOS configured. **Production** association verification deferred (Play SHA / Apple Team ID / device QA). Android release debug signing remains general release debt.
 

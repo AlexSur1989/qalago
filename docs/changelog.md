@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — F.8.2 — Public route social preview rollout
+
+- **Status:** **F.8.2 PASS — PUBLIC ROUTE SOCIAL PREVIEW ROLLOUT**. **F.8 IN PROGRESS**. **F.8.3 NOT STARTED**. **F.7 / PUBLIC HELP** unchanged.
+- **Checkpoint:** Pre-phase HEAD **`b7c862e2aee67a23a7d6026c2cd7c2dccc01e992`**; commit in git log immediately after.
+- **Scope:** **Verification + tests** — **`lib/seo/f8-phase2-route-rollout.test.ts`** documents route matrix; **no production metadata/routing changes** (F.8.1 shared helpers already cover indexable discovery, business fallback-only, legal/help neutral, search noindex+fallback, legacy business no OG identity, `/support` redirect-only).
+- **Summary:** Indexable families use **`/og/qalago-default.png`** via **`withDefaultSocialPreview()`**; RU/KK **`openGraph.url` = canonical**; legal/help locale-neutral; business **`locationId`** not in OG URL; search **noindex** preserved. **280** vitest PASS; **`next build`** PASS.
+- **Deferred:** **F.8.3** Business eligible cover; **F.8.5** production crawler QA.
+- **Next:** **Explicit agreement** before **F.8.3** — **do not auto-start F.8.3**.
+
+---
+
 ## 2026-09-28 — F.8.1 — Default QalaGo OG image + shared metadata plumbing
 
 - **Status:** **F.8.1 PASS — DEFAULT QALAGO OG IMAGE + SHARED METADATA PLUMBING**. **F.8 IN PROGRESS** (not CLOSED). **F.8.2 NOT STARTED**. **F.7 / PUBLIC HELP** unchanged.
