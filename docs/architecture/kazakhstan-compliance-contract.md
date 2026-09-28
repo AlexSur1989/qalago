@@ -82,7 +82,9 @@ Do **not** copy statutory texts into the repository.
 | Notifications | **IMPLEMENTED (KZ-C.1D.2):** server typed KK/RU for push (per `PushDevice.locale`) + Business Web `/messages`; Flutter in-app ARB (E.3) + push locale sync; legacy `title`/`body` fallback | **Physical FCM QA deferred KZ-C.1F** — see **`docs/architecture/notification-localization.md`** |
 | Legal documents | F.7 neutral URLs; body largely RU draft | Approved **KK + RU** where required (§8) |
 
-**DEFERRED:** KZ-C.1E (if any remaining automated parity beyond KZ-C.1D.2); KZ-C.1F physical FCM/Business Web QA; Admin Web localization; F.5 **x-default=kk** SEO decision (separate from product default).
+**KZ-C.1E (automated gate PASS):** Consumer **323/323**, Business **210/210**, notification package **9/9**, catalog-api notification jest **127/127**, builds PASS; Flutter KZ-C.1 focused **98** PASS; ARB **956/956**. **KZ-C.1F** physical QA still required before closing KZ-C.1.
+
+**DEFERRED:** KZ-C.1F physical FCM/Business Web QA; Admin Web localization; F.5 **x-default=kk** SEO decision (separate from product default); unrelated flaky full-suite jest / network widget tests (documented in changelog).
 
 ### 4.2 F.5 SEO compatibility (do not reopen F.5)
 

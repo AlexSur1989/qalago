@@ -169,21 +169,25 @@ export default function BusinessReviewsPage() {
                       }}
                     >
                       <label>
-                        Причина
+                        {ui.ownerReviewReportReasonLabel}
                         <select
                           value={reportReason}
                           onChange={(e) => setReportReason(e.target.value)}
                         >
-                          <option value="SPAM">Спам</option>
-                          <option value="INAPPROPRIATE_CONTENT">Неподходящий контент</option>
-                          <option value="FALSE_INFORMATION">Ложная информация</option>
-                          <option value="HARASSMENT">Оскорбления</option>
-                          <option value="OTHER">Другое</option>
+                          <option value="SPAM">{ui.ownerReviewReportReasonSpam}</option>
+                          <option value="INAPPROPRIATE_CONTENT">
+                            {ui.ownerReviewReportReasonInappropriate}
+                          </option>
+                          <option value="FALSE_INFORMATION">
+                            {ui.ownerReviewReportReasonFalseInfo}
+                          </option>
+                          <option value="HARASSMENT">{ui.ownerReviewReportReasonHarassment}</option>
+                          <option value="OTHER">{ui.ownerReviewReportReasonOther}</option>
                         </select>
                       </label>
                       <textarea
                         rows={2}
-                        placeholder="Комментарий (необязательно)"
+                        placeholder={ui.ownerReviewReportDetailsOptional}
                         value={reportDetails}
                         onChange={(e) => setReportDetails(e.target.value)}
                       />
@@ -193,14 +197,14 @@ export default function BusinessReviewsPage() {
                           className="btn btn-sm"
                           disabled={reportBusy}
                         >
-                          {reportBusy ? 'Отправка…' : 'Отправить жалобу'}
+                          {reportBusy ? ui.text_a2aa4c : ui.ownerReviewReportSubmit}
                         </button>
                         <button
                           type="button"
                           className="btn btn-ghost btn-sm"
                           onClick={() => setReportOpenId(null)}
                         >
-                          Отмена
+                          {ui.text_cancel}
                         </button>
                       </div>
                     </form>
@@ -214,7 +218,7 @@ export default function BusinessReviewsPage() {
                         setReportDetails('');
                       }}
                     >
-                      Пожаловаться на отзыв
+                      {ui.ownerReviewReportAction}
                     </button>
                   )}
                 </div>

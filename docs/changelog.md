@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-09-28 — KZ-C.1E — Kazakh-first automated regression gate
+
+- **Status:** **KZ-C.1E PASS — AUTOMATED REGRESSION GATE** (tests + builds). **KZ-C.1 NOT CLOSED** until **KZ-C.1F** physical QA. **Not** production / FCM sign-off.
+- **Starting HEAD:** **`428f5e618addd046b8715aa6b48136329bbbf3cb`**
+- **Checkpoint:** KZ-C.1E commit in git log immediately after starting HEAD.
+- **Scope:** Read-only verification of **KZ-C.1B/C/D**; **minimal fix** — Business Web reviews report UI localized (9 `UiLabels` keys, Flutter ARB parity for report reasons); **no** Prisma/API/backend.
+- **Results:** Consumer Web vitest **323/323 PASS**, `next build` **PASS**; Business Web vitest **210/210 PASS**, `next build` **PASS**; `@qalago/notification-presentation` **9/9 PASS**; catalog-api notification-focused jest **127/127 PASS**, `nest build` **PASS**; Flutter KZ-C.1 focused tests **98 PASS**, debug APK **PASS**; Flutter ARB keys **956 / 956**.
+- **Notes:** Full `catalog-api` jest occasionally fails unrelated **6.12A** business-location specs in parallel runs (**pass in isolation** — classify **C/D** flake). Full Flutter suite **1131 pass / 10 fail** — consumer widget tests with live **Dio** connection errors (**C/D**, not KZ-C.1). `flutter analyze` **215** issues — pre-existing repo debt.
+- **Physical QA:** **NOT PERFORMED** (deferred **KZ-C.1F**).
+- **Deferred:** KZ-C.1F manual/FCM QA; optional hardening of flaky parallel jest / network-dependent Flutter widget tests.
+- **Next:** **Explicit agreement** before **KZ-C.1F** / **KZ-C.2** / **AOP.0** — **do not auto-start**.
+
+---
+
 ## 2026-09-28 — KZ-C.1D.2 — Notification localization implementation
 
 - **Status:** **KZ-C.1D.2 PASS — NOTIFICATION LOCALIZATION IMPLEMENTED** (automated tests; **no** Prisma/migration). **KZ-C.1 NOT CLOSED** (KZ-C.1F physical QA pending). **Not** production FCM sign-off.
