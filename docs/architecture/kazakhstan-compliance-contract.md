@@ -79,10 +79,10 @@ Do **not** copy statutory texts into the repository.
 | Consumer Web | **IMPLEMENTED (KZ-C.1C):** `DEFAULT_PUBLIC_LOCALE = kk`; no cookie → **kk** UI/redirect path; explicit `qalago_locale` **kk**/**ru** wins; invalid → **kk**; cookie **not** auto-set on default visit; F.5 **x-default RU** unchanged | KZ-C.1F physical QA |
 | Business Web | **IMPLEMENTED (KZ-C.1C):** `normalizeLocale` / SSR `<html lang>` / client fallback → **kk** when no explicit cookie; same cookie semantics as Consumer Web | Residual RU-hardcoded ops strings (non-blocker); KZ-C.1F physical QA |
 | Admin Web | Operational UI largely RU | Admin ops localization **phased**; public/user/business **legal/compliance** surfaces must not silently stay RU-only for production |
-| Notifications | **AUDITED (KZ-C.1D.0):** Flutter in-app typed = KK/RU via client; push = RU persisted; Business Web = RU API text | **CONTRACT LOCKED (KZ-C.1D.1):** server typed KK/RU renderer for push + Business Web; `PushDevice.locale` per device; **no DB migration** — see **`docs/architecture/notification-localization.md`** |
+| Notifications | **IMPLEMENTED (KZ-C.1D.2):** server typed KK/RU for push (per `PushDevice.locale`) + Business Web `/messages`; Flutter in-app ARB (E.3) + push locale sync; legacy `title`/`body` fallback | **Physical FCM QA deferred KZ-C.1F** — see **`docs/architecture/notification-localization.md`** |
 | Legal documents | F.7 neutral URLs; body largely RU draft | Approved **KK + RU** where required (§8) |
 
-**DEFERRED:** KZ-C.1D **implementation** (architecture locked in KZ-C.1D.1); KZ-C.1E automated tests; KZ-C.1F physical QA; Admin Web localization; F.5 **x-default=kk** SEO decision (separate from product default).
+**DEFERRED:** KZ-C.1E (if any remaining automated parity beyond KZ-C.1D.2); KZ-C.1F physical FCM/Business Web QA; Admin Web localization; F.5 **x-default=kk** SEO decision (separate from product default).
 
 ### 4.2 F.5 SEO compatibility (do not reopen F.5)
 
@@ -287,7 +287,7 @@ Do **not** indiscriminately delete audit/payment/legal evidence; retention/legal
 
 **CURRENT STATE:** `PushDevice` model; FCM optional; deletion tx does not explicitly clear push rows (user row retained).
 
-**KZ-C.1D.1 (locked):** Option B — server-side typed KK/RU presentation for push (per `PushDevice.locale`, default **kk**) and Business Web inbox; Flutter in-app unchanged; **no** Prisma change. Canonical: **`docs/architecture/notification-localization.md`**.
+**KZ-C.1D.2 (implemented):** Option B — `@qalago/notification-presentation` renderer for push + Business Web; producer payload enrichment (`businessName`, `publicReason`, tier codes); Flutter push locale sync; **no** Prisma change. Canonical: **`docs/architecture/notification-localization.md`**. Physical push QA: **KZ-C.1F**.
 
 ---
 

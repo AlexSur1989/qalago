@@ -59,6 +59,9 @@ describe('ModerationService review notification producers', () => {
       expect.objectContaining({
         userId: 'author-1',
         type: NotificationType.REVIEW_HIDDEN,
+        payload: expect.objectContaining({
+          businessName: 'Cafe',
+        }),
         tx,
       }),
     );

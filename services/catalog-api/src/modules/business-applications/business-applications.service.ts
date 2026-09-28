@@ -36,6 +36,7 @@ import {
 import { normalizeKazakhstanPhone } from '../auth/auth-phone.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
+import { sanitizePublicReasonForPayload } from '@qalago/notification-presentation';
 import { NotificationsService } from '../notifications/notifications.service';
 import {
   AdminListBusinessApplicationsQueryDto,
@@ -353,7 +354,10 @@ export class BusinessApplicationsService {
         body: dto.rejectionReason.trim(),
         targetType: NotificationTargetType.BUSINESS_APPLICATION,
         targetId: id,
-        payload: { applicationId: id },
+        payload: {
+          applicationId: id,
+          publicReason: sanitizePublicReasonForPayload(dto.rejectionReason),
+        },
         tx,
       });
 
@@ -472,7 +476,11 @@ export class BusinessApplicationsService {
         body: `«${business.title}» создан${businessStatus === BusinessStatus.ACTIVE ? ' и опубликован' : ' и ожидает запуска города'}.`,
         targetType: NotificationTargetType.BUSINESS_APPLICATION,
         targetId: id,
-        payload: { applicationId: id, businessId: business.id },
+        payload: {
+          applicationId: id,
+          businessId: business.id,
+          businessName: business.title,
+        },
         tx,
       });
 

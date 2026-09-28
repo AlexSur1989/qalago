@@ -8,4 +8,8 @@ module.exports = {
   coverageDirectory: '../coverage',
   testEnvironment: 'node',
   transformIgnorePatterns: ['/node_modules/(?!jose/)'],
+  moduleNameMapper: {
+    '^@qalago/notification-presentation$':
+      '<rootDir>/../../../packages/notification-presentation/src/index.ts',
+  },
 };

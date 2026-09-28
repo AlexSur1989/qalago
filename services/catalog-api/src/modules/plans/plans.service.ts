@@ -262,7 +262,11 @@ export class PlansService {
       body: `«${business.title}»: тариф активен до ${until}. Лимиты и скидка на рекламу применены.`,
       targetType: NotificationTargetType.BUSINESS,
       targetId: businessId,
-      payload: { businessId, planTier: tier },
+      payload: {
+        businessId,
+        planTier: tier,
+        businessName: business.title,
+      },
     });
   }
 }

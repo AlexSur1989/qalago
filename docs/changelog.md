@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-09-28 — KZ-C.1D.2 — Notification localization implementation
+
+- **Status:** **KZ-C.1D.2 PASS — NOTIFICATION LOCALIZATION IMPLEMENTED** (automated tests; **no** Prisma/migration). **KZ-C.1 NOT CLOSED** (KZ-C.1F physical QA pending). **Not** production FCM sign-off.
+- **Starting HEAD:** **`de183a3b5238536c351a564754f490976861f5d8`**
+- **Checkpoint:** KZ-C.1D.2 implementation commit in git log immediately after starting HEAD.
+- **Scope:** **`@qalago/notification-presentation`** central renderer; catalog-api **`buildPushDisplayCopy`** per-device locale; producer safe payload fields; Business Web **`/messages`** typed presentation; Flutter **`pushLocaleSyncProvider`** + token-refresh locale fix; E.3 Flutter in-app preserved; FCM data whitelist unchanged.
+- **Tests:** Package vitest; catalog-api push/copy + producer specs; business-web `notification-presentation.test.ts`; Flutter push locale sync + existing notification presentation tests. **`@qalago/catalog-api` build PASS**.
+- **Physical QA:** **NOT PERFORMED** (deferred **KZ-C.1F** — real FCM, Samsung, terminated state, manual Business Web).
+- **Deferred:** KZ-C.1E (if additional parity scope agreed); KZ-C.1F physical QA; optional producer legacy title simplification.
+- **Next:** **Explicit agreement** before **KZ-C.1E** / **KZ-C.1F** or **AOP.0** — **do not auto-start**.
+
+---
+
 ## 2026-09-28 — KZ-C.1D.1 — Notification localization architecture lock
 
 - **Status:** **KZ-C.1D.1 PASS — NOTIFICATION LOCALIZATION ARCHITECTURE LOCKED** (documentation only). **KZ-C.1D implementation NOT STARTED**. **Not** production compliance sign-off.

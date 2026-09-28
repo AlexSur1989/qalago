@@ -1,6 +1,6 @@
 # Notification localization architecture (KZ-C.1D)
 
-**Status:** **KZ-C.1D.1 PASS — ARCHITECTURE / CONTRACT LOCKED** (documentation only; **not implemented**).
+**Status:** **KZ-C.1D.2 PASS — IMPLEMENTED** (central `@qalago/notification-presentation` renderer; push per-device locale; Business Web `/messages`; Flutter push locale sync). **Physical FCM QA:** **NOT PERFORMED** (KZ-C.1F). **KZ-C.1 NOT CLOSED**.
 
 **Audit baseline:** KZ-C.1D.0 read-only audit at HEAD `27d73d56ac47def5665ed1e5c3d4d0624b2b597f`.
 
@@ -173,7 +173,7 @@ Producers **do not** select KK/RU; they continue to pass **legacy RU** `title`/`
 | Consumer | Owner | Notes |
 |----------|--------|------|
 | Push OS copy | **catalog-api** renderer | Authoritative for FCM `notification.title/body` |
-| Business Web inbox | **Same TS module** ideally via future `packages/notification-presentation` **or** catalog-api module re-exported to business-web with **parity tests** | Avoid premature cross-language package; **acceptable:** duplicate TS with shared snapshot tests in KZ-C.1D implementation |
+| Business Web inbox | **`@qalago/notification-presentation`** (shared with catalog-api push path) | Parity tests in package vitest + business-web wrapper tests |
 | Flutter in-app | **ARB / gen_l10n** | Keep; parity enforced by contract tests mapping type → key semantics |
 
 Do **not** block KZ-C.1D on a new shared npm package; ship renderer in `services/catalog-api` first, extract package only if duplication hurts.

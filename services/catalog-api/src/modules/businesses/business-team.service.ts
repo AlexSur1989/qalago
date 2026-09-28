@@ -314,6 +314,7 @@ export class BusinessTeamService {
       payload: {
         businessId: params.businessId,
         invitationId: params.invitationId,
+        businessName: params.businessTitle,
       },
     });
   }

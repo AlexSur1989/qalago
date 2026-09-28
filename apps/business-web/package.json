@@ -11,6 +11,7 @@
     "check:ui-strings": "node tool/check_hardcoded_ui_strings.mjs"
   },
   "dependencies": {
+    "@qalago/notification-presentation": "*",
     "@react-oauth/google": "^0.12.2",
     "@types/leaflet": "^1.9.22",
     "leaflet": "^1.9.4",

@@ -308,6 +308,11 @@ export class AdminService {
 
         targetId: business.id,
 
+        payload: {
+          businessId: business.id,
+          businessName: business.title,
+        },
+
       });
 
     } else if (business.ownerId && dto.status === BusinessStatus.BLOCKED) {
@@ -325,6 +330,11 @@ export class AdminService {
         targetType: NotificationTargetType.BUSINESS,
 
         targetId: business.id,
+
+        payload: {
+          businessId: business.id,
+          businessName: business.title,
+        },
 
       });
 

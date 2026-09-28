@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/auth/providers/auth_provider.dart';
@@ -39,6 +40,7 @@ Future<void> initializePushFirebase() async {
 
 final pushLifecycleProvider = Provider<void>((ref) {
   ref.watch(authPushSyncProvider);
+  ref.watch(pushLocaleSyncProvider);
   ref.watch(pushTapNavigationProvider);
 });
 
@@ -54,6 +56,21 @@ final authPushSyncProvider = Provider<void>((ref) {
       if (previous == next) return;
       final locale = ref.read(appLocaleProvider).languageCode;
       await service.syncForAuthenticatedUser(localeTag: locale);
+    },
+  );
+});
+
+final pushLocaleSyncProvider = Provider<void>((ref) {
+  ref.listen<Locale>(
+    appLocaleProvider,
+    (previous, next) {
+      if (previous == null || previous == next) return;
+      if (!ref.read(authProvider).isAuthenticated) return;
+      final service = ref.read(pushRegistrationServiceProvider);
+      final localeTag = localeToCode(next);
+      unawaited(
+        service.syncForAuthenticatedUser(localeTag: localeTag).catchError((_) {}),
+      );
     },
   );
 });

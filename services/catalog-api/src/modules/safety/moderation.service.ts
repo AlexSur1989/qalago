@@ -591,7 +591,11 @@ export class ModerationService {
         body: `Ваш отзыв о «${before.business.title}» скрыт из публичного каталога.`,
         targetType: NotificationTargetType.REVIEW,
         targetId: reviewId,
-        payload: { businessId: before.businessId, reviewId },
+        payload: {
+          businessId: before.businessId,
+          reviewId,
+          businessName: before.business.title,
+        },
         tx,
       });
     }
@@ -607,7 +611,11 @@ export class ModerationService {
         body: `Ваш отзыв о «${before.business.title}» снова виден в каталоге.`,
         targetType: NotificationTargetType.REVIEW,
         targetId: reviewId,
-        payload: { businessId: before.businessId, reviewId },
+        payload: {
+          businessId: before.businessId,
+          reviewId,
+          businessName: before.business.title,
+        },
         tx,
       });
     }

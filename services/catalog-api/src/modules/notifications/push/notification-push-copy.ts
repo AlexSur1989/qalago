@@ -1,4 +1,8 @@
 import { Notification } from '@prisma/client';
+import {
+  renderNotificationPresentation,
+  resolvePresentationLocale,
+} from '@qalago/notification-presentation';
 import { buildPushDataPayload } from './push-payload';
 
 export type PushDisplayCopy = {
@@ -8,18 +12,31 @@ export type PushDisplayCopy = {
 };
 
 /**
- * Uses persisted notification title/body for OS display when push arrives in background.
- * Locale-specific copy uses device locale hint when present; otherwise falls back to stored strings.
+ * OS display copy for FCM/APNs: typed templates per device locale; legacy fallback for GENERAL/unknown.
  */
 export function buildPushDisplayCopy(
   notification: Notification,
   deviceLocale: string | null | undefined,
 ): PushDisplayCopy {
-  void deviceLocale;
+  const locale = resolvePresentationLocale(deviceLocale);
+  const payload =
+    notification.payload && typeof notification.payload === 'object' && !Array.isArray(notification.payload)
+      ? (notification.payload as Record<string, unknown>)
+      : null;
+
+  const rendered = renderNotificationPresentation({
+    type: notification.type,
+    locale,
+    payload,
+    legacyTitle: notification.title,
+    legacyBody: notification.body,
+    forPush: true,
+  });
+
   const data = buildPushDataPayload(notification);
   return {
-    title: notification.title,
-    body: notification.body ?? undefined,
+    title: rendered.title,
+    body: rendered.body,
     data,
   };
 }

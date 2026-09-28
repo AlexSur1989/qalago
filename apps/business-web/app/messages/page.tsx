@@ -11,6 +11,7 @@ import {
   formatNotificationsCountLabel,
   formatOwnerDateTime,
 } from '@/lib/presentation';
+import { presentBusinessNotification } from '@/lib/notification-presentation';
 
 function typeLabel(ui: UiLabels, type: string) {
   const map: Record<string, string> = {
@@ -115,7 +116,9 @@ export default function MessagesPage() {
         ) : items.length === 0 ? (
           <p style={{ color: 'var(--text-muted)', margin: 0 }}>{ui.____d078b3}</p>
         ) : (
-          items.map((item) => (
+          items.map((item) => {
+            const display = presentBusinessNotification(item, locale);
+            return (
             <article
               key={item.id}
               className={`promo-item notification-item${item.isRead ? '' : ' unread'}`}
@@ -135,18 +138,19 @@ export default function MessagesPage() {
               <div className="promo-thumb">💬</div>
               <div className="promo-body" style={{ flex: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                  <strong>{item.title}</strong>
+                  <strong>{display.title}</strong>
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                     {formatOwnerDateTime(locale, item.createdAt)}
                   </span>
                 </div>
-                {item.body && (
-                  <p style={{ margin: '6px 0 0', color: 'var(--text-muted)' }}>{item.body}</p>
+                {display.body && (
+                  <p style={{ margin: '6px 0 0', color: 'var(--text-muted)' }}>{display.body}</p>
                 )}
                 <span className="notification-type">{typeLabel(ui, item.type)}</span>
               </div>
             </article>
-          ))
+          );
+          })
         )}
       </section>
     </BusinessShell>

@@ -26,6 +26,7 @@ import { resolveBusinessAuditCityId } from '../../common/utils/business-context-
 import { loadPrimaryCityPresentationByBusinessId } from '../../common/utils/business-primary-city-presentation.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
+import { sanitizePublicReasonForPayload } from '@qalago/notification-presentation';
 import { NotificationsService } from '../notifications/notifications.service';
 import {
   AdminListOwnershipClaimsQueryDto,
@@ -286,7 +287,11 @@ export class OwnershipClaimsService {
         body: dto.rejectionReason.trim(),
         targetType: NotificationTargetType.OWNERSHIP_CLAIM,
         targetId: id,
-        payload: { claimId: id, businessId: claim.businessId },
+        payload: {
+          claimId: id,
+          businessId: claim.businessId,
+          publicReason: sanitizePublicReasonForPayload(dto.rejectionReason),
+        },
         tx,
       });
 
@@ -396,7 +401,11 @@ export class OwnershipClaimsService {
         body: `Вам предоставлен доступ владельца к «${businessAfter.title}».`,
         targetType: NotificationTargetType.OWNERSHIP_CLAIM,
         targetId: id,
-        payload: { claimId: id, businessId: businessAfter.id },
+        payload: {
+          claimId: id,
+          businessId: businessAfter.id,
+          businessName: businessAfter.title,
+        },
         tx,
       });
 

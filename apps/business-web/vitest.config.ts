@@ -5,6 +5,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, '.'),
+      '@qalago/notification-presentation': path.resolve(
+        __dirname,
+        '../../packages/notification-presentation/src/index.ts',
+      ),
     },
   },
   test: {

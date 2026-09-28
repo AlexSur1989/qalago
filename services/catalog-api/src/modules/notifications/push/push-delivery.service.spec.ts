@@ -27,8 +27,8 @@ describe('PushDeliveryService', () => {
   function build(gateway: Partial<PushDeliveryGateway>, prisma?: Partial<PrismaService>) {
     const pushDevices = {
       listActiveTokensForUser: jest.fn().mockResolvedValue([
-        { id: 'd1', token: 'tok1', locale: 'ru', platform: PushPlatform.ANDROID },
-        { id: 'd2', token: 'tok2', locale: null, platform: PushPlatform.IOS },
+        { id: 'd1', token: 'tok1', locale: 'kk', platform: PushPlatform.ANDROID },
+        { id: 'd2', token: 'tok2', locale: 'ru', platform: PushPlatform.IOS },
       ]),
       deactivateByTokenIds: jest.fn(),
     } as unknown as PushDevicesService;
@@ -65,6 +65,20 @@ describe('PushDeliveryService', () => {
       attempted: 2,
       succeeded: 0,
     });
+  });
+
+  it('same notification row → per-device localized OS copy', async () => {
+    const sendToToken = jest
+      .fn()
+      .mockResolvedValueOnce({ deviceId: 'd1', success: true })
+      .mockResolvedValueOnce({ deviceId: 'd2', success: true });
+    const { service } = build({ isEnabled: true, sendToToken });
+    await service.deliverForNotification(baseNotification);
+    expect(sendToToken).toHaveBeenCalledTimes(2);
+    const kkCopy = sendToToken.mock.calls[0][1];
+    const ruCopy = sendToToken.mock.calls[1][1];
+    expect(kkCopy.title).toBe('Жаңа пікір');
+    expect(ruCopy.title).toBe('Новый отзыв');
   });
 
   it('multi-device fan-out and one bad token does not block others', async () => {

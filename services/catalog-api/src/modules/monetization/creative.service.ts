@@ -12,6 +12,7 @@ import { resolveBusinessAuditCityId } from '../../common/utils/business-context-
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
+import { sanitizePublicReasonForPayload } from '@qalago/notification-presentation';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CampaignProvisioningService } from './campaign-provisioning.service';
 import { CreateCreativeDto, UpdateCreativeDto } from './dto/monetization.dto';
@@ -327,6 +328,10 @@ export class CreativeService {
       payload: {
         businessId: params.businessId,
         creativeId: params.creativeId,
+        businessName: business.title,
+        ...(params.publicComment
+          ? { publicReason: sanitizePublicReasonForPayload(params.publicComment) }
+          : {}),
         ...(campaign?.id ? { campaignId: campaign.id } : {}),
       },
     });

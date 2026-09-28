@@ -257,7 +257,7 @@ export class ReviewsService {
   async reply(user: AuthUser, id: string, dto: ReplyReviewDto) {
     const review = await this.prisma.review.findUnique({
       where: { id },
-      include: { business: { select: { id: true } } },
+      include: { business: { select: { id: true, title: true } } },
     });
     if (!review || review.deletedAt !== null) {
       throw new NotFoundException('Review not found');
@@ -303,7 +303,11 @@ export class ReviewsService {
         body: dto.ownerReply,
         targetType: NotificationTargetType.REVIEW,
         targetId: review.id,
-        payload: { businessId: review.business.id, reviewId: review.id },
+        payload: {
+          businessId: review.business.id,
+          reviewId: review.id,
+          businessName: review.business.title,
+        },
       });
     }
 
@@ -333,6 +337,7 @@ export class ReviewsService {
         businessId: business.id,
         reviewId: review.id,
         rating: review.rating,
+        businessName: business.title,
       },
     });
   }

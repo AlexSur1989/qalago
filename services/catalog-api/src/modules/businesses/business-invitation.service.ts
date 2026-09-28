@@ -227,6 +227,7 @@ export class BusinessInvitationService {
             businessId: invitation.businessId,
             invitationId: invitation.id,
             acceptedByUserId: user.id,
+            businessName: invitation.business.title,
           },
           tx,
         });
