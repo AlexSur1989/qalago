@@ -6,6 +6,22 @@
 
 ---
 
+## 2026-09-28 — KZ-C.1F — Partial physical QA / notification QA deferred
+
+- **Status:** **KZ-C.1F — PARTIAL PHYSICAL QA PASS / NOTIFICATION QA DEFERRED**. **KZ-C.1 NOT CLOSED** (core KK-first + locale authority verified on device/browsers; typed notification inbox + live FCM **not** physically verified).
+- **Starting HEAD (implementation, unchanged):** **`346ab5d31c3a932908b54b2b22b0212d7a68b64d`** (deep-link locale hotfix).
+- **Checkpoint:** docs-only commit immediately after this entry (physical QA evidence).
+- **Summary — Android / Flutter PASS:** clean install default **KK**; explicit KK↔RU switch; saved locale survives restart; saved **RU** startup without visible KK→RU flash; Kazakh glyphs **Ә Ғ Қ Ң Ө Ұ Ү Һ І** OK; catalog API reachable on LAN dev host; physical APK **`QALAGO_DEV_HOST=192.168.8.101`** (do **not** treat historical **`172.158.10.133`** as current APK host).
+- **Summary — deep links PASS:** hotfix **`346ab5d…`** physically verified — warm KK + `/ru/uralsk`→RU; warm RU + `/kk/uralsk`→KK; cold saved KK + `/ru/uralsk`→RU; cold saved RU + `/kk/uralsk`→KK; repeated after **`192.168.8.101`** rebuild. **No** second bootstrap/`getLatestLink` hotfix justified; keep **`346ab5d…`**. Generic ADB VIEW may show Android chooser (Verified App Links / **assetlinks** external debt); explicit `pkg=kz.qalago.qalago_mobile` bypasses resolver — **not** a locale defect.
+- **Summary — Consumer Web PASS:** incognito no cookie → **`/`→/kk/uralsk`**, KK UI; KK↔RU switch + persistence; explicit **`/kk/`** / **`/ru/`** override saved locale; neutral **`/uralsk`** + saved RU → **`/ru/uralsk`**; legal chrome KK/RU switchable; legal **body** may remain RU (later KZ compliance — **not** KZ-C.1 failure); **F.5 x-default RU** unchanged by KK-first policy.
+- **Summary — Business Web PASS:** apparent initial RU = existing **`qalago_locale=ru`** cookie; delete cookie → KK default; KK↔RU + persistence; internal nav preserves KK.
+- **Notification physical QA — DEFERRED (no PASS/FAIL):** Flutter inbox empty; Business Web **`/messages`** empty; typed **`NEW_REVIEW`** KK/RU presentation **not** physically verified; live FCM banner **not** physically verified. Read-only fixture audit: **`seed-notification-navigation-fixture.mjs`** sufficient for inbox typed **`NEW_REVIEW`** (Prisma insert only; **no** `NotificationsService` push; **no** review/business/user mutation; **no** cleanup script). Fixture attempt **`NOTIFICATION_FIXTURE_USER_ID=cmpn1wnq1000iult8yj6a06q7`** → **`User not found`** — stopped before INSERT (**no DB mutation**); id from Business Web Network **"my"** — entity/DB alignment **not** proven. **Next diagnostic (read-only, not started here):** **KZ-C.1F — DATABASE TARGET MISMATCH DIAGNOSIS** — Business Web **`my`** endpoint, correct **`User.id`**, Catalog API vs fixture **`DATABASE_URL`**, root cause of user-not-found, safe fixture command.
+- **Live push debt:** fixture does **not** exercise push delivery; FCM needs **`PUSH_ENABLED`**, Firebase, device registration — explicit external/deferred QA.
+- **Deferred:** notification inbox + FCM physical QA; DB-target mismatch diagnosis; optional **`businessName`** in fixture payload for named-template QA.
+- **Next product contour (documented only — **not** started): **AOP.0 — ADMIN CATALOG / OPERATIONS CONTRACT LOCK** (after AOP Phase 0 read-only audit). Deferred notification QA does **not** block unrelated development. Do **not** auto-start **KZ-C.2** / **AOP.0** implementation without agreement.
+
+---
+
 ## 2026-09-28 — KZ-C.1F — Deep-link locale authority hotfix
 
 - **Status:** **KZ-C.1F — DEEP LINK LOCALE HOTFIX IMPLEMENTED — AWAITING PHYSICAL RETEST** (not PASS/CLOSED). **KZ-C.1 NOT CLOSED**.

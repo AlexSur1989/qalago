@@ -1,6 +1,6 @@
 # Notification localization architecture (KZ-C.1D)
 
-**Status:** **KZ-C.1D.2 PASS — IMPLEMENTED** (central `@qalago/notification-presentation` renderer; push per-device locale; Business Web `/messages`; Flutter push locale sync). **Physical FCM QA:** **NOT PERFORMED** (KZ-C.1F). **KZ-C.1 NOT CLOSED**.
+**Status:** **KZ-C.1D.2 PASS — IMPLEMENTED** (central `@qalago/notification-presentation` renderer; push per-device locale; Business Web `/messages`; Flutter push locale sync). **Physical QA (KZ-C.1F):** typed **inbox** + **live FCM** **DEFERRED** (empty inboxes on test accounts; fixture/DB target mismatch unresolved — see **`docs/changelog.md`** KZ-C.1F partial QA entry). **KZ-C.1 NOT CLOSED**.
 
 **Audit baseline:** KZ-C.1D.0 read-only audit at HEAD `27d73d56ac47def5665ed1e5c3d4d0624b2b597f`.
 
