@@ -45,8 +45,8 @@
 | **Physical QA pending (6.12A)** | **None** — contour closed (**5E** finalized) |
 | **Flutter Web disposition** | **PASS — DEV/QA ONLY** (Option **B**); see **`docs/changelog.md`** |
 | **Public help** | **CLOSED / PASS — PUBLIC HELP FINALIZED** — Consumer Web guest **`/help`**; hotfix **`08b5340…`**; physical QA **PASS** (**2026-09-28**); Business Web **`/help`** = authenticated owner only |
-| **F.8** | **IN PROGRESS** — **F.8.0–F.8.2 PASS**; route rollout verified (**`f8-phase2-route-rollout.test.ts`**); Business cover still **F.8.3** |
-| **Next** | **Explicit agreement** before **F.8.3** — **do not auto-start F.8.3**; optional **`<html lang>`** soft nav |
+| **F.8** | **IN PROGRESS** — **F.8.0–F.8.3 PASS**; Business OG uses trusted **`coverImageUrl`** only (**`business-social-preview.ts`**); **F.8.4+ NOT STARTED** |
+| **Next** | **Explicit agreement** before **F.8.4** — **do not auto-start F.8.4**; optional **`<html lang>`** soft nav |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -56,13 +56,13 @@
 
 **F.5:** **CLOSED / PASS** — locale SEO URL architecture implemented and verified (routing, SEO, PublicShell URL-locale UI). Milestone: **F.5 PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED**. Non-blocking: **`<html lang>`** vs URL on soft nav (not verified); Phase **1** manual QA gaps (legacy redirect, **`locationId`** UI). No backend change.
 
-**Consumer Web F-series (canonical order):** F.5 **CLOSED** → **F.6 CLOSED / PASS** → **F.7 CLOSED / PASS** → **F.8 IN PROGRESS** (**F.8.0–F.8.2** PASS) — **`docs/architecture/public-consumer-web.md`** § **F.8**.
+**Consumer Web F-series (canonical order):** F.5 **CLOSED** → **F.6 CLOSED / PASS** → **F.7 CLOSED / PASS** → **F.8 IN PROGRESS** (**F.8.0–F.8.3** PASS) — **`docs/architecture/public-consumer-web.md`** § **F.8**.
 
 **F.6 (closed):** Canonical HTTPS → parser → coordinator → session city / locale → go_router; Web `/.well-known`; Android/iOS configured. **Production** association verification deferred (Play SHA / Apple Team ID / device QA). Android release debug signing remains general release debt.
 
 **F.7 (closed):** **Canonical public legal host:** Consumer Web / **`qalago.kz`**. **Paths:** locale-neutral **`/privacy`**, **`/terms`**, **`/account-deletion`**. **Business Web:** legacy legal routes redirect to Consumer Web. **Localization:** RU/KK QalaGo chrome; **Russian** source-language legal body until approved translation (no machine translation). **SEO:** self-canonical legal pages; index/follow; no legal RU/KK hreflang; one sitemap entry per legal page. **Physical QA:** PASS (**2026-09-28**). **External legal/content debt:** **`docs/legal-review-required.md`** — does **not** reopen technical F.7.
 
-**F.8 (in progress):** **F.8.1** shipped static fallback **`/og/qalago-default.png`** (**1200×630**) + **`withDefaultSocialPreview()`** on shared **`page-metadata`** helpers (**`summary_large_image`**, shared OG/Twitter image URL from **`getConsumerWebOrigin()`**). **No** Business cover selection yet (**F.8.3**). Business-grain / trusted-media / locale-neutral rules per § **F.8**. Production social crawler QA = **external verification debt** until **F.8.5**.
+**F.8 (in progress):** Fallback **`/og/qalago-default.png`**; canonical Business pages use **`coverImageUrl`** when **`/uploads/…`** on trusted Consumer/API origin (**reference-only**, no fetch); **`effectiveMedia` not used** for OG; **`locationId`** does not affect OG URL/image. **F.8.4** automated regression umbrella next. Production crawler QA = **F.8.5** debt.
 
 **Post-6.12A candidates (documented — not auto-started):** **6.12B** / Catalog Import; remaining contours — **`docs/changelog.md`** / architecture docs.
 

@@ -106,7 +106,7 @@ describe('F.8.1 default social preview', () => {
     expect(firstTwitterImage(m)).toBe(firstOgImageUrl(m));
   });
 
-  it('business metadata uses default fallback only (no coverImageUrl)', () => {
+  it('business metadata uses default fallback when cover absent or untrusted', () => {
     vi.stubEnv('NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL', 'https://qalago.kz');
     const m = metadataForCanonicalBusiness(
       'aktobe',

@@ -3,6 +3,7 @@
  * Business-specific images: F.8.3 only.
  */
 import type { Metadata } from 'next';
+import { resolveTrustedPublicBusinessCoverUrl } from './business-social-preview';
 import { getConsumerWebOrigin } from './canonical';
 
 /** Public static asset — Consumer Web owns production fallback. */
@@ -34,10 +35,17 @@ export function defaultSocialPreviewImages(): NonNullable<Metadata['openGraph']>
 
 const TWITTER_CARD = 'summary_large_image' as const;
 
-/** Attach shared QalaGo fallback image + card type without altering canonical / OG url. */
-export function withDefaultSocialPreview(metadata: Metadata): Metadata {
-  const images = defaultSocialPreviewImages();
-  const imageList = Array.isArray(images) ? images : images ? [images] : [];
+export type SocialPreviewImageEntry =
+  | string
+  | URL
+  | { url: string | URL; width?: number; height?: number; alt?: string; type?: string };
+
+/** Attach Open Graph / Twitter images + summary_large_image (canonical / OG url unchanged). */
+export function withSocialPreviewImages(
+  metadata: Metadata,
+  images: SocialPreviewImageEntry | SocialPreviewImageEntry[],
+): Metadata {
+  const imageList = Array.isArray(images) ? images : [images];
   const twitterImages = imageList.map((img) => {
     if (typeof img === 'string') return img;
     if (img instanceof URL) return img.toString();
@@ -47,8 +55,8 @@ export function withDefaultSocialPreview(metadata: Metadata): Metadata {
   return {
     ...metadata,
     openGraph: metadata.openGraph
-      ? { ...metadata.openGraph, images }
-      : { images },
+      ? { ...metadata.openGraph, images: imageList }
+      : { images: imageList },
     twitter: metadata.twitter
       ? {
           ...metadata.twitter,
@@ -60,4 +68,24 @@ export function withDefaultSocialPreview(metadata: Metadata): Metadata {
           images: twitterImages,
         },
   };
+}
+
+/** Attach shared QalaGo fallback image + card type without altering canonical / OG url. */
+export function withDefaultSocialPreview(metadata: Metadata): Metadata {
+  const images = defaultSocialPreviewImages();
+  return withSocialPreviewImages(
+    metadata,
+    (Array.isArray(images) ? images : images ? [images] : []) as SocialPreviewImageEntry[],
+  );
+}
+
+/** F.8.3 — Business cover when trusted; otherwise default fallback (no fabricated dimensions). */
+export function socialPreviewImagesForBusinessCover(
+  coverImageUrl: string | null | undefined,
+): SocialPreviewImageEntry[] {
+  const trusted = resolveTrustedPublicBusinessCoverUrl(coverImageUrl);
+  if (trusted) {
+    return [{ url: trusted, alt: DEFAULT_SOCIAL_PREVIEW_ALT }];
+  }
+  return (defaultSocialPreviewImages() ?? []) as SocialPreviewImageEntry[];
 }

@@ -41,6 +41,7 @@ export async function generateMetadata({
     data.business.title,
     data.business.shortDesc ?? data.business.description,
     locale,
+    data.business.coverImageUrl ?? null,
   );
 }
 

@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — F.8.3 — Safe Business social preview selection
+
+- **Status:** **F.8.3 PASS — SAFE BUSINESS SOCIAL PREVIEW SELECTION**. **F.8 IN PROGRESS**. **F.8.4 NOT STARTED**. **F.7 / PUBLIC HELP** unchanged.
+- **Checkpoint:** Pre-phase HEAD **`1a9eb2e71e2ac86860b024564d9aa7861f93a621`**; implementation commit in git log immediately after.
+- **Scope:** **`apps/consumer-web`** — **`lib/seo/business-social-preview.ts`** (trusted **`/uploads/…`** only; Consumer Web absolute URLs); **`metadataForCanonicalBusiness`** + business **`page.tsx`** pass **`coverImageUrl` only**; **`withSocialPreviewImages`**; **`f8-phase3-business-social-preview.test.ts`**. **No** API/DB; **no** fetch/SSRF; **no** **`effectiveMedia`** (branch-grain ambiguity).
+- **Summary:** Trusted relative **`/uploads/…`** or absolute on configured **Consumer/API** origin → Business **`og:image`/`twitter:image`** (no fabricated upload dimensions); else QalaGo fallback (**1200×630**). External URLs rejected. **`openGraph.url`/canonical** unchanged; **`locationId`** ignored for metadata. **295** vitest PASS; **`next build`** PASS.
+- **Deferred:** **F.8.4** full regression gate; **F.8.5** production social preview QA.
+- **Next:** **Explicit agreement** before **F.8.4** — **do not auto-start F.8.4**.
+
+---
+
 ## 2026-09-28 — F.8.2 — Public route social preview rollout
 
 - **Status:** **F.8.2 PASS — PUBLIC ROUTE SOCIAL PREVIEW ROLLOUT**. **F.8 IN PROGRESS**. **F.8.3 NOT STARTED**. **F.7 / PUBLIC HELP** unchanged.

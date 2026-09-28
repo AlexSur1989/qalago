@@ -20,7 +20,11 @@ import {
   subcategorySeoDescription,
   subcategorySeoTitle,
 } from './metadata-copy';
-import { withDefaultSocialPreview } from './social-preview';
+import {
+  socialPreviewImagesForBusinessCover,
+  withDefaultSocialPreview,
+  withSocialPreviewImages,
+} from './social-preview';
 import type { AppLocale } from '@/lib/locale';
 import type { PublicLocale } from '@/lib/public-locale';
 
@@ -164,6 +168,8 @@ export function metadataForCanonicalBusiness(
   businessTitle: string,
   description: string | null | undefined,
   locale: AppLocale,
+  /** F.8.3 — Business-grain `coverImageUrl` only (not effectiveMedia / not locationId). */
+  brandCoverImageUrl?: string | null,
 ): Metadata {
   const title = businessTitle;
   const desc =
@@ -171,8 +177,28 @@ export function metadataForCanonicalBusiness(
     (locale === 'kk'
       ? `${businessTitle} — QalaGo қалалық нұсқауы.`
       : `${businessTitle} — городской гид QalaGo.`);
+  const { canonical, languages } = buildIndexableLocaleSeoAlternates(locale, {
+    citySlug,
+    pathSegments: ['business', businessSlug],
+  });
+  const core: Metadata = {
+    title,
+    description: desc,
+    alternates: { canonical, languages },
+    openGraph: {
+      title,
+      description: desc,
+      url: canonical,
+      siteName: 'QalaGo',
+      type: 'website',
+    },
+    twitter: {
+      title,
+      description: desc,
+    },
+  };
   return {
-    ...indexableOgBasics(title, desc, locale, citySlug, ['business', businessSlug]),
+    ...withSocialPreviewImages(core, socialPreviewImagesForBusinessCover(brandCoverImageUrl)),
     robots: { index: true, follow: true },
   };
 }
