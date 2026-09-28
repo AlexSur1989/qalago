@@ -56,8 +56,9 @@
 | **AOP.0** | **PASS — ADMIN CATALOG / OPERATIONS CONTRACT LOCKED** — **`docs/architecture/admin-catalog-operations.md`** |
 | **AOP.1** | **PASS — BACKEND ADMIN CATALOG CORE** — `POST/GET/PATCH` **`/api/v1/admin/businesses*`** |
 | **AOP.2** | **PASS — ADMIN BUSINESS MANAGEMENT UI** — **`/catalog/businesses`** (list/detail/create/catalog edit) |
-| **AOP.3** | **PASS — ADMIN BUSINESSLOCATION MANAGEMENT** — detail **Locations** CRUD + set-primary; Admin API delegates **`BusinessLocationService.*ForAdmin`** |
-| **Next** | **KZ-C.1F** notification QA; **AOP.4** RBAC matrix / **AOP.5** audit; **mass catalog population BLOCKED**; do not auto-start **KZ-C.2** |
+| **AOP.3** | **PASS — ADMIN BUSINESSLOCATION MANAGEMENT** — detail **Locations** CRUD + set-primary |
+| **AOP.4** | **PASS — ADMIN CATALOG RBAC / CITY SCOPE ENFORCED** — matrix **§5.3**; set-primary anti-escalation; taxonomy scope fix |
+| **Next** | **KZ-C.1F** notification QA; **AOP.5** audit/lifecycle; **mass catalog population BLOCKED**; do not auto-start **KZ-C.2** |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -90,7 +91,7 @@
 | **Ads** | Shared Ad Engine; locale-aware labels + transparency + separate retention class — **KZ-C.4**; fixed API **`Реклама`** is not final. |
 | **AI** | Consumer AI **not launched**; external LLM / content-origin schema — **KZ-C.6** gate before launch. |
 | **Production gate** | Do **not** claim LEGAL READY / COMPLIANCE COMPLETE until §30 checklist in contract (+ **KZ-C.9**). |
-| **AOP.0–AOP.3** | **AOP.0** contract; **AOP.1** backend; **AOP.2** catalog UI; **AOP.3 PASS** Admin BL management — [admin-catalog-operations.md](./architecture/admin-catalog-operations.md); **AOP.4+** not started; mass population **BLOCKED**. |
+| **AOP.0–AOP.4** | **AOP.0** contract through **AOP.4 PASS** RBAC/city scope — [admin-catalog-operations.md](./architecture/admin-catalog-operations.md) §5.3; **AOP.5+** not started; mass population **BLOCKED**. |
 
 **Phases:** KZ-C.1 … KZ-C.9 per contract; **AOP.0** may proceed in parallel where compatible; **public production** gated by P0 compliance work.
 

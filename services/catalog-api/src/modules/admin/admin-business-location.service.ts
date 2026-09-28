@@ -55,6 +55,7 @@ export class AdminBusinessLocationService {
     if (!existing) {
       throw new NotFoundException('Location not found');
     }
+    await this.cityScope.assertCityInAdminScope(staff, existing.cityId);
     const targetCityId = dto.cityId ?? existing.cityId;
     await this.cityScope.assertCityInAdminScope(staff, targetCityId);
     if (existing.isPrimary) {
@@ -80,6 +81,8 @@ export class AdminBusinessLocationService {
 
   async setPrimary(staff: AuthUser, businessId: string, locationId: string) {
     await this.cityScope.assertBusinessInAdminScope(staff, businessId);
+    /** Owner-equivalent: only staff managing the *current* primary city may change primary (A.9.4.5A / AOP.0 §5.2). */
+    await this.cityScope.assertBusinessPrimaryLocationCityInAdminScope(staff, businessId);
     const target = await this.prisma.businessLocation.findFirst({
       where: { id: locationId, businessId },
     });

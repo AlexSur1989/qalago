@@ -951,8 +951,9 @@ export class AdminService {
   }
 
   async updateBusinessTaxonomy(user: AuthUser, businessId: string, dto: UpdateBusinessTaxonomyDto) {
-    this.systemAccess.assertGlobalAdmin(user);
     const business = await this.ensureBusiness(businessId);
+    await this.cityScope.assertBusinessInAdminScope(user, business.id);
+    await this.cityScope.assertBusinessPrimaryLocationCityInAdminScope(user, businessId);
 
     let categoryId = business.categoryId;
     if (dto.categoryId && dto.categoryId !== business.categoryId) {

@@ -185,6 +185,24 @@ Canonical permissions: `packages/shared-types/src/staff-permissions.ts`. Enforce
 
 If an AOP operation cannot be expressed with current permissions: record **AOP.1 implementation debt** — **no** hidden bypass.
 
+### 5.3 AOP.4 — enforced city-scope matrix (implemented)
+
+| Operation | Staff permission | CITY_ADMIN scope |
+|-----------|------------------|------------------|
+| List / detail / BL list | `BUSINESS_VIEW` | **ANY-BL** visibility |
+| Staff create Business | `BUSINESS_CREATE` | Initial primary `cityId` ∈ managed cities |
+| Catalog core patch (`PATCH …/catalog`) | `BUSINESS_EDIT` | **Primary-city** authority |
+| BL create | `BUSINESS_EDIT` | ANY-BL visibility + target `cityId` ∈ managed cities |
+| BL update | `BUSINESS_EDIT` | Existing + target `cityId` ∈ managed cities; **primary BL** edit also requires **primary-city** authority |
+| BL set-primary | `BUSINESS_EDIT` | **Primary-city** authority **and** target branch `cityId` ∈ managed cities (blocks cross-city promotion by scoped city admins; blocks B-admin escalation while primary stays in A) |
+| BL delete | `BUSINESS_EDIT` | Target branch `cityId` ∈ managed cities (+ domain last/primary rules) |
+| Status / featured / plan | `BUSINESS_EDIT` | **ANY-BL** visibility (business-wide admin aggregate — [business-location.md](./business-location.md) § A.9.4.5A) |
+| Taxonomy patch | `CATEGORY_EDIT` | **Primary-city** authority (replaces legacy global-admin-only service gate; **CITY_ADMIN** lacks `CATEGORY_EDIT`) |
+
+**Legacy bypass audit:** `POST /api/v1/businesses` (owner plane) remains **global ADMIN/SUPER_ADMIN only** — not staff `BUSINESS_CREATE`. Admin catalog mutations use `@AdminStaffRoute` + `StaffPermission` + `CityScopeService`.
+
+**AOP.5 debt:** dedicated audit actions for status/featured/plan/location mutations; lifecycle policy defaults.
+
 ---
 
 ## 6. Lifecycle / publication
@@ -276,7 +294,7 @@ All Admin catalog mutations go through **Catalog API** → **PostgreSQL**. Flutt
 | **AOP.1** | Backend: `POST /admin/businesses`, staff create aggregate (ownerless), Admin BL staff routes, DTOs, tests | 6.12A aggregate | API/integration tests | Admin UI |
 | **AOP.2** | Admin Web: **`/catalog/businesses`** list/detail/create/catalog edit; locations **read-only** (superseded on detail by AOP.3 manager) | AOP.1 | vitest + build **PASS** | — |
 | **AOP.3** | Admin Web + API: BusinessLocation CRUD + set-primary (delegates **`BusinessLocationService.*ForAdmin`**) | AOP.1 | vitest + build + **`admin-aop3-business-location.spec.ts`** | Mass import |
-| **AOP.4** | RBAC + CITY_ADMIN enforcement matrix tests | AOP.1 | jest specs (extend 6.12A.9.4.5A patterns) | New roles |
+| **AOP.4** | RBAC + CITY_ADMIN enforcement matrix (**§5.3**) | AOP.1–3 | **`admin-aop4-catalog-rbac.spec.ts`** + 6.12A.9.4.5A | New roles |
 | **AOP.5** | Audit + lifecycle policy (status defaults, audit gaps) | AOP.1 | audit log tests | Legal CMS |
 | **AOP.6** | Full automated regression (admin + catalog-api) | AOP.1–5 | CI green | Mobile/consumer |
 | **AOP.7** | Physical Admin browser QA + **AOP CLOSURE** | AOP.6 | Manual checklist | Population |
