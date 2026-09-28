@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-28 — AOP.2 — Admin business catalog management UI
+
+- **Status:** **AOP.2 PASS — ADMIN BUSINESS MANAGEMENT UI IMPLEMENTED**. **AOP.3 NOT STARTED**. **Mass catalog population remains BLOCKED**.
+- **Starting HEAD:** **`5aa9cff98999d8c7ea3885b2ed2ce4164cb6067d`** (post AOP.1 test fixture).
+- **Checkpoint (commit):** see git log — `feat(admin-web): add business catalog management ui`.
+- **Summary:** Admin Web **`/catalog/businesses`** — list (status filter, pagination, backend scope), detail (core/taxonomy/lifecycle, read-only locations), **create** form → **`POST /admin/businesses`**, **catalog patch** → **`PATCH …/catalog`**; RU/KK labels; RBAC UX (`BUSINESS_VIEW` / `CREATE` / `EDIT`); admin locations client fixed to **`GET /admin/businesses/:id/locations`**; sidebar nav **«Каталог · Заведения»**. Vitest + **`next build` PASS**.
+- **Deferred:** BusinessLocation mutation UI (**AOP.3**); lifecycle audit completeness (**AOP.5**); **KZ-C.1 NOT CLOSED**.
+- **Next:** **AOP.3** Admin BL management UI — explicit agreement only.
+
+---
+
 ## 2026-09-28 — AOP.1 — Backend Admin catalog core
 
 - **Status:** **AOP.1 PASS — BACKEND ADMIN CATALOG CORE IMPLEMENTED**. **AOP.2 NOT STARTED**. **Mass catalog population remains BLOCKED**.

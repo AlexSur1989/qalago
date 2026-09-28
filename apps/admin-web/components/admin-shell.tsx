@@ -127,6 +127,13 @@ export function AdminShell({
               ),
             )}
           <Link
+            href="/catalog/businesses"
+            className={`nav-item${pathname.startsWith('/catalog/businesses') ? ' active' : ''}`}
+          >
+            <span className="nav-icon">🏪</span>
+            <span>Каталог · Заведения</span>
+          </Link>
+          <Link
             href="/business-requests/applications"
             className={`nav-item${pathname.startsWith('/business-requests') ? ' active' : ''}`}
           >

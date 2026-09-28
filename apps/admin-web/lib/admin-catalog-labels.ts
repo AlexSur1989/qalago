@@ -1,0 +1,151 @@
+/** Admin catalog business management UI (AOP.2) — RU/KK parity. */
+export type AdminCatalogLocale = 'ru' | 'kk';
+
+const labels = {
+  ru: {
+    navCatalog: 'Каталог',
+    navBusinesses: 'Заведения',
+    pageListTitle: 'Заведения каталога',
+    pageCreateTitle: 'Новое заведение',
+    pageDetailTitle: 'Карточка заведения',
+    createAction: 'Создать заведение',
+    loading: 'Загрузка…',
+    emptyList: 'Нет заведений по выбранным фильтрам.',
+    errorLoad: 'Не удалось загрузить список.',
+    filterStatus: 'Статус',
+    filterAll: 'Все',
+    colTitle: 'Название',
+    colStatus: 'Статус',
+    colCity: 'Город (основной филиал)',
+    colCategory: 'Категория',
+    colSlug: 'Slug',
+    openDetail: 'Открыть',
+    sectionCore: 'Основные данные',
+    sectionTaxonomy: 'Таксономия',
+    sectionLifecycle: 'Публикация',
+    sectionLocations: 'Филиалы',
+    sectionCatalogEdit: 'Редактирование каталога',
+    primaryBranchHint: 'Первый филиал будет основным (PRIMARY).',
+    locationsReadOnly: 'Только просмотр. Управление филиалами — этап AOP.3.',
+    noOwner: 'Без владельца',
+    ownerAttached: 'Владелец назначен',
+    saveCatalog: 'Сохранить изменения',
+    saving: 'Сохранение…',
+    createSubmit: 'Создать',
+    creating: 'Создание…',
+    successCreated: 'Заведение создано.',
+    slugReadOnly: 'Slug (не изменяется)',
+    fieldTitle: 'Название',
+    fieldSlug: 'Slug',
+    fieldCategory: 'Категория',
+    fieldSubcategories: 'Подкатегории',
+    fieldShortDesc: 'Краткое описание',
+    fieldDescription: 'Описание',
+    fieldAddress: 'Адрес основного филиала',
+    fieldCity: 'Город',
+    fieldPhone: 'Телефон',
+    fieldWhatsapp: 'WhatsApp',
+    fieldInstagram: 'Instagram',
+    fieldWebsite: 'Сайт',
+    fieldWorkHours: 'Часы работы (JSON)',
+    fieldLat: 'Широта',
+    fieldLng: 'Долгота',
+    errDuplicateSlug: 'Такой slug уже занят.',
+    errForbidden: 'Недостаточно прав.',
+    errUnauthorized: 'Сессия истекла. Войдите снова.',
+    errValidation: 'Проверьте поля формы.',
+    errNetwork: 'Ошибка сети или сервера.',
+    errGeneric: 'Операция не выполнена.',
+    localeRu: 'RU',
+    localeKk: 'KK',
+    linkContent: 'Контент и акции',
+    statusPending: 'На модерации',
+    statusActive: 'Активно',
+    statusBlocked: 'Заблокировано',
+  },
+  kk: {
+    navCatalog: 'Каталог',
+    navBusinesses: 'Заведения',
+    pageListTitle: 'Каталог заведениялары',
+    pageCreateTitle: 'Жаңа заведение',
+    pageDetailTitle: 'Заведение карточкасы',
+    createAction: 'Заведение құру',
+    loading: 'Жүктелуде…',
+    emptyList: 'Сүзгілер бойынша заведение жоқ.',
+    errorLoad: 'Тізімді жүктеу сәтсіз.',
+    filterStatus: 'Мәртебе',
+    filterAll: 'Барлығы',
+    colTitle: 'Атауы',
+    colStatus: 'Мәртебе',
+    colCity: 'Қала (негізгі филиал)',
+    colCategory: 'Санат',
+    colSlug: 'Slug',
+    openDetail: 'Ашу',
+    sectionCore: 'Негізгі деректер',
+    sectionTaxonomy: 'Таксономия',
+    sectionLifecycle: 'Жариялау',
+    sectionLocations: 'Филиалдар',
+    sectionCatalogEdit: 'Каталогты өңдеу',
+    primaryBranchHint: 'Бірінші филиал негізгі (PRIMARY) болады.',
+    locationsReadOnly: 'Тек қарау. Филиалдарды басқару — AOP.3 кезеңі.',
+    noOwner: 'Иесіз',
+    ownerAttached: 'Иесі бар',
+    saveCatalog: 'Өзгерістерді сақтау',
+    saving: 'Сақталуда…',
+    createSubmit: 'Құру',
+    creating: 'Құрылуда…',
+    successCreated: 'Заведение құрылды.',
+    slugReadOnly: 'Slug (өзгертілмейді)',
+    fieldTitle: 'Атауы',
+    fieldSlug: 'Slug',
+    fieldCategory: 'Санат',
+    fieldSubcategories: 'Ішкі санаттар',
+    fieldShortDesc: 'Қысқаша сипаттама',
+    fieldDescription: 'Сипаттама',
+    fieldAddress: 'Негізгі филиал мекенжайы',
+    fieldCity: 'Қала',
+    fieldPhone: 'Телефон',
+    fieldWhatsapp: 'WhatsApp',
+    fieldInstagram: 'Instagram',
+    fieldWebsite: 'Сайт',
+    fieldWorkHours: 'Жұмыс уақыты (JSON)',
+    fieldLat: 'Ендік',
+    fieldLng: 'Бoyлық',
+    errDuplicateSlug: 'Мұндай slug бос емес.',
+    errForbidden: 'Құқық жеткіліксіз.',
+    errUnauthorized: 'Сессия аяқталды. Қайта кіріңіз.',
+    errValidation: 'Форма өрістерін тексеріңіз.',
+    errNetwork: 'Желі немесе сервер қатесі.',
+    errGeneric: 'Операция орындалмады.',
+    localeRu: 'RU',
+    localeKk: 'KK',
+    linkContent: 'Контент пен акциялар',
+    statusPending: 'Модерацияда',
+    statusActive: 'Белсенді',
+    statusBlocked: 'Блокталған',
+  },
+} as const;
+
+export type AdminCatalogLabelKey = keyof (typeof labels)['ru'];
+
+export function adminCatalogLabel(locale: AdminCatalogLocale, key: AdminCatalogLabelKey): string {
+  return labels[locale][key];
+}
+
+export function adminCatalogStatusLabel(locale: AdminCatalogLocale, status: string): string {
+  switch (status) {
+    case 'PENDING':
+      return adminCatalogLabel(locale, 'statusPending');
+    case 'ACTIVE':
+      return adminCatalogLabel(locale, 'statusActive');
+    case 'BLOCKED':
+      return adminCatalogLabel(locale, 'statusBlocked');
+    default:
+      return status;
+  }
+}
+
+/** Every RU key must exist in KK (parity gate for tests). */
+export function adminCatalogLabelKeys(): AdminCatalogLabelKey[] {
+  return Object.keys(labels.ru) as AdminCatalogLabelKey[];
+}

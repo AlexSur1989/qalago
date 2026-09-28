@@ -270,7 +270,7 @@ All Admin catalog mutations go through **Catalog API** → **PostgreSQL**. Flutt
 |-------|--------|------------|--------------|--------------|
 | **AOP.0** | **This contract** | Phase 0 audit | Docs PASS | Code/DB |
 | **AOP.1** | Backend: `POST /admin/businesses`, staff create aggregate (ownerless), Admin BL staff routes, DTOs, tests | 6.12A aggregate | API/integration tests | Admin UI |
-| **AOP.2** | Admin Web: business list/detail edit (core fields, taxonomy, status) | AOP.1 | vitest + build | BL UI |
+| **AOP.2** | Admin Web: **`/catalog/businesses`** list/detail/create/catalog edit; locations **read-only** | AOP.1 | vitest + build **PASS** | BL mutation UI |
 | **AOP.3** | Admin Web: BusinessLocation CRUD + set-primary | AOP.1 BL APIs | vitest + build | Mass import |
 | **AOP.4** | RBAC + CITY_ADMIN enforcement matrix tests | AOP.1 | jest specs (extend 6.12A.9.4.5A patterns) | New roles |
 | **AOP.5** | Audit + lifecycle policy (status defaults, audit gaps) | AOP.1 | audit log tests | Legal CMS |

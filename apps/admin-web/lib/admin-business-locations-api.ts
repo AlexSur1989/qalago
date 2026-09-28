@@ -21,7 +21,7 @@ export type AdminBusinessLocationRow = {
 export const adminBusinessLocationsApi = {
   listBusinessLocations: (token: string, businessId: string) =>
     api<{ items: AdminBusinessLocationRow[] }>(
-      `/businesses/${encodeURIComponent(businessId)}/locations`,
+      `/admin/businesses/${encodeURIComponent(businessId)}/locations`,
       { token },
     ),
 };
