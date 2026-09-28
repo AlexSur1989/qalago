@@ -23,7 +23,7 @@ class PublicDeepLinkExecutor {
   CatalogRepository get _catalog => ref.read(catalogRepositoryProvider);
 
   Future<bool> execute(PublicDeepLinkTarget target) async {
-    _applyLocale(target.locale);
+    await _applyLocale(target.locale);
     final router = ref.read(appRouterProvider);
 
     return switch (target) {
@@ -49,9 +49,9 @@ class PublicDeepLinkExecutor {
     };
   }
 
-  void _applyLocale(PublicDeepLinkLocale locale) {
+  Future<void> _applyLocale(PublicDeepLinkLocale locale) async {
     final code = locale.code;
-    ref.read(appLocaleProvider.notifier).setLocale(Locale(code));
+    await ref.read(appLocaleProvider.notifier).setLocale(Locale(code));
   }
 
   void _setSessionCity(String citySlug) {

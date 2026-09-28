@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-09-28 — KZ-C.1F — Deep-link locale authority hotfix
+
+- **Status:** **KZ-C.1F — DEEP LINK LOCALE HOTFIX IMPLEMENTED — AWAITING PHYSICAL RETEST** (not PASS/CLOSED). **KZ-C.1 NOT CLOSED**.
+- **Starting HEAD:** **`f17add5078d5beb47714a505cf2b42cfc81f580d`** (after KZ-C.1E); physical QA began on same lineage.
+- **Checkpoint:** hotfix commit in git log immediately after starting HEAD.
+- **Physical QA finding:** saved **RU** + `https://qalago.kz/kk/uralsk` opened app but UI stayed **RU** (F.6 URL locale must win).
+- **Root cause:** `PublicDeepLinkExecutor` did not await `setLocale`; `AppLocaleNotifier._loadSaved()` could overwrite a newer explicit locale after async prefs read.
+- **Fix:** explicit-write generation guard in **`AppLocaleNotifier`**; **`await setLocale`** before navigation in **`PublicDeepLinkExecutor`**. Tests: **`deep_link_locale_authority_test.dart`**, race test in **`app_locale_notifier_test.dart`**, executor saved-RU case.
+- **Android chooser / Verified App Links:** unchanged — debug/disambiguation debt remains separate from this hotfix.
+- **Physical QA:** **RETEST REQUIRED** (same ADB `/kk/` + `/ru/` matrix on device); FCM/full KZ-C.1F closure **NOT** claimed.
+- **Next:** physical retest → then KZ-C.1F closure decision; do not auto-start KZ-C.2 / AOP.0.
+
+---
+
 ## 2026-09-28 — KZ-C.1E — Kazakh-first automated regression gate
 
 - **Status:** **KZ-C.1E PASS — AUTOMATED REGRESSION GATE** (tests + builds). **KZ-C.1 NOT CLOSED** until **KZ-C.1F** physical QA. **Not** production / FCM sign-off.

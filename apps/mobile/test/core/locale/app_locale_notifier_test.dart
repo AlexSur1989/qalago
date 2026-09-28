@@ -4,7 +4,7 @@ import 'package:qalago_mobile/core/locale/app_locale_notifier.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> waitForLocaleLoad(AppLocaleNotifier notifier) async {
-  await Future<void>.delayed(const Duration(milliseconds: 20));
+  await notifier.initialHydration;
 }
 
 void main() {
@@ -92,6 +92,16 @@ void main() {
       final n2 = AppLocaleNotifier();
       await waitForLocaleLoad(n2);
       expect(n2.state, const Locale('kk'));
+    });
+
+    test('explicit setLocale during hydration wins over saved RU (KZ-C.1F race)', () async {
+      SharedPreferences.setMockInitialValues({kUiLocalePrefsKey: 'ru'});
+      final notifier = AppLocaleNotifier();
+      await notifier.setLocale(const Locale('kk'));
+      await notifier.initialHydration;
+      expect(notifier.state, const Locale('kk'));
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString(kUiLocalePrefsKey), 'kk');
     });
 
     test('device language does not affect initial state (no pref → KK)', () async {

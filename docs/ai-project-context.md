@@ -50,8 +50,9 @@
 | **F.8 external debt** | **Public HTTPS social crawler previews** (Telegram/WhatsApp/Facebook/X on **`qalago.kz`**) — **NOT VERIFIED**; trusted **`/uploads/…`** Business cover — **NOT OBSERVED** physically (automated PASS) |
 | **KZ-C.1B** | **PASS — FLUTTER KK-FIRST IMPLEMENTED** (automated tests; **physical QA NOT YET**) — see **`docs/changelog.md`** |
 | **KZ-C.1C** | **PASS — CONSUMER + BUSINESS WEB KK-FIRST IMPLEMENTED** (automated tests + builds; **physical QA NOT YET**; **x-default RU** unchanged) — see **`docs/changelog.md`** |
-| **KZ-C.1E** | **PASS — KAZAKH-FIRST AUTOMATED REGRESSION GATE** (Consumer/Business/catalog-api/Flutter KZ-C.1 suites + builds; Business Web reviews report UI localized; **KZ-C.1 NOT CLOSED** — KZ-C.1F pending) |
-| **Next** | **Explicit agreement** before **KZ-C.1F** physical QA / **KZ-C.2** / **AOP.0**; do not auto-start |
+| **KZ-C.1F** | **DEEP LINK LOCALE HOTFIX IMPLEMENTED — AWAITING PHYSICAL RETEST** (saved RU + `/kk/` race fixed in Flutter; automated tests added; chooser/App Links debt unchanged) |
+| **KZ-C.1E** | **PASS — KAZAKH-FIRST AUTOMATED REGRESSION GATE** |
+| **Next** | **KZ-C.1F physical retest** (deep-link locale matrix); then closure; do not auto-start **KZ-C.2** / **AOP.0** |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 

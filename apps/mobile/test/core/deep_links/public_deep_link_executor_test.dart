@@ -121,6 +121,28 @@ void main() {
       expect(prefs.getString(kUiLocalePrefsKey), 'kk');
     });
 
+    test('kk locale wins over saved RU (KZ-C.1F)', () async {
+      SharedPreferences.setMockInitialValues({
+        kUiLocalePrefsKey: 'ru',
+        'selected_city_slug': 'uralsk',
+      });
+      container.dispose();
+      container = buildContainer();
+      await container.read(onboardingProvider.future);
+      await container.read(appLocaleProvider.notifier).initialHydration;
+      expect(container.read(appLocaleProvider).languageCode, 'ru');
+
+      await execute(
+        const PublicDeepLinkCityHomeTarget(
+          locale: PublicDeepLinkLocale.kk,
+          citySlug: 'uralsk',
+        ),
+      );
+      expect(container.read(appLocaleProvider).languageCode, 'kk');
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString(kUiLocalePrefsKey), 'kk');
+    });
+
     test('category slug resolves to category route', () async {
       final ok = await execute(
         const PublicDeepLinkCategoryTarget(
