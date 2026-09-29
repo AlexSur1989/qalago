@@ -118,6 +118,18 @@ export default function BusinessReviewsPage() {
               <div className="promo-body" style={{ flex: 1 }}>
                 <strong>
                   {review.user?.name ?? ui.text_f154d6} · {review.rating}★
+                  {review.moderationHidden ? (
+                    <span
+                      style={{
+                        marginLeft: 8,
+                        fontSize: '0.75rem',
+                        fontWeight: 500,
+                        color: 'var(--text-muted)',
+                      }}
+                    >
+                      · {ui.text_424b69}
+                    </span>
+                  ) : null}
                 </strong>
                 <p style={{ margin: '6px 0' }}>
                   {review.text ?? ui.__bb0bac}

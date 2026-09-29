@@ -1,5 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
 import { Public } from '../../common/decorators/public.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import {
@@ -23,6 +25,15 @@ export class ReviewsController {
   @Get('me')
   findMine(@CurrentUser() user: AuthUser) {
     return this.reviewsService.findByUser(user.id);
+  }
+
+  @Roles(UserRole.BUSINESS, UserRole.ADMIN, UserRole.CITY_ADMIN)
+  @Get('manage/:businessId')
+  findForManage(
+    @CurrentUser() user: AuthUser,
+    @Param('businessId') businessId: string,
+  ) {
+    return this.reviewsService.findForManage(user, businessId);
   }
 
   @Post()

@@ -928,6 +928,7 @@ Response item includes `{ id, businessId, title, description?, imageUrl?, discou
 Public visibility: `moderationHidden = false` **and** `deletedAt = null` (central `publicReviewWhere()`).
 
 - `GET /reviews?businessId=&page=&limit=` — paginated public list (`items` + `pagination`; default limit 20, max 50; newest first, tie-break `id` desc). Hidden/deleted reviews excluded.
+- `GET /reviews/manage/:businessId` — owner/manager plane list (`REVIEWS_REPLY`; non-deleted only; includes `moderationHidden`; not paginated in MVP)
 - `GET /reviews/me` — active user reviews only (`deletedAt = null`; includes moderation-hidden)
 - `POST /reviews` — one row per `(userId, businessId)`; active duplicate → **409** `REVIEW_ALREADY_EXISTS`; soft-deleted row → **restore** same id (does not clear `moderationHidden`; no owner notification if still hidden)
 - `PATCH /reviews/:id` — author edits `rating`/`text` only; hidden stays hidden

@@ -57,6 +57,20 @@ export class ReviewsService {
     private readonly reviewRateLimit: ReviewRateLimitService,
   ) {}
 
+  /** Owner/manager plane — includes moderation-hidden rows; excludes soft-deleted. */
+  async findForManage(user: AuthUser, businessId: string) {
+    await this.businessAccess.assertBusinessPermission(
+      user,
+      businessId,
+      BusinessPermission.REVIEWS_REPLY,
+    );
+    return this.prisma.review.findMany({
+      where: { businessId, deletedAt: null },
+      include: reviewAuthorInclude,
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+    });
+  }
+
   async findByBusiness(query: ListReviewsQueryDto) {
     const { page, limit } = resolvePublicReviewsPageLimit(query);
     const where: Prisma.ReviewWhereInput = {

@@ -72,9 +72,10 @@
 | **BIZ.3** | **PASS — BUSINESS TEAM / MANAGER ACCESS FINALIZED** — permission matrix documented; email invite identity binding; team tests |
 | **BIZ.4** | **PASS — BUSINESS PROFILE / LOCATION MODEL CANONICALIZED** — Business Web BL-only physical writes; primary read from locations |
 | **BIZ.5** | **PASS — BUSINESS CONTENT / PLAN LIMITS HARDENED** — menu/media/promotions matrix; service item create plan gate |
-| **BIZ (track)** | **ACTIVE** — **BIZ.5 closed**; BIZ umbrella closure / **UXA** gate per roadmap |
+| **BIZ.6** | **PASS — OWNER REVIEWS / BUSINESS NOTIFICATIONS HARDENED** — manage review list; inbox navigation; reply/notification tests |
+| **BIZ (track)** | **ACTIVE** — **BIZ.6 closed**; BIZ umbrella closure / **UXA** gate per roadmap |
 | **UXA (track)** | **PLANNED / REQUIRED — NOT STARTED** — mandatory Admin + Business Web UI/UX finalization **after BIZ CLOSED** (see § UXA below) |
-| **Next** | BIZ track umbrella closure; **controlled** catalog population; **KZ-C.1F** notification QA; **do not start UXA** until BIZ closes unless explicitly approved |
+| **Next** | BIZ track umbrella closure; **controlled** catalog population; **KZ-C.1F** notification physical QA (not closed by BIZ.6); **do not start UXA** until BIZ closes unless explicitly approved |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 

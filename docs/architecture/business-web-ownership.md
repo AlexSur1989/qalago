@@ -319,7 +319,25 @@ Revoked/suspended manager: next **`GET /businesses/my`** omits business; BIZ.2 s
 
 ---
 
-## 17. Deferred (BIZ.6+)
+## 17. Reviews & Business Web notifications (BIZ.6)
+
+| Area | Permission | API | Plan |
+|------|------------|-----|------|
+| **Reviews list (owner plane)** | `REVIEWS_REPLY` | `GET /reviews/manage/:businessId` — all non-deleted reviews incl. **moderationHidden** | — |
+| **Review reply** | `REVIEWS_REPLY` | `PATCH /reviews/:id/reply` — single `ownerReply` field (create/update overwrite) | `canReplyToReviews` (**FREE false**, **BASIC+ true**) |
+| **Public reviews** | — | `GET /reviews?businessId=` — `publicReviewWhere()` (visible only) | — |
+
+**Reply guards:** access resolved on **`review.businessId`** (cross-business IDOR denied). Soft-deleted review → **404**. Hidden reviews: owner may list + reply; public list excludes them.
+
+**Notifications (owner inbox):** `NEW_REVIEW` → owners/managers with `REVIEWS_REPLY` (`notification-recipients.util`). Payload: `businessId`, `reviewId`, `rating`, `businessName`. Business Web **`/messages`**: typed presentation via `@qalago/notification-presentation`; navigation **`resolveBusinessNotificationHref`** (payload `businessId`, not shell selection). Legacy rows without payload: mark-read only, no crash.
+
+**Audit:** `REVIEW_REPLY_CREATE` on owner reply. Moderation remains staff plane.
+
+**Out of scope (unchanged):** KZ-C.1 FCM/inbox physical QA; push delivery verification.
+
+---
+
+## 18. Deferred (BIZ.7+)
 - `ownerId` ↔ ACTIVE OWNER reconciliation after manager promotion.
 - Ownership transfer / recovery beyond claim + manager promotion.
 - Public `ownerId` removal (KZ-C).

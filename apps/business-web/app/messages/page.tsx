@@ -12,6 +12,7 @@ import {
   formatOwnerDateTime,
 } from '@/lib/presentation';
 import { presentBusinessNotification } from '@/lib/notification-presentation';
+import { resolveBusinessNotificationHref } from '@/lib/business-notification-navigation';
 
 function typeLabel(ui: UiLabels, type: string) {
   const map: Record<string, string> = {
@@ -118,38 +119,67 @@ export default function MessagesPage() {
         ) : (
           items.map((item) => {
             const display = presentBusinessNotification(item, locale);
-            return (
-            <article
-              key={item.id}
-              className={`promo-item notification-item${item.isRead ? '' : ' unread'}`}
-              style={{ alignItems: 'flex-start', cursor: item.isRead ? 'default' : 'pointer' }}
-              onClick={() => {
-                if (!item.isRead) markRead(item.id);
-              }}
-              onKeyDown={(e) => {
-                if (!item.isRead && (e.key === 'Enter' || e.key === ' ')) {
-                  e.preventDefault();
-                  markRead(item.id);
-                }
-              }}
-              role={item.isRead ? undefined : 'button'}
-              tabIndex={item.isRead ? undefined : 0}
-            >
-              <div className="promo-thumb">💬</div>
-              <div className="promo-body" style={{ flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                  <strong>{display.title}</strong>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                    {formatOwnerDateTime(locale, item.createdAt)}
-                  </span>
+            const href = resolveBusinessNotificationHref(item);
+            const inner = (
+              <>
+                <div className="promo-thumb">💬</div>
+                <div className="promo-body" style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                    <strong>{display.title}</strong>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                      {formatOwnerDateTime(locale, item.createdAt)}
+                    </span>
+                  </div>
+                  {display.body && (
+                    <p style={{ margin: '6px 0 0', color: 'var(--text-muted)' }}>{display.body}</p>
+                  )}
+                  <span className="notification-type">{typeLabel(ui, item.type)}</span>
                 </div>
-                {display.body && (
-                  <p style={{ margin: '6px 0 0', color: 'var(--text-muted)' }}>{display.body}</p>
-                )}
-                <span className="notification-type">{typeLabel(ui, item.type)}</span>
-              </div>
-            </article>
-          );
+              </>
+            );
+
+            async function onActivate() {
+              if (!item.isRead) {
+                await markRead(item.id);
+              }
+            }
+
+            if (href) {
+              return (
+                <Link
+                  key={item.id}
+                  href={href}
+                  className={`promo-item notification-item${item.isRead ? '' : ' unread'}`}
+                  style={{ alignItems: 'flex-start', textDecoration: 'none', color: 'inherit' }}
+                  onClick={() => {
+                    void onActivate();
+                  }}
+                >
+                  {inner}
+                </Link>
+              );
+            }
+
+            return (
+              <article
+                key={item.id}
+                className={`promo-item notification-item${item.isRead ? '' : ' unread'}`}
+                style={{ alignItems: 'flex-start', cursor: item.isRead ? 'default' : 'pointer' }}
+                onClick={() => {
+                  void onActivate();
+                }}
+                onKeyDown={(e) => {
+                  if (!item.isRead && (e.key === 'Enter' || e.key === ' ')) {
+                    e.preventDefault();
+                    void onActivate();
+                  }
+                }}
+                role={item.isRead ? undefined : 'button'}
+                tabIndex={item.isRead ? undefined : 0}
+              >
+                {inner}
+              </article>
+            );
           })
         )}
       </section>
