@@ -64,6 +64,12 @@ describe('OwnershipClaimsService (Stage 5N.2)', () => {
   const membership = {
     getMembership: jest.fn(),
     createActiveOwnerMembership: jest.fn().mockResolvedValue({}),
+    findActiveOwnerMembershipForBusiness: jest.fn().mockResolvedValue(null),
+  };
+
+  const ownerlessActiveBusiness = {
+    ...activeBusiness,
+    ownerId: null,
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,6 +98,7 @@ describe('OwnershipClaimsService (Stage 5N.2)', () => {
       },
       businessMembership: {
         findUnique: jest.fn(),
+        findFirst: jest.fn(),
         update: jest.fn(),
       },
       $transaction: jest.fn(async (fn: (tx: typeof prisma) => unknown) => fn(prisma)),
@@ -114,7 +121,7 @@ describe('OwnershipClaimsService (Stage 5N.2)', () => {
   });
 
   it('enriches claim business summary address from primary BusinessLocation', async () => {
-    prisma.business.findUnique.mockResolvedValue(activeBusiness);
+    prisma.business.findUnique.mockResolvedValue(ownerlessActiveBusiness);
     membership.getMembership.mockResolvedValue(null);
     prisma.businessOwnershipClaim.findFirst.mockResolvedValue(null);
     prisma.businessLocation.findMany.mockResolvedValue([
@@ -132,7 +139,7 @@ describe('OwnershipClaimsService (Stage 5N.2)', () => {
   });
 
   it('creates PENDING claim without membership or ownerId change', async () => {
-    prisma.business.findUnique.mockResolvedValue(activeBusiness);
+    prisma.business.findUnique.mockResolvedValue(ownerlessActiveBusiness);
     membership.getMembership.mockResolvedValue(null);
     prisma.businessOwnershipClaim.findFirst.mockResolvedValue(null);
     prisma.businessOwnershipClaim.create.mockResolvedValue({
@@ -231,8 +238,27 @@ describe('OwnershipClaimsService (Stage 5N.2)', () => {
     expect(prisma.businessOwnershipClaim.create).toHaveBeenCalled();
   });
 
-  it('denies duplicate pending claim', async () => {
+  it('denies claim when unrelated user and business already has ownerId (BIZ.1)', async () => {
     prisma.business.findUnique.mockResolvedValue(activeBusiness);
+    membership.getMembership.mockResolvedValue(null);
+
+    await expect(service.create(user, 'biz-1', {})).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('denies claim when unrelated user and active owner membership exists (BIZ.1)', async () => {
+    prisma.business.findUnique.mockResolvedValue(ownerlessActiveBusiness);
+    membership.getMembership.mockResolvedValue(null);
+    membership.findActiveOwnerMembershipForBusiness.mockResolvedValue({
+      userId: 'other-owner',
+      role: BusinessMembershipRole.OWNER,
+      status: BusinessMembershipStatus.ACTIVE,
+    });
+
+    await expect(service.create(user, 'biz-1', {})).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('denies duplicate pending claim', async () => {
+    prisma.business.findUnique.mockResolvedValue(ownerlessActiveBusiness);
     membership.getMembership.mockResolvedValue(null);
     prisma.businessOwnershipClaim.findFirst.mockResolvedValue({ id: 'existing' });
 
@@ -247,6 +273,32 @@ describe('OwnershipClaimsService (Stage 5N.2)', () => {
     });
 
     await expect(service.getOwn(user, 'claim-1')).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('denies approve when another active owner exists (BIZ.1)', async () => {
+    const unownedBusiness = { ...activeBusiness, ownerId: null };
+    const claimRecord = {
+      id: 'claim-race',
+      status: BusinessOwnershipClaimStatus.PENDING,
+      claimantUserId: user.id,
+      businessId: 'biz-1',
+      verificationMethod: 'MANUAL',
+      business: unownedBusiness,
+      claimant: { id: user.id },
+      reviewedBy: null,
+    };
+
+    prisma.businessOwnershipClaim.findUnique.mockResolvedValue(claimRecord);
+    prisma.businessMembership.findUnique.mockResolvedValue(null);
+    prisma.businessMembership.findFirst.mockResolvedValue({
+      userId: 'other-owner',
+      role: BusinessMembershipRole.OWNER,
+      status: BusinessMembershipStatus.ACTIVE,
+    });
+
+    await expect(service.adminApprove(admin, 'claim-race')).rejects.toBeInstanceOf(
+      ConflictException,
+    );
   });
 
   it('approves claim and creates OWNER when no membership', async () => {
@@ -298,7 +350,7 @@ describe('OwnershipClaimsService (Stage 5N.2)', () => {
     );
   });
 
-  it('approves claim without overwriting existing ownerId', async () => {
+  it('denies approve for unrelated claimant when ownerId already set (BIZ.1)', async () => {
     const claimRecord = {
       id: 'claim-2',
       status: BusinessOwnershipClaimStatus.PENDING,
@@ -310,25 +362,13 @@ describe('OwnershipClaimsService (Stage 5N.2)', () => {
       reviewedBy: null,
     };
 
-    prisma.businessOwnershipClaim.findUnique
-      .mockResolvedValueOnce(claimRecord)
-      .mockResolvedValueOnce({ ...claimRecord, business: activeBusiness });
-
+    prisma.businessOwnershipClaim.findUnique.mockResolvedValue(claimRecord);
     prisma.businessMembership.findUnique.mockResolvedValue(null);
-    prisma.businessOwnershipClaim.updateMany.mockResolvedValue({ count: 1 });
-    prisma.business.findUniqueOrThrow.mockResolvedValue({
-      ...activeBusiness,
-      ownerId: 'owner-existing',
-      planTier: BusinessPlanTier.PREMIUM,
-    });
-    prisma.businessOwnershipClaim.findUniqueOrThrow.mockResolvedValue({
-      ...claimRecord,
-      status: BusinessOwnershipClaimStatus.APPROVED,
-    });
+    prisma.businessMembership.findFirst.mockResolvedValue(null);
 
-    await service.adminApprove(admin, 'claim-2');
-
-    expect(prisma.business.update).not.toHaveBeenCalled();
+    await expect(service.adminApprove(admin, 'claim-2')).rejects.toBeInstanceOf(
+      ConflictException,
+    );
   });
 
   it('promotes ACTIVE MANAGER to OWNER on approval', async () => {

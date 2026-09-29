@@ -325,9 +325,25 @@ export class OwnershipClaimsService {
       const businessBefore = locked.business;
       const planTierBefore = businessBefore.planTier;
 
+      const claimantMembership = await tx.businessMembership.findUnique({
+        where: {
+          userId_businessId: {
+            userId: locked.claimantUserId,
+            businessId: businessBefore.id,
+          },
+        },
+      });
+
       await this.assertCanApproveClaim(
         locked.claimantUserId,
         businessBefore,
+        tx,
+      );
+
+      await this.assertCanGrantOwnership(
+        locked.claimantUserId,
+        businessBefore,
+        claimantMembership,
         tx,
       );
 
@@ -457,9 +473,32 @@ export class OwnershipClaimsService {
       if (membership.status === BusinessMembershipStatus.INVITED) {
         throw new BadRequestException('Accept or decline your team invitation first');
       }
-      // ACTIVE MANAGER may submit a claim
+      if (
+        membership.role === BusinessMembershipRole.MANAGER &&
+        membership.status === BusinessMembershipStatus.ACTIVE
+      ) {
+        return;
+      }
     } else if (business.ownerId === userId) {
       throw new ConflictException('You already have legacy owner access to this business');
+    }
+
+    await this.assertBusinessAcceptsNewOwnerClaim(userId, business.id, business.ownerId);
+  }
+
+  /** Ownerless + ACTIVE only; blocks third-party claims on owned businesses (BIZ.1). */
+  private async assertBusinessAcceptsNewOwnerClaim(
+    claimantUserId: string,
+    businessId: string,
+    ownerId: string | null,
+  ) {
+    if (ownerId != null) {
+      throw new ConflictException('Business already has an owner');
+    }
+
+    const activeOwner = await this.membership.findActiveOwnerMembershipForBusiness(businessId);
+    if (activeOwner && activeOwner.userId !== claimantUserId) {
+      throw new ConflictException('Business already has an owner');
     }
   }
 
@@ -492,6 +531,40 @@ export class OwnershipClaimsService {
       }
     } else if (business.ownerId === claimantUserId) {
       throw new ConflictException('Claimant already has legacy owner access');
+    }
+  }
+
+  private async assertCanGrantOwnership(
+    claimantUserId: string,
+    business: { id: string; ownerId: string | null },
+    claimantMembership: {
+      role: BusinessMembershipRole;
+      status: BusinessMembershipStatus;
+    } | null,
+    tx: Prisma.TransactionClient,
+  ) {
+    const isManagerPromotion =
+      claimantMembership?.role === BusinessMembershipRole.MANAGER &&
+      claimantMembership.status === BusinessMembershipStatus.ACTIVE;
+
+    const otherActiveOwner = await tx.businessMembership.findFirst({
+      where: {
+        businessId: business.id,
+        role: BusinessMembershipRole.OWNER,
+        status: BusinessMembershipStatus.ACTIVE,
+        userId: { not: claimantUserId },
+      },
+    });
+    if (otherActiveOwner) {
+      throw new ConflictException('Business already has an active owner');
+    }
+
+    if (
+      business.ownerId != null &&
+      business.ownerId !== claimantUserId &&
+      !isManagerPromotion
+    ) {
+      throw new ConflictException('Business already has an owner');
     }
   }
 

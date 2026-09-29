@@ -2,7 +2,7 @@
 
 **Gate:** **AOP.0 PASS — ADMIN CATALOG / OPERATIONS CONTRACT LOCKED** · **AOP.1 PASS — BACKEND ADMIN CATALOG CORE IMPLEMENTED** (Catalog API)  
 **Status:** Architecture contract (AOP.0) + **AOP.1 backend** staff catalog primitives (see §2.2 implementation note).  
-**Depends on:** **6.12A PASS** — [business-location.md](./business-location.md) (authoritative; **must not** redesign); [kazakhstan-compliance-contract.md](./kazakhstan-compliance-contract.md) §31; Stage **6.9.1** staff RBAC (`StaffPermission`, `@RequireStaffPermission`); existing Admin Web surfaces (moderation, applications, claims, monetization, reports, taxonomy, read-only branch content).
+**Depends on:** **6.12A PASS** — [business-location.md](./business-location.md) (authoritative; **must not** redesign); [business-web-ownership.md](./business-web-ownership.md) (owner onboarding / claim contract — **BIZ.1**); [kazakhstan-compliance-contract.md](./kazakhstan-compliance-contract.md) §31; Stage **6.9.1** staff RBAC (`StaffPermission`, `@RequireStaffPermission`); existing Admin Web surfaces (moderation, applications, claims, monetization, reports, taxonomy, read-only branch content).
 
 **History:** `docs/changelog.md`. **AOP Phase 0 read-only audit:** PASS (accepted before this lock).
 

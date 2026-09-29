@@ -1,5 +1,7 @@
 # BusinessLocation architecture (Stage 6.12A)
 
+**Ownership / claim:** staff-created and application-created businesses must satisfy primary-BL invariants here; owner grant flows — [business-web-ownership.md](./business-web-ownership.md).
+
 ## Model split (accepted A.0)
 
 | Entity | Role |

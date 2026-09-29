@@ -56,6 +56,20 @@ export class BusinessMembershipService {
     return membership?.role === BusinessMembershipRole.OWNER;
   }
 
+  /** First ACTIVE OWNER row for a business (BIZ.1 — single-owner semantics). */
+  findActiveOwnerMembershipForBusiness(
+    businessId: string,
+    tx: Prisma.TransactionClient | typeof this.prisma = this.prisma,
+  ) {
+    return tx.businessMembership.findFirst({
+      where: {
+        businessId,
+        role: BusinessMembershipRole.OWNER,
+        status: BusinessMembershipStatus.ACTIVE,
+      },
+    });
+  }
+
   /**
    * Owner access with Stage 5N.1 membership-authoritative semantics.
    *

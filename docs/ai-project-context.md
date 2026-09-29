@@ -66,7 +66,9 @@
 | **AOP.7H.3** | **PASS — ADMIN AUTH REFRESH PRESERVES STAFF SCOPE** — `/users/me` after refresh |
 | **AOP.7** | **PASS — ADMIN WEB PHYSICAL QA VERIFIED** — manual QA on **`aop7-test-cafe`**; F5 stable for SUPER/ADMIN/CITY_ADMIN |
 | **AOP (umbrella)** | **PASS — ADMIN CATALOG / OPERATIONS PLANE FINALIZED** — **AOP.0–AOP.7** complete |
-| **Next** | **Controlled** catalog population (small batches, QA); **KZ-C.1F** notification QA; do not auto-start **KZ-C.2** / production deploy |
+| **BIZ.0** | **PASS — BUSINESS WEB / OWNERSHIP READ-ONLY AUDIT** (transcript; no docs commit) |
+| **BIZ.1** | **PASS — OWNERSHIP / CLAIM CONTRACT FINALIZED** — **`docs/architecture/business-web-ownership.md`** + claim hardening |
+| **Next** | **BIZ.2** (Business Web session/cabinet — not started); **controlled** catalog population; **KZ-C.1F** notification QA |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 

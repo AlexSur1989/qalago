@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-29 — BIZ.1 — Ownership / claim contract + backend hardening
+
+- **Status:** **BIZ.1 PASS — OWNERSHIP / CLAIM CONTRACT FINALIZED**. **BIZ.2 NOT STARTED**. **AOP remains CLOSED**.
+- **Starting HEAD:** **`bfdf4a73776f356aeb5af532e4c3c144138a743e`** (post AOP closure).
+- **Checkpoint (commit):** **`1c5edb58cdf0a8386ce0856c7f57bc6abe5e814e`** — `feat(ownership): finalize business claim contract`.
+- **Summary:** Locked **`docs/architecture/business-web-ownership.md`** — membership-authoritative access, single ACTIVE OWNER, staff PENDING→ACTIVE claim playbook, claim/application matrices, admin scope. Hardened **`OwnershipClaimsService`**: deny third-party claims on owned businesses; block approve when another ACTIVE OWNER exists. **`findActiveOwnerMembershipForBusiness`** helper. Tests extended. No schema migration. Catalog API build + focused Jest PASS.
+- **Deferred:** Business Web auth refresh / staff cabinet gate (**BIZ.2**); profile brand-geo cleanup (**BIZ.4**); `ownerId` reconciliation after manager promotion; **KZ-C.1** notifications.
+- **Next:** **BIZ.2** — explicit agreement only.
+
+---
+
 ## 2026-09-29 — AOP — Admin catalog / operations plane closure
 
 - **Status:** **AOP PASS — ADMIN CATALOG / OPERATIONS PLANE FINALIZED**. **AOP.7 PASS — ADMIN WEB PHYSICAL QA VERIFIED** (same closure). **AOP.0–AOP.7** complete (**AOP.7H / 7H.1 / 7H.2 / 7H.3** incorporated into verified state). **Controlled catalog population may begin** (small batches, data quality QA — **not** production launch / VPS / mass import without QA). **KZ-C.1 NOT CLOSED**; other roadmap blockers unchanged.
