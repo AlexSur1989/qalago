@@ -3,13 +3,7 @@
 import { BusinessLocationField, type BusinessLocationState } from '@/components/business-location/business-location-field';
 import { BusinessShell } from '@/components/business-shell';
 import { useLocale, useUi } from '@/components/locale-provider';
-import {
-  BusinessPermission,
-  buildFooterNavItems,
-  buildMainNavItems,
-  filterNavByAccess,
-  hasPermission,
-} from '@/lib/business-access';
+import { BusinessPermission, hasPermission } from '@/lib/business-access';
 import {
   BusinessLocationRow,
   CityRow,
@@ -74,15 +68,6 @@ export default function BusinessLocationsPage() {
     saturday: '09:00-22:00',
     sunday: '09:00-22:00',
   });
-
-  const mainNav = useMemo(
-    () => filterNavByAccess(buildMainNavItems(locale), access),
-    [access, locale],
-  );
-  const footerNav = useMemo(
-    () => filterNavByAccess(buildFooterNavItems(locale), access),
-    [access, locale],
-  );
 
   const canEditProfile = hasPermission(access, BusinessPermission.BUSINESS_PROFILE_EDIT);
   const canEditHours = hasPermission(access, BusinessPermission.BUSINESS_HOURS_EDIT);
@@ -239,8 +224,6 @@ export default function BusinessLocationsPage() {
       businesses={businesses}
       userName={user?.name ?? undefined}
       onLogout={logout}
-      mainNav={mainNav}
-      footerNav={footerNav}
     >
       <div className="card stack">
         <header>

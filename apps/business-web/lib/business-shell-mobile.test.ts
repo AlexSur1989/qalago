@@ -26,10 +26,11 @@ describe('BusinessShell mobile navigation (6.10D.1)', () => {
     expect(src).toContain('onClick={closeMobileNav}');
   });
 
-  it('reuses permission-filtered nav props without duplicating menu lists', () => {
+  it('centralizes permission-scoped nav in shell (BIZ.9 HOTFIX 2)', () => {
     const src = readShell();
-    expect(src).toContain('mainNav ?? buildMainNavItems');
-    expect(src).toContain('footerNav ?? buildFooterNavItems');
+    expect(src).toContain('buildPermissionScopedShellNav');
+    expect(src).toContain('useBusinessAccess');
+    expect(src).not.toContain('mainNav ?? buildMainNavItems');
     expect(src).not.toMatch(/const mobileNavItems/);
   });
 

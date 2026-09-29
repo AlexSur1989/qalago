@@ -315,7 +315,7 @@ Revoked/suspended manager: next **`GET /businesses/my`** omits business; BIZ.2 s
 
 **Downgrade:** content **preserved** in DB; public surfaces slice to plan limits; **new create** blocked at/above limit (`assertCanAdd*`); **update/delete** of existing rows allowed (BIZ.5: service item **create** now calls `assertCanAddServiceItem`).
 
-**Business Web routes:** `/business/[id]/menu`, `/media`, `/promotions` — nav gated by permissions per selected business (`business-access.ts`).
+**Business Web routes:** `/business/[id]/menu`, `/media`, `/promotions` — nav gated by permissions per selected business. **Sidebar filtering is centralized in `BusinessShell`** via `buildPermissionScopedShellNav` + `useBusinessAccess().access` (BIZ.9 HOTFIX 2); pages must not pass unfiltered nav overrides.
 
 ---
 

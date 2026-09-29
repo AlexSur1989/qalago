@@ -9,11 +9,6 @@ import { useOwnerBusiness } from '@/lib/use-owner-business';
 import { BusinessShell } from '@/components/business-shell';
 import { parseApiError } from '@/lib/monetization-utils';
 import { formatReviewsCountLabel } from '@/lib/presentation';
-import {
-  buildFooterNavItems,
-  buildMainNavItems,
-  filterNavByAccess,
-} from '@/lib/business-access';
 export default function BusinessReviewsPage() {
   const locale = useLocale();
   const ui = useUi();
@@ -22,14 +17,6 @@ export default function BusinessReviewsPage() {
   const businessId = params.id;
   const { token, user, ready, logout, businesses, business, access, error, setError } =
     useOwnerBusiness(businessId);
-  const mainNav = useMemo(
-    () => filterNavByAccess(buildMainNavItems(locale), access),
-    [access, locale],
-  );
-  const footerNav = useMemo(
-    () => filterNavByAccess(buildFooterNavItems(locale), access),
-    [access, locale],
-  );
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [reportOpenId, setReportOpenId] = useState<string | null>(null);
@@ -92,8 +79,6 @@ export default function BusinessReviewsPage() {
       businesses={businesses}
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
-      mainNav={mainNav}
-      footerNav={footerNav}
     >
       <header className="page-header">
         <div>

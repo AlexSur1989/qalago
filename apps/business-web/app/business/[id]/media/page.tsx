@@ -23,12 +23,7 @@ import {
   normalizeMediaScopeAfterLocationsLoad,
   type MediaScopeSelection,
 } from '@/lib/media-scope';
-import {
-  buildFooterNavItems,
-  buildMainNavItems,
-  canViewPayments,
-  filterNavByAccess,
-} from '@/lib/business-access';
+import { canViewPayments } from '@/lib/business-access';
 import { parseApiError } from '@/lib/monetization-utils';
 import { photoPublishLabel, photoPublishState } from '@/lib/owner-utils';
 import { useOwnerBusiness } from '@/lib/use-owner-business';
@@ -50,15 +45,6 @@ export default function BusinessMediaPage() {
   const [locationsLoading, setLocationsLoading] = useState(true);
   const [selectedScope, setSelectedScope] = useState<MediaScopeSelection>(MEDIA_SCOPE_BRAND);
   const [publishIndexById, setPublishIndexById] = useState<Map<string, number>>(new Map());
-
-  const mainNav = useMemo(
-    () => filterNavByAccess(buildMainNavItems(locale), access),
-    [access, locale],
-  );
-  const footerNav = useMemo(
-    () => filterNavByAccess(buildFooterNavItems(locale), access),
-    [access, locale],
-  );
 
   const totalPhotoUsage = planStatus?.usage.photos ?? planStatus?.entitlements?.photos.total;
 
@@ -163,8 +149,6 @@ export default function BusinessMediaPage() {
       businesses={businesses}
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
-      mainNav={mainNav}
-      footerNav={footerNav}
     >
       <header className="page-header">
         <div>

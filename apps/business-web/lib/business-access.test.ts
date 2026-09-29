@@ -4,6 +4,7 @@ import {
   PERMISSION_PRESETS,
   buildFooterNavItems,
   buildMainNavItems,
+  buildPermissionScopedShellNav,
   canAccessNavItem,
   canViewPayments,
   filterNavByAccess,
@@ -73,6 +74,16 @@ describe('business-access', () => {
         permissions: [BusinessPermission.PAYMENTS_VIEW],
       }),
     ).toBe(true);
+  });
+
+  it('canAccessNavItem denies all items when access is unresolved', () => {
+    const items = [...buildMainNavItems('ru'), ...buildFooterNavItems('ru')];
+    for (const item of items) {
+      expect(canAccessNavItem(item, null)).toBe(false);
+      expect(canAccessNavItem(item, undefined)).toBe(false);
+    }
+    expect(buildPermissionScopedShellNav('ru', null).mainNav).toEqual([]);
+    expect(buildPermissionScopedShellNav('ru', null).footerNav).toEqual([]);
   });
 
   it('stats nav visible with ANALYTICS_VIEW', () => {

@@ -1,4 +1,20 @@
 import type { MyBusinessItem } from './api';
+import { SELECTED_BUSINESS_KEY } from './api';
+
+/** Selection hint only — not authorization (BIZ.2 / BIZ.9 HOTFIX 2). */
+export function readStoredSelectedBusinessId(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(SELECTED_BUSINESS_KEY);
+}
+
+export function resolveSelectedMyBusinessItem(
+  items: MyBusinessItem[],
+  storedId: string | null | undefined,
+): MyBusinessItem | null {
+  if (items.length === 0) return null;
+  const id = resolveSelectedBusinessId(items, storedId);
+  return items.find((item) => item.business.id === id) ?? null;
+}
 
 /** Pick a business id from accessible items; ignores stale localStorage ids (BIZ.2). */
 export function resolveSelectedBusinessId(

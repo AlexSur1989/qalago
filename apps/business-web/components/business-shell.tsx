@@ -8,12 +8,15 @@ import { usePathname } from 'next/navigation';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { BusinessRow, SELECTED_BUSINESS_KEY, ownerApi } from '@/lib/api';
 import {
-  buildFooterNavItems,
-  buildMainNavItems,
+  buildPermissionScopedShellNav,
   type BusinessNavItem,
   type NavId,
 } from '@/lib/business-access';
-import { resolveSelectedBusinessRowId } from '@/lib/business-selection';
+import {
+  readStoredSelectedBusinessId,
+  resolveSelectedBusinessRowId,
+} from '@/lib/business-selection';
+import { useBusinessAccess } from '@/lib/use-business-access';
 import { getWebAccessToken } from '@/lib/web-auth-token';
 import { businessInitials, statusLabel } from '@/lib/business-utils';
 
@@ -27,8 +30,6 @@ type BusinessShellProps = {
   userName?: string;
   onLogout: () => void;
   children: ReactNode;
-  mainNav?: BusinessNavItem[];
-  footerNav?: BusinessNavItem[];
 };
 
 export function BusinessShell({
@@ -39,20 +40,21 @@ export function BusinessShell({
   userName,
   onLogout,
   children,
-  mainNav,
-  footerNav,
 }: BusinessShellProps) {
   const locale = useLocale();
   const ui = useUi();
   const pathname = usePathname();
   const defaultCity = cityName ?? ui.text_e640a8;
+  const { access, ready: authReady } = useBusinessAccess();
 
   const [collapsed, setCollapsed] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const navItems = mainNav ?? buildMainNavItems(locale);
-  const footerNavItems = footerNav ?? buildFooterNavItems(locale);
+  const { mainNav: navItems, footerNav: footerNavItems } = useMemo(
+    () => buildPermissionScopedShellNav(locale, authReady ? access : null),
+    [locale, access, authReady],
+  );
 
   const effectiveCollapsed = collapsed && !mobileNavOpen;
 
@@ -300,22 +302,24 @@ function NavLink({
 }
 
 export function useSelectedBusiness(businesses: BusinessRow[]): BusinessRow | null {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selectedId = useMemo(() => {
+    if (businesses.length === 0) return null;
+    return resolveSelectedBusinessRowId(businesses, readStoredSelectedBusinessId());
+  }, [businesses]);
 
   useEffect(() => {
     if (businesses.length === 0) {
-      setSelectedId(null);
+      localStorage.removeItem(SELECTED_BUSINESS_KEY);
       return;
     }
-    const stored = localStorage.getItem(SELECTED_BUSINESS_KEY);
-    const id = resolveSelectedBusinessRowId(businesses, stored);
+    const id = resolveSelectedBusinessRowId(businesses, readStoredSelectedBusinessId());
     if (id) {
       localStorage.setItem(SELECTED_BUSINESS_KEY, id);
     } else {
       localStorage.removeItem(SELECTED_BUSINESS_KEY);
     }
-    setSelectedId(id);
   }, [businesses]);
 
-  return businesses.find((b) => b.id === selectedId) ?? businesses[0] ?? null;
+  if (!selectedId) return null;
+  return businesses.find((b) => b.id === selectedId) ?? null;
 }

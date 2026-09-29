@@ -186,7 +186,7 @@ export function canAccessNavItem(
   access: BusinessAccessContext | null | undefined,
 ): boolean {
   if (!access) {
-    return !item.ownerOnly && (!item.anyOf || item.anyOf.length === 0);
+    return false;
   }
   if (item.ownerOnly && !isOwner(access)) return false;
   if (isOwner(access)) return true;
@@ -213,6 +213,17 @@ export function buildFooterNavItems(locale: AppLocale): BusinessNavItem[] {
     ...item,
     label: navLabelForId(locale, item.id),
   }));
+}
+
+/** Canonical BusinessShell sidebar: always permission-scoped (BIZ.9 HOTFIX 2). */
+export function buildPermissionScopedShellNav(
+  locale: AppLocale,
+  access: BusinessAccessContext | null | undefined,
+): { mainNav: BusinessNavItem[]; footerNav: BusinessNavItem[] } {
+  return {
+    mainNav: filterNavByAccess(buildMainNavItems(locale), access),
+    footerNav: filterNavByAccess(buildFooterNavItems(locale), access),
+  };
 }
 
 export function normalizeSelectedPermissions(permissions: BusinessPermission[]): BusinessPermission[] {

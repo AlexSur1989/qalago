@@ -1,36 +1,39 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   BusinessAccessInfo,
   BusinessRow,
   MyBusinessItem,
   SELECTED_BUSINESS_KEY,
 } from '@/lib/api';
-import { resolveSelectedBusinessId } from '@/lib/business-selection';
+import {
+  readStoredSelectedBusinessId,
+  resolveSelectedBusinessId,
+  resolveSelectedMyBusinessItem,
+} from '@/lib/business-selection';
 import { useAuth } from '@/lib/use-auth';
 
 export function useBusinessAccess() {
   const { token, user, items, ready, logout, refreshBusinesses } = useAuth();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const selectedItem: MyBusinessItem | null = useMemo(
+    () => resolveSelectedMyBusinessItem(items, readStoredSelectedBusinessId()),
+    [items],
+  );
 
   useEffect(() => {
     if (items.length === 0) {
-      setSelectedId(null);
+      localStorage.removeItem(SELECTED_BUSINESS_KEY);
       return;
     }
-    const stored = localStorage.getItem(SELECTED_BUSINESS_KEY);
-    const id = resolveSelectedBusinessId(items, stored);
+    const id = resolveSelectedBusinessId(items, readStoredSelectedBusinessId());
     if (id) {
       localStorage.setItem(SELECTED_BUSINESS_KEY, id);
     } else {
       localStorage.removeItem(SELECTED_BUSINESS_KEY);
     }
-    setSelectedId(id);
   }, [items]);
-
-  const selectedItem: MyBusinessItem | null =
-    items.find((item) => item.business.id === selectedId) ?? items[0] ?? null;
 
   const business: BusinessRow | null = selectedItem?.business ?? null;
   const access: BusinessAccessInfo | null = selectedItem?.access ?? null;

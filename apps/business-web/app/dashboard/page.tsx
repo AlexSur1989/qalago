@@ -2,19 +2,14 @@
 
 import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   BusinessPlanStatus,
   MonetizationCampaign,
   PromotionRow,
   ownerApi,
 } from '@/lib/api';
-import {
-  buildFooterNavItems,
-  buildMainNavItems,
-  canViewPayments,
-  filterNavByAccess,
-} from '@/lib/business-access';
+import { canViewPayments } from '@/lib/business-access';
 import { parseApiError } from '@/lib/monetization-utils';
 import {
   buildRecentActions,
@@ -38,15 +33,6 @@ export default function DashboardPage() {
   const [campaigns, setCampaigns] = useState<MonetizationCampaign[]>([]);
   const [summary7, setSummary7] = useState<{ total: number; views: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  const mainNav = useMemo(
-    () => filterNavByAccess(buildMainNavItems(locale), access),
-    [access, locale],
-  );
-  const footerNav = useMemo(
-    () => filterNavByAccess(buildFooterNavItems(locale), access),
-    [access, locale],
-  );
 
   useEffect(() => {
     if (!token || !business) return;
@@ -88,8 +74,6 @@ export default function DashboardPage() {
       activeNav="home"
       business={business}
       businesses={businesses}
-      mainNav={mainNav}
-      footerNav={footerNav}
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
     >

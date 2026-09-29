@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { resolveSelectedBusinessId, resolveSelectedBusinessRowId } from './business-selection';
+import {
+  resolveSelectedBusinessId,
+  resolveSelectedBusinessRowId,
+  resolveSelectedMyBusinessItem,
+} from './business-selection';
+import { BusinessPermission } from './business-access';
 
 const items = [
   {
@@ -28,5 +33,28 @@ describe('business-selection (BIZ.2)', () => {
   it('resolveSelectedBusinessRowId matches items rule', () => {
     const rows = items.map((i) => i.business);
     expect(resolveSelectedBusinessRowId(rows, 'stale')).toBe('b-a');
+  });
+
+  it('resolveSelectedMyBusinessItem uses stored id, not arbitrary items[0] access', () => {
+    const multi = [
+      {
+        business: { id: 'coffee-lab', title: 'Aktobe Coffee Lab', status: 'ACTIVE', address: '1' },
+        access: {
+          role: 'MANAGER' as const,
+          permissions: [BusinessPermission.CATALOG_EDIT],
+        },
+      },
+      {
+        business: { id: 'bar-code-51', title: 'Bar Code 51', status: 'ACTIVE', address: '2' },
+        access: {
+          role: 'MANAGER' as const,
+          permissions: [BusinessPermission.ANALYTICS_VIEW],
+        },
+      },
+    ];
+    const picked = resolveSelectedMyBusinessItem(multi, 'bar-code-51');
+    expect(picked?.business.id).toBe('bar-code-51');
+    expect(picked?.access.permissions).toContain(BusinessPermission.ANALYTICS_VIEW);
+    expect(picked?.access.permissions).not.toContain(BusinessPermission.CATALOG_EDIT);
   });
 });

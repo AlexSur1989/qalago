@@ -14,11 +14,8 @@ import {
 import {
   ALL_BUSINESS_PERMISSIONS,
   BusinessPermission,
-  buildFooterNavItems,
-  buildMainNavItems,
   buildPermissionPresets,
   businessPermissionLabelForLocale,
-  filterNavByAccess,
   isOwner,
   membershipRoleLabelForLocale,
   membershipStatusLabelForLocale,
@@ -46,14 +43,6 @@ export default function BusinessTeamPage() {
   const [editPermissions, setEditPermissions] = useState<BusinessPermission[]>([]);
   const [teamAudit, setTeamAudit] = useState<TeamAuditRow[]>([]);
 
-  const mainNav = useMemo(
-    () => filterNavByAccess(buildMainNavItems(locale), access),
-    [access, locale],
-  );
-  const footerNav = useMemo(
-    () => filterNavByAccess(buildFooterNavItems(locale), access),
-    [access, locale],
-  );
   const permissionPresets = useMemo(() => buildPermissionPresets(locale), [locale]);
 
   const ownerAccess = isOwner(access);
@@ -204,8 +193,6 @@ export default function BusinessTeamPage() {
         activeNav="team"
         business={business}
         businesses={businesses}
-        mainNav={mainNav}
-        footerNav={footerNav}
         userName={user?.name ?? user?.phone ?? undefined}
         onLogout={logout}
       >
@@ -226,8 +213,6 @@ export default function BusinessTeamPage() {
       activeNav="team"
       business={business}
       businesses={businesses}
-      mainNav={mainNav}
-      footerNav={footerNav}
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
     >

@@ -6,11 +6,22 @@
 
 ---
 
+## 2026-09-29 — BIZ.9 HOTFIX 2 — Manager sidebar permission filtering centralized
+
+- **Status:** **BIZ.9 HOTFIX 2 PASS — MANAGER SIDEBAR PERMISSION FILTERING CENTRALIZED**. **BIZ.9 physical QA REMAINS OPEN**. **BIZ.1–BIZ.8 remain CLOSED**. **AOP remains CLOSED**.
+- **Starting HEAD:** **`1af9eb3891a552575b9502baab669893aee83b6c`**.
+- **Checkpoint (commit):** **`f79c11d4df0a89cbf9809c98566047c9dea17fe0`** — `fix(business-web): enforce permission-scoped sidebar`.
+- **Summary:** **`BusinessShell`** always derives sidebar from **`buildPermissionScopedShellNav`** + canonical **`useBusinessAccess().access`** (no per-page **`mainNav`/`footerNav`** fallback to full owner menu). **`canAccessNavItem`** denies all items when access unresolved. Sync business selection via **`resolveSelectedMyBusinessItem`** / **`readStoredSelectedBusinessId`** to avoid first-paint **`items[0]`** permission flash. Tests: **`manager-sidebar-centralized.test.ts`**, extended **`business-access`** / **`business-selection`** / shell mobile guard.
+- **Deferred:** Full BIZ.9 physical QA (manager sidebar on all routes); dashboard **`Promise.all`** partial-failure UX.
+- **Next:** Physical re-verify manager **`+77000000003`** / **bar-code-51** sidebar route matrix; continue BIZ.9 closure.
+
+---
+
 ## 2026-09-29 — BIZ.9 HOTFIX 1 — Owner promotions query geo drift
 
 - **Status:** **BIZ.9 HOTFIX 1 PASS — OWNER PROMOTIONS QUERY GEO DRIFT FIXED**. **BIZ.9 physical QA REMAINS OPEN** (dashboard re-verify pending). **BIZ.1–BIZ.8 remain CLOSED**. **AOP remains CLOSED**.
 - **Starting HEAD:** **`3766234b603949b9ca202f0e7d1429fa6d19e4ca`**.
-- **Checkpoint (commit):** **`9111ae04c80f4f02ffa93f3be4cece9bf6368741`** — `fix(promotions): remove retired business geo select`.
+- **Checkpoint (commit):** **`98f1e077f3f519793ac6bbac8e90d471641e0591`** — `fix(promotions): remove retired business geo select`.
 - **Summary:** **`GET /promotions?businessId=`** owner-manage path no longer selects retired **`Business.cityId`** (6.12A). Fixes Business Web dashboard **`Promise.all`** failure (500 → 200). Regression spec **`promotions-owner-list-geo.spec.ts`**. Live verify: Aktobe Pending Bistro empty list + plan FREE OK.
 - **Deferred:** Dashboard **`Promise.all`** partial-failure resilience (non-blocking UXA debt); full BIZ.9 physical QA closure.
 - **Next:** Re-run Business Web **`/dashboard`** physical QA for OWNER; continue BIZ.9 scope.

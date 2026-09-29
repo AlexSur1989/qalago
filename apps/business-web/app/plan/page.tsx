@@ -11,10 +11,7 @@ import {
 } from '@/lib/api';
 import { internalTierToPublicLabel } from '@/lib/plan-display';
 import {
-  buildFooterNavItems,
-  buildMainNavItems,
   canViewPayments,
-  filterNavByAccess,
   isOwner,
   PAYMENTS_ACCESS_DENIED_RU,
 } from '@/lib/business-access';
@@ -66,15 +63,6 @@ export default function PlanPage() {
 
   const canView = canViewPayments(access);
   const canManage = isOwner(access);
-
-  const mainNav = useMemo(
-    () => filterNavByAccess(buildMainNavItems(locale), access),
-    [access, locale],
-  );
-  const footerNav = useMemo(
-    () => filterNavByAccess(buildFooterNavItems(locale), access),
-    [access, locale],
-  );
 
   const load = useCallback(async () => {
     if (!token || !business) return;
@@ -135,8 +123,6 @@ export default function PlanPage() {
       businesses={businesses}
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
-      mainNav={mainNav}
-      footerNav={footerNav}
     >
       <header className="page-header">
         <div>
