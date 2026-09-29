@@ -315,7 +315,7 @@ Revoked/suspended manager: next **`GET /businesses/my`** omits business; BIZ.2 s
 
 **Downgrade:** content **preserved** in DB; public surfaces slice to plan limits; **new create** blocked at/above limit (`assertCanAdd*`); **update/delete** of existing rows allowed (BIZ.5: service item **create** now calls `assertCanAddServiceItem`).
 
-**Business Web routes:** `/business/[id]/menu`, `/media`, `/promotions` — nav gated by permissions per selected business. **Sidebar filtering is centralized in `BusinessShell`** via `buildPermissionScopedShellNav` + `useBusinessAccess().access` (BIZ.9 HOTFIX 2); pages must not pass unfiltered nav overrides.
+**Business Web routes:** `/business/[id]/menu`, `/media`, `/promotions`, profile, locations, reviews, team, `/plan`, `/statistics`, `/settings`, `/monetization/*` — **sidebar** gated by permissions per selected business (**BIZ.9 HOTFIX 2**). **Direct URL / page content** uses **`useBusinessRouteGate`** + **`BUSINESS_ROUTE_ACCESS`** (BIZ.9 HOTFIX 4): when access does not satisfy the route requirement, **`BusinessSectionAccessDenied`** renders in the shell content area (no management forms, no protected owner API fetch). Backend remains authoritative. **Sidebar filtering is centralized in `BusinessShell`** via `buildPermissionScopedShellNav` + `useBusinessAccess().access`; pages must not pass unfiltered nav overrides.
 
 ---
 

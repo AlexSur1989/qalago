@@ -7,6 +7,11 @@ import { useParams } from 'next/navigation';
 import { ReviewRow, ownerApi } from '@/lib/api';
 import { useOwnerBusiness } from '@/lib/use-owner-business';
 import { BusinessShell } from '@/components/business-shell';
+import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
+import {
+  BUSINESS_ROUTE_ACCESS,
+  isBusinessRouteContentAllowed,
+} from '@/lib/business-route-access';
 import { parseApiError } from '@/lib/monetization-utils';
 import { formatReviewsCountLabel } from '@/lib/presentation';
 export default function BusinessReviewsPage() {
@@ -24,6 +29,13 @@ export default function BusinessReviewsPage() {
   const [reportDetails, setReportDetails] = useState('');
   const [reportBusy, setReportBusy] = useState(false);
 
+  const routeAllowed = isBusinessRouteContentAllowed(
+    ready,
+    access,
+    BUSINESS_ROUTE_ACCESS.reviews,
+    business != null,
+  );
+
   async function load(t: string) {
     const items = await ownerApi.listReviews(t, businessId);
     setReviews(items);
@@ -33,9 +45,9 @@ export default function BusinessReviewsPage() {
   }
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || !routeAllowed) return;
     load(token).catch((err) => setError(parseApiError(locale, err)));
-  }, [token, businessId, locale, setError]);
+  }, [token, businessId, routeAllowed, locale, setError]);
 
   async function submitReport(reviewId: string) {
     if (!token) return;
@@ -80,6 +92,10 @@ export default function BusinessReviewsPage() {
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
     >
+      {!routeAllowed ? (
+        <BusinessSectionAccessDenied />
+      ) : (
+        <>
       <header className="page-header">
         <div>
           <h1>{ui.text_1c3fea}</h1>
@@ -224,6 +240,8 @@ export default function BusinessReviewsPage() {
           ))
         )}
       </section>
+        </>
+      )}
     </BusinessShell>
   );
 }

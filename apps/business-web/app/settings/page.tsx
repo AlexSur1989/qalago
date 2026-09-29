@@ -4,26 +4,28 @@ import { useLocale, useUi } from '@/components/locale-provider';
 import { parseApiError } from '@/lib/monetization-utils';
 import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
-import { BusinessRow, myBusinessRows, ownerApi } from '@/lib/api';
-import { useAuth } from '@/lib/use-auth';
-import { BusinessShell, useSelectedBusiness } from '@/components/business-shell';
+import { ownerApi } from '@/lib/api';
+import { BusinessShell } from '@/components/business-shell';
+import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
+import { BUSINESS_ROUTE_ACCESS, useBusinessRouteGate } from '@/lib/use-business-route-gate';
 
 export default function SettingsPage() {
   const locale = useLocale();
   const ui = useUi();
 
-  const { token, user, ready, logout } = useAuth();
-  const [businesses, setBusinesses] = useState<BusinessRow[]>([]);
-  const business = useSelectedBusiness(businesses);
+  const {
+    token,
+    user,
+    ready,
+    logout,
+    business,
+    businesses,
+    allowed: routeAllowed,
+  } = useBusinessRouteGate(BUSINESS_ROUTE_ACCESS.settings);
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!token) return;
-    ownerApi.listMyBusinesses(token).then((res) => setBusinesses(myBusinessRows(res.items))).catch(() => undefined);
-  }, [token]);
 
   useEffect(() => {
     if (user?.name) setName(user.name);
@@ -58,6 +60,10 @@ export default function SettingsPage() {
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
     >
+      {!routeAllowed ? (
+        <BusinessSectionAccessDenied />
+      ) : (
+        <>
       <header className="page-header">
         <div>
           <h1>{ui.ownerNavSettings}</h1>
@@ -122,6 +128,8 @@ export default function SettingsPage() {
           <Link href="/account-deletion" target="_blank" rel="noopener noreferrer">{ui.legalAccountDeletionLink}</Link>
         </div>
       </section>
+        </>
+      )}
     </BusinessShell>
   );
 }

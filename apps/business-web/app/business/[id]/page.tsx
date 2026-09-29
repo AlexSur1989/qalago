@@ -15,6 +15,8 @@ import {
 } from '@/lib/api';
 import { useAuth } from '@/lib/use-auth';
 import { BusinessShell } from '@/components/business-shell';
+import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
+import { BUSINESS_ROUTE_ACCESS, useBusinessRouteGate } from '@/lib/use-business-route-gate';
 import { parseApiError } from '@/lib/monetization-utils';
 import {
   BusinessLocationField,
@@ -48,6 +50,11 @@ export default function BusinessEditPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
   const { token, user, ready, logout } = useAuth();
+  const {
+    allowed: routeAllowed,
+    business: gateBusiness,
+    businesses: gateBusinesses,
+  } = useBusinessRouteGate(BUSINESS_ROUTE_ACCESS.businessProfile, id);
   const [myItems, setMyItems] = useState<MyBusinessItem[]>([]);
   const [location, setLocation] = useState<BusinessLocationState>({ address: '' });
   const [primaryLocationId, setPrimaryLocationId] = useState<string | null>(null);
@@ -72,7 +79,7 @@ export default function BusinessEditPage() {
   const [taxonomySaved, setTaxonomySaved] = useState(false);
 
   const businesses = myBusinessRows(myItems);
-  const business = businesses.find((b) => b.id === id) ?? null;
+  const business = businesses.find((b) => b.id === id) ?? gateBusiness ?? null;
   const access = findMyBusinessItem(myItems, id)?.access ?? null;
   const permissions = useMemo(() => resolveProfileEditPermissions(access), [access]);
 
@@ -83,12 +90,12 @@ export default function BusinessEditPage() {
   }
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || !routeAllowed) return;
     refreshMyBusinesses().catch((err) => setError(parseApiError(locale, err)));
-  }, [token, locale]);
+  }, [token, locale, routeAllowed]);
 
   useEffect(() => {
-    if (!token || !id) return;
+    if (!token || !id || !routeAllowed) return;
     (async () => {
       try {
         const [b, locRes] = await Promise.all([
@@ -131,7 +138,7 @@ export default function BusinessEditPage() {
         setError(parseApiError(locale, err));
       }
     })();
-  }, [token, id, locale]);
+  }, [token, id, locale, routeAllowed]);
 
   function toggleSubcategory(subId: string) {
     if (!permissions.canEditProfile) return;
@@ -212,10 +219,14 @@ export default function BusinessEditPage() {
     <BusinessShell
       activeNav="profile"
       business={business}
-      businesses={businesses}
+      businesses={gateBusinesses.length > 0 ? gateBusinesses : businesses}
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
     >
+      {!routeAllowed ? (
+        <BusinessSectionAccessDenied />
+      ) : (
+        <>
       <header className="page-header">
         <div>
           <h1>{ui.ownerMgmtMyBusiness}</h1>
@@ -329,6 +340,8 @@ export default function BusinessEditPage() {
         <div className="alert alert-error" style={{ maxWidth: 720 }}>
           {error}
         </div>
+      )}
+        </>
       )}
     </BusinessShell>
   );

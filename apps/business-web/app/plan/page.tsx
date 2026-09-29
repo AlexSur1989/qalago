@@ -10,15 +10,12 @@ import {
   ownerApi,
 } from '@/lib/api';
 import { internalTierToPublicLabel } from '@/lib/plan-display';
-import {
-  canViewPayments,
-  isOwner,
-  PAYMENTS_ACCESS_DENIED_RU,
-} from '@/lib/business-access';
+import { canViewPayments, isOwner } from '@/lib/business-access';
 import { businessWebMockPlanCheckoutEnabled } from '@/lib/auth-config';
 import { parseApiError } from '@/lib/monetization-utils';
-import { useBusinessAccess } from '@/lib/use-business-access';
 import { BusinessShell } from '@/components/business-shell';
+import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
+import { BUSINESS_ROUTE_ACCESS, useBusinessRouteGate } from '@/lib/use-business-route-gate';
 import type { AppLocale, UiLabels } from '@/lib/locale';
 import { planAnalytics360Label } from '@/lib/presentation';
 
@@ -52,7 +49,16 @@ export default function PlanPage() {
   const locale = useLocale();
   const ui = useUi();
 
-  const { token, user, ready, logout, business, access, businesses } = useBusinessAccess();
+  const {
+    token,
+    user,
+    ready,
+    logout,
+    business,
+    access,
+    businesses,
+    allowed: routeAllowed,
+  } = useBusinessRouteGate(BUSINESS_ROUTE_ACCESS.payments);
   const [catalog, setCatalog] = useState<PlanCatalogRow[]>([]);
   const [planStatus, setPlanStatus] = useState<BusinessPlanStatus | null>(null);
   const [payments, setPayments] = useState<PlanPaymentRow[]>([]);
@@ -65,7 +71,7 @@ export default function PlanPage() {
   const canManage = isOwner(access);
 
   const load = useCallback(async () => {
-    if (!token || !business) return;
+    if (!token || !business || !routeAllowed) return;
     setLoading(true);
     setError(null);
     try {
@@ -88,7 +94,7 @@ export default function PlanPage() {
     } finally {
       setLoading(false);
     }
-  }, [token, business?.id, canView]);
+  }, [token, business?.id, canView, routeAllowed]);
 
   useEffect(() => {
     load().catch(() => undefined);
@@ -124,6 +130,10 @@ export default function PlanPage() {
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
     >
+      {!routeAllowed ? (
+        <BusinessSectionAccessDenied />
+      ) : (
+        <>
       <header className="page-header">
         <div>
           <h1>{ui.ownerNavPlan}</h1>
@@ -138,9 +148,6 @@ export default function PlanPage() {
       </header>
 
       {loading && <p style={{ color: 'var(--text-muted)' }}>{ui.__c63d55}</p>}
-      {!loading && !canView && (
-        <div className="alert alert-error">{PAYMENTS_ACCESS_DENIED_RU}</div>
-      )}
       {error && <div className="alert alert-error">{error}</div>}
       {message && <div className="alert alert-success">{message}</div>}
 
@@ -304,6 +311,8 @@ export default function PlanPage() {
         )}
         <Link href="/help" className="btn btn-ghost">{ui.____289a51}</Link>
       </section>
+        </>
+      )}
     </BusinessShell>
   );
 }

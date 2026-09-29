@@ -33,6 +33,11 @@ import {
 import { parseApiError } from '@/lib/monetization-utils';
 import { useOwnerBusiness } from '@/lib/use-owner-business';
 import { BusinessShell } from '@/components/business-shell';
+import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
+import {
+  BUSINESS_ROUTE_ACCESS,
+  isBusinessRouteContentAllowed,
+} from '@/lib/business-route-access';
 
 const PAGE_SIZE = 20;
 
@@ -76,6 +81,13 @@ export default function BusinessMenuPage() {
   const [branchByItemId, setBranchByItemId] = useState<
     Map<string, typeof DEFAULT_BRANCH_AVAILABILITY>
   >(() => new Map());
+
+  const routeAllowed = isBusinessRouteContentAllowed(
+    ready,
+    access,
+    BUSINESS_ROUTE_ACCESS.catalog,
+    business != null,
+  );
 
   const canCatalogEdit = canEditServiceItem(
     hasPermission(access, BusinessPermission.CATALOG_EDIT),
@@ -123,14 +135,14 @@ export default function BusinessMenuPage() {
   }, [access, businessId]);
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || !routeAllowed) return;
     Promise.all([loadPlan(token), loadItems(token, 1, sectionId, search)]).catch((err) =>
       setError(parseApiError(locale, err)),
     );
-  }, [token, businessId, loadPlan, loadItems, sectionId, search, setError]);
+  }, [token, businessId, routeAllowed, loadPlan, loadItems, sectionId, search, setError]);
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || !routeAllowed) return;
     setLocationsLoading(true);
     Promise.all([ownerApi.listBusinessLocations(token, businessId), ownerApi.listCities()])
       .then(([locRes, cityRows]) => {
@@ -139,7 +151,7 @@ export default function BusinessMenuPage() {
       })
       .catch((err) => setError(parseApiError(locale, err)))
       .finally(() => setLocationsLoading(false));
-  }, [token, businessId, locale, setError]);
+  }, [token, businessId, routeAllowed, locale, setError]);
 
   function branchValidationMessage(
     result: ReturnType<typeof validateBranchAvailabilitySubmit>,
@@ -291,6 +303,10 @@ export default function BusinessMenuPage() {
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
     >
+      {!routeAllowed ? (
+        <BusinessSectionAccessDenied />
+      ) : (
+        <>
       <header className="page-header">
         <div>
           <h1>{ui.ownerPermissionCatalogEdit}</h1>
@@ -607,6 +623,8 @@ export default function BusinessMenuPage() {
             </div>
           </form>
         </EditOverlay>
+      )}
+        </>
       )}
     </BusinessShell>
   );

@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-29 — BIZ.9 HOTFIX 4 — Forbidden Business Web routes fail closed in UI
+
+- **Status:** **BIZ.9 HOTFIX 4 PASS — FORBIDDEN BUSINESS ROUTES FAIL CLOSED IN UI**. **BIZ.9 physical QA REMAINS OPEN**. **BIZ.1–BIZ.8 remain CLOSED**. **AOP remains CLOSED**.
+- **Starting HEAD:** **`4359c8056e703352b3e63411bd7323c9f79a4000`**.
+- **Checkpoint (commit):** **`629bc6392a8887df0f564ebf1a09ca6561319e87`** — `fix(business-web): gate forbidden routes before render`.
+- **Summary:** Central **`business-route-access.ts`** + **`useBusinessRouteGate`** + **`BusinessSectionAccessDenied`** (RU/KK i18n). Owner/manager operational pages and **`MonetizationShell`** fail closed before protected UI and owner-management fetches when selected-business access lacks route permission. Tests: **`business-route-access.test.ts`**. **No backend / DB / membership changes.**
+- **Deferred:** Full BIZ.9 physical QA (direct-route matrix on device); dashboard **`Promise.all`** partial-failure UX.
+- **Next:** Physical re-verify manager **`+77000000003`** direct URLs (**bar-code-51** vs **aktobe-coffee-lab**); continue BIZ.9 closure.
+
+---
+
 ## 2026-09-29 — BIZ.9 HOTFIX 3 — Business switcher selection preserved through bootstrap
 
 - **Status:** **BIZ.9 HOTFIX 3 PASS — BUSINESS SWITCHER SELECTION PRESERVED THROUGH BOOTSTRAP**. **BIZ.9 physical QA REMAINS OPEN**. **BIZ.1–BIZ.8 remain CLOSED**. **AOP remains CLOSED**.

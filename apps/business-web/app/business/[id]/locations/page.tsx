@@ -12,7 +12,8 @@ import {
 import { cityDisplayName } from '@/lib/localized-content';
 import { branchManagementCopy, buildCreateBusinessLocationPayload } from '@/lib/presentation';
 import { parseApiError } from '@/lib/monetization-utils';
-import { useBusinessAccess } from '@/lib/use-business-access';
+import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
+import { BUSINESS_ROUTE_ACCESS, useBusinessRouteGate } from '@/lib/use-business-route-gate';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 
@@ -43,8 +44,17 @@ export default function BusinessLocationsPage() {
   const copy = branchManagementCopy(locale);
   const params = useParams<{ id: string }>();
   const businessId = params.id;
-  const { token, user, ready, logout, business: selectedBusiness, access, businesses, refreshBusinesses } =
-    useBusinessAccess();
+  const {
+    token,
+    user,
+    ready,
+    logout,
+    business: selectedBusiness,
+    access,
+    businesses,
+    refreshBusinesses,
+    allowed: routeAllowed,
+  } = useBusinessRouteGate(BUSINESS_ROUTE_ACCESS.businessProfile, businessId);
 
   const [locations, setLocations] = useState<BusinessLocationRow[]>([]);
   const [cities, setCities] = useState<CityRow[]>([]);
@@ -93,10 +103,10 @@ export default function BusinessLocationsPage() {
   }, [token, businessId, locale]);
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || !routeAllowed) return;
     ownerApi.listCities().then(setCities).catch(() => undefined);
     loadLocations();
-  }, [token, loadLocations]);
+  }, [token, routeAllowed, loadLocations]);
 
   function resetForm() {
     setMode('list');
@@ -225,6 +235,9 @@ export default function BusinessLocationsPage() {
       userName={user?.name ?? undefined}
       onLogout={logout}
     >
+      {!routeAllowed ? (
+        <BusinessSectionAccessDenied />
+      ) : (
       <div className="card stack">
         <header>
           <h1>{copy.pageTitle}</h1>
@@ -412,6 +425,7 @@ export default function BusinessLocationsPage() {
           </form>
         )}
       </div>
+      )}
     </BusinessShell>
   );
 }

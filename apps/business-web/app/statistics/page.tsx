@@ -2,13 +2,8 @@
 
 import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
-import {
-  AnalyticsDashboard,
-  findMyBusinessItem,
-  myBusinessRows,
-  ownerApi,
-} from '@/lib/api';
+import { useEffect, useState } from 'react';
+import { AnalyticsDashboard, ownerApi } from '@/lib/api';
 import {
   availablePeriodOptions,
   canShowExport,
@@ -23,19 +18,25 @@ import {
   isOwner,
 } from '@/lib/business-access';
 import { formatTodayHeader } from '@/lib/business-utils';
-import { useAuth } from '@/lib/use-auth';
 import { Analytics360Dashboard } from '@/components/analytics-360-dashboard';
-import { BusinessShell, useSelectedBusiness } from '@/components/business-shell';
+import { BusinessShell } from '@/components/business-shell';
+import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
+import { BUSINESS_ROUTE_ACCESS, useBusinessRouteGate } from '@/lib/use-business-route-gate';
 
 export default function StatisticsPage() {
   const locale = useLocale();
   const ui = useUi();
 
-  const { token, user, items, ready, logout } = useAuth();
-  const businesses = useMemo(() => myBusinessRows(items), [items]);
-  const business = useSelectedBusiness(businesses);
-  const accessItem = business ? findMyBusinessItem(items, business.id) : null;
-  const access = accessItem?.access ?? null;
+  const {
+    token,
+    user,
+    ready,
+    logout,
+    business,
+    businesses,
+    access,
+    allowed: routeAllowed,
+  } = useBusinessRouteGate(BUSINESS_ROUTE_ACCESS.analytics);
 
   const [days, setDays] = useState(30);
   const [dashboard, setDashboard] = useState<AnalyticsDashboard | null>(null);
@@ -45,7 +46,7 @@ export default function StatisticsPage() {
   const [promotionTitles, setPromotionTitles] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (!token || !business) return;
+    if (!token || !business || !routeAllowed) return;
     setLoading(true);
     ownerApi
       .analyticsDashboard(token, business.id, days)
@@ -58,10 +59,10 @@ export default function StatisticsPage() {
       })
       .catch((err) => setError(mapAnalyticsLoadError(locale, err)))
       .finally(() => setLoading(false));
-  }, [token, business?.id, days]);
+  }, [token, business?.id, days, routeAllowed]);
 
   useEffect(() => {
-    if (!token || !business || !dashboard?.promotions?.byPromotion?.length) {
+    if (!token || !business || !routeAllowed || !dashboard?.promotions?.byPromotion?.length) {
       setPromotionTitles({});
       return;
     }
@@ -73,7 +74,7 @@ export default function StatisticsPage() {
         setPromotionTitles(map);
       })
       .catch(() => setPromotionTitles({}));
-  }, [token, business?.id, dashboard?.promotions?.byPromotion?.length]);
+  }, [token, business?.id, dashboard?.promotions?.byPromotion?.length, routeAllowed]);
 
   if (!ready || !token) return <p className="page-content">{ui.text_89d69a}</p>;
 
@@ -132,6 +133,8 @@ export default function StatisticsPage() {
           <p>{ui.____20204b}</p>
           <Link href="/onboarding" className="btn btn-primary" style={{ marginTop: 16 }}>{ui.___43fd9e}</Link>
         </div>
+      ) : !routeAllowed ? (
+        <BusinessSectionAccessDenied />
       ) : (
         <>
           <header className="page-header">

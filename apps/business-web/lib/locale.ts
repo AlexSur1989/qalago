@@ -69,6 +69,9 @@ export type UiLabels = {
   ownerPlanQuotaPhotosOverLimitPrefix: string;
   ownerPlanPaymentHistoryTitle: string;
   ownerPlanPaymentHistoryEmpty: string;
+  ownerSectionAccessDeniedTitle: string;
+  ownerSectionAccessDeniedHint: string;
+  ownerSectionAccessDeniedAction: string;
   ownerPlanMockPaymentTag: string;
   mediaScopeBrand: string;
   mediaScopeBranchesHeading: string;
@@ -1028,6 +1031,9 @@ export type UiLabels = {
     ownerPlanQuotaPhotosLine: 'Тариф «${planName}»: ${used} / ${max} фото',
     ownerPlanPaymentHistoryTitle: 'История оплат тарифа',
     ownerPlanPaymentHistoryEmpty: 'Платежей пока нет.',
+    ownerSectionAccessDeniedTitle: 'Нет доступа к этому разделу.',
+    ownerSectionAccessDeniedHint: 'У вашей роли нет необходимых прав.',
+    ownerSectionAccessDeniedAction: 'Вернуться в обзор',
     ownerPlanMockPaymentTag: 'тест',
     ownerPlanQuotaPhotosOverLimitPrefix:
       'На тарифе «${planName}» публикуется до ${max} фото. Остальные',
@@ -1471,6 +1477,9 @@ export type UiLabels = {
     ownerPlanQuotaPhotosLine: 'Тариф «${planName}»: ${used} / ${max} фото',
     ownerPlanPaymentHistoryTitle: 'Тариф төлемдері тарихы',
     ownerPlanPaymentHistoryEmpty: 'Төлемдер әлі жоқ.',
+    ownerSectionAccessDeniedTitle: 'Бұл бөлімге қолжетімділік жоқ.',
+    ownerSectionAccessDeniedHint: 'Сіздің рөліңізде қажетті құқықтар жоқ.',
+    ownerSectionAccessDeniedAction: 'Шолуға оралу',
     ownerPlanMockPaymentTag: 'тест',
     ownerPlanQuotaPhotosOverLimitPrefix:
       '«${planName}» тарифінде ${max} фотоға дейін жарияланады. Қалғандары',

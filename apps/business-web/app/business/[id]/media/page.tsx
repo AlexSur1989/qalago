@@ -28,6 +28,11 @@ import { parseApiError } from '@/lib/monetization-utils';
 import { photoPublishLabel, photoPublishState } from '@/lib/owner-utils';
 import { useOwnerBusiness } from '@/lib/use-owner-business';
 import { BusinessShell } from '@/components/business-shell';
+import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
+import {
+  BUSINESS_ROUTE_ACCESS,
+  isBusinessRouteContentAllowed,
+} from '@/lib/business-route-access';
 
 export default function BusinessMediaPage() {
   const locale = useLocale();
@@ -47,6 +52,13 @@ export default function BusinessMediaPage() {
   const [publishIndexById, setPublishIndexById] = useState<Map<string, number>>(new Map());
 
   const totalPhotoUsage = planStatus?.usage.photos ?? planStatus?.entitlements?.photos.total;
+
+  const routeAllowed = isBusinessRouteContentAllowed(
+    ready,
+    access,
+    BUSINESS_ROUTE_ACCESS.photos,
+    business != null,
+  );
 
   const loadScopeImages = useCallback(
     async (t: string, scope: MediaScopeSelection) => {
@@ -75,7 +87,7 @@ export default function BusinessMediaPage() {
   );
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || !routeAllowed) return;
     setLocationsLoading(true);
     Promise.all([ownerApi.listBusinessLocations(token, businessId), ownerApi.listCities()])
       .then(([locRes, cityRows]) => {
@@ -85,12 +97,12 @@ export default function BusinessMediaPage() {
       })
       .catch((err) => setError(parseApiError(locale, err)))
       .finally(() => setLocationsLoading(false));
-  }, [token, businessId, locale, setError]);
+  }, [token, businessId, routeAllowed, locale, setError]);
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || !routeAllowed) return;
     load(token, selectedScope).catch((err) => setError(parseApiError(locale, err)));
-  }, [token, businessId, selectedScope, load, locale, setError]);
+  }, [token, businessId, routeAllowed, selectedScope, load, locale, setError]);
 
   const maxPhotos = planStatus?.limits.maxPhotos;
   const atPhotoLimit =
@@ -150,6 +162,10 @@ export default function BusinessMediaPage() {
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
     >
+      {!routeAllowed ? (
+        <BusinessSectionAccessDenied />
+      ) : (
+        <>
       <header className="page-header">
         <div>
           <h1>{ui.___c89390}</h1>
@@ -331,6 +347,8 @@ export default function BusinessMediaPage() {
           </div>
         )}
       </section>
+        </>
+      )}
     </BusinessShell>
   );
 }

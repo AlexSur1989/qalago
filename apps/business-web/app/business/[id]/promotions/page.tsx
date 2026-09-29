@@ -34,6 +34,11 @@ import {
 } from '@/lib/owner-content-edit';
 import { useAuth } from '@/lib/use-auth';
 import { BusinessShell } from '@/components/business-shell';
+import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
+import {
+  BUSINESS_ROUTE_ACCESS,
+  isBusinessRouteContentAllowed,
+} from '@/lib/business-route-access';
 
 export default function BusinessPromotionsPage() {
   const locale = useLocale();
@@ -74,6 +79,12 @@ export default function BusinessPromotionsPage() {
   );
 
   const business = businesses.find((b) => b.id === businessId) ?? null;
+  const routeAllowed = isBusinessRouteContentAllowed(
+    ready,
+    access,
+    BUSINESS_ROUTE_ACCESS.promotions,
+    business != null,
+  );
   const activeCount = promotions.filter((p) => p.status === 'ACTIVE').length;
   const atActiveLimit =
     planStatus != null && activeCount >= planStatus.limits.maxActivePromotions;
@@ -97,12 +108,12 @@ export default function BusinessPromotionsPage() {
   }
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || !routeAllowed) return;
     load(token).catch((err) => setError(parseApiError(locale, err)));
-  }, [token, businessId, access, locale]);
+  }, [token, businessId, routeAllowed, access, locale]);
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || !routeAllowed) return;
     setLocationsLoading(true);
     Promise.all([ownerApi.listBusinessLocations(token, businessId), ownerApi.listCities()])
       .then(([locRes, cityRows]) => {
@@ -111,7 +122,7 @@ export default function BusinessPromotionsPage() {
       })
       .catch((err) => setError(parseApiError(locale, err)))
       .finally(() => setLocationsLoading(false));
-  }, [token, businessId, locale]);
+  }, [token, businessId, routeAllowed, locale]);
 
   function branchValidationMessage(
     result: ReturnType<typeof validateBranchAvailabilitySubmit>,
@@ -237,6 +248,10 @@ export default function BusinessPromotionsPage() {
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
     >
+      {!routeAllowed ? (
+        <BusinessSectionAccessDenied />
+      ) : (
+        <>
       <header className="page-header">
         <div>
           <h1>{ui.ownerMgmtPromotions}</h1>
@@ -413,6 +428,8 @@ export default function BusinessPromotionsPage() {
             </div>
           </form>
         </EditOverlay>
+      )}
+        </>
       )}
     </BusinessShell>
   );

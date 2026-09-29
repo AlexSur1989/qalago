@@ -21,8 +21,9 @@ import {
   membershipStatusLabelForLocale,
   normalizeSelectedPermissions,
 } from '@/lib/business-access';
-import { useBusinessAccess } from '@/lib/use-business-access';
 import { BusinessShell } from '@/components/business-shell';
+import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
+import { BUSINESS_ROUTE_ACCESS, useBusinessRouteGate } from '@/lib/use-business-route-gate';
 import { parseApiError } from '@/lib/monetization-utils';
 
 export default function BusinessTeamPage() {
@@ -31,7 +32,8 @@ export default function BusinessTeamPage() {
 
   const params = useParams<{ id: string }>();
   const businessId = params.id;
-  const { token, user, ready, logout, business, access, businesses } = useBusinessAccess();
+  const { token, user, ready, logout, business, access, businesses, allowed: routeAllowed } =
+    useBusinessRouteGate(BUSINESS_ROUTE_ACCESS.ownerOnly, businessId);
   const [team, setTeam] = useState<TeamListResponse | null>(null);
   const [email, setEmail] = useState('');
   const [createdInviteUrl, setCreatedInviteUrl] = useState<string | null>(null);
@@ -45,18 +47,16 @@ export default function BusinessTeamPage() {
 
   const permissionPresets = useMemo(() => buildPermissionPresets(locale), [locale]);
 
-  const ownerAccess = isOwner(access);
-
   async function loadTeam(t: string) {
     const data = await ownerApi.listTeam(t, businessId);
     setTeam(data);
   }
 
   useEffect(() => {
-    if (!token || !ownerAccess) return;
+    if (!token || !routeAllowed) return;
     loadTeam(token).catch((err) => setError(parseApiError(locale, err)));
     ownerApi.listTeamAudit(token, businessId).then((res) => setTeamAudit(res.items)).catch(() => undefined);
-  }, [token, businessId, ownerAccess, locale]);
+  }, [token, businessId, routeAllowed, locale]);
 
   function togglePermission(permission: BusinessPermission) {
     setSelectedPermissions((prev) => {
@@ -187,24 +187,6 @@ export default function BusinessTeamPage() {
     return <p className="page-content">{ui.text_89d69a}</p>;
   }
 
-  if (!ownerAccess) {
-    return (
-      <BusinessShell
-        activeNav="team"
-        business={business}
-        businesses={businesses}
-        userName={user?.name ?? user?.phone ?? undefined}
-        onLogout={logout}
-      >
-        <div className="empty-state">
-          <h2>{ui.__6be76b}</h2>
-          <p>{ui.____c0be3f}</p>
-          <Link href="/dashboard" className="btn" style={{ marginTop: 16 }}>{ui.__65f9d8}</Link>
-        </div>
-      </BusinessShell>
-    );
-  }
-
   const managers = team?.members.filter((m) => m.role === 'MANAGER') ?? [];
   const owners = team?.members.filter((m) => m.role === 'OWNER') ?? [];
 
@@ -216,6 +198,10 @@ export default function BusinessTeamPage() {
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
     >
+      {!routeAllowed ? (
+        <BusinessSectionAccessDenied />
+      ) : (
+        <>
       <header className="page-header">
         <div>
           <h1>{ui.ownerNavTeam}</h1>
@@ -522,6 +508,8 @@ export default function BusinessTeamPage() {
             ))}
           </ul>
         </section>
+      )}
+        </>
       )}
     </BusinessShell>
   );

@@ -2,10 +2,11 @@
 
 import { useUi } from '@/components/locale-provider';
 import { ReactNode, createContext, useContext } from 'react';
-import { BusinessAccessInfo, BusinessRow, findMyBusinessItem } from '@/lib/api';
-import { useBusinessAccess } from '@/lib/use-business-access';
+import { BusinessAccessInfo, BusinessRow } from '@/lib/api';
 import { BusinessShell } from '@/components/business-shell';
 import { MonetizationSubNav } from '@/components/monetization/monetization-subnav';
+import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
+import { BUSINESS_ROUTE_ACCESS, useBusinessRouteGate } from '@/lib/use-business-route-gate';
 
 type MonetizationContextValue = {
   token: string;
@@ -30,10 +31,16 @@ type MonetizationShellProps = {
 
 export function MonetizationShell({ children }: MonetizationShellProps) {
   const ui = useUi();
-  const { token, user, ready, logout, business, businesses, items } = useBusinessAccess();
-  const access: BusinessAccessInfo | null = business
-    ? findMyBusinessItem(items, business.id)?.access ?? null
-    : null;
+  const {
+    token,
+    user,
+    ready,
+    logout,
+    business,
+    businesses,
+    access,
+    allowed: routeAllowed,
+  } = useBusinessRouteGate(BUSINESS_ROUTE_ACCESS.ads);
 
   if (!ready || !token) {
     return <p className="page-content">{ui.text_89d69a}</p>;
@@ -64,10 +71,14 @@ export function MonetizationShell({ children }: MonetizationShellProps) {
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
     >
-      <MonetizationContext.Provider value={{ token, business, businesses, access }}>
-        <MonetizationSubNav />
-        {children}
-      </MonetizationContext.Provider>
+      {!routeAllowed ? (
+        <BusinessSectionAccessDenied />
+      ) : (
+        <MonetizationContext.Provider value={{ token, business, businesses, access }}>
+          <MonetizationSubNav />
+          {children}
+        </MonetizationContext.Provider>
+      )}
     </BusinessShell>
   );
 }

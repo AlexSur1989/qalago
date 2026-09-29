@@ -75,10 +75,10 @@
 | **BIZ.6** | **PASS — OWNER REVIEWS / BUSINESS NOTIFICATIONS HARDENED** — manage review list; inbox navigation; reply/notification tests |
 | **BIZ.7** | **PASS — BUSINESS PLANS / ENTITLEMENTS / BILLING CONTRACT HARDENED** — plan matrix §18; plan payments list; billing access tests |
 | **BIZ.8** | **PASS — BUSINESS OWNER PLANE SECURITY REGRESSION CLEAN** — IDOR/membership regression suite; no CRITICAL/HIGH findings |
-| **BIZ.9** | **OPEN — PHYSICAL QA** — HOTFIX 1–2: promotions geo + centralized sidebar; HOTFIX 3: preserve **`SELECTED_BUSINESS_KEY`** through auth bootstrap |
-| **BIZ (track)** | **ACTIVE** — **BIZ.9 physical QA open**; HOTFIX 1–3 applied; umbrella closure / **UXA** gate per roadmap |
+| **BIZ.9** | **OPEN — PHYSICAL QA** — HOTFIX 1–3: promotions geo, centralized sidebar, bootstrap selection; **HOTFIX 4: forbidden routes fail closed before page content** |
+| **BIZ (track)** | **ACTIVE** — **BIZ.9 physical QA open**; HOTFIX 1–4 applied; umbrella closure / **UXA** gate per roadmap |
 | **UXA (track)** | **PLANNED / REQUIRED — NOT STARTED** — mandatory Admin + Business Web UI/UX finalization **after BIZ CLOSED** (see § UXA below) |
-| **Next** | **BIZ.9** physical QA: OWNER business switcher + manager sidebar matrix; BIZ umbrella closure; **KZ-C.1F**; **do not start UXA** until BIZ closes unless explicitly approved |
+| **Next** | **BIZ.9** physical QA: manager direct-route matrix + OWNER switcher; BIZ umbrella closure; **KZ-C.1F**; **do not start UXA** until BIZ closes unless explicitly approved |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
