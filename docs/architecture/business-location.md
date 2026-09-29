@@ -93,6 +93,10 @@ Migration **`20260926120000_stage_6_12a9_4_4c4_business_geo_column_retirement`**
 - **Selection / tap:** map selection is **location** identity; preview and directions use the **selected location row** (address, lat/lng); opening full detail uses **Business.id** plus optional **`locationId`** query for branch-aware detail physical fields.
 - **Unchanged:** reviews/favorites/analytics Business-scoped; MapLibre style/basemap; geocoding; cluster styling/thresholds; nearest/radius discovery grain.
 
+## Stage BIZ.5 (operational content branch assignment — reference)
+
+Service items and promotions use **`ServiceItemBranchAvailability`** / **`PromotionBranchAvailability`**: **no rows** = all branches; **selected rows** = listed `BusinessLocation` ids only (same business). Validated in **`stage-6-12a7-8-2-branch-availability-management.spec.ts`**. Media scope: brand (`locationId` null) vs branch — **`business-image-scope.util`** / Business Web **`media-scope.ts`**.
+
 ## Stage BIZ.4 (Business Web profile / location canonicalization)
 
 - **Status:** **BIZ.4 PASS** — Business Web no longer sends retired physical geo on **`PATCH /businesses/:id`** from the profile editor.

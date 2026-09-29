@@ -71,7 +71,8 @@
 | **BIZ.2** | **PASS — BUSINESS WEB SESSION / CABINET ACCESS HARDENED** — canonical `/users/me` after refresh; membership-only cabinet gate; business selection hardening |
 | **BIZ.3** | **PASS — BUSINESS TEAM / MANAGER ACCESS FINALIZED** — permission matrix documented; email invite identity binding; team tests |
 | **BIZ.4** | **PASS — BUSINESS PROFILE / LOCATION MODEL CANONICALIZED** — Business Web BL-only physical writes; primary read from locations |
-| **BIZ (track)** | **ACTIVE** — **BIZ.4 closed**; BIZ umbrella closure / **UXA** gate per roadmap |
+| **BIZ.5** | **PASS — BUSINESS CONTENT / PLAN LIMITS HARDENED** — menu/media/promotions matrix; service item create plan gate |
+| **BIZ (track)** | **ACTIVE** — **BIZ.5 closed**; BIZ umbrella closure / **UXA** gate per roadmap |
 | **UXA (track)** | **PLANNED / REQUIRED — NOT STARTED** — mandatory Admin + Business Web UI/UX finalization **after BIZ CLOSED** (see § UXA below) |
 | **Next** | BIZ track umbrella closure; **controlled** catalog population; **KZ-C.1F** notification QA; **do not start UXA** until BIZ closes unless explicitly approved |
 

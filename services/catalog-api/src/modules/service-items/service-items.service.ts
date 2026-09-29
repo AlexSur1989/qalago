@@ -59,6 +59,7 @@ export class ServiceItemsService {
 
   async create(user: AuthUser, dto: CreateServiceItemDto) {
     await this.menuAccess.assertCanManage(user, dto.businessId);
+    await this.planLimits.assertCanAddServiceItem(dto.businessId);
     if (dto.groupId) {
       await this.menuAccess.assertGroupForBusiness(dto.groupId, dto.businessId);
     }

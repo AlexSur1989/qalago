@@ -303,7 +303,23 @@ Revoked/suspended manager: next **`GET /businesses/my`** omits business; BIZ.2 s
 - **Primary physical edits** use **BusinessLocation** API; see **`docs/architecture/business-location.md`** § BIZ.4.
 - **BIZ.3** manager/team contract **unchanged**.
 
-## 16. Deferred (BIZ.5+)
+## 16. Operational content & plan limits (BIZ.5)
+
+| Area | Permission | API (owner plane) | Plan limit (catalog enum) |
+|------|------------|-------------------|---------------------------|
+| **Service items / menu** | `CATALOG_EDIT` | `ServiceItemsService` + menu groups | `maxServiceItems`: FREE **10**, BASIC **50**, PREMIUM **150**, VIP **300** |
+| **Media / photos** | `PHOTOS_EDIT` | `UploadsService` attach/list/delete/cover | `maxPhotos`: FREE **5**, BASIC **20**, PREMIUM **50**, VIP **100** |
+| **Promotions** | `PROMOTIONS_EDIT` | `PromotionsService` | `maxActivePromotions` + daily create cap; FREE **1**, BASIC **3**, PREMIUM **10**, VIP **25** |
+
+**Branch assignment (6.12A.7.8):** zero assignment rows ⇒ **ALL** locations; explicit rows ⇒ **SELECTED** only. Foreign `locationId` rejected. Location delete blocked when assignments exist.
+
+**Downgrade:** content **preserved** in DB; public surfaces slice to plan limits; **new create** blocked at/above limit (`assertCanAdd*`); **update/delete** of existing rows allowed (BIZ.5: service item **create** now calls `assertCanAddServiceItem`).
+
+**Business Web routes:** `/business/[id]/menu`, `/media`, `/promotions` — nav gated by permissions per selected business (`business-access.ts`).
+
+---
+
+## 17. Deferred (BIZ.6+)
 - `ownerId` ↔ ACTIVE OWNER reconciliation after manager promotion.
 - Ownership transfer / recovery beyond claim + manager promotion.
 - Public `ownerId` removal (KZ-C).

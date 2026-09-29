@@ -64,7 +64,9 @@ describe('Stage 6.12A.7.8.2 — branch availability management', () => {
       createMockBusinessAccess({ ownerId: businessOwnerId }),
     );
     const menuAccess = new MenuAccessService(businessAccess, prisma as unknown as PrismaService);
-    const planLimits = {} as PlanLimitsService;
+    const planLimits = {
+      assertCanAddServiceItem: jest.fn().mockResolvedValue(undefined),
+    } as unknown as PlanLimitsService;
     return new ServiceItemsService(
       prisma as unknown as PrismaService,
       menuAccess,

@@ -50,6 +50,32 @@ describe('UploadsService authorization', () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
+  it('deleteBusinessImage requires image under same businessId', async () => {
+    const prisma = {
+      businessImage: {
+        findFirst: jest.fn().mockResolvedValue(null),
+        delete: jest.fn(),
+      },
+      business: { findUnique: jest.fn() },
+    };
+    const svc = new UploadsService(
+      { get: jest.fn().mockReturnValue('./uploads') } as never,
+      prisma as never,
+      { assertCanAddPhoto: jest.fn() } as never,
+      asBusinessAccessService(businessAccess),
+      asAuditLogService(createMockAuditLog()),
+      {
+        assertAllowed: jest.fn().mockResolvedValue(undefined),
+        recordHit: jest.fn().mockResolvedValue(undefined),
+      } as never,
+    );
+    const user = { id: 'owner-1', sub: 'owner-1', role: UserRole.BUSINESS, phone: '+1' };
+    await expect(svc.deleteBusinessImage(user, businessId, 'img-other-biz')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    expect(prisma.businessImage.delete).not.toHaveBeenCalled();
+  });
+
   it('propagates not found from BusinessAccessService', async () => {
     businessAccess.assertBusinessPermission.mockRejectedValue(
       new NotFoundException('Business not found'),
