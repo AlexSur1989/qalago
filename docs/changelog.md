@@ -10,7 +10,7 @@
 
 - **Status:** **BIZ.2 PASS — BUSINESS WEB SESSION / CABINET ACCESS HARDENED**. **BIZ.1 remains CLOSED** (ownership contract unchanged). **AOP remains CLOSED**.
 - **Starting HEAD:** **`99a15933f8930f512f6e2834b5d3c58e49ab3b11`** (UXA roadmap docs).
-- **Checkpoint (commit):** **`2d1c6deca0a58152747cb31410b4c67d8331f8be`** — `fix(business-web): harden session and cabinet access`.
+- **Checkpoint (commit):** **`e351d77a1bdd9fa99f173adb6897f9fb1edc97f8`** — `fix(business-web): harden session and cabinet access`.
 - **Summary:** Business Web auth bootstrap: refresh/memory token → **`GET /users/me`** (canonical `AuthUser`) → **`GET /businesses/my`** before **ready**; fail-closed on profile failure. Cabinet gate **`hasBusinessCabinetAccess`** = non-empty `/my` only (no staff/`UserRole.BUSINESS` bypass). Post-login: dashboard vs onboarding; stale **`SELECTED_BUSINESS_KEY`** fallback. Tests: auth session, cabinet access, selection, bootstrap wiring, login-session, auth-config dev flag. **`docs/architecture/business-web-ownership.md`** §13 session contract. **No Catalog API / ownership backend changes.**
 - **Deferred:** INVITED/SUSPENDED/REVOKED UI edge cases beyond `/my` filtering; manager nav F5 integration tests; **BIZ.4** profile geo; **KZ-C.1** notifications.
 - **Next:** Continue BIZ track or close umbrella per product; UXA still blocked until BIZ CLOSED.
