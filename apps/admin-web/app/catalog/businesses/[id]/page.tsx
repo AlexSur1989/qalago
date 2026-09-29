@@ -13,7 +13,8 @@ import {
 import { parseAdminCatalogApiError } from '@/lib/admin-catalog-errors';
 import { buildAdminCatalogPatchPayload } from '@/lib/admin-catalog-form';
 import {
-  canEditAdminCatalogBusinessPrimaryCity,
+  canChangeBusinessLifecycle,
+  canEditBusinessCore,
   canEditCatalogTaxonomy,
 } from '@/lib/admin-catalog-rbac';
 import { statusClass } from '@/lib/admin-utils';
@@ -47,7 +48,12 @@ export default function CatalogBusinessDetailPage() {
   const [taxError, setTaxError] = useState<string | null>(null);
   const [taxOk, setTaxOk] = useState(false);
 
-  const canEditBrand = canEditAdminCatalogBusinessPrimaryCity(
+  const canEditBusinessCoreFields = canEditBusinessCore(
+    user.role,
+    user.managedCity?.slug,
+    detail?.city?.slug,
+  );
+  const canLifecycle = canChangeBusinessLifecycle(
     user.role,
     user.managedCity?.slug,
     detail?.city?.slug,
@@ -124,7 +130,7 @@ export default function CatalogBusinessDetailPage() {
   }
 
   async function changeStatus(next: 'ACTIVE' | 'BLOCKED' | 'PENDING') {
-    if (!canEditBrand || statusBusy || !detail) return;
+    if (!canLifecycle || statusBusy || !detail) return;
     const confirmMsg =
       next === 'BLOCKED'
         ? adminCatalogLabel(locale, 'confirmBlock')
@@ -145,7 +151,7 @@ export default function CatalogBusinessDetailPage() {
 
   async function onSaveCatalog(e: FormEvent) {
     e.preventDefault();
-    if (!canEditBrand || saving) return;
+    if (!canEditBusinessCoreFields || saving) return;
     setSaveError(null);
     setSaving(true);
     try {
@@ -267,7 +273,7 @@ export default function CatalogBusinessDetailPage() {
       <div className="card" style={{ marginTop: 16 }}>
         <h3 style={{ marginTop: 0 }}>{adminCatalogLabel(locale, 'sectionLifecycle')}</h3>
         <p>{adminCatalogStatusLabel(locale, detail.status)}</p>
-        {canEditBrand && (
+        {canLifecycle && (
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {(detail.status === 'PENDING' || detail.status === 'BLOCKED') && (
               <button
@@ -299,14 +305,16 @@ export default function CatalogBusinessDetailPage() {
           businessId={detail.id}
           locale={locale}
           cities={cities}
-          role={user.role}
-          managedCityId={user.managedCityId}
-          managedCitySlug={user.managedCity?.slug}
+          staffSession={{
+            role: user.role,
+            managedCityId: user.managedCityId,
+            managedCity: user.managedCity,
+          }}
           businessPrimaryCitySlug={detail.city?.slug}
         />
       </div>
 
-      {canEditBrand && (
+      {canEditBusinessCoreFields && (
         <form className="card" style={{ marginTop: 16, maxWidth: 720 }} onSubmit={onSaveCatalog}>
           <h3 style={{ marginTop: 0 }}>{adminCatalogLabel(locale, 'sectionCatalogEdit')}</h3>
           {saveError && <p className="muted">{saveError}</p>}

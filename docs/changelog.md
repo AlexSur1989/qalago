@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-29 — AOP.7H.2 — Admin Web capability matrix alignment
+
+- **Status:** **AOP.7H.2 PASS — ADMIN WEB CAPABILITY MATRIX ALIGNED**. **AOP.7 physical QA OPEN**.
+- **Starting HEAD:** **`07fc4e89c0982d876dbd180316be4a7134d80040`** (AOP.7H.1).
+- **Checkpoint (commit):** **`6b01d4e1102fdaf86fca0398baf9964a23bcb88c`** — `fix(admin-web): separate brand and location capabilities`.
+- **Summary:** Fixed **AOP.7H.1 over-restriction**: CITY_ADMIN location UI used empty `managedCityId` while `/users/me` exposes **`managedCity.id`**. Separated catalog capabilities (core/lifecycle/taxonomy/locations); secondary-city admin regains **own-branch** edit/add/delete; foreign branches stay view-only. Backend unchanged. Vitest **120/120** + **next build** PASS.
+- **Deferred:** **AOP.7** physical recheck on AOP7 Test Cafe fixture.
+- **Next:** **AOP.7** physical verification.
+
+---
+
 ## 2026-09-29 — AOP.7H.1 — CITY_ADMIN BusinessLocation UI RBAC alignment
 
 - **Status:** **AOP.7H.1 PASS — CITY_ADMIN LOCATION UI ALIGNED WITH BACKEND RBAC**. **AOP.7 physical QA OPEN**. **Mass catalog population remains BLOCKED**.

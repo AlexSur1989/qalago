@@ -6,13 +6,14 @@ import {
   canStaffMutateBusinessFeatured,
   canStaffOverrideBusinessPlan,
 } from '@qalago/shared-types';
+import type { AdminCatalogStaffScope } from './admin-catalog-staff-scope';
 
 export function canViewAdminCatalog(role: string): boolean {
   return staffRoleHasPermission(role as UserRole, StaffPermission.BUSINESS_VIEW);
 }
 
-/** Brand-wide core catalog + lifecycle — primary-city authority for CITY_ADMIN (AOP.7H). */
-export function canEditAdminCatalogBusinessPrimaryCity(
+/** 2 — Business core profile (PRIMARY-city authority for CITY_ADMIN). */
+export function canEditBusinessCore(
   role: string,
   managedCitySlug: string | undefined,
   businessPrimaryCitySlug: string | undefined,
@@ -33,8 +34,12 @@ export function canEditAdminCatalogBusinessPrimaryCity(
   return false;
 }
 
+/** @deprecated use canEditBusinessCore */
+export const canEditAdminCatalogBusinessPrimaryCity = canEditBusinessCore;
+
 export { canStaffMutateBusinessFeatured, canStaffOverrideBusinessPlan };
 
+/** 11 — Audit */
 export function canViewAdminAuditLogs(role: string): boolean {
   return staffRoleHasPermission(role as UserRole, StaffPermission.AUDIT_VIEW);
 }
@@ -43,32 +48,68 @@ export function canCreateAdminCatalogBusiness(role: string): boolean {
   return staffRoleHasPermission(role as UserRole, StaffPermission.BUSINESS_CREATE);
 }
 
-export function canEditAdminCatalogBusiness(role: string): boolean {
-  return staffRoleHasPermission(role as UserRole, StaffPermission.BUSINESS_EDIT);
-}
-
+/** 5 — Taxonomy */
 export function canEditCatalogTaxonomy(role: string): boolean {
   return staffRoleHasPermission(role as UserRole, StaffPermission.CATEGORY_EDIT);
 }
 
-/** BL mutation in a given city — mirrors CityScopeService.assertCityInAdminScope (AOP.7H.1). */
-export function canAdminMutateBusinessLocationInCity(
+/** 6 — Lifecycle (same PRIMARY-city rule as core). */
+export function canChangeBusinessLifecycle(
+  role: string,
+  managedCitySlug: string | undefined,
+  businessPrimaryCitySlug: string | undefined,
+): boolean {
+  return canEditBusinessCore(role, managedCitySlug, businessPrimaryCitySlug);
+}
+
+/** 7 — Featured */
+export function canChangeBusinessFeatured(role: string): boolean {
+  return canStaffMutateBusinessFeatured(role);
+}
+
+/** 8 — Plan */
+export function canChangeBusinessPlan(role: string): boolean {
+  return canStaffOverrideBusinessPlan(role);
+}
+
+function isLocationCityInStaffScope(
   role: string,
   locationCityId: string,
-  managedCityId: string | null | undefined,
+  managedCityIds: string[],
 ): boolean {
-  if (!canEditAdminCatalogBusiness(role)) {
+  if (!staffRoleHasPermission(role as UserRole, StaffPermission.BUSINESS_EDIT)) {
     return false;
   }
   if (isPlatformGlobalAdminRole(role)) {
     return true;
   }
   if (role === UserRole.CITY_ADMIN) {
-    return !!managedCityId && locationCityId === managedCityId;
+    return managedCityIds.length > 0 && managedCityIds.includes(locationCityId);
   }
   return true;
 }
 
+/** 10 — Edit specific location (decoupled from brand core). */
+export function canEditSpecificLocation(
+  role: string,
+  location: { cityId: string; isPrimary: boolean },
+  scope: AdminCatalogStaffScope,
+  businessPrimaryCitySlug?: string | null,
+): boolean {
+  if (!isLocationCityInStaffScope(role, location.cityId, scope.managedCityIds)) {
+    return false;
+  }
+  if (location.isPrimary) {
+    return canEditBusinessCore(
+      role,
+      scope.managedCitySlug,
+      businessPrimaryCitySlug ?? undefined,
+    );
+  }
+  return true;
+}
+
+/** @deprecated use canEditSpecificLocation */
 export function canAdminEditBusinessLocation(
   role: string,
   location: { cityId: string; isPrimary: boolean },
@@ -76,24 +117,34 @@ export function canAdminEditBusinessLocation(
     managedCityId?: string | null;
     managedCitySlug?: string | null;
     businessPrimaryCitySlug?: string | null;
+    managedCityIds?: string[];
   },
 ): boolean {
+  const managedCityIds =
+    ctx.managedCityIds ??
+    (ctx.managedCityId ? [ctx.managedCityId] : []);
+  return canEditSpecificLocation(role, location, { role, managedCityIds, managedCitySlug: ctx.managedCitySlug ?? undefined }, ctx.businessPrimaryCitySlug);
+}
+
+/** 13 — Set primary (anti-escalation). */
+export function canSetSpecificLocationPrimary(
+  role: string,
+  targetLocationCityId: string,
+  scope: AdminCatalogStaffScope,
+  businessPrimaryCitySlug?: string | null,
+): boolean {
+  if (!staffRoleHasPermission(role as UserRole, StaffPermission.BUSINESS_EDIT)) {
+    return false;
+  }
   if (
-    !canAdminMutateBusinessLocationInCity(role, location.cityId, ctx.managedCityId ?? null)
+    !canEditBusinessCore(role, scope.managedCitySlug, businessPrimaryCitySlug ?? undefined)
   ) {
     return false;
   }
-  if (location.isPrimary) {
-    return canEditAdminCatalogBusinessPrimaryCity(
-      role,
-      ctx.managedCitySlug ?? undefined,
-      ctx.businessPrimaryCitySlug ?? undefined,
-    );
-  }
-  return true;
+  return isLocationCityInStaffScope(role, targetLocationCityId, scope.managedCityIds);
 }
 
-/** set-primary — primary-city authority + target branch city in scope (AOP.4). */
+/** @deprecated use canSetSpecificLocationPrimary */
 export function canAdminSetPrimaryBusinessLocation(
   role: string,
   targetLocationCityId: string,
@@ -101,49 +152,87 @@ export function canAdminSetPrimaryBusinessLocation(
     managedCityId?: string | null;
     managedCitySlug?: string | null;
     businessPrimaryCitySlug?: string | null;
+    managedCityIds?: string[];
   },
 ): boolean {
-  if (!canEditAdminCatalogBusiness(role)) {
-    return false;
-  }
-  if (
-    !canEditAdminCatalogBusinessPrimaryCity(
-      role,
-      ctx.managedCitySlug ?? undefined,
-      ctx.businessPrimaryCitySlug ?? undefined,
-    )
-  ) {
-    return false;
-  }
-  return canAdminMutateBusinessLocationInCity(role, targetLocationCityId, ctx.managedCityId ?? null);
+  const managedCityIds =
+    ctx.managedCityIds ??
+    (ctx.managedCityId ? [ctx.managedCityId] : []);
+  return canSetSpecificLocationPrimary(
+    role,
+    targetLocationCityId,
+    { role, managedCityIds, managedCitySlug: ctx.managedCitySlug ?? undefined },
+    ctx.businessPrimaryCitySlug,
+  );
 }
 
+/** 11 — Delete specific location */
+export function canDeleteSpecificLocation(
+  role: string,
+  locationCityId: string,
+  managedCityIds: string[],
+): boolean {
+  return isLocationCityInStaffScope(role, locationCityId, managedCityIds);
+}
+
+/** @deprecated */
 export function canAdminDeleteBusinessLocation(
   role: string,
   locationCityId: string,
   managedCityId: string | null | undefined,
+  managedCityIds?: string[],
 ): boolean {
-  return canAdminMutateBusinessLocationInCity(role, locationCityId, managedCityId ?? null);
+  const ids = managedCityIds ?? (managedCityId ? [managedCityId] : []);
+  return canDeleteSpecificLocation(role, locationCityId, ids);
 }
 
-export function canAdminAddBusinessLocation(role: string): boolean {
-  return canEditAdminCatalogBusiness(role);
+/** 12 — Add location (independent of brand core edit). */
+export function canCreateLocation(role: string, managedCityIds: string[]): boolean {
+  if (!staffRoleHasPermission(role as UserRole, StaffPermission.BUSINESS_EDIT)) {
+    return false;
+  }
+  if (isPlatformGlobalAdminRole(role)) {
+    return true;
+  }
+  if (role === UserRole.CITY_ADMIN) {
+    return managedCityIds.length > 0;
+  }
+  return true;
 }
 
-/** Cities available in add/edit location selector for current staff session. */
+/** @deprecated */
+export function canAdminAddBusinessLocation(role: string, managedCityIds: string[] = []): boolean {
+  return canCreateLocation(role, managedCityIds);
+}
+
+/** City selector options for add/edit location forms. */
 export function adminBusinessLocationCityOptions<T extends { id: string }>(
   role: string,
   cities: T[],
-  managedCityId: string | null | undefined,
+  managedCityIds: string[],
 ): T[] {
-  if (!canEditAdminCatalogBusiness(role)) {
+  if (!staffRoleHasPermission(role as UserRole, StaffPermission.BUSINESS_EDIT)) {
     return [];
   }
   if (isPlatformGlobalAdminRole(role)) {
     return cities;
   }
-  if (role === UserRole.CITY_ADMIN && managedCityId) {
-    return cities.filter((c) => c.id === managedCityId);
+  if (role === UserRole.CITY_ADMIN && managedCityIds.length > 0) {
+    return cities.filter((c) => managedCityIds.includes(c.id));
   }
   return cities;
+}
+
+/** @deprecated */
+export function canAdminMutateBusinessLocationInCity(
+  role: string,
+  locationCityId: string,
+  managedCityId: string | null | undefined,
+): boolean {
+  const ids = managedCityId ? [managedCityId] : [];
+  return isLocationCityInStaffScope(role, locationCityId, ids);
+}
+
+export function canEditAdminCatalogBusiness(role: string): boolean {
+  return staffRoleHasPermission(role as UserRole, StaffPermission.BUSINESS_EDIT);
 }

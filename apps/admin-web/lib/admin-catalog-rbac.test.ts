@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   canCreateAdminCatalogBusiness,
   canEditAdminCatalogBusiness,
-  canEditAdminCatalogBusinessPrimaryCity,
+  canEditBusinessCore,
   canEditCatalogTaxonomy,
   canStaffMutateBusinessFeatured,
   canStaffOverrideBusinessPlan,
@@ -33,16 +33,16 @@ describe('admin catalog RBAC (AOP.2 / AOP.5)', () => {
 describe('admin catalog RBAC (AOP.7H hierarchy)', () => {
   it('CITY_ADMIN secondary-city cannot edit brand core or lifecycle UX gate', () => {
     expect(
-      canEditAdminCatalogBusinessPrimaryCity('CITY_ADMIN', 'aktobe', 'uralsk'),
+      canEditBusinessCore('CITY_ADMIN', 'aktobe', 'uralsk'),
     ).toBe(false);
     expect(
-      canEditAdminCatalogBusinessPrimaryCity('CITY_ADMIN', 'uralsk', 'uralsk'),
+      canEditBusinessCore('CITY_ADMIN', 'uralsk', 'uralsk'),
     ).toBe(true);
   });
 
   it('ADMIN has global primary-city edit and operational merchandising', () => {
     expect(
-      canEditAdminCatalogBusinessPrimaryCity('ADMIN', undefined, 'aktobe'),
+      canEditBusinessCore('ADMIN', undefined, 'aktobe'),
     ).toBe(true);
     expect(canStaffMutateBusinessFeatured('ADMIN')).toBe(true);
     expect(canStaffOverrideBusinessPlan('ADMIN')).toBe(true);

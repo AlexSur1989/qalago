@@ -9,11 +9,15 @@ import { parseAdminCatalogApiError } from '@/lib/admin-catalog-errors';
 import { buildAdminLocationPayload } from '@/lib/admin-catalog-location-form';
 import {
   adminBusinessLocationCityOptions,
-  canAdminAddBusinessLocation,
-  canAdminDeleteBusinessLocation,
-  canAdminEditBusinessLocation,
-  canAdminSetPrimaryBusinessLocation,
+  canCreateLocation,
+  canDeleteSpecificLocation,
+  canEditSpecificLocation,
+  canSetSpecificLocationPrimary,
 } from '@/lib/admin-catalog-rbac';
+import {
+  buildAdminCatalogStaffScope,
+  type AdminCatalogStaffSession,
+} from '@/lib/admin-catalog-staff-scope';
 import type { CityRow } from '@/lib/api';
 
 type Props = {
@@ -21,9 +25,7 @@ type Props = {
   businessId: string;
   locale: AdminCatalogLocale;
   cities: CityRow[];
-  role: string;
-  managedCityId?: string | null;
-  managedCitySlug?: string | null;
+  staffSession: AdminCatalogStaffSession;
   businessPrimaryCitySlug?: string | null;
 };
 
@@ -46,9 +48,7 @@ export function CatalogLocationsManager({
   businessId,
   locale,
   cities,
-  role,
-  managedCityId,
-  managedCitySlug,
+  staffSession,
   businessPrimaryCitySlug,
 }: Props) {
   const [items, setItems] = useState<AdminBusinessLocationRow[]>([]);
@@ -59,17 +59,17 @@ export function CatalogLocationsManager({
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
 
-  const rbacCtx = useMemo(
-    () => ({ managedCityId, managedCitySlug, businessPrimaryCitySlug }),
-    [managedCityId, managedCitySlug, businessPrimaryCitySlug],
+  const staffScope = useMemo(
+    () => buildAdminCatalogStaffScope(staffSession, cities),
+    [staffSession, cities],
   );
 
   const selectableCities = useMemo(
-    () => adminBusinessLocationCityOptions(role, cities, managedCityId ?? null),
-    [role, cities, managedCityId],
+    () => adminBusinessLocationCityOptions(staffSession.role, cities, staffScope.managedCityIds),
+    [staffSession.role, cities, staffScope.managedCityIds],
   );
 
-  const canAdd = canAdminAddBusinessLocation(role);
+  const canAdd = canCreateLocation(staffSession.role, staffScope.managedCityIds);
 
   const cityName = (cityId: string) => {
     const c = cities.find((x) => x.id === cityId);
@@ -99,7 +99,7 @@ export function CatalogLocationsManager({
   }
 
   function openEdit(loc: AdminBusinessLocationRow) {
-    if (!canAdminEditBusinessLocation(role, loc, rbacCtx)) {
+    if (!canEditSpecificLocation(staffSession.role, loc, staffScope, businessPrimaryCitySlug)) {
       return;
     }
     setEditId(loc.id);
@@ -202,13 +202,23 @@ export function CatalogLocationsManager({
       {!loading && items.length > 0 && (
         <ul style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
           {items.map((loc) => {
-            const showEdit = canAdminEditBusinessLocation(role, loc, rbacCtx);
+            const showEdit = canEditSpecificLocation(
+              staffSession.role,
+              loc,
+              staffScope,
+              businessPrimaryCitySlug,
+            );
             const showSetPrimary =
               !loc.isPrimary &&
-              canAdminSetPrimaryBusinessLocation(role, loc.cityId, rbacCtx);
+              canSetSpecificLocationPrimary(
+                staffSession.role,
+                loc.cityId,
+                staffScope,
+                businessPrimaryCitySlug,
+              );
             const showDelete =
               !loc.isPrimary &&
-              canAdminDeleteBusinessLocation(role, loc.cityId, managedCityId ?? null);
+              canDeleteSpecificLocation(staffSession.role, loc.cityId, staffScope.managedCityIds);
 
             return (
               <li

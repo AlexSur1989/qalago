@@ -9,11 +9,11 @@ describe('CatalogLocationsManager (AOP.7H.1 wiring)', () => {
   );
 
   it('uses per-location RBAC helpers instead of global canEdit', () => {
-    expect(src).toContain('canAdminEditBusinessLocation');
-    expect(src).toContain('canAdminSetPrimaryBusinessLocation');
-    expect(src).toContain('canAdminDeleteBusinessLocation');
-    expect(src).toContain('adminBusinessLocationCityOptions');
-    expect(src).not.toMatch(/canEdit:\s*boolean/);
+    expect(src).toContain('canEditSpecificLocation');
+    expect(src).toContain('canSetSpecificLocationPrimary');
+    expect(src).toContain('canDeleteSpecificLocation');
+    expect(src).toContain('buildAdminCatalogStaffScope');
+    expect(src).toContain('staffSession');
   });
 
   it('surfaces mutation errors in alert-error', () => {
