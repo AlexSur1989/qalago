@@ -6,11 +6,22 @@
 
 ---
 
+## 2026-09-29 — ROADMAP — UXA Backoffice UI/UX finalization scheduled
+
+- **Status:** **Documentation / roadmap only** — **UXA NOT STARTED** (not an implementation PASS).
+- **Starting HEAD:** **`7152fc3b0d0e7a504088152fde63354d03d5387e`** (post BIZ.1).
+- **Checkpoint (commit):** **`84dd804c8148f47fc62ca543bec9d66346dc20c3`** — `docs(roadmap): add backoffice ui ux finalization track`.
+- **Summary:** Recorded mandatory **UXA.0–UXA.13** track in **`docs/ai-project-context.md`**: **BIZ (active) → BIZ CLOSED → UXA → Consumer Web UI/UX → Mobile UI/UX → pre-VPS readiness → VPS**. Admin + Business Web share backoffice design system; UXA required before production-readiness gate. Known UI debts listed (save feedback, audit labels, icons, states, a11y/responsive QA). **AOP remains CLOSED**.
+- **Deferred:** All UXA implementation; icon artwork; design system code.
+- **Next:** Continue **BIZ** functional track (**BIZ.2+**); do not start UXA until BIZ closes unless approved.
+
+---
+
 ## 2026-09-29 — BIZ.1 — Ownership / claim contract + backend hardening
 
 - **Status:** **BIZ.1 PASS — OWNERSHIP / CLAIM CONTRACT FINALIZED**. **BIZ.2 NOT STARTED**. **AOP remains CLOSED**.
 - **Starting HEAD:** **`bfdf4a73776f356aeb5af532e4c3c144138a743e`** (post AOP closure).
-- **Checkpoint (commit):** **`1c5edb58cdf0a8386ce0856c7f57bc6abe5e814e`** — `feat(ownership): finalize business claim contract`.
+- **Checkpoint (commit):** **`7152fc3b0d0e7a504088152fde63354d03d5387e`** — `feat(ownership): finalize business claim contract`.
 - **Summary:** Locked **`docs/architecture/business-web-ownership.md`** — membership-authoritative access, single ACTIVE OWNER, staff PENDING→ACTIVE claim playbook, claim/application matrices, admin scope. Hardened **`OwnershipClaimsService`**: deny third-party claims on owned businesses; block approve when another ACTIVE OWNER exists. **`findActiveOwnerMembershipForBusiness`** helper. Tests extended. No schema migration. Catalog API build + focused Jest PASS.
 - **Deferred:** Business Web auth refresh / staff cabinet gate (**BIZ.2**); profile brand-geo cleanup (**BIZ.4**); `ownerId` reconciliation after manager promotion; **KZ-C.1** notifications.
 - **Next:** **BIZ.2** — explicit agreement only.

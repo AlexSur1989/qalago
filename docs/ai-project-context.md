@@ -68,7 +68,9 @@
 | **AOP (umbrella)** | **PASS — ADMIN CATALOG / OPERATIONS PLANE FINALIZED** — **AOP.0–AOP.7** complete |
 | **BIZ.0** | **PASS — BUSINESS WEB / OWNERSHIP READ-ONLY AUDIT** (transcript; no docs commit) |
 | **BIZ.1** | **PASS — OWNERSHIP / CLAIM CONTRACT FINALIZED** — **`docs/architecture/business-web-ownership.md`** + claim hardening |
-| **Next** | **BIZ.2** (Business Web session/cabinet — not started); **controlled** catalog population; **KZ-C.1F** notification QA |
+| **BIZ (track)** | **ACTIVE** — functional owner/onboarding (**BIZ.2+** not started) |
+| **UXA (track)** | **PLANNED / REQUIRED — NOT STARTED** — mandatory Admin + Business Web UI/UX finalization **after BIZ CLOSED** (see § UXA below) |
+| **Next** | **BIZ.2** (Business Web session/cabinet — not started); **controlled** catalog population; **KZ-C.1F** notification QA; **do not start UXA** until BIZ closes unless explicitly approved |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -337,6 +339,78 @@ Future architecture should allow **backend/admin-central configuration** of cons
 - **A.8.1 test debt** — **CLOSED in 5B** (branch **`businessLocationId`** contract spec).
 - **F.4** — **CLOSED / PASS** (see changelog **2026-09-27** finalized entry). Rich snippets (**LocalBusiness**) remain future work.
 - Post **6.12A:** User contour audit, Business Web owner contour, Admin Web contour, Admin Catalog/CMS, centralized Home config, Catalog Import, QalaGo AI, remaining Consumer Web, production monetization, analytics UX, role-based E2E, security/legal/release — **not** current track unless explicitly staged.
+
+## Product roadmap order (canonical)
+
+```
+AOP — CLOSED
+  ↓
+BIZ — functional Business Web / ownership / claim (ACTIVE)
+  ↓
+BIZ CLOSED
+  ↓
+UXA.0 → UXA.13 — QalaGo Backoffice UI/UX finalization (Admin Web + Business Web) — REQUIRED, not optional polish
+  ↓
+Consumer Web UI/UX pass
+  ↓
+Mobile UI/UX pass
+  ↓
+Production / security / pre-VPS readiness gates
+  ↓
+VPS / production deployment
+```
+
+**VPS / production** is **not** implied ready when AOP, BIZ, or UXA docs exist alone — all gates above apply.
+
+| Track | Status |
+|-------|--------|
+| **AOP** | **CLOSED** |
+| **BIZ** | **ACTIVE** (current) |
+| **UXA** | **PLANNED / REQUIRED — NOT STARTED** |
+| **Consumer Web UI/UX** | **PLANNED** (after backoffice functional + UXA) |
+| **Mobile UI/UX** | **PLANNED** |
+| **VPS / production** | **BLOCKED** until readiness gates |
+
+## UXA — QalaGo Backoffice UI/UX finalization (mandatory pre-production)
+
+**Scope:** **`apps/admin-web`** + **`apps/business-web`**. Shared **QalaGo Backoffice** design system; **different** information density (Admin = dense/operational; Business = owner-friendly/guided). **RBAC clarity must not be sacrificed** for simplification.
+
+**Brand (unchanged):** QalaGo accent historically includes **`#00A8D6`** (`--blue`); no rebranding in roadmap docs.
+
+**Do not start UXA** before **BIZ CLOSED** unless Chief Orchestrator / explicit approval.
+
+| Stage | Scope |
+|-------|--------|
+| **UXA.0** | Full read-only UI/UX audit — routes, screenshots inventory, patterns, obsolete UI, desktop/tablet, a11y baseline, RU/KK parity, icon inventory |
+| **UXA.1** | Backoffice design system — typography, spacing, radius, borders, surfaces, shadows, colors, semantic colors, focus/hover/disabled, component sizing |
+| **UXA.2** | App shell / navigation — sidebar, header, titles, breadcrumbs, account menu, city/business context, active nav, collapse if needed |
+| **UXA.3** | QalaGo Backoffice icon system — SVG/components, 20/24px, consistent stroke/fill, **no emoji nav icons**, shared Admin/Business semantics, a11y labels (**implementation later — not in roadmap commit**) |
+| **UXA.4** | Tables / filters / search — columns, sort, filters, pagination, row actions, empty states, tablet fallback |
+| **UXA.5** | Forms — grouping, labels, validation, errors, save/cancel, dirty state, destructive actions, **success feedback** (incl. catalog/core save debt) |
+| **UXA.6** | BusinessLocation / geo UX — location cards, primary badge, map/coords, city selector, hours/contacts, set-primary/delete, read-only permission states (**domain rules unchanged**) |
+| **UXA.7** | Status badges + confirmations — PENDING/ACTIVE/BLOCKED, plan/claim/application/payment/campaign; toast/alert/modal/destructive UX |
+| **UXA.8** | Dashboards / cards / statistics — Admin operational overview; Business owner overview (**no invented backend metrics in UXA docs**) |
+| **UXA.9** | System states — loading, skeleton, empty, error, permission denied, 404/500, offline, success, no results |
+| **UXA.10** | Responsive backoffice — desktop/laptop/tablet; Admin need not mimic consumer mobile; Business Web usable on tablet/smaller widths |
+| **UXA.11** | Accessibility — keyboard, focus, semantics, contrast, labels, modal focus, ARIA where applicable |
+| **UXA.12** | RU/KK visual QA — expansion, clipping, nav widths, forms/tables/dialogs (**not** KZ-C legal scope) |
+| **UXA.13** | Physical browser QA + closure — SUPER_ADMIN, ADMIN, CITY_ADMIN, OWNER, MANAGER → **UXA PASS — QALAGO BACKOFFICE UI/UX FINALIZED** |
+
+### UXA — known UI/UX debt (carry-in from AOP / BIZ audits)
+
+Not functional AOP defects (**AOP remains CLOSED**):
+
+- Weak or absent **save-success** feedback (catalog/core and elsewhere)
+- Audit UI shows **technical enum** action labels; filters for new actions incomplete
+- **Featured/plan** controls remain on legacy dashboard surface vs catalog detail
+- Inconsistent **empty / loading / error** states may exist across backoffice
+- **Custom QalaGo backoffice icon system** not implemented (emoji/icons mixed today)
+- **Admin Web** / **Business Web** final UI/UX pass **not performed**
+- Responsive + **a11y** physical QA still required
+
+### UXA.3 icon semantics (future)
+
+Dashboard, businesses, catalog, categories, locations, applications, ownership claims, moderation, users/staff, team/managers, reviews, promotions, services/items, media, plans, payments, advertising, statistics, audit, notifications, settings, help — component-based, reusable across Admin/Business where semantics match.
 
 ## Context maintenance
 
