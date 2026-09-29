@@ -368,7 +368,27 @@ Also: `maxPromotionsCreatedPerDay`, `maxPromotionDurationDays`, support/moderati
 
 ---
 
-## 19. Deferred (BIZ.8+)
+## 19. Owner-plane security regression (BIZ.8)
+
+**Authority model:** `BusinessMembership` + **ACTIVE** status + `BusinessPermission` via **`BusinessAccessService`**. Global `UserRole` alone does **not** grant owner-plane access (legacy `UserRole.BUSINESS` requires owner membership or legacy `ownerId` fallback).
+
+**Automated regression:** `owner-plane-security-regression.spec.ts` (umbrella) + domain `*-content-access.spec.ts`, `business-access.service.spec.ts`, `businesses-membership.spec.ts`, team/invite/claim specs, monetization adversarial specs, Business Web `owner-plane-security.test.ts`, BIZ.2 session tests.
+
+**BIZ.8 findings (no CRITICAL/HIGH code defects fixed — tests/docs):**
+
+| Severity | Finding | Status |
+|----------|---------|--------|
+| INFO | Public business DTOs may still expose `ownerId` (KZ-C.3 debt) | Documented |
+| INFO | Business Web direct URL to non-`/my` business: UI lacks membership; **API denies** | By design |
+| INFO | Notification deep links route by payload `businessId`; access still enforced on API | By design |
+| LOW | No owner-plane payment `PENDING` dedup (BIZ.7) | Deferred |
+| INFO | Rate limits: review mutation, auth OTP — partial; no platform-wide limiter | Debt |
+
+**Physical browser QA:** not part of BIZ.8 (follows automated gate).
+
+---
+
+## 20. Deferred (BIZ.9+)
 - `ownerId` ↔ ACTIVE OWNER reconciliation after manager promotion.
 - Ownership transfer / recovery beyond claim + manager promotion.
 - Public `ownerId` removal (KZ-C).

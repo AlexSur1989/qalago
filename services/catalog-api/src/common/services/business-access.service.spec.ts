@@ -170,4 +170,30 @@ describe('BusinessAccessService (Stage 5M.2)', () => {
     prisma.business.findUnique.mockResolvedValue(null);
     await expect(service.resolveAccess(user, 'missing')).rejects.toBeInstanceOf(NotFoundException);
   });
+
+  it('USER without membership denied (BIZ.8)', async () => {
+    prisma.business.findUnique.mockResolvedValue(businessOrphanOwner);
+    prisma.businessMembership.findFirst.mockResolvedValue(null);
+    prisma.businessMembership.findUnique.mockResolvedValue(null);
+    await expect(service.resolveAccess(user, businessOrphanOwner.id)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+  });
+
+  it('legacy UserRole.BUSINESS alone does not grant access without membership (BIZ.8)', async () => {
+    const legacyNoRow = {
+      id: 'biz-x',
+      ownerId: 'other-owner',
+      cityId: uralskCityId,
+      categoryId: 'cat-1',
+    };
+    prisma.business.findUnique.mockResolvedValue(legacyNoRow);
+    prisma.businessMembership.findUnique.mockResolvedValue(null);
+    await expect(
+      service.resolveAccess(
+        { id: 'stranger', sub: 'stranger', role: UserRole.BUSINESS, phone: '+9' },
+        legacyNoRow.id,
+      ),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
 });
