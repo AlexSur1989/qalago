@@ -11,7 +11,7 @@ export type AuthUser = {
   isActive?: boolean;
   createdAt?: string;
   managedCityId?: string | null;
-  managedCity?: { slug: string; nameRu: string } | null;
+  managedCity?: { id?: string; slug: string; nameRu: string; nameKk?: string | null } | null;
   authMethods?: UserAuthMethod[];
 };
 

@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-29 — AOP.7H.3 — Admin auth refresh scope enrichment
+
+- **Status:** **AOP.7H.3 PASS — ADMIN AUTH REFRESH PRESERVES STAFF SCOPE**. **AOP.7 physical QA OPEN**.
+- **Starting HEAD:** **`0059d343b4dd5b03c1d5e66c1afde37df83862f5`** (AOP.7H.2).
+- **Checkpoint (commit):** **`6f893de674a612bcb3c4defe080b9510759aa3bb`** — `fix(admin-web): preserve staff scope across auth refresh`.
+- **Summary:** **`useAuth`** cookie-refresh bootstrap no longer sets slim **`/auth/refresh`** user; after any access token, **`loadCanonicalAdminUser`** calls **`GET /users/me`** and **`normalizeAdminAuthUser`** (single **`managedCityId`** from **`managedCity.id`**). CITY_ADMIN location/catalog capabilities survive F5. Backend unchanged. Vitest + **next build** PASS.
+- **Deferred:** **AOP.7** physical F5 verification on AOP7 Test Cafe.
+- **Next:** **AOP.7** physical QA closure.
+
+---
+
 ## 2026-09-29 — AOP.7H.2 — Admin Web capability matrix alignment
 
 - **Status:** **AOP.7H.2 PASS — ADMIN WEB CAPABILITY MATRIX ALIGNED**. **AOP.7 physical QA OPEN**.

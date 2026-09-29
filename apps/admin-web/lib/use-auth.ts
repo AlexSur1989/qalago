@@ -2,8 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { adminApi, AuthUser } from '@/lib/api';
+import { AuthUser } from '@/lib/api';
 import { canAccessAdminWeb } from '@/lib/rbac';
+import {
+  clearAdminAuthSession,
+  loadCanonicalAdminUser,
+} from '@/lib/admin-auth-session';
 import {
   clearWebAccessToken,
   getWebAccessToken,
@@ -18,6 +22,12 @@ export function useAuth(redirectTo = '/login') {
 
   useEffect(() => {
     async function bootstrap() {
+      async function rejectSession() {
+        clearWebAccessToken();
+        await clearAdminAuthSession();
+        router.replace(redirectTo);
+      }
+
       let access = getWebAccessToken();
       if (!access) {
         try {
@@ -27,18 +37,12 @@ export function useAuth(redirectTo = '/login') {
             return;
           }
           const data = (await res.json()) as { accessToken: string; user: AuthUser };
-          access = data.accessToken;
-          setWebAccessToken(access);
           if (!canAccessAdminWeb(data.user.role)) {
-            await fetch('/api/auth/logout', { method: 'POST' });
-            clearWebAccessToken();
-            router.replace(redirectTo);
+            await rejectSession();
             return;
           }
-          setToken(access);
-          setUser(data.user);
-          setReady(true);
-          return;
+          access = data.accessToken;
+          setWebAccessToken(access);
         } catch {
           router.replace(redirectTo);
           return;
@@ -46,21 +50,13 @@ export function useAuth(redirectTo = '/login') {
       }
 
       setToken(access);
-      adminApi
-        .getMe(access)
-        .then((me) => {
-          if (!canAccessAdminWeb(me.role)) {
-            clearWebAccessToken();
-            router.replace(redirectTo);
-            return;
-          }
-          setUser(me);
-        })
-        .catch(async () => {
-          clearWebAccessToken();
-          router.replace(redirectTo);
-        })
-        .finally(() => setReady(true));
+      const loaded = await loadCanonicalAdminUser(access);
+      if (!loaded.ok) {
+        await rejectSession();
+        return;
+      }
+      setUser(loaded.user);
+      setReady(true);
     }
 
     void bootstrap();
@@ -68,7 +64,7 @@ export function useAuth(redirectTo = '/login') {
 
   async function logout() {
     clearWebAccessToken();
-    await fetch('/api/auth/logout', { method: 'POST' });
+    await clearAdminAuthSession();
     router.push('/login');
   }
 

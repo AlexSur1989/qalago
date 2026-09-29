@@ -62,7 +62,8 @@
 | **AOP.6** | **PASS — ADMIN CATALOG FULL AUTOMATED REGRESSION VERIFIED** — AOP.0–5 integrated gate |
 | **AOP.7H** | **PASS — ADMIN HIERARCHY / DEV LOGIN HARDENED** — SUPER→ADMIN→CITY_ADMIN; lifecycle **PRIMARY-city**; featured/plan **SUPER+ADMIN**; DEV login UI gated; audit nav **`AUDIT_VIEW`** |
 | **AOP.7H.1** | **PASS — CITY_ADMIN LOCATION UI ALIGNED WITH BACKEND RBAC** (superseded for scope resolution by **7H.2**) |
-| **AOP.7H.2** | **PASS — ADMIN WEB CAPABILITY MATRIX ALIGNED** — decoupled brand vs location capabilities; `managedCity.id`/slug scope; **AOP.7 physical QA OPEN** |
+| **AOP.7H.2** | **PASS — ADMIN WEB CAPABILITY MATRIX ALIGNED** — decoupled brand vs location capabilities |
+| **AOP.7H.3** | **PASS — ADMIN AUTH REFRESH PRESERVES STAFF SCOPE** — `/users/me` after refresh; **AOP.7 physical QA OPEN** |
 | **Next** | **AOP.7** physical Admin catalog QA; **KZ-C.1F** notification QA; **mass catalog population BLOCKED**; do not auto-start **KZ-C.2** |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
