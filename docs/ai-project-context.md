@@ -66,6 +66,7 @@
 | **AOP.7H.3** | **PASS — ADMIN AUTH REFRESH PRESERVES STAFF SCOPE** — `/users/me` after refresh |
 | **AOP.7** | **PASS — ADMIN WEB PHYSICAL QA VERIFIED** — manual QA on **`aop7-test-cafe`**; F5 stable for SUPER/ADMIN/CITY_ADMIN |
 | **AOP (umbrella)** | **PASS — ADMIN CATALOG / OPERATIONS PLANE FINALIZED** — **AOP.0–AOP.7** complete |
+| **Admin hotfix** | **Business managers UI (OWNER→MANAGER in catalog) TEMPORARILY OFF** — **`NEXT_PUBLIC_QALAGO_ADMIN_BUSINESS_TEAM`** default unset/false; **Business Web `/business/[id]/team` remains active** |
 | **BIZ.0** | **PASS — BUSINESS WEB / OWNERSHIP READ-ONLY AUDIT** (transcript; no docs commit) |
 | **BIZ.1** | **PASS — OWNERSHIP / CLAIM CONTRACT FINALIZED** — **`docs/architecture/business-web-ownership.md`** + claim hardening |
 | **BIZ.2** | **PASS — BUSINESS WEB SESSION / CABINET ACCESS HARDENED** — canonical `/users/me` after refresh; membership-only cabinet gate; business selection hardening |

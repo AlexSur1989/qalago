@@ -67,6 +67,14 @@ const labels = {
     localeRu: 'RU',
     localeKk: 'KK',
     linkContent: 'Контент и акции',
+    sectionTeam: 'Менеджеры заведения',
+    linkTeam: 'Управление командой',
+    pageTeamTitle: 'Команда заведения',
+    teamPanelHint:
+      'Администрирование менеджеров заведения (OWNER → MANAGER). Владельцы по-прежнему управляют командой в Business Web.',
+    teamFeatureUnavailableTitle: 'Раздел временно недоступен',
+    teamFeatureUnavailableHint:
+      'Управление менеджерами заведения в Admin Web отключено. Включите NEXT_PUBLIC_QALAGO_ADMIN_BUSINESS_TEAM=true для разработки.',
     statusPending: 'На модерации',
     statusActive: 'Активно',
     statusBlocked: 'Заблокировано',
@@ -142,6 +150,14 @@ const labels = {
     localeRu: 'RU',
     localeKk: 'KK',
     linkContent: 'Контент пен акциялар',
+    sectionTeam: 'Заведение менеджерлері',
+    linkTeam: 'Команданы басқару',
+    pageTeamTitle: 'Заведение командасы',
+    teamPanelHint:
+      'Заведение менеджерлерін әкімшілік (OWNER → MANAGER). Иелер командасын Business Web арқылы басқара береді.',
+    teamFeatureUnavailableTitle: 'Бөлім уақытша қолжетімсіз',
+    teamFeatureUnavailableHint:
+      'Admin Web-те менеджерлерді басқару өшірілген. Әзірлеу үшін NEXT_PUBLIC_QALAGO_ADMIN_BUSINESS_TEAM=true қойыңыз.',
     statusPending: 'Модерацияда',
     statusActive: 'Белсенді',
     statusBlocked: 'Блокталған',

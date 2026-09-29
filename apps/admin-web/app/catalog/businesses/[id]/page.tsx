@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { CatalogLocationsManager } from '@/components/catalog/catalog-locations-manager';
+import { CatalogBusinessTeamPanel } from '@/components/catalog/catalog-business-team-panel';
+import { adminBusinessTeamEnabled } from '@/lib/admin-feature-flags';
 import { useCatalogContext } from '@/components/catalog/catalog-layout-client';
 import { adminCatalogApi, type AdminCatalogBusinessDetail } from '@/lib/admin-catalog-api';
 import {
@@ -189,9 +191,16 @@ export default function CatalogBusinessDetailPage() {
     <section>
       <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <h1 style={{ margin: 0 }}>{detail.title}</h1>
-        <Link href={`/dashboard/businesses/${detail.id}/content`} className="btn btn-ghost btn-sm">
-          {adminCatalogLabel(locale, 'linkContent')}
-        </Link>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <Link href={`/dashboard/businesses/${detail.id}/content`} className="btn btn-ghost btn-sm">
+            {adminCatalogLabel(locale, 'linkContent')}
+          </Link>
+          {adminBusinessTeamEnabled() && (
+            <Link href={`/catalog/businesses/${detail.id}/team`} className="btn btn-ghost btn-sm">
+              {adminCatalogLabel(locale, 'linkTeam')}
+            </Link>
+          )}
+        </div>
       </div>
 
       <div className="card" style={{ marginTop: 16 }}>
@@ -298,6 +307,8 @@ export default function CatalogBusinessDetailPage() {
           </div>
         )}
       </div>
+
+      <CatalogBusinessTeamPanel businessId={detail.id} locale={locale} showRouteLink />
 
       <div style={{ marginTop: 16 }}>
         <CatalogLocationsManager

@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-30 — ADMIN HOTFIX — Business managers UI temporarily feature-flagged off
+
+- **Status:** **ADMIN HOTFIX PASS — BUSINESS MANAGERS UI TEMPORARILY FEATURE-FLAGGED OFF**. **AOP remains CLOSED**. **BIZ.9 physical QA REMAINS OPEN**. **BIZ.1–BIZ.8 remain CLOSED**.
+- **Starting HEAD:** **`b6a3f73e0f574ea7093d68097dc326aecaf22d7c`**.
+- **Checkpoint (commit):** **`c405127`** — `feat(admin-web): gate business managers ui`.
+- **Summary:** Admin Web **`NEXT_PUBLIC_QALAGO_ADMIN_BUSINESS_TEAM`** (default **off** via **`adminBusinessTeamEnabled()`**). Catalog business detail team link/panel and **`/catalog/businesses/[id]/team`** gated; direct URL shows unavailable state when disabled. **Platform staff RBAC / users nav unchanged.** **Business Web team unchanged.** **No backend / DB / membership changes.**
+- **Deferred:** Full staff-side business-manager admin UX when flag re-enabled; BIZ.9 physical QA.
+- **Next:** Continue BIZ.9 closure; re-enable Admin business team UI when owner/team UX finalized.
+
+---
+
 ## 2026-09-29 — BIZ.9 HOTFIX 4 — Forbidden Business Web routes fail closed in UI
 
 - **Status:** **BIZ.9 HOTFIX 4 PASS — FORBIDDEN BUSINESS ROUTES FAIL CLOSED IN UI**. **BIZ.9 physical QA REMAINS OPEN**. **BIZ.1–BIZ.8 remain CLOSED**. **AOP remains CLOSED**.
