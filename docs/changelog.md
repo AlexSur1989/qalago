@@ -10,7 +10,7 @@
 
 - **Status:** **BIZ.4 PASS — BUSINESS PROFILE / LOCATION MODEL CANONICALIZED**. **BIZ.1–BIZ.3 remain CLOSED**. **AOP remains CLOSED**.
 - **Starting HEAD:** **`03db32a4a79c363a28426ad6238811d4e03eaf0c`**.
-- **Checkpoint (commit):** *(this commit)* — `fix(business-web): canonicalize profile and locations`.
+- **Checkpoint (commit):** **`8dfd9fb45af88cbb5f34f34f3d066aae04ee8a8f`** — `fix(business-web): canonicalize profile and locations`.
 - **Summary:** Business Web profile **`buildProfileUpdatePayload`** — brand fields only; primary physical via **`buildPrimaryLocationPhysicalPatch`** + **`PATCH …/locations/:id`**. Profile load uses **primary BusinessLocation** for address/map. Docs: **`business-location.md`** § BIZ.4, **`business-web-ownership.md`** §15. Backend legacy business PATCH physical keys retained for compatibility. **6.12A / ownership unchanged.**
 - **Deferred:** Remove legacy physical keys from **`PATCH /businesses/:id`** API (wider contract); branch DELETE UI; backend-only clients still on mirror PATCH.
 - **Next:** BIZ umbrella closure; UXA blocked until BIZ CLOSED.
