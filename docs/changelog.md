@@ -10,7 +10,7 @@
 
 - **Status:** **BIZ.8 PASS — BUSINESS OWNER PLANE SECURITY REGRESSION CLEAN**. **BIZ.1–BIZ.7 remain CLOSED**. **AOP remains CLOSED**. **KZ-C.1 NOT closed**.
 - **Starting HEAD:** **`e848bab533428dc15389037b5523678449e0367e`**.
-- **Checkpoint (commit):** *(pending)* — `test(security): harden business owner plane access`.
+- **Checkpoint (commit):** **`5ed3e0f0cef639b15f217efc857f57bed0fd0528`** — `test(security): harden business owner plane access`.
 - **Summary:** Umbrella **`owner-plane-security-regression.spec.ts`**, **`business-location-security.spec.ts`**, extended **`business-access.service.spec.ts`**, Business Web **`owner-plane-security.test.ts`**. Security summary **§19** ownership doc. **No product/auth redesign**; **no CRITICAL/HIGH** defects requiring code fix in scope.
 - **Deferred:** Physical browser QA; public `ownerId` (KZ-C.3); broad rate-limit platform.
 - **Next:** BIZ umbrella closure; physical QA; UXA blocked until BIZ CLOSED.
