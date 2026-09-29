@@ -35,3 +35,51 @@ export function resolveSelectedBusinessRowId(
   const match = businesses.find((b) => b.id === storedId);
   return match?.id ?? businesses[0].id;
 }
+
+/** Resolve cabinet selection only after auth bootstrap is authoritative (BIZ.9 HOTFIX 3). */
+export function resolveSelectedMyBusinessItemWhenReady(
+  ready: boolean,
+  items: MyBusinessItem[],
+  storedId: string | null | undefined = readStoredSelectedBusinessId(),
+): MyBusinessItem | null {
+  if (!ready || items.length === 0) return null;
+  return resolveSelectedMyBusinessItem(items, storedId);
+}
+
+/** Normalize `localStorage` only when `ready`; preserve stored id while `/my` is loading. */
+export function syncSelectedBusinessStorageForMyItems(
+  ready: boolean,
+  items: MyBusinessItem[],
+): void {
+  if (typeof window === 'undefined') return;
+  if (!ready) return;
+  if (items.length === 0) {
+    localStorage.removeItem(SELECTED_BUSINESS_KEY);
+    return;
+  }
+  const id = resolveSelectedBusinessId(items, readStoredSelectedBusinessId());
+  if (id) {
+    localStorage.setItem(SELECTED_BUSINESS_KEY, id);
+  } else {
+    localStorage.removeItem(SELECTED_BUSINESS_KEY);
+  }
+}
+
+/** Row-list variant for pages using `BusinessRow[]` without full `MyBusinessItem` context. */
+export function syncSelectedBusinessStorageForRows(
+  ready: boolean,
+  businesses: { id: string }[],
+): void {
+  if (typeof window === 'undefined') return;
+  if (!ready) return;
+  if (businesses.length === 0) {
+    localStorage.removeItem(SELECTED_BUSINESS_KEY);
+    return;
+  }
+  const id = resolveSelectedBusinessRowId(businesses, readStoredSelectedBusinessId());
+  if (id) {
+    localStorage.setItem(SELECTED_BUSINESS_KEY, id);
+  } else {
+    localStorage.removeItem(SELECTED_BUSINESS_KEY);
+  }
+}

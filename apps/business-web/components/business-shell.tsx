@@ -15,8 +15,10 @@ import {
 import {
   readStoredSelectedBusinessId,
   resolveSelectedBusinessRowId,
+  syncSelectedBusinessStorageForRows,
 } from '@/lib/business-selection';
 import { useBusinessAccess } from '@/lib/use-business-access';
+import { useAuth } from '@/lib/use-auth';
 import { getWebAccessToken } from '@/lib/web-auth-token';
 import { businessInitials, statusLabel } from '@/lib/business-utils';
 
@@ -302,23 +304,16 @@ function NavLink({
 }
 
 export function useSelectedBusiness(businesses: BusinessRow[]): BusinessRow | null {
+  const { ready } = useAuth();
+
   const selectedId = useMemo(() => {
-    if (businesses.length === 0) return null;
+    if (!ready || businesses.length === 0) return null;
     return resolveSelectedBusinessRowId(businesses, readStoredSelectedBusinessId());
-  }, [businesses]);
+  }, [ready, businesses]);
 
   useEffect(() => {
-    if (businesses.length === 0) {
-      localStorage.removeItem(SELECTED_BUSINESS_KEY);
-      return;
-    }
-    const id = resolveSelectedBusinessRowId(businesses, readStoredSelectedBusinessId());
-    if (id) {
-      localStorage.setItem(SELECTED_BUSINESS_KEY, id);
-    } else {
-      localStorage.removeItem(SELECTED_BUSINESS_KEY);
-    }
-  }, [businesses]);
+    syncSelectedBusinessStorageForRows(ready, businesses);
+  }, [ready, businesses]);
 
   if (!selectedId) return null;
   return businesses.find((b) => b.id === selectedId) ?? null;

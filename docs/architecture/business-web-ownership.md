@@ -220,7 +220,7 @@ Notifications: `OWNERSHIP_CLAIM_APPROVED` / `REJECTED`, `BUSINESS_APPLICATION_AP
 | **Cabinet access** | `hasBusinessCabinetAccess` ⇔ **≥1** item in `/businesses/my` (backend already returns ACTIVE OWNER/MANAGER + documented `ownerId` legacy). |
 | **No businesses** | Authenticated users (any role) → **onboarding** (`/onboarding`), not empty dashboard; staff may log in but have no owner plane. |
 | **Post-login** | `resolvePostLoginDestination`: safe redirect param → else dashboard if cabinet access → else onboarding. |
-| **Business switcher** | `SELECTED_BUSINESS_KEY` in `localStorage` must match an id in current `/my`; stale/revoked ids fall back to first accessible; selection never authorizes API calls by itself. |
+| **Business switcher** | `SELECTED_BUSINESS_KEY` in `localStorage` must match an id in current `/my`; stale/revoked ids fall back to first accessible; selection never authorizes API calls by itself. **While auth is not `ready` or `/my` is still loading (`items=[]`), do not clear or normalize storage** — only when **`ready && items.length === 0`** (clear) or **`ready && items.length > 0`** (preserve valid stored id, normalize stale). |
 | **Membership status** | **ACTIVE** only in `/my`; INVITED/SUSPENDED/REVOKED excluded server-side (no client inventing states). |
 
 Implementation: `apps/business-web/lib/business-auth-session.ts`, `business-cabinet-access.ts`, `business-selection.ts`, `use-auth.ts`, `login-session.ts`, `use-business-access.ts`.

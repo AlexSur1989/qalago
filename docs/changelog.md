@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-29 — BIZ.9 HOTFIX 3 — Business switcher selection preserved through bootstrap
+
+- **Status:** **BIZ.9 HOTFIX 3 PASS — BUSINESS SWITCHER SELECTION PRESERVED THROUGH BOOTSTRAP**. **BIZ.9 physical QA REMAINS OPEN**. **BIZ.1–BIZ.8 remain CLOSED**. **AOP remains CLOSED**.
+- **Starting HEAD:** **`5d0080a82eb9c30f9861f4e5d34da83244c2d494`**.
+- **Checkpoint (commit):** **`5cc1a678634cf923719f0f61340d28f96a423756`** — `fix(business-web): preserve selected business during bootstrap`.
+- **Summary:** **`useBusinessAccess`** / **`useSelectedBusiness`** no longer **`removeItem(SELECTED_BUSINESS_KEY)`** when **`items`** / **`businesses`** are temporarily empty during bootstrap. Shared **`syncSelectedBusinessStorageForMyItems`** / **`ForRows`** + **`resolveSelectedMyBusinessItemWhenReady`**. Fixes OWNER switcher wipe → **`items[0]`** fallback after **`selectBusiness`**. Tests: **`business-selection-bootstrap.test.ts`**.
+- **Deferred:** Full BIZ.9 physical QA (owner switcher + manager sidebar route matrix); collapsed-sidebar switcher UX.
+- **Next:** Physical re-verify **`+77000000002`** switch Aktobe ↔ Bar Code 51; continue BIZ.9 closure.
+
+---
+
 ## 2026-09-29 — BIZ.9 HOTFIX 2 — Manager sidebar permission filtering centralized
 
 - **Status:** **BIZ.9 HOTFIX 2 PASS — MANAGER SIDEBAR PERMISSION FILTERING CENTRALIZED**. **BIZ.9 physical QA REMAINS OPEN**. **BIZ.1–BIZ.8 remain CLOSED**. **AOP remains CLOSED**.
