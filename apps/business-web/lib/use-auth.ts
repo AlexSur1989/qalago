@@ -4,10 +4,17 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthUser, MyBusinessItem, ownerApi } from '@/lib/api';
 import {
+  clearBusinessAuthSession,
+  loadCanonicalBusinessUser,
+} from '@/lib/business-auth-session';
+import { hasBusinessCabinetAccess } from '@/lib/business-cabinet-access';
+import {
   clearWebAccessToken,
   getWebAccessToken,
   setWebAccessToken,
 } from '@/lib/web-auth-token';
+
+export { hasBusinessCabinetAccess };
 
 export function useAuth(redirectTo = '/login') {
   const router = useRouter();
@@ -18,6 +25,25 @@ export function useAuth(redirectTo = '/login') {
 
   useEffect(() => {
     async function bootstrap() {
+      async function rejectSession() {
+        clearWebAccessToken();
+        await clearBusinessAuthSession();
+        router.replace(redirectTo);
+      }
+
+      async function completeBootstrap(access: string) {
+        const loaded = await loadCanonicalBusinessUser(access);
+        if (!loaded.ok) {
+          await rejectSession();
+          return;
+        }
+        setToken(access);
+        setUser(loaded.user);
+        const res = await ownerApi.listMyBusinesses(access);
+        setItems(res.items);
+        setReady(true);
+      }
+
       let access = getWebAccessToken();
       if (!access) {
         try {
@@ -29,31 +55,14 @@ export function useAuth(redirectTo = '/login') {
           const data = (await res.json()) as { accessToken: string; user: AuthUser };
           access = data.accessToken;
           setWebAccessToken(access);
-          setToken(access);
-          setUser(data.user);
-          const businesses = await ownerApi.listMyBusinesses(access);
-          setItems(businesses.items);
-          setReady(true);
-          return;
+          await completeBootstrap(access);
         } catch {
           router.replace(redirectTo);
-          return;
         }
+        return;
       }
 
-      setToken(access);
-      ownerApi
-        .getMe(access)
-        .then(async (me) => {
-          setUser(me);
-          const res = await ownerApi.listMyBusinesses(access!);
-          setItems(res.items);
-        })
-        .catch(async () => {
-          clearWebAccessToken();
-          router.replace(redirectTo);
-        })
-        .finally(() => setReady(true));
+      await completeBootstrap(access);
     }
 
     void bootstrap();
@@ -61,7 +70,7 @@ export function useAuth(redirectTo = '/login') {
 
   async function logout() {
     clearWebAccessToken();
-    await fetch('/api/auth/logout', { method: 'POST' });
+    await clearBusinessAuthSession();
     router.push('/login');
   }
 
@@ -81,16 +90,4 @@ export function useAuth(redirectTo = '/login') {
     logout,
     refreshBusinesses,
   };
-}
-
-/** True when user can open business cabinet (legacy role or active membership). */
-export function hasBusinessCabinetAccess(
-  user: AuthUser | null,
-  items: MyBusinessItem[],
-): boolean {
-  if (!user) return false;
-  if (user.role === 'ADMIN' || user.role === 'CITY_ADMIN' || user.role === 'BUSINESS') {
-    return true;
-  }
-  return items.length > 0;
 }

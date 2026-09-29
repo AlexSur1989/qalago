@@ -1,9 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   businessWebAnyLoginMethodConfigured,
   businessWebAppleAuthConfigured,
   businessWebAppleAuthEnabled,
-  businessWebDevLoginEnabled,
   businessWebGoogleAuthConfigured,
   businessWebGoogleAuthEnabled,
   businessWebMockPlanCheckoutEnabled,
@@ -12,7 +11,14 @@ import {
 } from './auth-config';
 
 describe('auth-config', () => {
-  it('businessWebDevLoginEnabled defaults to false', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('businessWebDevLoginEnabled defaults to false', async () => {
+    vi.stubEnv('NEXT_PUBLIC_QALAGO_DEV_LOGIN', '');
+    vi.resetModules();
+    const { businessWebDevLoginEnabled } = await import('./auth-config');
     expect(businessWebDevLoginEnabled).toBe(false);
   });
 

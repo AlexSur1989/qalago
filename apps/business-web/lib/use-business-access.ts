@@ -7,6 +7,7 @@ import {
   MyBusinessItem,
   SELECTED_BUSINESS_KEY,
 } from '@/lib/api';
+import { resolveSelectedBusinessId } from '@/lib/business-selection';
 import { useAuth } from '@/lib/use-auth';
 
 export function useBusinessAccess() {
@@ -19,9 +20,12 @@ export function useBusinessAccess() {
       return;
     }
     const stored = localStorage.getItem(SELECTED_BUSINESS_KEY);
-    const match = items.find((item) => item.business.id === stored);
-    const id = match?.business.id ?? items[0].business.id;
-    localStorage.setItem(SELECTED_BUSINESS_KEY, id);
+    const id = resolveSelectedBusinessId(items, stored);
+    if (id) {
+      localStorage.setItem(SELECTED_BUSINESS_KEY, id);
+    } else {
+      localStorage.removeItem(SELECTED_BUSINESS_KEY);
+    }
     setSelectedId(id);
   }, [items]);
 

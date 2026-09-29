@@ -14,6 +14,16 @@ describe('resolvePostLoginDestination', () => {
     vi.clearAllMocks();
   });
 
+  it('redirects ADMIN without membership to onboarding (BIZ.2)', async () => {
+    vi.mocked(ownerApi.listMyBusinesses).mockResolvedValue({ items: [] });
+    const result = await resolvePostLoginDestination(
+      'jwt',
+      { id: 'a1', role: 'ADMIN', name: null, phone: null },
+      null,
+    );
+    expect(result.path).toBe('/onboarding');
+  });
+
   it('redirects social USER without membership to onboarding', async () => {
     vi.mocked(ownerApi.listMyBusinesses).mockResolvedValue({ items: [] });
     const result = await resolvePostLoginDestination('jwt', {

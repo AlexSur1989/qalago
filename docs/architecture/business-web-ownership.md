@@ -182,7 +182,7 @@ Notifications: `OWNERSHIP_CLAIM_APPROVED` / `REJECTED`, `BUSINESS_APPLICATION_AP
 | **Unsafe if alone** | Treating global `BUSINESS` role as proof of ownership without membership/`/my` |
 | **Migration candidate** | Retire global role when all clients use membership; **not in BIZ.1** |
 
-Business Web cabinet gate that treats `UserRole.BUSINESS` like ownership is **BIZ.2** debt (see BIZ.0 audit).
+**BIZ.2:** Business Web cabinet access is **membership-driven only** (`GET /businesses/my` items). Global `UserRole` (including legacy `BUSINESS` and staff roles) **does not** grant owner cabinet without owner-plane membership rows.
 
 ---
 
@@ -211,9 +211,26 @@ Business Web cabinet gate that treats `UserRole.BUSINESS` like ownership is **BI
 
 ---
 
-## 13. Deferred (BIZ.2+)
+## 13. Business Web session & cabinet (BIZ.2)
 
-- Business Web session canonical profile / staff cabinet gate.
+| Concern | Rule |
+|---------|------|
+| **Bootstrap** | After access token (memory or `POST /api/auth/refresh`), always **`GET /users/me`** → normalize **`AuthUser`** → then **`GET /businesses/my`**. Never mark session **ready** from slim `refresh.user` alone. |
+| **`/users/me` failure** | Clear tokens/session; redirect login — no partial user state. |
+| **Cabinet access** | `hasBusinessCabinetAccess` ⇔ **≥1** item in `/businesses/my` (backend already returns ACTIVE OWNER/MANAGER + documented `ownerId` legacy). |
+| **No businesses** | Authenticated users (any role) → **onboarding** (`/onboarding`), not empty dashboard; staff may log in but have no owner plane. |
+| **Post-login** | `resolvePostLoginDestination`: safe redirect param → else dashboard if cabinet access → else onboarding. |
+| **Business switcher** | `SELECTED_BUSINESS_KEY` in `localStorage` must match an id in current `/my`; stale/revoked ids fall back to first accessible; selection never authorizes API calls by itself. |
+| **Membership status** | **ACTIVE** only in `/my`; INVITED/SUSPENDED/REVOKED excluded server-side (no client inventing states). |
+
+Implementation: `apps/business-web/lib/business-auth-session.ts`, `business-cabinet-access.ts`, `business-selection.ts`, `use-auth.ts`, `login-session.ts`, `use-business-access.ts`.
+
+Pattern aligned with Admin Web **AOP.7H.3** (canonical profile after refresh); ownership/claim semantics unchanged from **BIZ.1**.
+
+---
+
+## 14. Deferred (BIZ.3+)
+
 - Brand-level geo fields in owner profile PATCH (6.12A violation risk).
 - `ownerId` ↔ ACTIVE OWNER reconciliation after manager promotion.
 - Ownership transfer / recovery beyond claim + manager promotion.

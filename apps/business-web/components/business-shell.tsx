@@ -13,6 +13,7 @@ import {
   type BusinessNavItem,
   type NavId,
 } from '@/lib/business-access';
+import { resolveSelectedBusinessRowId } from '@/lib/business-selection';
 import { getWebAccessToken } from '@/lib/web-auth-token';
 import { businessInitials, statusLabel } from '@/lib/business-utils';
 
@@ -307,9 +308,12 @@ export function useSelectedBusiness(businesses: BusinessRow[]): BusinessRow | nu
       return;
     }
     const stored = localStorage.getItem(SELECTED_BUSINESS_KEY);
-    const match = businesses.find((b) => b.id === stored);
-    const id = match?.id ?? businesses[0].id;
-    localStorage.setItem(SELECTED_BUSINESS_KEY, id);
+    const id = resolveSelectedBusinessRowId(businesses, stored);
+    if (id) {
+      localStorage.setItem(SELECTED_BUSINESS_KEY, id);
+    } else {
+      localStorage.removeItem(SELECTED_BUSINESS_KEY);
+    }
     setSelectedId(id);
   }, [businesses]);
 

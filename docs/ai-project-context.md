@@ -68,9 +68,10 @@
 | **AOP (umbrella)** | **PASS — ADMIN CATALOG / OPERATIONS PLANE FINALIZED** — **AOP.0–AOP.7** complete |
 | **BIZ.0** | **PASS — BUSINESS WEB / OWNERSHIP READ-ONLY AUDIT** (transcript; no docs commit) |
 | **BIZ.1** | **PASS — OWNERSHIP / CLAIM CONTRACT FINALIZED** — **`docs/architecture/business-web-ownership.md`** + claim hardening |
-| **BIZ (track)** | **ACTIVE** — functional owner/onboarding (**BIZ.2+** not started) |
+| **BIZ.2** | **PASS — BUSINESS WEB SESSION / CABINET ACCESS HARDENED** — canonical `/users/me` after refresh; membership-only cabinet gate; business selection hardening |
+| **BIZ (track)** | **ACTIVE** — functional owner/onboarding (**BIZ.3+** as needed); **BIZ.2 closed** |
 | **UXA (track)** | **PLANNED / REQUIRED — NOT STARTED** — mandatory Admin + Business Web UI/UX finalization **after BIZ CLOSED** (see § UXA below) |
-| **Next** | **BIZ.2** (Business Web session/cabinet — not started); **controlled** catalog population; **KZ-C.1F** notification QA; **do not start UXA** until BIZ closes unless explicitly approved |
+| **Next** | **BIZ.3+** / profile geo (**BIZ.4**) per roadmap; **controlled** catalog population; **KZ-C.1F** notification QA; **do not start UXA** until BIZ closes unless explicitly approved |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 

@@ -1,0 +1,21 @@
+import type { MyBusinessItem } from './api';
+
+/** Pick a business id from accessible items; ignores stale localStorage ids (BIZ.2). */
+export function resolveSelectedBusinessId(
+  items: MyBusinessItem[],
+  storedId: string | null | undefined,
+): string | null {
+  if (items.length === 0) return null;
+  const match = items.find((item) => item.business.id === storedId);
+  return match?.business.id ?? items[0].business.id;
+}
+
+/** Same rule for BusinessRow lists (shell helper). */
+export function resolveSelectedBusinessRowId(
+  businesses: { id: string }[],
+  storedId: string | null | undefined,
+): string | null {
+  if (businesses.length === 0) return null;
+  const match = businesses.find((b) => b.id === storedId);
+  return match?.id ?? businesses[0].id;
+}
