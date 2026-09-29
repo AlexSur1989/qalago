@@ -10,7 +10,7 @@
 
 - **Status:** **BIZ.6 PASS — OWNER REVIEWS / BUSINESS NOTIFICATIONS HARDENED**. **BIZ.1–BIZ.5 remain CLOSED**. **AOP remains CLOSED**. **KZ-C.1 umbrella NOT closed** (no FCM physical QA in this stage).
 - **Starting HEAD:** **`4ab7e1b5cff293cb2773f0bc397da65212008232`**.
-- **Checkpoint (commit):** *(pending commit SHA)* — `fix(business): harden reviews and notifications`.
+- **Checkpoint (commit):** **`7a5b45f857315c171675a393be32a5ecb9ea3dda`** — `fix(business): harden reviews and notifications`.
 - **Summary:** Owner review list **`GET /reviews/manage/:businessId`** (`REVIEWS_REPLY`; includes moderation-hidden). Business Web reviews + **`/messages`** navigation via **`resolveBusinessNotificationHref`**. Tests: **`reviews-content-access`**, **`business-notification-navigation`**. Docs **§17** ownership + **`api-contracts`**. Reply/plan/IDOR/notification producers verified against existing **`ReviewsService`** contract.
 - **Deferred:** KZ-C.1F inbox/FCM physical QA; UXA polish; optional manage-list pagination.
 - **Next:** BIZ umbrella closure; UXA blocked until BIZ CLOSED.
