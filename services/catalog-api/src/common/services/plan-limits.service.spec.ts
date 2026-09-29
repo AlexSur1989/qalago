@@ -75,6 +75,41 @@ describe('PlanLimitsService', () => {
     expect(basic?.display.publicCode).toBe('BUSINESS');
   });
 
+  it('catalog prices match canonical KZT (BIZ.7)', () => {
+    const byTier = Object.fromEntries(PLAN_CATALOG.map((p) => [p.tier, p.priceKzt]));
+    expect(byTier[BusinessPlanTier.FREE]).toBe(0);
+    expect(byTier[BusinessPlanTier.BASIC]).toBe(4900);
+    expect(byTier[BusinessPlanTier.PREMIUM]).toBe(9900);
+    expect(byTier[BusinessPlanTier.VIP]).toBe(19900);
+  });
+
+  it('downgrade preserves managers but flags overLimit and blocks new invites', async () => {
+    const teamPrisma = {
+      business: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'b1',
+          planTier: BusinessPlanTier.FREE,
+          planExpiresAt: null,
+          isFeatured: false,
+          featuredSlot: null,
+          _count: { images: 0, serviceItems: 0, promotions: 0 },
+        }),
+        update: jest.fn(),
+      },
+      promotion: { count: jest.fn(), findMany: jest.fn(), updateMany: jest.fn() },
+      businessMembership: { count: jest.fn().mockResolvedValue(3) },
+      businessInvitation: { count: jest.fn().mockResolvedValue(0) },
+    } as unknown as PrismaService;
+    const teamService = new PlanLimitsService(teamPrisma, notifications);
+
+    const ctx = await teamService.getBusinessPlanContext('b1');
+    expect(ctx.team.activeManagers).toBe(3);
+    expect(ctx.team.limit).toBe(0);
+    expect(ctx.team.overLimit).toBe(true);
+    expect(ctx.team.canAddManager).toBe(false);
+    await expect(teamService.assertCanAddManager('b1')).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
   it('downgrades expired paid tier to FREE', () => {
     const tier = service.resolveEffectiveTier({
       planTier: BusinessPlanTier.PREMIUM,

@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-29 — BIZ.7 — Business plans / entitlements / billing clarity
+
+- **Status:** **BIZ.7 PASS — BUSINESS PLANS / ENTITLEMENTS / BILLING CONTRACT HARDENED**. **BIZ.1–BIZ.6 remain CLOSED**. **AOP remains CLOSED**. **KZ-C.1 NOT closed**. **No production PSP**.
+- **Starting HEAD:** **`2463549a3df5c3607de2fb98615e6088e76e50b1`**.
+- **Checkpoint (commit):** *(pending)* — `fix(business): harden plans and billing contract`.
+- **Summary:** Documented canonical plan matrix + billing maturity (**§18** ownership). **`GET /businesses/:id/plan/payments`** (`PAYMENTS_VIEW`). Business Web `/plan` payment history. Tests: **`plans-billing-access`**, manager over-limit on downgrade, catalog prices. Mock checkout OWNER-only; view **`PAYMENTS_VIEW`**.
+- **Deferred:** Production PSP; subscription pending/approval states; receipts/invoices; UXA.
+- **Next:** BIZ umbrella closure; UXA blocked until BIZ CLOSED.
+
+---
+
 ## 2026-09-29 — BIZ.6 — Owner reviews / Business notifications hardening
 
 - **Status:** **BIZ.6 PASS — OWNER REVIEWS / BUSINESS NOTIFICATIONS HARDENED**. **BIZ.1–BIZ.5 remain CLOSED**. **AOP remains CLOSED**. **KZ-C.1 umbrella NOT closed** (no FCM physical QA in this stage).

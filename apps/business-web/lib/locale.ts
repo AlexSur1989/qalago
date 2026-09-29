@@ -67,6 +67,9 @@ export type UiLabels = {
   ownerPlanQuotaPromotionsLine: string;
   ownerPlanQuotaPhotosLine: string;
   ownerPlanQuotaPhotosOverLimitPrefix: string;
+  ownerPlanPaymentHistoryTitle: string;
+  ownerPlanPaymentHistoryEmpty: string;
+  ownerPlanMockPaymentTag: string;
   mediaScopeBrand: string;
   mediaScopeBranchesHeading: string;
   mediaScopePrimarySuffix: string;
@@ -1023,6 +1026,9 @@ export type UiLabels = {
     ownerPlanQuotaPromotionsLine:
       'Тариф «${planName}»: активных ${active} / ${max} · срок акции до ${days} дн.',
     ownerPlanQuotaPhotosLine: 'Тариф «${planName}»: ${used} / ${max} фото',
+    ownerPlanPaymentHistoryTitle: 'История оплат тарифа',
+    ownerPlanPaymentHistoryEmpty: 'Платежей пока нет.',
+    ownerPlanMockPaymentTag: 'тест',
     ownerPlanQuotaPhotosOverLimitPrefix:
       'На тарифе «${planName}» публикуется до ${max} фото. Остальные',
     mediaScopeBrand: 'Общие фото',
@@ -1463,6 +1469,9 @@ export type UiLabels = {
     ownerPlanQuotaPromotionsLine:
       'Тариф «${planName}»: белсенді ${active} / ${max} · акция мерзімі ${days} күн.',
     ownerPlanQuotaPhotosLine: 'Тариф «${planName}»: ${used} / ${max} фото',
+    ownerPlanPaymentHistoryTitle: 'Тариф төлемдері тарихы',
+    ownerPlanPaymentHistoryEmpty: 'Төлемдер әлі жоқ.',
+    ownerPlanMockPaymentTag: 'тест',
     ownerPlanQuotaPhotosOverLimitPrefix:
       '«${planName}» тарифінде ${max} фотоға дейін жарияланады. Қалғандары',
     mediaScopeBrand: 'Ортақ фото',

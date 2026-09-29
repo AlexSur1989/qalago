@@ -15,6 +15,8 @@ const ALLOWLIST_FILES = new Set([
   'app/terms/page.tsx',
   'app/privacy/page.tsx',
   'app/account-deletion/page.tsx',
+  /** Mirrors backend plan-display.util public labels (BIZ.7). */
+  'lib/plan-display.ts',
 ]);
 
 const ALLOWLIST_LINE_PATTERNS: RegExp[] = [

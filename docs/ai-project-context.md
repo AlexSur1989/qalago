@@ -73,7 +73,8 @@
 | **BIZ.4** | **PASS — BUSINESS PROFILE / LOCATION MODEL CANONICALIZED** — Business Web BL-only physical writes; primary read from locations |
 | **BIZ.5** | **PASS — BUSINESS CONTENT / PLAN LIMITS HARDENED** — menu/media/promotions matrix; service item create plan gate |
 | **BIZ.6** | **PASS — OWNER REVIEWS / BUSINESS NOTIFICATIONS HARDENED** — manage review list; inbox navigation; reply/notification tests |
-| **BIZ (track)** | **ACTIVE** — **BIZ.6 closed**; BIZ umbrella closure / **UXA** gate per roadmap |
+| **BIZ.7** | **PASS — BUSINESS PLANS / ENTITLEMENTS / BILLING CONTRACT HARDENED** — plan matrix §18; plan payments list; billing access tests |
+| **BIZ (track)** | **ACTIVE** — **BIZ.7 closed**; BIZ umbrella closure / **UXA** gate per roadmap |
 | **UXA (track)** | **PLANNED / REQUIRED — NOT STARTED** — mandatory Admin + Business Web UI/UX finalization **after BIZ CLOSED** (see § UXA below) |
 | **Next** | BIZ track umbrella closure; **controlled** catalog population; **KZ-C.1F** notification physical QA (not closed by BIZ.6); **do not start UXA** until BIZ closes unless explicitly approved |
 

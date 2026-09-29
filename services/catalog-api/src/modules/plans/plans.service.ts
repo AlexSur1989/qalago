@@ -60,6 +60,27 @@ export class PlansService {
     return this.planLimits.getBusinessPlanContext(businessId);
   }
 
+  async listPlanPayments(user: AuthUser, businessId: string) {
+    await this.assertCanView(user, businessId);
+    const items = await this.prisma.planPayment.findMany({
+      where: { businessId },
+      orderBy: [{ paidAt: 'desc' }, { id: 'desc' }],
+      take: 50,
+      select: {
+        id: true,
+        businessId: true,
+        tier: true,
+        amountKzt: true,
+        status: true,
+        isMock: true,
+        paidAt: true,
+        expiresAt: true,
+        createdAt: true,
+      },
+    });
+    return { items };
+  }
+
   async mockCheckout(user: AuthUser, businessId: string, tier: BusinessPlanTier) {
     const nodeEnv = this.config.get<string>('NODE_ENV', 'development');
     const mockEnabled = this.config.get<boolean>('app.mockPlanCheckoutEnabled') === true;

@@ -6,8 +6,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   BusinessPlanStatus,
   PlanCatalogRow,
+  PlanPaymentRow,
   ownerApi,
 } from '@/lib/api';
+import { internalTierToPublicLabel } from '@/lib/plan-display';
 import {
   buildFooterNavItems,
   buildMainNavItems,
@@ -56,6 +58,7 @@ export default function PlanPage() {
   const { token, user, ready, logout, business, access, businesses } = useBusinessAccess();
   const [catalog, setCatalog] = useState<PlanCatalogRow[]>([]);
   const [planStatus, setPlanStatus] = useState<BusinessPlanStatus | null>(null);
+  const [payments, setPayments] = useState<PlanPaymentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [checkoutTier, setCheckoutTier] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -82,9 +85,15 @@ export default function PlanPage() {
       setCatalog(plans);
 
       if (canView) {
-        setPlanStatus(await ownerApi.getBusinessPlan(token, business.id));
+        const [status, paymentList] = await Promise.all([
+          ownerApi.getBusinessPlan(token, business.id),
+          ownerApi.listPlanPayments(token, business.id),
+        ]);
+        setPlanStatus(status);
+        setPayments(paymentList.items);
       } else {
         setPlanStatus(null);
+        setPayments([]);
       }
     } catch (err) {
       setError(parseApiError(locale, err));
@@ -186,6 +195,33 @@ export default function PlanPage() {
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
               Действует до {new Date(planStatus.expiresAt).toLocaleDateString('ru-RU')}
             </p>
+          )}
+        </section>
+      )}
+
+      {canView && !loading && (
+        <section className="form-card" style={{ marginBottom: 16, maxWidth: 720 }}>
+          <h3 style={{ marginTop: 0 }}>{ui.ownerPlanPaymentHistoryTitle}</h3>
+          {payments.length === 0 ? (
+            <p style={{ color: 'var(--text-muted)', margin: 0 }}>{ui.ownerPlanPaymentHistoryEmpty}</p>
+          ) : (
+            <ul style={{ margin: 0, paddingLeft: 18 }}>
+              {payments.map((p) => {
+                const tierName =
+                  catalog.find((c) => c.tier === p.tier)?.nameRu ??
+                  internalTierToPublicLabel(p.tier);
+                return (
+                <li key={p.id} style={{ marginBottom: 8 }}>
+                  {tierName} — {p.amountKzt.toLocaleString('ru-RU')} ₸
+                  {' · '}
+                  {new Date(p.paidAt).toLocaleDateString(locale === 'kk' ? 'kk-KZ' : 'ru-RU')}
+                  {p.isMock ? ` · ${ui.ownerPlanMockPaymentTag}` : ''}
+                  {' · '}
+                  {p.status}
+                </li>
+              );
+              })}
+            </ul>
           )}
         </section>
       )}

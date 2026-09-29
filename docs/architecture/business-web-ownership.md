@@ -337,7 +337,38 @@ Revoked/suspended manager: next **`GET /businesses/my`** omits business; BIZ.2 s
 
 ---
 
-## 18. Deferred (BIZ.7+)
+## 18. Plans, entitlements & billing (BIZ.7)
+
+**Storage enum (Prisma):** `FREE` | `BASIC` | `PREMIUM` | `VIP`. **Product display:** FREE / BUSINESS / PRO / VIP via `plan-display.util` (`BASIC→BUSINESS`, `PREMIUM→PRO`). Legacy `TOP_CITY` migrated to `VIP` (migration 4C); no separate TOP_CITY tier in runtime.
+
+**Source of truth:** `PLAN_CATALOG` + `PlanLimitsService` (`services/catalog-api/src/common/services/plan-limits.service.ts`). Public catalog: `GET /plans`. Per-business context: `GET /businesses/:id/plan` → `getBusinessPlanContext` (effective tier, usage, entitlements, team slots).
+
+**Prices (KZT / 30-day paid period):** FREE **0**, BASIC **4900**, PREMIUM **9900**, VIP **19900**.
+
+| Tier (enum) | Display | Photos | Items | Active promos | Managers | Review replies | Analytics days | Ad discount | Ad bonus/mo |
+|-------------|---------|--------|-------|---------------|----------|----------------|----------------|-------------|-------------|
+| FREE | Бесплатный | 5 | 10 | 1 | 0 | no | 30 BASIC | 0% | 0 |
+| BASIC | Бизнес | 20 | 50 | 3 | 1 | yes | 30 EXTENDED | 5% | 500 |
+| PREMIUM | PRO | 50 | 150 | 10 | 3 | yes | 90 FULL | 10% | 1500 |
+| VIP | VIP | 100 | 300 | 25 | 10 | yes | 365 ANALYTICS_360 | 15% | 3500 |
+
+Also: `maxPromotionsCreatedPerDay`, `maxPromotionDurationDays`, support/moderation priority — see `PlanLimits` interface.
+
+**Access:** View plan + payment history → **`PAYMENTS_VIEW`**. Checkout / tier change → **OWNER only** (`assertOwner`). Mock checkout: `POST …/plan/mock-checkout` when `mockPlanCheckoutEnabled` and non-production.
+
+**Payment maturity:** **Class C** — internal `PlanPayment` rows (`COMPLETED` | `FAILED`, `isMock` default true); **no production PSP** on subscription path. Campaign ads use separate monetization orders (admin manual flow).
+
+**PlanPayment:** created on paid tier activation (not on admin `skipPayment` override). No `PENDING` approval state in schema.
+
+**Downgrade / expiry:** `planExpiresAt` past → effective **FREE** (`syncExpiredPlan`); **content preserved**; public sliced; new creates blocked at limit; **existing managers kept** with `team.overLimit` + `assertCanAddManager` blocks new invites only.
+
+**Business Web:** `/plan` — catalog from API; status from plan context; history via **`GET …/plan/payments`**. No receipts/invoices.
+
+**Out of scope:** PSP integration, ads redesign, UXA.
+
+---
+
+## 19. Deferred (BIZ.8+)
 - `ownerId` ↔ ACTIVE OWNER reconciliation after manager promotion.
 - Ownership transfer / recovery beyond claim + manager promotion.
 - Public `ownerId` removal (KZ-C).

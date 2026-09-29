@@ -184,6 +184,18 @@ export type PlanEntitlements = {
   overLimitNotice: string | null;
 };
 
+export type PlanPaymentRow = {
+  id: string;
+  businessId: string;
+  tier: string;
+  amountKzt: number;
+  status: string;
+  isMock: boolean;
+  paidAt: string;
+  expiresAt: string | null;
+  createdAt: string;
+};
+
 export type BusinessPlanStatus = {
   businessId: string;
   tier: string;
@@ -1122,6 +1134,12 @@ export const ownerApi = {
 
   getBusinessPlan: (token: string, businessId: string) =>
     api<BusinessPlanStatus>(`/businesses/${businessId}/plan`, { token }),
+
+  listPlanPayments: (token: string, businessId: string) =>
+    api<{ items: PlanPaymentRow[] }>(
+      `/businesses/${businessId}/plan/payments`,
+      { token },
+    ),
 
   mockPlanCheckout: (token: string, businessId: string, tier: string) =>
     api<{

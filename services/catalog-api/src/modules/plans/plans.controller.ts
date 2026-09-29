@@ -27,6 +27,15 @@ export class PlansController {
   }
 
   @Roles(UserRole.BUSINESS, UserRole.ADMIN, UserRole.CITY_ADMIN)
+  @Get('businesses/:businessId/plan/payments')
+  listPlanPayments(
+    @CurrentUser() user: AuthUser,
+    @Param('businessId') businessId: string,
+  ) {
+    return this.plansService.listPlanPayments(user, businessId);
+  }
+
+  @Roles(UserRole.BUSINESS, UserRole.ADMIN, UserRole.CITY_ADMIN)
   @Post('businesses/:businessId/plan/mock-checkout')
   mockCheckout(
     @CurrentUser() user: AuthUser,
