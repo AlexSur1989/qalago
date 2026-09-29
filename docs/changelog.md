@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-29 — BIZ.9 HOTFIX 1 — Owner promotions query geo drift
+
+- **Status:** **BIZ.9 HOTFIX 1 PASS — OWNER PROMOTIONS QUERY GEO DRIFT FIXED**. **BIZ.9 physical QA REMAINS OPEN** (dashboard re-verify pending). **BIZ.1–BIZ.8 remain CLOSED**. **AOP remains CLOSED**.
+- **Starting HEAD:** **`3766234b603949b9ca202f0e7d1429fa6d19e4ca`**.
+- **Checkpoint (commit):** **`9111ae04c80f4f02ffa93f3be4cece9bf6368741`** — `fix(promotions): remove retired business geo select`.
+- **Summary:** **`GET /promotions?businessId=`** owner-manage path no longer selects retired **`Business.cityId`** (6.12A). Fixes Business Web dashboard **`Promise.all`** failure (500 → 200). Regression spec **`promotions-owner-list-geo.spec.ts`**. Live verify: Aktobe Pending Bistro empty list + plan FREE OK.
+- **Deferred:** Dashboard **`Promise.all`** partial-failure resilience (non-blocking UXA debt); full BIZ.9 physical QA closure.
+- **Next:** Re-run Business Web **`/dashboard`** physical QA for OWNER; continue BIZ.9 scope.
+
+---
+
 ## 2026-09-29 — BIZ.8 — Business owner-plane security regression
 
 - **Status:** **BIZ.8 PASS — BUSINESS OWNER PLANE SECURITY REGRESSION CLEAN**. **BIZ.1–BIZ.7 remain CLOSED**. **AOP remains CLOSED**. **KZ-C.1 NOT closed**.

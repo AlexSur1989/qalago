@@ -153,13 +153,14 @@ export class PromotionsService {
 
     if (ownerView || !query.businessId) {
       const publicFeedBusinessSelect =
-        !ownerView && feedCityId != null ? promotionFeedBusinessSelect : {
-          id: true,
-          title: true,
-          slug: true,
-          cityId: true,
-          coverImageUrl: true,
-        };
+        !ownerView && feedCityId != null
+          ? promotionFeedBusinessSelect
+          : {
+              id: true,
+              title: true,
+              slug: true,
+              coverImageUrl: true,
+            };
       const [items, total] = await Promise.all([
         this.prisma.promotion.findMany({
           where,

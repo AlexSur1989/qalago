@@ -75,9 +75,10 @@
 | **BIZ.6** | **PASS — OWNER REVIEWS / BUSINESS NOTIFICATIONS HARDENED** — manage review list; inbox navigation; reply/notification tests |
 | **BIZ.7** | **PASS — BUSINESS PLANS / ENTITLEMENTS / BILLING CONTRACT HARDENED** — plan matrix §18; plan payments list; billing access tests |
 | **BIZ.8** | **PASS — BUSINESS OWNER PLANE SECURITY REGRESSION CLEAN** — IDOR/membership regression suite; no CRITICAL/HIGH findings |
-| **BIZ (track)** | **ACTIVE** — **BIZ.8 closed**; physical browser QA / BIZ umbrella closure / **UXA** gate per roadmap |
+| **BIZ.9** | **OPEN — PHYSICAL QA** — HOTFIX 1: owner **`GET /promotions?businessId=`** geo select fixed (no **`Business.cityId`**) |
+| **BIZ (track)** | **ACTIVE** — **BIZ.9 physical QA open**; HOTFIX 1 applied; umbrella closure / **UXA** gate per roadmap |
 | **UXA (track)** | **PLANNED / REQUIRED — NOT STARTED** — mandatory Admin + Business Web UI/UX finalization **after BIZ CLOSED** (see § UXA below) |
-| **Next** | BIZ track umbrella closure; **controlled** catalog population; **KZ-C.1F** notification physical QA (not closed by BIZ.6); **do not start UXA** until BIZ closes unless explicitly approved |
+| **Next** | **BIZ.9** dashboard physical re-verify after HOTFIX 1; BIZ umbrella closure; **KZ-C.1F** notification physical QA; **do not start UXA** until BIZ closes unless explicitly approved |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
