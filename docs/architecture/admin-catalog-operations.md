@@ -228,6 +228,17 @@ If an AOP operation cannot be expressed with current permissions: record **AOP.1
 
 **Admin Web:** catalog detail — independent UI capabilities (**AOP.7H.2**): **core** / **lifecycle** (PRIMARY-city); **taxonomy** (`CATEGORY_EDIT`); **locations** per-branch city scope (own-city secondary edit **decoupled** from brand read-only); set-primary anti-escalation; staff scope from canonical **`GET /users/me`** profile (**AOP.7H.3** — refresh/login must not use slim auth payload alone). Featured/plan on **dashboard** only (SUPER+ADMIN).
 
+### 5.5 AOP.7 — physical QA reference (verified 2026-09-29)
+
+| Item | Value |
+|------|--------|
+| Reference Business | **AOP7 Test Cafe** — slug **`aop7-test-cafe`** |
+| Cross-city fixture state | PRIMARY **Aktobe** (ул. Тестовая, 3); secondary **Uralsk** (ул. Тестовая, 2А) |
+| Staff roles exercised | **SUPER_ADMIN** (manual phone; DEV UI hardened), **ADMIN** (Platform Admin), **CITY_ADMIN** Uralsk + Aktobe |
+| F5 / refresh | Permissions stable for all roles after hard reload (**7H.3** physically confirmed) |
+
+**Non-blocking UX debt (physical QA):** weak/absent core catalog save success feedback; audit log UI shows some raw **`AuditAction`** enum strings; audit filters for new actions remain future work.
+
 ---
 
 ## 6. Lifecycle / publication
@@ -293,21 +304,25 @@ All Admin catalog mutations go through **Catalog API** → **PostgreSQL**. Flutt
 
 ## 11. Mass catalog population gate
 
-**REAL / MASS catalog population remains BLOCKED** until:
+**AOP.7 PASS (2026-09-29):** operational blocker **lifted** for **controlled** catalog work.
 
-| Gate | Verification |
-|------|----------------|
-| Staff **Business + primary BL** create | AOP.1 + AOP.7 |
-| Business core edit | AOP.2 |
-| BusinessLocation Admin management | AOP.3 + AOP.7 |
-| Taxonomy assignment | AOP.2/4 |
-| Safe lifecycle / publication | AOP.5 |
-| RBAC + **CITY_ADMIN** | AOP.4 |
-| Audit on privileged mutations | AOP.5 |
-| Automated regression | AOP.6 |
-| Physical Admin browser QA | AOP.7 |
+| Gate | Status |
+|------|--------|
+| Staff **Business + primary BL** create | **AOP.1 + AOP.7** PASS |
+| Business core edit | **AOP.2 + AOP.7** PASS |
+| BusinessLocation Admin management | **AOP.3 + AOP.7** PASS |
+| Taxonomy assignment | **AOP.2/4/5 + AOP.7** PASS |
+| Safe lifecycle / publication | **AOP.5 + AOP.7** PASS |
+| RBAC + **CITY_ADMIN** | **AOP.4 + AOP.7H–7H.3 + AOP.7** PASS |
+| Audit on privileged mutations | **AOP.5 + AOP.7** PASS |
+| Automated regression | **AOP.6** PASS |
+| Physical Admin browser QA | **AOP.7** PASS |
 
-**AOP.0 does not** import or seed production catalog.
+**Allowed now:** controlled real catalog entries, **small batches**, category/BL/coordinate/content QA.
+
+**Not implied:** production launch, VPS deploy, production payments/legal readiness, **full mass import** without per-batch QA.
+
+**AOP.0 does not** import or seed production catalog automatically.
 
 ---
 
@@ -322,7 +337,7 @@ All Admin catalog mutations go through **Catalog API** → **PostgreSQL**. Flutt
 | **AOP.4** | RBAC + CITY_ADMIN enforcement matrix (**§5.3**) | AOP.1–3 | **`admin-aop4-catalog-rbac.spec.ts`** + 6.12A.9.4.5A | New roles |
 | **AOP.5** | Audit + lifecycle + catalog detail taxonomy/lifecycle UX (**§5.4**) | AOP.1–4 | **`admin-aop5-catalog-audit-lifecycle.spec.ts`** | Legal CMS |
 | **AOP.6** | Full automated regression (admin + catalog-api) | AOP.1–5 | CI green | Mobile/consumer |
-| **AOP.7** | Physical Admin browser QA + **AOP CLOSURE** | AOP.6 | Manual checklist | Population |
+| **AOP.7** | Physical Admin browser QA + **AOP CLOSURE** | AOP.6 | Manual checklist **PASS** | Population gate lifted (controlled only) |
 
 **Do not** start AOP.1 without explicit agreement after AOP.0 commit.
 
@@ -347,6 +362,6 @@ All Admin catalog mutations go through **Catalog API** → **PostgreSQL**. Flutt
 
 Admin Web **already useful** for: moderation, applications, claims, monetization, reports, taxonomy city order/visibility, **read-only** business branch content (`GET /admin/businesses/:id/content`).
 
-**Critical gaps** driving AOP: no staff **ownerless** create UI/API; **`POST /businesses`** wrong semantics; incomplete Admin business/BL edit plane; audit gaps on some Admin patches; mass population blocked until AOP.1–7 PASS.
+**Phase 0 gaps (historical):** staff create plane, owner **`POST /businesses`** semantics, Admin edit/audit gaps — **addressed AOP.1–7** (see changelog). **AOP CLOSED / PASS** — controlled catalog population may proceed; **full mass import** still requires explicit QA discipline.
 
 **BusinessLocation architecture — CLOSED/PASS — not reopened.**

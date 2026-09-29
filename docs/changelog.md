@@ -6,6 +6,28 @@
 
 ---
 
+## 2026-09-29 — AOP — Admin catalog / operations plane closure
+
+- **Status:** **AOP PASS — ADMIN CATALOG / OPERATIONS PLANE FINALIZED**. **AOP.7 PASS — ADMIN WEB PHYSICAL QA VERIFIED** (same closure). **AOP.0–AOP.7** complete (**AOP.7H / 7H.1 / 7H.2 / 7H.3** incorporated into verified state). **Controlled catalog population may begin** (small batches, data quality QA — **not** production launch / VPS / mass import without QA). **KZ-C.1 NOT CLOSED**; other roadmap blockers unchanged.
+- **Starting HEAD:** **`76c186f0b28bad80474e1a8c3def6fb17f270296`** (AOP.7H.3).
+- **Checkpoint (commit):** **`c6601c3eecf03457555c195cc026e249ab3476e1`** — `docs(qa): close admin catalog operations plane`.
+- **Summary:** Manual Admin Web physical QA closed on reference Business **`aop7-test-cafe`** (AOP7 Test Cafe). Verified staff create (**PENDING**, ownerless, primary BL, no auto membership); core edit persistence (weak save feedback = UX debt); BusinessLocation CRUD/set-primary/delete + exactly-one-primary; taxonomy + lifecycle (**PENDING→ACTIVE→BLOCKED→ACTIVE**); audit rows (**BUSINESS_CREATE**, **PROFILE/LOCATION_***, **STATUS**, **TAXONOMY** — UI still shows some raw enum labels = UX debt). Roles **SUPER_ADMIN → ADMIN → CITY_ADMIN** (Uralsk/Aktobe CA identical permissions, **StaffCityScope** only): Platform Admin global ops post-F5; Uralsk CA with PRIMARY Aktobe / secondary Uralsk — ANY-BL read, PRIMARY-city core/lifecycle read-only, own-city BL edit/add, no cross-city set-primary; Aktobe CA inverse while PRIMARY Aktobe. Auth F5/refresh stable for all roles (**AOP.7H.3**). DEV login: Platform Admin + both CITY_ADMIN helpers; no SUPER phone/quick-login. **No application code, DB, RBAC, or staff changes in this stage.**
+- **Deferred (non-blocking):** core save success UX; audit UI labels/filters; featured/plan on catalog detail; Jest parallel shared-DB flake (**--runInBand** canonical); **KZ-C.1** notification/FCM; public **ownerId** debt; production assetlinks/deep-link external verification.
+- **Next:** **Controlled** catalog entry (explicit batches); **KZ-C.1F** notification QA; do **not** auto-start **KZ-C.2** / production deploy.
+
+---
+
+## 2026-09-29 — AOP.7 — Admin Web physical QA
+
+- **Status:** **AOP.7 PASS — ADMIN WEB PHYSICAL QA VERIFIED**. Subsumed under umbrella **AOP PASS** (docs entry above); retained for stage traceability.
+- **Starting HEAD:** **`76c186f0b28bad80474e1a8c3def6fb17f270296`**.
+- **Checkpoint (commit):** **`c6601c3eecf03457555c195cc026e249ab3476e1`** — `docs(qa): close admin catalog operations plane`.
+- **Summary:** Physical browser QA on Admin Web (**localhost:3001**) — fixture **`aop7-test-cafe`**; cross-city PRIMARY Aktobe + secondary Uralsk; all staff roles + F5 refresh per closure checklist. **Mass catalog population blocker from AOP lifted** (controlled population only).
+- **Deferred:** same UX/compliance debts as umbrella closure.
+- **Next:** controlled catalog population; separate tracks per umbrella entry.
+
+---
+
 ## 2026-09-29 — AOP.7H.3 — Admin auth refresh scope enrichment
 
 - **Status:** **AOP.7H.3 PASS — ADMIN AUTH REFRESH PRESERVES STAFF SCOPE**. **AOP.7 physical QA OPEN**.
