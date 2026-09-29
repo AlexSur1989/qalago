@@ -1,14 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { parseAdminCatalogApiError } from './admin-catalog-errors';
 
-describe('admin catalog API errors (AOP.2)', () => {
-  it('maps duplicate slug', () => {
-    expect(parseAdminCatalogApiError(new Error('409 Business slug already exists')).kind).toBe(
-      'duplicate_slug',
-    );
+describe('admin catalog API errors (AOP.7H.1)', () => {
+  it('maps 403 to localized forbidden message (RU)', () => {
+    const parsed = parseAdminCatalogApiError(new Error('403 Forbidden'), 'ru');
+    expect(parsed.kind).toBe('forbidden');
+    expect(parsed.message).toBe('Недостаточно прав для этого действия.');
   });
 
-  it('maps forbidden', () => {
-    expect(parseAdminCatalogApiError(new Error('403 Forbidden')).kind).toBe('forbidden');
+  it('maps 403 to localized forbidden message (KK)', () => {
+    const parsed = parseAdminCatalogApiError(new Error('403 Forbidden'), 'kk');
+    expect(parsed.kind).toBe('forbidden');
+    expect(parsed.message).toBe('Бұл әрекет үшін құқық жеткіліксіз.');
   });
 });

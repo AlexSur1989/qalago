@@ -1,12 +1,19 @@
 'use client';
 
-import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { adminCatalogApi } from '@/lib/admin-catalog-api';
 import type { AdminBusinessLocationRow } from '@/lib/admin-business-locations-api';
 import { adminCatalogLabel } from '@/lib/admin-catalog-labels';
 import type { AdminCatalogLocale } from '@/lib/admin-catalog-labels';
 import { parseAdminCatalogApiError } from '@/lib/admin-catalog-errors';
 import { buildAdminLocationPayload } from '@/lib/admin-catalog-location-form';
+import {
+  adminBusinessLocationCityOptions,
+  canAdminAddBusinessLocation,
+  canAdminDeleteBusinessLocation,
+  canAdminEditBusinessLocation,
+  canAdminSetPrimaryBusinessLocation,
+} from '@/lib/admin-catalog-rbac';
 import type { CityRow } from '@/lib/api';
 
 type Props = {
@@ -14,7 +21,10 @@ type Props = {
   businessId: string;
   locale: AdminCatalogLocale;
   cities: CityRow[];
-  canEdit: boolean;
+  role: string;
+  managedCityId?: string | null;
+  managedCitySlug?: string | null;
+  businessPrimaryCitySlug?: string | null;
 };
 
 type FormMode = 'closed' | 'add' | 'edit';
@@ -31,7 +41,16 @@ const emptyForm = () => ({
   workHoursJson: '',
 });
 
-export function CatalogLocationsManager({ token, businessId, locale, cities, canEdit }: Props) {
+export function CatalogLocationsManager({
+  token,
+  businessId,
+  locale,
+  cities,
+  role,
+  managedCityId,
+  managedCitySlug,
+  businessPrimaryCitySlug,
+}: Props) {
   const [items, setItems] = useState<AdminBusinessLocationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +58,18 @@ export function CatalogLocationsManager({ token, businessId, locale, cities, can
   const [mode, setMode] = useState<FormMode>('closed');
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+
+  const rbacCtx = useMemo(
+    () => ({ managedCityId, managedCitySlug, businessPrimaryCitySlug }),
+    [managedCityId, managedCitySlug, businessPrimaryCitySlug],
+  );
+
+  const selectableCities = useMemo(
+    () => adminBusinessLocationCityOptions(role, cities, managedCityId ?? null),
+    [role, cities, managedCityId],
+  );
+
+  const canAdd = canAdminAddBusinessLocation(role);
 
   const cityName = (cityId: string) => {
     const c = cities.find((x) => x.id === cityId);
@@ -61,12 +92,16 @@ export function CatalogLocationsManager({ token, businessId, locale, cities, can
   }, [load]);
 
   function openAdd() {
-    setForm(emptyForm());
+    const defaultCityId = selectableCities.length === 1 ? selectableCities[0].id : '';
+    setForm({ ...emptyForm(), cityId: defaultCityId });
     setEditId(null);
     setMode('add');
   }
 
   function openEdit(loc: AdminBusinessLocationRow) {
+    if (!canAdminEditBusinessLocation(role, loc, rbacCtx)) {
+      return;
+    }
     setEditId(loc.id);
     setForm({
       cityId: loc.cityId,
@@ -152,7 +187,7 @@ export function CatalogLocationsManager({ token, businessId, locale, cities, can
     <div className="card">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={{ marginTop: 0 }}>{adminCatalogLabel(locale, 'sectionLocations')}</h3>
-        {canEdit && (
+        {canAdd && selectableCities.length > 0 && (
           <button type="button" className="btn btn-sm btn-primary" onClick={openAdd} disabled={busy}>
             {adminCatalogLabel(locale, 'addLocation')}
           </button>
@@ -160,58 +195,75 @@ export function CatalogLocationsManager({ token, businessId, locale, cities, can
       </div>
 
       {loading && <p className="muted">{adminCatalogLabel(locale, 'loading')}</p>}
-      {error && <p className="muted">{error}</p>}
+      {error && <div className="alert alert-error" style={{ marginTop: 8 }}>{error}</div>}
 
       {!loading && items.length === 0 && <p className="muted">—</p>}
 
       {!loading && items.length > 0 && (
         <ul style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
-          {items.map((loc) => (
-            <li
-              key={loc.id}
-              style={{
-                borderBottom: '1px solid var(--border, #eee)',
-                padding: '12px 0',
-              }}
-            >
-              {loc.isPrimary && (
-                <span className="tag tag-success">{adminCatalogLabel(locale, 'primaryBadge')}</span>
-              )}{' '}
-              <strong>{loc.address}</strong>
-              <span className="muted"> · {cityName(loc.cityId)}</span>
-              {canEdit && (
-                <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  <button type="button" className="btn btn-ghost btn-sm" onClick={() => openEdit(loc)} disabled={busy}>
-                    {adminCatalogLabel(locale, 'editLocation')}
-                  </button>
-                  {!loc.isPrimary && (
-                    <button
-                      type="button"
-                      className="btn btn-ghost btn-sm"
-                      onClick={() => makePrimary(loc.id)}
-                      disabled={busy}
-                    >
-                      {adminCatalogLabel(locale, 'makePrimary')}
-                    </button>
-                  )}
-                  {!loc.isPrimary && (
-                    <button
-                      type="button"
-                      className="btn btn-ghost btn-sm"
-                      onClick={() => removeLocation(loc.id)}
-                      disabled={busy}
-                    >
-                      {adminCatalogLabel(locale, 'deleteLocation')}
-                    </button>
-                  )}
-                </div>
-              )}
-            </li>
-          ))}
+          {items.map((loc) => {
+            const showEdit = canAdminEditBusinessLocation(role, loc, rbacCtx);
+            const showSetPrimary =
+              !loc.isPrimary &&
+              canAdminSetPrimaryBusinessLocation(role, loc.cityId, rbacCtx);
+            const showDelete =
+              !loc.isPrimary &&
+              canAdminDeleteBusinessLocation(role, loc.cityId, managedCityId ?? null);
+
+            return (
+              <li
+                key={loc.id}
+                style={{
+                  borderBottom: '1px solid var(--border, #eee)',
+                  padding: '12px 0',
+                }}
+              >
+                {loc.isPrimary && (
+                  <span className="tag tag-success">{adminCatalogLabel(locale, 'primaryBadge')}</span>
+                )}{' '}
+                <strong>{loc.address}</strong>
+                <span className="muted"> · {cityName(loc.cityId)}</span>
+                {(showEdit || showSetPrimary || showDelete) && (
+                  <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {showEdit && (
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => openEdit(loc)}
+                        disabled={busy}
+                      >
+                        {adminCatalogLabel(locale, 'editLocation')}
+                      </button>
+                    )}
+                    {showSetPrimary && (
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => makePrimary(loc.id)}
+                        disabled={busy}
+                      >
+                        {adminCatalogLabel(locale, 'makePrimary')}
+                      </button>
+                    )}
+                    {showDelete && (
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => removeLocation(loc.id)}
+                        disabled={busy}
+                      >
+                        {adminCatalogLabel(locale, 'deleteLocation')}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
 
-      {canEdit && mode !== 'closed' && (
+      {canAdd && mode !== 'closed' && selectableCities.length > 0 && (
         <form onSubmit={submitForm} style={{ marginTop: 16, maxWidth: 640 }}>
           <label style={{ display: 'block' }}>
             {adminCatalogLabel(locale, 'fieldCity')}
@@ -220,9 +272,10 @@ export function CatalogLocationsManager({ token, businessId, locale, cities, can
               value={form.cityId}
               onChange={(e) => setForm((f) => ({ ...f, cityId: e.target.value }))}
               style={{ width: '100%' }}
+              disabled={mode === 'edit' && selectableCities.length <= 1}
             >
               <option value="">—</option>
-              {cities.filter((c) => c.id).map((c) => (
+              {selectableCities.map((c) => (
                 <option key={c.id} value={c.id}>
                   {locale === 'kk' && c.nameKk ? c.nameKk : c.nameRu}
                 </option>

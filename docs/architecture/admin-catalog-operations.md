@@ -226,7 +226,7 @@ If an AOP operation cannot be expressed with current permissions: record **AOP.1
 
 **Lifecycle:** staff create defaults **`PENDING`**; public discovery queries require **`ACTIVE`**; **`BLOCKED`** excluded. Status changes via **`PATCH …/status`** only (not catalog PATCH). **Moderation:** `BLOCKED` is **Business lifecycle state**; staff may reactivate via status endpoint (audited) — no second moderation gate added in AOP.5.
 
-**Admin Web:** catalog detail — **lifecycle** actions (`BUSINESS_EDIT`); **taxonomy** editor (`CATEGORY_EDIT`). Featured/plan remain on legacy **dashboard** (audited backend).
+**Admin Web:** catalog detail — **lifecycle** actions (`BUSINESS_EDIT`); **taxonomy** editor (`CATEGORY_EDIT`); **BusinessLocation** row actions gated per branch city + set-primary anti-escalation (**AOP.7H.1** — mirrors backend, no foreign-city edit buttons). Featured/plan remain on legacy **dashboard** (audited backend).
 
 ---
 

@@ -14,9 +14,10 @@ describe('catalog business detail page (AOP.7H)', () => {
     expect(src).toMatch(/canEditBrand[\s\S]*status/);
   });
 
-  it('keeps location edits on generic BUSINESS_EDIT (ANY-BL visibility)', () => {
-    expect(src).toContain('canEditLocations');
-    expect(src).toContain('canEditAdminCatalogBusiness');
+  it('passes per-location RBAC context to locations manager (AOP.7H.1)', () => {
+    expect(src).toContain('CatalogLocationsManager');
+    expect(src).toContain('managedCityId');
+    expect(src).toContain('businessPrimaryCitySlug');
   });
 
   it('taxonomy remains CATEGORY_EDIT only', () => {

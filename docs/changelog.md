@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-29 — AOP.7H.1 — CITY_ADMIN BusinessLocation UI RBAC alignment
+
+- **Status:** **AOP.7H.1 PASS — CITY_ADMIN LOCATION UI ALIGNED WITH BACKEND RBAC**. **AOP.7 physical QA OPEN**. **Mass catalog population remains BLOCKED**.
+- **Starting HEAD:** **`10df0a9f426385cef258d0db2417ac82c396d200`** (AOP.7H).
+- **Checkpoint (commit):** **`15da43841ef3ab1459fe39f56aa421eccd16bb99`** — `fix(admin-web): align city location controls with rbac`.
+- **Summary:** Admin Web **`CatalogLocationsManager`** — per-row edit/delete/set-primary and add-branch city selector aligned with **AOP.4/AOP.7H** backend (`assertCityInAdminScope`, primary-city set-primary). **403** shows localized forbidden copy (RU/KK). Backend unchanged. Vitest **112/112** + **next build** PASS.
+- **Deferred:** **AOP.7** physical recheck after QA fixture (AOP7 Test Cafe — PRIMARY Aktobe / secondary Uralsk).
+- **Next:** **AOP.7** physical verification.
+
+---
+
 ## 2026-09-29 — AOP.7H — Admin hierarchy correction + DEV login hardening
 
 - **Status:** **AOP.7H PASS — ADMIN HIERARCHY / DEV LOGIN HARDENED**. **AOP.7 physical QA OPEN**. **Overall AOP NOT CLOSED**. **Mass catalog population remains BLOCKED**.

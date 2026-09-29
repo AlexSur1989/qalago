@@ -13,7 +13,6 @@ import {
 import { parseAdminCatalogApiError } from '@/lib/admin-catalog-errors';
 import { buildAdminCatalogPatchPayload } from '@/lib/admin-catalog-form';
 import {
-  canEditAdminCatalogBusiness,
   canEditAdminCatalogBusinessPrimaryCity,
   canEditCatalogTaxonomy,
 } from '@/lib/admin-catalog-rbac';
@@ -23,7 +22,6 @@ import { adminApi, type CategoryRow, type SubcategoryAdminRow } from '@/lib/api'
 export default function CatalogBusinessDetailPage() {
   const params = useParams<{ id: string }>();
   const { token, user, locale, cities, citySlug } = useCatalogContext();
-  const canEditLocations = canEditAdminCatalogBusiness(user.role);
   const canTaxonomy = canEditCatalogTaxonomy(user.role);
 
   const [detail, setDetail] = useState<AdminCatalogBusinessDetail | null>(null);
@@ -301,7 +299,10 @@ export default function CatalogBusinessDetailPage() {
           businessId={detail.id}
           locale={locale}
           cities={cities}
-          canEdit={canEditLocations}
+          role={user.role}
+          managedCityId={user.managedCityId}
+          managedCitySlug={user.managedCity?.slug}
+          businessPrimaryCitySlug={detail.city?.slug}
         />
       </div>
 
