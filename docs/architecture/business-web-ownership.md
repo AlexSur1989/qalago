@@ -297,9 +297,13 @@ Revoked/suspended manager: next **`GET /businesses/my`** omits business; BIZ.2 s
 
 ---
 
-## 15. Deferred (BIZ.4+)
+## 15. Business Web profile vs location (BIZ.4)
 
-- Brand-level geo fields in owner profile PATCH (6.12A violation risk).
+- **Business Web profile PATCH** sends **brand fields only** (`title`, descriptions, brand contacts, taxonomy). **No** `address` / `latitude` / `longitude` / `locationSource` on business PATCH from UI.
+- **Primary physical edits** use **BusinessLocation** API; see **`docs/architecture/business-location.md`** § BIZ.4.
+- **BIZ.3** manager/team contract **unchanged**.
+
+## 16. Deferred (BIZ.5+)
 - `ownerId` ↔ ACTIVE OWNER reconciliation after manager promotion.
 - Ownership transfer / recovery beyond claim + manager promotion.
 - Public `ownerId` removal (KZ-C).

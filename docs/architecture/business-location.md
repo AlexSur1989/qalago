@@ -93,6 +93,13 @@ Migration **`20260926120000_stage_6_12a9_4_4c4_business_geo_column_retirement`**
 - **Selection / tap:** map selection is **location** identity; preview and directions use the **selected location row** (address, lat/lng); opening full detail uses **Business.id** plus optional **`locationId`** query for branch-aware detail physical fields.
 - **Unchanged:** reviews/favorites/analytics Business-scoped; MapLibre style/basemap; geocoding; cluster styling/thresholds; nearest/radius discovery grain.
 
+## Stage BIZ.4 (Business Web profile / location canonicalization)
+
+- **Status:** **BIZ.4 PASS** — Business Web no longer sends retired physical geo on **`PATCH /businesses/:id`** from the profile editor.
+- **Write paths:** Profile save → brand fields on **Business**; primary branch **address / coordinates / locationSource** on **`PATCH …/locations/:primaryId`**. **`workHours`** remain **Business-level** PATCH (synced to primary BL per **A.3**). Secondary branches: **locations page** only (**A.4/A.5**).
+- **Read paths:** Profile primary block loads from **primary BusinessLocation** list (`isPrimary`); **GET /businesses/:id** projection remains compatibility aggregate for display elsewhere.
+- **Backend:** Legacy **`PATCH /businesses/:id`** physical keys may still be accepted for non–Business Web clients — **not removed in BIZ.4**.
+
 ## Stage 6.12A.9.3.5 (Business Web owner physical-context closure)
 
 - **Status:** **PASS** — implementation **`9e00ef25…`** + physical browser QA finalized (dev fixture **`QA A935 OWNER PHYSICAL`**); not full Business Web production QA or full role matrix.

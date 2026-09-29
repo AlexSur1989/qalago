@@ -25,6 +25,11 @@ import {
   buildProfileUpdatePayload,
   resolveProfileEditPermissions,
 } from '@/lib/owner-profile-edit';
+import {
+  buildPrimaryLocationPhysicalPatch,
+  businessLocationStateFromRow,
+  findPrimaryBusinessLocation,
+} from '@/lib/owner-primary-location';
 
 function parseHours(raw: BusinessRow['workHours']) {
   const weekdays = raw?.mon ?? raw?.tue ?? '09:00-22:00';
@@ -45,6 +50,8 @@ export default function BusinessEditPage() {
   const { token, user, ready, logout } = useAuth();
   const [myItems, setMyItems] = useState<MyBusinessItem[]>([]);
   const [location, setLocation] = useState<BusinessLocationState>({ address: '' });
+  const [primaryLocationId, setPrimaryLocationId] = useState<string | null>(null);
+  const [primaryCitySlug, setPrimaryCitySlug] = useState<string>('uralsk');
   const [form, setForm] = useState({
     title: '',
     shortDesc: '',
@@ -84,15 +91,23 @@ export default function BusinessEditPage() {
     if (!token || !id) return;
     (async () => {
       try {
-        const b = await ownerApi.getBusiness(token, id);
+        const [b, locRes] = await Promise.all([
+          ownerApi.getBusiness(token, id),
+          ownerApi.listBusinessLocations(token, id),
+        ]);
+        const primary = findPrimaryBusinessLocation(locRes.items);
+        if (primary) {
+          setPrimaryLocationId(primary.id);
+          setLocation(businessLocationStateFromRow(primary));
+          const cities = await ownerApi.listCities().catch(() => []);
+          const cityRow = cities.find((c) => c.id === primary.cityId);
+          setPrimaryCitySlug(cityRow?.slug ?? b.city?.slug ?? 'uralsk');
+        } else {
+          setPrimaryLocationId(null);
+          setLocation({ address: b.address ?? '' });
+          setPrimaryCitySlug(b.city?.slug ?? 'uralsk');
+        }
         const hours = parseHours(b.workHours);
-        setLocation({
-          address: b.address ?? '',
-          latitude: b.latitude != null ? Number(b.latitude) : undefined,
-          longitude: b.longitude != null ? Number(b.longitude) : undefined,
-          locationSource:
-            b.locationSource === 'MANUALLY_ADJUSTED' ? 'MANUALLY_ADJUSTED' : 'GEOCODED',
-        });
         setForm({
           title: b.title ?? '',
           shortDesc: b.shortDesc ?? '',
@@ -149,12 +164,17 @@ export default function BusinessEditPage() {
       const payload = buildProfileUpdatePayload({
         permissions,
         form,
-        location,
         includeProfile: true,
         includeHours: false,
       });
-      if (Object.keys(payload).length === 0) return;
-      await ownerApi.updateBusiness(token, id, payload);
+      const locationPatch = buildPrimaryLocationPhysicalPatch(location);
+      if (Object.keys(payload).length === 0 && !primaryLocationId) return;
+      if (Object.keys(payload).length > 0) {
+        await ownerApi.updateBusiness(token, id, payload);
+      }
+      if (primaryLocationId) {
+        await ownerApi.updateBusinessLocation(token, id, primaryLocationId, locationPatch);
+      }
       setProfileSaved(true);
       await refreshMyBusinesses();
     } catch (err) {
@@ -171,7 +191,6 @@ export default function BusinessEditPage() {
       const payload = buildProfileUpdatePayload({
         permissions,
         form,
-        location,
         includeProfile: false,
         includeHours: true,
       });
@@ -268,7 +287,7 @@ export default function BusinessEditPage() {
             <BusinessLocationField
               locale={locale}
               token={token}
-              citySlug={business?.city?.slug ?? 'uralsk'}
+              citySlug={primaryCitySlug}
               value={location}
               onChange={setLocation}
               readOnly={readOnlyProfile}

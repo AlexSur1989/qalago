@@ -20,13 +20,6 @@ const baseForm = {
   sunday: 'closed',
 };
 
-const location = {
-  address: 'Addr',
-  latitude: 51.2,
-  longitude: 51.3,
-  locationSource: 'GEOCODED' as const,
-};
-
 describe('resolveProfileEditPermissions', () => {
   it('OWNER has both profile and hours', () => {
     const p = resolveProfileEditPermissions({ role: 'OWNER', permissions: [] });
@@ -63,8 +56,8 @@ describe('resolveProfileEditPermissions', () => {
   });
 });
 
-describe('buildProfileUpdatePayload', () => {
-  it('A — hours-only: workHours only, no profile/physical fields', () => {
+describe('buildProfileUpdatePayload (BIZ.4)', () => {
+  it('hours-only: workHours only, no profile/physical fields', () => {
     const permissions = resolveProfileEditPermissions({
       role: 'MANAGER',
       permissions: [BusinessPermission.BUSINESS_HOURS_EDIT],
@@ -72,7 +65,6 @@ describe('buildProfileUpdatePayload', () => {
     const payload = buildProfileUpdatePayload({
       permissions,
       form: baseForm,
-      location,
       includeProfile: false,
       includeHours: true,
     });
@@ -80,12 +72,16 @@ describe('buildProfileUpdatePayload', () => {
       workHours: workHoursFromOwnerForm(baseForm),
     });
     expect(payload).not.toHaveProperty('address');
+    expect(payload).not.toHaveProperty('latitude');
+    expect(payload).not.toHaveProperty('longitude');
+    expect(payload).not.toHaveProperty('locationSource');
+    expect(payload).not.toHaveProperty('cityId');
     expect(payload).not.toHaveProperty('title');
     expect(payload).not.toHaveProperty('phone');
     expect(payload).not.toHaveProperty('locationId');
   });
 
-  it('B — profile-only: profile fields, no workHours', () => {
+  it('profile-only: brand fields without retired geo', () => {
     const permissions = resolveProfileEditPermissions({
       role: 'MANAGER',
       permissions: [BusinessPermission.BUSINESS_PROFILE_EDIT],
@@ -93,18 +89,20 @@ describe('buildProfileUpdatePayload', () => {
     const payload = buildProfileUpdatePayload({
       permissions,
       form: baseForm,
-      location,
       includeProfile: true,
       includeHours: false,
     });
     expect(payload.workHours).toBeUndefined();
     expect(payload.title).toBe('T');
-    expect(payload.address).toBe('Addr');
-    expect(payload.latitude).toBe(51.2);
+    expect(payload.phone).toBe('+1');
+    expect(payload).not.toHaveProperty('address');
+    expect(payload).not.toHaveProperty('latitude');
+    expect(payload).not.toHaveProperty('longitude');
+    expect(payload).not.toHaveProperty('locationSource');
     expect(payload).not.toHaveProperty('locationId');
   });
 
-  it('C — both permissions: full profile slice when requested', () => {
+  it('both permissions: profile and hours payloads stay separated', () => {
     const permissions = resolveProfileEditPermissions({
       role: 'MANAGER',
       permissions: [
@@ -115,36 +113,34 @@ describe('buildProfileUpdatePayload', () => {
     const profilePayload = buildProfileUpdatePayload({
       permissions,
       form: baseForm,
-      location,
       includeProfile: true,
       includeHours: false,
     });
     const hoursPayload = buildProfileUpdatePayload({
       permissions,
       form: baseForm,
-      location,
       includeProfile: false,
       includeHours: true,
     });
     expect(profilePayload.workHours).toBeUndefined();
     expect(hoursPayload.workHours).toBeDefined();
-    expect(profilePayload.address).toBe('Addr');
+    expect(profilePayload).not.toHaveProperty('address');
   });
 
-  it('E — OWNER full profile + hours payloads', () => {
+  it('OWNER full profile + hours payloads', () => {
     const permissions = resolveProfileEditPermissions({ role: 'OWNER', permissions: [] });
     const payload = buildProfileUpdatePayload({
       permissions,
       form: baseForm,
-      location,
       includeProfile: true,
       includeHours: true,
     });
     expect(payload.title).toBe('T');
     expect(payload.workHours).toEqual(workHoursFromOwnerForm(baseForm));
+    expect(payload).not.toHaveProperty('address');
   });
 
-  it('D — neither: empty payload even if include flags true', () => {
+  it('neither permission: empty payload even if include flags true', () => {
     const permissions = resolveProfileEditPermissions({
       role: 'MANAGER',
       permissions: [],
@@ -152,31 +148,18 @@ describe('buildProfileUpdatePayload', () => {
     const payload = buildProfileUpdatePayload({
       permissions,
       form: baseForm,
-      location,
       includeProfile: true,
       includeHours: true,
     });
     expect(Object.keys(payload)).toHaveLength(0);
   });
 
-  it('F — primary branch section copy (RU/KK)', () => {
+  it('primary branch section copy (RU/KK)', () => {
     expect(ownerProfilePrimaryBranchCopy('ru').sectionTitle).toBe('Основной филиал');
     expect(ownerProfilePrimaryBranchCopy('kk').sectionTitle).toBe('Негізгі филиал');
   });
 
-  it('G — branch management link label present', () => {
+  it('branch management link label present', () => {
     expect(ownerProfilePrimaryBranchCopy('ru').manageBranchesLink).toContain('филиал');
-  });
-
-  it('H — never includes locationId (secondary safety)', () => {
-    const permissions = resolveProfileEditPermissions({ role: 'OWNER', permissions: [] });
-    const payload = buildProfileUpdatePayload({
-      permissions,
-      form: baseForm,
-      location,
-      includeProfile: true,
-      includeHours: true,
-    });
-    expect(payload).not.toHaveProperty('locationId');
   });
 });

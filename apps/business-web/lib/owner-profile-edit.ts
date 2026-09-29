@@ -1,4 +1,3 @@
-import type { BusinessLocationState } from '@/components/business-location/business-location-field';
 import {
   BusinessPermission,
   type BusinessAccessContext,
@@ -52,27 +51,23 @@ export function workHoursFromOwnerForm(form: Pick<
   };
 }
 
-/** PATCH body for PATCH /businesses/:id — only keys the caller may edit. */
+/**
+ * PATCH body for PATCH /businesses/:id — brand-level fields only (BIZ.4).
+ * Physical address/coordinates → primary BusinessLocation endpoints.
+ */
 export function buildProfileUpdatePayload(options: {
   permissions: ProfileEditPermissions;
   form: OwnerProfileFormState;
-  location: BusinessLocationState;
   includeProfile: boolean;
   includeHours: boolean;
 }): Record<string, unknown> {
-  const { permissions, form, location, includeProfile, includeHours } = options;
+  const { permissions, form, includeProfile, includeHours } = options;
   const payload: Record<string, unknown> = {};
 
   if (includeProfile && permissions.canEditProfile) {
     payload.title = form.title;
     payload.shortDesc = form.shortDesc;
     payload.description = form.description;
-    payload.address = location.address;
-    if (location.latitude != null && location.longitude != null) {
-      payload.latitude = location.latitude;
-      payload.longitude = location.longitude;
-      payload.locationSource = location.locationSource ?? 'GEOCODED';
-    }
     payload.phone = form.phone;
     payload.whatsapp = form.whatsapp;
     payload.instagram = form.instagram;
