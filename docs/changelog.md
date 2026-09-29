@@ -10,7 +10,7 @@
 
 - **Status:** **BIZ.5 PASS — BUSINESS CONTENT / PLAN LIMITS HARDENED**. **BIZ.1–BIZ.4 remain CLOSED**. **AOP remains CLOSED**.
 - **Starting HEAD:** **`26d0bc93bb4c1c03a34ddd423906ce1e684c284f`**.
-- **Checkpoint (commit):** *(this commit)* — `fix(business): harden content and plan limits`.
+- **Checkpoint (commit):** **`7b96831db43f80030d12062eb56898b09f6811c3`** — `fix(business): harden content and plan limits`.
 - **Summary:** Documented menu/media/promotions permission + plan matrix (**§16** ownership doc). **Service item create** now calls **`assertCanAddServiceItem`**. Tests: **`service-items-content-access`**, **`promotions-content-access`**, upload cross-business delete, **`business-content-nav`**, branch availability fixture mock fix. Downgrade preservation unchanged (**plan-downgrade-entitlements**). **No payment/ads/ownership changes.**
 - **Deferred:** Reviews content QA; strip legacy business PATCH physical keys for non-web clients; UXA functional polish.
 - **Next:** BIZ umbrella closure; UXA blocked until BIZ CLOSED.
