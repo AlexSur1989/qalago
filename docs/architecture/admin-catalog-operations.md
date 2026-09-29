@@ -175,7 +175,17 @@ Canonical permissions: `packages/shared-types/src/staff-permissions.ts`. Enforce
 
 **Roles without catalog edit:** `ANALYST` (reports), `TECH_ADMIN` (flags), `SUPPORT` (mostly view) — **no** implied create Business.
 
-### 5.2 CITY_ADMIN (locked)
+### 5.2 Staff hierarchy (AOP.7H — locked)
+
+| Level | Role | Scope |
+|-------|------|--------|
+| 1 | **SUPER_ADMIN** | Global governance; all `StaffPermission`; staff plane; cities; security-critical controls |
+| 2 | **ADMIN** | Global **operational** administration (catalog, BL, lifecycle, featured, plan override, taxonomy, moderation, applications) — **no** `STAFF_*` plane |
+| 3 | **CITY_ADMIN** | City-scoped operations; **Uralsk** and **Aktobe** CITY_ADMIN share identical permission bundles — difference is **`StaffCityScope` only** |
+
+**CITY_ADMIN summary (AOP.7H):** ANY-BL **read** (list/detail/BL list); **PRIMARY-city** brand core + **lifecycle**; own-city **BL** CRUD/set-primary anti-escalation; **no** taxonomy mutation (`CATEGORY_EDIT` denied); **no** global **featured** mutation; **no** **plan override**; **no** `AUDIT_VIEW`; **no** staff plane.
+
+### 5.2.1 CITY_ADMIN scope modes (locked)
 
 | Mode | Rule |
 |------|------|
@@ -185,7 +195,7 @@ Canonical permissions: `packages/shared-types/src/staff-permissions.ts`. Enforce
 
 If an AOP operation cannot be expressed with current permissions: record **AOP.1 implementation debt** — **no** hidden bypass.
 
-### 5.3 AOP.4 — enforced city-scope matrix (implemented)
+### 5.3 AOP.4 + AOP.7H — enforced city-scope matrix (implemented)
 
 | Operation | Staff permission | CITY_ADMIN scope |
 |-----------|------------------|------------------|
@@ -196,8 +206,9 @@ If an AOP operation cannot be expressed with current permissions: record **AOP.1
 | BL update | `BUSINESS_EDIT` | Existing + target `cityId` ∈ managed cities; **primary BL** edit also requires **primary-city** authority |
 | BL set-primary | `BUSINESS_EDIT` | **Primary-city** authority **and** target branch `cityId` ∈ managed cities (blocks cross-city promotion by scoped city admins; blocks B-admin escalation while primary stays in A) |
 | BL delete | `BUSINESS_EDIT` | Target branch `cityId` ∈ managed cities (+ domain last/primary rules) |
-| Status / featured / plan | `BUSINESS_EDIT` | **ANY-BL** visibility (business-wide admin aggregate — [business-location.md](./business-location.md) § A.9.4.5A) |
-| Taxonomy patch | `CATEGORY_EDIT` | **Primary-city** authority (replaces legacy global-admin-only service gate; **CITY_ADMIN** lacks `CATEGORY_EDIT`) |
+| Status / lifecycle | `BUSINESS_EDIT` | **Primary-city** authority (**AOP.7H** — not ANY-BL) |
+| Featured / plan tier | `BUSINESS_EDIT` at route layer | **DENY** for CITY_ADMIN — **SUPER_ADMIN** + **ADMIN** only (`canStaffMutateBusinessFeatured` / `canStaffOverrideBusinessPlan`) |
+| Taxonomy patch | `CATEGORY_EDIT` | **DENY** (role lacks permission); global admins use primary-city helper where applicable |
 
 **Legacy bypass audit:** `POST /api/v1/businesses` (owner plane) remains **global ADMIN/SUPER_ADMIN only** — not staff `BUSINESS_CREATE`. Admin catalog mutations use `@AdminStaffRoute` + `StaffPermission` + `CityScopeService`.
 

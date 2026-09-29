@@ -4,14 +4,18 @@ import { FormEvent, Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { adminApi, AuthUser } from '@/lib/api';
 import { setWebAccessToken } from '@/lib/web-auth-token';
-import { adminWebDevLoginEnabled, devSeedAccounts } from '@/lib/auth-config';
+import {
+  adminWebDevLoginEnabled,
+  devSeedAccounts,
+  devSuperAdminManualHintRu,
+} from '@/lib/auth-config';
 import { canAccessAdminWeb } from '@/lib/rbac';
 
 function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = searchParams.get('next');
-  const [phone, setPhone] = useState('+77000000001');
+  const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [debugCode, setDebugCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -186,12 +190,11 @@ function LoginPageContent() {
             </button>
           </form>
         ) : null}
-        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20, lineHeight: 1.6 }}>
-          <div><strong>SUPER_ADMIN</strong> · +77000000001</div>
-          <div><strong>ADMIN</strong> · +77000000005</div>
-          <div><strong>CITY_ADMIN</strong> · +77000000004 · Актобе</div>
-          <div style={{ marginTop: 6 }}>OTP: 1234</div>
-        </div>
+        {adminWebDevLoginEnabled && !mfaChallengeToken ? (
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20, lineHeight: 1.6 }}>
+            <div>{devSuperAdminManualHintRu}</div>
+          </div>
+        ) : null}
         {!mfaChallengeToken ? (
           <>
             <form onSubmit={sendCode} className="form-grid" style={{ marginBottom: 24 }}>

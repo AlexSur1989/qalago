@@ -1,5 +1,5 @@
 import { ForbiddenException } from '@nestjs/common';
-import { PrismaClient, UserRole } from '@prisma/client';
+import { BusinessPlanTier, PrismaClient, UserRole } from '@prisma/client';
 import { randomBytes } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { StaffPermission } from '@qalago/shared-types';
@@ -256,13 +256,119 @@ describe('AOP.4 — Admin catalog RBAC / CITY_ADMIN scope', () => {
       }
     });
 
-    it('city admin B may update status (business-wide ANY-BL admin rule 6.12A)', async () => {
+    it('both city admins see business in scoped list (ANY-BL)', async () => {
+      if (skip) return;
+      const svc = buildAdminService();
+      const { business, slug } = await createMultiCityBusiness('aop7h-list');
+      try {
+        const listA = await svc.listBusinesses(cityAdminA(), { page: 1, limit: 100 });
+        const listB = await svc.listBusinesses(cityAdminB(), { page: 1, limit: 100 });
+        expect(listA.items.some((i) => i.id === business.id)).toBe(true);
+        expect(listB.items.some((i) => i.id === business.id)).toBe(true);
+      } finally {
+        await cleanupSlug(slug);
+      }
+    });
+
+    it('city admin A cannot mutate featured even with primary-city authority (AOP.7H)', async () => {
+      if (skip) return;
+      const svc = buildAdminService();
+      const { business, slug } = await createMultiCityBusiness('aop7h-feat-a');
+      try {
+        await expect(
+          svc.updateBusinessFeatured(cityAdminA(), business.id, {
+            isFeatured: true,
+            featuredSlot: 1,
+          }),
+        ).rejects.toBeInstanceOf(ForbiddenException);
+      } finally {
+        await cleanupSlug(slug);
+      }
+    });
+
+    it('city admin B cannot mutate featured (AOP.7H)', async () => {
+      if (skip) return;
+      const svc = buildAdminService();
+      const { business, slug } = await createMultiCityBusiness('aop7h-feat-b');
+      try {
+        await expect(
+          svc.updateBusinessFeatured(cityAdminB(), business.id, {
+            isFeatured: true,
+            featuredSlot: 1,
+          }),
+        ).rejects.toBeInstanceOf(ForbiddenException);
+      } finally {
+        await cleanupSlug(slug);
+      }
+    });
+
+    it('platform ADMIN can mutate featured (AOP.7H)', async () => {
+      if (skip) return;
+      const svc = buildAdminService();
+      const { business, slug } = await createMultiCityBusiness('aop7h-feat-admin');
+      try {
+        const updated = await svc.updateBusinessFeatured(adminActor(), business.id, {
+          isFeatured: true,
+          featuredSlot: 2,
+        });
+        expect(updated.isFeatured).toBe(true);
+        expect(updated.featuredSlot).toBe(2);
+      } finally {
+        await cleanupSlug(slug);
+      }
+    });
+
+    it('city admins cannot override plan tier (AOP.7H)', async () => {
+      if (skip) return;
+      const svc = buildAdminService();
+      const plans = {
+        adminSetTier: jest.fn().mockResolvedValue({ planTier: 'BASIC' }),
+      };
+      (svc as unknown as { plans: typeof plans }).plans = plans;
+      const { business, slug } = await createMultiCityBusiness('aop7h-plan');
+      try {
+        await expect(
+          svc.updateBusinessPlan(cityAdminA(), business.id, { tier: BusinessPlanTier.BASIC }),
+        ).rejects.toBeInstanceOf(ForbiddenException);
+        await expect(
+          svc.updateBusinessPlan(cityAdminB(), business.id, { tier: BusinessPlanTier.BASIC }),
+        ).rejects.toBeInstanceOf(ForbiddenException);
+        expect(plans.adminSetTier).not.toHaveBeenCalled();
+      } finally {
+        await cleanupSlug(slug);
+      }
+    });
+
+    it('platform ADMIN can override plan tier (AOP.7H)', async () => {
+      if (skip) return;
+      const svc = buildAdminService();
+      const plans = {
+        adminSetTier: jest.fn().mockResolvedValue({ planTier: 'PREMIUM' }),
+      };
+      (svc as unknown as { plans: typeof plans }).plans = plans;
+      const { business, slug } = await createMultiCityBusiness('aop7h-plan-admin');
+      try {
+        await svc.updateBusinessPlan(adminActor(), business.id, { tier: BusinessPlanTier.PREMIUM });
+        expect(plans.adminSetTier).toHaveBeenCalledWith(
+          adminActor(),
+          business.id,
+          BusinessPlanTier.PREMIUM,
+        );
+      } finally {
+        await cleanupSlug(slug);
+      }
+    });
+
+    it('city admin B cannot update status when primary is outside scope (AOP.7H)', async () => {
       if (skip) return;
       const svc = buildAdminService();
       const { business, slug } = await createMultiCityBusiness('aop4-status');
       try {
         await expect(
           svc.updateBusinessStatus(cityAdminB(), business.id, { status: 'BLOCKED' }),
+        ).rejects.toBeInstanceOf(ForbiddenException);
+        await expect(
+          svc.updateBusinessStatus(cityAdminA(), business.id, { status: 'BLOCKED' }),
         ).resolves.toMatchObject({ status: 'BLOCKED' });
       } finally {
         await cleanupSlug(slug);

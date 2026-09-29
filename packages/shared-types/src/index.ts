@@ -255,4 +255,7 @@ export {
   canViewUsers,
   isGlobalAdminRole,
   isSuperAdminRole,
+  isPlatformGlobalAdminRole,
+  canStaffMutateBusinessFeatured,
+  canStaffOverrideBusinessPlan,
 } from './staff-permissions';

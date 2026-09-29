@@ -59,7 +59,8 @@
 | **AOP.3** | **PASS — ADMIN BUSINESSLOCATION MANAGEMENT** — detail **Locations** CRUD + set-primary |
 | **AOP.4** | **PASS — ADMIN CATALOG RBAC / CITY SCOPE ENFORCED** |
 | **AOP.5** | **PASS — ADMIN CATALOG AUDIT / LIFECYCLE INTEGRATED** — audit matrix **§5.4**; catalog detail taxonomy + lifecycle UX |
-| **AOP.6** | **PASS — ADMIN CATALOG FULL AUTOMATED REGRESSION VERIFIED** — AOP.0–5 integrated gate; **AOP.7** physical QA **NOT STARTED**; overall **AOP NOT CLOSED** |
+| **AOP.6** | **PASS — ADMIN CATALOG FULL AUTOMATED REGRESSION VERIFIED** — AOP.0–5 integrated gate |
+| **AOP.7H** | **PASS — ADMIN HIERARCHY / DEV LOGIN HARDENED** — SUPER→ADMIN→CITY_ADMIN; lifecycle **PRIMARY-city**; featured/plan **SUPER+ADMIN**; DEV login UI gated; audit nav **`AUDIT_VIEW`**; **AOP.7 physical QA OPEN** |
 | **Next** | **AOP.7** physical Admin catalog QA; **KZ-C.1F** notification QA; **mass catalog population BLOCKED**; do not auto-start **KZ-C.2** |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
@@ -93,7 +94,7 @@
 | **Ads** | Shared Ad Engine; locale-aware labels + transparency + separate retention class — **KZ-C.4**; fixed API **`Реклама`** is not final. |
 | **AI** | Consumer AI **not launched**; external LLM / content-origin schema — **KZ-C.6** gate before launch. |
 | **Production gate** | Do **not** claim LEGAL READY / COMPLIANCE COMPLETE until §30 checklist in contract (+ **KZ-C.9**). |
-| **AOP.0–AOP.6** | **AOP.0** contract through **AOP.6 PASS** automated regression — [admin-catalog-operations.md](./architecture/admin-catalog-operations.md) §5.4; **AOP.7** physical QA **NOT STARTED**; overall **AOP NOT CLOSED**; mass population **BLOCKED**. |
+| **AOP.0–AOP.7H** | **AOP.0** contract through **AOP.7H PASS** hierarchy + dev-login hardening — [admin-catalog-operations.md](./architecture/admin-catalog-operations.md) §5.2–5.3; **AOP.7** physical QA **OPEN**; overall **AOP NOT CLOSED**; mass population **BLOCKED**. |
 
 **Phases:** KZ-C.1 … KZ-C.9 per contract; **AOP.0** may proceed in parallel where compatible; **public production** gated by P0 compliance work.
 

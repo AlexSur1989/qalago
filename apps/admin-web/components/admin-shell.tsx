@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { AuthUser } from '@/lib/api';
 import { AdminTabId } from '@/lib/admin-utils';
 import { canManageCities, canViewUsers, getRoleDefinition } from '@/lib/rbac';
+import { canViewAdminAuditLogs } from '@/lib/admin-catalog-rbac';
 import type { MonetizationSubNavId } from '@/lib/monetization-utils';
 
 type NavItem = {
@@ -170,13 +171,15 @@ export function AdminShell({
             <span className="nav-icon">📊</span>
             <span>Отчёты</span>
           </Link>
-          <Link
-            href="/audit-logs"
-            className={`nav-item${pathname.startsWith('/audit-logs') ? ' active' : ''}`}
-          >
-            <span className="nav-icon">🛡️</span>
-            <span>Аудит</span>
-          </Link>
+          {canViewAdminAuditLogs(user.role) && (
+            <Link
+              href="/audit-logs"
+              className={`nav-item${pathname.startsWith('/audit-logs') ? ' active' : ''}`}
+            >
+              <span className="nav-icon">🛡️</span>
+              <span>Аудит</span>
+            </Link>
+          )}
         </nav>
       </aside>
 

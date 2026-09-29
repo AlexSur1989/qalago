@@ -272,6 +272,21 @@ export function isSuperAdminRole(role: string): boolean {
   return role === UserRole.SUPER_ADMIN;
 }
 
+/** Platform-wide catalog operators (not city-scoped). AOP.7H hierarchy. */
+export function isPlatformGlobalAdminRole(role: string): boolean {
+  return role === UserRole.SUPER_ADMIN || role === UserRole.ADMIN;
+}
+
+/** Business-wide featured / merchandising — SUPER + ADMIN only (AOP.7H). */
+export function canStaffMutateBusinessFeatured(role: string): boolean {
+  return isPlatformGlobalAdminRole(role);
+}
+
+/** Business-wide plan override — SUPER + ADMIN only (AOP.7H). */
+export function canStaffOverrideBusinessPlan(role: string): boolean {
+  return isPlatformGlobalAdminRole(role);
+}
+
 export function canManageCities(role: string): boolean {
   return role === UserRole.SUPER_ADMIN;
 }

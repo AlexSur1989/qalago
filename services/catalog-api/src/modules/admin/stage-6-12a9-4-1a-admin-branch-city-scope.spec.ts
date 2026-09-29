@@ -144,6 +144,7 @@ describe('Stage 6.12A.9.4.1A admin branch city scope', () => {
     it('updateBusinessStatus calls assertBusinessInAdminScope with business id', async () => {
       const cityScope = {
         assertBusinessInAdminScope: jest.fn().mockResolvedValue(undefined),
+        assertBusinessPrimaryLocationCityInAdminScope: jest.fn().mockResolvedValue(undefined),
         resolveAdminCityId: jest.fn(),
         buildAdminBusinessScopeWhere: jest.fn(),
       };
@@ -193,6 +194,10 @@ describe('Stage 6.12A.9.4.1A admin branch city scope', () => {
         { status: 'BLOCKED' as never },
       );
       expect(cityScope.assertBusinessInAdminScope).toHaveBeenCalledWith(
+        expect.anything(),
+        businessId,
+      );
+      expect(cityScope.assertBusinessPrimaryLocationCityInAdminScope).toHaveBeenCalledWith(
         expect.anything(),
         businessId,
       );

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminApi, AuditLogRow } from '@/lib/api';
-import { canModerate } from '@/lib/rbac';
+import { canViewAdminAuditLogs } from '@/lib/admin-catalog-rbac';
 import { useAuth } from '@/lib/use-auth';
 
 function formatAction(action: string): string {
@@ -37,7 +37,7 @@ export default function AuditLogsPage() {
       router.replace('/login');
       return;
     }
-    if (!canModerate(user.role)) {
+    if (!canViewAdminAuditLogs(user.role)) {
       router.replace('/dashboard');
     }
   }, [ready, token, user, router]);

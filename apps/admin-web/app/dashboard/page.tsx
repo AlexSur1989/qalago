@@ -29,6 +29,11 @@ import {
   publicVisibilityLabel,
 } from '@/lib/admin-utils';
 import { canManageUsers, canViewUsers, canManageCities, canManageGlobalCategories } from '@/lib/rbac';
+import {
+  canEditAdminCatalogBusinessPrimaryCity,
+  canStaffMutateBusinessFeatured,
+  canStaffOverrideBusinessPlan,
+} from '@/lib/admin-catalog-rbac';
 import { useAuth } from '@/lib/use-auth';
 
 export default function DashboardPage() {
@@ -79,6 +84,17 @@ export default function DashboardPage() {
   const canChangeRoles = user ? canManageUsers(user.role) : false;
   const showCitiesTab = user ? canManageCities(user.role) : false;
   const canEditGlobalCategories = user ? canManageGlobalCategories(user.role) : false;
+  const canChangeFeatured = user ? canStaffMutateBusinessFeatured(user.role) : false;
+  const canChangePlan = user ? canStaffOverrideBusinessPlan(user.role) : false;
+
+  function canChangeBusinessStatus(b: BusinessRow): boolean {
+    if (!user) return false;
+    return canEditAdminCatalogBusinessPrimaryCity(
+      user.role,
+      user.managedCity?.slug,
+      b.city?.slug,
+    );
+  }
 
   useEffect(() => {
     adminApi.listCities().then(setCities).catch(() => undefined);
@@ -581,20 +597,26 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div className="moderation-actions">
-                    <button
-                      type="button"
-                      className="btn btn-primary btn-sm"
-                      onClick={() => setStatus(b.id, 'ACTIVE', b.title)}
-                    >
-                      Одобрить
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-danger btn-sm"
-                      onClick={() => setStatus(b.id, 'BLOCKED', b.title)}
-                    >
-                      Отклонить
-                    </button>
+                    {canChangeBusinessStatus(b) ? (
+                      <>
+                        <button
+                          type="button"
+                          className="btn btn-primary btn-sm"
+                          onClick={() => setStatus(b.id, 'ACTIVE', b.title)}
+                        >
+                          Одобрить
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-danger btn-sm"
+                          onClick={() => setStatus(b.id, 'BLOCKED', b.title)}
+                        >
+                          Отклонить
+                        </button>
+                      </>
+                    ) : (
+                      <span className="muted">Статус — только админ PRIMARY-города</span>
+                    )}
                   </div>
                 </div>
               ))
@@ -643,21 +665,25 @@ export default function DashboardPage() {
                       </span>
                     </td>
                     <td>
-                      <select
-                        className="filter-select"
-                        value={b.planTier ?? 'FREE'}
-                        onChange={(e) => setBusinessPlan(b, e.target.value)}
-                        title={
-                          b.planExpiresAt
-                            ? `До ${new Date(b.planExpiresAt).toLocaleDateString('ru-RU')}`
-                            : undefined
-                        }
-                      >
-                        <option value="FREE">Бесплатный</option>
-                        <option value="BASIC">Бизнес</option>
-                        <option value="PREMIUM">PRO</option>
-                        <option value="VIP">VIP</option>
-                      </select>
+                      {canChangePlan ? (
+                        <select
+                          className="filter-select"
+                          value={b.planTier ?? 'FREE'}
+                          onChange={(e) => setBusinessPlan(b, e.target.value)}
+                          title={
+                            b.planExpiresAt
+                              ? `До ${new Date(b.planExpiresAt).toLocaleDateString('ru-RU')}`
+                              : undefined
+                          }
+                        >
+                          <option value="FREE">Бесплатный</option>
+                          <option value="BASIC">Бизнес</option>
+                          <option value="PREMIUM">PRO</option>
+                          <option value="VIP">VIP</option>
+                        </select>
+                      ) : (
+                        <span>{planTierLabel(b.planTier ?? 'FREE')}</span>
+                      )}
                     </td>
                     <td>{b.city?.nameRu}</td>
                     <td>
@@ -676,22 +702,26 @@ export default function DashboardPage() {
                       </Link>
                     </td>
                     <td>
-                      {b.status === 'ACTIVE' ? (
-                        <button
-                          type="button"
-                          className="btn btn-danger btn-sm"
-                          onClick={() => setStatus(b.id, 'BLOCKED', b.title)}
-                        >
-                          Блок
-                        </button>
+                      {canChangeBusinessStatus(b) ? (
+                        b.status === 'ACTIVE' ? (
+                          <button
+                            type="button"
+                            className="btn btn-danger btn-sm"
+                            onClick={() => setStatus(b.id, 'BLOCKED', b.title)}
+                          >
+                            Блок
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="btn btn-sm"
+                            onClick={() => setStatus(b.id, 'ACTIVE', b.title)}
+                          >
+                            Активировать
+                          </button>
+                        )
                       ) : (
-                        <button
-                          type="button"
-                          className="btn btn-sm"
-                          onClick={() => setStatus(b.id, 'ACTIVE', b.title)}
-                        >
-                          Активировать
-                        </button>
+                        <span className="muted">—</span>
                       )}
                     </td>
                   </tr>
@@ -731,6 +761,9 @@ export default function DashboardPage() {
           <p style={{ color: 'var(--text-muted)', fontSize: 14, marginTop: 0 }}>
             Меньший номер слота — выше в блоке «Рекомендуем» в приложении.
           </p>
+          {!canChangeFeatured && (
+            <p className="muted">Изменение «Топ» доступно только администраторам платформы.</p>
+          )}
           <table className="table">
             <thead>
               <tr>
@@ -747,7 +780,7 @@ export default function DashboardPage() {
                   <td>{b.title}</td>
                   <td>{b.address}</td>
                   <td>
-                    {b.isFeatured ? (
+                    {b.isFeatured && canChangeFeatured ? (
                       <input
                         type="number"
                         min={0}
@@ -758,6 +791,8 @@ export default function DashboardPage() {
                           updateFeaturedSlot(b, Number.parseInt(e.target.value, 10) || 0)
                         }
                       />
+                    ) : b.isFeatured ? (
+                      String(b.featuredSlot ?? 0)
                     ) : (
                       '—'
                     )}
@@ -770,13 +805,17 @@ export default function DashboardPage() {
                     )}
                   </td>
                   <td>
-                    <button
-                      type="button"
-                      className={`btn btn-sm${b.isFeatured ? '' : ' btn-primary'}`}
-                      onClick={() => toggleFeatured(b)}
-                    >
-                      {b.isFeatured ? 'Убрать из Топа' : 'Добавить в Топ'}
-                    </button>
+                    {canChangeFeatured ? (
+                      <button
+                        type="button"
+                        className={`btn btn-sm${b.isFeatured ? '' : ' btn-primary'}`}
+                        onClick={() => toggleFeatured(b)}
+                      >
+                        {b.isFeatured ? 'Убрать из Топа' : 'Добавить в Топ'}
+                      </button>
+                    ) : (
+                      <span className="muted">—</span>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -5,7 +5,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { isStaffRole } from '@qalago/shared-types';
+import {
+  canStaffMutateBusinessFeatured,
+  canStaffOverrideBusinessPlan,
+  isStaffRole,
+} from '@qalago/shared-types';
 import {
   AuditAction,
   AuditResourceType,
@@ -299,6 +303,7 @@ export class AdminService {
     const business = await this.ensureBusiness(id);
 
     await this.cityScope.assertBusinessInAdminScope(user, business.id);
+    await this.cityScope.assertBusinessPrimaryLocationCityInAdminScope(user, business.id);
 
     const auditCityId = await resolveBusinessPrimaryCityId(this.prisma, business.id);
     const fromStatus = business.status;
@@ -390,6 +395,9 @@ export class AdminService {
     const business = await this.ensureBusiness(id);
 
     await this.cityScope.assertBusinessInAdminScope(user, business.id);
+    if (!canStaffMutateBusinessFeatured(user.role)) {
+      throw new ForbiddenException('Not allowed to change featured status');
+    }
 
     const auditCityId = await resolveBusinessPrimaryCityId(this.prisma, business.id);
 
@@ -429,6 +437,9 @@ export class AdminService {
     const business = await this.ensureBusiness(id);
 
     await this.cityScope.assertBusinessInAdminScope(user, business.id);
+    if (!canStaffOverrideBusinessPlan(user.role)) {
+      throw new ForbiddenException('Not allowed to change business plan');
+    }
 
     return this.plans.adminSetTier(user, id, dto.tier);
 

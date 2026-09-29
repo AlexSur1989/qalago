@@ -90,7 +90,7 @@ export class PlansService {
     if (!business) {
       throw new NotFoundException('Business not found');
     }
-    if (!isGlobalAdmin(user) && user.role !== UserRole.CITY_ADMIN) {
+    if (!isGlobalAdmin(user)) {
       throw new ForbiddenException('Admin only');
     }
 

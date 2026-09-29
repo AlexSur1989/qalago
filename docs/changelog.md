@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-29 — AOP.7H — Admin hierarchy correction + DEV login hardening
+
+- **Status:** **AOP.7H PASS — ADMIN HIERARCHY / DEV LOGIN HARDENED**. **AOP.7 physical QA OPEN**. **Overall AOP NOT CLOSED**. **Mass catalog population remains BLOCKED**.
+- **Starting HEAD:** **`a82ee3d37fd94c82796fa9d8eef44a5de8b3eff3`** (post AOP.6).
+- **Checkpoint (commit):** **`75f8f5bdaf20c667226430bd8085a182bbd7a0d4`** — `fix(admin): enforce staff hierarchy and harden dev login`.
+- **Summary:** Locked staff hierarchy **SUPER_ADMIN → ADMIN → CITY_ADMIN** (no new roles). **CITY_ADMIN:** ANY-BL read; **PRIMARY-city** catalog core + **lifecycle** (`updateBusinessStatus`); **DENY** featured/plan override (`canStaffMutateBusinessFeatured` / `canStaffOverrideBusinessPlan`); taxonomy/audit/staff plane unchanged. **ADMIN:** global ops without `STAFF_*`. **Real SUPER_ADMIN account untouched.** Admin Web: empty login phone; dev quick-login gated on **`NEXT_PUBLIC_QALAGO_DEV_LOGIN`** (Platform Admin + Uralsk/Aktobe CITY_ADMIN only; no SUPER phone in UI); audit nav **`AUDIT_VIEW`**; catalog detail + dashboard lifecycle/featured/plan UX aligned. Tests: catalog-api **212/212** Jest **`--runInBand`** (**1470** tests); admin-web **103/103** vitest + **next build** PASS. Docs **§5.2–5.3** updated.
+- **Deferred:** **AOP.7** physical browser QA; Jest parallel shared-DB flake (document only).
+- **Next:** **AOP.7** physical verification — explicit agreement only.
+
+---
+
 ## 2026-09-29 — AOP.6 — Admin catalog full automated regression gate
 
 - **Status:** **AOP.6 PASS — ADMIN CATALOG FULL AUTOMATED REGRESSION VERIFIED**. **AOP.7 NOT STARTED**. **Overall AOP NOT CLOSED**. **Mass catalog population remains BLOCKED**.

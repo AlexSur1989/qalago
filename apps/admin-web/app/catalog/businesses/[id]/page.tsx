@@ -14,6 +14,7 @@ import { parseAdminCatalogApiError } from '@/lib/admin-catalog-errors';
 import { buildAdminCatalogPatchPayload } from '@/lib/admin-catalog-form';
 import {
   canEditAdminCatalogBusiness,
+  canEditAdminCatalogBusinessPrimaryCity,
   canEditCatalogTaxonomy,
 } from '@/lib/admin-catalog-rbac';
 import { statusClass } from '@/lib/admin-utils';
@@ -22,7 +23,7 @@ import { adminApi, type CategoryRow, type SubcategoryAdminRow } from '@/lib/api'
 export default function CatalogBusinessDetailPage() {
   const params = useParams<{ id: string }>();
   const { token, user, locale, cities, citySlug } = useCatalogContext();
-  const canEdit = canEditAdminCatalogBusiness(user.role);
+  const canEditLocations = canEditAdminCatalogBusiness(user.role);
   const canTaxonomy = canEditCatalogTaxonomy(user.role);
 
   const [detail, setDetail] = useState<AdminCatalogBusinessDetail | null>(null);
@@ -47,6 +48,12 @@ export default function CatalogBusinessDetailPage() {
   const [taxSaving, setTaxSaving] = useState(false);
   const [taxError, setTaxError] = useState<string | null>(null);
   const [taxOk, setTaxOk] = useState(false);
+
+  const canEditBrand = canEditAdminCatalogBusinessPrimaryCity(
+    user.role,
+    user.managedCity?.slug,
+    detail?.city?.slug,
+  );
 
   const load = useCallback(() => {
     setLoading(true);
@@ -119,7 +126,7 @@ export default function CatalogBusinessDetailPage() {
   }
 
   async function changeStatus(next: 'ACTIVE' | 'BLOCKED' | 'PENDING') {
-    if (!canEdit || statusBusy || !detail) return;
+    if (!canEditBrand || statusBusy || !detail) return;
     const confirmMsg =
       next === 'BLOCKED'
         ? adminCatalogLabel(locale, 'confirmBlock')
@@ -140,7 +147,7 @@ export default function CatalogBusinessDetailPage() {
 
   async function onSaveCatalog(e: FormEvent) {
     e.preventDefault();
-    if (!canEdit || saving) return;
+    if (!canEditBrand || saving) return;
     setSaveError(null);
     setSaving(true);
     try {
@@ -262,7 +269,7 @@ export default function CatalogBusinessDetailPage() {
       <div className="card" style={{ marginTop: 16 }}>
         <h3 style={{ marginTop: 0 }}>{adminCatalogLabel(locale, 'sectionLifecycle')}</h3>
         <p>{adminCatalogStatusLabel(locale, detail.status)}</p>
-        {canEdit && (
+        {canEditBrand && (
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {(detail.status === 'PENDING' || detail.status === 'BLOCKED') && (
               <button
@@ -294,11 +301,11 @@ export default function CatalogBusinessDetailPage() {
           businessId={detail.id}
           locale={locale}
           cities={cities}
-          canEdit={canEdit}
+          canEdit={canEditLocations}
         />
       </div>
 
-      {canEdit && (
+      {canEditBrand && (
         <form className="card" style={{ marginTop: 16, maxWidth: 720 }} onSubmit={onSaveCatalog}>
           <h3 style={{ marginTop: 0 }}>{adminCatalogLabel(locale, 'sectionCatalogEdit')}</h3>
           {saveError && <p className="muted">{saveError}</p>}
