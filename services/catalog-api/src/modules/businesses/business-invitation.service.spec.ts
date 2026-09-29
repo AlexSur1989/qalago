@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import {
   BusinessInvitationStatus,
   BusinessMembershipRole,
@@ -25,6 +25,7 @@ describe('BusinessInvitationService (Stage 6.2B6)', () => {
       findUnique: jest.Mock;
       upsert: jest.Mock;
     };
+    authIdentity: { findFirst: jest.Mock };
     $transaction: jest.Mock;
   };
   let auditLog: { record: jest.Mock };
@@ -43,6 +44,7 @@ describe('BusinessInvitationService (Stage 6.2B6)', () => {
         findUnique: jest.fn(),
         upsert: jest.fn(),
       },
+      authIdentity: { findFirst: jest.fn().mockResolvedValue({ id: 'ai-1' }) },
       $transaction: jest.fn(async (fn: (tx: typeof prisma) => unknown) => fn(prisma)),
     };
     auditLog = { record: jest.fn().mockResolvedValue({ id: 'audit-1' }) };
@@ -76,10 +78,11 @@ describe('BusinessInvitationService (Stage 6.2B6)', () => {
     expect(result.recipientEmailMasked).toContain('@example.com');
   });
 
-  it('accept creates MANAGER membership for phone-null user', async () => {
+  it('accept creates MANAGER membership for email-token invite when identity matches', async () => {
     prisma.businessInvitation.findFirst.mockResolvedValue({
       id: 'inv-1',
       businessId: 'biz-1',
+      email: 'manager@example.com',
       invitedByUserId: 'inviter-1',
       permissions: [BusinessPermission.CATALOG_EDIT],
       status: BusinessInvitationStatus.PENDING,
@@ -161,6 +164,24 @@ describe('BusinessInvitationService (Stage 6.2B6)', () => {
     expect(params.normalized).toBe('manager@example.com');
     expect(params.tokenHash).toBe(hashInviteToken(params.rawToken));
     expect(params.tokenHash).not.toBe(params.rawToken);
+  });
+
+  it('rejects email invite when accepting user has no matching auth identity', async () => {
+    prisma.businessInvitation.findFirst.mockResolvedValue({
+      id: 'inv-1',
+      businessId: 'biz-1',
+      email: 'manager@example.com',
+      permissions: [],
+      status: BusinessInvitationStatus.PENDING,
+      expiresAt: new Date(Date.now() + 60_000),
+      business: { id: 'biz-1', title: 'Cafe', cityId: 'city-1', status: BusinessStatus.ACTIVE },
+    });
+    prisma.businessMembership.findUnique.mockResolvedValue(null);
+    prisma.authIdentity.findFirst.mockResolvedValue(null);
+
+    await expect(service.acceptByToken(user, rawToken)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
   });
 
   it('rejects cancelled invitation on accept', async () => {

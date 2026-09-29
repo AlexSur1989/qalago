@@ -66,3 +66,75 @@ describe('BusinessMembershipService.hasActiveOwnerAccess (Stage 5N.1)', () => {
     await expect(service.hasActiveOwnerAccess('u1', 'b1', 'u1')).resolves.toBe(false);
   });
 });
+
+describe('BusinessMembershipService.claimPendingInvitations (BIZ.3)', () => {
+  const auditLog = createMockAuditLog();
+
+  function createClaimService() {
+    const prisma = {
+      user: { findUnique: jest.fn() },
+      businessInvitation: { findMany: jest.fn(), update: jest.fn() },
+      $transaction: jest.fn(async (fn: (tx: unknown) => unknown) =>
+        fn({
+          businessMembership: { upsert: jest.fn().mockResolvedValue({ id: 'mem-1' }) },
+          businessInvitation: { update: jest.fn() },
+        }),
+      ),
+    };
+    const planLimits = {
+      assertCanAddManager: jest.fn().mockResolvedValue(undefined),
+    };
+    const service = new BusinessMembershipService(
+      prisma as never,
+      asAuditLogService(auditLog),
+      planLimits as never,
+    );
+    jest.spyOn(service, 'getMembership').mockResolvedValue(null);
+    return { service, prisma, planLimits };
+  }
+
+  it('claims only pending phone invitations matching user phone', async () => {
+    const { service, prisma } = createClaimService();
+    prisma.user.findUnique.mockResolvedValue({
+      id: 'u1',
+      phone: '+77001112233',
+      role: 'USER',
+    });
+    prisma.businessInvitation.findMany.mockResolvedValue([
+      {
+        id: 'inv-1',
+        businessId: 'biz-1',
+        phone: '+77001112233',
+        permissions: ['CATALOG_EDIT'],
+      },
+    ]);
+
+    await service.claimPendingInvitations('u1', '+77001112233');
+    expect(prisma.businessInvitation.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          phone: '+77001112233',
+          tokenHash: null,
+          status: 'PENDING',
+        }),
+      }),
+    );
+    expect(prisma.$transaction).toHaveBeenCalled();
+  });
+
+  it('skips claim when plan manager limit exceeded', async () => {
+    const { service, prisma, planLimits } = createClaimService();
+    prisma.user.findUnique.mockResolvedValue({
+      id: 'u1',
+      phone: '+77001112233',
+      role: 'USER',
+    });
+    prisma.businessInvitation.findMany.mockResolvedValue([
+      { id: 'inv-1', businessId: 'biz-1', phone: '+77001112233', permissions: [] },
+    ]);
+    planLimits.assertCanAddManager.mockRejectedValue(new Error('limit'));
+
+    await service.claimPendingInvitations('u1', '+77001112233');
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+});

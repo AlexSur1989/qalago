@@ -14,11 +14,15 @@ import {
   BusinessStatus,
   NotificationTargetType,
   NotificationType,
+  Prisma,
 } from '@prisma/client';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { SlidingWindowRateLimitService } from '../../common/services/sliding-window-rate-limit.service';
 import { generateInviteToken, hashInviteToken } from '../../common/utils/invite-token.util';
-import { maskInvitationEmail, normalizeInvitationEmail } from '../../common/utils/email-normalize.util';
+import {
+  maskInvitationEmail,
+  normalizeInvitationEmail,
+} from '../../common/utils/email-normalize.util';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { resolveBusinessAuditCityId } from '../../common/utils/business-context-city.util';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -127,6 +131,10 @@ export class BusinessInvitationService {
 
       if (invitation.business.status === BusinessStatus.BLOCKED) {
         throw new ForbiddenException('Business is not available');
+      }
+
+      if (invitation.email) {
+        await this.assertAcceptingUserMatchesInvitationEmail(tx, user.id, invitation.email);
       }
 
       const existingMembership = await tx.businessMembership.findUnique({
@@ -284,6 +292,28 @@ export class BusinessInvitationService {
       where: { tokenHash },
       include: { business: { select: { title: true, status: true, id: true } } },
     });
+  }
+
+  /** Email-token invites must be accepted by the matching auth identity (BIZ.3). */
+  private async assertAcceptingUserMatchesInvitationEmail(
+    tx: Prisma.TransactionClient,
+    userId: string,
+    invitationEmail: string,
+  ): Promise<void> {
+    const normalized = normalizeInvitationEmail(invitationEmail);
+    if (!normalized) {
+      throw new BadRequestException('Invalid invitation');
+    }
+    const identity = await tx.authIdentity.findFirst({
+      where: {
+        userId,
+        email: { equals: normalized, mode: 'insensitive' },
+      },
+      select: { id: true },
+    });
+    if (!identity) {
+      throw new ForbiddenException('Invitation email does not match your account');
+    }
   }
 
   private effectiveStatus(

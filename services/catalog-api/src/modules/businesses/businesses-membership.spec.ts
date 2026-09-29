@@ -196,4 +196,36 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
     expect(result.items[0].access.role).toBe('MANAGER');
     expect(result.items[0].access.permissions).toContain('CATALOG_EDIT');
   });
+
+  it('findMy excludes SUSPENDED MANAGER', async () => {
+    const { service, prisma } = createService();
+    prisma.business.findMany = jest.fn().mockResolvedValue([
+      {
+        id: 'b1',
+        ownerId: 'owner-1',
+        title: 'Cafe',
+        memberships: [{ role: 'MANAGER', status: 'SUSPENDED', permissions: ['CATALOG_EDIT'] }],
+        category: null,
+      },
+    ]);
+
+    const result = await service.findMy({ id: 'mgr-1', sub: 'mgr-1', phone: '+7', role: UserRole.USER });
+    expect(result.items).toHaveLength(0);
+  });
+
+  it('findMy excludes INVITED MANAGER', async () => {
+    const { service, prisma } = createService();
+    prisma.business.findMany = jest.fn().mockResolvedValue([
+      {
+        id: 'b1',
+        ownerId: 'owner-1',
+        title: 'Cafe',
+        memberships: [{ role: 'MANAGER', status: 'INVITED', permissions: [] }],
+        category: null,
+      },
+    ]);
+
+    const result = await service.findMy({ id: 'mgr-1', sub: 'mgr-1', phone: '+7', role: UserRole.USER });
+    expect(result.items).toHaveLength(0);
+  });
 });

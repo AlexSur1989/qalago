@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-29 — BIZ.3 — Business team / manager access hardening
+
+- **Status:** **BIZ.3 PASS — BUSINESS TEAM / MANAGER ACCESS FINALIZED**. **BIZ.1 / BIZ.2 remain CLOSED**. **AOP remains CLOSED**.
+- **Starting HEAD:** **`7b97dfd5346fa132d71f34bf1b28fa6d583113d6`**.
+- **Checkpoint (commit):** *(this commit)* — `fix(business): harden manager and team access`.
+- **Summary:** Documented canonical OWNER/MANAGER matrix in **`docs/architecture/business-web-ownership.md`** §14. Hardened email invite accept: **`POST /invitations/accept`** requires matching **auth identity email**. Team service blocks self-membership mutation. Tests: invitation identity, team IDOR/owner-only, `findMy` status filters, phone auto-claim, plan limits (existing), manager nav per business (Business Web). **BusinessLocation + `BUSINESS_PROFILE_EDIT` preserved as intended.**
+- **Deferred:** Ownership transfer UI; manager F5 physical QA; notification physical QA (**KZ-C.1**); **BIZ.4** profile geo.
+- **Next:** **BIZ.4** / BIZ track closure; UXA still blocked until BIZ CLOSED.
+
+---
+
 ## 2026-09-29 — BIZ.2 — Business Web session / cabinet access hardening
 
 - **Status:** **BIZ.2 PASS — BUSINESS WEB SESSION / CABINET ACCESS HARDENED**. **BIZ.1 remains CLOSED** (ownership contract unchanged). **AOP remains CLOSED**.

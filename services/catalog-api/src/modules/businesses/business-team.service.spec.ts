@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import {
   BusinessInvitationStatus,
   BusinessMembershipRole,
@@ -105,6 +105,42 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
   it('MANAGER cannot list team', async () => {
     businessAccess.assertOwner.mockRejectedValue(new ForbiddenException());
     await expect(service.listTeam(manager, businessId)).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('MANAGER cannot invite', async () => {
+    businessAccess.assertOwner.mockRejectedValue(new ForbiddenException());
+    await expect(
+      service.inviteManager(manager, businessId, {
+        phone: '+77001112233',
+        permissions: [BusinessPermission.CATALOG_EDIT],
+      }),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('updateMember rejects membership from another business', async () => {
+    prisma.businessMembership.findFirst.mockResolvedValue(null);
+    await expect(
+      service.updateMember(owner, businessId, 'mem-other-biz', {
+        status: BusinessMembershipStatus.REVOKED,
+      }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('manager cannot update own membership even if owner check were bypassed', async () => {
+    businessAccess.assertOwner.mockResolvedValue({ id: businessId });
+    prisma.businessMembership.findFirst.mockResolvedValue({
+      id: 'mem-mgr',
+      userId: manager.id,
+      role: BusinessMembershipRole.MANAGER,
+      status: BusinessMembershipStatus.ACTIVE,
+      permissions: [BusinessPermission.CATALOG_EDIT],
+    });
+
+    await expect(
+      service.updateMember(manager, businessId, 'mem-mgr', {
+        permissions: [BusinessPermission.PROMOTIONS_EDIT],
+      }),
+    ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('checks manager limit before invite', async () => {

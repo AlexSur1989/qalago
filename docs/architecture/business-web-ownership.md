@@ -229,7 +229,75 @@ Pattern aligned with Admin Web **AOP.7H.3** (canonical profile after refresh); o
 
 ---
 
-## 14. Deferred (BIZ.3+)
+## 14. Team / manager access (BIZ.3)
+
+### 14.1 Roles & statuses (schema)
+
+| `BusinessMembershipRole` | `OWNER` · `MANAGER` |
+| `BusinessMembershipStatus` | `INVITED` · `ACTIVE` · `SUSPENDED` · `REVOKED` |
+| `BusinessInvitationStatus` | `PENDING` · `ACCEPTED` · `REVOKED` · `EXPIRED` |
+
+Cabinet (`GET /businesses/my`): **ACTIVE** OWNER or MANAGER only. **INVITED / SUSPENDED / REVOKED** excluded.
+
+### 14.2 `BusinessPermission` inventory (enum — do not extend without contract)
+
+`BUSINESS_PROFILE_EDIT` · `BUSINESS_HOURS_EDIT` · `CATALOG_EDIT` · `PHOTOS_EDIT` · `PROMOTIONS_EDIT` · `REVIEWS_REPLY` · `ANALYTICS_VIEW` · `ANALYTICS_EXPORT` · `ADS_MANAGE` · `PAYMENTS_VIEW`
+
+**OWNER:** all permissions via `BusinessAccessService` (`ownerHasAllPermissions()`).
+
+**MANAGER:** only `permissions[]` on **ACTIVE** membership row.
+
+### 14.3 OWNER-only (backend `assertOwner`)
+
+| Action | API / service |
+|--------|----------------|
+| Invite manager | `POST /businesses/:id/team/invite` |
+| Revoke pending invitation | `DELETE …/team/invitations/:invitationId` |
+| Change manager status / permissions | `PATCH …/team/:membershipId` |
+| List team (Business Web plane) | `GET …/team` — managers denied |
+| Plan checkout / owner billing mutations | owner or `PAYMENTS_VIEW` per endpoint (see plans module) |
+
+**OWNER row** cannot be updated or revoked via team PATCH (403). No voluntary ownership transfer in product.
+
+### 14.4 MANAGER capability matrix (backend authority)
+
+| Permission | Backend (representative) | Business Web nav / route |
+|------------|--------------------------|---------------------------|
+| `BUSINESS_PROFILE_EDIT` | Brand profile PATCH; **BusinessLocation** create/update/delete/set-primary (`BusinessLocationService`) | Profile, locations, settings |
+| `BUSINESS_HOURS_EDIT` | Location hours fields (patch deps) | Profile, locations |
+| `CATALOG_EDIT` | Menu / service items | `/business/[id]/menu` |
+| `PHOTOS_EDIT` | Business media | `/business/[id]/media` |
+| `PROMOTIONS_EDIT` | Promotions CRUD | `/business/[id]/promotions` |
+| `REVIEWS_REPLY` | Reviews owner plane | `/business/[id]/reviews` |
+| `ANALYTICS_VIEW` / `ANALYTICS_EXPORT` | Analytics dashboards (export requires both; normalized on invite) | `/statistics` |
+| `ADS_MANAGE` | Monetization / campaigns | `/monetization/*` |
+| `PAYMENTS_VIEW` | Plan status / payments read | `/plan` (footer nav) |
+
+Nav: `apps/business-web/lib/business-access.ts` — `ownerOnly: team`; `anyOf` permission gates. **Backend remains authority** on direct URL.
+
+### 14.5 BusinessLocation + managers (decision)
+
+**Intended:** managers with **`BUSINESS_PROFILE_EDIT`** may create, edit, delete, and set-primary **BusinessLocation** (same permission as brand profile). Verified by `stage-6-12a4-business-location-crud.spec.ts` and `BusinessLocationService` guards. **Not** a BIZ.3 policy change.
+
+### 14.6 Invitation flows
+
+| Channel | Create | Accept |
+|---------|--------|--------|
+| **Phone** (unknown user) | `BusinessInvitation` PENDING, `tokenHash: null`, TTL 7d | **`claimPendingInvitations`** after OTP login — **phone must match** invitation phone |
+| **Phone** (existing user) | Immediate **ACTIVE MANAGER** membership | N/A |
+| **Email** | `tokenHash` + one-time URL `/invite/:token` | `POST /invitations/accept` — **auth identity email must match** invitation email (BIZ.3) |
+
+Duplicate PENDING invites for same phone/email on a business are **revoked** before re-issue. Plan **`assertCanAddManager`**: counts **ACTIVE managers + non-expired PENDING invitations** (accept may exclude self invitation id).
+
+Audit: `TEAM_INVITE`, `TEAM_INVITATION_ACCEPT`, `TEAM_PERMISSION_UPDATE`, `TEAM_SUSPEND`, `TEAM_RESTORE`, `TEAM_REVOKE`. Notifications: `BUSINESS_INVITATION_RECEIVED`, `BUSINESS_INVITATION_ACCEPTED` (existing producers).
+
+### 14.7 Session after membership change
+
+Revoked/suspended manager: next **`GET /businesses/my`** omits business; BIZ.2 selection fallback; API mutations **403** via `BusinessAccessService`. Permissions are **per business** in `/my` access payload — not cached globally on user.
+
+---
+
+## 15. Deferred (BIZ.4+)
 
 - Brand-level geo fields in owner profile PATCH (6.12A violation risk).
 - `ownerId` ↔ ACTIVE OWNER reconciliation after manager promotion.

@@ -337,6 +337,9 @@ export class BusinessTeamService {
     if (membership.role === BusinessMembershipRole.OWNER) {
       throw new ForbiddenException('Cannot modify owner membership');
     }
+    if (membership.userId === user.id) {
+      throw new ForbiddenException('Managers cannot modify their own membership');
+    }
 
     const data: Prisma.BusinessMembershipUpdateInput = {};
     let permissionsAdded: string[] = [];
