@@ -23,6 +23,7 @@ import { BusinessShell } from '@/components/business-shell';
 import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
 import { BUSINESS_ROUTE_ACCESS, useBusinessRouteGate } from '@/lib/use-business-route-gate';
 import { BackofficeErrorState, BackofficeLoadingState } from '@qalago/brand/states';
+import { statisticsPeriodDaysLabel } from '@/lib/owner-visual-copy';
 
 export default function StatisticsPage() {
   const locale = useLocale();
@@ -159,7 +160,7 @@ export default function StatisticsPage() {
                 className={`btn ${days === option ? 'btn-primary' : 'btn-ghost'}`}
                 onClick={() => setDays(option)}
               >
-                {option} дн
+                {statisticsPeriodDaysLabel(locale, option)}
               </button>
             ))}
           </div>

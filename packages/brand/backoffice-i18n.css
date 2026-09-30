@@ -1,0 +1,75 @@
+/**
+ * UXA.12 — long RU/KK copy: wrap safely without destroying words (Business Web primary).
+ */
+
+.business-shell .nav-item,
+.business-shell .sidebar-nav a,
+.business-shell .sidebar-nav span.nav-item {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.business-shell .page-header-meta,
+.business-shell .page-header h1,
+.page-content .page-header-meta {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.business-shell .topbar-entity-title {
+  overflow-wrap: anywhere;
+}
+
+.bo-table-wrap th,
+.table-wrap th,
+.data-table th {
+  overflow-wrap: anywhere;
+  word-break: normal;
+  hyphens: auto;
+}
+
+.page-content .btn:not(.icon-btn):not(.collapse-btn),
+.quote-card .btn,
+.dialog-actions .btn,
+.confirm-actions .btn {
+  white-space: normal;
+  text-align: center;
+  min-height: 2.75rem;
+}
+
+.badge,
+.status-badge,
+.plan-badge {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.bo-form-grid .field-label,
+.bo-field-label,
+.field-label {
+  overflow-wrap: anywhere;
+}
+
+.subnav-scroll a,
+.monetization-subnav a {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.legal-consent-footer {
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .page-header {
+    align-items: flex-start;
+  }
+
+  .page-header .btn-row,
+  .page-header > div:last-child {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+}

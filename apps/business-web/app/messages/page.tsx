@@ -134,7 +134,7 @@ export default function MessagesPage() {
 
       {error && !loading ? (
         <BackofficeErrorState
-          title={locale === 'kk' ? 'Хабарландыруларды жүктеу сәтсіз аяқталды' : 'Не удалось загрузить уведомления'}
+          title={ui.ownerMessagesLoadError}
           message={error}
           onRetry={() => token && load(token)}
           retryLabel={ui.text_b914bb}

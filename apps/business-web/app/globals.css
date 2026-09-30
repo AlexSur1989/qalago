@@ -10,6 +10,7 @@
 @import '../../../packages/brand/backoffice-dashboards.css';
 @import '../../../packages/brand/backoffice-responsive.css';
 @import '../../../packages/brand/backoffice-a11y.css';
+@import '../../../packages/brand/backoffice-i18n.css';
 
 :root {
   --sidebar-width: var(--sidebar-expanded);

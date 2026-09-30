@@ -25,6 +25,7 @@ import {
   vipCampaignDisplayStatus,
   vipModerationNotice,
 } from '@/lib/monetization-utils';
+import { campaignKpiServedLabel, monetizationCampaignPageMeta } from '@/lib/owner-visual-copy';
 
 export default function MonetizationCampaignDetailPage() {
   const locale = useLocale();
@@ -102,7 +103,9 @@ export default function MonetizationCampaignDetailPage() {
       <header className="page-header">
         <div>
           <h1>{productLabel(locale, campaign.product?.code)}</h1>
-          <p className="page-header-meta">Кампания #{campaign.id.slice(0, 8)}</p>
+          <p className="page-header-meta">
+            {monetizationCampaignPageMeta(locale, campaign.id.slice(0, 8))}
+          </p>
         </div>
         <Link href="/monetization/campaigns" className="btn btn-ghost btn-sm">{ui.__41649d}</Link>
       </header>
@@ -174,7 +177,7 @@ export default function MonetizationCampaignDetailPage() {
           <h2 style={{ marginTop: 0 }}>{ui.ownerNavAnalytics}</h2>
           <div className="kpi-grid">
             <div className="kpi-card">
-              <div className="kpi-label">Показы (served)</div>
+              <div className="kpi-label">{campaignKpiServedLabel(locale)}</div>
               <div className="kpi-value">{analytics.served}</div>
             </div>
             <div className="kpi-card">

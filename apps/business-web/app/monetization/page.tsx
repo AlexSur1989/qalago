@@ -17,6 +17,7 @@ import {
 } from '@/lib/monetization-utils';
 import { BackofficeKpiCard, BackofficeKpiGrid } from '@qalago/brand/dashboards';
 import { BackofficeLoadingState } from '@qalago/brand/states';
+import { monetizationAdvertisingDiscountLine } from '@/lib/owner-visual-copy';
 
 export default function MonetizationOverviewPage() {
   const locale = useLocale();
@@ -102,7 +103,10 @@ export default function MonetizationOverviewPage() {
               value={planStatus ? planTierLabel(locale, planStatus.effectiveTier) : '—'}
               secondary={
                 planStatus
-                  ? `${locale === 'kk' ? 'Жарнама жеңілдігі' : 'Скидка на рекламу'}: ${planStatus.limits.advertisingDiscountPercent}%`
+                  ? monetizationAdvertisingDiscountLine(
+                      locale,
+                      planStatus.limits.advertisingDiscountPercent,
+                    )
                   : undefined
               }
             />

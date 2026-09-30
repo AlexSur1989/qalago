@@ -158,7 +158,7 @@ export default function MonetizationPackageDetailPage() {
               {ui.text_promoForAds}
               {promotions.length === 0 ? (
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-                  Нет активных акций.{' '}
+                  {ui.___a2ac3e}.{' '}
                   <Link href={`/business/${business.id}/promotions`}>{ui.__8062f8}</Link>
                 </p>
               ) : (

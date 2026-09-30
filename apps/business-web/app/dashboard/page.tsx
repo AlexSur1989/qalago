@@ -23,6 +23,7 @@ import { campaignStatusLabel, monetizationStatusClass } from '@/lib/monetization
 import { useBusinessAccess } from '@/lib/use-business-access';
 import { BusinessShell } from '@/components/business-shell';
 import { BackofficeEmptyState, BackofficeErrorState, BackofficeLoadingState } from '@qalago/brand/states';
+import { dashboardDateUntilWord } from '@/lib/owner-visual-copy';
 import {
   BackofficeDashboardSection,
   BackofficeKpiCard,
@@ -232,7 +233,7 @@ export default function DashboardPage() {
               secondary={
                 planStatus.data?.expiresAt ? (
                   <>
-                    {locale === 'kk' ? 'дейін' : 'до'}{' '}
+                    {dashboardDateUntilWord(locale)}{' '}
                     {new Date(planStatus.data.expiresAt).toLocaleDateString(locale === 'kk' ? 'kk-KZ' : 'ru-RU')}
                   </>
                 ) : undefined

@@ -29,6 +29,7 @@ import { GoogleLoginButton } from '@/components/social-login/google-login-button
 import { sanitizeInternalRedirect } from '@/lib/redirect-utils';
 import { mapLoginRouteError, postLoginErrorMessage } from '@/lib/presentation';
 import { LegalConsentFooter } from '@/components/legal-consent-footer';
+import { loginNoBusinessPrompt } from '@/lib/owner-visual-copy';
 
 export default function LoginPage() {
   const locale = useLocale();
@@ -328,7 +329,7 @@ function LoginContent() {
         <LegalConsentFooter />
 
         <p style={{ marginTop: 20, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-          Нет бизнеса в QalaGo?{' '}
+          {loginNoBusinessPrompt(locale)}{' '}
           <Link href="/onboarding" style={{ color: 'var(--primary)' }}>{ui.___c1d1fc}</Link>
         </p>
       </div>

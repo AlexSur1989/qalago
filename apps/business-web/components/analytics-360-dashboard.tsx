@@ -18,6 +18,19 @@ import {
 import { formatNumber } from '@/lib/business-utils';
 import { ViewsChart } from '@/components/views-chart';
 import { BackofficeChartContainer, BackofficeKpiCard, BackofficeKpiGrid } from '@qalago/brand/dashboards';
+import {
+  analyticsActionsChartTitle,
+  analyticsBenchmarkActionsLine,
+  analyticsBenchmarkViewsLine,
+  analyticsConversionDetailPrefix,
+  analyticsCtrDetailPrefix,
+  analyticsPeriodDaysLabel,
+  analyticsSessionsApproxLabel,
+  analyticsSessionsPeriodLabel,
+  analyticsUniqueVisitorsApproxLabel,
+  analyticsUniqueVisitorsPeriodLabel,
+  analyticsViewsChartTitle,
+} from '@/lib/owner-visual-copy';
 
 function LockedCard({ label, message }: { label: string; message: string }) {
   const ui = useUi();
@@ -135,7 +148,7 @@ export function Analytics360Dashboard({
           </span>
         ) : null}
         <span style={{ color: 'var(--text-muted)', alignSelf: 'center' }}>
-          Период: {dashboard.effectiveRange.days} дн.
+          {analyticsPeriodDaysLabel(locale, dashboard.effectiveRange.days)}
         </span>
       </div>
 
@@ -183,13 +196,13 @@ export function Analytics360Dashboard({
 
       <SectionTitle id="trends">{ui.text_e073be}</SectionTitle>
       <BackofficeChartContainer
-        title={`Просмотры за ${dashboard.effectiveRange.days} дн.`}
+        title={analyticsViewsChartTitle(locale, dashboard.effectiveRange.days)}
       >
         <ViewsChart items={dashboard.trends.views} days={dashboard.effectiveRange.days} />
       </BackofficeChartContainer>
       {dashboard.trends.actions && caps.actionTrend ? (
         <BackofficeChartContainer
-          title={`Целевые действия за ${dashboard.effectiveRange.days} дн.`}
+          title={analyticsActionsChartTitle(locale, dashboard.effectiveRange.days)}
           className="page-section"
         >
           <ViewsChart items={dashboard.trends.actions} days={dashboard.effectiveRange.days} />
@@ -323,10 +336,14 @@ export function Analytics360Dashboard({
           </ol>
           <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 12 }}>{ui.____88eb85}</p>
           {overview.ctr != null ? (
-            <p>CTR (просмотры / показы): {formatRate(overview.ctr)}</p>
+            <p>
+              {analyticsCtrDetailPrefix(locale)} {formatRate(overview.ctr)}
+            </p>
           ) : null}
           {overview.conversionRate != null ? (
-            <p>Конверсия (действия / просмотры): {formatRate(overview.conversionRate)}</p>
+            <p>
+              {analyticsConversionDetailPrefix(locale)} {formatRate(overview.conversionRate)}
+            </p>
           ) : null}
         </article>
       ) : isLockedSection(dashboard, 'ctr') ? (
@@ -369,22 +386,23 @@ export function Analytics360Dashboard({
           </div>
           {overview.uniqueVisitorsPeriodDistinct != null ? (
             <p>
-              Уникальные посетители (за период):{' '}
+              {analyticsUniqueVisitorsPeriodLabel(locale)}{' '}
               <strong>{formatNumber(overview.uniqueVisitorsPeriodDistinct)}</strong>
             </p>
           ) : overview.uniqueVisitorsDailySumApprox != null ? (
             <p>
-              Уникальные посетители (сумма по дням, приближение):{' '}
+              {analyticsUniqueVisitorsApproxLabel(locale)}{' '}
               <strong>{formatNumber(overview.uniqueVisitorsDailySumApprox)}</strong>
             </p>
           ) : null}
           {overview.sessionsPeriodDistinct != null ? (
             <p>
-              Сессии (за период): <strong>{formatNumber(overview.sessionsPeriodDistinct)}</strong>
+              {analyticsSessionsPeriodLabel(locale)}{' '}
+              <strong>{formatNumber(overview.sessionsPeriodDistinct)}</strong>
             </p>
           ) : overview.sessionsDailySumApprox != null ? (
             <p>
-              Сессии (сумма по дням, приближение):{' '}
+              {analyticsSessionsApproxLabel(locale)}{' '}
               <strong>{formatNumber(overview.sessionsDailySumApprox)}</strong>
             </p>
           ) : null}
@@ -534,12 +552,20 @@ export function Analytics360Dashboard({
             ) : (
               <>
                 <p>
-                  Просмотры: {formatNumber(dashboard.benchmark.businessViews ?? 0)} vs среднее{' '}
-                  {formatNumber(dashboard.benchmark.categoryAvgViews ?? 0)}
+                  {analyticsBenchmarkViewsLine(
+                    locale,
+                    dashboard.benchmark.businessViews ?? 0,
+                    dashboard.benchmark.categoryAvgViews ?? 0,
+                    formatNumber,
+                  )}
                 </p>
                 <p>
-                  Действия: {formatNumber(dashboard.benchmark.businessActions ?? 0)} vs среднее{' '}
-                  {formatNumber(dashboard.benchmark.categoryAvgActions ?? 0)}
+                  {analyticsBenchmarkActionsLine(
+                    locale,
+                    dashboard.benchmark.businessActions ?? 0,
+                    dashboard.benchmark.categoryAvgActions ?? 0,
+                    formatNumber,
+                  )}
                 </p>
               </>
             )}

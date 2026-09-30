@@ -20,6 +20,23 @@ import type { AppLocale, UiLabels } from '@/lib/locale';
 import { planAnalytics360Label } from '@/lib/presentation';
 import { BackofficeProgress, BackofficeSummaryCard } from '@qalago/brand/dashboards';
 import { BackofficeLoadingState } from '@qalago/brand/states';
+import {
+  planCurrentTierTitle,
+  planFeatureAdBonusPrefix,
+  planFeatureAdDiscountLine,
+  planFeatureAnalyticsLine,
+  planFeatureManagersLine,
+  planFeaturePhotosLine,
+  planFeaturePromotionsLine,
+  planFeatureReviewsLine,
+  planFeatureServiceItemsLine,
+  planManagersUsageLine,
+  planPageHeaderMeta,
+  planQuotaCatalogLabel,
+  planQuotaPhotosLabel,
+  planQuotaPromotionsLabel,
+  planValidUntilPrefix,
+} from '@/lib/owner-visual-copy';
 
 function formatPrice(priceKzt: number) {
   if (priceKzt === 0) return '0 ₸';
@@ -140,7 +157,7 @@ export default function PlanPage() {
         <div>
           <h1>{ui.ownerNavPlan}</h1>
           <p className="page-header-meta">
-            Подписка для лимитов и скидки на рекламу — {business?.title ?? ui.text_e0fc47}
+            {planPageHeaderMeta(locale, business?.title ?? ui.text_e0fc47)}
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -155,11 +172,11 @@ export default function PlanPage() {
 
       {planStatus && (
         <BackofficeSummaryCard
-          title={`${locale === 'kk' ? 'Ағымдағы тариф' : 'Текущий тариф'}: ${planStatus.catalog.nameRu}`}
+          title={planCurrentTierTitle(locale, planStatus.catalog.nameRu)}
           className="form-card"
         >
           <BackofficeProgress
-            label={locale === 'kk' ? 'Фото' : 'Фото'}
+            label={planQuotaPhotosLabel(locale)}
             value={planStatus.usage.photos}
             max={planStatus.limits.maxPhotos}
             tone={planStatus.entitlements?.photos.overLimit ? 'danger' : 'default'}
@@ -168,7 +185,7 @@ export default function PlanPage() {
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '4px 0 8px' }}>{ui.text_8eabdb}</p>
           ) : null}
           <BackofficeProgress
-            label={locale === 'kk' ? 'Тауарлар/қызметтер' : 'Товары/услуги'}
+            label={planQuotaCatalogLabel(locale)}
             value={planStatus.usage.serviceItems}
             max={planStatus.limits.maxServiceItems}
             tone={planStatus.entitlements?.serviceItems.overLimit ? 'danger' : 'default'}
@@ -177,7 +194,7 @@ export default function PlanPage() {
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '4px 0 8px' }}>{ui.text_d6537c}</p>
           ) : null}
           <BackofficeProgress
-            label={locale === 'kk' ? 'Акциялар' : 'Акции'}
+            label={planQuotaPromotionsLabel(locale)}
             value={planStatus.usage.activePromotions}
             max={planStatus.limits.maxActivePromotions}
             tone={planStatus.entitlements?.activePromotions.overLimit ? 'danger' : 'default'}
@@ -192,7 +209,11 @@ export default function PlanPage() {
           )}
           {planStatus.team && planStatus.team.limit > 0 && (
             <p style={{ color: 'var(--text-muted)', marginBottom: 8 }}>
-              Менеджеры: {planStatus.team.activeManagers} / {planStatus.team.limit}
+              {planManagersUsageLine(
+                locale,
+                planStatus.team.activeManagers,
+                planStatus.team.limit,
+              )}
               {planStatus.team.pendingInvitations > 0
                 ? ui.text_bc921d
                 : ''}
@@ -201,7 +222,7 @@ export default function PlanPage() {
           )}
           {planStatus.expiresAt && (
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-              {locale === 'kk' ? 'Мерзімі' : 'Действует до'}{' '}
+              {planValidUntilPrefix(locale)}{' '}
               {new Date(planStatus.expiresAt).toLocaleDateString(locale === 'kk' ? 'kk-KZ' : 'ru-RU')}
             </p>
           )}
@@ -252,19 +273,27 @@ export default function PlanPage() {
                 <span> / {formatPeriod(ui, plan.periodDays, plan.priceKzt)}</span>
               </p>
               <ul className="plan-features" style={{ fontSize: '0.85rem', marginTop: 8 }}>
-                <li>Фото: {plan.limits.maxPhotos}</li>
-                <li>Товары/услуги: {plan.limits.maxServiceItems}</li>
-                <li>Акции: {plan.limits.maxActivePromotions}</li>
-                <li>Менеджеры: {plan.limits.maxManagers}</li>
-                <li>Ответы на отзывы: {plan.limits.canReplyToReviews ? ui.text_81c9da : ui.text_df28b6}</li>
-                <li>Аналитика: {analyticsLevelLabel(locale, ui, plan.limits.analyticsTier)}</li>
+                <li>{planFeaturePhotosLine(locale, plan.limits.maxPhotos)}</li>
+                <li>{planFeatureServiceItemsLine(locale, plan.limits.maxServiceItems)}</li>
+                <li>{planFeaturePromotionsLine(locale, plan.limits.maxActivePromotions)}</li>
+                <li>{planFeatureManagersLine(locale, plan.limits.maxManagers)}</li>
                 <li>
-                  Бонус на рекламу QalaGo:{' '}
-                  {plan.limits.monthlyAdBonusKzt > 0
-                    ? ui.text_d8d7ab
-                    : '—'}
+                  {planFeatureReviewsLine(
+                    locale,
+                    plan.limits.canReplyToReviews ? ui.text_81c9da : ui.text_df28b6,
+                  )}
                 </li>
-                <li>Скидка на рекламу: {plan.limits.advertisingDiscountPercent}%</li>
+                <li>
+                  {planFeatureAnalyticsLine(
+                    locale,
+                    analyticsLevelLabel(locale, ui, plan.limits.analyticsTier),
+                  )}
+                </li>
+                <li>
+                  {planFeatureAdBonusPrefix(locale)}{' '}
+                  {plan.limits.monthlyAdBonusKzt > 0 ? ui.text_d8d7ab : '—'}
+                </li>
+                <li>{planFeatureAdDiscountLine(locale, plan.limits.advertisingDiscountPercent)}</li>
               </ul>
               <ul className="plan-features">
                 {plan.features.map((f) => (

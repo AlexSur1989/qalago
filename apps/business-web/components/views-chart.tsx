@@ -1,6 +1,6 @@
 'use client';
 
-import { useUi } from '@/components/locale-provider';
+import { useLocale, useUi } from '@/components/locale-provider';
 type ViewsChartProps = {
   items: { date: string; count: number }[];
   days?: number;
@@ -10,6 +10,7 @@ const BRAND_BLUE = '#00A8D6';
 const BRAND_BLUE_FILL = 'rgba(0, 168, 214, 0.12)';
 
 export function ViewsChart({ items, days = 7 }: ViewsChartProps) {
+  const locale = useLocale();
   const ui = useUi();
 
   const dates = buildDateRange(days);
@@ -37,7 +38,8 @@ export function ViewsChart({ items, days = 7 }: ViewsChartProps) {
   return (
     <>
       <p className="bo-sr-only">
-        {ui.__e1ba6e}. {points.map((p) => `${formatChartDate(p.date)}: ${p.v}`).join('; ')}. Σ {totalViews}
+        {ui.__e1ba6e}.{' '}
+        {points.map((p) => `${formatChartDate(p.date, locale)}: ${p.v}`).join('; ')}. Σ {totalViews}
       </p>
       <svg viewBox={`0 0 ${width} ${height}`} width="100%" height={height} role="img" aria-label={ui.__e1ba6e}>
       {[0, 0.25, 0.5, 0.75, 1].map((t) => {
@@ -79,7 +81,7 @@ export function ViewsChart({ items, days = 7 }: ViewsChartProps) {
             fontSize={11}
             fill="#6b7280"
           >
-            {formatChartDate(p.date)}
+            {formatChartDate(p.date, locale)}
           </text>
         ) : null,
       )}
@@ -100,9 +102,12 @@ function buildDateRange(days: number): string[] {
   return result;
 }
 
-function formatChartDate(iso: string): string {
+function formatChartDate(iso: string, locale: 'ru' | 'kk'): string {
   const d = new Date(`${iso}T12:00:00`);
-  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+  return d.toLocaleDateString(locale === 'kk' ? 'kk-KZ' : 'ru-RU', {
+    day: 'numeric',
+    month: 'short',
+  });
 }
 
 export function aggregateViewTrends(

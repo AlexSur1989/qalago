@@ -4,7 +4,7 @@ import path from 'node:path';
 const CYRILLIC = /[\u0400-\u04FF]/;
 
 /** Product UI strings must live in lib/locale.ts and lib/presentation.ts only. */
-const DICTIONARY_FILES = new Set(['locale.ts', 'presentation.ts']);
+const DICTIONARY_FILES = new Set(['locale.ts', 'presentation.ts', 'owner-visual-copy.ts']);
 
 const SCAN_ROOTS = ['app', 'components', 'lib'];
 
@@ -23,6 +23,8 @@ const ALLOWLIST_LINE_PATTERNS: RegExp[] = [
   /UI_LABELS/,
   /presentation\./,
   /hardcoded-ui-guard/,
+  /owner-visual-copy/,
+  /ownerVisualCopy/,
   /locale-client/,
   /locale-server/,
   /locale-provider/,
@@ -46,8 +48,7 @@ function isDictionaryFile(relativePath: string): boolean {
 
 function lineAllowed(line: string, relativePath: string): boolean {
   if (ALLOWLIST_FILES.has(relativePath)) return true;
-  // JSX/TS templates mixing labels with runtime values stay inline.
-  if (/\{[a-zA-Z_$][^}]*\}/.test(line) && CYRILLIC.test(line)) return true;
+  if (/\bui\.|\bUI_LABELS\b|ownerVisualCopy|owner-visual-copy/.test(line)) return true;
   return ALLOWLIST_LINE_PATTERNS.some((re) => re.test(line));
 }
 

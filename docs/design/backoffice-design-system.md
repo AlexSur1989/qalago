@@ -204,9 +204,23 @@ Canonical: `--radius-xs` (8px), `--radius-md` (12px), `--radius-lg` (16px), `--r
 - **Language:** Business **`html lang`** follows locale layout; Admin unchanged.
 - **Tests:** `@qalago/brand/accessibility/accessibility.contract.test.mjs` + Admin/Business **`backoffice-accessibility.test.ts`** (static/DOM contracts — **not** real screen-reader validation).
 
+## Visual localization RU/KK (UXA.12)
+
+**Scope:** Business Web **RU/KK** UI copy and layout stress; Admin remains **RU-first** (no full Admin localization).
+
+- **Dictionaries:** `apps/business-web/lib/locale.ts` (`UI_LABELS.ru` / `UI_LABELS.kk`) + `presentation.ts` (status/plan/permission enums) + **`owner-visual-copy.ts`** (inline analytics/plan/monetization/login copy migrated off JSX).
+- **Locale contract:** Cookie **`qalago_locale`**; invalid → **kk** product default; Business **`html lang`** from layout; switcher preserves persistence and routes — **unchanged**.
+- **System vs user content:** System UI must be RU or KK per active locale; **business names, menu/review/promotion body, API `nameRu` plan catalog titles** are user/content — not translation defects.
+- **Canonical terms (examples):** branch **`Основной филиал` / `Негізгі филиал`**; plan tiers **`Бесплатный/Тегін`**, **`Бизнес`**, **`PRO`**, **`VIP`**; notifications **`Уведомления` / `Хабарландырулар`** — reuse existing keys; do not invent page-local synonyms.
+- **Hardcoded guard:** `hardcoded-ui-guard.ts` — Cyrillic product strings only in dictionary files (tighter than pre-UXA.12 `{…}` JSX exemption).
+- **Long copy CSS:** `backoffice-i18n.css` — `overflow-wrap: anywhere` on nav, headers, table headers, badges, non-icon buttons; **no** `word-break: break-all` on ordinary labels; dialog/page-header stack on mobile (UXA.10 breakpoints).
+- **Fallback:** Missing/invalid locale → **kk**; unknown enum → presentation mapper or em dash — not raw enum in UI where mapper exists.
+- **Tests:** `locale-parity.test.ts` (RU/KK key parity), `uxa12-visual-localization.test.ts`, `@qalago/brand/i18n/i18n.contract.test.mjs`.
+- **Deferred:** Full KK rewrite of legacy `____*` hash keys in `locale.ts` (large backlog); physical viewport/font/contrast QA → **UXA.13**.
+
 ## UXA.1 does NOT cover
 
-RU/KK visual QA (UXA.12), dark mode, formal WCAG certification.
+Dark mode, formal WCAG certification, physical browser visual QA (UXA.13).
 
 ## Tests
 

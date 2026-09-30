@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const CYRILLIC = /[\u0400-\u04FF]/;
-const DICTIONARY_FILES = new Set(['locale.ts', 'presentation.ts']);
+const DICTIONARY_FILES = new Set(['locale.ts', 'presentation.ts', 'owner-visual-copy.ts']);
 const SCAN_ROOTS = ['app', 'components', 'lib'];
 const SKIP_DIR_NAMES = new Set(['node_modules', '.next', 'dist']);
 const ALLOWLIST_FILES = new Set([
@@ -33,7 +33,7 @@ const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
 function lineAllowed(line, relative) {
   if (ALLOWLIST_FILES.has(relative)) return true;
-  if (/\{[a-zA-Z_$][^}]*\}/.test(line) && CYRILLIC.test(line)) return true;
+  if (/\bui\.|\bUI_LABELS\b|owner-visual-copy|ownerVisualCopy/.test(line)) return true;
   return ALLOWLIST_LINE_PATTERNS.some((re) => re.test(line));
 }
 

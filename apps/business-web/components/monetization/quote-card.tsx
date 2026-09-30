@@ -3,6 +3,11 @@
 import { useLocale, useUi } from '@/components/locale-provider';
 import type { MonetizationQuote } from '@/lib/api';
 import { formatDate, formatDateTime, formatDuration, formatKzt } from '@/lib/monetization-utils';
+import {
+  monetizationQuoteNextAvailableLabel,
+  monetizationQuotePeriodLabel,
+  monetizationQuoteStartLabel,
+} from '@/lib/owner-visual-copy';
 
 type QuoteCardProps = {
   quote: MonetizationQuote | null;
@@ -50,14 +55,14 @@ export function QuoteCard({ quote, loading, error }: QuoteCardProps) {
 
       {quote.duration && (
         <p style={{ fontSize: '0.9rem' }}>
-          Период:{' '}
+          {monetizationQuotePeriodLabel(locale)}{' '}
           {formatDuration(locale, quote.duration.durationDays ?? null, quote.duration.durationHours ?? null)}
         </p>
       )}
 
       {quote.requestedStartAt && (
         <p style={{ fontSize: '0.9rem' }}>
-          Старт: {formatDateTime(quote.requestedStartAt)}
+          {monetizationQuoteStartLabel(locale)} {formatDateTime(quote.requestedStartAt)}
           {quote.calculatedEndAt && ` — ${formatDate(quote.calculatedEndAt)}`}
         </p>
       )}
@@ -85,7 +90,8 @@ export function QuoteCard({ quote, loading, error }: QuoteCardProps) {
           {quote.availability.nextAvailableAt && (
             <span>
               {' '}
-              Ближайшая дата: {formatDateTime(quote.availability.nextAvailableAt)}
+              {monetizationQuoteNextAvailableLabel(locale)}{' '}
+              {formatDateTime(quote.availability.nextAvailableAt)}
             </span>
           )}
         </div>

@@ -22,6 +22,7 @@ import {
   normalizeSelectedPermissions,
 } from '@/lib/business-access';
 import { BusinessShell } from '@/components/business-shell';
+import { teamPageHeaderMeta } from '@/lib/owner-visual-copy';
 import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
 import { BusinessPlatformFeatureUnavailable } from '@/components/business-platform-feature-unavailable';
 import { backofficeConfirm } from '@qalago/brand/confirm';
@@ -250,7 +251,7 @@ export default function BusinessTeamPage() {
         <div>
           <h1>{ui.ownerNavTeam}</h1>
           <p className="page-header-meta">
-            {business?.title ?? ui.text_4e3e1b} · приглашения и права менеджеров
+            {teamPageHeaderMeta(locale, business?.title ?? ui.text_4e3e1b)}
           </p>
         </div>
         <Link href="/dashboard" className="btn">{ui.__65f9d8}</Link>

@@ -31,6 +31,7 @@ import {
   type ServiceItemEditForm,
 } from '@/lib/owner-content-edit';
 import { parseApiError } from '@/lib/monetization-utils';
+import { menuSectionItemCountLabel } from '@/lib/owner-visual-copy';
 import { useOwnerBusiness } from '@/lib/use-owner-business';
 import { BusinessShell } from '@/components/business-shell';
 import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
@@ -578,7 +579,7 @@ export default function BusinessMenuPage() {
                 <div>
                   <strong>{section.title}</strong>
                   <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-                    {section.itemCount} поз.
+                    {menuSectionItemCountLabel(locale, section.itemCount)}
                     {!section.isActive && ui.text_d24286}
                   </p>
                 </div>

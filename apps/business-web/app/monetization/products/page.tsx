@@ -14,6 +14,7 @@ import {
   purchaseActionLabel,
   purchaseStateLabel,
 } from '@/lib/monetization-utils';
+import { monetizationProductsPageMeta } from '@/lib/owner-visual-copy';
 import type { MonetizationPurchaseState } from '@/lib/api';
 
 export default function MonetizationProductsPage() {
@@ -63,7 +64,9 @@ export default function MonetizationProductsPage() {
       <header className="page-header">
         <div>
           <h1>{ui.__ebd04c}</h1>
-          <p className="page-header-meta">Каталог размещений для {business.title}</p>
+          <p className="page-header-meta">
+            {monetizationProductsPageMeta(locale, business.title)}
+          </p>
         </div>
       </header>
 

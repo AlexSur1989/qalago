@@ -19,6 +19,7 @@ import {
   paymentStatusLabel,
   productLabel,
 } from '@/lib/monetization-utils';
+import { monetizationOrderPageTitle } from '@/lib/owner-visual-copy';
 
 export default function MonetizationOrderDetailPage() {
   const locale = useLocale();
@@ -72,7 +73,7 @@ export default function MonetizationOrderDetailPage() {
     <>
       <header className="page-header">
         <div>
-          <h1>Заказ {order.orderNumber}</h1>
+          <h1>{monetizationOrderPageTitle(locale, order.orderNumber)}</h1>
           <p className="page-header-meta">{formatDateTime(order.createdAt)}</p>
         </div>
         <Link href="/monetization/orders" className="btn btn-ghost btn-sm">{ui.__41649d}</Link>

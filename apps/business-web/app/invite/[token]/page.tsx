@@ -1,6 +1,8 @@
 'use client';
 
-import { useUi } from '@/components/locale-provider';
+import { useLocale, useUi } from '@/components/locale-provider';
+import { formatOwnerDateTime } from '@/lib/presentation';
+import { inviteExpiresLabel, inviteRecipientLabel, inviteStatusLabel } from '@/lib/owner-visual-copy';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -9,6 +11,7 @@ import { getWebAccessToken, setWebAccessToken } from '@/lib/web-auth-token';
 
 export default function InviteAcceptPage() {
   const ui = useUi();
+  const locale = useLocale();
 
   const params = useParams<{ token: string }>();
   const router = useRouter();
@@ -111,12 +114,15 @@ export default function InviteAcceptPage() {
         </p>
         {resolved.recipientEmailMasked && (
           <p style={{ color: 'var(--text-muted)' }}>
-            Адресат: {resolved.recipientEmailMasked}
+            {inviteRecipientLabel(locale)} {resolved.recipientEmailMasked}
           </p>
         )}
-        <p style={{ color: 'var(--text-muted)' }}>Статус: {statusMessage}</p>
+        <p style={{ color: 'var(--text-muted)' }}>
+          {inviteStatusLabel(locale)} {statusMessage}
+        </p>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-          Действует до: {new Date(resolved.expiresAt).toLocaleString('ru-RU')}
+          {inviteExpiresLabel(locale)}{' '}
+          {formatOwnerDateTime(locale, resolved.expiresAt)}
         </p>
 
         {resolved.status === 'PENDING' && !authToken && (
