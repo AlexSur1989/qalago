@@ -216,11 +216,25 @@ Canonical: `--radius-xs` (8px), `--radius-md` (12px), `--radius-lg` (16px), `--r
 - **Long copy CSS:** `backoffice-i18n.css` — `overflow-wrap: anywhere` on nav, headers, table headers, badges, non-icon buttons; **no** `word-break: break-all` on ordinary labels; dialog/page-header stack on mobile (UXA.10 breakpoints).
 - **Fallback:** Missing/invalid locale → **kk**; unknown enum → presentation mapper or em dash — not raw enum in UI where mapper exists.
 - **Tests:** `locale-parity.test.ts` (RU/KK key parity), `uxa12-visual-localization.test.ts`, `@qalago/brand/i18n/i18n.contract.test.mjs`.
-- **Deferred:** Full KK rewrite of legacy `____*` hash keys in `locale.ts` (large backlog); physical viewport/font/contrast QA → **UXA.13**.
+- **Deferred:** Full KK rewrite of legacy `____*` hash keys in `locale.ts` (large backlog); remaining mixed RU strings in KK dictionary → **POST-UXA debt** until swept.
+
+## Physical browser QA (UXA.13 — partial, not closed)
+
+**Method:** Cursor IDE Browser MCP (Chromium); local dev **`catalog-api` :3002**, Admin **:3001**, Business **:3003**; BFF dev-login where UI automation clicks were unreliable (fetch + navigation).
+
+**Verified (representative):**
+
+- Admin **Platform Admin** (`+77000000005`) — login via BFF, **`/dashboard`** KPI cards, moderation queue, skip link, mobile shell (~390), city picker, logout control present.
+- Business **OWNER** (`+77000000002`) — login KK lead/onboarding link after fix; **`/dashboard`** KK shell, locale toggle, KPI grid, plan usage (VIP), skip link.
+- **Stale `.next` dev cache** on long-running Admin/Business processes caused missing chunk / infinite loading — cleared by restart + `.next` delete (**environment**, not product regression).
+
+**Not physically verified in this session:** full viewport matrix (320/768/1024/1440 all routes); **SUPER_ADMIN** / **CITY_ADMIN** / **MANAGER** walkthroughs; keyboard-only drawer focus sweep; Windows Narrator; measured contrast ratios; exhaustive modal/table/form/map/media routes; team feature-flag toggle; independent Admin+Business simultaneous sessions.
+
+**UXA.13 fixes (Business KK):** login lead (`____c8191d`), onboarding link (`___c1d1fc`), dashboard KPI/link strings (`__79b074`, `__7__0205a6`, `__bb49cc`, `__19c279`, `__a144ec`, `___ee3b0e`, `__591eff`, `__24c04c`, `___c89390`); contract test **`uxa12-visual-localization.test.ts`**.
 
 ## UXA.1 does NOT cover
 
-Dark mode, formal WCAG certification, physical browser visual QA (UXA.13).
+Dark mode, formal WCAG certification, full physical browser closure (UXA.13 — **ACTIVE**).
 
 ## Tests
 

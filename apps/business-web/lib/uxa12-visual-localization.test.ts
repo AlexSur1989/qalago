@@ -28,6 +28,23 @@ describe('UXA.12 canonical terminology', () => {
     expect(UI_LABELS.ru.ownerMessagesLoadError.length).toBeGreaterThan(5);
     expect(UI_LABELS.kk.ownerMessagesLoadError).toContain('Хабарландыру');
   });
+
+  it('UXA.13 physical QA: login and dashboard KK strings differ from RU', () => {
+    const keys = [
+      '____c8191d',
+      '___c1d1fc',
+      '__79b074',
+      '__7__0205a6',
+      '__bb49cc',
+      '__a144ec',
+      '___ee3b0e',
+      '__591eff',
+      '__19c279',
+    ] as const;
+    for (const key of keys) {
+      expect(UI_LABELS.kk[key]).not.toBe(UI_LABELS.ru[key]);
+    }
+  });
 });
 
 describe('UXA.12 wiring contracts', () => {

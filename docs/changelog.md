@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-10-01 — UXA.13 — Physical browser QA (partial; track not closed)
+
+- **Status:** **UXA.13 ACTIVE — PHYSICAL QA PARTIAL**. **UXA track not closed**. **No UXA PASS claim**.
+- **Starting HEAD:** **`fc8e49e`** (docs closure after UXA.12).
+- **Checkpoint (commit):** **`6214822`** — `fix(ui): resolve UXA.13 physical QA KK findings`.
+- **Summary:** Real Chromium QA via Cursor browser MCP on local Admin/Business dev servers + **`catalog-api`**. Admin dashboard and Business OWNER dashboard exercised after dev-server **`.next` refresh**. **P1** Business KK mixed-language on **`/login`** and **`/dashboard`** — corrected KK dictionary entries + **`uxa12-visual-localization`** contract. Automated regression: brand contracts **PASS**; Business **343** vitest; Admin **197** vitest; both production **build PASS**.
+- **Deferred / blockers for UXA closure:** Full §1–§44 matrix (roles SUPER_ADMIN/CITY_ADMIN/MANAGER, 320–1440 all surfaces, keyboard/drawer/SR/contrast, maps/messages/team flag, screenshot archive); remaining **`____*`** KK backlog (**POST-UXA debt** unless blocking in tested flows).
+- **Next:** Complete remaining UXA.13 physical checklist; re-run closure gate; then **UXA PASS** docs commit.
+
+---
+
 ## 2026-10-01 — UXA.12 PASS — RU/KK visual localization QA completed
 
 - **Status:** **UXA.12 PASS — RU / KK VISUAL LOCALIZATION QA COMPLETED**. **UXA.13 not started**. **No physical browser QA claimed**.
