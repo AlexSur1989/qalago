@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { monetizationApi, MonetizationPaymentRow } from '@/lib/monetization-api';
 import { useMonetizationContext } from '@/components/monetization/monetization-layout-client';
-import { confirmAction } from '@/lib/admin-utils';
+import { backofficeConfirm } from '@qalago/brand/confirm';
 import {
   canConfirmPayment,
   formatDateTime,
@@ -47,8 +47,18 @@ export default function MonetizationPaymentsPage() {
   }, [token, citySlug, page]);
 
   async function confirmPayment(payment: MonetizationPaymentRow) {
-    const msg = `Подтвердить получение оплаты ${formatKzt(payment.amount, payment.currency)} по заказу ${payment.orderNumber}?\n\nПосле подтверждения рекламная кампания может быть активирована автоматически.`;
-    if (!confirmAction(msg)) return;
+    if (
+      !(await backofficeConfirm({
+        title: 'Подтвердить оплату?',
+        description: `Заказ ${payment.orderNumber} · ${formatKzt(payment.amount, payment.currency)}`,
+        consequence:
+          'После подтверждения рекламная кампания может быть активирована автоматически.',
+        variant: 'warning',
+        confirmLabel: 'Подтвердить',
+      }))
+    ) {
+      return;
+    }
 
     setConfirmingId(payment.id);
     setError(null);

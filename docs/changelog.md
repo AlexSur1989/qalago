@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-30 — UXA.7 PASS — Status badges / confirmations standardized
+
+- **Status:** **UXA.7 PASS — STATUS / BADGES / CONFIRMATIONS STANDARDIZED**. **UXA.4 / UXA.5 not started**.
+- **Starting HEAD:** **`a0659be`** (UXA.9 docs closure).
+- **Checkpoint (commit):** _(this commit)_ — `feat(ui): standardize backoffice statuses and confirmations`.
+- **Summary:** **`@qalago/brand/badges`**, **`@qalago/brand/status`**, **`@qalago/brand/confirm`** (+ CSS). `BackofficeBadge`, domain presentation helpers, audit action + staff role human labels (no raw enum fallback). `BackofficeConfirmDialog` + provider/`backofficeConfirm` bridge. Representative migrations Admin (audit, staff, catalog businesses, moderation, locations delete, monetization confirms, platform toggle) and Business (locations, onboarding, menu/media/promotions delete, team revoke/suspend). UXA.9 feedback preserved. **No enum/RBAC/route/API/DB/workflow changes.**
+- **Deferred:** Admin dashboard `confirmAction`; full badge sweep; business-requests modal pattern; reports staff role display; UXA.4 tables/filters.
+- **Next:** **UXA.4** tables / filters / search (recommended).
+
+---
+
 ## 2026-09-30 — UXA.9 PASS — Backoffice system states standardized
 
 - **Status:** **UXA.9 PASS — BACKOFFICE SYSTEM STATES STANDARDIZED**. **UXA.4 / UXA.5 not started**.

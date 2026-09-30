@@ -4,6 +4,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { adminCatalogApi } from '@/lib/admin-catalog-api';
 import type { AdminBusinessLocationRow } from '@/lib/admin-business-locations-api';
 import { adminCatalogLabel } from '@/lib/admin-catalog-labels';
+import { backofficeConfirm } from '@qalago/brand/confirm';
 import type { AdminCatalogLocale } from '@/lib/admin-catalog-labels';
 import { parseAdminCatalogApiError } from '@/lib/admin-catalog-errors';
 import { buildAdminLocationPayload } from '@/lib/admin-catalog-location-form';
@@ -169,7 +170,14 @@ export function CatalogLocationsManager({
   }
 
   async function removeLocation(locationId: string) {
-    if (!window.confirm(adminCatalogLabel(locale, 'confirmDeleteLocation'))) return;
+    const ok = await backofficeConfirm({
+      title: 'Удалить филиал?',
+      description: adminCatalogLabel(locale, 'confirmDeleteLocation'),
+      consequence: 'Это действие нельзя отменить.',
+      variant: 'danger',
+      confirmLabel: 'Удалить',
+    });
+    if (!ok) return;
     if (busy) return;
     setBusy(true);
     setError(null);

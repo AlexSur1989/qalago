@@ -35,6 +35,7 @@ import {
 import { useAuth } from '@/lib/use-auth';
 import { BusinessShell } from '@/components/business-shell';
 import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
+import { backofficeConfirm } from '@qalago/brand/confirm';
 import {
   BUSINESS_ROUTE_ACCESS,
   isBusinessRouteContentAllowed,
@@ -178,8 +179,19 @@ export default function BusinessPromotionsPage() {
     }
   }
 
-  async function remove(id: string) {
+  async function remove(id: string, title: string) {
     if (!token) return;
+    if (
+      !(await backofficeConfirm({
+        title: ui.confirmDeletePromotionTitle,
+        description: title,
+        consequence: ui.confirmConsequenceIrreversible,
+        variant: 'danger',
+        confirmLabel: ui.text_ed2bbf,
+      }))
+    ) {
+      return;
+    }
     await ownerApi.deletePromotion(token, id);
     await load(token);
   }
@@ -365,7 +377,7 @@ export default function BusinessPromotionsPage() {
                 <button type="button" className="btn btn-sm" onClick={() => toggleStatus(p)}>
                   {p.status === 'ACTIVE' ? ui.text_b0e3a5 : ui.text_3e177a}
                 </button>
-                <button type="button" className="btn btn-sm" onClick={() => remove(p.id)}>{ui.text_ed2bbf}</button>
+                <button type="button" className="btn btn-sm" onClick={() => remove(p.id, p.title)}>{ui.text_ed2bbf}</button>
               </div>
             </div>
           ))

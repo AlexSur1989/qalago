@@ -6,6 +6,11 @@ import { BackofficePageHeader } from '@/components/backoffice-page-header';
 import { useAuth } from '@/lib/use-auth';
 import { staffApi } from '@/lib/staff-api';
 import { isSuperAdminRole } from '@/lib/rbac';
+import { BackofficeBadge } from '@qalago/brand/badges';
+import { backofficeConfirm } from '@qalago/brand/confirm';
+import { BackofficeAccessDenied, BackofficeLoadingState } from '@qalago/brand/states';
+import { auditActionLabel } from '@/lib/audit-action-presentation';
+import { staffActivePresentation, staffRoleLabel } from '@/lib/staff-presentation';
 
 export default function StaffDetailPage() {
   const params = useParams();
@@ -20,9 +25,14 @@ export default function StaffDetailPage() {
     staffApi.detail(token, userId).then(setDetail).catch(() => undefined);
   }, [token, user, userId]);
 
-  if (!ready) return <p className="muted">Загрузка…</p>;
+  if (!ready) return <BackofficeLoadingState density="page" label="Загрузка…" />;
   if (!user || !isSuperAdminRole(user.role)) {
-    return <p className="tag tag-danger">Доступ только для SUPER_ADMIN</p>;
+    return (
+      <BackofficeAccessDenied
+        title="Доступ только для SUPER_ADMIN"
+        description="Карточка staff доступна только суперадминистратору."
+      />
+    );
   }
 
   const staff = detail?.staff as {
@@ -31,8 +41,22 @@ export default function StaffDetailPage() {
     user: { name: string | null; phone: string | null };
   } | null;
 
-  async function run(action: () => Promise<unknown>) {
-    if (!token || !window.confirm('Подтвердите действие')) return;
+  async function run(
+    action: () => Promise<unknown>,
+    confirm: {
+      title: string;
+      description?: string;
+      consequence?: string;
+      variant?: 'default' | 'warning' | 'danger';
+    },
+  ) {
+    if (!token) return;
+    const ok = await backofficeConfirm({
+      ...confirm,
+      confirmLabel: 'Подтвердить',
+      cancelLabel: 'Отмена',
+    });
+    if (!ok) return;
     setBusy(true);
     try {
       await action();
@@ -52,16 +76,24 @@ export default function StaffDetailPage() {
       />
       {staff ? (
         <>
-          <p>
-            Роль: <strong>{staff.staffRole}</strong> ·{' '}
-            {staff.isActive ? 'активен' : 'отключён'}
+          <p style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+            <span>Роль:</span>
+            <BackofficeBadge label={staffRoleLabel(staff.staffRole)} tone="info" />
+            <BackofficeBadge {...staffActivePresentation(staff.isActive)} />
           </p>
           <p className="muted">{staff.user.phone}</p>
           <div className="button-row">
             <button
               type="button"
               disabled={busy}
-              onClick={() => run(() => staffApi.revokeSessions(token!, userId))}
+              onClick={() =>
+                run(() => staffApi.revokeSessions(token!, userId), {
+                  title: 'Отозвать все сессии?',
+                  description: `Staff: ${staff.user.name ?? userId}`,
+                  consequence: 'Пользователю потребуется войти заново на всех устройствах.',
+                  variant: 'warning',
+                })
+              }
             >
               Отозвать все сессии
             </button>
@@ -71,10 +103,18 @@ export default function StaffDetailPage() {
                 disabled={busy}
                 className="btn-danger"
                 onClick={() =>
-                  run(async () => {
-                    await staffApi.disable(token!, userId);
-                    router.refresh();
-                  })
+                  run(
+                    async () => {
+                      await staffApi.disable(token!, userId);
+                      router.refresh();
+                    },
+                    {
+                      title: 'Отключить staff?',
+                      description: staff.user.name ?? staff.user.phone ?? userId,
+                      consequence: 'Доступ к admin-web будет заблокирован до восстановления.',
+                      variant: 'danger',
+                    },
+                  )
                 }
               >
                 Отключить staff
@@ -83,7 +123,13 @@ export default function StaffDetailPage() {
               <button
                 type="button"
                 disabled={busy}
-                onClick={() => run(() => staffApi.restore(token!, userId))}
+                onClick={() =>
+                  run(() => staffApi.restore(token!, userId), {
+                    title: 'Восстановить staff?',
+                    description: staff.user.name ?? staff.user.phone ?? userId,
+                    variant: 'default',
+                  })
+                }
               >
                 Восстановить staff
               </button>
@@ -101,7 +147,7 @@ export default function StaffDetailPage() {
               .slice(0, 20)
               .map((e) => (
               <li key={e.id}>
-                {e.action} · {new Date(e.createdAt).toLocaleString('ru-RU')}
+                {auditActionLabel(e.action)} · {new Date(e.createdAt).toLocaleString('ru-RU')}
               </li>
             ))}
           </ul>

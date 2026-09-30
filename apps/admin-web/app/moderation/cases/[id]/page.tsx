@@ -21,6 +21,8 @@ import {
   moderationTargetTypeLabel,
 } from '@/lib/moderation-utils';
 import { formatDateTime } from '@/lib/monetization-utils';
+import { backofficeConfirm } from '@qalago/brand/confirm';
+import { BackofficeSuccessState } from '@qalago/brand/states';
 import { StaffPermission, staffRoleHasPermission } from '@qalago/shared-types';
 
 export default function ModerationCaseDetailPage() {
@@ -58,7 +60,13 @@ export default function ModerationCaseDetailPage() {
     if (!item || !canAct) return;
     const note = actionNote.trim();
     const label = actionType === 'MEDIA_HIDE' ? 'скрыть фото' : 'вернуть фото';
-    if (!window.confirm(`Подтвердите действие: ${label}?`)) return;
+    const ok = await backofficeConfirm({
+      title: actionType === 'MEDIA_HIDE' ? 'Скрыть фото?' : 'Вернуть фото?',
+      description: `Кейс модерации #${item.id.slice(0, 8)}`,
+      variant: actionType === 'MEDIA_HIDE' ? 'warning' : 'default',
+      confirmLabel: actionType === 'MEDIA_HIDE' ? 'Скрыть' : 'Вернуть',
+    });
+    if (!ok) return;
 
     setActionBusy(actionType);
     setActionError(null);
@@ -85,7 +93,14 @@ export default function ModerationCaseDetailPage() {
       return;
     }
     const label = actionType === 'REVIEW_HIDE' ? 'скрыть отзыв' : 'вернуть отзыв';
-    if (!window.confirm(`Подтвердите действие: ${label}?`)) return;
+    const ok = await backofficeConfirm({
+      title: actionType === 'REVIEW_HIDE' ? 'Скрыть отзыв?' : 'Вернуть отзыв?',
+      description: `Кейс модерации #${item.id.slice(0, 8)}`,
+      consequence: actionType === 'REVIEW_HIDE' ? 'Отзыв будет скрыт для пользователей приложения.' : undefined,
+      variant: actionType === 'REVIEW_HIDE' ? 'warning' : 'default',
+      confirmLabel: actionType === 'REVIEW_HIDE' ? 'Скрыть' : 'Вернуть',
+    });
+    if (!ok) return;
 
     setActionBusy(actionType);
     setActionError(null);
@@ -125,14 +140,7 @@ export default function ModerationCaseDetailPage() {
 
   return (
     <>
-      {toast && (
-        <p className="toast-banner" role="status">
-          {toast}
-          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setToast(null)}>
-            ✕
-          </button>
-        </p>
-      )}
+      {toast ? <BackofficeSuccessState message={toast} /> : null}
 
       <div className="card" style={{ marginBottom: '1rem' }}>
         <div className="toolbar" style={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>

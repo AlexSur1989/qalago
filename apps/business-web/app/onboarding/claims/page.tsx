@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { OwnershipClaimRow, ownerApi } from '@/lib/api';
 import { OnboardingShell } from '@/components/onboarding-shell';
 import { useAuth } from '@/lib/use-auth';
+import { backofficeConfirm } from '@qalago/brand/confirm';
 import { claimStatusLabel, mapOnboardingError } from '@/lib/onboarding-utils';
 import { onboardingRejectionReasonLabel } from '@/lib/presentation';
 
@@ -34,7 +35,7 @@ export default function OnboardingClaimsPage() {
   }, [load]);
 
   async function cancelClaim(id: string) {
-    if (!token || !window.confirm(ui.__c50c8f)) return;
+    if (!token || !(await backofficeConfirm({ title: ui.__c50c8f, variant: 'warning' }))) return;
     setMutatingId(id);
     setError(null);
     try {

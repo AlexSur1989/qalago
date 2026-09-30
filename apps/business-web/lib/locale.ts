@@ -51,6 +51,20 @@ export type UiLabels = {
   text_cancel: string;
   text_savePermissions: string;
   text_revokeAccess: string;
+  confirmConsequenceIrreversible: string;
+  confirmDeletePhotoTitle: string;
+  confirmDeleteMenuItemTitle: string;
+  confirmDeleteMenuGroupTitle: string;
+  confirmDeleteMenuGroupConsequence: string;
+  confirmDeletePromotionTitle: string;
+  confirmSetPrimaryConsequence: string;
+  confirmSetPrimaryActionLabel: string;
+  confirmRevokeMemberTitle: string;
+  confirmRevokeMemberConsequence: string;
+  confirmSuspendMemberTitle: string;
+  confirmSuspendMemberConsequence: string;
+  confirmRevokeInviteTitle: string;
+  confirmRevokeInviteConsequence: string;
   ownerSuspend: string;
   ownerEditPermissions: string;
   text_saveSubcategories: string;
@@ -839,6 +853,21 @@ export type UiLabels = {
     ownerEditPermissions: 'Изменить права',
     ownerSuspend: 'Приостановить',
     text_revokeAccess: 'Отозвать доступ',
+    confirmConsequenceIrreversible: 'Это действие нельзя отменить.',
+    confirmDeletePhotoTitle: 'Удалить фото?',
+    confirmDeleteMenuItemTitle: 'Удалить позицию?',
+    confirmDeleteMenuGroupTitle: 'Удалить группу?',
+    confirmDeleteMenuGroupConsequence:
+      'Позиции группы останутся без раздела или будут удалены по правилам API.',
+    confirmDeletePromotionTitle: 'Удалить акцию?',
+    confirmSetPrimaryConsequence: 'Этот филиал станет основным для бизнеса в выбранном городе.',
+    confirmSetPrimaryActionLabel: 'Сделать основным',
+    confirmRevokeMemberTitle: 'Отозвать доступ?',
+    confirmRevokeMemberConsequence: 'Пользователь потеряет доступ к кабинету этого заведения.',
+    confirmSuspendMemberTitle: 'Приостановить доступ?',
+    confirmSuspendMemberConsequence: 'Менеджер временно не сможет работать в кабинете до восстановления.',
+    confirmRevokeInviteTitle: 'Отозвать приглашение?',
+    confirmRevokeInviteConsequence: 'Пользователь больше не сможет принять это приглашение.',
     text_savePermissions: 'Сохранить права',
     text_cancel: 'Отмена',
     text_resumeAccess: 'Возобновить доступ',
@@ -1528,6 +1557,21 @@ export type UiLabels = {
     ownerEditPermissions: 'Құқықтарды өзгерту',
     ownerSuspend: 'Тоқтату',
     text_revokeAccess: 'Қолжетімділікті алу',
+    confirmConsequenceIrreversible: 'Бұл әрекетті болдырмау мүмкін емес.',
+    confirmDeletePhotoTitle: 'Фотоны жою керек пе?',
+    confirmDeleteMenuItemTitle: 'Позицияны жою керек пе?',
+    confirmDeleteMenuGroupTitle: 'Топты жою керек пе?',
+    confirmDeleteMenuGroupConsequence:
+      'Топ позициялары бөлімсіз қалады немесе API ережелері бойынша жойылады.',
+    confirmDeletePromotionTitle: 'Акцияны жою керек пе?',
+    confirmSetPrimaryConsequence: 'Бұл филиал таңдалған қалада негізгі филиал болады.',
+    confirmSetPrimaryActionLabel: 'Негізгі ету',
+    confirmRevokeMemberTitle: 'Қолжетімділікті алу керек пе?',
+    confirmRevokeMemberConsequence: 'Пайдаланушы осы мекеменің кабинетіне кіре алмайды.',
+    confirmSuspendMemberTitle: 'Қолжетімділікті уақытша тоқтату керек пе?',
+    confirmSuspendMemberConsequence: 'Менеджер қалпына келтірілгенге дейін кабинетте жұмыс істей алмайды.',
+    confirmRevokeInviteTitle: 'Шақырудан бас тарту керек пе?',
+    confirmRevokeInviteConsequence: 'Пайдаланушы бұл шақыруды қабылдай алмайды.',
     text_savePermissions: 'Құқықтарды сақтау',
     text_cancel: 'Бас тарту',
     text_resumeAccess: 'Қолжетімділікті қалпына келтіру',

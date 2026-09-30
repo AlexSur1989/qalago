@@ -14,6 +14,7 @@ import {
   BusinessLocationField,
   type BusinessLocationState,
 } from '@/components/business-location/business-location-field';
+import { backofficeConfirm } from '@qalago/brand/confirm';
 
 export default function OnboardingApplyPage() {
   const locale = useLocale();
@@ -167,7 +168,7 @@ function OnboardingApplyContent() {
 
   async function handleCancel() {
     if (!token || !draftId) return;
-    if (!window.confirm(ui.__c50c8f)) return;
+    if (!(await backofficeConfirm({ title: ui.__c50c8f, variant: 'warning' }))) return;
     setLoading(true);
     setError(null);
     try {

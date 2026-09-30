@@ -38,6 +38,8 @@ import {
   BackofficeEmptyState,
   BackofficeLoadingState,
 } from '@qalago/brand/states';
+import { backofficeConfirm } from '@qalago/brand/confirm';
+import { BackofficeBadge } from '@qalago/brand/badges';
 
 export default function BusinessMediaPage() {
   const locale = useLocale();
@@ -326,13 +328,11 @@ export default function BusinessMediaPage() {
                       <span className="tag tag-success">{ui.text_7407ba}</span>
                     )}
                     {publishLabel && (
-                      <span
-                        className={
-                          publishState === 'published' ? 'tag tag-success' : 'tag tag-warning'
-                        }
-                      >
-                        {publishLabel}
-                      </span>
+                      <BackofficeBadge
+                        label={publishLabel}
+                        tone={publishState === 'published' ? 'success' : 'warning'}
+                        size="compact"
+                      />
                     )}
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                       {showCoverActions && !isCover && (
@@ -353,6 +353,16 @@ export default function BusinessMediaPage() {
                         className="btn btn-sm"
                         onClick={async () => {
                           if (!token) return;
+                          if (
+                            !(await backofficeConfirm({
+                              title: ui.confirmDeletePhotoTitle,
+                              consequence: ui.confirmConsequenceIrreversible,
+                              variant: 'danger',
+                              confirmLabel: ui.text_ed2bbf,
+                            }))
+                          ) {
+                            return;
+                          }
                           await ownerApi.deleteBusinessImage(token, businessId, image.id);
                           await load(token, selectedScope);
                         }}

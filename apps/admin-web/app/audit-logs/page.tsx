@@ -7,26 +7,14 @@ import { canViewAdminAuditLogs } from '@/lib/admin-catalog-rbac';
 import { BackofficePageHeader } from '@/components/backoffice-page-header';
 import { useAuth } from '@/lib/use-auth';
 import {
+  auditActionFilterLabel,
+  auditActionLabel,
+} from '@/lib/audit-action-presentation';
+import {
   BackofficeEmptyState,
   BackofficeErrorState,
   BackofficeSkeleton,
 } from '@qalago/brand/states';
-
-function formatAction(action: string): string {
-  const labels: Record<string, string> = {
-    TEAM_INVITE: 'Приглашение в команду',
-    TEAM_INVITATION_ACCEPT: 'Принятие приглашения',
-    TEAM_PERMISSION_UPDATE: 'Изменение прав',
-    TEAM_SUSPEND: 'Приостановка доступа',
-    TEAM_RESTORE: 'Восстановление доступа',
-    TEAM_REVOKE: 'Отзыв доступа',
-    USER_ROLE_CHANGE: 'Смена роли пользователя',
-    PAYMENT_CONFIRM: 'Подтверждение оплаты',
-    BUSINESS_PROFILE_UPDATE: 'Профиль заведения',
-    PLAN_OVERRIDE: 'Изменение тарифа (админ)',
-  };
-  return labels[action] ?? action;
-}
 
 export default function AuditLogsPage() {
   const router = useRouter();
@@ -77,10 +65,12 @@ export default function AuditLogsPage() {
           Действие{' '}
           <select value={actionFilter} onChange={(e) => setActionFilter(e.target.value)}>
             <option value="">Все</option>
-            <option value="USER_ROLE_CHANGE">Смена роли</option>
-            <option value="PAYMENT_CONFIRM">Подтверждение оплаты</option>
-            <option value="TEAM_INVITE">Приглашение в команду</option>
-            <option value="TEAM_PERMISSION_UPDATE">Изменение прав команды</option>
+            <option value="USER_ROLE_CHANGE">{auditActionFilterLabel('USER_ROLE_CHANGE')}</option>
+            <option value="PAYMENT_CONFIRM">{auditActionFilterLabel('PAYMENT_CONFIRM')}</option>
+            <option value="TEAM_INVITE">{auditActionFilterLabel('TEAM_INVITE')}</option>
+            <option value="TEAM_PERMISSION_UPDATE">
+              {auditActionFilterLabel('TEAM_PERMISSION_UPDATE')}
+            </option>
           </select>
         </label>
       </div>
@@ -127,7 +117,7 @@ export default function AuditLogsPage() {
                   {row.actor?.name ?? row.actor?.phone ?? '—'}
                   {row.actor?.role ? ` (${row.actor.role})` : ''}
                 </td>
-                <td>{formatAction(row.action)}</td>
+                <td>{auditActionLabel(row.action)}</td>
                 <td>
                   {row.resourceType}
                   {row.resourceId ? ` · ${row.resourceId.slice(0, 8)}…` : ''}

@@ -3,6 +3,7 @@ import { Montserrat } from 'next/font/google';
 import './globals.css';
 import { LocaleProvider } from '@/components/locale-provider';
 import { PlatformFeaturesProvider } from '@/components/platform-features-provider';
+import { BackofficeProviders } from '@/components/backoffice-providers';
 import { siteMetadataForLocale } from '@/lib/locale';
 import { getServerLocale } from '@/lib/locale-server';
 
@@ -23,7 +24,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={locale} className={montserrat.variable}>
       <body className={montserrat.className}>
         <LocaleProvider initialLocale={locale}>
-          <PlatformFeaturesProvider>{children}</PlatformFeaturesProvider>
+          <PlatformFeaturesProvider>
+            <BackofficeProviders>{children}</BackofficeProviders>
+          </PlatformFeaturesProvider>
         </LocaleProvider>
       </body>
     </html>

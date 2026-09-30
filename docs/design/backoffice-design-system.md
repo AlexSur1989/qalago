@@ -11,6 +11,9 @@
 | `packages/brand/backoffice-shell.css` | Shared shell layout: sidebar, topbar, nav item geometry, page canvas, mobile drawer (UXA.2) |
 | `packages/brand/icons/` (`@qalago/brand/icons`) | QalaGo Backoffice SVG icon components (UXA.3) |
 | `packages/brand/backoffice-states.css` + `@qalago/brand/states` | System states — alerts, loading, skeleton, empty, error, access (UXA.9) |
+| `packages/brand/backoffice-badges.css` + `@qalago/brand/badges` | Status badges — semantic tones (UXA.7) |
+| `packages/brand/status` (`@qalago/brand/status`) | Shared status → label + tone (business lifecycle, plan tier, feature flags) |
+| `packages/brand/backoffice-confirm.css` + `@qalago/brand/confirm` | Accessible confirm dialog + `backofficeConfirm` bridge (UXA.7) |
 
 Both apps import in order:
 
@@ -32,7 +35,7 @@ Legacy `--primary` and `--accent` alias the canonical brand tokens. **`--qz-gold
 
 ## Semantic palette
 
-Success, warning, danger, and info use `--color-{name}` and `--color-{name}-soft` pairs. Domain status mapping (badges, enums) is **UXA.7** — do not map enums in UXA.1.
+Success, warning, danger, and info use `--color-{name}` and `--color-{name}-soft` pairs. Domain status **presentation** (label + tone, no raw enum in UI) is **UXA.7** — see below.
 
 ## Typography
 
@@ -96,9 +99,22 @@ Canonical: `--radius-xs` (8px), `--radius-md` (12px), `--radius-lg` (16px), `--r
 - **i18n:** Business wrappers pass RU/KK copy from `useUi()`; Admin representative surfaces RU-first.
 - **Migration debt:** Not every screen migrated; tables/forms/dashboard partial-failure UX deferred to UXA.4/UXA.5/UXA.8.
 
+## Status badges & confirmations (UXA.7)
+
+- **Badge:** `BackofficeBadge` — props `label`, `tone` (`neutral` | `info` | `success` | `warning` | `danger`), optional `icon` (16px via UXA.3), `size` `default` | `compact`. Pill geometry, semantic soft background + foreground from UXA.1 tokens. **No emoji.**
+- **Presentation rule:** Backend enum values stay unchanged. UI shows localized human labels + tone via domain helpers (`@qalago/brand/status`, `apps/admin-web/lib/audit-action-presentation.ts`, `staff-presentation.ts`, existing catalog/monetization label helpers). **Never** use raw `SCREAMING_SNAKE_CASE` as primary copy; unknown → safe fallback (e.g. «Неизвестное действие», «Неизвестный статус»).
+- **Plan tiers (public names):** FREE → «Бесплатный», BASIC → «BUSINESS», PREMIUM → «PRO», VIP → «VIP» (`planTierPresentation`).
+- **Feature flags:** ON → «Включено» / success; OFF → «Выключено» / neutral (`featureFlagPresentation`). Runtime semantics unchanged.
+- **Business RU/KK:** Business lifecycle labels in shared status helper remain RU; Business Web membership/plan copy continues to use existing locale helpers where already wired.
+- **Confirm:** `BackofficeConfirmDialog` (native `<dialog>`, `aria-labelledby` / `aria-describedby`, initial focus on **Cancel**, Escape when not pending, `pending` disables double-submit). Variants: `default`, `warning`, `danger`. Async entry: `backofficeConfirm()` via `BackofficeConfirmProvider` in both app roots. **No `window.confirm`** on migrated surfaces.
+- **Destructive copy:** Title names action + target; `consequence` states irreversible or product-accurate side effect (delete location, revoke invite, lifecycle block, etc.).
+- **Post-action feedback:** Success/error still via UXA.9 inline alerts / `BackofficeSuccessState` — no new toast layer.
+- **Migrated (representative):** Admin — audit logs, staff list/detail, catalog businesses list/detail (badges + lifecycle confirm), moderation case actions, catalog location delete, monetization campaigns/creatives/payments confirms, platform team toggle. Business — locations set-primary/delete, onboarding cancel, menu/media/promotions delete, team invite revoke + member suspend/revoke.
+- **Deferred:** Admin legacy **dashboard** (`confirmAction` / `window.confirm`); full monetization/catalog badge sweep; business-requests ModalDialog (separate pattern); reports staff role raw string; filter/table redesign (**UXA.4**).
+
 ## UXA.1 does NOT cover
 
-Tables/filters (UXA.4), forms migration (UXA.5), location UX (UXA.6), status badges (UXA.7), dashboards (UXA.8), responsive pass (UXA.10), a11y closure (UXA.11), RU/KK visual QA (UXA.12), dark mode.
+Tables/filters (UXA.4), forms migration (UXA.5), location UX (UXA.6), dashboards (UXA.8), responsive pass (UXA.10), a11y closure (UXA.11), RU/KK visual QA (UXA.12), dark mode.
 
 ## Tests
 

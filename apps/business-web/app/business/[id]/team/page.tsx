@@ -24,6 +24,7 @@ import {
 import { BusinessShell } from '@/components/business-shell';
 import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
 import { BusinessPlatformFeatureUnavailable } from '@/components/business-platform-feature-unavailable';
+import { backofficeConfirm } from '@qalago/brand/confirm';
 import { usePlatformFeatures } from '@/components/platform-features-provider';
 import { BUSINESS_ROUTE_ACCESS, useBusinessRouteGate } from '@/lib/use-business-route-gate';
 import { parseApiError } from '@/lib/monetization-utils';
@@ -157,6 +158,32 @@ export default function BusinessTeamPage() {
     data: { permissions?: string[]; status?: string },
   ) {
     if (!token) return;
+    if (data.status === 'REVOKED') {
+      if (
+        !(await backofficeConfirm({
+          title: ui.confirmRevokeMemberTitle,
+          description: member.name ?? member.phone ?? member.membershipId,
+          consequence: ui.confirmRevokeMemberConsequence,
+          variant: 'danger',
+          confirmLabel: ui.text_revokeAccess,
+        }))
+      ) {
+        return;
+      }
+    }
+    if (data.status === 'SUSPENDED') {
+      if (
+        !(await backofficeConfirm({
+          title: ui.confirmSuspendMemberTitle,
+          description: member.name ?? member.phone ?? member.membershipId,
+          consequence: ui.confirmSuspendMemberConsequence,
+          variant: 'warning',
+          confirmLabel: ui.ownerSuspend,
+        }))
+      ) {
+        return;
+      }
+    }
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -173,6 +200,17 @@ export default function BusinessTeamPage() {
 
   async function revokeInvite(invitation: TeamInvitationRow) {
     if (!token) return;
+    if (
+      !(await backofficeConfirm({
+        title: ui.confirmRevokeInviteTitle,
+        description: invitation.email ?? invitation.phone ?? invitation.invitationId,
+        consequence: ui.confirmRevokeInviteConsequence,
+        variant: 'danger',
+        confirmLabel: ui.text_revokeInvite,
+      }))
+    ) {
+      return;
+    }
     setLoading(true);
     setError(null);
     setSuccess(null);

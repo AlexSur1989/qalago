@@ -9,7 +9,7 @@ import {
   MonetizationCampaignRow,
 } from '@/lib/monetization-api';
 import { useMonetizationContext } from '@/components/monetization/monetization-layout-client';
-import { confirmAction } from '@/lib/admin-utils';
+import { backofficeConfirm } from '@qalago/brand/confirm';
 import {
   analyticsActionLabel,
   campaignActionsForStatus,
@@ -67,7 +67,16 @@ export default function MonetizationCampaignDetailPage() {
       cancel:
         'Отменить рекламную кампанию?\n\nЭто действие остановит дальнейшие показы.',
     };
-    if (!confirmAction(messages[action])) return;
+    if (
+      !(await backofficeConfirm({
+        title: messages[action].split('\n')[0],
+        description: messages[action].includes('\n') ? messages[action].split('\n').slice(1).join('\n') : undefined,
+        variant: action === 'cancel' ? 'danger' : 'warning',
+        confirmLabel: 'Подтвердить',
+      }))
+    ) {
+      return;
+    }
 
     setActionLoading(action);
     setError(null);

@@ -19,7 +19,9 @@ import {
   canEditBusinessCore,
   canEditCatalogTaxonomy,
 } from '@/lib/admin-catalog-rbac';
-import { statusClass } from '@/lib/admin-utils';
+import { BackofficeBadge } from '@qalago/brand/badges';
+import { backofficeConfirm } from '@qalago/brand/confirm';
+import { businessStatusPresentation } from '@qalago/brand/status';
 import { adminApi, type CategoryRow, type SubcategoryAdminRow } from '@/lib/api';
 
 export default function CatalogBusinessDetailPage() {
@@ -139,7 +141,13 @@ export default function CatalogBusinessDetailPage() {
         : next === 'ACTIVE'
           ? adminCatalogLabel(locale, 'confirmActivate')
           : adminCatalogLabel(locale, 'confirmActivate');
-    if (!window.confirm(confirmMsg)) return;
+    const ok = await backofficeConfirm({
+      title: next === 'BLOCKED' ? 'Заблокировать заведение?' : 'Изменить статус заведения?',
+      description: confirmMsg,
+      variant: next === 'BLOCKED' ? 'danger' : 'warning',
+      confirmLabel: 'Подтвердить',
+    });
+    if (!ok) return;
     setStatusBusy(true);
     try {
       await adminCatalogApi.updateStatus(token, params.id, next);
@@ -206,9 +214,10 @@ export default function CatalogBusinessDetailPage() {
       <div className="card" style={{ marginTop: 16 }}>
         <h3 style={{ marginTop: 0 }}>{adminCatalogLabel(locale, 'sectionCore')}</h3>
         <p>
-          <span className={statusClass(detail.status)}>
-            {adminCatalogStatusLabel(locale, detail.status)}
-          </span>
+          <BackofficeBadge
+            label={adminCatalogStatusLabel(locale, detail.status)}
+            tone={businessStatusPresentation(detail.status).tone}
+          />
         </p>
         <p className="muted">
           {adminCatalogLabel(locale, 'slugReadOnly')}: <code>{detail.slug}</code>

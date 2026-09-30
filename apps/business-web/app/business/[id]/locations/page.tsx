@@ -13,6 +13,7 @@ import { cityDisplayName } from '@/lib/localized-content';
 import { branchManagementCopy, buildCreateBusinessLocationPayload } from '@/lib/presentation';
 import { parseApiError } from '@/lib/monetization-utils';
 import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
+import { backofficeConfirm } from '@qalago/brand/confirm';
 import { BUSINESS_ROUTE_ACCESS, useBusinessRouteGate } from '@/lib/use-business-route-gate';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
@@ -207,7 +208,13 @@ export default function BusinessLocationsPage() {
     if (!token || !canManage || row.isPrimary) return;
     const city = cities.find((c) => c.id === row.cityId);
     const cityName = city ? cityDisplayName(city, locale) : row.cityId;
-    if (!window.confirm(copy.setPrimaryConfirm(cityName, row.address))) return;
+    const ok = await backofficeConfirm({
+      title: copy.setPrimaryConfirm(cityName, row.address),
+      consequence: ui.confirmSetPrimaryConsequence,
+      variant: 'warning',
+      confirmLabel: ui.confirmSetPrimaryActionLabel,
+    });
+    if (!ok) return;
     setMutating(true);
     setError(null);
     setSuccess(null);

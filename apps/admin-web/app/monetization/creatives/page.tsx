@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { monetizationApi, MonetizationCreativeRow } from '@/lib/monetization-api';
 import { useMonetizationContext } from '@/components/monetization/monetization-layout-client';
 import { VipBannerPreview } from '@/components/monetization/vip-banner-preview';
-import { confirmAction } from '@/lib/admin-utils';
+import { backofficeConfirm } from '@qalago/brand/confirm';
+import { BackofficeSuccessState } from '@qalago/brand/states';
 import {
   creativeStatusLabel,
   formatDateTime,
@@ -52,7 +53,7 @@ export default function MonetizationCreativesPage() {
   }, [token, citySlug, statusFilter]);
 
   async function approveCreative(creative: MonetizationCreativeRow) {
-    if (!confirmAction('Одобрить рекламный баннер?')) return;
+    if (!(await backofficeConfirm({ title: 'Одобрить рекламный баннер?', variant: 'default' }))) return;
     setActionLoading(`approve-${creative.id}`);
     setError(null);
     setInfo(null);
@@ -69,7 +70,7 @@ export default function MonetizationCreativesPage() {
   }
 
   async function rejectCreative(creative: MonetizationCreativeRow) {
-    if (!confirmAction('Отклонить рекламный баннер?')) return;
+    if (!(await backofficeConfirm({ title: 'Отклонить рекламный баннер?', variant: 'warning' }))) return;
     setActionLoading(`reject-${creative.id}`);
     setError(null);
     setInfo(null);

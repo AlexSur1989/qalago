@@ -1,4 +1,5 @@
 import { Montserrat } from 'next/font/google';
+import { BackofficeProviders } from '@/components/backoffice-providers';
 import './globals.css';
 
 const montserrat = Montserrat({
@@ -9,7 +10,9 @@ const montserrat = Montserrat({
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru" className={montserrat.variable}>
-      <body className={montserrat.className}>{children}</body>
+      <body className={montserrat.className}>
+        <BackofficeProviders>{children}</BackofficeProviders>
+      </body>
     </html>
   );
 }

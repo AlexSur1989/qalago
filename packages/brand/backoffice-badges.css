@@ -1,0 +1,61 @@
+/**
+ * QalaGo backoffice badges (UXA.7) — semantic status pills.
+ */
+
+.bo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  max-width: 100%;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-line-height);
+  font-weight: 600;
+  border: 1px solid transparent;
+  vertical-align: middle;
+}
+
+.bo-badge--compact {
+  padding: 1px var(--space-2);
+  font-size: 0.7rem;
+}
+
+.bo-badge-label {
+  overflow-wrap: anywhere;
+}
+
+.bo-badge-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.bo-badge--neutral {
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+}
+
+.bo-badge--info {
+  background: var(--color-info-soft);
+  color: var(--color-info);
+  border-color: color-mix(in srgb, var(--color-info) 25%, transparent);
+}
+
+.bo-badge--success {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+  border-color: color-mix(in srgb, var(--color-success) 25%, transparent);
+}
+
+.bo-badge--warning {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+  border-color: color-mix(in srgb, var(--color-warning) 25%, transparent);
+}
+
+.bo-badge--danger {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  border-color: color-mix(in srgb, var(--color-danger) 25%, transparent);
+}

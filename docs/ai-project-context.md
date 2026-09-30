@@ -86,9 +86,10 @@
 | **UXA.2** | **PASS — BACKOFFICE SHELL / NAVIGATION UNIFIED** — checkpoint **`ed1c9ff`**; `backoffice-shell.css`, Admin authenticated areas in `AdminShell`, mobile drawer @960px |
 | **UXA.3** | **PASS — QALAGO BACKOFFICE ICON SYSTEM** — checkpoint **`03e6e17`**; `@qalago/brand/icons`; SVG `currentColor` nav/shell; no emoji in authenticated shell/nav |
 | **UXA.9** | **PASS — BACKOFFICE SYSTEM STATES STANDARDIZED** — checkpoint **`5774f0f`**; `@qalago/brand/states`; inline alerts; access vs feature unavailable |
-| **UXA (track)** | **ACTIVE** — **UXA.7 / UXA.4 next**; see § UXA below |
+| **UXA.7** | **PASS — STATUS / BADGES / CONFIRMATIONS STANDARDIZED** — `@qalago/brand/badges`, `status`, `confirm`; audit/staff enum humanization; representative confirm migrations |
+| **UXA (track)** | **ACTIVE** — **UXA.4 next**; see § UXA below |
 | **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = ACTIVE** · Consumer Web UI/UX after UXA · Mobile Web UI/UX after Consumer · production/security/pre-VPS later · VPS later |
-| **Next** | **UXA.7** status/badges/confirmations or **UXA.4** tables; parallel **KZ-C.1** notification physical QA remains open |
+| **Next** | **UXA.4** tables / filters / search; parallel **KZ-C.1** notification physical QA remains open |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -384,7 +385,7 @@ VPS / production deployment
 |-------|--------|
 | **AOP** | **CLOSED** |
 | **BIZ** | **CLOSED** |
-| **UXA** | **ACTIVE** — **UXA.1–UXA.3, UXA.9 PASS**; **UXA.4+** pending |
+| **UXA** | **ACTIVE** — **UXA.1–UXA.3, UXA.7, UXA.9 PASS**; **UXA.4+** pending |
 | **Consumer Web UI/UX** | **PLANNED** (after backoffice functional + UXA) |
 | **Mobile UI/UX** | **PLANNED** |
 | **VPS / production** | **BLOCKED** until readiness gates |
@@ -406,7 +407,7 @@ VPS / production deployment
 | **UXA.4** | Tables / filters / search — columns, sort, filters, pagination, row actions, empty states, tablet fallback |
 | **UXA.5** | Forms — grouping, labels, validation, errors, save/cancel, dirty state, destructive actions, **success feedback** (incl. catalog/core save debt) |
 | **UXA.6** | BusinessLocation / geo UX — location cards, primary badge, map/coords, city selector, hours/contacts, set-primary/delete, read-only permission states (**domain rules unchanged**) |
-| **UXA.7** | Status badges + confirmations — PENDING/ACTIVE/BLOCKED, plan/claim/application/payment/campaign; toast/alert/modal/destructive UX |
+| **UXA.7** | **PASS** — Status badges + confirmations — `@qalago/brand/badges|status|confirm`; audit/staff labels; `backofficeConfirm`; dashboard `confirmAction` deferred |
 | **UXA.8** | Dashboards / cards / statistics — Admin operational overview; Business owner overview (**no invented backend metrics in UXA docs**) |
 | **UXA.9** | **PASS** — System states foundation (`@qalago/brand/states`); representative screen migration; no global toast |
 | **UXA.10** | Responsive backoffice — desktop/laptop/tablet; Admin need not mimic consumer mobile; Business Web usable on tablet/smaller widths |
@@ -419,7 +420,7 @@ VPS / production deployment
 Not functional AOP defects (**AOP remains CLOSED**):
 
 - Weak or absent **save-success** feedback (catalog/core and elsewhere)
-- Audit UI shows **technical enum** action labels; filters for new actions incomplete
+- Audit **action** primary labels humanized (UXA.7); filter/table polish deferred (**UXA.4**)
 - **Featured/plan** controls remain on legacy dashboard surface vs catalog detail
 - Inconsistent **empty / loading / error** states may exist across backoffice
 - Screen-level **loading/empty/error** consistency still open (**UXA.9**)

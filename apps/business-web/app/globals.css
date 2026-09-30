@@ -2,6 +2,8 @@
 @import '../../../packages/brand/backoffice-primitives.css';
 @import '../../../packages/brand/backoffice-shell.css';
 @import '../../../packages/brand/backoffice-states.css';
+@import '../../../packages/brand/backoffice-badges.css';
+@import '../../../packages/brand/backoffice-confirm.css';
 
 :root {
   --sidebar-width: var(--sidebar-expanded);

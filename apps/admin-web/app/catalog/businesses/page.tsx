@@ -7,7 +7,8 @@ import { adminCatalogApi, type AdminCatalogListItem } from '@/lib/admin-catalog-
 import { adminCatalogLabel, adminCatalogStatusLabel } from '@/lib/admin-catalog-labels';
 import { parseAdminCatalogApiError } from '@/lib/admin-catalog-errors';
 import { canCreateAdminCatalogBusiness } from '@/lib/admin-catalog-rbac';
-import { statusClass } from '@/lib/admin-utils';
+import { BackofficeBadge } from '@qalago/brand/badges';
+import { businessStatusPresentation } from '@qalago/brand/status';
 import {
   BackofficeEmptyState,
   BackofficeErrorState,
@@ -76,9 +77,9 @@ export default function CatalogBusinessesListPage() {
           <span>{adminCatalogLabel(locale, 'filterStatus')}</span>
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="city-select">
             <option value="">{adminCatalogLabel(locale, 'filterAll')}</option>
-            <option value="PENDING">PENDING</option>
-            <option value="ACTIVE">ACTIVE</option>
-            <option value="BLOCKED">BLOCKED</option>
+            <option value="PENDING">{businessStatusPresentation('PENDING').label}</option>
+            <option value="ACTIVE">{businessStatusPresentation('ACTIVE').label}</option>
+            <option value="BLOCKED">{businessStatusPresentation('BLOCKED').label}</option>
           </select>
         </label>
       </div>
@@ -118,9 +119,11 @@ export default function CatalogBusinessesListPage() {
                 <tr key={b.id}>
                   <td>{b.title}</td>
                   <td>
-                    <span className={statusClass(b.status)}>
-                      {adminCatalogStatusLabel(locale, b.status)}
-                    </span>
+                    <BackofficeBadge
+                      label={adminCatalogStatusLabel(locale, b.status)}
+                      tone={businessStatusPresentation(b.status).tone}
+                      size="compact"
+                    />
                   </td>
                   <td>{b.city?.nameRu ?? '—'}</td>
                   <td>{b.category?.title ?? '—'}</td>

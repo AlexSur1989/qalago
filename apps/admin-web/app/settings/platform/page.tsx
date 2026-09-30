@@ -9,6 +9,7 @@ import {
 } from '@/lib/admin-platform-features-api';
 import { useAuth } from '@/lib/use-auth';
 import { isSuperAdminRole } from '@/lib/rbac';
+import { backofficeConfirm } from '@qalago/brand/confirm';
 import {
   BackofficeAlert,
   BackofficeLoadingState,
@@ -50,6 +51,16 @@ export default function PlatformFeaturesSettingsPage() {
 
   async function onToggleTeam(next: boolean) {
     if (!token || saving) return;
+    const ok = await backofficeConfirm({
+      title: next ? 'Включить команду бизнеса?' : 'Выключить команду бизнеса?',
+      description: 'Платформенная функция для всех бизнес-кабинетов.',
+      consequence: next
+        ? 'Владельцы смогут приглашать менеджеров (при наличии прав).'
+        : 'Раздел «Команда» станет недоступен, пока функция выключена.',
+      variant: 'warning',
+      confirmLabel: next ? 'Включить' : 'Выключить',
+    });
+    if (!ok) return;
     const prev = businessTeamEnabled;
     setBusinessTeamEnabled(next);
     setSaving(true);

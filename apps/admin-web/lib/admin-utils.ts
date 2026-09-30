@@ -1,3 +1,6 @@
+import { backofficeToneToTagClass } from '@qalago/brand/badges';
+import { businessStatusPresentation, planTierPresentation } from '@qalago/brand/status';
+
 export type AdminTabId =
   | 'moderation'
   | 'featured'
@@ -9,29 +12,11 @@ export type AdminTabId =
   | 'monetization';
 
 export function statusLabel(status: string): string {
-  switch (status) {
-    case 'ACTIVE':
-      return 'Активно';
-    case 'PENDING':
-      return 'На модерации';
-    case 'BLOCKED':
-      return 'Заблокировано';
-    default:
-      return status;
-  }
+  return businessStatusPresentation(status).label;
 }
 
 export function statusClass(status: string): string {
-  switch (status) {
-    case 'ACTIVE':
-      return 'tag tag-success';
-    case 'PENDING':
-      return 'tag tag-warning';
-    case 'BLOCKED':
-      return 'tag tag-danger';
-    default:
-      return 'tag tag-muted';
-  }
+  return backofficeToneToTagClass(businessStatusPresentation(status).tone);
 }
 
 export function isPublicVisible(status: string): boolean {
@@ -63,16 +48,5 @@ export function confirmAction(message: string): boolean {
 
 /** Maps internal enum to public Russian labels (Stage 6.4). */
 export function planTierLabel(tier?: string | null): string {
-  switch (tier) {
-    case 'FREE':
-      return 'Бесплатный';
-    case 'BASIC':
-      return 'Бизнес';
-    case 'PREMIUM':
-      return 'PRO';
-    case 'VIP':
-      return 'VIP';
-    default:
-      return 'Бесплатный';
-  }
+  return planTierPresentation(tier).label;
 }

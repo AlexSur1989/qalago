@@ -34,6 +34,7 @@ import { parseApiError } from '@/lib/monetization-utils';
 import { useOwnerBusiness } from '@/lib/use-owner-business';
 import { BusinessShell } from '@/components/business-shell';
 import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
+import { backofficeConfirm } from '@qalago/brand/confirm';
 import { BackofficeSuccessState } from '@qalago/brand/states';
 import {
   BUSINESS_ROUTE_ACCESS,
@@ -475,6 +476,17 @@ export default function BusinessMenuPage() {
                   onEdit={() => openEditItem(item)}
                   onDelete={async () => {
                     if (!token) return;
+                    if (
+                      !(await backofficeConfirm({
+                        title: ui.confirmDeleteMenuItemTitle,
+                        description: item.title,
+                        consequence: ui.confirmConsequenceIrreversible,
+                        variant: 'danger',
+                        confirmLabel: ui.text_ed2bbf,
+                      }))
+                    ) {
+                      return;
+                    }
                     await ownerApi.deleteMenuItem(token, item.id);
                     await reloadAll();
                   }}
@@ -536,6 +548,17 @@ export default function BusinessMenuPage() {
                   className="btn btn-sm"
                   onClick={async () => {
                     if (!token) return;
+                    if (
+                      !(await backofficeConfirm({
+                        title: ui.confirmDeleteMenuGroupTitle,
+                        description: section.title,
+                        consequence: ui.confirmDeleteMenuGroupConsequence,
+                        variant: 'danger',
+                        confirmLabel: ui.text_deleteGroup,
+                      }))
+                    ) {
+                      return;
+                    }
                     await ownerApi.deleteMenuGroup(token, section.id);
                     if (sectionId === section.id) setSectionId('');
                     await reloadAll();

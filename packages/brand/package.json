@@ -9,10 +9,15 @@
     "./backoffice-primitives.css": "./backoffice-primitives.css",
     "./backoffice-shell.css": "./backoffice-shell.css",
     "./backoffice-states.css": "./backoffice-states.css",
-    "./states": "./states/index.tsx"
+    "./states": "./states/index.tsx",
+    "./badges": "./badges/index.tsx",
+    "./status": "./status/index.ts",
+    "./confirm": "./confirm/index.tsx",
+    "./backoffice-badges.css": "./backoffice-badges.css",
+    "./backoffice-confirm.css": "./backoffice-confirm.css"
   },
   "scripts": {
-    "test": "node qalago-theme.tokens.test.mjs && node icons/icons.contract.test.mjs && node icons/QalaIcon.test.mjs && node states/states.contract.test.mjs"
+    "test": "node qalago-theme.tokens.test.mjs && node icons/icons.contract.test.mjs && node icons/QalaIcon.test.mjs && node states/states.contract.test.mjs && node badges/badges.contract.test.mjs && node confirm/confirm.contract.test.mjs"
   },
   "peerDependencies": {
     "react": "^19.0.0"

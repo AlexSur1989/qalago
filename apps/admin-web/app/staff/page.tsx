@@ -6,11 +6,13 @@ import { BackofficePageHeader } from '@/components/backoffice-page-header';
 import { useAuth } from '@/lib/use-auth';
 import { staffApi, StaffListRow, StaffOverview } from '@/lib/staff-api';
 import { isSuperAdminRole } from '@/lib/rbac';
+import { BackofficeBadge } from '@qalago/brand/badges';
 import {
   BackofficeAccessDenied,
   BackofficeErrorState,
   BackofficeLoadingState,
 } from '@qalago/brand/states';
+import { staffActivePresentation, staffRoleLabel } from '@/lib/staff-presentation';
 
 export default function StaffPage() {
   const { token, user, ready } = useAuth();
@@ -98,9 +100,20 @@ export default function StaffPage() {
                 <br />
                 <span className="muted">{row.user.phone ?? row.user.id}</span>
               </td>
-              <td>{row.staffRole}</td>
+              <td>
+                <BackofficeBadge
+                  label={staffRoleLabel(row.staffRole)}
+                  tone="info"
+                  size="compact"
+                />
+              </td>
               <td>{row.cityScopes.map((c) => c.nameRu).join(', ') || '—'}</td>
-              <td>{row.isActive ? 'Активен' : 'Отключён'}</td>
+              <td>
+                <BackofficeBadge
+                  {...staffActivePresentation(row.isActive)}
+                  size="compact"
+                />
+              </td>
               <td>{row.activeSessionCount}</td>
               <td>
                 <Link href={`/staff/${row.userId}`}>Детали</Link>

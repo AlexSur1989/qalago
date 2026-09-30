@@ -1,5 +1,8 @@
 'use client';
 
+import { BackofficeBadge } from '@qalago/brand/badges';
+import { featureFlagPresentation } from '@qalago/brand/status';
+
 type PlatformFeatureRowProps = {
   title: string;
   description: string;
@@ -22,6 +25,7 @@ export function PlatformFeatureRow({
   onToggle,
 }: PlatformFeatureRowProps) {
   const busy = loading || saving;
+  const flag = featureFlagPresentation(enabled);
 
   return (
     <div className="card" style={{ marginBottom: 12 }}>
@@ -40,7 +44,11 @@ export function PlatformFeatureRow({
             disabled={disabled || busy}
             onChange={(e) => onToggle(e.target.checked)}
           />
-          <span>{busy ? '…' : enabled ? 'Вкл.' : 'Выкл.'}</span>
+          {busy ? (
+            <span>…</span>
+          ) : (
+            <BackofficeBadge label={flag.label} tone={flag.tone} size="compact" />
+          )}
         </label>
       </div>
     </div>
