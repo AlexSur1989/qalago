@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-30 — UXA.2 PASS — Backoffice shell / navigation unified
+
+- **Status:** **UXA.2 PASS — BACKOFFICE SHELL / NAVIGATION UNIFIED**. **UXA.3 not started**.
+- **Starting HEAD:** **`77f588cd384db555c49f17a3d66f451fea308924`**.
+- **Checkpoint (commit):** _(set at commit)_ — `feat(ui): unify backoffice shell navigation`.
+- **Summary:** Shared **`packages/brand/backoffice-shell.css`**; Admin mobile **drawer** (replaces ≤960px unlabeled icon rail); **`AdminAuthenticatedShell`** wraps reports/settings/staff/audit; horizontal **`shell-section-subnav`** for reports/settings; Staff nav entry for SUPER_ADMIN; Settings nav for all admin-web roles (platform tab SUPER_ADMIN only); Business shell aligned (main landmark, drawer scroll lock, business switcher styling). **No route/auth/RBAC/API/DB changes.** Emoji nav unchanged.
+- **Deferred:** UXA.3 icons; UXA.10 full responsive polish; physical browser QA.
+- **Next:** **UXA.3** icon system.
+
+---
+
 ## 2026-09-30 — UXA.1 PASS — Backoffice design system foundation
 
 - **Status:** **UXA.1 PASS — BACKOFFICE DESIGN SYSTEM FOUNDATION**. **UXA.0 PASS** (read-only audit). **AOP / BIZ remain CLOSED**. **UXA.2 not started**.

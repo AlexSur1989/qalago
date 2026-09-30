@@ -8,6 +8,7 @@
 |------|------|
 | `packages/brand/qalago-theme.css` | Semantic colors, typography, spacing, radii, shadows, controls, icons, layout, focus, motion |
 | `packages/brand/backoffice-primitives.css` | Shared focus, button/input/alert/tag baselines, typography helpers |
+| `packages/brand/backoffice-shell.css` | Shared shell layout: sidebar, topbar, nav item geometry, page canvas, mobile drawer (UXA.2) |
 
 Both apps import in order:
 
@@ -67,9 +68,18 @@ Canonical: `--radius-xs` (8px), `--radius-md` (12px), `--radius-lg` (16px), `--r
 
 `--focus-ring-*` + `:focus-visible` in primitives. `--transition-fast` (150ms), `--transition-normal` (200ms). `prefers-reduced-motion` global reduction in primitives.
 
+## Shell (UXA.2)
+
+- **Dimensions:** `--sidebar-expanded` 260px, `--sidebar-collapsed` 72px (desktop collapse only on Business), `--topbar-height` 64px, `--content-max` 1200px, page padding tokens.
+- **Responsive:** At **≤960px** both apps use **off-canvas drawer + backdrop** (no unlabeled Admin icon rail). `body.shell-drawer-open` locks background scroll.
+- **Admin integration:** `/reports`, `/settings`, `/staff`, `/audit-logs` render inside `AdminAuthenticatedShell` + global `AdminShell`. Section subnav uses `.shell-section-subnav` (reports, settings).
+- **Nav visibility helpers:** `apps/admin-web/lib/admin-shell-nav.ts` (Staff SUPER_ADMIN, Settings all admin-web roles, Platform tab SUPER_ADMIN, Audit `AUDIT_VIEW`).
+- **Page header helper:** `BackofficePageHeader` (admin-web) — title, description, optional back link/actions.
+- **Nav grouping:** **Flat nav** retained (no section labels) to avoid clutter; emoji placeholders until UXA.3.
+
 ## UXA.1 does NOT cover
 
-Shell/navigation redesign (UXA.2), icons (UXA.3), tables/filters (UXA.4), forms migration (UXA.5), location UX (UXA.6), status badges (UXA.7), dashboards (UXA.8), loading/empty states (UXA.9), responsive pass (UXA.10), a11y closure (UXA.11), RU/KK visual QA (UXA.12), dark mode.
+Icons (UXA.3), tables/filters (UXA.4), forms migration (UXA.5), location UX (UXA.6), status badges (UXA.7), dashboards (UXA.8), loading/empty states (UXA.9), responsive pass (UXA.10), a11y closure (UXA.11), RU/KK visual QA (UXA.12), dark mode.
 
 ## Tests
 

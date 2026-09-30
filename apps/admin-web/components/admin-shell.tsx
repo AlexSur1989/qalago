@@ -1,12 +1,16 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AuthUser } from '@/lib/api';
 import { AdminTabId } from '@/lib/admin-utils';
-import { canManageCities, canViewUsers, getRoleDefinition, isSuperAdminRole } from '@/lib/rbac';
-import { canViewAdminAuditLogs } from '@/lib/admin-catalog-rbac';
+import {
+  showAdminAuditNav,
+  showAdminSettingsNav,
+  showAdminStaffNav,
+} from '@/lib/admin-shell-nav';
+import { canManageCities, canViewUsers, getRoleDefinition } from '@/lib/rbac';
 import type { MonetizationSubNavId } from '@/lib/monetization-utils';
 
 type NavItem = {
@@ -56,6 +60,7 @@ export function AdminShell({
 }: AdminShellProps) {
   const pathname = usePathname();
   const roleInfo = getRoleDefinition(user.role);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const monetizationBadgeTotal =
     (monetizationBadges?.orders ?? 0) + (monetizationBadges?.creatives ?? 0);
@@ -79,12 +84,65 @@ export function AdminShell({
     cities.find((c) => c.slug === citySlug)?.nameRu ??
     citySlug;
 
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileNavOpen) {
+      document.body.classList.remove('shell-drawer-open');
+      return;
+    }
+    document.body.classList.add('shell-drawer-open');
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setMobileNavOpen(false);
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.classList.remove('shell-drawer-open');
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [mobileNavOpen]);
+
+  const sidebarClassName = useMemo(() => {
+    let cls = 'sidebar';
+    if (mobileNavOpen) cls += ' open';
+    return cls;
+  }, [mobileNavOpen]);
+
+  function closeMobileNav() {
+    setMobileNavOpen(false);
+  }
+
+  function linkClass(active: boolean): string {
+    return `nav-item${active ? ' active' : ''}`;
+  }
+
   return (
     <div className="shell">
-      <aside className="sidebar">
+      {mobileNavOpen ? (
+        <button
+          type="button"
+          className="shell-nav-backdrop mobile-only"
+          aria-label="Закрыть меню"
+          onClick={closeMobileNav}
+        />
+      ) : null}
+
+      <aside className={sidebarClassName} aria-label="Админ-навигация">
         <div className="sidebar-brand">
           <span className="sidebar-brand-mark">Q</span>
           <span>QalaGo Admin</span>
+          {mobileNavOpen ? (
+            <button
+              type="button"
+              className="sidebar-close-btn mobile-only"
+              aria-label="Закрыть меню"
+              onClick={closeMobileNav}
+            >
+              ×
+            </button>
+          ) : null}
         </div>
 
         <div className="admin-role-card">
@@ -92,7 +150,7 @@ export function AdminShell({
           <div className="admin-role-meta">{user.phone ?? 'Телефон не указан'}</div>
         </div>
 
-        <nav className="sidebar-nav">
+        <nav className="sidebar-nav" aria-label="Разделы админки">
           {nav
             .filter((item) => item.visible !== false)
             .map((item) =>
@@ -100,113 +158,176 @@ export function AdminShell({
                 <Link
                   key={item.id}
                   href="/monetization"
-                  className={`nav-item${
-                    activeTab === 'monetization' || pathname.startsWith('/monetization')
-                      ? ' active'
-                      : ''
-                  }`}
-                >
-                  <span className="nav-icon">{item.icon}</span>
-                  <span>{item.label}</span>
-                  {item.badge != null && item.badge !== 0 && (
-                    <span className="nav-badge">{item.badge}</span>
+                  className={linkClass(
+                    activeTab === 'monetization' || pathname.startsWith('/monetization'),
                   )}
+                  aria-current={
+                    activeTab === 'monetization' || pathname.startsWith('/monetization')
+                      ? 'page'
+                      : undefined
+                  }
+                  onClick={closeMobileNav}
+                >
+                  <span className="nav-icon" aria-hidden>
+                    {item.icon}
+                  </span>
+                  <span>{item.label}</span>
+                  {item.badge != null && item.badge !== 0 ? (
+                    <span className="nav-badge">{item.badge}</span>
+                  ) : null}
                 </Link>
               ) : (
                 <button
                   key={item.id}
                   type="button"
-                  className={`nav-item${activeTab === item.id ? ' active' : ''}`}
-                  onClick={() => onTabChange(item.id)}
+                  className={linkClass(activeTab === item.id)}
+                  aria-current={activeTab === item.id ? 'page' : undefined}
+                  onClick={() => {
+                    closeMobileNav();
+                    onTabChange(item.id);
+                  }}
                 >
-                  <span className="nav-icon">{item.icon}</span>
+                  <span className="nav-icon" aria-hidden>
+                    {item.icon}
+                  </span>
                   <span>{item.label}</span>
-                  {item.badge != null && item.badge !== 0 && (
+                  {item.badge != null && item.badge !== 0 ? (
                     <span className="nav-badge">{item.badge}</span>
-                  )}
+                  ) : null}
                 </button>
               ),
             )}
           <Link
             href="/catalog/businesses"
-            className={`nav-item${pathname.startsWith('/catalog/businesses') ? ' active' : ''}`}
+            className={linkClass(pathname.startsWith('/catalog/businesses'))}
+            aria-current={pathname.startsWith('/catalog/businesses') ? 'page' : undefined}
+            onClick={closeMobileNav}
           >
-            <span className="nav-icon">🏪</span>
+            <span className="nav-icon" aria-hidden>
+              🏪
+            </span>
             <span>Каталог · Заведения</span>
           </Link>
           <Link
             href="/business-requests/applications"
-            className={`nav-item${pathname.startsWith('/business-requests') ? ' active' : ''}`}
+            className={linkClass(pathname.startsWith('/business-requests'))}
+            aria-current={pathname.startsWith('/business-requests') ? 'page' : undefined}
+            onClick={closeMobileNav}
           >
-            <span className="nav-icon">📝</span>
+            <span className="nav-icon" aria-hidden>
+              📝
+            </span>
             <span>Заявки бизнеса</span>
-            {businessRequestsBadgeTotal > 0 && (
+            {businessRequestsBadgeTotal > 0 ? (
               <span className="nav-badge">{businessRequestsBadgeTotal}</span>
-            )}
+            ) : null}
           </Link>
           <Link
             href="/moderation/cases"
-            className={`nav-item${pathname.startsWith('/moderation') ? ' active' : ''}`}
+            className={linkClass(pathname.startsWith('/moderation'))}
+            aria-current={pathname.startsWith('/moderation') ? 'page' : undefined}
+            onClick={closeMobileNav}
           >
-            <span className="nav-icon">🚩</span>
+            <span className="nav-icon" aria-hidden>
+              🚩
+            </span>
             <span>Модерация UGC</span>
-            {moderationCaseBadge != null && moderationCaseBadge > 0 && (
+            {moderationCaseBadge != null && moderationCaseBadge > 0 ? (
               <span className="nav-badge">{moderationCaseBadge}</span>
-            )}
+            ) : null}
           </Link>
           <Link
             href="/legal/documents"
-            className={`nav-item${pathname.startsWith('/legal') ? ' active' : ''}`}
+            className={linkClass(pathname.startsWith('/legal'))}
+            aria-current={pathname.startsWith('/legal') ? 'page' : undefined}
+            onClick={closeMobileNav}
           >
-            <span className="nav-icon">⚖️</span>
+            <span className="nav-icon" aria-hidden>
+              ⚖️
+            </span>
             <span>Legal</span>
-            {legalDataRequestBadge != null && legalDataRequestBadge > 0 && (
+            {legalDataRequestBadge != null && legalDataRequestBadge > 0 ? (
               <span className="nav-badge">{legalDataRequestBadge}</span>
-            )}
+            ) : null}
           </Link>
           <Link
             href="/reports"
-            className={`nav-item${pathname.startsWith('/reports') ? ' active' : ''}`}
+            className={linkClass(pathname.startsWith('/reports'))}
+            aria-current={pathname.startsWith('/reports') ? 'page' : undefined}
+            onClick={closeMobileNav}
           >
-            <span className="nav-icon">📊</span>
+            <span className="nav-icon" aria-hidden>
+              📊
+            </span>
             <span>Отчёты</span>
           </Link>
-          {canViewAdminAuditLogs(user.role) && (
+          {showAdminStaffNav(user.role) ? (
+            <Link
+              href="/staff"
+              className={linkClass(pathname.startsWith('/staff'))}
+              aria-current={pathname.startsWith('/staff') ? 'page' : undefined}
+              onClick={closeMobileNav}
+            >
+              <span className="nav-icon" aria-hidden>
+                👤
+              </span>
+              <span>Staff / RBAC</span>
+            </Link>
+          ) : null}
+          {showAdminAuditNav(user.role) ? (
             <Link
               href="/audit-logs"
-              className={`nav-item${pathname.startsWith('/audit-logs') ? ' active' : ''}`}
+              className={linkClass(pathname.startsWith('/audit-logs'))}
+              aria-current={pathname.startsWith('/audit-logs') ? 'page' : undefined}
+              onClick={closeMobileNav}
             >
-              <span className="nav-icon">🛡️</span>
+              <span className="nav-icon" aria-hidden>
+                🛡️
+              </span>
               <span>Аудит</span>
             </Link>
-          )}
-          {isSuperAdminRole(user.role) && (
+          ) : null}
+          {showAdminSettingsNav(user.role) ? (
             <Link
-              href="/settings/platform"
-              className={`nav-item${pathname.startsWith('/settings') ? ' active' : ''}`}
+              href="/settings/security"
+              className={linkClass(pathname.startsWith('/settings'))}
+              aria-current={pathname.startsWith('/settings') ? 'page' : undefined}
+              onClick={closeMobileNav}
             >
-              <span className="nav-icon">⚙️</span>
+              <span className="nav-icon" aria-hidden>
+                ⚙️
+              </span>
               <span>Настройки</span>
             </Link>
-          )}
+          ) : null}
         </nav>
       </aside>
 
       <div className="shell-main">
         <header className="topbar">
           <div className="topbar-left">
+            <button
+              type="button"
+              className="icon-btn mobile-only"
+              aria-expanded={mobileNavOpen}
+              aria-label="Открыть меню"
+              onClick={() => setMobileNavOpen(true)}
+            >
+              ☰
+            </button>
             {cityLocked ? (
-              <div className="city-picker">
-                <span>📍</span>
+              <div className="city-picker" title={cityLabel}>
+                <span aria-hidden>📍</span>
                 <span>{cityLabel}</span>
               </div>
             ) : (
               <label className="city-picker">
-                <span>📍</span>
+                <span aria-hidden>📍</span>
                 <select
                   value={citySlug}
                   onChange={(e) => onCityChange(e.target.value)}
                   className="city-select"
+                  aria-label="Город"
                 >
                   {cities.map((city) => (
                     <option key={city.slug} value={city.slug}>
@@ -219,7 +340,9 @@ export function AdminShell({
           </div>
           <div className="topbar-right">
             <div className="user-chip">
-              <div className="user-avatar">A</div>
+              <div className="user-avatar" aria-hidden>
+                A
+              </div>
               <div className="user-meta">
                 <strong>{user.name ?? 'Администратор'}</strong>
                 <span>{roleInfo.labelRu}</span>
@@ -230,7 +353,9 @@ export function AdminShell({
             </button>
           </div>
         </header>
-        <div className="page-content">{children}</div>
+        <main id="admin-main-content" className="page-content">
+          {children}
+        </main>
       </div>
     </div>
   );

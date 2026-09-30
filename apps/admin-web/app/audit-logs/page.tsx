@@ -1,10 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminApi, AuditLogRow } from '@/lib/api';
 import { canViewAdminAuditLogs } from '@/lib/admin-catalog-rbac';
+import { BackofficePageHeader } from '@/components/backoffice-page-header';
 import { useAuth } from '@/lib/use-auth';
 
 function formatAction(action: string): string {
@@ -58,78 +58,69 @@ export default function AuditLogsPage() {
 
   if (!ready || !user) return null;
 
+  const description =
+    user.role === 'CITY_ADMIN'
+      ? 'Записи только по вашему городу'
+      : 'Все операционные изменения платформы';
+
   return (
-    <div className="shell" style={{ minHeight: '100vh' }}>
-      <header className="topbar" style={{ padding: '1rem 1.5rem' }}>
-        <div>
-          <Link href="/dashboard" className="text-link">
-            ← Панель
-          </Link>
-          <h1 style={{ margin: '0.5rem 0 0' }}>Журнал аудита</h1>
-          <p className="muted" style={{ margin: 0 }}>
-            {user.role === 'CITY_ADMIN'
-              ? 'Записи только по вашему городу'
-              : 'Все операционные изменения платформы'}
-          </p>
-        </div>
-      </header>
+    <>
+      <BackofficePageHeader title="Журнал аудита" description={description} />
 
-      <main style={{ padding: '1rem 1.5rem 2rem' }}>
-        <div className="toolbar" style={{ marginBottom: '1rem' }}>
-          <label>
-            Действие{' '}
-            <select value={actionFilter} onChange={(e) => setActionFilter(e.target.value)}>
-              <option value="">Все</option>
-              <option value="USER_ROLE_CHANGE">Смена роли</option>
-              <option value="PAYMENT_CONFIRM">Подтверждение оплаты</option>
-              <option value="TEAM_INVITE">Приглашение в команду</option>
-              <option value="TEAM_PERMISSION_UPDATE">Изменение прав команды</option>
-            </select>
-          </label>
-        </div>
+      <div className="toolbar table-toolbar">
+        <label>
+          Действие{' '}
+          <select value={actionFilter} onChange={(e) => setActionFilter(e.target.value)}>
+            <option value="">Все</option>
+            <option value="USER_ROLE_CHANGE">Смена роли</option>
+            <option value="PAYMENT_CONFIRM">Подтверждение оплаты</option>
+            <option value="TEAM_INVITE">Приглашение в команду</option>
+            <option value="TEAM_PERMISSION_UPDATE">Изменение прав команды</option>
+          </select>
+        </label>
+      </div>
 
-        {error && <p className="error-text">{error}</p>}
-        {loading && <p>Загрузка…</p>}
+      {error && <p className="error-text">{error}</p>}
+      {loading && <p>Загрузка…</p>}
 
-        <div className="table-wrap">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Время</th>
-                <th>Актор</th>
-                <th>Действие</th>
-                <th>Ресурс</th>
-                <th>Заведение / город</th>
+      <div className="table-wrap">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Время</th>
+              <th>Актор</th>
+              <th>Действие</th>
+              <th>Ресурс</th>
+              <th>Заведение / город</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((row) => (
+              <tr key={row.id}>
+                <td>{new Date(row.createdAt).toLocaleString('ru-RU')}</td>
+                <td>
+                  {row.actor?.name ?? row.actor?.phone ?? '—'}
+                  {row.actor?.role ? ` (${row.actor.role})` : ''}
+                </td>
+                <td>{formatAction(row.action)}</td>
+                <td>
+                  {row.resourceType}
+                  {row.resourceId ? ` · ${row.resourceId.slice(0, 8)}…` : ''}
+                </td>
+                <td>
+                  {row.business?.title ?? '—'}
+                  {row.city?.nameRu ? ` · ${row.city.nameRu}` : ''}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {items.map((row) => (
-                <tr key={row.id}>
-                  <td>{new Date(row.createdAt).toLocaleString('ru-RU')}</td>
-                  <td>
-                    {row.actor?.name ?? row.actor?.phone ?? '—'}
-                    {row.actor?.role ? ` (${row.actor.role})` : ''}
-                  </td>
-                  <td>{formatAction(row.action)}</td>
-                  <td>
-                    {row.resourceType}
-                    {row.resourceId ? ` · ${row.resourceId.slice(0, 8)}…` : ''}
-                  </td>
-                  <td>
-                    {row.business?.title ?? '—'}
-                    {row.city?.nameRu ? ` · ${row.city.nameRu}` : ''}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {!loading && items.length === 0 && (
-            <p className="muted" style={{ padding: '1rem' }}>
-              Записей пока нет. Аудит ведётся с момента включения Stage 5M.3.
-            </p>
-          )}
-        </div>
-      </main>
-    </div>
+            ))}
+          </tbody>
+        </table>
+        {!loading && items.length === 0 && (
+          <p className="muted" style={{ padding: '1rem' }}>
+            Записей пока нет. Аудит ведётся с момента включения Stage 5M.3.
+          </p>
+        )}
+      </div>
+    </>
   );
 }

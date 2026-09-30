@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { BackofficePageHeader } from '@/components/backoffice-page-header';
 import { useAuth } from '@/lib/use-auth';
 import { staffApi } from '@/lib/staff-api';
 import { isSuperAdminRole } from '@/lib/rbac';
@@ -44,9 +44,12 @@ export default function StaffDetailPage() {
   }
 
   return (
-    <div className="page-stack">
-      <Link href="/staff">← Staff</Link>
-      <h1>Staff: {staff?.user.name ?? userId}</h1>
+    <div className="shell-page-body">
+      <BackofficePageHeader
+        title={`Staff: ${staff?.user.name ?? userId}`}
+        backHref="/staff"
+        backLabel="← Staff"
+      />
       {staff ? (
         <>
           <p>

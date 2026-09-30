@@ -10,8 +10,11 @@ describe('settings layout auth guard (BIZ.9 HOTFIX 6)', () => {
     expect(layout).toMatch(/if \(!ready \|\| !user\)/);
   });
 
-  it('redirects to login only after ready', () => {
-    expect(layout).toMatch(/if \(!ready\) return/);
-    expect(layout).toContain("router.replace('/login')");
+  it('delegates login redirect to AdminAuthenticatedShell after ready', () => {
+    expect(layout).toContain('AdminAuthenticatedShell');
+    expect(layout).toMatch(/if \(!ready \|\| !user\)/);
+    const shell = readFileSync(join(__dirname, '../components/admin-authenticated-shell.tsx'), 'utf8');
+    expect(shell).toMatch(/if \(!ready\) return/);
+    expect(shell).toContain("router.replace('/login')");
   });
 });

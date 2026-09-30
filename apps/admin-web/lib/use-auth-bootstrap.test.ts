@@ -17,10 +17,12 @@ describe('useAuth bootstrap wiring (AOP.7H.3 + BIZ.9 HOTFIX 6)', () => {
     expect(src).toMatch(/setReady\(true\)/);
   });
 
-  it('settings layout waits for ready before auth redirect', () => {
+  it('settings layout waits for ready before rendering shell', () => {
     const layout = readFileSync(join(__dirname, '../app/settings/layout.tsx'), 'utf8');
-    expect(layout).toMatch(/if \(!ready\) return/);
     expect(layout).toMatch(/if \(!ready \|\| !user\)/);
+    const shell = readFileSync(join(__dirname, '../components/admin-authenticated-shell.tsx'), 'utf8');
+    expect(shell).toMatch(/if \(!ready\) return/);
+    expect(shell).toContain("router.replace('/login')");
   });
 
   it('uses admin-scoped refresh BFF route', () => {

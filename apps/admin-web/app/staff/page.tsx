@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { BackofficePageHeader } from '@/components/backoffice-page-header';
 import { useAuth } from '@/lib/use-auth';
 import { staffApi, StaffListRow, StaffOverview } from '@/lib/staff-api';
 import { isSuperAdminRole } from '@/lib/rbac';
@@ -28,8 +29,11 @@ export default function StaffPage() {
   }
 
   return (
-    <div className="page-stack">
-      <h1>Staff / RBAC</h1>
+    <div className="shell-page-body">
+      <BackofficePageHeader
+        title="Staff / RBAC"
+        description="Управление учётными записями staff и ролями платформы."
+      />
       {error ? <p className="tag tag-danger">{error}</p> : null}
       {overview ? (
         <div className="card-grid">

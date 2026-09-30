@@ -39,5 +39,12 @@ describe('BusinessShell mobile navigation (6.10D.1)', () => {
     expect(src).toContain('selectBusiness');
     expect(src).toContain('businesses.length > 1');
     expect(src).toContain('collapse-btn desktop-only');
+    expect(src).toContain('business-switcher');
+  });
+
+  it('uses shared main landmark and drawer scroll lock (UXA.2)', () => {
+    const src = readShell();
+    expect(src).toContain('id="business-main-content"');
+    expect(src).toContain('shell-drawer-open');
   });
 });

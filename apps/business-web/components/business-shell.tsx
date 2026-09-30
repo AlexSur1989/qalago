@@ -68,12 +68,19 @@ export function BusinessShell({
   }, [pathname]);
 
   useEffect(() => {
-    if (!mobileNavOpen) return;
+    if (!mobileNavOpen) {
+      document.body.classList.remove('shell-drawer-open');
+      return;
+    }
+    document.body.classList.add('shell-drawer-open');
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') setMobileNavOpen(false);
     }
     window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.classList.remove('shell-drawer-open');
+      window.removeEventListener('keydown', onKeyDown);
+    };
   }, [mobileNavOpen]);
 
   useEffect(() => {
@@ -102,7 +109,7 @@ export function BusinessShell({
   }, [mobileNavOpen, effectiveCollapsed]);
 
   return (
-    <div className="shell">
+    <div className="shell business-shell">
       {mobileNavOpen && (
         <button
           type="button"
@@ -112,7 +119,7 @@ export function BusinessShell({
         />
       )}
 
-      <aside className={sidebarClassName}>
+      <aside className={sidebarClassName} aria-label="QalaGo business navigation">
         <div className="sidebar-brand">
           <span className="sidebar-brand-mark">Q</span>
           {!effectiveCollapsed && <span>QalaGo</span>}
@@ -153,17 +160,11 @@ export function BusinessShell({
         )}
 
         {businesses.length > 1 && !effectiveCollapsed && (
-          <div style={{ padding: '0 12px 12px' }}>
+          <div className="business-switcher">
             <select
               value={business?.id ?? ''}
               onChange={(e) => selectBusiness(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '8px 10px',
-                borderRadius: 8,
-                border: '1px solid var(--border)',
-                fontSize: '0.85rem',
-              }}
+              aria-label={ui.text_da78ed}
             >
               {businesses.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -174,7 +175,7 @@ export function BusinessShell({
           </div>
         )}
 
-        <nav className="sidebar-nav">
+        <nav className="sidebar-nav" aria-label={ui.ownerNavOverview}>
           {navItems.map((item) => (
             <NavLink
               key={item.id}
@@ -255,7 +256,9 @@ export function BusinessShell({
             </button>
           </div>
         </header>
-        <div className="page-content">{children}</div>
+        <main id="business-main-content" className="page-content">
+          {children}
+        </main>
       </div>
     </div>
   );
@@ -299,8 +302,15 @@ function NavLink({
   }
 
   return (
-    <Link href={item.href(businessId ?? '')} className={className} onClick={() => onNavigate?.()}>
-      <span className="nav-icon">{item.icon}</span>
+    <Link
+      href={item.href(businessId ?? '')}
+      className={className}
+      aria-current={active ? 'page' : undefined}
+      onClick={() => onNavigate?.()}
+    >
+      <span className="nav-icon" aria-hidden>
+        {item.icon}
+      </span>
       {!collapsed && <span>{item.label}</span>}
     </Link>
   );

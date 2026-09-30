@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { StaffMfaEnrollment } from '@/components/staff-mfa-enrollment';
@@ -36,9 +35,8 @@ export default function SecuritySettingsPage() {
   }
 
   return (
-    <div className="report-page">
-      <Link href="/dashboard">← Админка</Link>
-      <h1>Безопасность · MFA</h1>
+    <div className="shell-page-body">
+      <h2 className="section-title">Безопасность · MFA</h2>
       {enabled ? (
         <p>
           Двухфакторная защита включена. Неиспользованных резервных кодов: {recoveryRemaining}
