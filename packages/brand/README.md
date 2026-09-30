@@ -1,9 +1,12 @@
 # QalaGo brand tokens
 
-Shared CSS variables for web panels. Source of truth for colors: `apps/mobile/lib/core/theme/app_theme.dart`.
+Shared CSS for web panels. Mobile color parity: `apps/mobile/lib/core/theme/app_theme.dart`.
 
-Import in web apps:
+**Backoffice (Admin + Business Web):**
 
 ```css
 @import '../../../packages/brand/qalago-theme.css';
+@import '../../../packages/brand/backoffice-primitives.css';
 ```
+
+Docs: `docs/design/backoffice-design-system.md`. Tests: `npm run test -w @qalago/brand`.

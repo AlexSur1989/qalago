@@ -644,7 +644,7 @@ function FilterChip({
       type="button"
       className="btn btn-sm"
       style={{
-        background: active ? 'var(--accent, #f97316)' : undefined,
+        background: active ? 'var(--color-brand-accent)' : undefined,
         color: active ? '#fff' : undefined,
       }}
       onClick={onClick}

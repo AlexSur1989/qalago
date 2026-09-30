@@ -1,0 +1,9 @@
+{
+  "name": "@qalago/brand",
+  "version": "0.1.0",
+  "private": true,
+  "description": "QalaGo shared brand CSS tokens and backoffice primitives",
+  "scripts": {
+    "test": "node qalago-theme.tokens.test.mjs"
+  }
+}

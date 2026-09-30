@@ -1,0 +1,222 @@
+/**
+ * QalaGo backoffice UI primitives (UXA.1) — shared by admin-web & business-web.
+ * Token source: qalago-theme.css. Shell/table/form migrations happen in later UXA stages.
+ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ——— Focus contract ——— */
+:where(
+    a,
+    button,
+    input,
+    select,
+    textarea,
+    [tabindex]:not([tabindex='-1'])
+  ):focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+:where(.btn, .nav-item, .icon-btn, .tab):focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* ——— Typography helpers (opt-in) ——— */
+.page-title {
+  margin: 0;
+  font-size: var(--text-page-title-size);
+  line-height: var(--text-page-title-line-height);
+  font-weight: var(--text-page-title-weight);
+  color: var(--color-text-primary);
+}
+
+.section-title {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-section-title-size);
+  line-height: var(--text-section-title-line-height);
+  font-weight: var(--text-section-title-weight);
+  color: var(--color-text-primary);
+}
+
+/* ——— Surface ——— */
+.surface {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+/* ——— Card baseline (apps may extend .card in globals) ——— */
+.card {
+  border: 1px solid transparent;
+}
+
+/* ——— Buttons (baseline states; apps keep sizing overrides) ——— */
+.btn {
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-primary {
+  color: var(--color-text-inverse);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-brand-primary-hover);
+  border-color: var(--color-brand-primary-hover);
+}
+
+.btn-primary:active:not(:disabled) {
+  background: var(--color-brand-primary-active);
+  border-color: var(--color-brand-primary-active);
+}
+
+.btn-secondary {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--color-bg);
+  border-color: var(--color-border-strong);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--color-bg);
+}
+
+.btn-danger {
+  color: var(--color-danger);
+  border-color: #fecaca;
+  background: var(--color-surface);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--color-danger-soft);
+}
+
+.btn-lg {
+  min-height: var(--control-height-lg);
+  padding: 12px 20px;
+  font-size: var(--text-body-size);
+}
+
+.btn-sm {
+  min-height: var(--control-height-sm);
+}
+
+/* ——— Form control baseline (opt-in class; UXA.5 migrates forms) ——— */
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: var(--control-height-md);
+  padding: 0 var(--control-padding-x);
+  border: 1px solid var(--color-border);
+  border-radius: var(--control-radius);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.form-control::placeholder {
+  color: var(--color-text-muted);
+}
+
+.form-control:hover:not(:disabled):not(:read-only) {
+  border-color: var(--color-border-strong);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--color-brand-primary);
+  box-shadow: 0 0 0 3px rgba(0, 168, 214, 0.25);
+}
+
+.form-control:disabled,
+.form-control[readonly] {
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.form-control[aria-invalid='true'],
+.form-control.form-control-invalid {
+  border-color: var(--color-danger);
+}
+
+.form-control[aria-invalid='true']:focus {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+}
+
+/* ——— Tags / badges ——— */
+.tag,
+.badge {
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-line-height);
+}
+
+.tag-warning {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.tag-danger {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+/* ——— Alerts ——— */
+.alert {
+  border: 1px solid var(--color-border);
+}
+
+.alert-error {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  border-color: #fecaca;
+}
+
+.alert-success {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+  border-color: #bbf7d0;
+}
+
+.alert-warning {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+  border-color: #fde68a;
+}
+
+.alert-info {
+  background: var(--color-info-soft);
+  color: var(--color-info);
+  border-color: #bae6fd;
+}

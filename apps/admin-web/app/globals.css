@@ -1,4 +1,5 @@
 @import '../../../packages/brand/qalago-theme.css';
+@import '../../../packages/brand/backoffice-primitives.css';
 
 *,
 *::before,
@@ -14,10 +15,11 @@ body {
 }
 
 body {
-  font-family: var(--font-sans), 'Montserrat', system-ui, sans-serif;
+  font-family: var(--font-sans), var(--font-sans-fallback);
   background: var(--bg);
   color: var(--text);
-  line-height: 1.5;
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-line-height);
 }
 
 a {
@@ -225,7 +227,8 @@ select {
 .form-grid input:focus,
 .form-grid select:focus,
 .form-grid textarea:focus {
-  outline: 2px solid rgba(0, 168, 214, 0.35);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .markdown-box {
@@ -245,7 +248,7 @@ select {
 }
 
 .sidebar {
-  width: 260px;
+  width: var(--sidebar-expanded);
   background: var(--surface);
   border-right: 1px solid var(--border);
   display: flex;
@@ -350,7 +353,7 @@ select {
 
 .shell-main {
   flex: 1;
-  margin-left: 260px;
+  margin-left: var(--sidebar-expanded);
   min-width: 0;
 }
 
@@ -530,7 +533,7 @@ select {
 
 @media (max-width: 960px) {
   .sidebar {
-    width: 72px;
+    width: var(--sidebar-collapsed);
   }
 
   .sidebar-brand span:not(.sidebar-brand-mark),
@@ -540,7 +543,7 @@ select {
   }
 
   .shell-main {
-    margin-left: 72px;
+    margin-left: var(--sidebar-collapsed);
   }
 
   .kpi-grid {

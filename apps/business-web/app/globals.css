@@ -1,9 +1,9 @@
 @import '../../../packages/brand/qalago-theme.css';
+@import '../../../packages/brand/backoffice-primitives.css';
 
 :root {
-  --sidebar-width: 260px;
-  --sidebar-collapsed: 72px;
-  --header-height: 64px;
+  --sidebar-width: var(--sidebar-expanded);
+  --header-height: var(--topbar-height);
 }
 
 *,
@@ -20,10 +20,11 @@ body {
 }
 
 body {
-  font-family: var(--font-sans), 'Montserrat', system-ui, sans-serif;
+  font-family: var(--font-sans), var(--font-sans-fallback);
   background: var(--bg);
   color: var(--text);
-  line-height: 1.5;
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-line-height);
 }
 
 a {

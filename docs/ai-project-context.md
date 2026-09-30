@@ -81,9 +81,11 @@
 | **BIZ.8** | **PASS — BUSINESS OWNER PLANE SECURITY REGRESSION CLEAN** — IDOR/membership regression suite; no CRITICAL/HIGH findings |
 | **BIZ.9** | **CLOSED / PASS — PHYSICAL QA VERIFIED** (**2026-09-30**) — HOTFIX 1–7B; owner/manager matrix; platform Team rollout; multi-app auth |
 | **BIZ (track)** | **CLOSED / PASS — BUSINESS OWNER PLANE FINALIZED** — **BIZ.0–BIZ.9** complete |
-| **UXA (track)** | **NEXT — NOT STARTED** — mandatory Admin + Business Web UI/UX finalization (see § UXA below) |
-| **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = NEXT** · Consumer Web UI/UX after UXA · Mobile UI/UX after Consumer · production/security/pre-VPS later · VPS later |
-| **Next** | **UXA.0** gate (explicit approval); parallel track **KZ-C.1** notification physical QA remains open — **not** BIZ blocker |
+| **UXA.0** | **PASS — READ-ONLY AUDIT** (Admin + Business Web baseline) |
+| **UXA.1** | **PASS — BACKOFFICE DESIGN SYSTEM FOUNDATION** — `packages/brand/qalago-theme.css` + `backoffice-primitives.css`; docs **`docs/design/backoffice-design-system.md`** |
+| **UXA (track)** | **ACTIVE** — **UXA.2 shell/nav next** (not started); see § UXA below |
+| **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = ACTIVE** · Consumer Web UI/UX after UXA · Mobile UI/UX after Consumer · production/security/pre-VPS later · VPS later |
+| **Next** | **UXA.2** shell / navigation; parallel **KZ-C.1** notification physical QA remains open |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -378,8 +380,8 @@ VPS / production deployment
 | Track | Status |
 |-------|--------|
 | **AOP** | **CLOSED** |
-| **BIZ** | **ACTIVE** (current) |
-| **UXA** | **PLANNED / REQUIRED — NOT STARTED** |
+| **BIZ** | **CLOSED** |
+| **UXA** | **ACTIVE** — **UXA.1 PASS**; **UXA.2+** pending |
 | **Consumer Web UI/UX** | **PLANNED** (after backoffice functional + UXA) |
 | **Mobile UI/UX** | **PLANNED** |
 | **VPS / production** | **BLOCKED** until readiness gates |
@@ -388,7 +390,7 @@ VPS / production deployment
 
 **Scope:** **`apps/admin-web`** + **`apps/business-web`**. Shared **QalaGo Backoffice** design system; **different** information density (Admin = dense/operational; Business = owner-friendly/guided). **RBAC clarity must not be sacrificed** for simplification.
 
-**Brand (unchanged):** QalaGo accent historically includes **`#00A8D6`** (`--blue`); no rebranding in roadmap docs.
+**Brand (UXA.1 tokens):** Primary **`#00A8D6`**, accent **`#F3A100`** (`--color-brand-*`); Montserrat; legacy **`--qz-gold` (#fec50c)** deprecated alias retained.
 
 **Do not start UXA** before **BIZ CLOSED** unless Chief Orchestrator / explicit approval.
 
