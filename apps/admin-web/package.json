@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@qalago/brand": "*",
     "@qalago/shared-types": "*",
     "next": "^15.3.3",
     "qrcode.react": "^4.2.0",

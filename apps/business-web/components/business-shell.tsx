@@ -22,6 +22,7 @@ import { usePlatformFeatures } from '@/components/platform-features-provider';
 import { useAuth } from '@/lib/use-auth';
 import { getWebAccessToken } from '@/lib/web-auth-token';
 import { businessInitials, statusLabel } from '@/lib/business-utils';
+import { BackofficeNavIcon, QalaIcon } from '@qalago/brand/icons';
 
 export type { NavId };
 
@@ -130,7 +131,7 @@ export function BusinessShell({
               aria-label={ui.shellCloseNavigation}
               onClick={closeMobileNav}
             >
-              ×
+              <QalaIcon name="close" size="md" decorative />
             </button>
           )}
         </div>
@@ -204,7 +205,13 @@ export function BusinessShell({
             className="collapse-btn desktop-only"
             onClick={() => setCollapsed((v) => !v)}
           >
-            <span className="nav-icon">{collapsed ? '»' : '«'}</span>
+            <span className="nav-icon" aria-hidden>
+              <QalaIcon
+                name={collapsed ? 'chevron-right' : 'chevron-left'}
+                size="md"
+                decorative
+              />
+            </span>
             {!effectiveCollapsed && <span>{ui.shellCollapseMenu}</span>}
           </button>
         </div>
@@ -220,10 +227,10 @@ export function BusinessShell({
               aria-label={ui.shellOpenNavigation}
               onClick={() => setMobileNavOpen(true)}
             >
-              ☰
+              <QalaIcon name="menu" size="md" decorative />
             </button>
             <div className="city-picker">
-              <span>📍</span>
+              <QalaIcon name="location" size="md" decorative />
               <span>
                 {business?.city
                   ? cityDisplayName(
@@ -237,7 +244,7 @@ export function BusinessShell({
           <div className="topbar-right">
             <LocaleSwitcher locale={locale} labels={ui} />
             <Link href="/messages" className="icon-btn" aria-label={ui.ownerNavMessages} title={ui.ownerNavMessages}>
-              🔔
+              <QalaIcon name="notification" size="md" decorative />
               {unreadCount > 0 && (
                 <span className="badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
               )}
@@ -286,7 +293,7 @@ function NavLink({
   if (item.soon || !item.href || (needsBusiness && !businessId)) {
     return (
       <span className={className} title={item.soon ? ui.text_7d2cdd : item.label}>
-        <span className="nav-icon">{item.icon}</span>
+        <BackofficeNavIcon name={item.icon} />
         {!collapsed && (
           <>
             <span>{item.label}</span>
@@ -308,9 +315,7 @@ function NavLink({
       aria-current={active ? 'page' : undefined}
       onClick={() => onNavigate?.()}
     >
-      <span className="nav-icon" aria-hidden>
-        {item.icon}
-      </span>
+      <BackofficeNavIcon name={item.icon} />
       {!collapsed && <span>{item.label}</span>}
     </Link>
   );

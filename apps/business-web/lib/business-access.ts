@@ -1,3 +1,4 @@
+import type { QalaBackofficeIconName } from '@qalago/brand/icons';
 import type { PlatformFeatures } from '@qalago/shared-types';
 import type { AppLocale } from '@/lib/locale';
 import {
@@ -58,85 +59,92 @@ export type NavId =
 export type BusinessNavItem = {
   id: NavId;
   label: string;
-  icon: string;
+  icon: QalaBackofficeIconName;
   href?: (businessId: string) => string;
   soon?: boolean;
   anyOf?: BusinessPermission[];
   ownerOnly?: boolean;
 };
 
-const MAIN_NAV_TEMPLATE: Omit<BusinessNavItem, 'label'>[] = [
-  { id: 'home', icon: '🏠', href: () => '/dashboard' },
+/** Semantic shell nav icons (shared with Admin where concepts match). */
+export const BUSINESS_NAV_ICONS: Record<NavId, QalaBackofficeIconName> = {
+  home: 'dashboard',
+  profile: 'business',
+  locations: 'location',
+  media: 'image',
+  menu: 'catalog',
+  promotions: 'promotion',
+  reviews: 'review',
+  monetization: 'megaphone',
+  stats: 'analytics',
+  settings: 'settings',
+  team: 'users',
+  plan: 'plan',
+  help: 'help',
+  messages: 'notification',
+};
+
+const MAIN_NAV_TEMPLATE: Omit<BusinessNavItem, 'label' | 'icon'>[] = [
+  { id: 'home', href: () => '/dashboard' },
   {
     id: 'profile',
-    icon: '🏪',
     href: (id) => `/business/${id}`,
     anyOf: [BusinessPermission.BUSINESS_PROFILE_EDIT, BusinessPermission.BUSINESS_HOURS_EDIT],
   },
   {
     id: 'locations',
-    icon: '📍',
     href: (id) => `/business/${id}/locations`,
     anyOf: [BusinessPermission.BUSINESS_PROFILE_EDIT, BusinessPermission.BUSINESS_HOURS_EDIT],
   },
   {
     id: 'media',
-    icon: '🖼️',
     href: (id) => `/business/${id}/media`,
     anyOf: [BusinessPermission.PHOTOS_EDIT],
   },
   {
     id: 'menu',
-    icon: '📋',
     href: (id) => `/business/${id}/menu`,
     anyOf: [BusinessPermission.CATALOG_EDIT],
   },
   {
     id: 'promotions',
-    icon: '🏷️',
     href: (id) => `/business/${id}/promotions`,
     anyOf: [BusinessPermission.PROMOTIONS_EDIT],
   },
   {
     id: 'reviews',
-    icon: '💬',
     href: (id) => `/business/${id}/reviews`,
     anyOf: [BusinessPermission.REVIEWS_REPLY],
   },
   {
     id: 'monetization',
-    icon: '📣',
     href: () => '/monetization',
     anyOf: [BusinessPermission.ADS_MANAGE],
   },
   {
     id: 'stats',
-    icon: '📊',
     href: () => '/statistics',
     anyOf: [BusinessPermission.ANALYTICS_VIEW],
   },
   {
     id: 'settings',
-    icon: '⚙️',
     href: () => '/settings',
     anyOf: [BusinessPermission.BUSINESS_PROFILE_EDIT],
   },
   {
     id: 'team',
-    icon: '👥',
     href: (id) => `/business/${id}/team`,
     ownerOnly: true,
   },
 ];
 
-const FOOTER_NAV_TEMPLATE: Omit<BusinessNavItem, 'label'>[] = [
+const FOOTER_NAV_TEMPLATE: Omit<BusinessNavItem, 'label' | 'icon'>[] = [
   {
     id: 'plan',
-    icon: '💎',
     href: () => '/plan',
     anyOf: [BusinessPermission.PAYMENTS_VIEW],
   },
-  { id: 'help', icon: '❓', href: () => '/help' },
+  { id: 'help', href: () => '/help' },
 ];
 
 export type PermissionPreset = {
@@ -212,6 +220,7 @@ export function filterNavByAccess<T extends Pick<BusinessNavItem, 'id' | 'anyOf'
 export function buildMainNavItems(locale: AppLocale): BusinessNavItem[] {
   return MAIN_NAV_TEMPLATE.map((item) => ({
     ...item,
+    icon: BUSINESS_NAV_ICONS[item.id],
     label: navLabelForId(locale, item.id),
   }));
 }
@@ -219,6 +228,7 @@ export function buildMainNavItems(locale: AppLocale): BusinessNavItem[] {
 export function buildFooterNavItems(locale: AppLocale): BusinessNavItem[] {
   return FOOTER_NAV_TEMPLATE.map((item) => ({
     ...item,
+    icon: BUSINESS_NAV_ICONS[item.id],
     label: navLabelForId(locale, item.id),
   }));
 }

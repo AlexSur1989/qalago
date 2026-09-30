@@ -8,6 +8,7 @@ const apiOrigin =
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   outputFileTracingRoot: path.join(__dirname, '../..'),
+  transpilePackages: ['@qalago/brand'],
   async rewrites() {
     return [
       {

@@ -12,11 +12,12 @@ import {
 } from '@/lib/admin-shell-nav';
 import { canManageCities, canViewUsers, getRoleDefinition } from '@/lib/rbac';
 import type { MonetizationSubNavId } from '@/lib/monetization-utils';
+import { BackofficeNavIcon, QalaIcon } from '@qalago/brand/icons';
+import { ADMIN_SHELL_ROUTE_ICONS, ADMIN_TAB_ICONS } from '@/lib/admin-shell-icons';
 
 type NavItem = {
   id: AdminTabId;
   label: string;
-  icon: string;
   visible?: boolean;
   badge?: number | string | null;
 };
@@ -69,14 +70,14 @@ export function AdminShell({
     (businessRequestBadges?.applications ?? 0) + (businessRequestBadges?.claims ?? 0);
 
   const nav: NavItem[] = [
-    { id: 'moderation', label: 'Модерация', icon: '📋', badge: badges.pending || null },
-    { id: 'featured', label: 'VIP / Топ', icon: '⭐', badge: badges.featured || null },
-    { id: 'reviews', label: 'Отзывы', icon: '💬', badge: badges.reviews || null },
-    { id: 'monetization', label: 'Монетизация', icon: '💰', badge: monetizationBadgeTotal || null },
-    { id: 'categories', label: 'Категории', icon: '🗂️' },
-    { id: 'content', label: 'AI-черновики', icon: '✨' },
-    { id: 'users', label: 'Пользователи', icon: '👥', visible: canViewUsers(user.role) },
-    { id: 'cities', label: 'Города', icon: '🏙️', visible: canManageCities(user.role) },
+    { id: 'moderation', label: 'Модерация', badge: badges.pending || null },
+    { id: 'featured', label: 'VIP / Топ', badge: badges.featured || null },
+    { id: 'reviews', label: 'Отзывы', badge: badges.reviews || null },
+    { id: 'monetization', label: 'Монетизация', badge: monetizationBadgeTotal || null },
+    { id: 'categories', label: 'Категории' },
+    { id: 'content', label: 'AI-черновики' },
+    { id: 'users', label: 'Пользователи', visible: canViewUsers(user.role) },
+    { id: 'cities', label: 'Города', visible: canManageCities(user.role) },
   ];
 
   const cityLabel =
@@ -140,7 +141,7 @@ export function AdminShell({
               aria-label="Закрыть меню"
               onClick={closeMobileNav}
             >
-              ×
+              <QalaIcon name="close" size="md" decorative />
             </button>
           ) : null}
         </div>
@@ -168,9 +169,7 @@ export function AdminShell({
                   }
                   onClick={closeMobileNav}
                 >
-                  <span className="nav-icon" aria-hidden>
-                    {item.icon}
-                  </span>
+                  <BackofficeNavIcon name={ADMIN_TAB_ICONS[item.id]} />
                   <span>{item.label}</span>
                   {item.badge != null && item.badge !== 0 ? (
                     <span className="nav-badge">{item.badge}</span>
@@ -187,9 +186,7 @@ export function AdminShell({
                     onTabChange(item.id);
                   }}
                 >
-                  <span className="nav-icon" aria-hidden>
-                    {item.icon}
-                  </span>
+                  <BackofficeNavIcon name={ADMIN_TAB_ICONS[item.id]} />
                   <span>{item.label}</span>
                   {item.badge != null && item.badge !== 0 ? (
                     <span className="nav-badge">{item.badge}</span>
@@ -203,9 +200,7 @@ export function AdminShell({
             aria-current={pathname.startsWith('/catalog/businesses') ? 'page' : undefined}
             onClick={closeMobileNav}
           >
-            <span className="nav-icon" aria-hidden>
-              🏪
-            </span>
+            <BackofficeNavIcon name={ADMIN_SHELL_ROUTE_ICONS['catalog-businesses']} />
             <span>Каталог · Заведения</span>
           </Link>
           <Link
@@ -214,9 +209,7 @@ export function AdminShell({
             aria-current={pathname.startsWith('/business-requests') ? 'page' : undefined}
             onClick={closeMobileNav}
           >
-            <span className="nav-icon" aria-hidden>
-              📝
-            </span>
+            <BackofficeNavIcon name={ADMIN_SHELL_ROUTE_ICONS['business-requests']} />
             <span>Заявки бизнеса</span>
             {businessRequestsBadgeTotal > 0 ? (
               <span className="nav-badge">{businessRequestsBadgeTotal}</span>
@@ -228,9 +221,7 @@ export function AdminShell({
             aria-current={pathname.startsWith('/moderation') ? 'page' : undefined}
             onClick={closeMobileNav}
           >
-            <span className="nav-icon" aria-hidden>
-              🚩
-            </span>
+            <BackofficeNavIcon name={ADMIN_SHELL_ROUTE_ICONS['moderation-ugc']} />
             <span>Модерация UGC</span>
             {moderationCaseBadge != null && moderationCaseBadge > 0 ? (
               <span className="nav-badge">{moderationCaseBadge}</span>
@@ -242,9 +233,7 @@ export function AdminShell({
             aria-current={pathname.startsWith('/legal') ? 'page' : undefined}
             onClick={closeMobileNav}
           >
-            <span className="nav-icon" aria-hidden>
-              ⚖️
-            </span>
+            <BackofficeNavIcon name={ADMIN_SHELL_ROUTE_ICONS.legal} />
             <span>Legal</span>
             {legalDataRequestBadge != null && legalDataRequestBadge > 0 ? (
               <span className="nav-badge">{legalDataRequestBadge}</span>
@@ -256,9 +245,7 @@ export function AdminShell({
             aria-current={pathname.startsWith('/reports') ? 'page' : undefined}
             onClick={closeMobileNav}
           >
-            <span className="nav-icon" aria-hidden>
-              📊
-            </span>
+            <BackofficeNavIcon name={ADMIN_SHELL_ROUTE_ICONS.reports} />
             <span>Отчёты</span>
           </Link>
           {showAdminStaffNav(user.role) ? (
@@ -268,9 +255,7 @@ export function AdminShell({
               aria-current={pathname.startsWith('/staff') ? 'page' : undefined}
               onClick={closeMobileNav}
             >
-              <span className="nav-icon" aria-hidden>
-                👤
-              </span>
+              <BackofficeNavIcon name={ADMIN_SHELL_ROUTE_ICONS.staff} />
               <span>Staff / RBAC</span>
             </Link>
           ) : null}
@@ -281,9 +266,7 @@ export function AdminShell({
               aria-current={pathname.startsWith('/audit-logs') ? 'page' : undefined}
               onClick={closeMobileNav}
             >
-              <span className="nav-icon" aria-hidden>
-                🛡️
-              </span>
+              <BackofficeNavIcon name={ADMIN_SHELL_ROUTE_ICONS.audit} />
               <span>Аудит</span>
             </Link>
           ) : null}
@@ -294,9 +277,7 @@ export function AdminShell({
               aria-current={pathname.startsWith('/settings') ? 'page' : undefined}
               onClick={closeMobileNav}
             >
-              <span className="nav-icon" aria-hidden>
-                ⚙️
-              </span>
+              <BackofficeNavIcon name={ADMIN_SHELL_ROUTE_ICONS.settings} />
               <span>Настройки</span>
             </Link>
           ) : null}
@@ -313,16 +294,16 @@ export function AdminShell({
               aria-label="Открыть меню"
               onClick={() => setMobileNavOpen(true)}
             >
-              ☰
+              <QalaIcon name="menu" size="md" decorative />
             </button>
             {cityLocked ? (
               <div className="city-picker" title={cityLabel}>
-                <span aria-hidden>📍</span>
+                <QalaIcon name="location" size="md" decorative />
                 <span>{cityLabel}</span>
               </div>
             ) : (
               <label className="city-picker">
-                <span aria-hidden>📍</span>
+                <QalaIcon name="location" size="md" decorative />
                 <select
                   value={citySlug}
                   onChange={(e) => onCityChange(e.target.value)}

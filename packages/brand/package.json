@@ -3,7 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "description": "QalaGo shared brand CSS tokens and backoffice primitives",
+  "exports": {
+    "./icons": "./icons/index.tsx",
+    "./qalago-theme.css": "./qalago-theme.css",
+    "./backoffice-primitives.css": "./backoffice-primitives.css",
+    "./backoffice-shell.css": "./backoffice-shell.css"
+  },
   "scripts": {
-    "test": "node qalago-theme.tokens.test.mjs"
+    "test": "node qalago-theme.tokens.test.mjs && node icons/icons.contract.test.mjs && node icons/QalaIcon.test.mjs"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
   }
 }

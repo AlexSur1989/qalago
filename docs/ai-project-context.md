@@ -84,9 +84,10 @@
 | **UXA.0** | **PASS — READ-ONLY AUDIT** (Admin + Business Web baseline) |
 | **UXA.1** | **PASS — BACKOFFICE DESIGN SYSTEM FOUNDATION** — checkpoint **`78ecea0`**; `packages/brand/qalago-theme.css` + `backoffice-primitives.css` |
 | **UXA.2** | **PASS — BACKOFFICE SHELL / NAVIGATION UNIFIED** — checkpoint **`ed1c9ff`**; `backoffice-shell.css`, Admin authenticated areas in `AdminShell`, mobile drawer @960px |
-| **UXA (track)** | **ACTIVE** — **UXA.3 icons next**; see § UXA below |
-| **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = ACTIVE** · Consumer Web UI/UX after UXA · Mobile UI/UX after Consumer · production/security/pre-VPS later · VPS later |
-| **Next** | **UXA.3** backoffice icon system; parallel **KZ-C.1** notification physical QA remains open |
+| **UXA.3** | **PASS — QALAGO BACKOFFICE ICON SYSTEM** — `@qalago/brand/icons`; SVG `currentColor` nav/shell; no emoji in authenticated shell/nav |
+| **UXA (track)** | **ACTIVE** — **UXA.4 / UXA.9 next** (product choice); see § UXA below |
+| **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = ACTIVE** · Consumer Web UI/UX after UXA · Mobile Web UI/UX after Consumer · production/security/pre-VPS later · VPS later |
+| **Next** | **UXA.4** tables/filters or **UXA.9** loading/empty states; parallel **KZ-C.1** notification physical QA remains open |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -382,7 +383,7 @@ VPS / production deployment
 |-------|--------|
 | **AOP** | **CLOSED** |
 | **BIZ** | **CLOSED** |
-| **UXA** | **ACTIVE** — **UXA.1 PASS**; **UXA.2+** pending |
+| **UXA** | **ACTIVE** — **UXA.1–UXA.3 PASS**; **UXA.4+** pending |
 | **Consumer Web UI/UX** | **PLANNED** (after backoffice functional + UXA) |
 | **Mobile UI/UX** | **PLANNED** |
 | **VPS / production** | **BLOCKED** until readiness gates |
@@ -400,7 +401,7 @@ VPS / production deployment
 | **UXA.0** | Full read-only UI/UX audit — routes, screenshots inventory, patterns, obsolete UI, desktop/tablet, a11y baseline, RU/KK parity, icon inventory |
 | **UXA.1** | Backoffice design system — typography, spacing, radius, borders, surfaces, shadows, colors, semantic colors, focus/hover/disabled, component sizing |
 | **UXA.2** | App shell / navigation — sidebar, header, titles, breadcrumbs, account menu, city/business context, active nav, collapse if needed |
-| **UXA.3** | QalaGo Backoffice icon system — SVG/components, 20/24px, consistent stroke/fill, **no emoji nav icons**, shared Admin/Business semantics, a11y labels (**implementation later — not in roadmap commit**) |
+| **UXA.3** | **PASS** — QalaGo Backoffice icon system — `@qalago/brand/icons`, 16/20/24px, stroke `currentColor`, no emoji in authenticated shell/nav |
 | **UXA.4** | Tables / filters / search — columns, sort, filters, pagination, row actions, empty states, tablet fallback |
 | **UXA.5** | Forms — grouping, labels, validation, errors, save/cancel, dirty state, destructive actions, **success feedback** (incl. catalog/core save debt) |
 | **UXA.6** | BusinessLocation / geo UX — location cards, primary badge, map/coords, city selector, hours/contacts, set-primary/delete, read-only permission states (**domain rules unchanged**) |
@@ -420,13 +421,13 @@ Not functional AOP defects (**AOP remains CLOSED**):
 - Audit UI shows **technical enum** action labels; filters for new actions incomplete
 - **Featured/plan** controls remain on legacy dashboard surface vs catalog detail
 - Inconsistent **empty / loading / error** states may exist across backoffice
-- **Custom QalaGo backoffice icon system** not implemented (emoji/icons mixed today)
+- Screen-level **loading/empty/error** consistency still open (**UXA.9**)
 - **Admin Web** / **Business Web** final UI/UX pass **not performed**
 - Responsive + **a11y** physical QA still required
 
-### UXA.3 icon semantics (future)
+### UXA.3 icon semantics (implemented)
 
-Dashboard, businesses, catalog, categories, locations, applications, ownership claims, moderation, users/staff, team/managers, reviews, promotions, services/items, media, plans, payments, advertising, statistics, audit, notifications, settings, help — component-based, reusable across Admin/Business where semantics match.
+Shell/nav icons live in **`@qalago/brand/icons`**; Admin route map **`admin-shell-icons.ts`**; Business **`BUSINESS_NAV_ICONS`**. Charts and page content emoji unchanged; extend icon set when new nav items ship.
 
 ## Context maintenance
 
