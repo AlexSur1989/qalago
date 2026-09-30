@@ -17,6 +17,7 @@
 | `packages/brand/backoffice-tables.css` + `@qalago/brand/tables` | Tables, toolbars, search, filters, pagination (UXA.4) |
 | `packages/brand/backoffice-forms.css` + `@qalago/brand/forms` | Form fields, controls, sections, actions, switch, upload surface, dirty helpers (UXA.5) |
 | `packages/brand/backoffice-locations.css` + `@qalago/brand/locations` | Branch cards, hours rows, map frame (UXA.6) |
+| `packages/brand/backoffice-dashboards.css` + `@qalago/brand/dashboards` | KPI cards, dashboard sections, summary/chart shells, usage progress (UXA.8) |
 
 Both apps import in order:
 
@@ -100,7 +101,7 @@ Canonical: `--radius-xs` (8px), `--radius-md` (12px), `--radius-lg` (16px), `--r
 - **Retry:** Secondary button, disabled while pending, no auto-retry loops.
 - **Icons:** UXA.3 state glyphs (`check`, `alert-circle`, `alert-triangle`, `info`, `empty`, `lock`, `refresh`) — no emoji in state components.
 - **i18n:** Business wrappers pass RU/KK copy from `useUi()`; Admin representative surfaces RU-first.
-- **Migration debt:** Not every screen migrated; dashboard partial-failure UX deferred to UXA.8.
+- **Migration debt:** Not every screen migrated; remaining non-dashboard surfaces may still use legacy `.kpi-grid` until swept.
 
 ## Status badges & confirmations (UXA.7)
 
@@ -148,9 +149,23 @@ Canonical: `--radius-xs` (8px), `--radius-md` (12px), `--radius-lg` (16px), `--r
 - **Admin:** `CatalogLocationsManager` — branch cards, UXA.5 form sections, set-primary/delete confirms; manual coordinates (no embedded map).
 - **Invariants:** API, primary rules, city authority, geo derivation — **unchanged**. Physical QA **UXA.13**.
 
+## Dashboards / KPI / statistics (UXA.8)
+
+- **Primitives:** `@qalago/brand/dashboards` + `backoffice-dashboards.css` — `BackofficeKpiCard`, `BackofficeKpiGrid`, `BackofficeDashboardSection`, `BackofficeSummaryCard`, `BackofficeChartContainer`, `BackofficeProgress`; presentation helpers `formatKpiCount` / `formatKpiKzt` / `formatKpiPercent` (display only).
+- **KPI hierarchy:** Value → label → secondary/trend → optional drilldown («Подробнее» / link row). Small decorative UXA.3 icon (opacity ~0.35); numbers stay focal (`tabular-nums`).
+- **KPI contract:** Props only — no embedded analytics formulas. Loading skeleton, error (— + message, not fake zero), empty label when unknown.
+- **Trend:** Only when caller supplies comparison (e.g. reports `previousValue`); direction arrow + text; neutral tone supported — not color-only.
+- **Currency:** Canonical display `1 234 ₸` via existing formatters / `formatKpiKzt`; amounts unchanged.
+- **Chart container:** Title, description, legend slot, loading/error/empty via UXA.9 states; chart implementation stays Recharts/custom SVG.
+- **Partial failure (Business `/dashboard`):** Independent section fetches (analytics, plan, promotions, campaigns). One section error → `BackofficeErrorState` + retry; other sections still render. Global fatal only for missing auth/business context — not one `Promise.all` blanking the page.
+- **Usage / limits:** `BackofficeProgress` with `aria-valuenow/min/max`; danger tone only when existing entitlements already flag over-limit.
+- **Freshness:** Show «Обновлено …» only when API provides timestamp — no fabricated freshness.
+- **Migrated:** Admin — dashboard KPI row, monetization overview KPIs, reports `ReportKpiCard` shell. Business — `/dashboard` (partial failure), `/statistics` (360 + chart shell), `/plan` usage summary, monetization overview KPIs.
+- **Deferred:** Admin dashboard monolith split/routes; business monetization overview partial-failure parity; full dashboard sweep; mobile KPI grid polish (**UXA.10**); chart semantic recolor audit.
+
 ## UXA.1 does NOT cover
 
-Dashboards (UXA.8), responsive pass (UXA.10), a11y closure (UXA.11), RU/KK visual QA (UXA.12), dark mode.
+Responsive pass (UXA.10), a11y closure (UXA.11), RU/KK visual QA (UXA.12), dark mode.
 
 ## Tests
 

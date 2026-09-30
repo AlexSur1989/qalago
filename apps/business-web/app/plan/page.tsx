@@ -18,6 +18,8 @@ import { BusinessSectionAccessDenied } from '@/components/business-section-acces
 import { BUSINESS_ROUTE_ACCESS, useBusinessRouteGate } from '@/lib/use-business-route-gate';
 import type { AppLocale, UiLabels } from '@/lib/locale';
 import { planAnalytics360Label } from '@/lib/presentation';
+import { BackofficeProgress, BackofficeSummaryCard } from '@qalago/brand/dashboards';
+import { BackofficeLoadingState } from '@qalago/brand/states';
 
 function formatPrice(priceKzt: number) {
   if (priceKzt === 0) return '0 ₸';
@@ -147,29 +149,42 @@ export default function PlanPage() {
         </div>
       </header>
 
-      {loading && <p style={{ color: 'var(--text-muted)' }}>{ui.__c63d55}</p>}
+      {loading ? <BackofficeLoadingState density="section" label={ui.__c63d55} /> : null}
       {error && <div className="alert alert-error">{error}</div>}
       {message && <div className="alert alert-success">{message}</div>}
 
       {planStatus && (
-        <section className="form-card" style={{ marginBottom: 16, maxWidth: 720 }}>
-          <h3 style={{ marginTop: 0 }}>Текущий тариф: {planStatus.catalog.nameRu}</h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: 8 }}>
-            Фото: {planStatus.usage.photos} / {planStatus.limits.maxPhotos}
-            {planStatus.entitlements?.photos.overLimit && planStatus.entitlements.photos.published != null
-              ? ui.text_8eabdb
-              : ''}
-            {' · '}
-            Товары/услуги: {planStatus.usage.serviceItems} / {planStatus.limits.maxServiceItems}
-            {planStatus.entitlements?.serviceItems.overLimit && planStatus.entitlements.serviceItems.published != null
-              ? ui.text_d6537c
-              : ''}
-            {' · '}
-            Акции: {planStatus.usage.activePromotions} / {planStatus.limits.maxActivePromotions}
-            {planStatus.entitlements?.activePromotions.overLimit && planStatus.entitlements.activePromotions.published != null
-              ? ui.text_1658f7
-              : ''}
-          </p>
+        <BackofficeSummaryCard
+          title={`${locale === 'kk' ? 'Ағымдағы тариф' : 'Текущий тариф'}: ${planStatus.catalog.nameRu}`}
+          className="form-card"
+        >
+          <BackofficeProgress
+            label={locale === 'kk' ? 'Фото' : 'Фото'}
+            value={planStatus.usage.photos}
+            max={planStatus.limits.maxPhotos}
+            tone={planStatus.entitlements?.photos.overLimit ? 'danger' : 'default'}
+          />
+          {planStatus.entitlements?.photos.overLimit && planStatus.entitlements.photos.published != null ? (
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '4px 0 8px' }}>{ui.text_8eabdb}</p>
+          ) : null}
+          <BackofficeProgress
+            label={locale === 'kk' ? 'Тауарлар/қызметтер' : 'Товары/услуги'}
+            value={planStatus.usage.serviceItems}
+            max={planStatus.limits.maxServiceItems}
+            tone={planStatus.entitlements?.serviceItems.overLimit ? 'danger' : 'default'}
+          />
+          {planStatus.entitlements?.serviceItems.overLimit && planStatus.entitlements.serviceItems.published != null ? (
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '4px 0 8px' }}>{ui.text_d6537c}</p>
+          ) : null}
+          <BackofficeProgress
+            label={locale === 'kk' ? 'Акциялар' : 'Акции'}
+            value={planStatus.usage.activePromotions}
+            max={planStatus.limits.maxActivePromotions}
+            tone={planStatus.entitlements?.activePromotions.overLimit ? 'danger' : 'default'}
+          />
+          {planStatus.entitlements?.activePromotions.overLimit && planStatus.entitlements.activePromotions.published != null ? (
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '4px 0 8px' }}>{ui.text_1658f7}</p>
+          ) : null}
           {planStatus.entitlements?.overLimitNotice && (
             <p className="alert" style={{ marginBottom: 8, fontSize: '0.9rem' }}>
               {planStatus.entitlements.overLimitNotice}
@@ -186,10 +201,11 @@ export default function PlanPage() {
           )}
           {planStatus.expiresAt && (
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-              Действует до {new Date(planStatus.expiresAt).toLocaleDateString('ru-RU')}
+              {locale === 'kk' ? 'Мерзімі' : 'Действует до'}{' '}
+              {new Date(planStatus.expiresAt).toLocaleDateString(locale === 'kk' ? 'kk-KZ' : 'ru-RU')}
             </p>
           )}
-        </section>
+        </BackofficeSummaryCard>
       )}
 
       {canView && !loading && (

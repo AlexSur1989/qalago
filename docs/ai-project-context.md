@@ -90,9 +90,10 @@
 | **UXA.4** | **PASS — TABLES / FILTERS / SEARCH STANDARDIZED** — checkpoint **`b608444`**; `@qalago/brand/tables`; representative Admin/Business list migrations |
 | **UXA.5** | **PASS — BACKOFFICE FORMS STANDARDIZED** — `@qalago/brand/forms`; field/controls/sections/switch; representative Admin/Business form migrations; dirty guard on settings/profile |
 | **UXA.6** | **PASS — BUSINESS LOCATION / GEO UX STANDARDIZED** — `@qalago/brand/locations`; branch cards; Business locations + Admin CatalogLocationsManager; map UX polish |
-| **UXA (track)** | **ACTIVE** — **UXA.8 next**; see § UXA below |
+| **UXA.8** | **PASS — DASHBOARDS / CARDS / STATISTICS STANDARDIZED** — `@qalago/brand/dashboards`; KPI hierarchy; Business `/dashboard` partial failure; representative Admin/Business statistics surfaces |
+| **UXA (track)** | **ACTIVE** — **UXA.10 next**; see § UXA below |
 | **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = ACTIVE** · Consumer Web UI/UX after UXA · Mobile Web UI/UX after Consumer · production/security/pre-VPS later · VPS later |
-| **Next** | **UXA.8** dashboards / cards / statistics; parallel **KZ-C.1** notification physical QA remains open |
+| **Next** | **UXA.10** responsive backoffice; parallel **KZ-C.1** notification physical QA remains open |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -388,7 +389,7 @@ VPS / production deployment
 |-------|--------|
 | **AOP** | **CLOSED** |
 | **BIZ** | **CLOSED** |
-| **UXA** | **ACTIVE** — **UXA.1–UXA.6, UXA.7, UXA.9 PASS**; **UXA.8+** pending |
+| **UXA** | **ACTIVE** — **UXA.1–UXA.8, UXA.7, UXA.9 PASS**; **UXA.10+** pending |
 | **Consumer Web UI/UX** | **PLANNED** (after backoffice functional + UXA) |
 | **Mobile UI/UX** | **PLANNED** |
 | **VPS / production** | **BLOCKED** until readiness gates |
@@ -411,7 +412,7 @@ VPS / production deployment
 | **UXA.5** | **PASS** — Forms — `@qalago/brand/forms`; labels/errors/success; switch; sections/actions; dirty guard (settings/profile); catalog create/detail; business locations/promotions/menu create |
 | **UXA.6** | **PASS** — Location / geo UX — branch cards, sectioned forms, map pin/coords, Admin manager alignment (**domain rules unchanged**) |
 | **UXA.7** | **PASS** — Status badges + confirmations — `@qalago/brand/badges|status|confirm`; audit/staff labels; `backofficeConfirm`; dashboard `confirmAction` deferred |
-| **UXA.8** | Dashboards / cards / statistics — Admin operational overview; Business owner overview (**recommended next**; no invented backend metrics in UXA docs) |
+| **UXA.8** | **PASS** — Dashboards / KPI / chart shells — `@qalago/brand/dashboards`; Business partial-failure loading; Admin dashboard KPI row + monetization/reports alignment |
 | **UXA.9** | **PASS** — System states foundation (`@qalago/brand/states`); representative screen migration; no global toast |
 | **UXA.10** | Responsive backoffice — desktop/laptop/tablet; Admin need not mimic consumer mobile; Business Web usable on tablet/smaller widths |
 | **UXA.11** | Accessibility — keyboard, focus, semantics, contrast, labels, modal focus, ARIA where applicable |

@@ -1,5 +1,6 @@
 'use client';
 
+import { BackofficeKpiCard, BackofficeKpiGrid } from '@qalago/brand/dashboards';
 import { formatCount, formatPercent, isMetricSupported } from '@/lib/reporting/format';
 import { ReportUnsupportedState } from './ReportStates';
 
@@ -30,46 +31,38 @@ export function ReportKpiCard({
   neutralTrend = false,
   formatValue,
 }: ReportKpiCardProps) {
-  if (loading) {
-    return (
-      <div className="report-kpi-card report-kpi-card-loading">
-        <div className="report-kpi-skel-label" />
-        <div className="report-kpi-skel-value" />
-      </div>
-    );
-  }
-
-  let change: { abs: number; pct: number | null; dir: 'up' | 'down' | 'flat' } | null = null;
+  let trend: { direction: 'up' | 'down' | 'flat'; text: string; neutral?: boolean } | undefined;
   if (isMetricSupported(value) && isMetricSupported(previousValue) && previousValue !== 0) {
     const abs = value - previousValue;
     const pct = (abs / previousValue) * 100;
-    change = { abs, pct, dir: abs > 0 ? 'up' : abs < 0 ? 'down' : 'flat' };
+    const dir = abs > 0 ? 'up' : abs < 0 ? 'down' : 'flat';
+    trend = {
+      direction: dir,
+      text: formatPercent(Math.abs(pct)),
+      neutral: neutralTrend,
+    };
   }
 
+  const display =
+    isMetricSupported(value) && !loading
+      ? formatValue
+        ? formatValue(value)
+        : formatValueDefault(value, format)
+      : undefined;
+
   return (
-    <div className="report-kpi-card">
-      <div className="report-kpi-label">{label}</div>
-      <div className="report-kpi-value">
-        {isMetricSupported(value) ? (
-          formatValue ? formatValue(value) : formatValueDefault(value, format)
-        ) : (
-          <ReportUnsupportedState />
-        )}
-      </div>
-      {change && change.pct != null ? (
-        <div
-          className={`report-kpi-change${neutralTrend ? ' report-kpi-change-neutral' : ''}`}
-          title="Изменение к предыдущему периоду"
-        >
-          {change.dir === 'up' ? '↑' : change.dir === 'down' ? '↓' : '→'}{' '}
-          {formatPercent(Math.abs(change.pct))}
-        </div>
-      ) : null}
-      {supportingText ? <div className="report-kpi-meta muted">{supportingText}</div> : null}
-    </div>
+    <BackofficeKpiCard
+      label={label}
+      value={display}
+      loading={loading}
+      error={!loading && !isMetricSupported(value) ? <ReportUnsupportedState /> : undefined}
+      trend={trend}
+      secondary={supportingText}
+      icon="analytics"
+    />
   );
 }
 
 export function ReportKpiGrid({ children }: { children: React.ReactNode }) {
-  return <div className="report-kpi-grid">{children}</div>;
+  return <BackofficeKpiGrid>{children}</BackofficeKpiGrid>;
 }

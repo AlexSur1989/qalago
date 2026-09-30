@@ -22,6 +22,7 @@ import { Analytics360Dashboard } from '@/components/analytics-360-dashboard';
 import { BusinessShell } from '@/components/business-shell';
 import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
 import { BUSINESS_ROUTE_ACCESS, useBusinessRouteGate } from '@/lib/use-business-route-gate';
+import { BackofficeErrorState, BackofficeLoadingState } from '@qalago/brand/states';
 
 export default function StatisticsPage() {
   const locale = useLocale();
@@ -120,12 +121,9 @@ export default function StatisticsPage() {
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
     >
-      {error && (
-        <div className="alert alert-error" role="alert">
-          {error}
-          <button type="button" className="btn btn-ghost btn-sm" style={{ marginLeft: 12 }} onClick={handleRetry}>{ui.text_b914bb}</button>
-        </div>
-      )}
+      {error ? (
+        <BackofficeErrorState message={error} onRetry={handleRetry} retryLabel={ui.text_b914bb} />
+      ) : null}
 
       {!business ? (
         <div className="empty-state">
@@ -167,7 +165,7 @@ export default function StatisticsPage() {
           </div>
 
           {loading && !dashboard ? (
-            <p role="status">{ui.__bbd5d8}</p>
+            <BackofficeLoadingState density="page" label={ui.__bbd5d8} />
           ) : dashboard ? (
             <Analytics360Dashboard
               dashboard={dashboard}

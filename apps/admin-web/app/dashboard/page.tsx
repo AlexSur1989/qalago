@@ -35,6 +35,7 @@ import {
   canStaffOverrideBusinessPlan,
 } from '@/lib/admin-catalog-rbac';
 import { useAuth } from '@/lib/use-auth';
+import { BackofficeKpiCard, BackofficeKpiGrid } from '@qalago/brand/dashboards';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -542,24 +543,12 @@ export default function DashboardPage() {
     >
       {error && <div className="alert alert-error">{error}</div>}
 
-      <div className="kpi-grid">
-        <div className="kpi-card">
-          <div className="kpi-label">На модерации</div>
-          <div className="kpi-value">{pending.length}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Активных</div>
-          <div className="kpi-value">{activeBusinesses.length}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">В Топе</div>
-          <div className="kpi-value">{featuredBusinesses.length}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Отзывов</div>
-          <div className="kpi-value">{reviews.length}</div>
-        </div>
-      </div>
+      <BackofficeKpiGrid>
+        <BackofficeKpiCard label="На модерации" value={pending.length} icon="moderation" />
+        <BackofficeKpiCard label="Активных" value={activeBusinesses.length} icon="business" />
+        <BackofficeKpiCard label="В Топе" value={featuredBusinesses.length} icon="sparkle" />
+        <BackofficeKpiCard label="Отзывов" value={reviews.length} icon="review" />
+      </BackofficeKpiGrid>
 
       {tab === 'moderation' && (
         <>

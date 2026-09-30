@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { monetizationApi } from '@/lib/monetization-api';
 import { useMonetizationContext } from '@/components/monetization/monetization-layout-client';
 import { parseApiError } from '@/lib/monetization-utils';
+import { BackofficeKpiCard, BackofficeKpiGrid } from '@qalago/brand/dashboards';
+import { BackofficeLoadingState } from '@qalago/brand/states';
 
 export default function MonetizationOverviewPage() {
   const { token, citySlug } = useMonetizationContext();
@@ -75,30 +77,15 @@ export default function MonetizationOverviewPage() {
       {error && <div className="alert alert-error">{error}</div>}
 
       {loading ? (
-        <p style={{ color: 'var(--text-muted)' }}>Загрузка…</p>
+        <BackofficeLoadingState density="section" label="Загрузка…" />
       ) : (
-        <div className="kpi-grid">
-          <div className="kpi-card">
-            <div className="kpi-label">Заказы ожидают оплаты</div>
-            <div className="kpi-value">{kpis.awaitingPayment}</div>
-          </div>
-          <div className="kpi-card">
-            <div className="kpi-label">Креативы на модерации</div>
-            <div className="kpi-value">{kpis.pendingCreatives}</div>
-          </div>
-          <div className="kpi-card">
-            <div className="kpi-label">Активные кампании</div>
-            <div className="kpi-value">{kpis.activeCampaigns}</div>
-          </div>
-          <div className="kpi-card">
-            <div className="kpi-label">Запланированные кампании</div>
-            <div className="kpi-value">{kpis.scheduledCampaigns}</div>
-          </div>
-          <div className="kpi-card">
-            <div className="kpi-label">Завершённые кампании</div>
-            <div className="kpi-value">{kpis.completedCampaigns}</div>
-          </div>
-        </div>
+        <BackofficeKpiGrid>
+          <BackofficeKpiCard label="Заказы ожидают оплаты" icon="wallet" value={kpis.awaitingPayment} />
+          <BackofficeKpiCard label="Креативы на модерации" icon="moderation" value={kpis.pendingCreatives} />
+          <BackofficeKpiCard label="Активные кампании" icon="megaphone" value={kpis.activeCampaigns} />
+          <BackofficeKpiCard label="Запланированные кампании" icon="megaphone" value={kpis.scheduledCampaigns} />
+          <BackofficeKpiCard label="Завершённые кампании" icon="megaphone" value={kpis.completedCampaigns} />
+        </BackofficeKpiGrid>
       )}
 
       <section className="card card-muted">

@@ -17,6 +17,7 @@ import {
 } from '@/lib/analytics-utils';
 import { formatNumber } from '@/lib/business-utils';
 import { ViewsChart } from '@/components/views-chart';
+import { BackofficeChartContainer, BackofficeKpiCard, BackofficeKpiGrid } from '@qalago/brand/dashboards';
 
 function LockedCard({ label, message }: { label: string; message: string }) {
   const ui = useUi();
@@ -41,12 +42,7 @@ function SectionTitle({ id, children }: { id?: string; children: React.ReactNode
 }
 
 function KpiTile({ label, value }: { label: string; value: string }) {
-  return (
-    <article className="kpi-card">
-      <div className="kpi-label">{label}</div>
-      <div className="kpi-value">{value}</div>
-    </article>
-  );
+  return <BackofficeKpiCard label={label} value={value} icon="analytics" />;
 }
 
 function HourBars({ items }: { items: Array<{ hour: number; count: number }> }) {
@@ -144,7 +140,7 @@ export function Analytics360Dashboard({
       </div>
 
       <SectionTitle id="overview">{ui.ownerNavOverview}</SectionTitle>
-      <section className="kpi-grid">
+      <BackofficeKpiGrid>
         {formatMetricValue(overview.views) != null ? (
           <KpiTile label={ui.text_54b0a7} value={formatMetricValue(overview.views)!} />
         ) : null}
@@ -163,18 +159,18 @@ export function Analytics360Dashboard({
         {caps.conversion && overview.conversionRate != null ? (
           <KpiTile label={ui.___a6b7f9} value={formatRate(overview.conversionRate)} />
         ) : null}
-      </section>
+      </BackofficeKpiGrid>
 
       {dashboard.actions ? (
         <article className="card" style={{ marginTop: 16 }}>
           <div className="card-header">
             <h3>{ui.____75174f}</h3>
           </div>
-          <div className="kpi-grid">
+          <BackofficeKpiGrid>
             {intentActionEntries(dashboard.actions).map(({ key, value }) => (
               <KpiTile key={key} label={actionMetricLabel(locale, key)} value={formatNumber(value)} />
             ))}
-          </div>
+          </BackofficeKpiGrid>
         </article>
       ) : isLockedSection(dashboard, 'actions') ? (
         <div style={{ marginTop: 16 }}>
@@ -186,19 +182,18 @@ export function Analytics360Dashboard({
       ) : null}
 
       <SectionTitle id="trends">{ui.text_e073be}</SectionTitle>
-      <article className="card">
-        <div className="card-header">
-          <h3>Просмотры за {dashboard.effectiveRange.days} дн.</h3>
-        </div>
+      <BackofficeChartContainer
+        title={`Просмотры за ${dashboard.effectiveRange.days} дн.`}
+      >
         <ViewsChart items={dashboard.trends.views} days={dashboard.effectiveRange.days} />
-      </article>
+      </BackofficeChartContainer>
       {dashboard.trends.actions && caps.actionTrend ? (
-        <article className="card" style={{ marginTop: 16 }}>
-          <div className="card-header">
-            <h3>Целевые действия за {dashboard.effectiveRange.days} дн.</h3>
-          </div>
+        <BackofficeChartContainer
+          title={`Целевые действия за ${dashboard.effectiveRange.days} дн.`}
+          className="page-section"
+        >
           <ViewsChart items={dashboard.trends.actions} days={dashboard.effectiveRange.days} />
-        </article>
+        </BackofficeChartContainer>
       ) : null}
 
       {dashboard.comparison ? (
@@ -347,7 +342,8 @@ export function Analytics360Dashboard({
       {dashboard.audience && caps.audience ? (
         <article className="card">
           <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>{ui.____7d54b1}</p>
-          <div className="kpi-grid" style={{ marginTop: 12 }}>
+          <div style={{ marginTop: 12 }}>
+          <BackofficeKpiGrid>
             <KpiTile
               label={ui.____734d85}
               value={formatRate(dashboard.audience.newShare)}
@@ -356,6 +352,7 @@ export function Analytics360Dashboard({
               label={ui.___31acc4}
               value={formatRate(dashboard.audience.returningShare)}
             />
+          </BackofficeKpiGrid>
           </div>
         </article>
       ) : isLockedSection(dashboard, 'audience') ? (

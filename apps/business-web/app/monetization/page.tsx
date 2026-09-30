@@ -15,6 +15,8 @@ import {
   parseApiError,
   planTierLabel,
 } from '@/lib/monetization-utils';
+import { BackofficeKpiCard, BackofficeKpiGrid } from '@qalago/brand/dashboards';
+import { BackofficeLoadingState } from '@qalago/brand/states';
 
 export default function MonetizationOverviewPage() {
   const locale = useLocale();
@@ -90,34 +92,24 @@ export default function MonetizationOverviewPage() {
       </section>
 
       {loading ? (
-        <p style={{ color: 'var(--text-muted)' }}>{ui.text_89d69a}</p>
+        <BackofficeLoadingState density="section" label={ui.text_89d69a} />
       ) : (
         <>
-          <div className="kpi-grid">
-            <div className="kpi-card">
-              <div className="kpi-label">{ui.ownerNavPlan}</div>
-              <div className="kpi-value" style={{ fontSize: '1.2rem' }}>
-                {planStatus ? planTierLabel(locale, planStatus.effectiveTier) : '—'}
-              </div>
-              {planStatus && (
-                <p style={{ margin: '8px 0 0', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                  Скидка на рекламу: {planStatus.limits.advertisingDiscountPercent}%
-                </p>
-              )}
-            </div>
-            <div className="kpi-card">
-              <div className="kpi-label">{ui.__bb49cc}</div>
-              <div className="kpi-value">{activeCount}</div>
-            </div>
-            <div className="kpi-card">
-              <div className="kpi-label">{ui.text_b911f5}</div>
-              <div className="kpi-value">{scheduledCount}</div>
-            </div>
-            <div className="kpi-card">
-              <div className="kpi-label">{ui.__d9d74d}</div>
-              <div className="kpi-value">{moderationCount}</div>
-            </div>
-          </div>
+          <BackofficeKpiGrid>
+            <BackofficeKpiCard
+              label={ui.ownerNavPlan}
+              icon="plan"
+              value={planStatus ? planTierLabel(locale, planStatus.effectiveTier) : '—'}
+              secondary={
+                planStatus
+                  ? `${locale === 'kk' ? 'Жарнама жеңілдігі' : 'Скидка на рекламу'}: ${planStatus.limits.advertisingDiscountPercent}%`
+                  : undefined
+              }
+            />
+            <BackofficeKpiCard label={ui.__bb49cc} icon="megaphone" value={activeCount} />
+            <BackofficeKpiCard label={ui.text_b911f5} icon="megaphone" value={scheduledCount} />
+            <BackofficeKpiCard label={ui.__d9d74d} icon="moderation" value={moderationCount} />
+          </BackofficeKpiGrid>
 
           <div className="bottom-row">
             <section className="card">
