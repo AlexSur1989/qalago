@@ -10,7 +10,7 @@
 
 - **Status:** **UXA.12 PASS — RU / KK VISUAL LOCALIZATION QA COMPLETED**. **UXA.13 not started**. **No physical browser QA claimed**.
 - **Starting HEAD:** **`7af7393`**.
-- **Checkpoint (commit):** *(this commit)* — `feat(ui): complete ru kk visual localization qa`.
+- **Checkpoint (commit):** **`298c327`** — `feat(ui): complete ru kk visual localization qa`.
 - **Summary:** **`owner-visual-copy.ts`** — migrated hardcoded RU from analytics/plan/monetization/login/invite/statistics surfaces; **`ownerMessagesLoadError`**; KK plan quota string fixes; **`backoffice-i18n.css`** long-copy wrap; tightened **`hardcoded-ui-guard`**; **`locale-parity`** + **`uxa12-visual-localization`** tests; brand **`i18n.contract`**. **No route/auth/RBAC/API/domain changes.**
 - **Deferred:** Bulk KK cleanup of legacy `____*` locale entries; physical 320–1440 walkthrough; Montserrat glyph verification on device — **UXA.13**.
 - **Next:** **UXA.13** physical browser QA / closure.
