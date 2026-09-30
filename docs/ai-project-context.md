@@ -86,7 +86,7 @@
 | **UXA.2** | **PASS — BACKOFFICE SHELL / NAVIGATION UNIFIED** — checkpoint **`ed1c9ff`**; `backoffice-shell.css`, Admin authenticated areas in `AdminShell`, mobile drawer @960px |
 | **UXA.3** | **PASS — QALAGO BACKOFFICE ICON SYSTEM** — checkpoint **`03e6e17`**; `@qalago/brand/icons`; SVG `currentColor` nav/shell; no emoji in authenticated shell/nav |
 | **UXA.9** | **PASS — BACKOFFICE SYSTEM STATES STANDARDIZED** — checkpoint **`5774f0f`**; `@qalago/brand/states`; inline alerts; access vs feature unavailable |
-| **UXA.7** | **PASS — STATUS / BADGES / CONFIRMATIONS STANDARDIZED** — `@qalago/brand/badges`, `status`, `confirm`; audit/staff enum humanization; representative confirm migrations |
+| **UXA.7** | **PASS — STATUS / BADGES / CONFIRMATIONS STANDARDIZED** — checkpoint **`49265c4`**; `@qalago/brand/badges`, `status`, `confirm`; audit/staff enum humanization; representative confirm migrations |
 | **UXA (track)** | **ACTIVE** — **UXA.4 next**; see § UXA below |
 | **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = ACTIVE** · Consumer Web UI/UX after UXA · Mobile Web UI/UX after Consumer · production/security/pre-VPS later · VPS later |
 | **Next** | **UXA.4** tables / filters / search; parallel **KZ-C.1** notification physical QA remains open |
