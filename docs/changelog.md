@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-30 — BIZ.9 HOTFIX 5B — Global runtime business feature rollout (`businessTeamEnabled`)
+
+- **Status:** **BIZ.9 HOTFIX 5B IMPLEMENTATION PASS — AUTOMATED REGRESSION CLEAN (env DB integrity suite excepted)**. **BIZ.9 physical QA REMAINS OPEN**. **BIZ.1–BIZ.8 remain CLOSED**. **AOP remains CLOSED**. **UXA not started**.
+- **Starting HEAD:** **`38497bfc6c5ab7f3df13bb1f7ef4c6db1e966b3e`**.
+- **Checkpoint (commit):** **`0f66550`** — `feat(platform): add runtime business feature rollout control`.
+- **Summary:** DB-backed global **`businessTeamEnabled`** via existing **`FeatureFlagDefinition`** (default **OFF**; seed creates missing row, **`update: {}`** preserves persisted ON). Public **`GET /api/v1/platform-features`**; admin **`GET/PATCH /api/v1/admin/platform-features`** (**PATCH SUPER_ADMIN only**); city override for this key **rejected**. Business Web runtime client + nav/route gating; Admin **`/settings/platform`** («Функции для бизнеса»). Team APIs + invite accept **403 `BUSINESS_TEAM_DISABLED`** when OFF; **no membership revocation**. **`NEXT_PUBLIC_QALAGO_ADMIN_BUSINESS_TEAM`** unchanged (orthogonal compile-time Admin catalog gate). **No DB migration.**
+- **Deferred:** Physical QA (SUPER_ADMIN toggle + owner/manager matrix); connect future platform business keys to modules in focused stages; optional full catalog-api Jest on clean local DB (`stage-6-12a9-1-primary-integrity` env debt if DB dirty).
+- **Next:** Manual BIZ.9 physical QA per checklist; later stages for plans/ads/analytics/etc. runtime gates.
+
+---
+
 ## 2026-09-30 — ADMIN HOTFIX — Business managers UI temporarily feature-flagged off
 
 - **Status:** **ADMIN HOTFIX PASS — BUSINESS MANAGERS UI TEMPORARILY FEATURE-FLAGGED OFF**. **AOP remains CLOSED**. **BIZ.9 physical QA REMAINS OPEN**. **BIZ.1–BIZ.8 remain CLOSED**.

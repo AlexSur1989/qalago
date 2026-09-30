@@ -44,6 +44,7 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
   };
   let planLimits: { assertCanAddManager: jest.Mock };
   let notifications: { create: jest.Mock };
+  let platformFeatures: { assertBusinessTeamEnabled: jest.Mock };
   let service: BusinessTeamService;
 
   beforeEach(() => {
@@ -86,6 +87,7 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
     };
     planLimits = { assertCanAddManager: jest.fn().mockResolvedValue(undefined) };
     notifications = { create: jest.fn().mockResolvedValue({ id: 'n1' }) };
+    platformFeatures = { assertBusinessTeamEnabled: jest.fn().mockResolvedValue(undefined) };
     service = new BusinessTeamService(
       prisma as never,
       businessAccess as unknown as BusinessAccessService,
@@ -94,7 +96,14 @@ describe('BusinessTeamService (Stage 5M.2)', () => {
       invitations as never,
       planLimits as never,
       notifications as never,
+      platformFeatures as never,
     );
+  });
+
+  it('listTeam fails closed when business team platform feature is disabled', async () => {
+    platformFeatures.assertBusinessTeamEnabled.mockRejectedValue(new ForbiddenException());
+    await expect(service.listTeam(owner, businessId)).rejects.toBeInstanceOf(ForbiddenException);
+    expect(businessAccess.assertOwner).not.toHaveBeenCalled();
   });
 
   it('OWNER can list team', async () => {

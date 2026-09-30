@@ -33,6 +33,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { maskPhoneForAudit, permissionDiff } from '../audit-log/audit-log.util';
 import { InviteTeamMemberDto, UpdateTeamMemberDto } from './dto/team.dto';
 import { BusinessInvitationService, TEAM_INVITE_TTL_DAYS } from './business-invitation.service';
+import { PlatformFeaturesService } from '../app-config/platform-features.service';
 
 const INVITE_TTL_DAYS = TEAM_INVITE_TTL_DAYS;
 
@@ -46,9 +47,15 @@ export class BusinessTeamService {
     private readonly invitations: BusinessInvitationService,
     private readonly planLimits: PlanLimitsService,
     private readonly notifications: NotificationsService,
+    private readonly platformFeatures: PlatformFeaturesService,
   ) {}
 
+  async ensureTeamFeatureEnabled(): Promise<void> {
+    await this.platformFeatures.assertBusinessTeamEnabled();
+  }
+
   async listTeam(user: AuthUser, businessId: string) {
+    await this.ensureTeamFeatureEnabled();
     await this.assertTeamReadAccess(user, businessId);
 
     const members = await this.prisma.businessMembership.findMany({
@@ -100,6 +107,7 @@ export class BusinessTeamService {
   }
 
   async inviteManager(user: AuthUser, businessId: string, dto: InviteTeamMemberDto) {
+    await this.ensureTeamFeatureEnabled();
     const business = await this.businessAccess.assertOwner(user, businessId);
     await this.planLimits.assertCanAddManager(businessId);
     validatePermissionDependencies(dto.permissions);
@@ -325,6 +333,7 @@ export class BusinessTeamService {
     membershipId: string,
     dto: UpdateTeamMemberDto,
   ) {
+    await this.ensureTeamFeatureEnabled();
     await this.businessAccess.assertOwner(user, businessId);
     const memberAuditCityId = await resolveBusinessAuditCityId(this.prisma, businessId);
 
@@ -425,6 +434,7 @@ export class BusinessTeamService {
   }
 
   async revokeInvitation(user: AuthUser, businessId: string, invitationId: string) {
+    await this.ensureTeamFeatureEnabled();
     await this.businessAccess.assertOwner(user, businessId);
     const revokeAuditCityId = await resolveBusinessAuditCityId(this.prisma, businessId);
 

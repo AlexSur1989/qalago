@@ -29,6 +29,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { maskPhoneForAudit } from '../audit-log/audit-log.util';
+import { PlatformFeaturesService } from '../app-config/platform-features.service';
 
 export const TEAM_INVITE_TTL_DAYS = 7;
 
@@ -48,6 +49,7 @@ export class BusinessInvitationService {
     private readonly config: ConfigService,
     private readonly planLimits: PlanLimitsService,
     private readonly notifications: NotificationsService,
+    private readonly platformFeatures: PlatformFeaturesService,
   ) {}
 
   buildInviteUrl(rawToken: string): string {
@@ -92,6 +94,7 @@ export class BusinessInvitationService {
 
   async acceptByToken(user: AuthUser, rawToken: string) {
     this.assertAcceptRateLimit(user.id);
+    await this.platformFeatures.assertBusinessTeamEnabled();
 
     const tokenHash = hashInviteToken(rawToken.trim());
     const now = new Date();

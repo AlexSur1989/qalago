@@ -1,4 +1,4 @@
-import { FeatureFlagKey } from '@qalago/shared-types';
+import { FeatureFlagKey, PlatformBusinessFeatureFlagKey } from '@qalago/shared-types';
 
 /** Safe defaults when DB row missing — core browse stays ON; high-risk OFF. */
 export const FEATURE_FLAG_SAFE_DEFAULTS: Record<FeatureFlagKey, boolean> = {
@@ -43,4 +43,24 @@ export const FEATURE_FLAG_SEED: Array<{
   { key: 'legalCenterEnabled', globalEnabled: false, description: 'Legal center UI (6.9)' },
   { key: 'reportingEnabled', globalEnabled: false, description: 'Content reporting (6.9)' },
   { key: 'dataRightsEnabled', globalEnabled: false, description: 'Data rights requests (6.9)' },
+];
+
+/** Global Business Web product flags (not in mobile app-config resolver). */
+export const PLATFORM_BUSINESS_FEATURE_SAFE_DEFAULTS: Record<
+  PlatformBusinessFeatureFlagKey,
+  boolean
+> = {
+  businessTeamEnabled: false,
+};
+
+export const PLATFORM_BUSINESS_FEATURE_SEED: Array<{
+  key: PlatformBusinessFeatureFlagKey;
+  globalEnabled: boolean;
+  description: string;
+}> = [
+  {
+    key: 'businessTeamEnabled',
+    globalEnabled: false,
+    description: 'Business Web owner team / manager management (BIZ.9 HOTFIX 5B)',
+  },
 ];

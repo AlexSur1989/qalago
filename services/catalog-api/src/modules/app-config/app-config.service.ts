@@ -9,7 +9,7 @@ import {
 } from '@qalago/shared-types';
 import { PrismaService } from '../../prisma/prisma.service';
 import { resolveUpdateMode, assertReleaseVersionConfig } from '../../common/utils/update-mode.util';
-import { FEATURE_FLAG_SEED } from './feature-flag.defaults';
+import { FEATURE_FLAG_SEED, PLATFORM_BUSINESS_FEATURE_SEED } from './feature-flag.defaults';
 import { FeatureFlagResolverService } from './feature-flag-resolver.service';
 
 export type AppConfigQuery = {
@@ -46,6 +46,19 @@ export class AppConfigService implements OnModuleInit {
     });
 
     for (const flag of FEATURE_FLAG_SEED) {
+      await this.prisma.featureFlagDefinition.upsert({
+        where: { key: flag.key },
+        create: {
+          key: flag.key,
+          globalEnabled: flag.globalEnabled,
+          description: flag.description,
+          updatedAt: new Date(),
+        },
+        update: {},
+      });
+    }
+
+    for (const flag of PLATFORM_BUSINESS_FEATURE_SEED) {
       await this.prisma.featureFlagDefinition.upsert({
         where: { key: flag.key },
         create: {

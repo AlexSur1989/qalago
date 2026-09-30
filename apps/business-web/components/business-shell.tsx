@@ -18,6 +18,7 @@ import {
   syncSelectedBusinessStorageForRows,
 } from '@/lib/business-selection';
 import { useBusinessAccess } from '@/lib/use-business-access';
+import { usePlatformFeatures } from '@/components/platform-features-provider';
 import { useAuth } from '@/lib/use-auth';
 import { getWebAccessToken } from '@/lib/web-auth-token';
 import { businessInitials, statusLabel } from '@/lib/business-utils';
@@ -48,14 +49,16 @@ export function BusinessShell({
   const pathname = usePathname();
   const defaultCity = cityName ?? ui.text_e640a8;
   const { access, ready: authReady } = useBusinessAccess();
+  const { features: platformFeatures, ready: platformReady } = usePlatformFeatures();
 
   const [collapsed, setCollapsed] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  const platformNav = platformReady ? platformFeatures : { businessTeamEnabled: false };
   const { mainNav: navItems, footerNav: footerNavItems } = useMemo(
-    () => buildPermissionScopedShellNav(locale, authReady ? access : null),
-    [locale, access, authReady],
+    () => buildPermissionScopedShellNav(locale, authReady ? access : null, platformNav),
+    [locale, access, authReady, platformNav],
   );
 
   const effectiveCollapsed = collapsed && !mobileNavOpen;

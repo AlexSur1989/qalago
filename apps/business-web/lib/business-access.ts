@@ -1,3 +1,4 @@
+import type { PlatformFeatures } from '@qalago/shared-types';
 import type { AppLocale } from '@/lib/locale';
 import {
   businessPermissionLabel,
@@ -181,11 +182,17 @@ export function hasPermission(
   return access.permissions.includes(permission);
 }
 
+export type PlatformNavFeatures = Pick<PlatformFeatures, 'businessTeamEnabled'>;
+
 export function canAccessNavItem(
-  item: Pick<BusinessNavItem, 'anyOf' | 'ownerOnly'>,
+  item: Pick<BusinessNavItem, 'id' | 'anyOf' | 'ownerOnly'>,
   access: BusinessAccessContext | null | undefined,
+  platform?: PlatformNavFeatures | null,
 ): boolean {
   if (!access) {
+    return false;
+  }
+  if (item.id === 'team' && platform && !platform.businessTeamEnabled) {
     return false;
   }
   if (item.ownerOnly && !isOwner(access)) return false;
@@ -197,8 +204,9 @@ export function canAccessNavItem(
 export function filterNavByAccess<T extends Pick<BusinessNavItem, 'id' | 'anyOf' | 'ownerOnly'>>(
   items: T[],
   access: BusinessAccessContext | null | undefined,
+  platform?: PlatformNavFeatures | null,
 ): T[] {
-  return items.filter((item) => canAccessNavItem(item, access));
+  return items.filter((item) => canAccessNavItem(item, access, platform));
 }
 
 export function buildMainNavItems(locale: AppLocale): BusinessNavItem[] {
@@ -219,10 +227,11 @@ export function buildFooterNavItems(locale: AppLocale): BusinessNavItem[] {
 export function buildPermissionScopedShellNav(
   locale: AppLocale,
   access: BusinessAccessContext | null | undefined,
+  platform?: PlatformNavFeatures | null,
 ): { mainNav: BusinessNavItem[]; footerNav: BusinessNavItem[] } {
   return {
-    mainNav: filterNavByAccess(buildMainNavItems(locale), access),
-    footerNav: filterNavByAccess(buildFooterNavItems(locale), access),
+    mainNav: filterNavByAccess(buildMainNavItems(locale), access, platform),
+    footerNav: filterNavByAccess(buildFooterNavItems(locale), access, platform),
   };
 }
 

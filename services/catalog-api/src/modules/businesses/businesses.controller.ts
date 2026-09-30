@@ -118,11 +118,12 @@ export class BusinessesController {
   }
 
   @Get(':businessId/team/audit')
-  listTeamAudit(
+  async listTeamAudit(
     @CurrentUser() user: AuthUser,
     @Param('businessId') businessId: string,
     @Query() query: ListTeamAuditQueryDto,
   ) {
+    await this.teamService.ensureTeamFeatureEnabled();
     return this.auditLog.listTeamHistory(user, businessId, query);
   }
 

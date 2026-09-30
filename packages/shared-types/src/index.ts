@@ -201,6 +201,15 @@ export {
   type ServiceVersionDto,
 } from './release-config';
 
+export {
+  PLATFORM_BUSINESS_FEATURE_FLAG_KEYS,
+  type PlatformBusinessFeatureFlagKey,
+  type PlatformFeatures,
+  type PlatformFeaturesResponseDto,
+  type PatchPlatformFeaturesDto,
+  isPlatformBusinessFeatureFlagKey,
+} from './platform-features';
+
 export type { SubcategoryPublicDto, SubcategoryAdminDto } from './subcategory';
 
 export {

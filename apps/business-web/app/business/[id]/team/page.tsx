@@ -23,6 +23,8 @@ import {
 } from '@/lib/business-access';
 import { BusinessShell } from '@/components/business-shell';
 import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
+import { BusinessPlatformFeatureUnavailable } from '@/components/business-platform-feature-unavailable';
+import { usePlatformFeatures } from '@/components/platform-features-provider';
 import { BUSINESS_ROUTE_ACCESS, useBusinessRouteGate } from '@/lib/use-business-route-gate';
 import { parseApiError } from '@/lib/monetization-utils';
 
@@ -34,6 +36,8 @@ export default function BusinessTeamPage() {
   const businessId = params.id;
   const { token, user, ready, logout, business, access, businesses, allowed: routeAllowed } =
     useBusinessRouteGate(BUSINESS_ROUTE_ACCESS.ownerOnly, businessId);
+  const { features, ready: platformReady } = usePlatformFeatures();
+  const teamFeatureOn = platformReady && features.businessTeamEnabled;
   const [team, setTeam] = useState<TeamListResponse | null>(null);
   const [email, setEmail] = useState('');
   const [createdInviteUrl, setCreatedInviteUrl] = useState<string | null>(null);
@@ -53,10 +57,10 @@ export default function BusinessTeamPage() {
   }
 
   useEffect(() => {
-    if (!token || !routeAllowed) return;
+    if (!token || !routeAllowed || !teamFeatureOn) return;
     loadTeam(token).catch((err) => setError(parseApiError(locale, err)));
     ownerApi.listTeamAudit(token, businessId).then((res) => setTeamAudit(res.items)).catch(() => undefined);
-  }, [token, businessId, routeAllowed, locale]);
+  }, [token, businessId, routeAllowed, teamFeatureOn, locale]);
 
   function togglePermission(permission: BusinessPermission) {
     setSelectedPermissions((prev) => {
@@ -183,7 +187,7 @@ export default function BusinessTeamPage() {
     }
   }
 
-  if (!ready || !token) {
+  if (!ready || !token || !platformReady) {
     return <p className="page-content">{ui.text_89d69a}</p>;
   }
 
@@ -198,7 +202,9 @@ export default function BusinessTeamPage() {
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
     >
-      {!routeAllowed ? (
+      {!features.businessTeamEnabled ? (
+        <BusinessPlatformFeatureUnavailable />
+      ) : !routeAllowed ? (
         <BusinessSectionAccessDenied />
       ) : (
         <>

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AppConfigModule } from '../app-config/app-config.module';
 import { CommonAccessModule } from '../../common/common-access.module';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { CategoriesModule } from '../categories/categories.module';
@@ -14,7 +15,7 @@ import { BusinessPublicContentService } from './business-public-content.service'
 import { BusinessLocationService } from './business-location.service';
 
 @Module({
-  imports: [PlansModule, CommonAccessModule, CategoriesModule, NotificationsModule],
+  imports: [AppConfigModule, PlansModule, CommonAccessModule, CategoriesModule, NotificationsModule],
   controllers: [BusinessesController, InvitationsController],
   providers: [
     BusinessSubcategoryService,

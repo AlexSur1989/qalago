@@ -72,6 +72,8 @@ export type UiLabels = {
   ownerSectionAccessDeniedTitle: string;
   ownerSectionAccessDeniedHint: string;
   ownerSectionAccessDeniedAction: string;
+  platformFeatureUnavailableTitle: string;
+  platformFeatureTeamDisabledHint: string;
   ownerPlanMockPaymentTag: string;
   mediaScopeBrand: string;
   mediaScopeBranchesHeading: string;
@@ -1034,6 +1036,9 @@ export type UiLabels = {
     ownerSectionAccessDeniedTitle: 'Нет доступа к этому разделу.',
     ownerSectionAccessDeniedHint: 'У вашей роли нет необходимых прав.',
     ownerSectionAccessDeniedAction: 'Вернуться в обзор',
+    platformFeatureUnavailableTitle: 'Функция временно недоступна',
+    platformFeatureTeamDisabledHint:
+      'Раздел «Команда» пока отключён администратором QalaGo.',
     ownerPlanMockPaymentTag: 'тест',
     ownerPlanQuotaPhotosOverLimitPrefix:
       'На тарифе «${planName}» публикуется до ${max} фото. Остальные',
@@ -1480,6 +1485,9 @@ export type UiLabels = {
     ownerSectionAccessDeniedTitle: 'Бұл бөлімге қолжетімділік жоқ.',
     ownerSectionAccessDeniedHint: 'Сіздің рөліңізде қажетті құқықтар жоқ.',
     ownerSectionAccessDeniedAction: 'Шолуға оралу',
+    platformFeatureUnavailableTitle: 'Функция уақытша қолжетімсіз',
+    platformFeatureTeamDisabledHint:
+      '«Команда» бөлімі QalaGo әкімшісімен уақытша өшірілген.',
     ownerPlanMockPaymentTag: 'тест',
     ownerPlanQuotaPhotosOverLimitPrefix:
       '«${planName}» тарифінде ${max} фотоға дейін жарияланады. Қалғандары',

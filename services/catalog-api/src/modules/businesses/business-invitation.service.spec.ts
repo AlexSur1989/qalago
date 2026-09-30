@@ -32,6 +32,7 @@ describe('BusinessInvitationService (Stage 6.2B6)', () => {
   let rateLimit: { assertAllowed: jest.Mock };
   let planLimits: { assertCanAddManager: jest.Mock };
   let notifications: { create: jest.Mock; schedulePushAfterTransaction: jest.Mock };
+  let platformFeatures: { assertBusinessTeamEnabled: jest.Mock };
   let service: BusinessInvitationService;
 
   beforeEach(() => {
@@ -54,6 +55,7 @@ describe('BusinessInvitationService (Stage 6.2B6)', () => {
       create: jest.fn().mockResolvedValue({ id: 'n1' }),
       schedulePushAfterTransaction: jest.fn(),
     };
+    platformFeatures = { assertBusinessTeamEnabled: jest.fn().mockResolvedValue(undefined) };
     service = new BusinessInvitationService(
       prisma as never,
       auditLog as never,
@@ -61,7 +63,15 @@ describe('BusinessInvitationService (Stage 6.2B6)', () => {
       { get: () => 'http://localhost:3003' } as unknown as ConfigService,
       planLimits as never,
       notifications as never,
+      platformFeatures as never,
     );
+  });
+
+  it('acceptByToken fails closed when business team platform feature is disabled', async () => {
+    platformFeatures.assertBusinessTeamEnabled.mockRejectedValue(new ForbiddenException());
+    await expect(service.acceptByToken(user, rawToken)).rejects.toBeInstanceOf(ForbiddenException);
+    expect(prisma.businessInvitation.findFirst).not.toHaveBeenCalled();
+    expect(prisma.businessMembership.upsert).not.toHaveBeenCalled();
   });
 
   it('resolve returns minimal public data', async () => {

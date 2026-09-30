@@ -196,6 +196,68 @@ Body: `{ reason }` — eligible owner/affected user only.
 - `GET /admin/users` — **ADMIN only** — includes safe `authMethods: ('GOOGLE'|'APPLE'|'PHONE')[]` (no providerUserId)
 - `PATCH /admin/users/:id/role` — **ADMIN only**
 
+### Platform business features (BIZ.9 HOTFIX 5B)
+
+Global **Business Web** product toggles persisted in `FeatureFlagDefinition.globalEnabled` (no city override, not in mobile app-config resolver). **Default:** `businessTeamEnabled: false`. **Only `businessTeamEnabled` is live-gated in 5B**; future keys may appear in types/admin UI without changing other modules until later stages.
+
+#### GET /platform-features
+
+**Auth:** none (public).
+
+Response `200`:
+
+```json
+{
+  "platformFeatures": { "businessTeamEnabled": false },
+  "configRevision": 12
+}
+```
+
+Missing DB row → `businessTeamEnabled: false`. Reads persisted state at request time (no redeploy).
+
+#### GET /admin/platform-features
+
+**Auth:** staff JWT.
+
+| Role | Access |
+|------|--------|
+| SUPER_ADMIN | read |
+| ADMIN | read-only |
+| CITY_ADMIN, TECH_ADMIN, others | **403** |
+
+Response: same shape as public GET.
+
+#### PATCH /admin/platform-features
+
+**Auth:** staff JWT. **Write: SUPER_ADMIN only** (defense in depth in service; `ADMIN` / `CITY_ADMIN` / `TECH_ADMIN` / business roles → **403** even if other release-config permissions exist).
+
+Body:
+
+```json
+{ "businessTeamEnabled": true }
+```
+
+Persists `FeatureFlagDefinition` for key `businessTeamEnabled`, increments `configRevision`, audit `RELEASE_CONFIG_UPDATE` on `APP_RELEASE_CONFIG` / resourceId `businessTeamEnabled` with metadata `{ field: "platformFeature", key, previousGlobal, newGlobal }`.
+
+**City overrides:** `PATCH` city feature flag with key `businessTeamEnabled` → **400** (rejected, not ignored).
+
+#### Business Team when `businessTeamEnabled: false`
+
+Owner/manager **memberships and permissions unchanged**; invitations remain stored. Team management is blocked:
+
+- `GET /businesses/:businessId/team`
+- `GET /businesses/:businessId/team/audit`
+- `POST /businesses/:businessId/team/invite`
+- `PATCH /businesses/:businessId/team/:membershipId`
+- `DELETE /businesses/:businessId/team/invitations/:invitationId`
+- `POST /businesses/invitations/accept` (token accept path)
+
+→ **403** with code **`BUSINESS_TEAM_DISABLED`** (fail closed; no membership mutation on accept).
+
+When **true**, existing Team API behavior applies (owner RBAC, plan limits, invite TTL unchanged).
+
+**Orthogonal:** Admin Web compile-time `NEXT_PUBLIC_QALAGO_ADMIN_BUSINESS_TEAM` gates catalog team tooling only; not this runtime flag.
+
 ---
 
 ## Cities

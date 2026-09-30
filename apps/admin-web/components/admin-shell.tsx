@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AuthUser } from '@/lib/api';
 import { AdminTabId } from '@/lib/admin-utils';
-import { canManageCities, canViewUsers, getRoleDefinition } from '@/lib/rbac';
+import { canManageCities, canViewUsers, getRoleDefinition, isSuperAdminRole } from '@/lib/rbac';
 import { canViewAdminAuditLogs } from '@/lib/admin-catalog-rbac';
 import type { MonetizationSubNavId } from '@/lib/monetization-utils';
 
@@ -178,6 +178,15 @@ export function AdminShell({
             >
               <span className="nav-icon">🛡️</span>
               <span>Аудит</span>
+            </Link>
+          )}
+          {isSuperAdminRole(user.role) && (
+            <Link
+              href="/settings/platform"
+              className={`nav-item${pathname.startsWith('/settings') ? ' active' : ''}`}
+            >
+              <span className="nav-icon">⚙️</span>
+              <span>Настройки</span>
             </Link>
           )}
         </nav>

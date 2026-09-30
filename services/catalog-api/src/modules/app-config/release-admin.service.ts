@@ -6,6 +6,7 @@ import { AuditLogService } from '../audit-log/audit-log.service';
 import { AppConfigService } from './app-config.service';
 import { UpdateReleaseSettingsDto, UpsertCityFeatureFlagDto, UpsertFeatureFlagDto } from './dto/release-admin.dto';
 import { isSuperAdmin } from '../../common/utils/system-access.util';
+import { isPlatformBusinessFeatureFlagKey } from '@qalago/shared-types';
 
 @Injectable()
 export class ReleaseAdminService {
@@ -118,6 +119,10 @@ export class ReleaseAdminService {
   }
 
   async upsertCityFeatureFlag(user: AuthUser, cityId: string, dto: UpsertCityFeatureFlagDto) {
+    if (isPlatformBusinessFeatureFlagKey(dto.flagKey)) {
+      throw new BadRequestException('City override is not allowed for this feature flag');
+    }
+
     if (user.role === UserRole.CITY_ADMIN) {
       const record = await this.prisma.user.findUnique({
         where: { id: user.id },
