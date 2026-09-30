@@ -5,19 +5,31 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { useBusinessRequestsContext } from '@/components/business-requests/business-requests-layout-client';
 import { businessRequestsApi, type BusinessApplicationRow } from '@/lib/business-requests-api';
-import {
-  applicationStatusClass,
-  applicationStatusLabel,
-} from '@/lib/business-requests-utils';
+import { applicationStatusPresentation } from '@/lib/application-status-presentation';
+import { applicationStatusLabel, mapBusinessRequestError } from '@/lib/business-requests-utils';
 import { formatDateTime } from '@/lib/monetization-utils';
-import { mapBusinessRequestError } from '@/lib/business-requests-utils';
+import { BackofficeBadge } from '@qalago/brand/badges';
+import { BackofficeErrorState, BackofficeSkeleton } from '@qalago/brand/states';
+import {
+  BackofficeFilterSelect,
+  BackofficePagination,
+  BackofficeTable,
+  BackofficeTableBody,
+  BackofficeTableCell,
+  BackofficeTableContainer,
+  BackofficeTableEmpty,
+  BackofficeTableHead,
+  BackofficeTableHeaderCell,
+  BackofficeTableRow,
+  BackofficeTableToolbar,
+} from '@qalago/brand/tables';
 
 const STATUS_OPTIONS = [
-  { value: 'PENDING', label: 'На проверке' },
-  { value: 'APPROVED', label: 'Одобрено' },
-  { value: 'REJECTED', label: 'Отклонено' },
-  { value: 'CANCELLED', label: 'Отменено' },
-  { value: 'DRAFT', label: 'Черновик' },
+  { value: 'PENDING', label: applicationStatusLabel('PENDING') },
+  { value: 'APPROVED', label: applicationStatusLabel('APPROVED') },
+  { value: 'REJECTED', label: applicationStatusLabel('REJECTED') },
+  { value: 'CANCELLED', label: applicationStatusLabel('CANCELLED') },
+  { value: 'DRAFT', label: applicationStatusLabel('DRAFT') },
 ];
 
 export default function BusinessApplicationsListPage() {
@@ -46,7 +58,7 @@ export default function BusinessApplicationsListPage() {
     [router, searchParams],
   );
 
-  useEffect(() => {
+  function loadApplications() {
     setLoading(true);
     setError(null);
     businessRequestsApi
@@ -62,112 +74,96 @@ export default function BusinessApplicationsListPage() {
       })
       .catch((err: unknown) => setError(mapBusinessRequestError(String(err))))
       .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    loadApplications();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, page, status, citySlug, cityLocked]);
 
   const totalPages = Math.max(1, Math.ceil(total / 20));
+  const cityLabel =
+    user.role === 'CITY_ADMIN' && user.managedCity
+      ? user.managedCity.nameRu
+      : citySlug;
 
   return (
     <div className="card">
-      <div className="toolbar" style={{ marginBottom: '1rem', flexWrap: 'wrap', gap: '12px' }}>
-        <label>
-          Статус{' '}
-          <select
+      <BackofficeTableToolbar
+        start={
+          <BackofficeFilterSelect
+            label="Статус"
             value={status}
-            onChange={(e) => updateQuery({ status: e.target.value, page: 1 })}
-          >
-            {STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value || 'all'} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        {user.role !== 'CITY_ADMIN' && (
-          <span className="muted">Город: {citySlug}</span>
-        )}
-        {user.role === 'CITY_ADMIN' && user.managedCity && (
-          <span className="muted">Город: {user.managedCity.nameRu}</span>
-        )}
-      </div>
+            onChange={(value) => updateQuery({ status: value, page: 1 })}
+            options={STATUS_OPTIONS}
+          />
+        }
+        meta={user.role !== 'CITY_ADMIN' ? `Город: ${cityLabel}` : `Город: ${cityLabel}`}
+      />
 
-      {error && <p className="error-text">{error}</p>}
-      {loading && <p>Загрузка…</p>}
+      {error ? (
+        <BackofficeErrorState title="Не удалось загрузить заявки" message={error} onRetry={loadApplications} />
+      ) : null}
+      {loading ? <BackofficeSkeleton variant="table-row" count={5} /> : null}
 
-      {!loading && items.length === 0 && (
-        <p className="muted">
-          {status === 'PENDING'
-            ? 'Нет заявок на проверке.'
-            : 'Заявки с выбранным статусом не найдены.'}
-        </p>
-      )}
+      {!loading && !error && items.length === 0 ? (
+        <BackofficeTableEmpty
+          filtered={status !== 'PENDING'}
+          emptyTitle="Нет заявок на проверке"
+          filteredTitle="Заявки с выбранным статусом не найдены"
+          resetLabel="Сбросить фильтры"
+          onResetFilters={() => updateQuery({ status: 'PENDING', page: 1 })}
+          icon="file-request"
+        />
+      ) : null}
 
-      {!loading && items.length > 0 && (
-        <div className="table-wrap">
-          <table className="data-table">
-            <thead>
+      {!loading && !error && items.length > 0 && (
+        <BackofficeTableContainer>
+          <BackofficeTable density="normal">
+            <BackofficeTableHead>
               <tr>
-                <th>Название</th>
-                <th>Город</th>
-                <th>Категория</th>
-                <th>Адрес</th>
-                <th>Заявитель</th>
-                <th>Статус</th>
-                <th>Дата</th>
-                <th />
+                <BackofficeTableHeaderCell>Название</BackofficeTableHeaderCell>
+                <BackofficeTableHeaderCell>Город</BackofficeTableHeaderCell>
+                <BackofficeTableHeaderCell>Категория</BackofficeTableHeaderCell>
+                <BackofficeTableHeaderCell>Адрес</BackofficeTableHeaderCell>
+                <BackofficeTableHeaderCell>Заявитель</BackofficeTableHeaderCell>
+                <BackofficeTableHeaderCell>Статус</BackofficeTableHeaderCell>
+                <BackofficeTableHeaderCell>Дата</BackofficeTableHeaderCell>
+                <BackofficeTableHeaderCell variant="actions">Действия</BackofficeTableHeaderCell>
               </tr>
-            </thead>
-            <tbody>
-              {items.map((row) => (
-                <tr key={row.id}>
-                  <td>{row.title}</td>
-                  <td>{row.city?.nameRu ?? '—'}</td>
-                  <td>{row.category?.title ?? '—'}</td>
-                  <td>{row.address}</td>
-                  <td>{row.applicant?.name ?? row.applicant?.role ?? '—'}</td>
-                  <td>
-                    <span className={applicationStatusClass(row.status)}>
-                      {applicationStatusLabel(row.status)}
-                    </span>
-                  </td>
-                  <td>{formatDateTime(row.createdAt)}</td>
-                  <td>
-                    <Link
-                      href={`/business-requests/applications/${row.id}`}
-                      className="btn btn-sm"
-                    >
-                      Открыть
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            </BackofficeTableHead>
+            <BackofficeTableBody>
+              {items.map((row) => {
+                const statusPresentation = applicationStatusPresentation(row.status);
+                return (
+                  <BackofficeTableRow key={row.id}>
+                    <BackofficeTableCell variant="truncate">{row.title}</BackofficeTableCell>
+                    <BackofficeTableCell>{row.city?.nameRu ?? '—'}</BackofficeTableCell>
+                    <BackofficeTableCell>{row.category?.title ?? '—'}</BackofficeTableCell>
+                    <BackofficeTableCell variant="truncate">{row.address}</BackofficeTableCell>
+                    <BackofficeTableCell>{row.applicant?.name ?? row.applicant?.role ?? '—'}</BackofficeTableCell>
+                    <BackofficeTableCell>
+                      <BackofficeBadge
+                        label={statusPresentation.label}
+                        tone={statusPresentation.tone}
+                        size="compact"
+                      />
+                    </BackofficeTableCell>
+                    <BackofficeTableCell>{formatDateTime(row.createdAt)}</BackofficeTableCell>
+                    <BackofficeTableCell variant="actions">
+                      <Link href={`/business-requests/applications/${row.id}`} className="btn btn-sm">
+                        Открыть
+                      </Link>
+                    </BackofficeTableCell>
+                  </BackofficeTableRow>
+                );
+              })}
+            </BackofficeTableBody>
+          </BackofficeTable>
+        </BackofficeTableContainer>
       )}
 
-      {totalPages > 1 && (
-        <div className="toolbar" style={{ marginTop: '1rem' }}>
-          <button
-            type="button"
-            className="btn btn-sm"
-            disabled={page <= 1}
-            onClick={() => updateQuery({ page: page - 1 })}
-          >
-            ← Назад
-          </button>
-          <span className="muted">
-            Страница {page} из {totalPages}
-          </span>
-          <button
-            type="button"
-            className="btn btn-sm"
-            disabled={page >= totalPages}
-            onClick={() => updateQuery({ page: page + 1 })}
-          >
-            Вперёд →
-          </button>
-        </div>
-      )}
+      <BackofficePagination page={page} totalPages={totalPages} onPageChange={(p) => updateQuery({ page: p })} />
     </div>
   );
 }

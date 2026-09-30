@@ -8,6 +8,17 @@ import {
   reportPlacementLabel,
 } from '@/lib/reporting/labels';
 import type { BusinessesReport, FinanceReport, OverviewReport, PlansReport, SearchReport } from '@/lib/reporting/types';
+import { BackofficeBadge } from '@qalago/brand/badges';
+import { businessStatusPresentation } from '@qalago/brand/status';
+import {
+  BackofficeTable,
+  BackofficeTableBody,
+  BackofficeTableCell,
+  BackofficeTableContainer,
+  BackofficeTableHead,
+  BackofficeTableHeaderCell,
+  BackofficeTableRow,
+} from '@qalago/brand/tables';
 import { ReportBarChart } from './ReportCharts';
 import { ReportKpiCard, ReportKpiGrid } from './ReportKpiCard';
 import { ReportSection } from './ReportSection';
@@ -51,28 +62,37 @@ export function BusinessesReportView({ data, loading }: { data: BusinessesReport
       <ReportBarChart data={chartPlan} xKey="name" yKey="count" title="Тарифы" loading={loading} />
       {data?.newBusinesses?.items?.length ? (
         <ReportSection title="Новые бизнесы">
-          <div className="report-table-scroll">
-            <table className="data-table">
-              <thead>
+          <BackofficeTableContainer className="report-table-scroll">
+            <BackofficeTable density="compact">
+              <BackofficeTableHead>
                 <tr>
-                  <th>Название</th>
-                  <th>Статус</th>
-                  <th>Тариф</th>
-                  <th>Создан</th>
+                  <BackofficeTableHeaderCell>Название</BackofficeTableHeaderCell>
+                  <BackofficeTableHeaderCell>Статус</BackofficeTableHeaderCell>
+                  <BackofficeTableHeaderCell>Тариф</BackofficeTableHeaderCell>
+                  <BackofficeTableHeaderCell>Создан</BackofficeTableHeaderCell>
                 </tr>
-              </thead>
-              <tbody>
-                {data.newBusinesses.items.map((row) => (
-                  <tr key={row.id}>
-                    <td>{row.title}</td>
-                    <td>{row.status}</td>
-                    <td>{planTierLabel(row.planTier)}</td>
-                    <td>{formatDate(row.createdAt)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              </BackofficeTableHead>
+              <BackofficeTableBody>
+                {data.newBusinesses.items.map((row) => {
+                  const statusPresentation = businessStatusPresentation(row.status);
+                  return (
+                    <BackofficeTableRow key={row.id}>
+                      <BackofficeTableCell variant="truncate">{row.title}</BackofficeTableCell>
+                      <BackofficeTableCell>
+                        <BackofficeBadge
+                          label={statusPresentation.label}
+                          tone={statusPresentation.tone}
+                          size="compact"
+                        />
+                      </BackofficeTableCell>
+                      <BackofficeTableCell>{planTierLabel(row.planTier)}</BackofficeTableCell>
+                      <BackofficeTableCell>{formatDate(row.createdAt)}</BackofficeTableCell>
+                    </BackofficeTableRow>
+                  );
+                })}
+              </BackofficeTableBody>
+            </BackofficeTable>
+          </BackofficeTableContainer>
         </ReportSection>
       ) : (
         <ReportEmptyState title="Нет новых бизнесов за период" />

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useCatalogContext } from '@/components/catalog/catalog-layout-client';
 import { adminCatalogApi, type AdminCatalogListItem } from '@/lib/admin-catalog-api';
 import { adminCatalogLabel, adminCatalogStatusLabel } from '@/lib/admin-catalog-labels';
@@ -10,10 +10,23 @@ import { canCreateAdminCatalogBusiness } from '@/lib/admin-catalog-rbac';
 import { BackofficeBadge } from '@qalago/brand/badges';
 import { businessStatusPresentation } from '@qalago/brand/status';
 import {
-  BackofficeEmptyState,
   BackofficeErrorState,
   BackofficeSkeleton,
 } from '@qalago/brand/states';
+import {
+  BackofficeFilterSelect,
+  BackofficePagination,
+  BackofficeSearchField,
+  BackofficeTable,
+  BackofficeTableBody,
+  BackofficeTableCell,
+  BackofficeTableContainer,
+  BackofficeTableEmpty,
+  BackofficeTableHead,
+  BackofficeTableHeaderCell,
+  BackofficeTableRow,
+  BackofficeTableToolbar,
+} from '@qalago/brand/tables';
 
 export default function CatalogBusinessesListPage() {
   const { token, user, citySlug, locale } = useCatalogContext();
@@ -21,11 +34,22 @@ export default function CatalogBusinessesListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState({ page: 1, limit: 20, total: 0 });
   const [refreshNonce, setRefreshNonce] = useState(0);
 
   const canCreate = canCreateAdminCatalogBusiness(user.role);
+
+  const statusOptions = useMemo(
+    () => [
+      { value: '', label: adminCatalogLabel(locale, 'filterAll') },
+      { value: 'PENDING', label: businessStatusPresentation('PENDING').label },
+      { value: 'ACTIVE', label: businessStatusPresentation('ACTIVE').label },
+      { value: 'BLOCKED', label: businessStatusPresentation('BLOCKED').label },
+    ],
+    [locale],
+  );
 
   useEffect(() => {
     setPage(1);
@@ -61,28 +85,62 @@ export default function CatalogBusinessesListPage() {
     };
   }, [token, citySlug, statusFilter, page, locale, refreshNonce]);
 
+  const filteredItems = useMemo(() => {
+    const q = searchInput.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter(
+      (b) =>
+        b.title.toLowerCase().includes(q) ||
+        b.slug.toLowerCase().includes(q) ||
+        (b.city?.nameRu?.toLowerCase().includes(q) ?? false),
+    );
+  }, [items, searchInput]);
+
+  const hasActiveFilters = Boolean(statusFilter || searchInput.trim());
+  const totalPages = Math.max(1, Math.ceil(meta.total / meta.limit));
+
+  function resetFilters() {
+    setStatusFilter('');
+    setSearchInput('');
+    setPage(1);
+  }
+
   return (
     <section>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-        <h1 style={{ margin: 0 }}>{adminCatalogLabel(locale, 'pageListTitle')}</h1>
-        {canCreate && (
-          <Link href="/catalog/businesses/new" className="btn btn-primary">
-            {adminCatalogLabel(locale, 'createAction')}
-          </Link>
-        )}
-      </div>
+      <h1 className="page-title" style={{ marginTop: 0 }}>
+        {adminCatalogLabel(locale, 'pageListTitle')}
+      </h1>
 
-      <div className="card" style={{ marginTop: 16 }}>
-        <label style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-          <span>{adminCatalogLabel(locale, 'filterStatus')}</span>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="city-select">
-            <option value="">{adminCatalogLabel(locale, 'filterAll')}</option>
-            <option value="PENDING">{businessStatusPresentation('PENDING').label}</option>
-            <option value="ACTIVE">{businessStatusPresentation('ACTIVE').label}</option>
-            <option value="BLOCKED">{businessStatusPresentation('BLOCKED').label}</option>
-          </select>
-        </label>
-      </div>
+      <BackofficeTableToolbar
+        start={
+          <>
+            <BackofficeSearchField
+              label={adminCatalogLabel(locale, 'searchLabel')}
+              placeholder={adminCatalogLabel(locale, 'searchLabel')}
+              value={searchInput}
+              onChange={setSearchInput}
+            />
+            <BackofficeFilterSelect
+              label={adminCatalogLabel(locale, 'filterStatus')}
+              value={statusFilter}
+              onChange={setStatusFilter}
+              options={statusOptions}
+            />
+          </>
+        }
+        end={
+          canCreate ? (
+            <Link href="/catalog/businesses/new" className="btn btn-primary">
+              {adminCatalogLabel(locale, 'createAction')}
+            </Link>
+          ) : null
+        }
+        meta={
+          !loading && !error
+            ? `${filteredItems.length} из ${meta.total} на странице ${meta.page}`
+            : undefined
+        }
+      />
 
       {loading ? <BackofficeSkeleton variant="table-row" count={5} /> : null}
       {error ? (
@@ -93,71 +151,62 @@ export default function CatalogBusinessesListPage() {
         />
       ) : null}
 
-      {!loading && !error && items.length === 0 ? (
-        <BackofficeEmptyState
-          title={adminCatalogLabel(locale, 'emptyList')}
+      {!loading && !error && filteredItems.length === 0 ? (
+        <BackofficeTableEmpty
+          filtered={hasActiveFilters}
+          emptyTitle={adminCatalogLabel(locale, 'emptyNoData')}
+          filteredTitle={adminCatalogLabel(locale, 'emptyList')}
+          resetLabel={adminCatalogLabel(locale, 'resetFilters')}
+          onResetFilters={hasActiveFilters ? resetFilters : undefined}
           icon="business"
-          density="section"
         />
       ) : null}
 
-      {!loading && !error && items.length > 0 && (
-        <div className="card" style={{ marginTop: 16, overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 640 }}>
-            <thead>
-              <tr>
-                <th align="left">{adminCatalogLabel(locale, 'colTitle')}</th>
-                <th align="left">{adminCatalogLabel(locale, 'colStatus')}</th>
-                <th align="left">{adminCatalogLabel(locale, 'colCity')}</th>
-                <th align="left">{adminCatalogLabel(locale, 'colCategory')}</th>
-                <th align="left">{adminCatalogLabel(locale, 'colSlug')}</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((b) => (
-                <tr key={b.id}>
-                  <td>{b.title}</td>
-                  <td>
-                    <BackofficeBadge
-                      label={adminCatalogStatusLabel(locale, b.status)}
-                      tone={businessStatusPresentation(b.status).tone}
-                      size="compact"
-                    />
-                  </td>
-                  <td>{b.city?.nameRu ?? '—'}</td>
-                  <td>{b.category?.title ?? '—'}</td>
-                  <td className="muted">{b.slug}</td>
-                  <td>
-                    <Link href={`/catalog/businesses/${b.id}`}>{adminCatalogLabel(locale, 'openDetail')}</Link>
-                  </td>
+      {!loading && !error && filteredItems.length > 0 && (
+        <div className="card" style={{ marginTop: 16 }}>
+          <BackofficeTableContainer>
+            <BackofficeTable density="normal">
+              <BackofficeTableHead>
+                <tr>
+                  <BackofficeTableHeaderCell>{adminCatalogLabel(locale, 'colTitle')}</BackofficeTableHeaderCell>
+                  <BackofficeTableHeaderCell>{adminCatalogLabel(locale, 'colStatus')}</BackofficeTableHeaderCell>
+                  <BackofficeTableHeaderCell>{adminCatalogLabel(locale, 'colCity')}</BackofficeTableHeaderCell>
+                  <BackofficeTableHeaderCell>{adminCatalogLabel(locale, 'colCategory')}</BackofficeTableHeaderCell>
+                  <BackofficeTableHeaderCell>{adminCatalogLabel(locale, 'colSlug')}</BackofficeTableHeaderCell>
+                  <BackofficeTableHeaderCell variant="actions">
+                    {adminCatalogLabel(locale, 'colActions')}
+                  </BackofficeTableHeaderCell>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {meta.total > meta.limit && (
-            <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-              >
-                ←
-              </button>
-              <span className="muted">
-                {meta.page} / {Math.ceil(meta.total / meta.limit)}
-              </span>
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm"
-                disabled={page * meta.limit >= meta.total}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                →
-              </button>
-            </div>
-          )}
+              </BackofficeTableHead>
+              <BackofficeTableBody>
+                {filteredItems.map((b) => (
+                  <BackofficeTableRow key={b.id}>
+                    <BackofficeTableCell variant="truncate">{b.title}</BackofficeTableCell>
+                    <BackofficeTableCell>
+                      <BackofficeBadge
+                        label={adminCatalogStatusLabel(locale, b.status)}
+                        tone={businessStatusPresentation(b.status).tone}
+                        size="compact"
+                      />
+                    </BackofficeTableCell>
+                    <BackofficeTableCell>{b.city?.nameRu ?? '—'}</BackofficeTableCell>
+                    <BackofficeTableCell>{b.category?.title ?? '—'}</BackofficeTableCell>
+                    <BackofficeTableCell variant="mono">{b.slug}</BackofficeTableCell>
+                    <BackofficeTableCell variant="actions">
+                      <Link href={`/catalog/businesses/${b.id}`}>{adminCatalogLabel(locale, 'openDetail')}</Link>
+                    </BackofficeTableCell>
+                  </BackofficeTableRow>
+                ))}
+              </BackofficeTableBody>
+            </BackofficeTable>
+          </BackofficeTableContainer>
+          <BackofficePagination
+            page={page}
+            totalPages={totalPages}
+            totalItems={meta.total}
+            pageSize={meta.limit}
+            onPageChange={setPage}
+          />
         </div>
       )}
     </section>

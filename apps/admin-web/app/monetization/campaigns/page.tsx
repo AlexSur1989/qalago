@@ -4,14 +4,29 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { monetizationApi, MonetizationCampaignRow } from '@/lib/monetization-api';
 import { useMonetizationContext } from '@/components/monetization/monetization-layout-client';
+import { campaignStatusPresentation } from '@/lib/campaign-status-presentation';
 import {
   campaignStatusLabel,
   formatDate,
-  monetizationStatusClass,
   parseApiError,
   placementLabel,
   productLabel,
 } from '@/lib/monetization-utils';
+import { BackofficeBadge } from '@qalago/brand/badges';
+import { BackofficeErrorState, BackofficeSkeleton } from '@qalago/brand/states';
+import {
+  BackofficeFilterSelect,
+  BackofficePagination,
+  BackofficeTable,
+  BackofficeTableBody,
+  BackofficeTableCell,
+  BackofficeTableContainer,
+  BackofficeTableEmpty,
+  BackofficeTableHead,
+  BackofficeTableHeaderCell,
+  BackofficeTableRow,
+  BackofficeTableToolbar,
+} from '@qalago/brand/tables';
 
 export default function MonetizationCampaignsPage() {
   const { token, citySlug } = useMonetizationContext();
@@ -23,32 +38,29 @@ export default function MonetizationCampaignsPage() {
   const [productFilter, setProductFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshNonce, setRefreshNonce] = useState(0);
 
   useEffect(() => {
     setPage(1);
   }, [citySlug, statusFilter, placementFilter, productFilter]);
 
-  useEffect(() => {
-    let cancelled = false;
+  function loadCampaigns() {
     setLoading(true);
     setError(null);
     monetizationApi
       .listCampaigns(token, { citySlug, page, limit: 50 })
       .then((res) => {
-        if (cancelled) return;
         setCampaigns(res.items);
         setTotal(res.total);
       })
-      .catch((err) => {
-        if (!cancelled) setError(parseApiError(err));
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [token, citySlug, page]);
+      .catch((err) => setError(parseApiError(err)))
+      .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    loadCampaigns();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, citySlug, page, refreshNonce]);
 
   const filtered = useMemo(() => {
     return campaigns.filter((c) => {
@@ -70,129 +82,136 @@ export default function MonetizationCampaignsPage() {
       <div className="page-header">
         <h1>Кампании</h1>
       </div>
-      {error && <div className="alert alert-error">Не удалось загрузить кампании. {error}</div>}
+      {error ? (
+        <BackofficeErrorState
+          title="Не удалось загрузить кампании"
+          message={error}
+          onRetry={() => setRefreshNonce((n) => n + 1)}
+        />
+      ) : null}
 
       <section className="card">
-        <div className="table-toolbar">
-          <h2>Список кампаний ({total})</h2>
-          <div className="filter-row">
-            <select
-              className="filter-select"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="">Все статусы</option>
-              <option value="ACTIVE">Активно</option>
-              <option value="SCHEDULED">Запланировано</option>
-              <option value="PENDING_MODERATION">На модерации</option>
-              <option value="PAUSED">Приостановлено</option>
-              <option value="COMPLETED">Завершено</option>
-              <option value="CANCELLED">Отменено</option>
-            </select>
-            <select
-              className="filter-select"
-              value={productFilter}
-              onChange={(e) => setProductFilter(e.target.value)}
-            >
-              <option value="">Все продукты</option>
-              <option value="BOOST">Поднять карточку</option>
-              <option value="TOP_CATEGORY">TOP категории</option>
-              <option value="PROMOTED_PROMOTION">Продвинуть акцию</option>
-              <option value="FEATURED_BUSINESS">Популярное место</option>
-              <option value="VIP_BANNER">VIP-баннер</option>
-            </select>
-            <select
-              className="filter-select"
-              value={placementFilter}
-              onChange={(e) => setPlacementFilter(e.target.value)}
-            >
-              <option value="">Все placements</option>
-              <option value="HOME_VIP_BANNER">VIP-баннер</option>
-              <option value="HOME_FEATURED">Популярные места</option>
-              <option value="HOME_PROMOTIONS">Акции</option>
-              <option value="CATEGORY_TOP">TOP категории</option>
-              <option value="CATEGORY_BOOST">Поднятые карточки</option>
-            </select>
-          </div>
-        </div>
-        <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 0 }}>
-          Фильтры применяются к загруженной странице (до 50 записей). Backend-фильтр по статусу
-          пока не поддерживается.
-        </p>
+        <BackofficeTableToolbar
+          start={
+            <>
+              <BackofficeFilterSelect
+                label="Статус"
+                value={statusFilter}
+                onChange={setStatusFilter}
+                options={[
+                  { value: '', label: 'Все статусы' },
+                  { value: 'ACTIVE', label: campaignStatusLabel('ACTIVE') },
+                  { value: 'SCHEDULED', label: campaignStatusLabel('SCHEDULED') },
+                  { value: 'PENDING_MODERATION', label: campaignStatusLabel('PENDING_MODERATION') },
+                  { value: 'PAUSED', label: campaignStatusLabel('PAUSED') },
+                  { value: 'COMPLETED', label: campaignStatusLabel('COMPLETED') },
+                  { value: 'CANCELLED', label: campaignStatusLabel('CANCELLED') },
+                ]}
+              />
+              <BackofficeFilterSelect
+                label="Продукт"
+                value={productFilter}
+                onChange={setProductFilter}
+                options={[
+                  { value: '', label: 'Все продукты' },
+                  { value: 'BOOST', label: productLabel('BOOST') },
+                  { value: 'TOP_CATEGORY', label: productLabel('TOP_CATEGORY') },
+                  { value: 'PROMOTED_PROMOTION', label: productLabel('PROMOTED_PROMOTION') },
+                  { value: 'FEATURED_BUSINESS', label: productLabel('FEATURED_BUSINESS') },
+                  { value: 'VIP_BANNER', label: productLabel('VIP_BANNER') },
+                ]}
+              />
+              <BackofficeFilterSelect
+                label="Размещение"
+                value={placementFilter}
+                onChange={setPlacementFilter}
+                options={[
+                  { value: '', label: 'Все размещения' },
+                  { value: 'HOME_VIP_BANNER', label: placementLabel('HOME_VIP_BANNER') },
+                  { value: 'HOME_FEATURED', label: placementLabel('HOME_FEATURED') },
+                  { value: 'HOME_PROMOTIONS', label: placementLabel('HOME_PROMOTIONS') },
+                  { value: 'CATEGORY_TOP', label: placementLabel('CATEGORY_TOP') },
+                  { value: 'CATEGORY_BOOST', label: placementLabel('CATEGORY_BOOST') },
+                ]}
+              />
+            </>
+          }
+          meta={`Список кампаний · ${total} всего · фильтры на текущей странице (до 50)`}
+        />
 
-        {loading ? (
-          <p style={{ color: 'var(--text-muted)' }}>Загрузка…</p>
-        ) : filtered.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)' }}>Нет кампаний</p>
-        ) : (
+        {loading ? <BackofficeSkeleton variant="table-row" count={6} /> : null}
+
+        {!loading && filtered.length === 0 ? (
+          <BackofficeTableEmpty
+            filtered={Boolean(statusFilter || productFilter || placementFilter)}
+            emptyTitle="Кампаний пока нет"
+            filteredTitle="Нет кампаний по выбранным фильтрам на этой странице"
+            resetLabel="Сбросить фильтры"
+            onResetFilters={() => {
+              setStatusFilter('');
+              setProductFilter('');
+              setPlacementFilter('');
+            }}
+            icon="megaphone"
+          />
+        ) : null}
+
+        {!loading && filtered.length > 0 && (
           <>
-            <table className="table table-scroll">
-              <thead>
-                <tr>
-                  <th>Бизнес</th>
-                  <th>Тип</th>
-                  <th>Placement</th>
-                  <th>Статус</th>
-                  <th>Начало</th>
-                  <th>Окончание</th>
-                  <th>Показы</th>
-                  <th>Просмотры</th>
-                  <th>Переходы</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((c) => {
-                  const status = c.effectiveStatus || c.status;
-                  const placementCode = c.placements?.[0]?.code;
-                  return (
-                    <tr key={c.id}>
-                      <td>{c.businessTitle ?? c.businessId.slice(0, 8)}</td>
-                      <td>{productLabel(c.product.code)}</td>
-                      <td>{placementLabel(placementCode)}</td>
-                      <td>
-                        <span className={monetizationStatusClass(status)}>
-                          {campaignStatusLabel(status)}
-                        </span>
-                      </td>
-                      <td>{formatDate(c.startAt)}</td>
-                      <td>{formatDate(c.endAt)}</td>
-                      <td>{c.metrics.servedCount}</td>
-                      <td>{c.metrics.qualifiedImpressions}</td>
-                      <td>{c.metrics.clickCount}</td>
-                      <td>
-                        <Link href={`/monetization/campaigns/${c.id}`} className="btn btn-sm">
-                          Открыть
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            {pageCount > 1 && (
-              <div className="pagination">
-                <button
-                  type="button"
-                  className="btn btn-sm"
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => p - 1)}
-                >
-                  ← Назад
-                </button>
-                <span className="pagination-meta">
-                  Стр. {page} из {pageCount}
-                </span>
-                <button
-                  type="button"
-                  className="btn btn-sm"
-                  disabled={page >= pageCount}
-                  onClick={() => setPage((p) => p + 1)}
-                >
-                  Вперёд →
-                </button>
-              </div>
-            )}
+            <BackofficeTableContainer>
+              <BackofficeTable density="compact" className="table-scroll">
+                <BackofficeTableHead>
+                  <tr>
+                    <BackofficeTableHeaderCell>Бизнес</BackofficeTableHeaderCell>
+                    <BackofficeTableHeaderCell>Тип</BackofficeTableHeaderCell>
+                    <BackofficeTableHeaderCell>Размещение</BackofficeTableHeaderCell>
+                    <BackofficeTableHeaderCell>Статус</BackofficeTableHeaderCell>
+                    <BackofficeTableHeaderCell>Начало</BackofficeTableHeaderCell>
+                    <BackofficeTableHeaderCell>Окончание</BackofficeTableHeaderCell>
+                    <BackofficeTableHeaderCell variant="numeric">Показы</BackofficeTableHeaderCell>
+                    <BackofficeTableHeaderCell variant="numeric">Просмотры</BackofficeTableHeaderCell>
+                    <BackofficeTableHeaderCell variant="numeric">Переходы</BackofficeTableHeaderCell>
+                    <BackofficeTableHeaderCell variant="actions">Действия</BackofficeTableHeaderCell>
+                  </tr>
+                </BackofficeTableHead>
+                <BackofficeTableBody>
+                  {filtered.map((c) => {
+                    const status = c.effectiveStatus || c.status;
+                    const placementCode = c.placements?.[0]?.code;
+                    const statusPresentation = campaignStatusPresentation(status);
+                    return (
+                      <BackofficeTableRow key={c.id}>
+                        <BackofficeTableCell variant="truncate">
+                          {c.businessTitle ?? c.businessId.slice(0, 8)}
+                        </BackofficeTableCell>
+                        <BackofficeTableCell>{productLabel(c.product.code)}</BackofficeTableCell>
+                        <BackofficeTableCell>{placementLabel(placementCode)}</BackofficeTableCell>
+                        <BackofficeTableCell>
+                          <BackofficeBadge
+                            label={statusPresentation.label}
+                            tone={statusPresentation.tone}
+                            size="compact"
+                          />
+                        </BackofficeTableCell>
+                        <BackofficeTableCell>{formatDate(c.startAt)}</BackofficeTableCell>
+                        <BackofficeTableCell>{formatDate(c.endAt)}</BackofficeTableCell>
+                        <BackofficeTableCell variant="numeric">{c.metrics.servedCount}</BackofficeTableCell>
+                        <BackofficeTableCell variant="numeric">
+                          {c.metrics.qualifiedImpressions}
+                        </BackofficeTableCell>
+                        <BackofficeTableCell variant="numeric">{c.metrics.clickCount}</BackofficeTableCell>
+                        <BackofficeTableCell variant="actions">
+                          <Link href={`/monetization/campaigns/${c.id}`} className="btn btn-sm">
+                            Открыть
+                          </Link>
+                        </BackofficeTableCell>
+                      </BackofficeTableRow>
+                    );
+                  })}
+                </BackofficeTableBody>
+              </BackofficeTable>
+            </BackofficeTableContainer>
+            <BackofficePagination page={page} totalPages={pageCount} onPageChange={setPage} />
           </>
         )}
       </section>

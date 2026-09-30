@@ -65,6 +65,12 @@ export type UiLabels = {
   confirmSuspendMemberConsequence: string;
   confirmRevokeInviteTitle: string;
   confirmRevokeInviteConsequence: string;
+  tableResetFilters: string;
+  tableEmptyFilteredMenu: string;
+  tableSearchMenuLabel: string;
+  tablePaginationPrev: string;
+  tablePaginationNext: string;
+  tableSearchMessagesLabel: string;
   ownerSuspend: string;
   ownerEditPermissions: string;
   text_saveSubcategories: string;
@@ -868,6 +874,12 @@ export type UiLabels = {
     confirmSuspendMemberConsequence: 'Менеджер временно не сможет работать в кабинете до восстановления.',
     confirmRevokeInviteTitle: 'Отозвать приглашение?',
     confirmRevokeInviteConsequence: 'Пользователь больше не сможет принять это приглашение.',
+    tableResetFilters: 'Сбросить фильтры',
+    tableEmptyFilteredMenu: 'Нет позиций по выбранным фильтрам',
+    tableSearchMenuLabel: 'Поиск по меню',
+    tablePaginationPrev: 'Назад',
+    tablePaginationNext: 'Вперёд',
+    tableSearchMessagesLabel: 'Поиск по уведомлениям',
     text_savePermissions: 'Сохранить права',
     text_cancel: 'Отмена',
     text_resumeAccess: 'Возобновить доступ',
@@ -1572,6 +1584,12 @@ export type UiLabels = {
     confirmSuspendMemberConsequence: 'Менеджер қалпына келтірілгенге дейін кабинетте жұмыс істей алмайды.',
     confirmRevokeInviteTitle: 'Шақырудан бас тарту керек пе?',
     confirmRevokeInviteConsequence: 'Пайдаланушы бұл шақыруды қабылдай алмайды.',
+    tableResetFilters: 'Сүзгілерді тастау',
+    tableEmptyFilteredMenu: 'Таңдалған сүзгілер бойынша позиция жоқ',
+    tableSearchMenuLabel: 'Мәзір бойынша іздеу',
+    tablePaginationPrev: 'Артқа',
+    tablePaginationNext: 'Алға',
+    tableSearchMessagesLabel: 'Хабарландырулар бойынша іздеу',
     text_savePermissions: 'Құқықтарды сақтау',
     text_cancel: 'Бас тарту',
     text_resumeAccess: 'Қолжетімділікті қалпына келтіру',

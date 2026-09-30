@@ -77,6 +77,7 @@ export const ICON_PATHS: Record<QalaBackofficeIconName, readonly string[]> = {
     'M13.73 21a2 2 0 0 1-3.46 0',
   ],
   menu: ['M4 6h16', 'M4 12h16', 'M4 18h16'],
+  search: ['M21 21l-5.197-5.197', 'M10.5 18a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15Z'],
   close: ['M18 6 6 18', 'M6 6l12 12'],
   'chevron-left': ['M15 18l-6-6 6-6'],
   'chevron-right': ['M9 18l6-6-6-6'],

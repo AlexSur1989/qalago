@@ -36,6 +36,8 @@ import { useAuth } from '@/lib/use-auth';
 import { BusinessShell } from '@/components/business-shell';
 import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
 import { backofficeConfirm } from '@qalago/brand/confirm';
+import { BackofficeBadge } from '@qalago/brand/badges';
+import { BackofficeEmptyState } from '@qalago/brand/states';
 import {
   BUSINESS_ROUTE_ACCESS,
   isBusinessRouteContentAllowed,
@@ -349,7 +351,7 @@ export default function BusinessPromotionsPage() {
           {ui.ownerPromotionsListHeading.replace('${count}', String(promotions.length))}
         </h2>
         {promotions.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)' }}>{ui.___208573}</p>
+          <BackofficeEmptyState title={ui.___208573} icon="promotion" density="section" />
         ) : (
           promotions.map((p) => (
             <div
@@ -364,9 +366,11 @@ export default function BusinessPromotionsPage() {
                   <p style={{ color: 'var(--primary)', margin: '4px 0' }}>{p.discountText}</p>
                 )}
                 {p.description && <p>{p.description}</p>}
-                <span className={`tag ${p.status === 'ACTIVE' ? 'tag-success' : ''}`}>
-                  {organicPromotionStatusLabel(locale, p.status)}
-                </span>
+                <BackofficeBadge
+                  label={organicPromotionStatusLabel(locale, p.status)}
+                  tone={p.status === 'ACTIVE' ? 'success' : 'neutral'}
+                  size="compact"
+                />
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {canPromotionsEdit && (

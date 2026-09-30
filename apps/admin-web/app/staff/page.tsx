@@ -11,7 +11,18 @@ import {
   BackofficeAccessDenied,
   BackofficeErrorState,
   BackofficeLoadingState,
+  BackofficeSkeleton,
 } from '@qalago/brand/states';
+import {
+  BackofficeTable,
+  BackofficeTableBody,
+  BackofficeTableCell,
+  BackofficeTableContainer,
+  BackofficeTableEmpty,
+  BackofficeTableHead,
+  BackofficeTableHeaderCell,
+  BackofficeTableRow,
+} from '@qalago/brand/tables';
 import { staffActivePresentation, staffRoleLabel } from '@/lib/staff-presentation';
 
 export default function StaffPage() {
@@ -63,7 +74,9 @@ export default function StaffPage() {
           retrying={loading}
         />
       ) : null}
-      {loading && !error ? <BackofficeLoadingState density="section" label="Загрузка…" /> : null}
+      {loading && !error && !overview ? (
+        <BackofficeLoadingState density="section" label="Загрузка…" />
+      ) : null}
       {overview ? (
         <div className="card-grid">
           <div className="card">
@@ -80,48 +93,55 @@ export default function StaffPage() {
           </div>
         </div>
       ) : null}
-      {!loading && !error ? (
-      <table className="data-table">
-        <thead>
-          <tr>
-            <th>Имя / телефон</th>
-            <th>Роль</th>
-            <th>Города</th>
-            <th>Статус</th>
-            <th>Сессии</th>
-            <th />
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.id}>
-              <td>
-                {row.user.name ?? '—'}
-                <br />
-                <span className="muted">{row.user.phone ?? row.user.id}</span>
-              </td>
-              <td>
-                <BackofficeBadge
-                  label={staffRoleLabel(row.staffRole)}
-                  tone="info"
-                  size="compact"
-                />
-              </td>
-              <td>{row.cityScopes.map((c) => c.nameRu).join(', ') || '—'}</td>
-              <td>
-                <BackofficeBadge
-                  {...staffActivePresentation(row.isActive)}
-                  size="compact"
-                />
-              </td>
-              <td>{row.activeSessionCount}</td>
-              <td>
-                <Link href={`/staff/${row.userId}`}>Детали</Link>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {loading && !error ? <BackofficeSkeleton variant="table-row" count={4} /> : null}
+
+      {!loading && !error && rows.length === 0 ? (
+        <BackofficeTableEmpty emptyTitle="Staff-аккаунтов пока нет" icon="staff" />
+      ) : null}
+
+      {!loading && !error && rows.length > 0 ? (
+        <BackofficeTableContainer>
+          <BackofficeTable density="normal">
+            <BackofficeTableHead>
+              <tr>
+                <BackofficeTableHeaderCell>Имя / телефон</BackofficeTableHeaderCell>
+                <BackofficeTableHeaderCell>Роль</BackofficeTableHeaderCell>
+                <BackofficeTableHeaderCell>Города</BackofficeTableHeaderCell>
+                <BackofficeTableHeaderCell>Статус</BackofficeTableHeaderCell>
+                <BackofficeTableHeaderCell variant="numeric">Сессии</BackofficeTableHeaderCell>
+                <BackofficeTableHeaderCell variant="actions">Действия</BackofficeTableHeaderCell>
+              </tr>
+            </BackofficeTableHead>
+            <BackofficeTableBody>
+              {rows.map((row) => (
+                <BackofficeTableRow key={row.id}>
+                  <BackofficeTableCell>
+                    {row.user.name ?? '—'}
+                    <br />
+                    <span className="muted">{row.user.phone ?? row.user.id}</span>
+                  </BackofficeTableCell>
+                  <BackofficeTableCell>
+                    <BackofficeBadge
+                      label={staffRoleLabel(row.staffRole)}
+                      tone="info"
+                      size="compact"
+                    />
+                  </BackofficeTableCell>
+                  <BackofficeTableCell>
+                    {row.cityScopes.map((c) => c.nameRu).join(', ') || '—'}
+                  </BackofficeTableCell>
+                  <BackofficeTableCell>
+                    <BackofficeBadge {...staffActivePresentation(row.isActive)} size="compact" />
+                  </BackofficeTableCell>
+                  <BackofficeTableCell variant="numeric">{row.activeSessionCount}</BackofficeTableCell>
+                  <BackofficeTableCell variant="actions">
+                    <Link href={`/staff/${row.userId}`}>Детали</Link>
+                  </BackofficeTableCell>
+                </BackofficeTableRow>
+              ))}
+            </BackofficeTableBody>
+          </BackofficeTable>
+        </BackofficeTableContainer>
       ) : null}
     </div>
   );

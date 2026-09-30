@@ -14,6 +14,7 @@
 | `packages/brand/backoffice-badges.css` + `@qalago/brand/badges` | Status badges — semantic tones (UXA.7) |
 | `packages/brand/status` (`@qalago/brand/status`) | Shared status → label + tone (business lifecycle, plan tier, feature flags) |
 | `packages/brand/backoffice-confirm.css` + `@qalago/brand/confirm` | Accessible confirm dialog + `backofficeConfirm` bridge (UXA.7) |
+| `packages/brand/backoffice-tables.css` + `@qalago/brand/tables` | Tables, toolbars, search, filters, pagination (UXA.4) |
 
 Both apps import in order:
 
@@ -110,11 +111,25 @@ Canonical: `--radius-xs` (8px), `--radius-md` (12px), `--radius-lg` (16px), `--r
 - **Destructive copy:** Title names action + target; `consequence` states irreversible or product-accurate side effect (delete location, revoke invite, lifecycle block, etc.).
 - **Post-action feedback:** Success/error still via UXA.9 inline alerts / `BackofficeSuccessState` — no new toast layer.
 - **Migrated (representative):** Admin — audit logs, staff list/detail, catalog businesses list/detail (badges + lifecycle confirm), moderation case actions, catalog location delete, monetization campaigns/creatives/payments confirms, platform team toggle. Business — locations set-primary/delete, onboarding cancel, menu/media/promotions delete, team invite revoke + member suspend/revoke.
-- **Deferred:** Admin legacy **dashboard** (`confirmAction` / `window.confirm`); full monetization/catalog badge sweep; business-requests ModalDialog (separate pattern); reports staff role raw string; filter/table redesign (**UXA.4**).
+- **Deferred:** Admin legacy **dashboard** (`confirmAction` / `window.confirm`); full monetization/catalog badge sweep; business-requests ModalDialog (separate pattern); reports staff role raw string.
+
+## Tables / filters / search (UXA.4)
+
+- **Primitives:** `@qalago/brand/tables` — `BackofficeTable*` (container, head/body/row/cell, `scope="col"`), `BackofficeTableToolbar`, `BackofficeSearchField`, `BackofficeFilterSelect`, `BackofficeFilterChip`, `BackofficePagination` (UXA.3 chevrons), `BackofficeTableEmpty` (no data vs filtered + reset), `useDebouncedValue` (300ms default for live search when adopted).
+- **Density:** `normal` (catalog/management) | `compact` (audit, dense monetization). No user density toggle.
+- **Visual:** Header muted background, row hover, numeric/actions alignment, horizontal scroll via `.bo-table-wrap`. UXA.1 tokens only.
+- **Status cells:** UXA.7 `BackofficeBadge`; filter `<option value>` unchanged.
+- **Empty vs filtered:** `BackofficeTableEmpty` + «Сбросить фильтры»; UXA.9 skeleton/error for table loads.
+- **URL state:** Preserved on applications, claims, moderation (`page`, `status` query). Catalog businesses filters remain **local state** (API unchanged); client title search on loaded page only.
+- **Debounce:** Explicit-submit search (menu) unchanged; hook available for future live search — do not debounce submit-button flows.
+- **Responsive:** Desktop table + horizontal scroll on narrow; card/mobile conversion deferred **UXA.10**.
+- **Migrated Admin:** catalog businesses, audit logs, staff, applications, claims, moderation cases, monetization campaigns, reports businesses table snippet.
+- **Migrated Business:** menu (search/chips/empty), promotions list badges, messages inbox search, media grid unchanged (scope radios).
+- **Deferred:** Admin dashboard monolith tables; legal/data-requests full pass; remaining `.data-table` / `.table` pages; reviews card layout; team list-as-cards.
 
 ## UXA.1 does NOT cover
 
-Tables/filters (UXA.4), forms migration (UXA.5), location UX (UXA.6), dashboards (UXA.8), responsive pass (UXA.10), a11y closure (UXA.11), RU/KK visual QA (UXA.12), dark mode.
+Forms migration (UXA.5), location UX (UXA.6), dashboards (UXA.8), responsive pass (UXA.10), a11y closure (UXA.11), RU/KK visual QA (UXA.12), dark mode.
 
 ## Tests
 

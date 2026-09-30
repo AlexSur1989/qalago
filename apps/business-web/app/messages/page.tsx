@@ -3,7 +3,8 @@
 import { useLocale, useUi, type UiLabels } from '@/components/locale-provider';
 import { parseApiError } from '@/lib/monetization-utils';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { BackofficeSearchField } from '@qalago/brand/tables';
 import { BusinessRow, NotificationRow, myBusinessRows, ownerApi } from '@/lib/api';
 import { useAuth } from '@/lib/use-auth';
 import { BusinessShell, useSelectedBusiness } from '@/components/business-shell';
@@ -52,6 +53,7 @@ export default function MessagesPage() {
   const [items, setItems] = useState<NotificationRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   async function load(t: string) {
     setLoading(true);
@@ -96,6 +98,15 @@ export default function MessagesPage() {
   }
 
   const unread = items.filter((n) => !n.isRead).length;
+  const visibleItems = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter((item) => {
+      const display = presentBusinessNotification(item, locale);
+      const haystack = `${display.title} ${display.body ?? ''} ${typeLabel(ui, item.type)}`.toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [items, searchQuery, locale, ui]);
 
   return (
     <BusinessShell
@@ -131,6 +142,16 @@ export default function MessagesPage() {
       ) : null}
 
       <section className="form-card" style={{ maxWidth: 820 }}>
+        {!loading && !error && items.length > 0 ? (
+          <div style={{ marginBottom: 16 }}>
+            <BackofficeSearchField
+              label={ui.tableSearchMessagesLabel}
+              placeholder={ui.tableSearchMessagesLabel}
+              value={searchQuery}
+              onChange={setSearchQuery}
+            />
+          </div>
+        ) : null}
         {loading ? (
           <BackofficeLoadingState density="section" label={ui.text_89d69a} />
         ) : !error && items.length === 0 ? (
@@ -140,8 +161,19 @@ export default function MessagesPage() {
             icon="notification"
             density="section"
           />
+        ) : !error && visibleItems.length === 0 && items.length > 0 ? (
+          <BackofficeEmptyState
+            title={ui.tableEmptyFilteredMenu}
+            actions={
+              <button type="button" className="btn btn-sm btn-secondary" onClick={() => setSearchQuery('')}>
+                {ui.tableResetFilters}
+              </button>
+            }
+            icon="notification"
+            density="section"
+          />
         ) : !error ? (
-          items.map((item) => {
+          visibleItems.map((item) => {
             const display = presentBusinessNotification(item, locale);
             const href = resolveBusinessNotificationHref(item);
             const inner = (

@@ -5,22 +5,37 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { useModerationContext } from '@/components/moderation/moderation-layout-client';
 import { moderationApi, type ModerationCaseRow } from '@/lib/moderation-api';
+import { moderationCaseStatusPresentation } from '@/lib/moderation-status-presentation';
 import {
   mapModerationError,
-  moderationCaseStatusClass,
   moderationCaseStatusLabel,
   moderationPriorityLabel,
   moderationTargetTypeLabel,
 } from '@/lib/moderation-utils';
 import { formatDateTime } from '@/lib/monetization-utils';
+import { BackofficeBadge } from '@qalago/brand/badges';
+import { BackofficeErrorState, BackofficeSkeleton } from '@qalago/brand/states';
+import {
+  BackofficeFilterSelect,
+  BackofficePagination,
+  BackofficeTable,
+  BackofficeTableBody,
+  BackofficeTableCell,
+  BackofficeTableContainer,
+  BackofficeTableEmpty,
+  BackofficeTableHead,
+  BackofficeTableHeaderCell,
+  BackofficeTableRow,
+  BackofficeTableToolbar,
+} from '@qalago/brand/tables';
 
 const STATUS_OPTIONS = [
   { value: '', label: 'Все статусы' },
-  { value: 'OPEN', label: 'Открыто' },
-  { value: 'IN_REVIEW', label: 'На проверке' },
-  { value: 'ACTION_REQUIRED', label: 'Нужно действие' },
-  { value: 'RESOLVED', label: 'Закрыто' },
-  { value: 'DISMISSED', label: 'Отклонено' },
+  { value: 'OPEN', label: moderationCaseStatusLabel('OPEN') },
+  { value: 'IN_REVIEW', label: moderationCaseStatusLabel('IN_REVIEW') },
+  { value: 'ACTION_REQUIRED', label: moderationCaseStatusLabel('ACTION_REQUIRED') },
+  { value: 'RESOLVED', label: moderationCaseStatusLabel('RESOLVED') },
+  { value: 'DISMISSED', label: moderationCaseStatusLabel('DISMISSED') },
 ];
 
 export default function ModerationCasesListPage() {
@@ -49,7 +64,7 @@ export default function ModerationCasesListPage() {
     [router, searchParams],
   );
 
-  useEffect(() => {
+  function loadCases() {
     setLoading(true);
     setError(null);
     moderationApi
@@ -65,103 +80,92 @@ export default function ModerationCasesListPage() {
       })
       .catch((err: unknown) => setError(mapModerationError(String(err))))
       .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    loadCases();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, page, status, citySlug, cityLocked]);
 
   const totalPages = Math.max(1, Math.ceil(total / 20));
 
   return (
     <div className="card">
-      <div className="toolbar" style={{ marginBottom: '1rem', flexWrap: 'wrap', gap: '12px' }}>
-        <label>
-          Статус{' '}
-          <select
+      <BackofficeTableToolbar
+        start={
+          <BackofficeFilterSelect
+            label="Статус"
             value={status}
-            onChange={(e) => updateQuery({ status: e.target.value, page: 1 })}
-          >
-            {STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value || 'all'} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+            onChange={(value) => updateQuery({ status: value, page: 1 })}
+            options={STATUS_OPTIONS}
+          />
+        }
+      />
 
-      {error && <p className="error-text">{error}</p>}
-      {loading && <p>Загрузка…</p>}
+      {error ? (
+        <BackofficeErrorState title="Не удалось загрузить кейсы" message={error} onRetry={loadCases} />
+      ) : null}
+      {loading ? <BackofficeSkeleton variant="table-row" count={6} /> : null}
 
-      {!loading && !error && (
-        <div className="table-wrap">
-          <table className="data-table">
-            <thead>
+      {!loading && !error && items.length === 0 ? (
+        <BackofficeTableEmpty
+          filtered={status !== 'OPEN' && status !== ''}
+          emptyTitle="Открытых кейсов пока нет"
+          filteredTitle="Кейсы с выбранным статусом не найдены"
+          resetLabel="Сбросить фильтры"
+          onResetFilters={() => updateQuery({ status: 'OPEN', page: 1 })}
+          icon="moderation"
+        />
+      ) : null}
+
+      {!loading && !error && items.length > 0 && (
+        <BackofficeTableContainer>
+          <BackofficeTable density="normal">
+            <BackofficeTableHead>
               <tr>
-                <th>Создан</th>
-                <th>Объект</th>
-                <th>Приоритет</th>
-                <th>Статус</th>
-                <th>Город</th>
-                <th>Жалоб</th>
-                <th />
+                <BackofficeTableHeaderCell>Создан</BackofficeTableHeaderCell>
+                <BackofficeTableHeaderCell>Объект</BackofficeTableHeaderCell>
+                <BackofficeTableHeaderCell>Приоритет</BackofficeTableHeaderCell>
+                <BackofficeTableHeaderCell>Статус</BackofficeTableHeaderCell>
+                <BackofficeTableHeaderCell>Город</BackofficeTableHeaderCell>
+                <BackofficeTableHeaderCell variant="numeric">Жалоб</BackofficeTableHeaderCell>
+                <BackofficeTableHeaderCell variant="actions">Действия</BackofficeTableHeaderCell>
               </tr>
-            </thead>
-            <tbody>
-              {items.map((row) => (
-                <tr key={row.id}>
-                  <td>{formatDateTime(row.createdAt)}</td>
-                  <td>
-                    {moderationTargetTypeLabel(row.targetType)}
-                    <div className="muted" style={{ fontSize: '0.85rem' }}>
-                      {row.targetId.slice(0, 10)}…
-                    </div>
-                  </td>
-                  <td>{moderationPriorityLabel(row.priority)}</td>
-                  <td>
-                    <span className={moderationCaseStatusClass(row.status)}>
-                      {moderationCaseStatusLabel(row.status)}
-                    </span>
-                  </td>
-                  <td>{row.city?.nameRu ?? '—'}</td>
-                  <td>{row.reportCount ?? '—'}</td>
-                  <td>
-                    <Link href={`/moderation/cases/${row.id}`} className="btn btn-sm">
-                      Открыть
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {items.length === 0 && (
-            <p className="muted" style={{ padding: '1rem' }}>
-              Кейсов пока нет. API: GET /api/v1/admin/moderation/cases
-            </p>
-          )}
-        </div>
+            </BackofficeTableHead>
+            <BackofficeTableBody>
+              {items.map((row) => {
+                const statusPresentation = moderationCaseStatusPresentation(row.status);
+                return (
+                  <BackofficeTableRow key={row.id}>
+                    <BackofficeTableCell>{formatDateTime(row.createdAt)}</BackofficeTableCell>
+                    <BackofficeTableCell>
+                      {moderationTargetTypeLabel(row.targetType)}
+                      <span className="bo-table-cell--mono">{row.targetId.slice(0, 10)}…</span>
+                    </BackofficeTableCell>
+                    <BackofficeTableCell>{moderationPriorityLabel(row.priority)}</BackofficeTableCell>
+                    <BackofficeTableCell>
+                      <BackofficeBadge
+                        label={statusPresentation.label}
+                        tone={statusPresentation.tone}
+                        size="compact"
+                      />
+                    </BackofficeTableCell>
+                    <BackofficeTableCell>{row.city?.nameRu ?? '—'}</BackofficeTableCell>
+                    <BackofficeTableCell variant="numeric">{row.reportCount ?? '—'}</BackofficeTableCell>
+                    <BackofficeTableCell variant="actions">
+                      <Link href={`/moderation/cases/${row.id}`} className="btn btn-sm">
+                        Открыть
+                      </Link>
+                    </BackofficeTableCell>
+                  </BackofficeTableRow>
+                );
+              })}
+            </BackofficeTableBody>
+          </BackofficeTable>
+        </BackofficeTableContainer>
       )}
 
-      {totalPages > 1 && (
-        <div className="toolbar" style={{ marginTop: '1rem' }}>
-          <button
-            type="button"
-            className="btn btn-sm"
-            disabled={page <= 1}
-            onClick={() => updateQuery({ page: page - 1 })}
-          >
-            ← Назад
-          </button>
-          <span className="muted">
-            Стр. {page} / {totalPages}
-          </span>
-          <button
-            type="button"
-            className="btn btn-sm"
-            disabled={page >= totalPages}
-            onClick={() => updateQuery({ page: page + 1 })}
-          >
-            Вперёд →
-          </button>
-        </div>
-      )}
+      <BackofficePagination page={page} totalPages={totalPages} onPageChange={(p) => updateQuery({ page: p })} />
     </div>
   );
 }

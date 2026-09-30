@@ -26,6 +26,7 @@ export const QALA_BACKOFFICE_ICON_NAMES = [
   'help',
   'notification',
   'menu',
+  'search',
   'close',
   'chevron-left',
   'chevron-right',

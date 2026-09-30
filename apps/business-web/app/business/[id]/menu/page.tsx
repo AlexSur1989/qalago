@@ -35,7 +35,13 @@ import { useOwnerBusiness } from '@/lib/use-owner-business';
 import { BusinessShell } from '@/components/business-shell';
 import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
 import { backofficeConfirm } from '@qalago/brand/confirm';
-import { BackofficeSuccessState } from '@qalago/brand/states';
+import { BackofficeSuccessState, BackofficeSkeleton } from '@qalago/brand/states';
+import {
+  BackofficeFilterChip,
+  BackofficeSearchField,
+  BackofficeTableEmpty,
+  BackofficeTableToolbar,
+} from '@qalago/brand/tables';
 import {
   BUSINESS_ROUTE_ACCESS,
   isBusinessRouteContentAllowed,
@@ -402,36 +408,36 @@ export default function BusinessMenuPage() {
         </form>
 
         <section className="form-card">
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 12,
-              alignItems: 'center',
-              marginBottom: 16,
-            }}
-          >
-            <h2 style={{ margin: 0, flex: '1 1 200px' }}>{ui.text_3f4e8c}</h2>
-            <input
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder={ui.____262747}
-              style={{ minWidth: 220, flex: '1 1 220px' }}
-            />
-            <button
-              type="button"
-              className="btn btn-sm"
-              onClick={() => {
-                setSearch(searchInput.trim());
-                void applyFilters(sectionId, searchInput.trim());
-              }}
-            >
-              {ui.text_findShort}
-            </button>
-          </div>
+          <BackofficeTableToolbar
+            start={
+              <>
+                <BackofficeSearchField
+                  label={ui.tableSearchMenuLabel}
+                  placeholder={ui.____262747}
+                  value={searchInput}
+                  onChange={setSearchInput}
+                  onClear={() => {
+                    setSearch('');
+                    void applyFilters(sectionId, '');
+                  }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  onClick={() => {
+                    setSearch(searchInput.trim());
+                    void applyFilters(sectionId, searchInput.trim());
+                  }}
+                >
+                  {ui.text_findShort}
+                </button>
+              </>
+            }
+            end={<h2 style={{ margin: 0 }}>{ui.text_3f4e8c}</h2>}
+          />
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-            <FilterChip
+          <div className="bo-filter-chips" style={{ marginBottom: 16 }}>
+            <BackofficeFilterChip
               active={!sectionId}
               label={ui.text_984bf1}
               onClick={() => {
@@ -439,7 +445,7 @@ export default function BusinessMenuPage() {
                 void applyFilters('', search);
               }}
             />
-            <FilterChip
+            <BackofficeFilterChip
               active={sectionId === 'uncategorized'}
               label={ui.__8f4ecc}
               onClick={() => {
@@ -448,7 +454,7 @@ export default function BusinessMenuPage() {
               }}
             />
             {sections.map((section) => (
-              <FilterChip
+              <BackofficeFilterChip
                 key={section.id}
                 active={sectionId === section.id}
                 label={`${section.title} (${section.itemCount})`}
@@ -461,9 +467,25 @@ export default function BusinessMenuPage() {
           </div>
 
           {loadingItems && items.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)' }}>{ui.__259ff5}</p>
+            <BackofficeSkeleton variant="table-row" count={4} />
           ) : items.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)' }}>{ui.___84d683}</p>
+            <BackofficeTableEmpty
+              filtered={Boolean(sectionId || search)}
+              emptyTitle={ui.___84d683}
+              filteredTitle={ui.tableEmptyFilteredMenu}
+              resetLabel={ui.tableResetFilters}
+              onResetFilters={
+                sectionId || search
+                  ? () => {
+                      setSectionId('');
+                      setSearchInput('');
+                      setSearch('');
+                      void applyFilters('', '');
+                    }
+                  : undefined
+              }
+              icon="catalog"
+            />
           ) : (
             <>
               {items.map((item) => (
@@ -653,30 +675,6 @@ export default function BusinessMenuPage() {
         </>
       )}
     </BusinessShell>
-  );
-}
-
-function FilterChip({
-  active,
-  label,
-  onClick,
-}: {
-  active: boolean;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      className="btn btn-sm"
-      style={{
-        background: active ? 'var(--color-brand-accent)' : undefined,
-        color: active ? '#fff' : undefined,
-      }}
-      onClick={onClick}
-    >
-      {label}
-    </button>
   );
 }
 
