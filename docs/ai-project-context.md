@@ -67,7 +67,8 @@
 | **AOP.7** | **PASS — ADMIN WEB PHYSICAL QA VERIFIED** — manual QA on **`aop7-test-cafe`**; F5 stable for SUPER/ADMIN/CITY_ADMIN |
 | **AOP (umbrella)** | **PASS — ADMIN CATALOG / OPERATIONS PLANE FINALIZED** — **AOP.0–AOP.7** complete |
 | **Admin hotfix** | **Business managers UI (OWNER→MANAGER in catalog) TEMPORARILY OFF** — **`NEXT_PUBLIC_QALAGO_ADMIN_BUSINESS_TEAM`** default unset/false (compile-time Admin catalog gate; **orthogonal** to runtime **`businessTeamEnabled`**) |
-| **BIZ.9 HOTFIX 5B** | **IMPLEMENTED (automated PASS)** — global runtime **`businessTeamEnabled`** (default OFF, SUPER_ADMIN PATCH, **`GET /platform-features`**); Team UI/API fail-closed when OFF; **physical QA still OPEN** |
+| **BIZ.9 HOTFIX 5B** | **IMPLEMENTED (automated PASS)** — global runtime **`businessTeamEnabled`** (default OFF, SUPER_ADMIN PATCH, **`GET /platform-features`**); Team UI/API fail-closed when OFF; checkpoint **`53cc9c4`** |
+| **BIZ.9 HOTFIX 6** | **IMPLEMENTED (automated PASS)** — Admin Web F5 session restore (single-flight refresh bootstrap); **physical QA still OPEN** |
 | **BIZ.0** | **PASS — BUSINESS WEB / OWNERSHIP READ-ONLY AUDIT** (transcript; no docs commit) |
 | **BIZ.1** | **PASS — OWNERSHIP / CLAIM CONTRACT FINALIZED** — **`docs/architecture/business-web-ownership.md`** + claim hardening |
 | **BIZ.2** | **PASS — BUSINESS WEB SESSION / CABINET ACCESS HARDENED** — canonical `/users/me` after refresh; membership-only cabinet gate; business selection hardening |
@@ -77,7 +78,7 @@
 | **BIZ.6** | **PASS — OWNER REVIEWS / BUSINESS NOTIFICATIONS HARDENED** — manage review list; inbox navigation; reply/notification tests |
 | **BIZ.7** | **PASS — BUSINESS PLANS / ENTITLEMENTS / BILLING CONTRACT HARDENED** — plan matrix §18; plan payments list; billing access tests |
 | **BIZ.8** | **PASS — BUSINESS OWNER PLANE SECURITY REGRESSION CLEAN** — IDOR/membership regression suite; no CRITICAL/HIGH findings |
-| **BIZ.9** | **OPEN — PHYSICAL QA** — HOTFIX 1–4 + **5B runtime `businessTeamEnabled`** (Admin Settings → Функции для бизнеса; Business Web Team gated); membership/permissions unchanged when OFF |
+| **BIZ.9** | **OPEN — PHYSICAL QA** — HOTFIX 1–4 + **5B** platform Team rollout + **6** Admin F5 auth restore; membership/permissions unchanged when Team OFF |
 | **BIZ (track)** | **ACTIVE** — **BIZ.9 physical QA open**; HOTFIX 1–4 applied; umbrella closure / **UXA** gate per roadmap |
 | **UXA (track)** | **PLANNED / REQUIRED — NOT STARTED** — mandatory Admin + Business Web UI/UX finalization **after BIZ CLOSED** (see § UXA below) |
 | **Next** | **BIZ.9** physical QA: manager direct-route matrix + OWNER switcher; BIZ umbrella closure; **KZ-C.1F**; **do not start UXA** until BIZ closes unless explicitly approved |

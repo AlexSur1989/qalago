@@ -1,15 +1,27 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { ReactNode } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { ReactNode, useEffect } from 'react';
 import { useAuth } from '@/lib/use-auth';
-import { isSuperAdminRole } from '@/lib/rbac';
+import { canAccessAdminWeb, isSuperAdminRole } from '@/lib/rbac';
 
 export default function SettingsLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const router = useRouter();
+  const { user, ready } = useAuth();
   const superAdmin = user ? isSuperAdminRole(user.role) : false;
+
+  useEffect(() => {
+    if (!ready) return;
+    if (!user || !canAccessAdminWeb(user.role)) {
+      router.replace('/login');
+    }
+  }, [ready, user, router]);
+
+  if (!ready || !user) {
+    return <p className="muted">Загрузка…</p>;
+  }
 
   return (
     <div className="report-page">

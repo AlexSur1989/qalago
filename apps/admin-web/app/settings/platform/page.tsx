@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { PlatformFeatureRow } from '@/components/settings/platform-feature-row';
-import { ensureStaffAccessToken } from '@/lib/ensure-staff-access-token';
 import {
   getAdminPlatformFeatures,
   patchAdminPlatformFeatures,
@@ -13,8 +12,7 @@ import { isSuperAdminRole } from '@/lib/rbac';
 
 export default function PlatformFeaturesSettingsPage() {
   const router = useRouter();
-  const { user } = useAuth();
-  const [token, setToken] = useState<string | null>(null);
+  const { token, user, ready } = useAuth();
   const [businessTeamEnabled, setBusinessTeamEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -37,21 +35,13 @@ export default function PlatformFeaturesSettingsPage() {
   }, []);
 
   useEffect(() => {
-    if (!user) return;
+    if (!ready || !token || !user) return;
     if (!superAdmin) {
       router.replace('/dashboard');
       return;
     }
-    void (async () => {
-      const access = await ensureStaffAccessToken();
-      if (!access) {
-        router.replace('/login');
-        return;
-      }
-      setToken(access);
-      await load(access);
-    })();
-  }, [user, superAdmin, router, load]);
+    void load(token);
+  }, [ready, token, user, superAdmin, router, load]);
 
   async function onToggleTeam(next: boolean) {
     if (!token || saving) return;
@@ -72,6 +62,7 @@ export default function PlatformFeaturesSettingsPage() {
     }
   }
 
+  if (!ready || !user) return null;
   if (!superAdmin) return null;
 
   return (

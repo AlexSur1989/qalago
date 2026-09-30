@@ -6,11 +6,22 @@
 
 ---
 
+## 2026-09-30 — BIZ.9 HOTFIX 6 — Admin Web session restores on hard refresh
+
+- **Status:** **BIZ.9 HOTFIX 6 IMPLEMENTATION PASS — ADMIN WEB AUTH REGRESSION GREEN**. **BIZ.9 physical QA REMAINS OPEN** (re-verify F5 on **`/settings/platform`**). **BIZ.1–BIZ.8 remain CLOSED**. **AOP remains CLOSED**. **UXA not started**.
+- **Starting HEAD:** **`53cc9c475aa9f338b4d3cad138487e60bc6c608f`**.
+- **Checkpoint (commit):** _(post-commit SHA)_ — `fix(admin-web): restore authenticated session on refresh`.
+- **Summary:** Root cause: parallel **`/api/auth/refresh`** on F5 (multiple **`useAuth()`** + **`ensureStaffAccessToken`**) with rotating refresh cookie → one caller invalidated the other → spurious login redirect. Fix: single-flight **`resolveAdminAccessToken`** + shared **`runAdminAuthBootstrap`** (canonical **`/users/me`**); settings layout/page wait for **`ready`** before redirect. **No security relaxation**; invalid refresh still → login. **Admin Web only.**
+- **Deferred:** Physical QA SUPER_ADMIN/ADMIN/CITY_ADMIN F5 matrix; security settings page still uses standalone token ensure (deduped, not unified layout guard).
+- **Next:** Physical BIZ.9 closure checklist including platform features F5.
+
+---
+
 ## 2026-09-30 — BIZ.9 HOTFIX 5B — Global runtime business feature rollout (`businessTeamEnabled`)
 
 - **Status:** **BIZ.9 HOTFIX 5B IMPLEMENTATION PASS — AUTOMATED REGRESSION CLEAN (env DB integrity suite excepted)**. **BIZ.9 physical QA REMAINS OPEN**. **BIZ.1–BIZ.8 remain CLOSED**. **AOP remains CLOSED**. **UXA not started**.
 - **Starting HEAD:** **`38497bfc6c5ab7f3df13bb1f7ef4c6db1e966b3e`**.
-- **Checkpoint (commit):** **`0f66550`** — `feat(platform): add runtime business feature rollout control`.
+- **Checkpoint (commit):** **`53cc9c4`** — `feat(platform): add runtime business feature rollout control`.
 - **Summary:** DB-backed global **`businessTeamEnabled`** via existing **`FeatureFlagDefinition`** (default **OFF**; seed creates missing row, **`update: {}`** preserves persisted ON). Public **`GET /api/v1/platform-features`**; admin **`GET/PATCH /api/v1/admin/platform-features`** (**PATCH SUPER_ADMIN only**); city override for this key **rejected**. Business Web runtime client + nav/route gating; Admin **`/settings/platform`** («Функции для бизнеса»). Team APIs + invite accept **403 `BUSINESS_TEAM_DISABLED`** when OFF; **no membership revocation**. **`NEXT_PUBLIC_QALAGO_ADMIN_BUSINESS_TEAM`** unchanged (orthogonal compile-time Admin catalog gate). **No DB migration.**
 - **Deferred:** Physical QA (SUPER_ADMIN toggle + owner/manager matrix); connect future platform business keys to modules in focused stages; optional full catalog-api Jest on clean local DB (`stage-6-12a9-1-primary-integrity` env debt if DB dirty).
 - **Next:** Manual BIZ.9 physical QA per checklist; later stages for plans/ads/analytics/etc. runtime gates.

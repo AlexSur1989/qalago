@@ -3,15 +3,15 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthUser } from '@/lib/api';
-import { canAccessAdminWeb } from '@/lib/rbac';
+import {
+  resetAdminAuthBootstrapState,
+  runAdminAuthBootstrap,
+} from '@/lib/admin-auth-bootstrap';
 import {
   clearAdminAuthSession,
-  loadCanonicalAdminUser,
 } from '@/lib/admin-auth-session';
 import {
   clearWebAccessToken,
-  getWebAccessToken,
-  setWebAccessToken,
 } from '@/lib/web-auth-token';
 
 export function useAuth(redirectTo = '/login') {
@@ -21,49 +21,41 @@ export function useAuth(redirectTo = '/login') {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function bootstrap() {
       async function rejectSession() {
         clearWebAccessToken();
+        resetAdminAuthBootstrapState();
         await clearAdminAuthSession();
-        router.replace(redirectTo);
-      }
-
-      let access = getWebAccessToken();
-      if (!access) {
-        try {
-          const res = await fetch('/api/auth/refresh', { method: 'POST' });
-          if (!res.ok) {
-            router.replace(redirectTo);
-            return;
-          }
-          const data = (await res.json()) as { accessToken: string; user: AuthUser };
-          if (!canAccessAdminWeb(data.user.role)) {
-            await rejectSession();
-            return;
-          }
-          access = data.accessToken;
-          setWebAccessToken(access);
-        } catch {
+        if (!cancelled) {
           router.replace(redirectTo);
-          return;
         }
       }
 
-      setToken(access);
-      const loaded = await loadCanonicalAdminUser(access);
-      if (!loaded.ok) {
+      const result = await runAdminAuthBootstrap();
+      if (cancelled) return;
+
+      if (result.status === 'unauthenticated') {
         await rejectSession();
         return;
       }
-      setUser(loaded.user);
+
+      setToken(result.accessToken);
+      setUser(result.user);
       setReady(true);
     }
 
     void bootstrap();
+
+    return () => {
+      cancelled = true;
+    };
   }, [router, redirectTo]);
 
   async function logout() {
     clearWebAccessToken();
+    resetAdminAuthBootstrapState();
     await clearAdminAuthSession();
     router.push('/login');
   }

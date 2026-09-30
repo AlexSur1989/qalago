@@ -3,6 +3,7 @@
 import { FormEvent, Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { adminApi, AuthUser } from '@/lib/api';
+import { resetAdminAuthBootstrapState } from '@/lib/admin-auth-bootstrap';
 import { setWebAccessToken } from '@/lib/web-auth-token';
 import {
   adminWebDevLoginEnabled,
@@ -34,6 +35,7 @@ function LoginPageContent() {
       setError('Доступ только для администраторов платформы');
       return;
     }
+    resetAdminAuthBootstrapState();
     setWebAccessToken(accessToken);
     if (opts?.enrollmentRequired) {
       router.push('/mfa/setup');
