@@ -10,7 +10,7 @@
 
 - **Status:** **UXA.9 PASS — BACKOFFICE SYSTEM STATES STANDARDIZED**. **UXA.4 / UXA.5 not started**.
 - **Starting HEAD:** **`e245c43`** (UXA.3 docs closure).
-- **Checkpoint (commit):** _(set at commit)_ — `feat(ui): standardize backoffice system states`.
+- **Checkpoint (commit):** **`5774f0f`** — `feat(ui): standardize backoffice system states`.
 - **Summary:** **`@qalago/brand/states`** + **`backoffice-states.css`** — alerts, loading (page/section/inline), skeletons, empty, error+retry, access denied, feature unavailable, not-found. Representative migrations: Admin audit/staff/platform/catalog/reports shell; Business dashboard/messages/settings/media/menu success + access/feature wrappers. **Inline alerts only (no toast).** Dashboard `Promise.all` partial failure **deferred**. No auth/RBAC/API/DB/route/workflow changes.
 - **Deferred:** Full-screen migration; UXA.4 tables; UXA.5 forms; dashboard section-level partial failure; physical QA.
 - **Next:** **UXA.7** status badges / confirmations (recommended) or **UXA.4** tables.
