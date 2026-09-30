@@ -82,7 +82,7 @@
 | **BIZ.9** | **CLOSED / PASS — PHYSICAL QA VERIFIED** (**2026-09-30**) — HOTFIX 1–7B; owner/manager matrix; platform Team rollout; multi-app auth |
 | **BIZ (track)** | **CLOSED / PASS — BUSINESS OWNER PLANE FINALIZED** — **BIZ.0–BIZ.9** complete |
 | **UXA.0** | **PASS — READ-ONLY AUDIT** (Admin + Business Web baseline) |
-| **UXA.1** | **PASS — BACKOFFICE DESIGN SYSTEM FOUNDATION** — `packages/brand/qalago-theme.css` + `backoffice-primitives.css`; docs **`docs/design/backoffice-design-system.md`** |
+| **UXA.1** | **PASS — BACKOFFICE DESIGN SYSTEM FOUNDATION** — checkpoint **`78ecea0`**; `packages/brand/qalago-theme.css` + `backoffice-primitives.css`; docs **`docs/design/backoffice-design-system.md`** |
 | **UXA (track)** | **ACTIVE** — **UXA.2 shell/nav next** (not started); see § UXA below |
 | **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = ACTIVE** · Consumer Web UI/UX after UXA · Mobile UI/UX after Consumer · production/security/pre-VPS later · VPS later |
 | **Next** | **UXA.2** shell / navigation; parallel **KZ-C.1** notification physical QA remains open |

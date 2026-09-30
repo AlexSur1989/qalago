@@ -10,7 +10,7 @@
 
 - **Status:** **UXA.1 PASS — BACKOFFICE DESIGN SYSTEM FOUNDATION**. **UXA.0 PASS** (read-only audit). **AOP / BIZ remain CLOSED**. **UXA.2 not started**.
 - **Starting HEAD:** **`9521e7d82cbcee720fdec57eb3229fcc4e7a5cc5`**.
-- **Checkpoint (commit):** _(set at commit)_ — `feat(ui): establish backoffice design system tokens`.
+- **Checkpoint (commit):** **`78ecea0`** — `feat(ui): establish backoffice design system tokens`.
 - **Summary:** Canonical shared tokens in **`packages/brand/qalago-theme.css`** (primary **`#00A8D6`**, accent **`#F3A100`**, semantic palette, typography/spacing/radii/shadows, control + icon + layout + focus + motion tokens). **`packages/brand/backoffice-primitives.css`** — focus-visible, button/input/alert baselines. Admin + Business Web import both; legacy **`--primary` / `--accent` / `--radius` / `--radius-sm`** alias canonical values; deprecated **`--qz-gold` (#fec50c)** documented. Removed menu tab **`#f97316`** fallback. **`docs/design/backoffice-design-system.md`**; brand token contract test **`@qalago/brand`**. No routes, auth, RBAC, API, DB, shell, table, form, or icon migrations.
 - **Deferred:** Shell/nav unification (UXA.2); emoji icons (UXA.3); screen-level token adoption; accent visual shift on pages using legacy gold gradient; responsive breakpoint alignment.
 - **Next:** **UXA.2** shell / navigation (explicit approval per workflow).
