@@ -10,7 +10,7 @@
 
 - **Status:** **UXA.10 PASS — BACKOFFICE RESPONSIVE LAYOUT STANDARDIZED**. **UXA.11 / UXA.12 / UXA.13 not started**.
 - **Starting HEAD:** **`c6b03ea`** (UXA.8 docs closure).
-- **Checkpoint (commit):** _(see git log)_ — `feat(ui): standardize backoffice responsive layouts`.
+- **Checkpoint (commit):** **`cd28d3d`** — `feat(ui): standardize backoffice responsive layouts`.
 - **Summary:** **`backoffice-responsive.css`** — canonical breakpoints, shell `100dvh`, page-header stack, topbar long-name/truncation, table toolbar/stack + inner horizontal scroll, KPI grid breakpoints aligned with UXA.8, chart/map/modal/login responsive rules; reports layout **`900px` → `960px`**. Business topbar **`topbar-entity-title`** + monetization/reports subnav scroll. Contract tests in **`@qalago/brand`** + Admin/Business vitest. **No route/auth/RBAC/API/domain changes.**
 - **Deferred:** Table→card mobile conversion for dense admin tables; per-page `page-content--wide` adoption; full overflow sweep of unmigrated pages; **UXA.13** physical browser QA.
 - **Next:** **UXA.11** accessibility (recommended).
