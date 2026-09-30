@@ -15,13 +15,15 @@
     "./confirm": "./confirm/index.tsx",
     "./tables": "./tables/index.tsx",
     "./forms": "./forms/index.tsx",
+    "./locations": "./locations/index.tsx",
     "./backoffice-badges.css": "./backoffice-badges.css",
     "./backoffice-confirm.css": "./backoffice-confirm.css",
     "./backoffice-tables.css": "./backoffice-tables.css",
-    "./backoffice-forms.css": "./backoffice-forms.css"
+    "./backoffice-forms.css": "./backoffice-forms.css",
+    "./backoffice-locations.css": "./backoffice-locations.css"
   },
   "scripts": {
-    "test": "node qalago-theme.tokens.test.mjs && node icons/icons.contract.test.mjs && node icons/QalaIcon.test.mjs && node states/states.contract.test.mjs && node badges/badges.contract.test.mjs && node confirm/confirm.contract.test.mjs && node tables/tables.contract.test.mjs && node tables/useDebouncedValue.test.mjs && node forms/forms.contract.test.mjs"
+    "test": "node qalago-theme.tokens.test.mjs && node icons/icons.contract.test.mjs && node icons/QalaIcon.test.mjs && node states/states.contract.test.mjs && node badges/badges.contract.test.mjs && node confirm/confirm.contract.test.mjs && node tables/tables.contract.test.mjs && node tables/useDebouncedValue.test.mjs && node forms/forms.contract.test.mjs && node locations/locations.contract.test.mjs"
   },
   "peerDependencies": {
     "react": "^19.0.0"

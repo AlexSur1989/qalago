@@ -16,6 +16,7 @@
 | `packages/brand/backoffice-confirm.css` + `@qalago/brand/confirm` | Accessible confirm dialog + `backofficeConfirm` bridge (UXA.7) |
 | `packages/brand/backoffice-tables.css` + `@qalago/brand/tables` | Tables, toolbars, search, filters, pagination (UXA.4) |
 | `packages/brand/backoffice-forms.css` + `@qalago/brand/forms` | Form fields, controls, sections, actions, switch, upload surface, dirty helpers (UXA.5) |
+| `packages/brand/backoffice-locations.css` + `@qalago/brand/locations` | Branch cards, hours rows, map frame (UXA.6) |
 
 Both apps import in order:
 
@@ -137,11 +138,19 @@ Canonical: `--radius-xs` (8px), `--radius-md` (12px), `--radius-lg` (16px), `--r
 - **Special types:** `inputMode="tel"` / `type="url"` / `inputMode="decimal"` presentation-only — **no** backend normalization changes. Native `<select>` only (no custom select library). Work-hours rows use same controls; **6.12A** Business vs BusinessLocation semantics unchanged.
 - **Migrated Admin:** catalog business create/detail (core + taxonomy + catalog edit), platform feature row (`BackofficeSwitch`), staff MFA enrollment TOTP form.
 - **Migrated Business:** settings (name), business profile + hours sections, locations create/edit (incl. `BusinessLocationField` address), promotions create/edit overlay, menu group/item create.
-- **Deferred:** Admin staff `[id]` action panels; business-requests editable modals; media upload full `BackofficeUploadSurface`; menu/item edit overlays; onboarding/claim forms; monetization checkout; admin catalog locations manager inner forms; in-app dirty cancel on all routes.
+- **Deferred:** Admin staff `[id]` action panels; business-requests editable modals; media upload full `BackofficeUploadSurface`; menu/item edit overlays; onboarding/claim forms; monetization checkout; in-app dirty cancel on all routes.
+
+## Location / geo (UXA.6)
+
+- **Primitives:** `@qalago/brand/locations` + `backoffice-locations.css` — `BackofficeBranchCard`, `BackofficeLocationHoursGroup`.
+- **Business vs branch:** UI copy treats **Business** as brand and **BusinessLocation** as physical branch; primary uses UXA.7 badge «Основной филиал» / KK.
+- **Business Web:** sectioned create/edit; map pan + center pin; manual lat/lon; set-primary UXA.7 confirm; no DELETE (unchanged).
+- **Admin:** `CatalogLocationsManager` — branch cards, UXA.5 form sections, set-primary/delete confirms; manual coordinates (no embedded map).
+- **Invariants:** API, primary rules, city authority, geo derivation — **unchanged**. Physical QA **UXA.13**.
 
 ## UXA.1 does NOT cover
 
-Location UX (UXA.6), dashboards (UXA.8), responsive pass (UXA.10), a11y closure (UXA.11), RU/KK visual QA (UXA.12), dark mode.
+Dashboards (UXA.8), responsive pass (UXA.10), a11y closure (UXA.11), RU/KK visual QA (UXA.12), dark mode.
 
 ## Tests
 

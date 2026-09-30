@@ -14,7 +14,12 @@ import { branchManagementCopy, buildCreateBusinessLocationPayload } from '@/lib/
 import { parseApiError } from '@/lib/monetization-utils';
 import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
 import { backofficeConfirm } from '@qalago/brand/confirm';
-import { BackofficeErrorState, BackofficeSuccessState } from '@qalago/brand/states';
+import {
+  BackofficeEmptyState,
+  BackofficeErrorState,
+  BackofficeLoadingState,
+  BackofficeSuccessState,
+} from '@qalago/brand/states';
 import {
   BackofficeField,
   BackofficeFormActions,
@@ -22,8 +27,9 @@ import {
   BackofficeInput,
   BackofficeSelect,
 } from '@qalago/brand/forms';
+import { BackofficeBranchCard, BackofficeLocationHoursGroup } from '@qalago/brand/locations';
 import { BUSINESS_ROUTE_ACCESS, useBusinessRouteGate } from '@/lib/use-business-route-gate';
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
 function parseHours(raw: BusinessLocationRow['workHours']) {
@@ -217,7 +223,8 @@ export default function BusinessLocationsPage() {
     const city = cities.find((c) => c.id === row.cityId);
     const cityName = city ? cityDisplayName(city, locale) : row.cityId;
     const ok = await backofficeConfirm({
-      title: copy.setPrimaryConfirm(cityName, row.address),
+      title: copy.setPrimaryConfirmTitle,
+      description: `${cityName}, ${row.address}`,
       consequence: ui.confirmSetPrimaryConsequence,
       variant: 'warning',
       confirmLabel: ui.confirmSetPrimaryActionLabel,
@@ -272,54 +279,63 @@ export default function BusinessLocationsPage() {
               </button>
             )}
             {loading ? (
-              <p>{ui.text_89d69a}</p>
+              <BackofficeLoadingState label={ui.text_89d69a} density="section" />
             ) : locations.length === 0 ? (
-              <p className="muted">{copy.emptyList}</p>
+              <BackofficeEmptyState
+                title={canManage ? copy.emptyNoBranches : copy.emptyList}
+                icon="location"
+                density="section"
+                actions={
+                  canManage ? (
+                    <button type="button" className="btn btn-primary" onClick={startCreate} disabled={mutating}>
+                      {copy.addBranch}
+                    </button>
+                  ) : undefined
+                }
+              />
             ) : (
-              <ul className="stack" style={{ listStyle: 'none', padding: 0 }}>
+              <ul className="bo-branch-list">
                 {locations.map((row) => {
                   const city = cities.find((c) => c.id === row.cityId);
                   const cityName = city ? cityDisplayName(city, locale) : row.cityId;
+                  const contactParts = [row.whatsapp, row.instagram, row.website].filter(Boolean);
                   return (
-                    <li key={row.id} className="card bordered stack">
-                      <div className="row spread">
-                        <strong>{cityName}</strong>
-                        {row.isPrimary && (
-                          <span className="badge">{copy.primaryBadge}</span>
-                        )}
-                      </div>
-                      <p>{row.address}</p>
-                      {row.phone && <p className="muted">{row.phone}</p>}
-                      {row.workHours?.mon && (
-                        <p className="muted small">
-                          {copy.hoursSummary}: {row.workHours.mon}
-                        </p>
-                      )}
-                      {!row.isPrimary && canManage && (
-                        <p className="muted small">{copy.secondaryHint}</p>
-                      )}
-                      {canManage && (
-                        <div className="row gap">
-                          <button
-                            type="button"
-                            className="btn"
-                            onClick={() => startEdit(row)}
-                            disabled={mutating}
-                          >
-                            {copy.editBranch}
-                          </button>
-                          {!row.isPrimary && (
-                            <button
-                              type="button"
-                              className="btn"
-                              onClick={() => handleSetPrimary(row)}
-                              disabled={mutating}
-                            >
-                              {copy.setPrimary}
-                            </button>
-                          )}
-                        </div>
-                      )}
+                    <li key={row.id}>
+                      <BackofficeBranchCard
+                        cityLabel={cityName}
+                        address={row.address}
+                        isPrimary={row.isPrimary}
+                        primaryBadgeLabel={copy.primaryBadge}
+                        phone={row.phone}
+                        hoursSummary={row.workHours?.mon ?? null}
+                        hoursSummaryLabel={copy.hoursSummary}
+                        secondaryHint={!row.isPrimary ? copy.secondaryHint : null}
+                        contactLine={contactParts.length ? contactParts.join(' · ') : null}
+                        actions={
+                          canManage ? (
+                            <>
+                              <button
+                                type="button"
+                                className="btn btn-secondary btn-sm"
+                                onClick={() => startEdit(row)}
+                                disabled={mutating}
+                              >
+                                {copy.editBranch}
+                              </button>
+                              {!row.isPrimary && (
+                                <button
+                                  type="button"
+                                  className="btn btn-ghost btn-sm"
+                                  onClick={() => handleSetPrimary(row)}
+                                  disabled={mutating}
+                                >
+                                  {copy.setPrimary}
+                                </button>
+                              )}
+                            </>
+                          ) : undefined
+                        }
+                      />
                     </li>
                   );
                 })}
@@ -330,39 +346,45 @@ export default function BusinessLocationsPage() {
 
         {(mode === 'create' || mode === 'edit') && canManage && token && (
           <form className="bo-form-grid bo-form-grid--1" onSubmit={onSubmit}>
-            <BackofficeFormSection title={mode === 'create' ? copy.createTitle : copy.editTitle}>
-            <BackofficeField label={copy.cityLabel} required>
-              {({ id, describedBy, invalid }) => (
-                <BackofficeSelect
-                  id={id}
-                  aria-describedby={describedBy}
-                  invalid={invalid}
-                  value={cityId}
-                  onChange={(e) => setCityId(e.target.value)}
-                  required
-                  disabled={!canEditProfile || mutating}
-                >
-                  <option value="">—</option>
-                  {cities.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {cityDisplayName(c, locale)}
-                    </option>
-                  ))}
-                </BackofficeSelect>
-              )}
-            </BackofficeField>
-            {canEditProfile && cityId && (
-              <BusinessLocationField
-                locale={locale}
-                token={token}
-                citySlug={citySlug}
-                value={location}
-                onChange={setLocation}
-                addressLabel={ui.text_80148f}
-              />
-            )}
-            {canEditProfile && (
-              <>
+            <BackofficeFormSection
+              title={mode === 'create' ? copy.createTitle : copy.editTitle}
+              description={copy.pageIntro}
+            >
+              <BackofficeFormSection title={copy.sectionMainInfo}>
+                <BackofficeField label={copy.cityLabel} required>
+                  {({ id, describedBy, invalid }) => (
+                    <BackofficeSelect
+                      id={id}
+                      aria-describedby={describedBy}
+                      invalid={invalid}
+                      value={cityId}
+                      onChange={(e) => setCityId(e.target.value)}
+                      required
+                      disabled={!canEditProfile || mutating}
+                    >
+                      <option value="">—</option>
+                      {cities.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {cityDisplayName(c, locale)}
+                        </option>
+                      ))}
+                    </BackofficeSelect>
+                  )}
+                </BackofficeField>
+                {canEditProfile && cityId ? (
+                  <BusinessLocationField
+                    locale={locale}
+                    token={token}
+                    citySlug={citySlug}
+                    value={location}
+                    onChange={setLocation}
+                    addressLabel={ui.text_80148f}
+                  />
+                ) : null}
+              </BackofficeFormSection>
+
+              {canEditProfile && (
+                <BackofficeFormSection title={copy.sectionContacts}>
                 <BackofficeField label={ui.text_2928e1}>
                   {({ id, describedBy, invalid }) => (
                     <BackofficeInput
@@ -414,56 +436,81 @@ export default function BusinessLocationsPage() {
                     />
                   )}
                 </BackofficeField>
-              </>
-            )}
-            {canEditHours && (
-              <>
-                <BackofficeField label={ui.__255eae}>
-                  {({ id, describedBy, invalid }) => (
-                    <BackofficeInput
-                      id={id}
-                      aria-describedby={describedBy}
-                      invalid={invalid}
-                      value={hours.weekdays}
-                      onChange={(e) => setHours((p) => ({ ...p, weekdays: e.target.value }))}
-                      disabled={mutating}
-                    />
-                  )}
-                </BackofficeField>
-                <BackofficeField label={ui.text_cee58b}>
-                  {({ id, describedBy, invalid }) => (
-                    <BackofficeInput
-                      id={id}
-                      aria-describedby={describedBy}
-                      invalid={invalid}
-                      value={hours.saturday}
-                      onChange={(e) => setHours((p) => ({ ...p, saturday: e.target.value }))}
-                      disabled={mutating}
-                    />
-                  )}
-                </BackofficeField>
-                <BackofficeField label={ui.text_aa48fa}>
-                  {({ id, describedBy, invalid }) => (
-                    <BackofficeInput
-                      id={id}
-                      aria-describedby={describedBy}
-                      invalid={invalid}
-                      value={hours.sunday}
-                      onChange={(e) => setHours((p) => ({ ...p, sunday: e.target.value }))}
-                      disabled={mutating}
-                    />
-                  )}
-                </BackofficeField>
-              </>
-            )}
-            <BackofficeFormActions>
-              <button type="submit" className="btn btn-primary" disabled={mutating} aria-busy={mutating}>
-                {copy.save}
-              </button>
-              <button type="button" className="btn btn-ghost" onClick={resetForm} disabled={mutating}>
-                {ui.text_cancel}
-              </button>
-            </BackofficeFormActions>
+                </BackofficeFormSection>
+              )}
+
+              {canEditHours && (
+                <BackofficeFormSection
+                  title={copy.sectionHours}
+                  description={copy.sectionHoursBusinessNote}
+                >
+                  <BackofficeLocationHoursGroup
+                    rows={[
+                      {
+                        id: 'weekdays',
+                        label: ui.__255eae,
+                        control: (
+                          <BackofficeInput
+                            value={hours.weekdays}
+                            onChange={(e) => setHours((p) => ({ ...p, weekdays: e.target.value }))}
+                            disabled={mutating}
+                            aria-label={ui.__255eae}
+                          />
+                        ),
+                      },
+                      {
+                        id: 'saturday',
+                        label: ui.text_cee58b,
+                        control: (
+                          <BackofficeInput
+                            value={hours.saturday}
+                            onChange={(e) => setHours((p) => ({ ...p, saturday: e.target.value }))}
+                            disabled={mutating}
+                            aria-label={ui.text_cee58b}
+                          />
+                        ),
+                      },
+                      {
+                        id: 'sunday',
+                        label: ui.text_aa48fa,
+                        control: (
+                          <BackofficeInput
+                            value={hours.sunday}
+                            onChange={(e) => setHours((p) => ({ ...p, sunday: e.target.value }))}
+                            disabled={mutating}
+                            aria-label={ui.text_aa48fa}
+                          />
+                        ),
+                      },
+                    ]}
+                  />
+                </BackofficeFormSection>
+              )}
+
+              {mode === 'edit' && editingId ? (
+                <BackofficeFormSection title={copy.sectionPrimary}>
+                  <div
+                    className={`bo-location-primary-status${
+                      locations.find((l) => l.id === editingId)?.isPrimary ? '' : ' bo-location-primary-status--secondary'
+                    }`}
+                  >
+                    <p style={{ margin: 0 }}>
+                      {locations.find((l) => l.id === editingId)?.isPrimary
+                        ? copy.primaryStatusPrimary
+                        : copy.primaryStatusSecondary}
+                    </p>
+                  </div>
+                </BackofficeFormSection>
+              ) : null}
+
+              <BackofficeFormActions>
+                <button type="submit" className="btn btn-primary" disabled={mutating} aria-busy={mutating}>
+                  {copy.save}
+                </button>
+                <button type="button" className="btn btn-ghost" onClick={resetForm} disabled={mutating}>
+                  {ui.text_cancel}
+                </button>
+              </BackofficeFormActions>
             </BackofficeFormSection>
           </form>
         )}

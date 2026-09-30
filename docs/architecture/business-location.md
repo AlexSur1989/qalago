@@ -61,7 +61,7 @@ Migration **`20260926120000_stage_6_12a9_4_4c4_business_geo_column_retirement`**
 ## Stage 6.12A.5 (owner & admin management UX)
 
 - **Business Web:** route `/business/[id]/locations` (“Филиалы” / `Филиалдар`); main nav when `BUSINESS_PROFILE_EDIT` or `BUSINESS_HOURS_EDIT`. List with **`isPrimary`** badge (not array order); create/edit via A.4 DTO; city from **`listCities()`** (cross-city secondaries allowed); reuses profile **`BusinessLocationField`** + hours/contact patterns. **No `isPrimary` on create**; **no DELETE** UI.
-- **Set primary:** `window.confirm` with city/address; `POST …/set-primary`; refreshes location list and **`listMyBusinesses`** so shell/profile primary fields stay current after cross-city switch.
+- **Set primary:** UXA.7 `backofficeConfirm` (city/address + consequence copy); `POST …/set-primary`; refreshes location list and **`listMyBusinesses`** so shell/profile primary fields stay current after cross-city switch. **UXA.6** standardized branch cards, sectioned forms, map pin/coords presentation — **no API/invariant changes**.
 - **Permissions UX:** hide mutating actions without `BUSINESS_PROFILE_EDIT`; hours fields require `BUSINESS_HOURS_EDIT`; backend 403 unchanged. **No branch-level RBAC.**
 - **Admin Web (minimal):** read-only **`BusinessLocationsReadonly`** on approved business-application detail (staff token → same list endpoint). **No admin edit form** in A.5 — full management remains Business Web.
 - **Unchanged:** consumer-web public discovery, map/PostGIS cutover, ads, reviews/favorites/plans scope.

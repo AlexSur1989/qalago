@@ -1,0 +1,121 @@
+/* UXA.6 — branch / location presentation (Admin + Business) */
+
+.bo-branch-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 12px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.bo-branch-card {
+  border: 1px solid var(--border-subtle, var(--border, #e8e8e8));
+  border-radius: var(--radius-md, 12px);
+  padding: var(--space-4, 16px);
+  background: var(--surface-raised, #fff);
+}
+
+.bo-branch-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2, 8px);
+  margin-bottom: var(--space-2, 8px);
+}
+
+.bo-branch-card__city {
+  font-weight: 600;
+  font-size: var(--text-body-md-size, 0.9375rem);
+}
+
+.bo-branch-card__address {
+  margin: 0 0 var(--space-2, 8px);
+  color: var(--text-primary, inherit);
+  line-height: 1.45;
+}
+
+.bo-branch-card__meta {
+  margin: 0;
+  font-size: var(--text-caption-size, 0.8125rem);
+  color: var(--text-muted, var(--muted));
+}
+
+.bo-branch-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2, 8px);
+  margin-top: var(--space-3, 12px);
+}
+
+.bo-location-map-block {
+  margin-top: var(--space-3, 12px);
+}
+
+.bo-location-map-block__title {
+  margin: 0 0 var(--space-1, 4px);
+  font-size: var(--text-label-size, 0.875rem);
+  font-weight: 600;
+}
+
+.bo-location-map-block__hint {
+  margin: 0 0 var(--space-2, 8px);
+  font-size: var(--text-caption-size, 0.8125rem);
+  color: var(--text-muted, var(--muted));
+}
+
+.bo-location-map-frame {
+  position: relative;
+  height: min(280px, 50vh);
+  min-height: 200px;
+  border-radius: var(--radius-md, 12px);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle, var(--border, #eee));
+}
+
+.bo-location-map-pin {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+  color: var(--color-brand-primary, var(--primary));
+  z-index: 1000;
+}
+
+.bo-location-hours-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 12px);
+}
+
+.bo-location-hours-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2, 8px);
+}
+
+@media (min-width: 640px) {
+  .bo-location-hours-row {
+    grid-template-columns: minmax(120px, 160px) 1fr;
+    align-items: start;
+  }
+}
+
+.bo-location-hours-row__label {
+  font-size: var(--text-label-size, 0.875rem);
+  font-weight: 500;
+  padding-top: 10px;
+}
+
+.bo-location-primary-status {
+  padding: var(--space-3, 12px);
+  border-radius: var(--radius-md, 12px);
+  background: var(--color-success-soft, rgba(0, 168, 86, 0.08));
+  border: 1px solid var(--border-subtle, #eee);
+}
+
+.bo-location-primary-status--secondary {
+  background: var(--surface-muted, #f8f8f8);
+}

@@ -16,8 +16,14 @@ describe('CatalogLocationsManager (AOP.7H.1 wiring)', () => {
     expect(src).toContain('staffSession');
   });
 
-  it('surfaces mutation errors in alert-error', () => {
-    expect(src).toContain('alert alert-error');
+  it('surfaces mutation errors via UXA.9 error state', () => {
+    expect(src).toContain('BackofficeErrorState');
     expect(src).toContain('parseAdminCatalogApiError');
+  });
+
+  it('uses shared branch card and set-primary confirm', () => {
+    expect(src).toContain('BackofficeBranchCard');
+    expect(src).toContain('backofficeConfirm');
+    expect(src).toContain('confirmSetPrimaryTitle');
   });
 });

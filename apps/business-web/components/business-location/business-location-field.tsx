@@ -7,9 +7,11 @@ import {
   businessLocationCancel,
   businessLocationConfirm,
   businessLocationGeocodingError,
+  businessLocationMapLoadError,
   businessLocationOutOfCityBounds,
   businessLocationPickerHint,
   businessLocationRequired,
+  branchManagementCopy,
 } from '@/lib/presentation';
 import {
   GeocodingOutOfCityError,
@@ -18,7 +20,8 @@ import {
   type GeocodingSuggestion,
 } from '@/lib/geocoding-api';
 import { LocationMapPicker } from './location-map-picker';
-import { BackofficeField, BackofficeInput } from '@qalago/brand/forms';
+import { BackofficeField, BackofficeFieldGroup, BackofficeInput } from '@qalago/brand/forms';
+import { BackofficeLoadingState } from '@qalago/brand/states';
 
 export type BusinessLocationState = {
   address: string;
@@ -37,6 +40,13 @@ type Props = {
   addressLabel: string;
 };
 
+function parseCoord(raw: string): number | undefined {
+  const t = raw.trim().replace(',', '.');
+  if (!t) return undefined;
+  const n = Number(t);
+  return Number.isFinite(n) ? n : undefined;
+}
+
 export function BusinessLocationField({
   locale,
   token,
@@ -46,6 +56,7 @@ export function BusinessLocationField({
   readOnly = false,
   addressLabel,
 }: Props) {
+  const copy = branchManagementCopy(locale);
   const language = locale === 'kk' ? 'kk' : 'ru';
   const [suggestions, setSuggestions] = useState<GeocodingSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
@@ -109,12 +120,11 @@ export function BusinessLocationField({
       if (reverse?.address) {
         next = { ...next, address: reverse.address };
       }
-    } catch (error) {
-      if (error instanceof GeocodingOutOfCityError) {
+    } catch (err) {
+      if (err instanceof GeocodingOutOfCityError) {
         setError(businessLocationOutOfCityBounds(locale));
         return;
       }
-      // coordinates authoritative for other reverse failures
     }
     onChange(next);
     setShowPicker(false);
@@ -130,8 +140,11 @@ export function BusinessLocationField({
       ? businessLocationRequired(locale)
       : undefined;
 
+  const latStr = value.latitude != null ? String(value.latitude) : '';
+  const lngStr = value.longitude != null ? String(value.longitude) : '';
+
   return (
-    <div>
+    <div className="bo-form-grid bo-form-grid--1">
       <BackofficeField label={addressLabel} required error={error ?? coordHint}>
         {({ id, describedBy, invalid }) => (
           <BackofficeInput
@@ -148,9 +161,9 @@ export function BusinessLocationField({
           />
         )}
       </BackofficeField>
-      {loading && <p className="bo-field-helper">…</p>}
+      {loading ? <BackofficeLoadingState label="…" density="inline" /> : null}
       {suggestions.length > 0 && !readOnly && (
-        <ul className="card" style={{ marginTop: 8, padding: 0, listStyle: 'none' }}>
+        <ul className="card" style={{ marginTop: 0, padding: 0, listStyle: 'none' }}>
           {suggestions.map((item) => (
             <li key={item.id}>
               <button
@@ -165,13 +178,63 @@ export function BusinessLocationField({
           ))}
         </ul>
       )}
+
+      {!readOnly && (
+        <>
+          <p className="bo-field-label">{copy.mapSectionTitle}</p>
+          <p className="bo-field-helper">{copy.coordinatesHelper}</p>
+          <BackofficeFieldGroup columns="inline">
+            <BackofficeField label={copy.latitudeLabel}>
+              {({ id, describedBy, invalid }) => (
+                <BackofficeInput
+                  id={id}
+                  aria-describedby={describedBy}
+                  invalid={invalid}
+                  inputMode="decimal"
+                  value={latStr}
+                  onChange={(e) => {
+                    const latitude = parseCoord(e.target.value);
+                    onChange({
+                      ...value,
+                      latitude,
+                      locationSource: latitude != null ? 'MANUALLY_ADJUSTED' : value.locationSource,
+                    });
+                  }}
+                />
+              )}
+            </BackofficeField>
+            <BackofficeField label={copy.longitudeLabel}>
+              {({ id, describedBy, invalid }) => (
+                <BackofficeInput
+                  id={id}
+                  aria-describedby={describedBy}
+                  invalid={invalid}
+                  inputMode="decimal"
+                  value={lngStr}
+                  onChange={(e) => {
+                    const longitude = parseCoord(e.target.value);
+                    onChange({
+                      ...value,
+                      longitude,
+                      locationSource: longitude != null ? 'MANUALLY_ADJUSTED' : value.locationSource,
+                    });
+                  }}
+                />
+              )}
+            </BackofficeField>
+          </BackofficeFieldGroup>
+        </>
+      )}
+
       {hasCoords && !readOnly && (
-        <div style={{ marginTop: 12 }}>
+        <div>
           {showPicker ? (
             <LocationMapPicker
               latitude={value.latitude!}
               longitude={value.longitude!}
+              title={copy.mapSectionTitle}
               hint={businessLocationPickerHint(locale)}
+              mapLoadErrorLabel={businessLocationMapLoadError(locale)}
               confirmLabel={businessLocationConfirm(locale)}
               cancelLabel={businessLocationCancel(locale)}
               onConfirm={confirmPicker}

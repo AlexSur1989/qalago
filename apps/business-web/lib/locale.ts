@@ -866,7 +866,7 @@ export type UiLabels = {
     confirmDeleteMenuGroupConsequence:
       'Позиции группы останутся без раздела или будут удалены по правилам API.',
     confirmDeletePromotionTitle: 'Удалить акцию?',
-    confirmSetPrimaryConsequence: 'Этот филиал станет основным для бизнеса в выбранном городе.',
+    confirmSetPrimaryConsequence: 'Он будет использоваться как основной филиал бизнеса.',
     confirmSetPrimaryActionLabel: 'Сделать основным',
     confirmRevokeMemberTitle: 'Отозвать доступ?',
     confirmRevokeMemberConsequence: 'Пользователь потеряет доступ к кабинету этого заведения.',
@@ -1576,7 +1576,7 @@ export type UiLabels = {
     confirmDeleteMenuGroupConsequence:
       'Топ позициялары бөлімсіз қалады немесе API ережелері бойынша жойылады.',
     confirmDeletePromotionTitle: 'Акцияны жою керек пе?',
-    confirmSetPrimaryConsequence: 'Бұл филиал таңдалған қалада негізгі филиал болады.',
+    confirmSetPrimaryConsequence: 'Ол бизнестің негізгі филиалы ретінде пайдаланылады.',
     confirmSetPrimaryActionLabel: 'Негізгі ету',
     confirmRevokeMemberTitle: 'Қолжетімділікті алу керек пе?',
     confirmRevokeMemberConsequence: 'Пайдаланушы осы мекеменің кабинетіне кіре алмайды.',
