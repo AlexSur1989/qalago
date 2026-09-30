@@ -10,7 +10,7 @@
 
 - **Status:** **UXA.4 PASS — TABLES / FILTERS / SEARCH STANDARDIZED**. **UXA.5 / UXA.8 not started**.
 - **Starting HEAD:** **`32da1e7`** (UXA.7 docs SHA).
-- **Checkpoint (commit):** _(this commit)_ — `feat(ui): standardize backoffice tables and filters`.
+- **Checkpoint (commit):** **`b608444`** — `feat(ui): standardize backoffice tables and filters`.
 - **Summary:** **`@qalago/brand/tables`** + **`backoffice-tables.css`**; table/toolbar/search/filter/pagination/empty-filtered primitives; UXA.3 **`search`** icon. Representative Admin migrations (catalog, audit, staff, business-requests, moderation, campaigns, reports businesses table) and Business (menu, promotions, messages search). Query/API/pagination contracts unchanged. **No RBAC/route/domain changes.**
 - **Deferred:** Dashboard tables; legal data-requests; full `.data-table` sweep; reviews/team card layouts; UXA.10 mobile cards.
 - **Next:** **UXA.5** forms (recommended).

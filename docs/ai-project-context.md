@@ -87,7 +87,7 @@
 | **UXA.3** | **PASS — QALAGO BACKOFFICE ICON SYSTEM** — checkpoint **`03e6e17`**; `@qalago/brand/icons`; SVG `currentColor` nav/shell; no emoji in authenticated shell/nav |
 | **UXA.9** | **PASS — BACKOFFICE SYSTEM STATES STANDARDIZED** — checkpoint **`5774f0f`**; `@qalago/brand/states`; inline alerts; access vs feature unavailable |
 | **UXA.7** | **PASS — STATUS / BADGES / CONFIRMATIONS STANDARDIZED** — checkpoint **`49265c4`**; `@qalago/brand/badges`, `status`, `confirm`; audit/staff enum humanization; representative confirm migrations |
-| **UXA.4** | **PASS — TABLES / FILTERS / SEARCH STANDARDIZED** — `@qalago/brand/tables`; representative Admin/Business list migrations |
+| **UXA.4** | **PASS — TABLES / FILTERS / SEARCH STANDARDIZED** — checkpoint **`b608444`**; `@qalago/brand/tables`; representative Admin/Business list migrations |
 | **UXA (track)** | **ACTIVE** — **UXA.5 next**; see § UXA below |
 | **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = ACTIVE** · Consumer Web UI/UX after UXA · Mobile Web UI/UX after Consumer · production/security/pre-VPS later · VPS later |
 | **Next** | **UXA.5** forms; parallel **KZ-C.1** notification physical QA remains open |
