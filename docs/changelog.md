@@ -10,7 +10,7 @@
 
 - **Status:** **BIZ.9 HOTFIX 7B IMPLEMENTATION PASS — AUTOMATED REGRESSION GREEN**. **BIZ.9 physical multi-app QA REMAINS OPEN**. **UXA not started**.
 - **Starting HEAD:** **`0a4741ebcb78c2488e66cffaf780ff34bae93e4b`**.
-- **Checkpoint (commit):** _(post-commit)_ — `fix(auth): isolate admin and business web sessions`.
+- **Checkpoint (commit):** **`edd39e5`** — `fix(auth): isolate admin and business web sessions`.
 - **Summary:** Scoped refresh cookies — Admin **`qalago_admin_refresh`** (`Path=/api/auth/admin`), Business **`qalago_business_refresh`** (`Path=/api/auth/business`); BFF routes under **`/api/auth/admin/*`** and **`/api/auth/business/*`**; legacy **`qalago_refresh`** cleared not read; **HOTFIX 6** admin single-flight retained; **Business Web single-flight bootstrap** added. **No DB migration.** **No backend auth logic duplication.**
 - **Deferred:** Physical QA — SUPER_ADMIN on :3001 + OWNER on :3003 same browser; independent F5/logout; platform features unchanged.
 - **Next:** Multi-app physical QA checklist; BIZ.9 closure.
