@@ -10,7 +10,7 @@
 
 - **Status:** **BIZ.9 HOTFIX 6 IMPLEMENTATION PASS — ADMIN WEB AUTH REGRESSION GREEN**. **BIZ.9 physical QA REMAINS OPEN** (re-verify F5 on **`/settings/platform`**). **BIZ.1–BIZ.8 remain CLOSED**. **AOP remains CLOSED**. **UXA not started**.
 - **Starting HEAD:** **`53cc9c475aa9f338b4d3cad138487e60bc6c608f`**.
-- **Checkpoint (commit):** _(post-commit SHA)_ — `fix(admin-web): restore authenticated session on refresh`.
+- **Checkpoint (commit):** **`a58d3f0`** — `fix(admin-web): restore authenticated session on refresh`.
 - **Summary:** Root cause: parallel **`/api/auth/refresh`** on F5 (multiple **`useAuth()`** + **`ensureStaffAccessToken`**) with rotating refresh cookie → one caller invalidated the other → spurious login redirect. Fix: single-flight **`resolveAdminAccessToken`** + shared **`runAdminAuthBootstrap`** (canonical **`/users/me`**); settings layout/page wait for **`ready`** before redirect. **No security relaxation**; invalid refresh still → login. **Admin Web only.**
 - **Deferred:** Physical QA SUPER_ADMIN/ADMIN/CITY_ADMIN F5 matrix; security settings page still uses standalone token ensure (deduped, not unified layout guard).
 - **Next:** Physical BIZ.9 closure checklist including platform features F5.
