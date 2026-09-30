@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-10-01 — FUTURE-READY ARCHITECTURE ROADMAP DOCUMENTED
+
+- **Status:** **FUTURE-READY ARCHITECTURE ROADMAP DOCUMENTED** (docs only). **SCALE implementation not started**. **UXA remains active track**.
+- **Starting HEAD:** **`82d4483`** (UXA.10 docs closure).
+- **Checkpoint (commit):** _(see git log)_ — `docs(architecture): add future-ready platform roadmap`.
+- **Summary:** Added **`docs/architecture/future-ready-platform.md`** — modular monolith, stateless API, PostgreSQL/PostGIS + Redis roles, workers/outbox/idempotency/object storage/search/map/payment/notification abstractions, multi-city/multi-business rules, SCALE.0–SCALE.12 track, explicit non-goals (K8s, microservices, sharding, replicas, multi-region). Linked from **`docs/architecture/overview.md`**. Updated **`docs/ai-project-context.md`** roadmap placement. **No application code, DB, migrations, runtime config, auth, RBAC, API, or deployment changes.**
+- **Deferred:** All **SCALE.0–SCALE.12** implementation; production RPO/RTO numbers; partner API; ownership transfer; ledger/outbox/worker rollout.
+- **Next:** Continue **UXA.11** (recommended active track).
+
+---
+
 ## 2026-09-30 — UXA.10 PASS — Backoffice responsive layout standardized
 
 - **Status:** **UXA.10 PASS — BACKOFFICE RESPONSIVE LAYOUT STANDARDIZED**. **UXA.11 / UXA.12 / UXA.13 not started**.

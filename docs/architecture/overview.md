@@ -54,6 +54,8 @@ Future:
 | Growth | Extract notifications, search, analytics worker |
 | AI | Sidecar `services/ai-orchestrator`, no direct DB from agents |
 
+**Future-ready / scale principles (planning only, not implemented):** [future-ready-platform.md](./future-ready-platform.md) — modular monolith first, stateless API, SCALE.0–SCALE.12 track (**not started**).
+
 ## Multi-city model
 
 ```text

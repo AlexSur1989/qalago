@@ -93,7 +93,9 @@
 | **UXA.8** | **PASS — DASHBOARDS / CARDS / STATISTICS STANDARDIZED** — `@qalago/brand/dashboards`; KPI hierarchy; Business `/dashboard` partial failure; representative Admin/Business statistics surfaces |
 | **UXA.10** | **PASS — BACKOFFICE RESPONSIVE LAYOUT STANDARDIZED** — `backoffice-responsive.css`; shell ≤960 drawer; KPI/table/form/chart/modal responsive contracts |
 | **UXA (track)** | **ACTIVE** — **UXA.11 next**; see § UXA below |
-| **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = ACTIVE** · Consumer Web UI/UX after UXA · Mobile Web UI/UX after Consumer · production/security/pre-VPS later · VPS later |
+| **Future-ready platform** | **DOCUMENTED** — **`docs/architecture/future-ready-platform.md`** (planning only; **SCALE not started**) |
+| **SCALE (track)** | **PLANNED** — **SCALE.0–SCALE.12 not started**; see future-ready doc §70 |
+| **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = ACTIVE** · Consumer Web UI/UX after UXA · Mobile UI/UX after Consumer · production/security/pre-VPS · **SCALE foundation** · VPS later |
 | **Next** | **UXA.11** accessibility; parallel **KZ-C.1** notification physical QA remains open |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
@@ -381,6 +383,8 @@ Mobile UI/UX pass
   ↓
 Production / security / pre-VPS readiness gates
   ↓
+SCALE.0 → SCALE.12 — scale foundation (see docs/architecture/future-ready-platform.md; not started)
+  ↓
 VPS / production deployment
 ```
 
@@ -394,6 +398,12 @@ VPS / production deployment
 | **Consumer Web UI/UX** | **PLANNED** (after backoffice functional + UXA) |
 | **Mobile UI/UX** | **PLANNED** |
 | **VPS / production** | **BLOCKED** until readiness gates |
+| **SCALE** | **PLANNED** — architecture roadmap documented; **implementation not started** |
+| **Future-ready platform doc** | **DOCUMENTED** — `docs/architecture/future-ready-platform.md` |
+
+## Future-ready platform (summary)
+
+Canonical planning doc: **`docs/architecture/future-ready-platform.md`**. **Modular monolith first**; stateless API; PostgreSQL/PostGIS source of truth; Redis for cache/coordination only; workers/object storage/CDN/outbox/idempotency as **PLANNED** maturity steps. **Explicit non-goals now:** Kubernetes, microservices, sharding, read replicas, multi-region, partner API. **SCALE.0–SCALE.12** listed — **none started**. **Does not** change AOP/BIZ/API/RBAC/DB or active **UXA** work.
 
 ## UXA — QalaGo Backoffice UI/UX finalization (mandatory pre-production)
 
