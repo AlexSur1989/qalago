@@ -32,9 +32,14 @@ export function ViewsChart({ items, days = 7 }: ViewsChartProps) {
 
   const line = points.map((p) => `${p.x},${p.y}`).join(' ');
   const area = `${padX},${padY + chartH} ${line} ${padX + chartW},${padY + chartH}`;
+  const totalViews = values.reduce((sum, v) => sum + v, 0);
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} width="100%" height={height} role="img" aria-label={ui.__e1ba6e}>
+    <>
+      <p className="bo-sr-only">
+        {ui.__e1ba6e}. {points.map((p) => `${formatChartDate(p.date)}: ${p.v}`).join('; ')}. Σ {totalViews}
+      </p>
+      <svg viewBox={`0 0 ${width} ${height}`} width="100%" height={height} role="img" aria-label={ui.__e1ba6e}>
       {[0, 0.25, 0.5, 0.75, 1].map((t) => {
         const y = padY + chartH * (1 - t);
         return (
@@ -79,6 +84,7 @@ export function ViewsChart({ items, days = 7 }: ViewsChartProps) {
         ) : null,
       )}
     </svg>
+    </>
   );
 }
 

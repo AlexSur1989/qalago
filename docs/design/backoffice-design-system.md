@@ -179,9 +179,34 @@ Canonical: `--radius-xs` (8px), `--radius-md` (12px), `--radius-lg` (16px), `--r
 - **Maps/charts:** Map frame 100% width, capped height on mobile; charts `width:100%` + responsive SVG.
 - **Physical browser QA:** **Deferred UXA.13** — UXA.10 = code/static contracts only.
 
+## Accessibility (UXA.11)
+
+**Target:** Practical WCAG 2.2 AA-aligned patterns where applicable. **Formal WCAG certification is not claimed.** Physical screen-reader / device browser QA **deferred to UXA.13**.
+
+- **Styles:** `backoffice-a11y.css` — skip link focus ring, `.bo-sr-only`, closed mobile sidebar visibility, notification badge non-focusable, contextual link underline hint, `prefers-reduced-motion` hooks aligned with UXA.1.
+- **Skip link:** `@qalago/brand/accessibility` **`BackofficeSkipLink`** → `#admin-main-content` / `#business-main-content` (Business label **RU/KK** via `shellSkipToMainContent`).
+- **Landmarks:** One **`main`** per shell; **`header`** topbar; sidebar **`nav`** with `aria-label`; avoid redundant landmark nesting.
+- **Headings:** Page-level **h1** via existing page headers; no product copy rewrites solely for tags.
+- **Navigation:** `aria-current="page"` on active routes; decorative nav icons (`aria-hidden`); mobile menu **`aria-expanded`** + **`aria-controls`**; drawer **`useShellDrawerA11y`** — **`inert`** on `.shell-main`, initial focus in drawer, restore menu button on close, **Escape** unchanged.
+- **Icon-only controls:** Named via visible text, **`aria-label`**, or linked label; decorative icons **`aria-hidden`**.
+- **Button vs link:** Actions → **`button`**; navigation → **`Link`/`a`** (e.g. messages unread mark-read uses native **`button`**, not `role="button"` on **`article`**).
+- **Tables (UXA.4):** **`th scope="col"`**; pagination **`nav`** + **`aria-current="page"`** on current meta; horizontal scroll inside table wrap — focus not clipped.
+- **Forms (UXA.5):** Label ↔ control **`htmlFor`/`id`**; errors **`aria-describedby`** + **`aria-invalid`**; switch **`role="switch"`** + **`aria-checked`** + optional description id.
+- **Dialogs (UXA.7):** Native **`<dialog>`** + **`aria-labelledby`/`aria-describedby`**; optional **`triggerRef`** focus restore on close.
+- **Live regions (UXA.9):** **`role="alert"`** for critical errors; **`role="status"`** / polite live for save success — avoid duplicate/noisy regions.
+- **Loading / empty:** Decorative skeletons hidden from AT where applicable; empty states readable without icon-only meaning.
+- **KPI / progress (UXA.8):** KPI link/card accessible name; **`BackofficeProgress`** **`role="progressbar"`** + value min/max/now.
+- **Charts:** Textual summary alongside SVG (`role="img"` + **`aria-label`** or sr-only data sentence) — chart not sole carrier of critical metrics.
+- **Maps / locations (UXA.6):** Map labelled; manual coordinates remain; failure text visible.
+- **Image alt:** Decorative → **`alt=""`**; informative when data exists — no fabricated descriptions.
+- **Focus:** UXA.1 focus tokens on interactive controls; no positive **`tabIndex`** in shells; hidden collapsed drawer not tabbable on mobile (CSS + inert main while open).
+- **Contrast / target size:** Obvious token risks documented in deferred debt; touch ~44px for shell icon triggers where feasible.
+- **Language:** Business **`html lang`** follows locale layout; Admin unchanged.
+- **Tests:** `@qalago/brand/accessibility/accessibility.contract.test.mjs` + Admin/Business **`backoffice-accessibility.test.ts`** (static/DOM contracts — **not** real screen-reader validation).
+
 ## UXA.1 does NOT cover
 
-Accessibility closure (UXA.11), RU/KK visual QA (UXA.12), dark mode.
+RU/KK visual QA (UXA.12), dark mode, formal WCAG certification.
 
 ## Tests
 

@@ -216,25 +216,38 @@ export default function MessagesPage() {
               );
             }
 
+            if (item.isRead) {
+              return (
+                <article
+                  key={item.id}
+                  className="promo-item notification-item"
+                  style={{ alignItems: 'flex-start' }}
+                >
+                  {inner}
+                </article>
+              );
+            }
+
             return (
-              <article
+              <button
                 key={item.id}
-                className={`promo-item notification-item${item.isRead ? '' : ' unread'}`}
-                style={{ alignItems: 'flex-start', cursor: item.isRead ? 'default' : 'pointer' }}
+                type="button"
+                className="promo-item notification-item unread"
+                style={{
+                  alignItems: 'flex-start',
+                  cursor: 'pointer',
+                  border: 'none',
+                  background: 'transparent',
+                  font: 'inherit',
+                  textAlign: 'left',
+                  width: '100%',
+                }}
                 onClick={() => {
                   void onActivate();
                 }}
-                onKeyDown={(e) => {
-                  if (!item.isRead && (e.key === 'Enter' || e.key === ' ')) {
-                    e.preventDefault();
-                    void onActivate();
-                  }
-                }}
-                role={item.isRead ? undefined : 'button'}
-                tabIndex={item.isRead ? undefined : 0}
               >
                 {inner}
-              </article>
+              </button>
             );
           })
         ) : null}

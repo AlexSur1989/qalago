@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-10-01 — UXA.11 PASS — Backoffice accessibility standardized
+
+- **Status:** **UXA.11 PASS — BACKOFFICE ACCESSIBILITY STANDARDIZED**. **UXA.12 / UXA.13 not started**. **Formal WCAG certification not claimed**; **physical screen-reader/browser QA deferred UXA.13**.
+- **Starting HEAD:** **`2c0699a`** (future-ready docs; spec noted **`82d4483`** UXA.10 baseline).
+- **Checkpoint (commit):** *(this commit)* — `feat(ui): standardize backoffice accessibility`.
+- **Summary:** **`backoffice-a11y.css`** + **`@qalago/brand/accessibility`** (skip link, mobile drawer **`inert`/focus restore). Admin/Business shells — skip to main, drawer a11y hook, nav **`aria-controls`**. Business — localized skip, messages unread native **button**, notification **`aria-label`** with count, chart sr-only summary. Brand — confirm focus restore, switch **`aria-describedby`**, pagination **`aria-current`**, KPI link name. Static contract tests in brand + both apps. **No route/auth/RBAC/API/domain/DB changes.**
+- **Deferred:** Numerical contrast audit; full modal/popover sweep; every chart/KPI page textual alternative; real SR/device QA (**UXA.13**).
+- **Next:** **UXA.12** RU/KK visual QA (recommended).
+
+---
+
 ## 2026-10-01 — FUTURE-READY ARCHITECTURE ROADMAP DOCUMENTED
 
 - **Status:** **FUTURE-READY ARCHITECTURE ROADMAP DOCUMENTED** (docs only). **SCALE implementation not started**. **UXA remains active track**.

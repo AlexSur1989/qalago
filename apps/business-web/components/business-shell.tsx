@@ -5,7 +5,7 @@ import { cityDisplayName } from '@/lib/localized-content';
 import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { BusinessRow, SELECTED_BUSINESS_KEY, ownerApi } from '@/lib/api';
 import {
   buildPermissionScopedShellNav,
@@ -23,6 +23,7 @@ import { useAuth } from '@/lib/use-auth';
 import { getWebAccessToken } from '@/lib/web-auth-token';
 import { businessInitials, statusLabel } from '@/lib/business-utils';
 import { BackofficeNavIcon, QalaIcon } from '@qalago/brand/icons';
+import { BackofficeSkipLink, useShellDrawerA11y } from '@qalago/brand/accessibility';
 
 export type { NavId };
 
@@ -55,6 +56,9 @@ export function BusinessShell({
   const [collapsed, setCollapsed] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
+  useShellDrawerA11y(mobileNavOpen, menuButtonRef, sidebarRef);
 
   const platformNav = platformReady ? platformFeatures : { businessTeamEnabled: false };
   const { mainNav: navItems, footerNav: footerNavItems } = useMemo(
@@ -109,8 +113,12 @@ export function BusinessShell({
     return cls;
   }, [mobileNavOpen, effectiveCollapsed]);
 
+  const messagesAriaLabel =
+    unreadCount > 0 ? `${ui.ownerNavMessages} (${unreadCount})` : ui.ownerNavMessages;
+
   return (
     <div className="shell business-shell">
+      <BackofficeSkipLink href="#business-main-content">{ui.shellSkipToMainContent}</BackofficeSkipLink>
       {mobileNavOpen && (
         <button
           type="button"
@@ -120,7 +128,7 @@ export function BusinessShell({
         />
       )}
 
-      <aside className={sidebarClassName} aria-label="QalaGo business navigation">
+      <aside ref={sidebarRef} className={sidebarClassName} aria-label="QalaGo business navigation">
         <div className="sidebar-brand">
           <span className="sidebar-brand-mark">Q</span>
           {!effectiveCollapsed && <span>QalaGo</span>}
@@ -176,7 +184,7 @@ export function BusinessShell({
           </div>
         )}
 
-        <nav className="sidebar-nav" aria-label={ui.ownerNavOverview}>
+        <nav id="business-sidebar-nav" className="sidebar-nav" aria-label={ui.ownerNavOverview}>
           {navItems.map((item) => (
             <NavLink
               key={item.id}
@@ -203,6 +211,8 @@ export function BusinessShell({
           <button
             type="button"
             className="collapse-btn desktop-only"
+            aria-label={ui.shellCollapseMenu}
+            aria-expanded={!collapsed}
             onClick={() => setCollapsed((v) => !v)}
           >
             <span className="nav-icon" aria-hidden>
@@ -221,9 +231,11 @@ export function BusinessShell({
         <header className="topbar">
           <div className="topbar-left">
             <button
+              ref={menuButtonRef}
               type="button"
               className="icon-btn mobile-only"
               aria-expanded={mobileNavOpen}
+              aria-controls="business-sidebar-nav"
               aria-label={ui.shellOpenNavigation}
               onClick={() => setMobileNavOpen(true)}
             >
@@ -250,14 +262,21 @@ export function BusinessShell({
             <div className="topbar-locale">
               <LocaleSwitcher locale={locale} labels={ui} />
             </div>
-            <Link href="/messages" className="icon-btn" aria-label={ui.ownerNavMessages} title={ui.ownerNavMessages}>
+            <Link
+              href="/messages"
+              className="icon-btn"
+              aria-label={messagesAriaLabel}
+              title={messagesAriaLabel}
+            >
               <QalaIcon name="notification" size="md" decorative />
               {unreadCount > 0 && (
-                <span className="badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                <span className="badge" aria-hidden="true">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
               )}
             </Link>
             <div className="user-chip">
-              <div className="user-avatar">
+              <div className="user-avatar" aria-hidden="true">
                 {business ? businessInitials(business.title) : 'Q'}
               </div>
               <div className="user-meta">

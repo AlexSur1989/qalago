@@ -1,0 +1,78 @@
+/* UXA.11 — skip link, focus, screen-reader utilities */
+
+.bo-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.bo-skip-link {
+  position: absolute;
+  left: var(--space-4, 16px);
+  top: var(--space-2, 8px);
+  z-index: 100;
+  padding: var(--space-2, 8px) var(--space-4, 16px);
+  border-radius: var(--radius-xs, 8px);
+  background: var(--color-surface, #fff);
+  color: var(--color-brand-primary, var(--primary));
+  font-weight: 600;
+  font-size: var(--text-label-size, 0.875rem);
+  text-decoration: none;
+  border: 2px solid var(--color-brand-primary, var(--primary));
+  transform: translateY(-200%);
+  transition: transform var(--transition-fast, 150ms ease);
+}
+
+.bo-skip-link:focus {
+  transform: translateY(0);
+  outline: none;
+  box-shadow: var(
+    --focus-ring,
+    0 0 0 var(--focus-ring-offset, 2px) var(--color-surface, #fff),
+    0 0 0 calc(var(--focus-ring-offset, 2px) + var(--focus-ring-width, 2px))
+      var(--focus-ring-color, var(--color-brand-primary))
+  );
+}
+
+.shell {
+  position: relative;
+}
+
+@media (max-width: 960px) {
+  .sidebar:not(.open) {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .sidebar.open {
+    visibility: visible;
+    pointer-events: auto;
+  }
+}
+
+.bo-sr-only-focusable:not(:focus):not(:focus-within) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.page-content a:not(.btn):not(.nav-item):not(.card-link):not(.bo-kpi-card--link) {
+  text-decoration-thickness: from-font;
+  text-underline-offset: 2px;
+}
+
+.icon-btn .badge {
+  pointer-events: none;
+}

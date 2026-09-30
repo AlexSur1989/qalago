@@ -22,6 +22,7 @@ export function BackofficeSwitch({
   id,
 }: BackofficeSwitchProps) {
   const switchId = id ?? `bo-switch-${label.replace(/\s+/g, '-').slice(0, 24)}`;
+  const descId = description ? `${switchId}-desc` : undefined;
   const busy = disabled || loading;
 
   return (
@@ -30,7 +31,11 @@ export function BackofficeSwitch({
         <p className="bo-switch-title" id={`${switchId}-label`}>
           {label}
         </p>
-        {description ? <p className="bo-switch-description">{description}</p> : null}
+        {description ? (
+          <p className="bo-switch-description" id={descId}>
+            {description}
+          </p>
+        ) : null}
       </div>
       <button
         type="button"
@@ -39,6 +44,7 @@ export function BackofficeSwitch({
         className="bo-switch"
         aria-checked={checked}
         aria-labelledby={`${switchId}-label`}
+        aria-describedby={descId}
         aria-busy={loading || undefined}
         disabled={busy}
         onClick={() => onCheckedChange(!checked)}

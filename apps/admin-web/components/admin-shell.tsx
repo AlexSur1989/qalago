@@ -1,6 +1,7 @@
 'use client';
 
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { BackofficeSkipLink, useShellDrawerA11y } from '@qalago/brand/accessibility';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AuthUser } from '@/lib/api';
@@ -62,6 +63,9 @@ export function AdminShell({
   const pathname = usePathname();
   const roleInfo = getRoleDefinition(user.role);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
+  useShellDrawerA11y(mobileNavOpen, menuButtonRef, sidebarRef);
 
   const monetizationBadgeTotal =
     (monetizationBadges?.orders ?? 0) + (monetizationBadges?.creatives ?? 0);
@@ -121,6 +125,7 @@ export function AdminShell({
 
   return (
     <div className="shell">
+      <BackofficeSkipLink href="#admin-main-content">Перейти к основному содержимому</BackofficeSkipLink>
       {mobileNavOpen ? (
         <button
           type="button"
@@ -130,7 +135,7 @@ export function AdminShell({
         />
       ) : null}
 
-      <aside className={sidebarClassName} aria-label="Админ-навигация">
+      <aside ref={sidebarRef} className={sidebarClassName} aria-label="Админ-навигация">
         <div className="sidebar-brand">
           <span className="sidebar-brand-mark">Q</span>
           <span>QalaGo Admin</span>
@@ -151,7 +156,7 @@ export function AdminShell({
           <div className="admin-role-meta">{user.phone ?? 'Телефон не указан'}</div>
         </div>
 
-        <nav className="sidebar-nav" aria-label="Разделы админки">
+        <nav id="admin-sidebar-nav" className="sidebar-nav" aria-label="Разделы админки">
           {nav
             .filter((item) => item.visible !== false)
             .map((item) =>
@@ -288,9 +293,11 @@ export function AdminShell({
         <header className="topbar">
           <div className="topbar-left">
             <button
+              ref={menuButtonRef}
               type="button"
               className="icon-btn mobile-only"
               aria-expanded={mobileNavOpen}
+              aria-controls="admin-sidebar-nav"
               aria-label="Открыть меню"
               onClick={() => setMobileNavOpen(true)}
             >

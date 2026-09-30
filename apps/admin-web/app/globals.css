@@ -9,6 +9,7 @@
 @import '../../../packages/brand/backoffice-locations.css';
 @import '../../../packages/brand/backoffice-dashboards.css';
 @import '../../../packages/brand/backoffice-responsive.css';
+@import '../../../packages/brand/backoffice-a11y.css';
 
 *,
 *::before,

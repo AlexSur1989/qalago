@@ -32,16 +32,20 @@ export function BackofficeConfirmDialog({
   const descId = useId();
   const cancelRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const el = dialogRef.current;
     if (!el) return;
     if (open && !el.open) {
+      triggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       el.showModal();
       cancelRef.current?.focus();
     }
     if (!open && el.open) {
       el.close();
+      triggerRef.current?.focus();
+      triggerRef.current = null;
     }
   }, [open]);
 

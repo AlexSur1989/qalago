@@ -93,16 +93,18 @@ export function BackofficeKpiCard({
     .filter(Boolean)
     .join(' ');
 
+  const accessibleName = linkLabel ? `${label}: ${linkLabel}` : label;
+
   if (href && !loading && !error) {
     return (
-      <a href={href} className={classNames} style={{ position: 'relative' }}>
+      <a href={href} className={classNames} style={{ position: 'relative' }} aria-label={accessibleName}>
         {body}
       </a>
     );
   }
 
   return (
-    <article className={classNames} style={{ position: 'relative' }}>
+    <article className={classNames} style={{ position: 'relative' }} aria-label={label}>
       {body}
     </article>
   );

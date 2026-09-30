@@ -48,7 +48,9 @@ export function BackofficePagination({
         <QalaIcon name="chevron-left" size="sm" decorative />
         {prevLabel}
       </button>
-      <span className="bo-table-pagination-meta">{metaParts.join(' ')}</span>
+      <span className="bo-table-pagination-meta" aria-current="page">
+        {metaParts.join(' ')}
+      </span>
       <button
         type="button"
         className="btn btn-sm btn-secondary bo-table-pagination-btn"

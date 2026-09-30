@@ -92,11 +92,12 @@
 | **UXA.6** | **PASS — BUSINESS LOCATION / GEO UX STANDARDIZED** — `@qalago/brand/locations`; branch cards; Business locations + Admin CatalogLocationsManager; map UX polish |
 | **UXA.8** | **PASS — DASHBOARDS / CARDS / STATISTICS STANDARDIZED** — `@qalago/brand/dashboards`; KPI hierarchy; Business `/dashboard` partial failure; representative Admin/Business statistics surfaces |
 | **UXA.10** | **PASS — BACKOFFICE RESPONSIVE LAYOUT STANDARDIZED** — `backoffice-responsive.css`; shell ≤960 drawer; KPI/table/form/chart/modal responsive contracts |
-| **UXA (track)** | **ACTIVE** — **UXA.11 next**; see § UXA below |
+| **UXA.11** | **PASS — BACKOFFICE ACCESSIBILITY STANDARDIZED** — `backoffice-a11y.css`, `@qalago/brand/accessibility`; skip link; drawer inert/focus; static a11y contracts (**WCAG cert / SR QA deferred UXA.13**) |
+| **UXA (track)** | **ACTIVE** — **UXA.12 next**; see § UXA below |
 | **Future-ready platform** | **DOCUMENTED** — **`docs/architecture/future-ready-platform.md`** (planning only; **SCALE not started**) |
 | **SCALE (track)** | **PLANNED** — **SCALE.0–SCALE.12 not started**; see future-ready doc §70 |
 | **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = ACTIVE** · Consumer Web UI/UX after UXA · Mobile UI/UX after Consumer · production/security/pre-VPS · **SCALE foundation** · VPS later |
-| **Next** | **UXA.11** accessibility; parallel **KZ-C.1** notification physical QA remains open |
+| **Next** | **UXA.12** RU/KK visual QA; parallel **KZ-C.1** notification physical QA remains open |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -394,7 +395,7 @@ VPS / production deployment
 |-------|--------|
 | **AOP** | **CLOSED** |
 | **BIZ** | **CLOSED** |
-| **UXA** | **ACTIVE** — **UXA.1–UXA.10 PASS** (incl. **UXA.8–UXA.9**); **UXA.11+** pending |
+| **UXA** | **ACTIVE** — **UXA.1–UXA.11 PASS**; **UXA.12–UXA.13** pending |
 | **Consumer Web UI/UX** | **PLANNED** (after backoffice functional + UXA) |
 | **Mobile UI/UX** | **PLANNED** |
 | **VPS / production** | **BLOCKED** until readiness gates |
@@ -426,7 +427,7 @@ Canonical planning doc: **`docs/architecture/future-ready-platform.md`**. **Modu
 | **UXA.8** | **PASS** — Dashboards / KPI / chart shells — `@qalago/brand/dashboards`; Business partial-failure loading; Admin dashboard KPI row + monetization/reports alignment |
 | **UXA.9** | **PASS** — System states foundation (`@qalago/brand/states`); representative screen migration; no global toast |
 | **UXA.10** | **PASS** — Responsive layout — `backoffice-responsive.css`; shell drawer ≤960; table inner scroll; KPI breakpoints; static contract tests (**physical QA UXA.13**) |
-| **UXA.11** | Accessibility — keyboard, focus, semantics, contrast, labels, modal focus, ARIA where applicable |
+| **UXA.11** | **PASS** — Accessibility — skip link, landmarks/nav semantics, drawer inert/focus, forms/tables/dialogs/switch/progress contracts, static tests (**SR/contrast physical QA UXA.13**) |
 | **UXA.12** | RU/KK visual QA — expansion, clipping, nav widths, forms/tables/dialogs (**not** KZ-C legal scope) |
 | **UXA.13** | Physical browser QA + closure — SUPER_ADMIN, ADMIN, CITY_ADMIN, OWNER, MANAGER → **UXA PASS — QALAGO BACKOFFICE UI/UX FINALIZED** |
 
