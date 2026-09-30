@@ -10,7 +10,7 @@
 
 - **Status:** **UXA.8 PASS — DASHBOARDS / CARDS / STATISTICS STANDARDIZED**. **UXA.10 / UXA.11 not started**.
 - **Starting HEAD:** **`589780e`** (UXA.6 docs closure).
-- **Checkpoint (commit):** _(implementation commit SHA — see git log)_ — `feat(ui): standardize backoffice dashboards`.
+- **Checkpoint (commit):** **`9ea8fab`** — `feat(ui): standardize backoffice dashboards`.
 - **Summary:** **`@qalago/brand/dashboards`** + **`backoffice-dashboards.css`** — `BackofficeKpiCard` (value-first hierarchy, loading/error/empty, optional trend/drilldown), `BackofficeKpiGrid`, `BackofficeDashboardSection`, `BackofficeSummaryCard`, `BackofficeChartContainer`, `BackofficeProgress`. Business **`/dashboard`** — independent section loads + UXA.9 section errors/retries (no global `Promise.all` blanking). Migrated Business **`/statistics`** (360 KPI/chart shell), **`/plan`** usage progress, monetization overview KPIs; Admin dashboard KPI row, monetization overview, reports **`ReportKpiCard`** shell. **No analytics formula, KPI semantic, API, RBAC, route, plan limit, or DB changes.**
 - **Deferred:** Admin dashboard monolith visual split; full legacy `.kpi-grid` sweep; business monetization overview partial-failure parity; chart token recolor audit; **UXA.10** responsive KPI grids.
 - **Next:** **UXA.10** responsive backoffice (recommended).

@@ -389,7 +389,7 @@ VPS / production deployment
 |-------|--------|
 | **AOP** | **CLOSED** |
 | **BIZ** | **CLOSED** |
-| **UXA** | **ACTIVE** — **UXA.1–UXA.8, UXA.7, UXA.9 PASS**; **UXA.10+** pending |
+| **UXA** | **ACTIVE** — **UXA.1–UXA.9 PASS** (incl. **UXA.8**); **UXA.10+** pending |
 | **Consumer Web UI/UX** | **PLANNED** (after backoffice functional + UXA) |
 | **Mobile UI/UX** | **PLANNED** |
 | **VPS / production** | **BLOCKED** until readiness gates |
