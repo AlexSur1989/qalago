@@ -412,6 +412,10 @@ body.shell-drawer-open {
 }
 
 @media (max-width: 960px) {
+  .sidebar.collapsed {
+    width: var(--sidebar-expanded);
+  }
+
   .sidebar {
     transform: translateX(-100%);
   }

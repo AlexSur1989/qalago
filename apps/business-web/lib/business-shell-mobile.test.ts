@@ -47,4 +47,9 @@ describe('BusinessShell mobile navigation (6.10D.1)', () => {
     expect(src).toContain('id="business-main-content"');
     expect(src).toContain('shell-drawer-open');
   });
+
+  it('exposes mobile business context in topbar (UXA.10)', () => {
+    const src = readShell();
+    expect(src).toContain('topbar-entity-title');
+  });
 });

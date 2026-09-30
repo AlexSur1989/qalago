@@ -8,6 +8,7 @@
 @import '../../../packages/brand/backoffice-forms.css';
 @import '../../../packages/brand/backoffice-locations.css';
 @import '../../../packages/brand/backoffice-dashboards.css';
+@import '../../../packages/brand/backoffice-responsive.css';
 
 :root {
   --sidebar-width: var(--sidebar-expanded);

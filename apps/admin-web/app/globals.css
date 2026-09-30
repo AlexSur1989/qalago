@@ -8,6 +8,7 @@
 @import '../../../packages/brand/backoffice-forms.css';
 @import '../../../packages/brand/backoffice-locations.css';
 @import '../../../packages/brand/backoffice-dashboards.css';
+@import '../../../packages/brand/backoffice-responsive.css';
 
 *,
 *::before,
@@ -1004,21 +1005,7 @@ select {
   margin-bottom: 1rem;
 }
 
-@media (max-width: 900px) {
-  .report-layout {
-    flex-direction: column;
-  }
-
-  .report-sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .report-main {
-    padding: 1rem;
-  }
-}
+/* Report responsive layout: packages/brand/backoffice-responsive.css @960px */
 
 .report-anomaly-list {
   list-style: none;

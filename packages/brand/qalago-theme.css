@@ -104,8 +104,8 @@
 
   /**
    * Breakpoints (documentation — not usable in @media as custom properties):
-   * mobile: 640px | tablet: 768px | shell-collapse: 960px | desktop: 1200px | wide: 1440px
-   * Admin shell uses ~960px; Business mobile nav ~900px — unify in UXA.10.
+   * mobile: ≤640px | tablet: 641–959px | shell-collapse: ≤960px | desktop: ≥961px | wide: ≥1200px | very wide: ≥1440px
+   * Canonical responsive rules: backoffice-responsive.css (UXA.10).
    */
 
   /* ——— Focus ——— */

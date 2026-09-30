@@ -28,7 +28,7 @@ export function MonetizationSubNav({ badges }: MonetizationSubNavProps) {
   }
 
   return (
-    <nav className="monetization-subnav" aria-label="Монетизация">
+    <nav className="monetization-subnav monetization-subnav--scroll" aria-label="Монетизация">
       {ITEMS.map((item) => (
         <Link
           key={item.id}

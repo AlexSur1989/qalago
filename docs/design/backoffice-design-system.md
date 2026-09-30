@@ -18,6 +18,7 @@
 | `packages/brand/backoffice-forms.css` + `@qalago/brand/forms` | Form fields, controls, sections, actions, switch, upload surface, dirty helpers (UXA.5) |
 | `packages/brand/backoffice-locations.css` + `@qalago/brand/locations` | Branch cards, hours rows, map frame (UXA.6) |
 | `packages/brand/backoffice-dashboards.css` + `@qalago/brand/dashboards` | KPI cards, dashboard sections, summary/chart shells, usage progress (UXA.8) |
+| `packages/brand/backoffice-responsive.css` | Shared breakpoints, shell/page/table/form/chart/modal responsive rules (UXA.10) |
 
 Both apps import in order:
 
@@ -161,11 +162,26 @@ Canonical: `--radius-xs` (8px), `--radius-md` (12px), `--radius-lg` (16px), `--r
 - **Usage / limits:** `BackofficeProgress` with `aria-valuenow/min/max`; danger tone only when existing entitlements already flag over-limit.
 - **Freshness:** Show «Обновлено …» only when API provides timestamp — no fabricated freshness.
 - **Migrated:** Admin — dashboard KPI row, monetization overview KPIs, reports `ReportKpiCard` shell. Business — `/dashboard` (partial failure), `/statistics` (360 + chart shell), `/plan` usage summary, monetization overview KPIs.
-- **Deferred:** Admin dashboard monolith split/routes; business monetization overview partial-failure parity; full dashboard sweep; mobile KPI grid polish (**UXA.10**); chart semantic recolor audit.
+- **Deferred:** Admin dashboard monolith split/routes; business monetization overview partial-failure parity; full dashboard sweep; chart semantic recolor audit.
+
+## Responsive layout (UXA.10)
+
+- **Source:** `backoffice-responsive.css` (imported after dashboards in both apps). **Shell collapse:** `≤960px` — off-canvas drawer, backdrop, body scroll lock (`shell-drawer-open`); no permanent 72px icon rail on mobile.
+- **Breakpoints (canonical):** mobile `≤640` · tablet `641–959` · shell `≤960` · desktop `≥961` · wide `≥1200` · very wide `≥1440`. Legacy app rules (e.g. reports formerly `@900px`) normalized to **960** where they competed with shell.
+- **Page headers:** `.page-header` / `BackofficePageHeader` stack title + actions on mobile; long titles wrap (`overflow-wrap`).
+- **Topbar:** Menu + critical controls preserved; secondary `.user-meta` hidden `≤960` (Admin); Business shows `.topbar-entity-title` truncate + locale in `.topbar-locale`; touch targets ~44px for mobile menu icon.
+- **Tables:** Horizontal scroll inside `.bo-table-wrap` / `.table-wrap` / `.data-table` min-width; toolbars stack at `≤640`; filters remain visible (wrap/scroll).
+- **Forms:** UXA.5 `bo-form-grid--2` → 1 col at `≤640` (unchanged); responsive CSS adds legacy grid/card header wrap.
+- **KPI grid (UXA.8):** 4 → 3 (`≤1439`) → 2 (`≤1023`) → 1 (`≤767`); value `clamp` prevents clipping.
+- **Subnav:** Monetization/reports use `--scroll` modifier (horizontal scroll + wrap fallback); settings/legal wrap via shared subnav classes.
+- **Modals/confirm:** Max height + internal scroll; action buttons stack on mobile.
+- **Content width:** Default `page-content` max `--content-max` (1200); utilities `page-content--wide` (1600) / `page-content--fluid` for data-heavy exceptions (opt-in per page).
+- **Maps/charts:** Map frame 100% width, capped height on mobile; charts `width:100%` + responsive SVG.
+- **Physical browser QA:** **Deferred UXA.13** — UXA.10 = code/static contracts only.
 
 ## UXA.1 does NOT cover
 
-Responsive pass (UXA.10), a11y closure (UXA.11), RU/KK visual QA (UXA.12), dark mode.
+Accessibility closure (UXA.11), RU/KK visual QA (UXA.12), dark mode.
 
 ## Tests
 

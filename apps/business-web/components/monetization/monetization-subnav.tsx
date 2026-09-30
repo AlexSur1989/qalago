@@ -29,7 +29,7 @@ export function MonetizationSubNav() {
   }
 
   return (
-    <nav className="monetization-subnav" aria-label={ui.ownerNavPromote}>
+    <nav className="monetization-subnav monetization-subnav--scroll" aria-label={ui.ownerNavPromote}>
       {items.map((item) => (
         <Link
           key={item.id}

@@ -14,7 +14,7 @@ export function ReportsSubNav({ user }: ReportsSubNavProps) {
   const nav = visibleReportNav(user.role);
 
   return (
-    <nav className="shell-section-subnav" aria-label="Отчёты">
+    <nav className="shell-section-subnav shell-section-subnav--scroll" aria-label="Отчёты">
       {nav.map((item) => {
         const href = reportHref(item.id);
         const active =

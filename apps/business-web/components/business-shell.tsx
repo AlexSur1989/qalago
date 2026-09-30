@@ -240,9 +240,16 @@ export function BusinessShell({
                   : defaultCity}
               </span>
             </div>
+            {business ? (
+              <span className="topbar-entity-title" title={business.title}>
+                {business.title}
+              </span>
+            ) : null}
           </div>
           <div className="topbar-right">
-            <LocaleSwitcher locale={locale} labels={ui} />
+            <div className="topbar-locale">
+              <LocaleSwitcher locale={locale} labels={ui} />
+            </div>
             <Link href="/messages" className="icon-btn" aria-label={ui.ownerNavMessages} title={ui.ownerNavMessages}>
               <QalaIcon name="notification" size="md" decorative />
               {unreadCount > 0 && (
