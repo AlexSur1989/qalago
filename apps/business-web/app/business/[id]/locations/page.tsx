@@ -14,6 +14,14 @@ import { branchManagementCopy, buildCreateBusinessLocationPayload } from '@/lib/
 import { parseApiError } from '@/lib/monetization-utils';
 import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
 import { backofficeConfirm } from '@qalago/brand/confirm';
+import { BackofficeErrorState, BackofficeSuccessState } from '@qalago/brand/states';
+import {
+  BackofficeField,
+  BackofficeFormActions,
+  BackofficeFormSection,
+  BackofficeInput,
+  BackofficeSelect,
+} from '@qalago/brand/forms';
 import { BUSINESS_ROUTE_ACCESS, useBusinessRouteGate } from '@/lib/use-business-route-gate';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
@@ -251,16 +259,8 @@ export default function BusinessLocationsPage() {
           <p className="muted">{copy.pageIntro}</p>
         </header>
 
-        {error && (
-          <p className="error" role="alert">
-            {error}
-          </p>
-        )}
-        {success && (
-          <p className="success" role="status">
-            {success}
-          </p>
-        )}
+        {error ? <BackofficeErrorState message={error} /> : null}
+        {success ? <BackofficeSuccessState message={success} /> : null}
 
         {!canManage && <p className="muted">{copy.readOnlyHint}</p>}
 
@@ -329,24 +329,28 @@ export default function BusinessLocationsPage() {
         )}
 
         {(mode === 'create' || mode === 'edit') && canManage && token && (
-          <form className="stack" onSubmit={onSubmit}>
-            <h2>{mode === 'create' ? copy.createTitle : copy.editTitle}</h2>
-            <label>
-              {copy.cityLabel}
-              <select
-                value={cityId}
-                onChange={(e) => setCityId(e.target.value)}
-                required
-                disabled={!canEditProfile || mutating}
-              >
-                <option value="">—</option>
-                {cities.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {cityDisplayName(c, locale)}
-                  </option>
-                ))}
-              </select>
-            </label>
+          <form className="bo-form-grid bo-form-grid--1" onSubmit={onSubmit}>
+            <BackofficeFormSection title={mode === 'create' ? copy.createTitle : copy.editTitle}>
+            <BackofficeField label={copy.cityLabel} required>
+              {({ id, describedBy, invalid }) => (
+                <BackofficeSelect
+                  id={id}
+                  aria-describedby={describedBy}
+                  invalid={invalid}
+                  value={cityId}
+                  onChange={(e) => setCityId(e.target.value)}
+                  required
+                  disabled={!canEditProfile || mutating}
+                >
+                  <option value="">—</option>
+                  {cities.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {cityDisplayName(c, locale)}
+                    </option>
+                  ))}
+                </BackofficeSelect>
+              )}
+            </BackofficeField>
             {canEditProfile && cityId && (
               <BusinessLocationField
                 locale={locale}
@@ -359,76 +363,108 @@ export default function BusinessLocationsPage() {
             )}
             {canEditProfile && (
               <>
-                <label>
-                  {ui.text_2928e1}
-                  <input
-                    value={contacts.phone}
-                    onChange={(e) => setContacts((p) => ({ ...p, phone: e.target.value }))}
-                    disabled={mutating}
-                  />
-                </label>
-                <label>
-                  WhatsApp
-                  <input
-                    value={contacts.whatsapp}
-                    onChange={(e) => setContacts((p) => ({ ...p, whatsapp: e.target.value }))}
-                    disabled={mutating}
-                  />
-                </label>
-                <label>
-                  Instagram
-                  <input
-                    value={contacts.instagram}
-                    onChange={(e) => setContacts((p) => ({ ...p, instagram: e.target.value }))}
-                    disabled={mutating}
-                  />
-                </label>
-                <label>
-                  Website
-                  <input
-                    value={contacts.website}
-                    onChange={(e) => setContacts((p) => ({ ...p, website: e.target.value }))}
-                    disabled={mutating}
-                  />
-                </label>
+                <BackofficeField label={ui.text_2928e1}>
+                  {({ id, describedBy, invalid }) => (
+                    <BackofficeInput
+                      id={id}
+                      aria-describedby={describedBy}
+                      invalid={invalid}
+                      inputMode="tel"
+                      value={contacts.phone}
+                      onChange={(e) => setContacts((p) => ({ ...p, phone: e.target.value }))}
+                      disabled={mutating}
+                    />
+                  )}
+                </BackofficeField>
+                <BackofficeField label="WhatsApp">
+                  {({ id, describedBy, invalid }) => (
+                    <BackofficeInput
+                      id={id}
+                      aria-describedby={describedBy}
+                      invalid={invalid}
+                      inputMode="tel"
+                      value={contacts.whatsapp}
+                      onChange={(e) => setContacts((p) => ({ ...p, whatsapp: e.target.value }))}
+                      disabled={mutating}
+                    />
+                  )}
+                </BackofficeField>
+                <BackofficeField label="Instagram">
+                  {({ id, describedBy, invalid }) => (
+                    <BackofficeInput
+                      id={id}
+                      aria-describedby={describedBy}
+                      invalid={invalid}
+                      value={contacts.instagram}
+                      onChange={(e) => setContacts((p) => ({ ...p, instagram: e.target.value }))}
+                      disabled={mutating}
+                    />
+                  )}
+                </BackofficeField>
+                <BackofficeField label="Website">
+                  {({ id, describedBy, invalid }) => (
+                    <BackofficeInput
+                      id={id}
+                      aria-describedby={describedBy}
+                      invalid={invalid}
+                      type="url"
+                      value={contacts.website}
+                      onChange={(e) => setContacts((p) => ({ ...p, website: e.target.value }))}
+                      disabled={mutating}
+                    />
+                  )}
+                </BackofficeField>
               </>
             )}
             {canEditHours && (
               <>
-                <label>
-                  {ui.__255eae}
-                  <input
-                    value={hours.weekdays}
-                    onChange={(e) => setHours((p) => ({ ...p, weekdays: e.target.value }))}
-                    disabled={mutating}
-                  />
-                </label>
-                <label>
-                  {ui.text_cee58b}
-                  <input
-                    value={hours.saturday}
-                    onChange={(e) => setHours((p) => ({ ...p, saturday: e.target.value }))}
-                    disabled={mutating}
-                  />
-                </label>
-                <label>
-                  {ui.text_aa48fa}
-                  <input
-                    value={hours.sunday}
-                    onChange={(e) => setHours((p) => ({ ...p, sunday: e.target.value }))}
-                    disabled={mutating}
-                  />
-                </label>
+                <BackofficeField label={ui.__255eae}>
+                  {({ id, describedBy, invalid }) => (
+                    <BackofficeInput
+                      id={id}
+                      aria-describedby={describedBy}
+                      invalid={invalid}
+                      value={hours.weekdays}
+                      onChange={(e) => setHours((p) => ({ ...p, weekdays: e.target.value }))}
+                      disabled={mutating}
+                    />
+                  )}
+                </BackofficeField>
+                <BackofficeField label={ui.text_cee58b}>
+                  {({ id, describedBy, invalid }) => (
+                    <BackofficeInput
+                      id={id}
+                      aria-describedby={describedBy}
+                      invalid={invalid}
+                      value={hours.saturday}
+                      onChange={(e) => setHours((p) => ({ ...p, saturday: e.target.value }))}
+                      disabled={mutating}
+                    />
+                  )}
+                </BackofficeField>
+                <BackofficeField label={ui.text_aa48fa}>
+                  {({ id, describedBy, invalid }) => (
+                    <BackofficeInput
+                      id={id}
+                      aria-describedby={describedBy}
+                      invalid={invalid}
+                      value={hours.sunday}
+                      onChange={(e) => setHours((p) => ({ ...p, sunday: e.target.value }))}
+                      disabled={mutating}
+                    />
+                  )}
+                </BackofficeField>
               </>
             )}
-            <div className="row gap">
-              <button type="submit" className="btn primary" disabled={mutating}>
+            <BackofficeFormActions>
+              <button type="submit" className="btn btn-primary" disabled={mutating} aria-busy={mutating}>
                 {copy.save}
               </button>
-              <button type="button" className="btn" onClick={resetForm} disabled={mutating}>
+              <button type="button" className="btn btn-ghost" onClick={resetForm} disabled={mutating}>
                 {ui.text_cancel}
               </button>
-            </div>
+            </BackofficeFormActions>
+            </BackofficeFormSection>
           </form>
         )}
       </div>

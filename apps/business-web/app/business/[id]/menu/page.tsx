@@ -35,7 +35,15 @@ import { useOwnerBusiness } from '@/lib/use-owner-business';
 import { BusinessShell } from '@/components/business-shell';
 import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
 import { backofficeConfirm } from '@qalago/brand/confirm';
-import { BackofficeSuccessState, BackofficeSkeleton } from '@qalago/brand/states';
+import { BackofficeErrorState, BackofficeSuccessState, BackofficeSkeleton } from '@qalago/brand/states';
+import {
+  BackofficeField,
+  BackofficeFormActions,
+  BackofficeFormSection,
+  BackofficeInput,
+  BackofficeSelect,
+  BackofficeTextarea,
+} from '@qalago/brand/forms';
 import {
   BackofficeFilterChip,
   BackofficeSearchField,
@@ -326,7 +334,7 @@ export default function BusinessMenuPage() {
       {successMessage ? (
         <BackofficeSuccessState message={successMessage} />
       ) : null}
-      {error && <div className="alert alert-error">{error}</div>}
+      {error ? <BackofficeErrorState message={error} /> : null}
 
       {planStatus && maxItems != null && (
         <section className="form-card" style={{ maxWidth: 920, marginBottom: 18 }}>
@@ -354,57 +362,66 @@ export default function BusinessMenuPage() {
       )}
 
       <div style={{ display: 'grid', gap: 18, maxWidth: 920 }}>
-        <form onSubmit={createGroup} className="form-card form-grid">
-          <h2 style={{ margin: 0 }}>{ui.__fb56a2}</h2>
-          <input
-            value={groupTitle}
-            onChange={(e) => setGroupTitle(e.target.value)}
-            placeholder={ui.____9c14d6}
-          />
-          <button type="submit" className="btn btn-primary">{ui.__44e6ac}</button>
+        <form onSubmit={createGroup} className="form-card bo-form-grid bo-form-grid--1">
+          <BackofficeFormSection title={ui.__fb56a2}>
+            <BackofficeField label={ui.____9c14d6} required>
+              {({ id, describedBy, invalid }) => (
+                <BackofficeInput id={id} aria-describedby={describedBy} invalid={invalid} value={groupTitle} onChange={(e) => setGroupTitle(e.target.value)} required />
+              )}
+            </BackofficeField>
+            <BackofficeFormActions>
+              <button type="submit" className="btn btn-primary">{ui.__44e6ac}</button>
+            </BackofficeFormActions>
+          </BackofficeFormSection>
         </form>
 
-        <form onSubmit={createItem} className="form-card form-grid">
-          <h2 style={{ margin: 0 }}>{ui.__a1281f}</h2>
-          <input
-            value={itemTitle}
-            onChange={(e) => setItemTitle(e.target.value)}
-            placeholder={ui.text_602680}
-          />
-          <input
-            value={itemTitleKk}
-            onChange={(e) => setItemTitleKk(e.target.value)}
-            placeholder={ui.contentAuthoredTitleKkOptional}
-          />
-          <textarea
-            value={itemDescriptionKk}
-            onChange={(e) => setItemDescriptionKk(e.target.value)}
-            placeholder={ui.contentAuthoredDescriptionKkOptional}
-            rows={2}
-          />
-          <input
-            value={itemPrice}
-            onChange={(e) => setItemPrice(e.target.value)}
-            placeholder={ui.__2500_f917c1}
-          />
-          <select value={itemGroupId} onChange={(e) => setItemGroupId(e.target.value)}>
-            <option value="">{ui.__8f4ecc}</option>
-            {sections.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.title}
-              </option>
-            ))}
-          </select>
-          <BranchAvailabilityField
-            namePrefix="menu-create"
-            locations={locations}
-            cities={cities}
-            locationsLoading={locationsLoading}
-            value={createBranch}
-            onChange={setCreateBranch}
-            validationError={createBranchError}
-          />
-          <button type="submit" className="btn btn-primary">{ui.__430244}</button>
+        <form onSubmit={createItem} className="form-card bo-form-grid bo-form-grid--1">
+          <BackofficeFormSection title={ui.__a1281f}>
+            <BackofficeField label={ui.text_602680} required>
+              {({ id, describedBy, invalid }) => (
+                <BackofficeInput id={id} aria-describedby={describedBy} invalid={invalid} value={itemTitle} onChange={(e) => setItemTitle(e.target.value)} required />
+              )}
+            </BackofficeField>
+            <BackofficeField label={ui.contentAuthoredTitleKkOptional}>
+              {({ id, describedBy, invalid }) => (
+                <BackofficeInput id={id} aria-describedby={describedBy} invalid={invalid} value={itemTitleKk} onChange={(e) => setItemTitleKk(e.target.value)} />
+              )}
+            </BackofficeField>
+            <BackofficeField label={ui.contentAuthoredDescriptionKkOptional}>
+              {({ id, describedBy, invalid }) => (
+                <BackofficeTextarea id={id} aria-describedby={describedBy} invalid={invalid} value={itemDescriptionKk} onChange={(e) => setItemDescriptionKk(e.target.value)} rows={2} />
+              )}
+            </BackofficeField>
+            <BackofficeField label={ui.__2500_f917c1}>
+              {({ id, describedBy, invalid }) => (
+                <BackofficeInput id={id} aria-describedby={describedBy} invalid={invalid} inputMode="decimal" value={itemPrice} onChange={(e) => setItemPrice(e.target.value)} />
+              )}
+            </BackofficeField>
+            <BackofficeField label={ui.__8f4ecc} required>
+              {({ id, describedBy, invalid }) => (
+                <BackofficeSelect id={id} aria-describedby={describedBy} invalid={invalid} required value={itemGroupId} onChange={(e) => setItemGroupId(e.target.value)}>
+                  <option value="">{ui.__8f4ecc}</option>
+                  {sections.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.title}
+                    </option>
+                  ))}
+                </BackofficeSelect>
+              )}
+            </BackofficeField>
+            <BranchAvailabilityField
+              namePrefix="menu-create"
+              locations={locations}
+              cities={cities}
+              locationsLoading={locationsLoading}
+              value={createBranch}
+              onChange={setCreateBranch}
+              validationError={createBranchError}
+            />
+            <BackofficeFormActions>
+              <button type="submit" className="btn btn-primary">{ui.__430244}</button>
+            </BackofficeFormActions>
+          </BackofficeFormSection>
         </form>
 
         <section className="form-card">

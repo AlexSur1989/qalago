@@ -3,7 +3,7 @@
 import { useLocale, useUi } from '@/components/locale-provider';
 import { subcategoryDisplayName } from '@/lib/localized-content';
 import Link from 'next/link';
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { type ComponentProps, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import {
   BusinessRow,
@@ -32,6 +32,16 @@ import {
   businessLocationStateFromRow,
   findPrimaryBusinessLocation,
 } from '@/lib/owner-primary-location';
+import { BackofficeSuccessState } from '@qalago/brand/states';
+import {
+  BackofficeField,
+  BackofficeFormActions,
+  BackofficeFormSection,
+  BackofficeInput,
+  BackofficeTextarea,
+  useFormDirty,
+  useUnsavedChangesGuard,
+} from '@qalago/brand/forms';
 
 function parseHours(raw: BusinessRow['workHours']) {
   const weekdays = raw?.mon ?? raw?.tue ?? '09:00-22:00';
@@ -82,6 +92,16 @@ export default function BusinessEditPage() {
   const business = businesses.find((b) => b.id === id) ?? gateBusiness ?? null;
   const access = findMyBusinessItem(myItems, id)?.access ?? null;
   const permissions = useMemo(() => resolveProfileEditPermissions(access), [access]);
+  const profileSnapshot = useMemo(() => JSON.stringify({ form, location }), [form, location]);
+  const { dirty: profileDirty, markClean: markProfileClean } = useFormDirty(profileSnapshot);
+  const profileBaselineSet = useRef(false);
+  useUnsavedChangesGuard(profileDirty && permissions.canEditProfile);
+
+  useEffect(() => {
+    if (!form.title || profileBaselineSet.current) return;
+    markProfileClean(profileSnapshot);
+    profileBaselineSet.current = true;
+  }, [form.title, profileSnapshot, markProfileClean]);
 
   async function refreshMyBusinesses() {
     if (!token) return;
@@ -183,6 +203,7 @@ export default function BusinessEditPage() {
         await ownerApi.updateBusinessLocation(token, id, primaryLocationId, locationPatch);
       }
       setProfileSaved(true);
+      markProfileClean(JSON.stringify({ form, location }));
       await refreshMyBusinesses();
     } catch (err) {
       setError(parseApiError(locale, err));
@@ -270,7 +291,7 @@ export default function BusinessEditPage() {
           <button type="button" className="btn btn-primary" onClick={() => void saveSubcategories()}>
             {ui.text_saveSubcategories}
           </button>
-          {taxonomySaved && <div className="alert alert-success">{ui.__9b14e9}</div>}
+          {taxonomySaved ? <BackofficeSuccessState message={ui.__9b14e9} /> : null}
         </section>
       )}
 
@@ -280,9 +301,9 @@ export default function BusinessEditPage() {
           className="form-card form-grid"
           style={{ maxWidth: 720, marginBottom: 16 }}
         >
-          {field(ui.text_602680, form.title, (v) => setForm({ ...form, title: v }), readOnlyProfile)}
-          {field(ui.__62b685, form.shortDesc, (v) => setForm({ ...form, shortDesc: v }), readOnlyProfile)}
-          {area(ui.text_38ca0a, form.description, (v) => setForm({ ...form, description: v }), readOnlyProfile)}
+          {profileTextField(ui.text_602680, form.title, (v) => setForm({ ...form, title: v }), readOnlyProfile)}
+          {profileTextField(ui.__62b685, form.shortDesc, (v) => setForm({ ...form, shortDesc: v }), readOnlyProfile)}
+          {profileTextArea(ui.text_38ca0a, form.description, (v) => setForm({ ...form, description: v }), readOnlyProfile)}
 
           <div className="form-section-title stack" style={{ gap: 8 }}>
             <h3 style={{ margin: 0 }}>{primaryCopy.sectionTitle}</h3>
@@ -305,28 +326,34 @@ export default function BusinessEditPage() {
               addressLabel={ui.text_80148f}
             />
           )}
-          {field(ui.text_2928e1, form.phone, (v) => setForm({ ...form, phone: v }), readOnlyProfile)}
-          {field('WhatsApp', form.whatsapp, (v) => setForm({ ...form, whatsapp: v }), readOnlyProfile)}
-          {field('Instagram', form.instagram, (v) => setForm({ ...form, instagram: v }), readOnlyProfile)}
-          {field(ui.text_61dee7, form.website, (v) => setForm({ ...form, website: v }), readOnlyProfile)}
+          {profileTextField(ui.text_2928e1, form.phone, (v) => setForm({ ...form, phone: v }), readOnlyProfile, { inputMode: 'tel' })}
+          {profileTextField('WhatsApp', form.whatsapp, (v) => setForm({ ...form, whatsapp: v }), readOnlyProfile, { inputMode: 'tel' })}
+          {profileTextField('Instagram', form.instagram, (v) => setForm({ ...form, instagram: v }), readOnlyProfile)}
+          {profileTextField(ui.text_61dee7, form.website, (v) => setForm({ ...form, website: v }), readOnlyProfile, { type: 'url' })}
 
           {permissions.canEditProfile && (
-            <button type="submit" className="btn btn-primary">{ui.text_74ea58}</button>
+            <BackofficeFormActions>
+              <button type="submit" className="btn btn-primary" disabled={!profileDirty}>
+                {ui.text_74ea58}
+              </button>
+            </BackofficeFormActions>
           )}
-          {profileSaved && <div className="alert alert-success">{ui.text_54a59b}</div>}
+          {profileSaved ? <BackofficeSuccessState message={ui.text_54a59b} /> : null}
         </form>
       )}
 
       {(permissions.canEditProfile || permissions.canEditHours) && (
         <form onSubmit={saveHoursSection} className="form-card form-grid" style={{ maxWidth: 720 }}>
           <h3 className="form-section-title">{ui.__5e77e4}</h3>
-          {field(ui.__255eae, form.weekdays, (v) => setForm({ ...form, weekdays: v }), readOnlyHours)}
-          {field(ui.text_cee58b, form.saturday, (v) => setForm({ ...form, saturday: v }), readOnlyHours)}
-          {field(ui.text_aa48fa, form.sunday, (v) => setForm({ ...form, sunday: v }), readOnlyHours)}
+          {profileTextField(ui.__255eae, form.weekdays, (v) => setForm({ ...form, weekdays: v }), readOnlyHours)}
+          {profileTextField(ui.text_cee58b, form.saturday, (v) => setForm({ ...form, saturday: v }), readOnlyHours)}
+          {profileTextField(ui.text_aa48fa, form.sunday, (v) => setForm({ ...form, sunday: v }), readOnlyHours)}
           {permissions.canEditHours && (
-            <button type="submit" className="btn btn-primary">{ui.text_74ea58}</button>
+            <BackofficeFormActions>
+              <button type="submit" className="btn btn-primary">{ui.text_74ea58}</button>
+            </BackofficeFormActions>
           )}
-          {hoursSaved && <div className="alert alert-success">{ui.text_54a59b}</div>}
+          {hoursSaved ? <BackofficeSuccessState message={ui.text_54a59b} /> : null}
         </form>
       )}
 
@@ -347,41 +374,51 @@ export default function BusinessEditPage() {
   );
 }
 
-function field(
+function profileTextField(
   label: string,
   value: string,
   onChange: (v: string) => void,
   readOnly = false,
+  inputProps: ComponentProps<typeof BackofficeInput> = {},
 ) {
   return (
-    <label>
-      <span>{label}</span>
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        readOnly={readOnly}
-        disabled={readOnly}
-      />
-    </label>
+    <BackofficeField label={label}>
+      {({ id, describedBy, invalid }) => (
+        <BackofficeInput
+          id={id}
+          aria-describedby={describedBy}
+          invalid={invalid}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          readOnly={readOnly}
+          disabled={readOnly}
+          {...inputProps}
+        />
+      )}
+    </BackofficeField>
   );
 }
 
-function area(
+function profileTextArea(
   label: string,
   value: string,
   onChange: (v: string) => void,
   readOnly = false,
 ) {
   return (
-    <label>
-      <span>{label}</span>
-      <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        rows={4}
-        readOnly={readOnly}
-        disabled={readOnly}
-      />
-    </label>
+    <BackofficeField label={label}>
+      {({ id, describedBy, invalid }) => (
+        <BackofficeTextarea
+          id={id}
+          aria-describedby={describedBy}
+          invalid={invalid}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          rows={4}
+          readOnly={readOnly}
+          disabled={readOnly}
+        />
+      )}
+    </BackofficeField>
   );
 }

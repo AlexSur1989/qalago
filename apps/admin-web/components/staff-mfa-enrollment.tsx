@@ -14,6 +14,8 @@ import {
 } from '@/lib/staff-mfa-enrollment-ui';
 import { startStaffMfaEnroll, verifyStaffMfaEnroll } from '@/lib/staff-mfa-api';
 import { setWebAccessToken } from '@/lib/web-auth-token';
+import { BackofficeErrorState } from '@qalago/brand/states';
+import { BackofficeField, BackofficeFormActions, BackofficeInput } from '@qalago/brand/forms';
 
 type Props = {
   token: string;
@@ -113,25 +115,30 @@ export function StaffMfaEnrollment({ token, onEnrolled, onComplete }: Props) {
               Ключ для ручного ввода: <code>{secret}</code>
             </p>
           ) : null}
-          <form onSubmit={confirm} className="form-grid">
-            <label style={{ fontSize: 14 }}>
-              {MFA_TOTP_INPUT_LABEL}
-              <input
-                value={totp}
-                onChange={(e) => setTotp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                placeholder={MFA_TOTP_INPUT_PLACEHOLDER}
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                aria-label="6-значный код из приложения Authenticator"
-              />
-            </label>
-            <button type="submit" className="btn btn-primary" disabled={loading || totp.length !== 6}>
-              {MFA_CONFIRM_BUTTON}
-            </button>
+          <form onSubmit={confirm} className="bo-form-grid bo-form-grid--1">
+            <BackofficeField label={MFA_TOTP_INPUT_LABEL} required helperText={MFA_TOTP_INPUT_PLACEHOLDER}>
+              {({ id, describedBy, invalid }) => (
+                <BackofficeInput
+                  id={id}
+                  aria-describedby={describedBy}
+                  invalid={invalid}
+                  value={totp}
+                  onChange={(e) => setTotp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  required
+                />
+              )}
+            </BackofficeField>
+            <BackofficeFormActions>
+              <button type="submit" className="btn btn-primary" disabled={loading || totp.length !== 6} aria-busy={loading}>
+                {MFA_CONFIRM_BUTTON}
+              </button>
+            </BackofficeFormActions>
           </form>
         </>
       )}
-      {error ? <p style={{ color: 'var(--danger)', marginTop: 12 }}>{error}</p> : null}
+      {error ? <BackofficeErrorState message={error} /> : null}
     </div>
   );
 }

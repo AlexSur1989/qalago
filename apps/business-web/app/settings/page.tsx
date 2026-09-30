@@ -9,6 +9,14 @@ import { BusinessShell } from '@/components/business-shell';
 import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
 import { BUSINESS_ROUTE_ACCESS, useBusinessRouteGate } from '@/lib/use-business-route-gate';
 import { BackofficeAlert, BackofficeLoadingState, BackofficeSuccessState } from '@qalago/brand/states';
+import {
+  BackofficeField,
+  BackofficeFormActions,
+  BackofficeFormSection,
+  BackofficeInput,
+  useFormDirty,
+  useUnsavedChangesGuard,
+} from '@qalago/brand/forms';
 
 export default function SettingsPage() {
   const locale = useLocale();
@@ -27,10 +35,15 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { dirty, markClean } = useFormDirty(name);
+  useUnsavedChangesGuard(dirty);
 
   useEffect(() => {
-    if (user?.name) setName(user.name);
-  }, [user?.name]);
+    if (user?.name) {
+      setName(user.name);
+      markClean(user.name);
+    }
+  }, [user?.name, markClean]);
 
   async function saveAccount(e: FormEvent) {
     e.preventDefault();
@@ -42,7 +55,9 @@ export default function SettingsPage() {
       const updated = await ownerApi.updateMe(token, {
         name: name.trim() || undefined,
       });
-      setName(updated.name ?? '');
+      const nextName = updated.name ?? '';
+      setName(nextName);
+      markClean(nextName);
       setMessage(ui.___6b48a6);
     } catch (err) {
       setError(parseApiError(locale, err));
@@ -83,57 +98,67 @@ export default function SettingsPage() {
       {message ? <BackofficeSuccessState message={message} /> : null}
 
       <section className="form-card" style={{ maxWidth: 560, marginBottom: 16 }}>
-        <h3 style={{ marginTop: 0 }}>{ui.text_a1ceab}</h3>
-        <form onSubmit={saveAccount} className="form-grid">
-          <label>{ui.text_2928e1}<input value={user?.phone ?? ui.___68cbb0} readOnly disabled />
-          </label>
-          <label>{ui.__2ab419}<input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={ui.____bf2df1}
-            />
-          </label>
-          <div>
-            <button type="submit" className="btn btn-primary" disabled={saving}>
-              {saving ? ui.text_73dba4 : ui.text_74ea58}
-            </button>
-          </div>
+        <form onSubmit={saveAccount}>
+          <BackofficeFormSection title={ui.text_a1ceab}>
+            <BackofficeField label={ui.text_2928e1}>
+              {({ id, describedBy, invalid }) => (
+                <BackofficeInput id={id} aria-describedby={describedBy} invalid={invalid} value={user?.phone ?? ui.___68cbb0} readOnly disabled />
+              )}
+            </BackofficeField>
+            <BackofficeField label={ui.__2ab419}>
+              {({ id, describedBy, invalid }) => (
+                <BackofficeInput
+                  id={id}
+                  aria-describedby={describedBy}
+                  invalid={invalid}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={ui.____bf2df1}
+                />
+              )}
+            </BackofficeField>
+            <BackofficeFormActions>
+              <button type="submit" className="btn btn-primary" disabled={saving || !dirty}>
+                {saving ? ui.text_73dba4 : ui.text_74ea58}
+              </button>
+            </BackofficeFormActions>
+          </BackofficeFormSection>
         </form>
       </section>
 
       <section className="form-card" style={{ maxWidth: 560, marginBottom: 16 }}>
-        <h3 style={{ marginTop: 0 }}>{ui.text_4e3e1b}</h3>
-        {business ? (
-          <>
-            <p style={{ margin: '0 0 12px', color: 'var(--text-muted)' }}>{ui.____6982ec}</p>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <Link href={`/business/${business.id}`} className="btn btn-primary">{ui.__a459d5}</Link>
-              <Link href={`/business/${business.id}/media`} className="btn">{ui.___c89390}</Link>
-            </div>
-          </>
-        ) : (
-          <>
-            <p style={{ margin: '0 0 12px', color: 'var(--text-muted)' }}>{ui.____4e15ad}</p>
-            <Link href="/onboarding" className="btn btn-primary">{ui.____3f2e2a}</Link>
-          </>
-        )}
+        <BackofficeFormSection title={ui.text_4e3e1b}>
+          {business ? (
+            <>
+              <p className="bo-form-section-description">{ui.____6982ec}</p>
+              <BackofficeFormActions>
+                <Link href={`/business/${business.id}`} className="btn btn-primary">{ui.__a459d5}</Link>
+                <Link href={`/business/${business.id}/media`} className="btn">{ui.___c89390}</Link>
+              </BackofficeFormActions>
+            </>
+          ) : (
+            <>
+              <p className="bo-form-section-description">{ui.____4e15ad}</p>
+              <Link href="/onboarding" className="btn btn-primary">{ui.____3f2e2a}</Link>
+            </>
+          )}
+        </BackofficeFormSection>
       </section>
 
       <section className="form-card" style={{ maxWidth: 560 }}>
-        <h3 style={{ marginTop: 0 }}>{ui.text_3677ee}</h3>
-        <p style={{ margin: 0, color: 'var(--text-muted)' }}>
-          {ui.text_settingsAuthHint1}
-          {ui.text_settingsAuthHint2}
-        </p>
+        <BackofficeFormSection title={ui.text_3677ee} description={`${ui.text_settingsAuthHint1}${ui.text_settingsAuthHint2}`}>
+          <></>
+        </BackofficeFormSection>
       </section>
 
       <section className="form-card" style={{ maxWidth: 560, marginTop: '1rem' }}>
-        <h3 style={{ marginTop: 0 }}>{ui.__288711}</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <Link href="/privacy" target="_blank" rel="noopener noreferrer">{ui.legalPrivacyLink}</Link>
-          <Link href="/terms" target="_blank" rel="noopener noreferrer">{ui.legalTermsLink}</Link>
-          <Link href="/account-deletion" target="_blank" rel="noopener noreferrer">{ui.legalAccountDeletionLink}</Link>
-        </div>
+        <BackofficeFormSection title={ui.__288711}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <Link href="/privacy" target="_blank" rel="noopener noreferrer">{ui.legalPrivacyLink}</Link>
+            <Link href="/terms" target="_blank" rel="noopener noreferrer">{ui.legalTermsLink}</Link>
+            <Link href="/account-deletion" target="_blank" rel="noopener noreferrer">{ui.legalAccountDeletionLink}</Link>
+          </div>
+        </BackofficeFormSection>
       </section>
         </>
       )}

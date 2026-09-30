@@ -10,6 +10,17 @@ import { adminCatalogLabel } from '@/lib/admin-catalog-labels';
 import { parseAdminCatalogApiError } from '@/lib/admin-catalog-errors';
 import { buildAdminCreateBusinessPayload } from '@/lib/admin-catalog-form';
 import { canCreateAdminCatalogBusiness } from '@/lib/admin-catalog-rbac';
+import { BackofficeErrorState } from '@qalago/brand/states';
+import {
+  BackofficeCheckbox,
+  BackofficeField,
+  BackofficeFieldGroup,
+  BackofficeFormActions,
+  BackofficeFormSection,
+  BackofficeInput,
+  BackofficeSelect,
+  BackofficeTextarea,
+} from '@qalago/brand/forms';
 
 function parseWorkHours(raw: string): Record<string, string> | undefined {
   const trimmed = raw.trim();
@@ -132,110 +143,124 @@ export default function CatalogBusinessCreatePage() {
       <h1>{adminCatalogLabel(locale, 'pageCreateTitle')}</h1>
       <p className="muted">{adminCatalogLabel(locale, 'primaryBranchHint')}</p>
 
-      {error && <p className="muted">{error}</p>}
+      {error ? (
+        <BackofficeErrorState title={adminCatalogLabel(locale, 'errorLoad')} message={error} />
+      ) : null}
 
-      <form className="card" onSubmit={onSubmit} style={{ marginTop: 16, maxWidth: 720 }}>
-        <label>
-          {adminCatalogLabel(locale, 'fieldTitle')}
-          <input required value={title} onChange={(e) => setTitle(e.target.value)} style={{ width: '100%' }} />
-        </label>
-        <label style={{ display: 'block', marginTop: 12 }}>
-          {adminCatalogLabel(locale, 'fieldSlug')}
-          <input required value={slug} onChange={(e) => setSlug(e.target.value)} style={{ width: '100%' }} />
-        </label>
-        <label style={{ display: 'block', marginTop: 12 }}>
-          {adminCatalogLabel(locale, 'fieldCategory')}
-          <select required value={categoryId} onChange={(e) => setCategoryId(e.target.value)} style={{ width: '100%' }}>
-            <option value="">—</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {locale === 'kk' ? c.nameKk : c.nameRu}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {subsForCategory.length > 0 && (
-          <fieldset style={{ marginTop: 12, border: 'none', padding: 0 }}>
-            <legend>{adminCatalogLabel(locale, 'fieldSubcategories')}</legend>
-            {subsForCategory.map((s) => (
-              <label key={s.id} style={{ display: 'block' }}>
-                <input
-                  type="checkbox"
+      <form className="card bo-form-grid bo-form-grid--1" onSubmit={onSubmit} style={{ marginTop: 16, maxWidth: 720 }}>
+        <BackofficeFormSection title={adminCatalogLabel(locale, 'sectionCore')}>
+          <BackofficeField label={adminCatalogLabel(locale, 'fieldTitle')} required>
+            {({ id, describedBy, invalid }) => (
+              <BackofficeInput id={id} aria-describedby={describedBy} invalid={invalid} required value={title} onChange={(e) => setTitle(e.target.value)} />
+            )}
+          </BackofficeField>
+          <BackofficeField label={adminCatalogLabel(locale, 'fieldSlug')} required>
+            {({ id, describedBy, invalid }) => (
+              <BackofficeInput id={id} aria-describedby={describedBy} invalid={invalid} required value={slug} onChange={(e) => setSlug(e.target.value)} />
+            )}
+          </BackofficeField>
+          <BackofficeField label={adminCatalogLabel(locale, 'fieldCategory')} required>
+            {({ id, describedBy, invalid }) => (
+              <BackofficeSelect id={id} aria-describedby={describedBy} invalid={invalid} required value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+                <option value="">—</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {locale === 'kk' ? c.nameKk : c.nameRu}
+                  </option>
+                ))}
+              </BackofficeSelect>
+            )}
+          </BackofficeField>
+          {subsForCategory.length > 0 && (
+            <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
+              <legend className="bo-field-label">{adminCatalogLabel(locale, 'fieldSubcategories')}</legend>
+              {subsForCategory.map((s) => (
+                <BackofficeCheckbox
+                  key={s.id}
+                  label={locale === 'kk' ? s.nameKk : s.nameRu}
                   checked={subcategoryIds.includes(s.id)}
                   onChange={() => toggleSub(s.id)}
-                />{' '}
-                {locale === 'kk' ? s.nameKk : s.nameRu}
-              </label>
-            ))}
-          </fieldset>
-        )}
+                />
+              ))}
+            </fieldset>
+          )}
+          <BackofficeField label={adminCatalogLabel(locale, 'fieldShortDesc')}>
+            {({ id, describedBy, invalid }) => (
+              <BackofficeTextarea id={id} aria-describedby={describedBy} invalid={invalid} value={shortDesc} onChange={(e) => setShortDesc(e.target.value)} rows={2} />
+            )}
+          </BackofficeField>
+          <BackofficeField label={adminCatalogLabel(locale, 'fieldDescription')}>
+            {({ id, describedBy, invalid }) => (
+              <BackofficeTextarea id={id} aria-describedby={describedBy} invalid={invalid} value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+            )}
+          </BackofficeField>
+        </BackofficeFormSection>
 
-        <label style={{ display: 'block', marginTop: 12 }}>
-          {adminCatalogLabel(locale, 'fieldShortDesc')}
-          <textarea value={shortDesc} onChange={(e) => setShortDesc(e.target.value)} rows={2} style={{ width: '100%' }} />
-        </label>
-        <label style={{ display: 'block', marginTop: 12 }}>
-          {adminCatalogLabel(locale, 'fieldDescription')}
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} style={{ width: '100%' }} />
-        </label>
+        <BackofficeFormSection title={adminCatalogLabel(locale, 'sectionLocations')}>
+          <BackofficeField label={adminCatalogLabel(locale, 'fieldCity')} required>
+            {({ id, describedBy, invalid }) => (
+              <BackofficeSelect id={id} aria-describedby={describedBy} invalid={invalid} required value={cityId} onChange={(e) => setCityId(e.target.value)}>
+                <option value="">—</option>
+                {citiesAdmin.filter((c) => c.id).map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {locale === 'kk' && c.nameKk ? c.nameKk : c.nameRu}
+                  </option>
+                ))}
+              </BackofficeSelect>
+            )}
+          </BackofficeField>
+          <BackofficeField label={adminCatalogLabel(locale, 'fieldAddress')} required>
+            {({ id, describedBy, invalid }) => (
+              <BackofficeInput id={id} aria-describedby={describedBy} invalid={invalid} required value={address} onChange={(e) => setAddress(e.target.value)} />
+            )}
+          </BackofficeField>
+          <BackofficeFieldGroup columns="inline">
+            <BackofficeField label={adminCatalogLabel(locale, 'fieldLat')}>
+              {({ id, describedBy, invalid }) => (
+                <BackofficeInput id={id} aria-describedby={describedBy} invalid={invalid} inputMode="decimal" value={latitude} onChange={(e) => setLatitude(e.target.value)} />
+              )}
+            </BackofficeField>
+            <BackofficeField label={adminCatalogLabel(locale, 'fieldLng')}>
+              {({ id, describedBy, invalid }) => (
+                <BackofficeInput id={id} aria-describedby={describedBy} invalid={invalid} inputMode="decimal" value={longitude} onChange={(e) => setLongitude(e.target.value)} />
+              )}
+            </BackofficeField>
+          </BackofficeFieldGroup>
+          <BackofficeField label={adminCatalogLabel(locale, 'fieldPhone')}>
+            {({ id, describedBy, invalid }) => (
+              <BackofficeInput id={id} aria-describedby={describedBy} invalid={invalid} inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            )}
+          </BackofficeField>
+          <BackofficeField label={adminCatalogLabel(locale, 'fieldWhatsapp')}>
+            {({ id, describedBy, invalid }) => (
+              <BackofficeInput id={id} aria-describedby={describedBy} invalid={invalid} inputMode="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
+            )}
+          </BackofficeField>
+          <BackofficeField label={adminCatalogLabel(locale, 'fieldInstagram')}>
+            {({ id, describedBy, invalid }) => (
+              <BackofficeInput id={id} aria-describedby={describedBy} invalid={invalid} value={instagram} onChange={(e) => setInstagram(e.target.value)} />
+            )}
+          </BackofficeField>
+          <BackofficeField label={adminCatalogLabel(locale, 'fieldWebsite')}>
+            {({ id, describedBy, invalid }) => (
+              <BackofficeInput id={id} aria-describedby={describedBy} invalid={invalid} type="url" value={website} onChange={(e) => setWebsite(e.target.value)} />
+            )}
+          </BackofficeField>
+          <BackofficeField label={adminCatalogLabel(locale, 'fieldWorkHours')}>
+            {({ id, describedBy, invalid }) => (
+              <BackofficeTextarea id={id} aria-describedby={describedBy} invalid={invalid} value={workHoursJson} onChange={(e) => setWorkHoursJson(e.target.value)} rows={2} />
+            )}
+          </BackofficeField>
+        </BackofficeFormSection>
 
-        <h3 style={{ marginTop: 20 }}>{adminCatalogLabel(locale, 'sectionLocations')}</h3>
-        <label style={{ display: 'block' }}>
-          {adminCatalogLabel(locale, 'fieldCity')}
-          <select required value={cityId} onChange={(e) => setCityId(e.target.value)} style={{ width: '100%' }}>
-            <option value="">—</option>
-            {citiesAdmin.filter((c) => c.id).map((c) => (
-              <option key={c.id} value={c.id}>
-                {locale === 'kk' && c.nameKk ? c.nameKk : c.nameRu}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label style={{ display: 'block', marginTop: 12 }}>
-          {adminCatalogLabel(locale, 'fieldAddress')}
-          <input required value={address} onChange={(e) => setAddress(e.target.value)} style={{ width: '100%' }} />
-        </label>
-        <div style={{ display: 'flex', gap: 12, marginTop: 12, flexWrap: 'wrap' }}>
-          <label>
-            {adminCatalogLabel(locale, 'fieldLat')}
-            <input value={latitude} onChange={(e) => setLatitude(e.target.value)} />
-          </label>
-          <label>
-            {adminCatalogLabel(locale, 'fieldLng')}
-            <input value={longitude} onChange={(e) => setLongitude(e.target.value)} />
-          </label>
-        </div>
-
-        <label style={{ display: 'block', marginTop: 12 }}>
-          {adminCatalogLabel(locale, 'fieldPhone')}
-          <input value={phone} onChange={(e) => setPhone(e.target.value)} style={{ width: '100%' }} />
-        </label>
-        <label style={{ display: 'block', marginTop: 12 }}>
-          {adminCatalogLabel(locale, 'fieldWhatsapp')}
-          <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} style={{ width: '100%' }} />
-        </label>
-        <label style={{ display: 'block', marginTop: 12 }}>
-          {adminCatalogLabel(locale, 'fieldInstagram')}
-          <input value={instagram} onChange={(e) => setInstagram(e.target.value)} style={{ width: '100%' }} />
-        </label>
-        <label style={{ display: 'block', marginTop: 12 }}>
-          {adminCatalogLabel(locale, 'fieldWebsite')}
-          <input value={website} onChange={(e) => setWebsite(e.target.value)} style={{ width: '100%' }} />
-        </label>
-        <label style={{ display: 'block', marginTop: 12 }}>
-          {adminCatalogLabel(locale, 'fieldWorkHours')}
-          <textarea value={workHoursJson} onChange={(e) => setWorkHoursJson(e.target.value)} rows={2} style={{ width: '100%' }} />
-        </label>
-
-        <div style={{ marginTop: 20, display: 'flex', gap: 12 }}>
-          <button type="submit" className="btn btn-primary" disabled={submitting}>
+        <BackofficeFormActions>
+          <button type="submit" className="btn btn-primary" disabled={submitting} aria-busy={submitting}>
             {submitting ? adminCatalogLabel(locale, 'creating') : adminCatalogLabel(locale, 'createSubmit')}
           </button>
           <Link href="/catalog/businesses" className="btn btn-ghost">
-            ←
+            Отмена
           </Link>
-        </div>
+        </BackofficeFormActions>
       </form>
     </section>
   );

@@ -15,6 +15,7 @@
 | `packages/brand/status` (`@qalago/brand/status`) | Shared status → label + tone (business lifecycle, plan tier, feature flags) |
 | `packages/brand/backoffice-confirm.css` + `@qalago/brand/confirm` | Accessible confirm dialog + `backofficeConfirm` bridge (UXA.7) |
 | `packages/brand/backoffice-tables.css` + `@qalago/brand/tables` | Tables, toolbars, search, filters, pagination (UXA.4) |
+| `packages/brand/backoffice-forms.css` + `@qalago/brand/forms` | Form fields, controls, sections, actions, switch, upload surface, dirty helpers (UXA.5) |
 
 Both apps import in order:
 
@@ -98,7 +99,7 @@ Canonical: `--radius-xs` (8px), `--radius-md` (12px), `--radius-lg` (16px), `--r
 - **Retry:** Secondary button, disabled while pending, no auto-retry loops.
 - **Icons:** UXA.3 state glyphs (`check`, `alert-circle`, `alert-triangle`, `info`, `empty`, `lock`, `refresh`) — no emoji in state components.
 - **i18n:** Business wrappers pass RU/KK copy from `useUi()`; Admin representative surfaces RU-first.
-- **Migration debt:** Not every screen migrated; tables/forms/dashboard partial-failure UX deferred to UXA.4/UXA.5/UXA.8.
+- **Migration debt:** Not every screen migrated; dashboard partial-failure UX deferred to UXA.8.
 
 ## Status badges & confirmations (UXA.7)
 
@@ -127,9 +128,20 @@ Canonical: `--radius-xs` (8px), `--radius-md` (12px), `--radius-lg` (16px), `--r
 - **Migrated Business:** menu (search/chips/empty), promotions list badges, messages inbox search, media grid unchanged (scope radios).
 - **Deferred:** Admin dashboard monolith tables; legal/data-requests full pass; remaining `.data-table` / `.table` pages; reviews card layout; team list-as-cards.
 
+## Forms (UXA.5)
+
+- **Primitives:** `@qalago/brand/forms` + `backoffice-forms.css` — `BackofficeField` (label, required `*`, helper, error, `aria-describedby` / `aria-invalid`), `BackofficeInput` / `Textarea` / `Select`, `BackofficeCheckbox` / `Radio`, `BackofficeSwitch` (`role="switch"`), `BackofficeFormSection`, `BackofficeFormActions`, `BackofficeFieldGroup`, `BackofficeUploadSurface`. Hooks: `useFormDirty`, `useUnsavedChangesGuard` (`beforeunload` when dirty).
+- **Field contract:** Label above control; required marker on label + `required` / `aria-required`; errors via `.bo-field-error` + `role="alert"` (not border-only). Disabled/read-only preserve UXA.1 control tokens (40px default, 32px compact where used).
+- **Feedback:** Field validation → field error; server/general → `BackofficeErrorState`. Success → `BackofficeSuccessState` («Изменения сохранены» or domain copy). Submit: primary disabled + `aria-busy` while pending (UXA.9 inline loading pattern).
+- **Dirty / unsaved:** Only on local-state forms where safe (Business settings, business profile). `beforeunload` when dirty; in-app cancel-with-dirty via UXA.7 confirm **deferred** on some surfaces.
+- **Special types:** `inputMode="tel"` / `type="url"` / `inputMode="decimal"` presentation-only — **no** backend normalization changes. Native `<select>` only (no custom select library). Work-hours rows use same controls; **6.12A** Business vs BusinessLocation semantics unchanged.
+- **Migrated Admin:** catalog business create/detail (core + taxonomy + catalog edit), platform feature row (`BackofficeSwitch`), staff MFA enrollment TOTP form.
+- **Migrated Business:** settings (name), business profile + hours sections, locations create/edit (incl. `BusinessLocationField` address), promotions create/edit overlay, menu group/item create.
+- **Deferred:** Admin staff `[id]` action panels; business-requests editable modals; media upload full `BackofficeUploadSurface`; menu/item edit overlays; onboarding/claim forms; monetization checkout; admin catalog locations manager inner forms; in-app dirty cancel on all routes.
+
 ## UXA.1 does NOT cover
 
-Forms migration (UXA.5), location UX (UXA.6), dashboards (UXA.8), responsive pass (UXA.10), a11y closure (UXA.11), RU/KK visual QA (UXA.12), dark mode.
+Location UX (UXA.6), dashboards (UXA.8), responsive pass (UXA.10), a11y closure (UXA.11), RU/KK visual QA (UXA.12), dark mode.
 
 ## Tests
 

@@ -18,6 +18,7 @@ import {
   type GeocodingSuggestion,
 } from '@/lib/geocoding-api';
 import { LocationMapPicker } from './location-map-picker';
+import { BackofficeField, BackofficeInput } from '@qalago/brand/forms';
 
 export type BusinessLocationState = {
   address: string;
@@ -124,21 +125,30 @@ export function BusinessLocationField({
     value.longitude != null &&
     !(value.latitude === 0 && value.longitude === 0);
 
+  const coordHint =
+    !readOnly && !hasCoords && value.address.trim().length >= 2
+      ? businessLocationRequired(locale)
+      : undefined;
+
   return (
     <div>
-      <label>
-        {addressLabel}
-        <input
-          value={value.address}
-          disabled={readOnly}
-          onChange={(e) => {
-            onChange({ ...value, address: e.target.value });
-            if (!readOnly) scheduleAutocomplete(e.target.value);
-          }}
-        />
-      </label>
-      {loading && <p style={{ fontSize: 12 }}>…</p>}
-      {error && <p className="alert alert-error" style={{ marginTop: 8 }}>{error}</p>}
+      <BackofficeField label={addressLabel} required error={error ?? coordHint}>
+        {({ id, describedBy, invalid }) => (
+          <BackofficeInput
+            id={id}
+            aria-describedby={describedBy}
+            invalid={invalid}
+            value={value.address}
+            disabled={readOnly}
+            readOnly={readOnly}
+            onChange={(e) => {
+              onChange({ ...value, address: e.target.value });
+              if (!readOnly) scheduleAutocomplete(e.target.value);
+            }}
+          />
+        )}
+      </BackofficeField>
+      {loading && <p className="bo-field-helper">…</p>}
       {suggestions.length > 0 && !readOnly && (
         <ul className="card" style={{ marginTop: 8, padding: 0, listStyle: 'none' }}>
           {suggestions.map((item) => (
@@ -154,11 +164,6 @@ export function BusinessLocationField({
             </li>
           ))}
         </ul>
-      )}
-      {!readOnly && !hasCoords && value.address.trim().length >= 2 && (
-        <p style={{ color: 'var(--danger)', fontSize: 12, marginTop: 8 }}>
-          {businessLocationRequired(locale)}
-        </p>
       )}
       {hasCoords && !readOnly && (
         <div style={{ marginTop: 12 }}>

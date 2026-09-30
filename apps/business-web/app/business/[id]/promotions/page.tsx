@@ -37,7 +37,14 @@ import { BusinessShell } from '@/components/business-shell';
 import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
 import { backofficeConfirm } from '@qalago/brand/confirm';
 import { BackofficeBadge } from '@qalago/brand/badges';
-import { BackofficeEmptyState } from '@qalago/brand/states';
+import { BackofficeEmptyState, BackofficeErrorState, BackofficeSuccessState } from '@qalago/brand/states';
+import {
+  BackofficeField,
+  BackofficeFormActions,
+  BackofficeFormSection,
+  BackofficeInput,
+  BackofficeTextarea,
+} from '@qalago/brand/forms';
 import {
   BUSINESS_ROUTE_ACCESS,
   isBusinessRouteContentAllowed,
@@ -294,57 +301,53 @@ export default function BusinessPromotionsPage() {
         </section>
       )}
 
-      <form onSubmit={create} className="form-card form-grid" style={{ maxWidth: 720, marginBottom: 24 }}>
-        <h2 style={{ margin: 0 }}>{ui.__404816}</h2>
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder={ui.text_602680}
-          disabled={atActiveLimit}
-        />
-        <input
-          value={titleKk}
-          onChange={(e) => setTitleKk(e.target.value)}
-          placeholder={ui.contentAuthoredTitleKkOptional}
-          disabled={atActiveLimit}
-        />
-        <input
-          value={discountText}
-          onChange={(e) => setDiscountText(e.target.value)}
-          placeholder={ui.text_d90396}
-          disabled={atActiveLimit}
-        />
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder={ui.text_38ca0a}
-          rows={3}
-          disabled={atActiveLimit}
-        />
-        <textarea
-          value={descriptionKk}
-          onChange={(e) => setDescriptionKk(e.target.value)}
-          placeholder={ui.contentAuthoredDescriptionKkOptional}
-          rows={3}
-          disabled={atActiveLimit}
-        />
-        <BranchAvailabilityField
-          namePrefix="promo-create"
-          locations={locations}
-          cities={cities}
-          locationsLoading={locationsLoading}
-          value={createBranch}
-          onChange={setCreateBranch}
-          disabled={atActiveLimit}
-          validationError={createBranchError}
-        />
-        <button type="submit" className="btn btn-primary" disabled={atActiveLimit}>
-          {atActiveLimit ? ui.___c45ec6 : ui.__8062f8}
-        </button>
+      <form onSubmit={create} className="form-card bo-form-grid bo-form-grid--1" style={{ maxWidth: 720, marginBottom: 24 }}>
+        <BackofficeFormSection title={ui.__404816}>
+          <BackofficeField label={ui.text_602680} required>
+            {({ id, describedBy, invalid }) => (
+              <BackofficeInput id={id} aria-describedby={describedBy} invalid={invalid} value={title} onChange={(e) => setTitle(e.target.value)} disabled={atActiveLimit} required />
+            )}
+          </BackofficeField>
+          <BackofficeField label={ui.contentAuthoredTitleKkOptional}>
+            {({ id, describedBy, invalid }) => (
+              <BackofficeInput id={id} aria-describedby={describedBy} invalid={invalid} value={titleKk} onChange={(e) => setTitleKk(e.target.value)} disabled={atActiveLimit} />
+            )}
+          </BackofficeField>
+          <BackofficeField label={ui.text_d90396}>
+            {({ id, describedBy, invalid }) => (
+              <BackofficeInput id={id} aria-describedby={describedBy} invalid={invalid} value={discountText} onChange={(e) => setDiscountText(e.target.value)} disabled={atActiveLimit} />
+            )}
+          </BackofficeField>
+          <BackofficeField label={ui.text_38ca0a}>
+            {({ id, describedBy, invalid }) => (
+              <BackofficeTextarea id={id} aria-describedby={describedBy} invalid={invalid} value={description} onChange={(e) => setDescription(e.target.value)} rows={3} disabled={atActiveLimit} />
+            )}
+          </BackofficeField>
+          <BackofficeField label={ui.contentAuthoredDescriptionKkOptional}>
+            {({ id, describedBy, invalid }) => (
+              <BackofficeTextarea id={id} aria-describedby={describedBy} invalid={invalid} value={descriptionKk} onChange={(e) => setDescriptionKk(e.target.value)} rows={3} disabled={atActiveLimit} />
+            )}
+          </BackofficeField>
+          <BranchAvailabilityField
+            namePrefix="promo-create"
+            locations={locations}
+            cities={cities}
+            locationsLoading={locationsLoading}
+            value={createBranch}
+            onChange={setCreateBranch}
+            disabled={atActiveLimit}
+            validationError={createBranchError}
+          />
+          <BackofficeFormActions>
+            <button type="submit" className="btn btn-primary" disabled={atActiveLimit}>
+              {atActiveLimit ? ui.___c45ec6 : ui.__8062f8}
+            </button>
+          </BackofficeFormActions>
+        </BackofficeFormSection>
       </form>
 
-      {successMessage && <div className="alert alert-success">{successMessage}</div>}
-      {error && <div className="alert alert-error">{error}</div>}
+      {successMessage ? <BackofficeSuccessState message={successMessage} /> : null}
+      {error ? <BackofficeErrorState message={error} /> : null}
 
       <section className="form-card" style={{ maxWidth: 720 }}>
         <h2 style={{ marginTop: 0 }}>
@@ -390,40 +393,32 @@ export default function BusinessPromotionsPage() {
 
       {editingPromo && editForm && (
         <EditOverlay title={ui.promotionEditTitle} onClose={closeEdit}>
-          <form onSubmit={saveEdit} className="form-grid">
-            <input
-              value={editForm.title}
-              onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-              placeholder={ui.text_602680}
-              required
-              disabled={editSaving}
-            />
-            <input
-              value={editForm.titleKk}
-              onChange={(e) => setEditForm({ ...editForm, titleKk: e.target.value })}
-              placeholder={ui.contentAuthoredTitleKkOptional}
-              disabled={editSaving}
-            />
-            <input
-              value={editForm.discountText}
-              onChange={(e) => setEditForm({ ...editForm, discountText: e.target.value })}
-              placeholder={ui.text_d90396}
-              disabled={editSaving}
-            />
-            <textarea
-              value={editForm.description}
-              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-              placeholder={ui.text_38ca0a}
-              rows={3}
-              disabled={editSaving}
-            />
-            <textarea
-              value={editForm.descriptionKk}
-              onChange={(e) => setEditForm({ ...editForm, descriptionKk: e.target.value })}
-              placeholder={ui.contentAuthoredDescriptionKkOptional}
-              rows={3}
-              disabled={editSaving}
-            />
+          <form onSubmit={saveEdit} className="bo-form-grid bo-form-grid--1">
+            <BackofficeField label={ui.text_602680} required>
+              {({ id, describedBy, invalid }) => (
+                <BackofficeInput id={id} aria-describedby={describedBy} invalid={invalid} value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} required disabled={editSaving} />
+              )}
+            </BackofficeField>
+            <BackofficeField label={ui.contentAuthoredTitleKkOptional}>
+              {({ id, describedBy, invalid }) => (
+                <BackofficeInput id={id} aria-describedby={describedBy} invalid={invalid} value={editForm.titleKk} onChange={(e) => setEditForm({ ...editForm, titleKk: e.target.value })} disabled={editSaving} />
+              )}
+            </BackofficeField>
+            <BackofficeField label={ui.text_d90396}>
+              {({ id, describedBy, invalid }) => (
+                <BackofficeInput id={id} aria-describedby={describedBy} invalid={invalid} value={editForm.discountText} onChange={(e) => setEditForm({ ...editForm, discountText: e.target.value })} disabled={editSaving} />
+              )}
+            </BackofficeField>
+            <BackofficeField label={ui.text_38ca0a}>
+              {({ id, describedBy, invalid }) => (
+                <BackofficeTextarea id={id} aria-describedby={describedBy} invalid={invalid} value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} rows={3} disabled={editSaving} />
+              )}
+            </BackofficeField>
+            <BackofficeField label={ui.contentAuthoredDescriptionKkOptional}>
+              {({ id, describedBy, invalid }) => (
+                <BackofficeTextarea id={id} aria-describedby={describedBy} invalid={invalid} value={editForm.descriptionKk} onChange={(e) => setEditForm({ ...editForm, descriptionKk: e.target.value })} rows={3} disabled={editSaving} />
+              )}
+            </BackofficeField>
             <BranchAvailabilityField
               namePrefix="promo-edit"
               locations={locations}
@@ -434,14 +429,14 @@ export default function BusinessPromotionsPage() {
               disabled={editSaving}
               validationError={editBranchError}
             />
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <button type="submit" className="btn btn-primary" disabled={editSaving}>
+            <BackofficeFormActions>
+              <button type="submit" className="btn btn-primary" disabled={editSaving} aria-busy={editSaving}>
                 {editSaving ? ui.text_89d69a : ui.promotionEditSave}
               </button>
-              <button type="button" className="btn" onClick={closeEdit} disabled={editSaving}>
+              <button type="button" className="btn btn-ghost" onClick={closeEdit} disabled={editSaving}>
                 {ui.text_cancel}
               </button>
-            </div>
+            </BackofficeFormActions>
           </form>
         </EditOverlay>
       )}

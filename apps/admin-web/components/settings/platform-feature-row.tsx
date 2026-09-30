@@ -1,6 +1,7 @@
 'use client';
 
 import { BackofficeBadge } from '@qalago/brand/badges';
+import { BackofficeSwitch } from '@qalago/brand/forms';
 import { featureFlagPresentation } from '@qalago/brand/status';
 
 type PlatformFeatureRowProps = {
@@ -29,27 +30,18 @@ export function PlatformFeatureRow({
 
   return (
     <div className="card" style={{ marginBottom: 12 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-        <div style={{ flex: 1, minWidth: 220 }}>
-          <h3 style={{ margin: '0 0 8px' }}>{title}</h3>
-          <p className="muted" style={{ margin: 0 }}>
-            {description}
-          </p>
-          {error ? <p style={{ color: 'var(--danger)', marginTop: 8 }}>{error}</p> : null}
-        </div>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <input
-            type="checkbox"
-            checked={enabled}
-            disabled={disabled || busy}
-            onChange={(e) => onToggle(e.target.checked)}
-          />
-          {busy ? (
-            <span>…</span>
-          ) : (
-            <BackofficeBadge label={flag.label} tone={flag.tone} size="compact" />
-          )}
-        </label>
+      <BackofficeSwitch
+        label={title}
+        description={description}
+        checked={enabled}
+        disabled={disabled}
+        loading={busy}
+        onCheckedChange={onToggle}
+      />
+      <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+        {busy ? <span className="muted">Сохранение…</span> : null}
+        {!busy ? <BackofficeBadge label={flag.label} tone={flag.tone} size="compact" /> : null}
+        {error ? <p className="bo-field-error" role="alert">{error}</p> : null}
       </div>
     </div>
   );
