@@ -1,6 +1,7 @@
 @import '../../../packages/brand/qalago-theme.css';
 @import '../../../packages/brand/backoffice-primitives.css';
 @import '../../../packages/brand/backoffice-shell.css';
+@import '../../../packages/brand/backoffice-states.css';
 
 *,
 *::before,

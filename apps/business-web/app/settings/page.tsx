@@ -8,6 +8,7 @@ import { ownerApi } from '@/lib/api';
 import { BusinessShell } from '@/components/business-shell';
 import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
 import { BUSINESS_ROUTE_ACCESS, useBusinessRouteGate } from '@/lib/use-business-route-gate';
+import { BackofficeAlert, BackofficeLoadingState, BackofficeSuccessState } from '@qalago/brand/states';
 
 export default function SettingsPage() {
   const locale = useLocale();
@@ -50,7 +51,13 @@ export default function SettingsPage() {
     }
   }
 
-  if (!ready || !token) return <p className="page-content">{ui.text_89d69a}</p>;
+  if (!ready || !token) {
+    return (
+      <div className="page-content">
+        <BackofficeLoadingState density="page" label={ui.text_89d69a} />
+      </div>
+    );
+  }
 
   return (
     <BusinessShell
@@ -72,8 +79,8 @@ export default function SettingsPage() {
         <Link href="/dashboard" className="btn">{ui.__65f9d8}</Link>
       </header>
 
-      {error && <div className="alert alert-error">{error}</div>}
-      {message && <div className="alert alert-success">{message}</div>}
+      {error ? <BackofficeAlert variant="danger" message={error} /> : null}
+      {message ? <BackofficeSuccessState message={message} /> : null}
 
       <section className="form-card" style={{ maxWidth: 560, marginBottom: 16 }}>
         <h3 style={{ marginTop: 0 }}>{ui.text_a1ceab}</h3>

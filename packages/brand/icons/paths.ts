@@ -80,4 +80,15 @@ export const ICON_PATHS: Record<QalaBackofficeIconName, readonly string[]> = {
   close: ['M18 6 6 18', 'M6 6l12 12'],
   'chevron-left': ['M15 18l-6-6 6-6'],
   'chevron-right': ['M9 18l6-6-6-6'],
+  check: ['M20 6 9 17l-5-5'],
+  'alert-circle': ['M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z', 'M12 8v4', 'M12 16h.01'],
+  'alert-triangle': [
+    'M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z',
+    'M12 9v4',
+    'M12 17h.01',
+  ],
+  info: ['M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z', 'M12 16v-4', 'M12 8h.01'],
+  empty: ['M4 4h16v16H4z', 'M4 8h16', 'M8 12h.01', 'M12 12h.01', 'M16 12h.01'],
+  lock: ['M7 11V7a5 5 0 0 1 10 0v4', 'M5 11h14v10H5z'],
+  refresh: ['M21 12a9 9 0 1 1-3-6.7', 'M21 3v6h-6'],
 };

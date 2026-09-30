@@ -10,6 +10,7 @@
 | `packages/brand/backoffice-primitives.css` | Shared focus, button/input/alert/tag baselines, typography helpers |
 | `packages/brand/backoffice-shell.css` | Shared shell layout: sidebar, topbar, nav item geometry, page canvas, mobile drawer (UXA.2) |
 | `packages/brand/icons/` (`@qalago/brand/icons`) | QalaGo Backoffice SVG icon components (UXA.3) |
+| `packages/brand/backoffice-states.css` + `@qalago/brand/states` | System states — alerts, loading, skeleton, empty, error, access (UXA.9) |
 
 Both apps import in order:
 
@@ -85,9 +86,19 @@ Canonical: `--radius-xs` (8px), `--radius-md` (12px), `--radius-lg` (16px), `--r
 - **Nav grouping:** **Flat nav** retained (no section labels) to avoid clutter.
 - **Nav icons:** UXA.3 SVG slot (20px, centered via `.nav-icon` flex box).
 
+## System states (UXA.9)
+
+- **Source:** `@qalago/brand/states` + `backoffice-states.css`. Primitives: `BackofficeAlert`, `BackofficeSuccessState`, `BackofficeLoadingState` (page / section / inline), `BackofficeSkeleton` (line, title, card, table-row, kpi), `BackofficeEmptyState`, `BackofficeErrorState` (retry), `BackofficeAccessDenied`, `BackofficeFeatureUnavailable`, `BackofficeNotFoundState`.
+- **Alerts:** Variants `success` | `warning` | `danger` | `info` | `neutral` via existing `.alert-*` token classes; **danger** → `role="alert"`, others → `role="status"` where appropriate. **No toast library** in UXA.9 — durable feedback uses inline alerts.
+- **Access vs feature:** **Access denied** = missing permission (`BackofficeAccessDenied` / Business wrapper). **Feature unavailable** = platform flag off (`BackofficeFeatureUnavailable` / Team `businessTeamEnabled`). Logic unchanged.
+- **Retry:** Secondary button, disabled while pending, no auto-retry loops.
+- **Icons:** UXA.3 state glyphs (`check`, `alert-circle`, `alert-triangle`, `info`, `empty`, `lock`, `refresh`) — no emoji in state components.
+- **i18n:** Business wrappers pass RU/KK copy from `useUi()`; Admin representative surfaces RU-first.
+- **Migration debt:** Not every screen migrated; tables/forms/dashboard partial-failure UX deferred to UXA.4/UXA.5/UXA.8.
+
 ## UXA.1 does NOT cover
 
-Tables/filters (UXA.4), forms migration (UXA.5), location UX (UXA.6), status badges (UXA.7), dashboards (UXA.8), loading/empty states (UXA.9), responsive pass (UXA.10), a11y closure (UXA.11), RU/KK visual QA (UXA.12), dark mode.
+Tables/filters (UXA.4), forms migration (UXA.5), location UX (UXA.6), status badges (UXA.7), dashboards (UXA.8), responsive pass (UXA.10), a11y closure (UXA.11), RU/KK visual QA (UXA.12), dark mode.
 
 ## Tests
 

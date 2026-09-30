@@ -8,6 +8,11 @@ import { adminCatalogLabel, adminCatalogStatusLabel } from '@/lib/admin-catalog-
 import { parseAdminCatalogApiError } from '@/lib/admin-catalog-errors';
 import { canCreateAdminCatalogBusiness } from '@/lib/admin-catalog-rbac';
 import { statusClass } from '@/lib/admin-utils';
+import {
+  BackofficeEmptyState,
+  BackofficeErrorState,
+  BackofficeSkeleton,
+} from '@qalago/brand/states';
 
 export default function CatalogBusinessesListPage() {
   const { token, user, citySlug, locale } = useCatalogContext();
@@ -17,6 +22,7 @@ export default function CatalogBusinessesListPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState({ page: 1, limit: 20, total: 0 });
+  const [refreshNonce, setRefreshNonce] = useState(0);
 
   const canCreate = canCreateAdminCatalogBusiness(user.role);
 
@@ -52,7 +58,7 @@ export default function CatalogBusinessesListPage() {
     return () => {
       cancelled = true;
     };
-  }, [token, citySlug, statusFilter, page, locale]);
+  }, [token, citySlug, statusFilter, page, locale, refreshNonce]);
 
   return (
     <section>
@@ -77,12 +83,22 @@ export default function CatalogBusinessesListPage() {
         </label>
       </div>
 
-      {loading && <p className="muted">{adminCatalogLabel(locale, 'loading')}</p>}
-      {error && <p className="muted">{error}</p>}
+      {loading ? <BackofficeSkeleton variant="table-row" count={5} /> : null}
+      {error ? (
+        <BackofficeErrorState
+          title={adminCatalogLabel(locale, 'errorLoad')}
+          message={error}
+          onRetry={() => setRefreshNonce((n) => n + 1)}
+        />
+      ) : null}
 
-      {!loading && !error && items.length === 0 && (
-        <p className="muted">{adminCatalogLabel(locale, 'emptyList')}</p>
-      )}
+      {!loading && !error && items.length === 0 ? (
+        <BackofficeEmptyState
+          title={adminCatalogLabel(locale, 'emptyList')}
+          icon="business"
+          density="section"
+        />
+      ) : null}
 
       {!loading && !error && items.length > 0 && (
         <div className="card" style={{ marginTop: 16, overflowX: 'auto' }}>

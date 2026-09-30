@@ -33,6 +33,11 @@ import {
   BUSINESS_ROUTE_ACCESS,
   isBusinessRouteContentAllowed,
 } from '@/lib/business-route-access';
+import {
+  BackofficeAlert,
+  BackofficeEmptyState,
+  BackofficeLoadingState,
+} from '@qalago/brand/states';
 
 export default function BusinessMediaPage() {
   const locale = useLocale();
@@ -152,7 +157,13 @@ export default function BusinessMediaPage() {
   const emptyCopy = isBrandMediaScope(selectedScope) ? ui.mediaEmptyBrand : ui.mediaEmptyBranch;
   const showCoverActions = canSetBusinessCover(selectedScope);
 
-  if (!ready || !token) return <p className="page-content">{ui.text_89d69a}</p>;
+  if (!ready || !token) {
+    return (
+      <div className="page-content">
+        <BackofficeLoadingState density="page" label={ui.text_89d69a} />
+      </div>
+    );
+  }
 
   return (
     <BusinessShell
@@ -174,7 +185,7 @@ export default function BusinessMediaPage() {
         <Link href="/dashboard" className="btn">{ui.__65f9d8}</Link>
       </header>
 
-      {error && <div className="alert alert-error">{error}</div>}
+      {error ? <BackofficeAlert variant="danger" message={error} /> : null}
 
       {planStatus && totalPhotoUsage != null && (
         <section className="form-card" style={{ maxWidth: 820, marginBottom: 18 }}>
@@ -271,8 +282,15 @@ export default function BusinessMediaPage() {
 
       <section className="form-card" style={{ maxWidth: 820 }}>
         <h2 style={{ marginTop: 0 }}>{galleryHeading}</h2>
-        {images.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)' }}>{emptyCopy}</p>
+        {locationsLoading ? (
+          <BackofficeLoadingState density="section" label={ui.mediaScopeLoadingLocations} />
+        ) : images.length === 0 ? (
+          <BackofficeEmptyState
+            title={galleryHeading}
+            description={emptyCopy}
+            icon="image"
+            density="section"
+          />
         ) : (
           <div
             style={{

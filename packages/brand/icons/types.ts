@@ -29,6 +29,13 @@ export const QALA_BACKOFFICE_ICON_NAMES = [
   'close',
   'chevron-left',
   'chevron-right',
+  'check',
+  'alert-circle',
+  'alert-triangle',
+  'info',
+  'empty',
+  'lock',
+  'refresh',
 ] as const;
 
 export type QalaBackofficeIconName = (typeof QALA_BACKOFFICE_ICON_NAMES)[number];

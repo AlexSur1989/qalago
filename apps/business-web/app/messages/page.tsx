@@ -13,6 +13,12 @@ import {
 } from '@/lib/presentation';
 import { presentBusinessNotification } from '@/lib/notification-presentation';
 import { resolveBusinessNotificationHref } from '@/lib/business-notification-navigation';
+import {
+  BackofficeAlert,
+  BackofficeEmptyState,
+  BackofficeErrorState,
+  BackofficeLoadingState,
+} from '@qalago/brand/states';
 
 function typeLabel(ui: UiLabels, type: string) {
   const map: Record<string, string> = {
@@ -81,7 +87,13 @@ export default function MessagesPage() {
     await load(token);
   }
 
-  if (!ready || !token) return <p className="page-content">{ui.text_89d69a}</p>;
+  if (!ready || !token) {
+    return (
+      <div className="page-content">
+        <BackofficeLoadingState density="page" label={ui.text_89d69a} />
+      </div>
+    );
+  }
 
   const unread = items.filter((n) => !n.isRead).length;
 
@@ -109,14 +121,26 @@ export default function MessagesPage() {
         </div>
       </header>
 
-      {error && <div className="alert alert-error">{error}</div>}
+      {error && !loading ? (
+        <BackofficeErrorState
+          title={locale === 'kk' ? 'Хабарландыруларды жүктеу сәтсіз аяқталды' : 'Не удалось загрузить уведомления'}
+          message={error}
+          onRetry={() => token && load(token)}
+          retryLabel={ui.text_b914bb}
+        />
+      ) : null}
 
       <section className="form-card" style={{ maxWidth: 820 }}>
         {loading ? (
-          <p style={{ color: 'var(--text-muted)', margin: 0 }}>{ui.text_89d69a}</p>
-        ) : items.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)', margin: 0 }}>{ui.____d078b3}</p>
-        ) : (
+          <BackofficeLoadingState density="section" label={ui.text_89d69a} />
+        ) : !error && items.length === 0 ? (
+          <BackofficeEmptyState
+            title={ui.ownerNavMessages}
+            description={ui.____d078b3}
+            icon="notification"
+            density="section"
+          />
+        ) : !error ? (
           items.map((item) => {
             const display = presentBusinessNotification(item, locale);
             const href = resolveBusinessNotificationHref(item);
@@ -181,7 +205,7 @@ export default function MessagesPage() {
               </article>
             );
           })
-        )}
+        ) : null}
       </section>
     </BusinessShell>
   );

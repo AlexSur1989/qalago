@@ -1,18 +1,21 @@
 'use client';
 
 import { useUi } from '@/components/locale-provider';
+import { BackofficeFeatureUnavailable } from '@qalago/brand/states';
 import Link from 'next/link';
 
 export function BusinessPlatformFeatureUnavailable() {
   const ui = useUi();
 
   return (
-    <div className="empty-state" style={{ maxWidth: 480 }}>
-      <h2>{ui.platformFeatureUnavailableTitle}</h2>
-      <p style={{ color: 'var(--text-muted)' }}>{ui.platformFeatureTeamDisabledHint}</p>
-      <Link href="/dashboard" className="btn btn-primary" style={{ marginTop: 16 }}>
-        {ui.ownerSectionAccessDeniedAction}
-      </Link>
-    </div>
+    <BackofficeFeatureUnavailable
+      title={ui.platformFeatureUnavailableTitle}
+      description={ui.platformFeatureTeamDisabledHint}
+      action={
+        <Link href="/dashboard" className="btn btn-primary">
+          {ui.ownerSectionAccessDeniedAction}
+        </Link>
+      }
+    />
   );
 }

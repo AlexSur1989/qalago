@@ -9,6 +9,11 @@ import {
 } from '@/lib/admin-platform-features-api';
 import { useAuth } from '@/lib/use-auth';
 import { isSuperAdminRole } from '@/lib/rbac';
+import {
+  BackofficeAlert,
+  BackofficeLoadingState,
+  BackofficeSuccessState,
+} from '@qalago/brand/states';
 
 export default function PlatformFeaturesSettingsPage() {
   const router = useRouter();
@@ -28,7 +33,7 @@ export default function PlatformFeaturesSettingsPage() {
       const data = await getAdminPlatformFeatures(t);
       setBusinessTeamEnabled(data.platformFeatures.businessTeamEnabled);
     } catch (e) {
-      setError(String(e));
+      setError(e instanceof Error ? e.message : 'Не удалось загрузить настройки платформы');
     } finally {
       setLoading(false);
     }
@@ -56,7 +61,7 @@ export default function PlatformFeaturesSettingsPage() {
       setSuccess('Сохранено');
     } catch (e) {
       setBusinessTeamEnabled(prev);
-      setError(String(e));
+      setError(e instanceof Error ? e.message : 'Не удалось сохранить настройки');
     } finally {
       setSaving(false);
     }
@@ -68,14 +73,16 @@ export default function PlatformFeaturesSettingsPage() {
   return (
     <section>
       <h2 style={{ marginTop: 0 }}>Функции для бизнеса</h2>
-      {success ? <p className="muted">{success}</p> : null}
+      {loading ? <BackofficeLoadingState density="section" label="Загрузка…" /> : null}
+      {success ? <BackofficeSuccessState message={success} /> : null}
+      {error ? <BackofficeAlert variant="danger" message={error} /> : null}
       <PlatformFeatureRow
         title="Команда бизнеса"
         description="Разрешить владельцам бизнеса приглашать и управлять менеджерами."
         enabled={businessTeamEnabled}
         loading={loading}
         saving={saving}
-        error={error}
+        error={null}
         onToggle={onToggleTeam}
       />
     </section>

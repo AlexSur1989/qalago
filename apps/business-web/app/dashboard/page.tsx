@@ -22,6 +22,7 @@ import { buildPlanUsageSummary } from '@/lib/owner-utils';
 import { campaignStatusLabel, monetizationStatusClass } from '@/lib/monetization-utils';
 import { useBusinessAccess } from '@/lib/use-business-access';
 import { BusinessShell } from '@/components/business-shell';
+import { BackofficeAlert, BackofficeEmptyState, BackofficeLoadingState } from '@qalago/brand/states';
 
 export default function DashboardPage() {
   const locale = useLocale();
@@ -60,7 +61,11 @@ export default function DashboardPage() {
   }, [token, business?.id, access]);
 
   if (!ready || !token) {
-    return <p className="page-content">{ui.text_89d69a}</p>;
+    return (
+      <div className="page-content">
+        <BackofficeLoadingState density="page" label={ui.text_89d69a} />
+      </div>
+    );
   }
 
   const actions = business ? buildRecentActions(locale, business, promotions) : [];
@@ -77,17 +82,24 @@ export default function DashboardPage() {
       userName={user?.name ?? user?.phone ?? undefined}
       onLogout={logout}
     >
-      {error && <div className="alert alert-error">{error}</div>}
+      {error ? <BackofficeAlert variant="danger" message={error} /> : null}
 
       {!business ? (
-        <div className="empty-state">
-          <h2>{ui.____447674}</h2>
-          <p>{ui.____03e3ed}</p>
-          <div style={{ display: 'flex', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
-            <Link href="/onboarding/search" className="btn btn-primary">{ui.___612420}</Link>
-            <Link href="/onboarding/apply" className="btn">{ui.__3b30e8}</Link>
-          </div>
-        </div>
+        <BackofficeEmptyState
+          title={ui.____447674}
+          description={ui.____03e3ed}
+          icon="business"
+          actions={
+            <>
+              <Link href="/onboarding/search" className="btn btn-primary">
+                {ui.___612420}
+              </Link>
+              <Link href="/onboarding/apply" className="btn btn-secondary">
+                {ui.__3b30e8}
+              </Link>
+            </>
+          }
+        />
       ) : (
         <>
           <header className="page-header">

@@ -1,44 +1,42 @@
 'use client';
 
+import {
+  BackofficeAccessDenied,
+  BackofficeEmptyState,
+  BackofficeErrorState,
+  BackofficeSkeleton,
+} from '@qalago/brand/states';
+
 export function ReportSkeleton({ rows = 3 }: { rows?: number }) {
   return (
-    <div className="report-skeleton" aria-busy="true">
-      {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="report-skeleton-row" />
-      ))}
+    <div aria-busy="true">
+      <BackofficeSkeleton variant="table-row" count={rows} />
     </div>
   );
 }
 
 export function ReportErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <div className="report-state report-state-error">
-      <p>{message}</p>
-      {onRetry ? (
-        <button type="button" className="btn btn-primary btn-sm" onClick={onRetry}>
-          Повторить
-        </button>
-      ) : null}
-    </div>
+    <BackofficeErrorState
+      title="Не удалось загрузить отчёт"
+      message={message}
+      onRetry={onRetry}
+      retryLabel="Повторить"
+    />
   );
 }
 
 export function ReportForbiddenState() {
   return (
-    <div className="report-state report-state-forbidden">
-      <h2>Доступ запрещён</h2>
-      <p>У вашей роли нет прав на этот отчёт.</p>
-    </div>
+    <BackofficeAccessDenied
+      title="Доступ запрещён"
+      description="У вашей роли нет прав на этот отчёт."
+    />
   );
 }
 
 export function ReportEmptyState({ title, hint }: { title: string; hint?: string }) {
-  return (
-    <div className="report-state report-state-empty">
-      <p>{title}</p>
-      {hint ? <p className="muted">{hint}</p> : null}
-    </div>
-  );
+  return <BackofficeEmptyState title={title} description={hint} icon="analytics" density="section" />;
 }
 
 export function ReportUnsupportedState({ label = 'Метрика пока недоступна' }: { label?: string }) {

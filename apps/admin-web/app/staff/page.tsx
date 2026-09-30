@@ -6,26 +6,45 @@ import { BackofficePageHeader } from '@/components/backoffice-page-header';
 import { useAuth } from '@/lib/use-auth';
 import { staffApi, StaffListRow, StaffOverview } from '@/lib/staff-api';
 import { isSuperAdminRole } from '@/lib/rbac';
+import {
+  BackofficeAccessDenied,
+  BackofficeErrorState,
+  BackofficeLoadingState,
+} from '@qalago/brand/states';
 
 export default function StaffPage() {
   const { token, user, ready } = useAuth();
   const [rows, setRows] = useState<StaffListRow[]>([]);
   const [overview, setOverview] = useState<StaffOverview | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  function loadStaff() {
     if (!token || !user || !isSuperAdminRole(user.role)) return;
+    setLoading(true);
+    setError(null);
     Promise.all([staffApi.list(token), staffApi.overview(token)])
       .then(([list, ov]) => {
         setRows(list);
         setOverview(ov);
       })
-      .catch(() => setError('Не удалось загрузить staff'));
-  }, [token, user]);
+      .catch(() => setError('Не удалось загрузить список staff'))
+      .finally(() => setLoading(false));
+  }
 
-  if (!ready) return <p className="muted">Загрузка…</p>;
+  useEffect(() => {
+    loadStaff();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load when auth ready
+  }, [token, user?.role]);
+
+  if (!ready) return <BackofficeLoadingState density="page" label="Загрузка…" />;
   if (!user || !isSuperAdminRole(user.role)) {
-    return <p className="tag tag-danger">Доступ только для SUPER_ADMIN</p>;
+    return (
+      <BackofficeAccessDenied
+        title="Доступ только для SUPER_ADMIN"
+        description="Раздел Staff / RBAC доступен только суперадминистратору."
+      />
+    );
   }
 
   return (
@@ -34,7 +53,15 @@ export default function StaffPage() {
         title="Staff / RBAC"
         description="Управление учётными записями staff и ролями платформы."
       />
-      {error ? <p className="tag tag-danger">{error}</p> : null}
+      {error ? (
+        <BackofficeErrorState
+          title="Не удалось загрузить staff"
+          message={error}
+          onRetry={loadStaff}
+          retrying={loading}
+        />
+      ) : null}
+      {loading && !error ? <BackofficeLoadingState density="section" label="Загрузка…" /> : null}
       {overview ? (
         <div className="card-grid">
           <div className="card">
@@ -51,6 +78,7 @@ export default function StaffPage() {
           </div>
         </div>
       ) : null}
+      {!loading && !error ? (
       <table className="data-table">
         <thead>
           <tr>
@@ -81,6 +109,7 @@ export default function StaffPage() {
           ))}
         </tbody>
       </table>
+      ) : null}
     </div>
   );
 }

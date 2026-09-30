@@ -34,6 +34,7 @@ import { parseApiError } from '@/lib/monetization-utils';
 import { useOwnerBusiness } from '@/lib/use-owner-business';
 import { BusinessShell } from '@/components/business-shell';
 import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
+import { BackofficeSuccessState } from '@qalago/brand/states';
 import {
   BUSINESS_ROUTE_ACCESS,
   isBusinessRouteContentAllowed,
@@ -315,7 +316,9 @@ export default function BusinessMenuPage() {
         <Link href="/dashboard" className="btn">{ui.text_76e286}</Link>
       </header>
 
-      {successMessage && <div className="alert alert-success">{successMessage}</div>}
+      {successMessage ? (
+        <BackofficeSuccessState message={successMessage} />
+      ) : null}
       {error && <div className="alert alert-error">{error}</div>}
 
       {planStatus && maxItems != null && (

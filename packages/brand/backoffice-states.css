@@ -1,0 +1,220 @@
+/**
+ * QalaGo backoffice system states (UXA.9) — loading, empty, error, alerts, skeletons.
+ * Token source: qalago-theme.css. Semantic colors via existing .alert-* classes.
+ */
+
+.bo-alert {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  margin: 0 0 var(--space-4);
+}
+
+.bo-alert-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: inherit;
+}
+
+.bo-alert-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.bo-alert-title {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-body-size);
+  font-weight: 600;
+  line-height: var(--text-body-line-height);
+}
+
+.bo-alert-message {
+  margin: 0;
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-line-height);
+}
+
+.bo-alert-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.bo-state-panel {
+  padding: var(--space-6) var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.bo-state-panel--page {
+  margin: var(--space-4) 0;
+}
+
+.bo-state-panel--section {
+  margin: var(--space-3) 0;
+}
+
+.bo-empty-state {
+  text-align: center;
+  max-width: 28rem;
+  margin: var(--space-6) auto;
+  padding: var(--space-4);
+}
+
+.bo-empty-state-icon {
+  display: inline-flex;
+  margin-bottom: var(--space-3);
+  color: var(--color-text-muted);
+}
+
+.bo-empty-state-title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-section-title-size);
+  font-weight: var(--text-section-title-weight);
+  color: var(--color-text-primary);
+}
+
+.bo-empty-state-description {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-line-height);
+}
+
+.bo-empty-state-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.bo-loading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--text-body-size);
+  margin: var(--space-3) 0;
+}
+
+.bo-loading--page {
+  min-height: 120px;
+  justify-content: center;
+  padding: var(--space-6);
+}
+
+.bo-loading--section {
+  padding: var(--space-4);
+}
+
+.bo-loading--inline {
+  display: inline-flex;
+  margin: 0;
+  vertical-align: middle;
+}
+
+.bo-loading-spinner {
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-brand-primary);
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: bo-loading-spin 0.75s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-loading-spinner {
+    animation: none;
+    border-top-color: var(--color-brand-primary);
+    opacity: 0.85;
+  }
+}
+
+@keyframes bo-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.bo-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-bg) 0%,
+    color-mix(in srgb, var(--color-border) 40%, var(--color-bg)) 50%,
+    var(--color-bg) 100%
+  );
+  background-size: 200% 100%;
+  border-radius: var(--radius-xs);
+  animation: bo-skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-skeleton {
+    animation: none;
+    background: var(--color-bg);
+  }
+}
+
+@keyframes bo-skeleton-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.bo-skeleton-line {
+  height: 0.875rem;
+  width: 100%;
+  margin-bottom: var(--space-2);
+}
+
+.bo-skeleton-title {
+  height: 1.25rem;
+  width: 55%;
+  margin-bottom: var(--space-3);
+}
+
+.bo-skeleton-card {
+  height: 5rem;
+  width: 100%;
+  margin-bottom: var(--space-3);
+}
+
+.bo-skeleton-table-row {
+  height: 2.5rem;
+  width: 100%;
+  margin-bottom: var(--space-2);
+}
+
+.bo-skeleton-kpi {
+  height: 4.5rem;
+  width: 100%;
+}
+
+.bo-skeleton-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.bo-error-state,
+.bo-access-denied,
+.bo-feature-unavailable,
+.bo-not-found {
+  max-width: 32rem;
+}
+
+.bo-error-state.bo-state-panel--section,
+.bo-access-denied.bo-state-panel--section,
+.bo-feature-unavailable.bo-state-panel--section,
+.bo-not-found.bo-state-panel--section {
+  max-width: none;
+}

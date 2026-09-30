@@ -1,18 +1,21 @@
 'use client';
 
 import { useUi } from '@/components/locale-provider';
+import { BackofficeAccessDenied } from '@qalago/brand/states';
 import Link from 'next/link';
 
 export function BusinessSectionAccessDenied() {
   const ui = useUi();
 
   return (
-    <div className="empty-state" style={{ maxWidth: 480 }}>
-      <h2>{ui.ownerSectionAccessDeniedTitle}</h2>
-      <p style={{ color: 'var(--text-muted)' }}>{ui.ownerSectionAccessDeniedHint}</p>
-      <Link href="/dashboard" className="btn btn-primary" style={{ marginTop: 16 }}>
-        {ui.ownerSectionAccessDeniedAction}
-      </Link>
-    </div>
+    <BackofficeAccessDenied
+      title={ui.ownerSectionAccessDeniedTitle}
+      description={ui.ownerSectionAccessDeniedHint}
+      action={
+        <Link href="/dashboard" className="btn btn-primary">
+          {ui.ownerSectionAccessDeniedAction}
+        </Link>
+      }
+    />
   );
 }

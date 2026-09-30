@@ -6,6 +6,11 @@ import { adminApi, AuditLogRow } from '@/lib/api';
 import { canViewAdminAuditLogs } from '@/lib/admin-catalog-rbac';
 import { BackofficePageHeader } from '@/components/backoffice-page-header';
 import { useAuth } from '@/lib/use-auth';
+import {
+  BackofficeEmptyState,
+  BackofficeErrorState,
+  BackofficeSkeleton,
+} from '@qalago/brand/states';
 
 function formatAction(action: string): string {
   const labels: Record<string, string> = {
@@ -52,7 +57,7 @@ export default function AuditLogsPage() {
         action: actionFilter || undefined,
       })
       .then((res) => setItems(res.items))
-      .catch((err) => setError(String(err)))
+      .catch(() => setError('Не удалось загрузить журнал аудита'))
       .finally(() => setLoading(false));
   }, [token, actionFilter]);
 
@@ -80,8 +85,28 @@ export default function AuditLogsPage() {
         </label>
       </div>
 
-      {error && <p className="error-text">{error}</p>}
-      {loading && <p>Загрузка…</p>}
+      {error ? (
+        <BackofficeErrorState
+          title="Не удалось загрузить журнал аудита"
+          message={error}
+          onRetry={() => {
+            if (!token) return;
+            setError(null);
+            setLoading(true);
+            adminApi
+              .listAuditLogs(token, {
+                page: 1,
+                limit: 50,
+                action: actionFilter || undefined,
+              })
+              .then((res) => setItems(res.items))
+              .catch(() => setError('Не удалось загрузить журнал аудита'))
+              .finally(() => setLoading(false));
+          }}
+        />
+      ) : null}
+
+      {loading ? <BackofficeSkeleton variant="table-row" count={6} /> : null}
 
       <div className="table-wrap">
         <table className="data-table">
@@ -115,11 +140,14 @@ export default function AuditLogsPage() {
             ))}
           </tbody>
         </table>
-        {!loading && items.length === 0 && (
-          <p className="muted" style={{ padding: '1rem' }}>
-            Записей пока нет. Аудит ведётся с момента включения Stage 5M.3.
-          </p>
-        )}
+        {!loading && !error && items.length === 0 ? (
+          <BackofficeEmptyState
+            title="Записей пока нет"
+            description="Аудит ведётся с момента включения Stage 5M.3."
+            icon="audit"
+            density="section"
+          />
+        ) : null}
       </div>
     </>
   );

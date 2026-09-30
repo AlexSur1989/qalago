@@ -8,6 +8,7 @@ import { adminApi, CityRow } from '@/lib/api';
 import { useAuth } from '@/lib/use-auth';
 import { canAccessAdminWeb } from '@/lib/rbac';
 import type { MonetizationSubNavId } from '@/lib/monetization-utils';
+import { BackofficeLoadingState } from '@qalago/brand/states';
 
 type AdminAuthenticatedShellProps = {
   children: ReactNode;
@@ -66,7 +67,11 @@ export function AdminAuthenticatedShell({
   }, [token, citySlug, loadPendingBadge]);
 
   if (!ready || !token || !user) {
-    return <p className="page-content muted">Загрузка…</p>;
+    return (
+      <div className="page-content">
+        <BackofficeLoadingState density="page" label="Загрузка…" />
+      </div>
+    );
   }
 
   const cityLabel =
