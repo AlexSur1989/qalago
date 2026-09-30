@@ -10,7 +10,7 @@
 
 - **Status:** **UXA.3 PASS — QALAGO BACKOFFICE ICON SYSTEM**. **UXA.4 not started**.
 - **Starting HEAD:** **`594e7b3`** (UXA.2 closure).
-- **Checkpoint (commit):** _(set at commit)_ — `feat(ui): add qalago backoffice icon system`.
+- **Checkpoint (commit):** **`03e6e17`** — `feat(ui): add qalago backoffice icon system`.
 - **Summary:** Shared **`@qalago/brand/icons`** — stroke-first **`currentColor`** SVG components (`QalaIcon`, `BackofficeNavIcon`), semantic icon names, 16/20/24px via UXA.1 tokens. Admin shell + route links and Business shell/nav metadata migrated off emoji/Unicode nav glyphs (☰ × « » 📍 🔔 etc.). **`.nav-icon`** flex-centered for stable 20px slot. Tests: icon registry contract, nav icon maps, scoped shell/nav emoji audit. **No route/label/auth/RBAC/API/DB/shell IA changes.**
 - **Deferred:** UXA.4 tables; UXA.7 badges; UXA.9 loading/empty; physical browser QA.
 - **Next:** **UXA.4** table/filter baseline or **UXA.9** loading/empty states (product choice).
