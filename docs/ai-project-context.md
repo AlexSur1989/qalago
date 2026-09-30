@@ -92,7 +92,7 @@
 | **UXA.6** | **PASS — BUSINESS LOCATION / GEO UX STANDARDIZED** — `@qalago/brand/locations`; branch cards; Business locations + Admin CatalogLocationsManager; map UX polish |
 | **UXA.8** | **PASS — DASHBOARDS / CARDS / STATISTICS STANDARDIZED** — `@qalago/brand/dashboards`; KPI hierarchy; Business `/dashboard` partial failure; representative Admin/Business statistics surfaces |
 | **UXA.10** | **PASS — BACKOFFICE RESPONSIVE LAYOUT STANDARDIZED** — `backoffice-responsive.css`; shell ≤960 drawer; KPI/table/form/chart/modal responsive contracts |
-| **UXA.11** | **PASS — BACKOFFICE ACCESSIBILITY STANDARDIZED** — `backoffice-a11y.css`, `@qalago/brand/accessibility`; skip link; drawer inert/focus; static a11y contracts (**WCAG cert / SR QA deferred UXA.13**) |
+| **UXA.11** | **PASS — BACKOFFICE ACCESSIBILITY STANDARDIZED** — checkpoint **`76ee055`**; `backoffice-a11y.css`, `@qalago/brand/accessibility`; skip link; drawer inert/focus; static a11y contracts (**WCAG cert / SR QA deferred UXA.13**) |
 | **UXA (track)** | **ACTIVE** — **UXA.12 next**; see § UXA below |
 | **Future-ready platform** | **DOCUMENTED** — **`docs/architecture/future-ready-platform.md`** (planning only; **SCALE not started**) |
 | **SCALE (track)** | **PLANNED** — **SCALE.0–SCALE.12 not started**; see future-ready doc §70 |
