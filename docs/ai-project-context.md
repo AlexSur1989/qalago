@@ -83,7 +83,7 @@
 | **BIZ (track)** | **CLOSED / PASS — BUSINESS OWNER PLANE FINALIZED** — **BIZ.0–BIZ.9** complete |
 | **UXA.0** | **PASS — READ-ONLY AUDIT** (Admin + Business Web baseline) |
 | **UXA.1** | **PASS — BACKOFFICE DESIGN SYSTEM FOUNDATION** — checkpoint **`78ecea0`**; `packages/brand/qalago-theme.css` + `backoffice-primitives.css` |
-| **UXA.2** | **PASS — BACKOFFICE SHELL / NAVIGATION UNIFIED** — `backoffice-shell.css`, Admin authenticated areas in `AdminShell`, mobile drawer @960px |
+| **UXA.2** | **PASS — BACKOFFICE SHELL / NAVIGATION UNIFIED** — checkpoint **`ed1c9ff`**; `backoffice-shell.css`, Admin authenticated areas in `AdminShell`, mobile drawer @960px |
 | **UXA (track)** | **ACTIVE** — **UXA.3 icons next**; see § UXA below |
 | **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = ACTIVE** · Consumer Web UI/UX after UXA · Mobile UI/UX after Consumer · production/security/pre-VPS later · VPS later |
 | **Next** | **UXA.3** backoffice icon system; parallel **KZ-C.1** notification physical QA remains open |
