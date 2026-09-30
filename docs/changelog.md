@@ -10,7 +10,7 @@
 
 - **Status:** **UXA.5 PASS — BACKOFFICE FORMS STANDARDIZED**. **UXA.6 / UXA.8 not started**.
 - **Starting HEAD:** **`2c82c33`** (UXA.4 docs closure).
-- **Checkpoint (commit):** _(this commit)_ — `feat(ui): standardize backoffice forms`.
+- **Checkpoint (commit):** **`5b91379`** — `feat(ui): standardize backoffice forms`.
 - **Summary:** **`@qalago/brand/forms`** + **`backoffice-forms.css`** — field/label/helper/error, inputs, textarea, select, checkbox/radio, switch, sections, action rows, upload surface CSS, `useFormDirty` / `useUnsavedChangesGuard`. Representative Admin migrations (catalog create/detail, platform toggle switch, MFA enrollment) and Business (settings, profile/hours, locations, promotions, menu create). UXA.9 success/error; UXA.7 confirm unchanged on new saves. **No validation rules, DTO/API/RBAC/route/DB/BusinessLocation semantic changes.**
 - **Deferred:** Staff detail forms; business-requests modals; media upload surface wiring; menu/promo edit overlay polish; onboarding/claim; in-app unsaved confirm on all navigations; full form sweep.
 - **Next:** **UXA.6** location / geo UX (recommended).
