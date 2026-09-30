@@ -10,7 +10,7 @@
 
 - **Status:** **UXA.13 ACTIVE — PHYSICAL QA PARTIAL**. **UXA track not closed**. **No UXA PASS claim**.
 - **Starting HEAD:** **`fc8e49e`** (docs closure after UXA.12).
-- **Checkpoint (commit):** **`6214822`** — `fix(ui): resolve UXA.13 physical QA KK findings`.
+- **Checkpoint (commit):** **`9b6a86f`** — `fix(ui): resolve UXA.13 physical QA KK findings`.
 - **Summary:** Real Chromium QA via Cursor browser MCP on local Admin/Business dev servers + **`catalog-api`**. Admin dashboard and Business OWNER dashboard exercised after dev-server **`.next` refresh**. **P1** Business KK mixed-language on **`/login`** and **`/dashboard`** — corrected KK dictionary entries + **`uxa12-visual-localization`** contract. Automated regression: brand contracts **PASS**; Business **343** vitest; Admin **197** vitest; both production **build PASS**.
 - **Deferred / blockers for UXA closure:** Full §1–§44 matrix (roles SUPER_ADMIN/CITY_ADMIN/MANAGER, 320–1440 all surfaces, keyboard/drawer/SR/contrast, maps/messages/team flag, screenshot archive); remaining **`____*`** KK backlog (**POST-UXA debt** unless blocking in tested flows).
 - **Next:** Complete remaining UXA.13 physical checklist; re-run closure gate; then **UXA PASS** docs commit.
