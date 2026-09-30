@@ -388,7 +388,18 @@ Also: `maxPromotionsCreatedPerDay`, `maxPromotionDurationDays`, support/moderati
 
 ---
 
-## 20. Deferred (BIZ.9+)
+## 20. BIZ.9 closure (2026-09-30 — physical QA verified)
+
+**Milestone:** **BIZ.9 PASS — BUSINESS WEB PHYSICAL QA VERIFIED**; **BIZ PASS — BUSINESS OWNER PLANE FINALIZED**.
+
+Physical QA covered OWNER cabinet routes, MANAGER permission-scoped sidebar and fail-closed direct URLs (HOTFIX 2–4), runtime **`businessTeamEnabled`** Team rollout (HOTFIX 5B), Admin/Business isolated browser sessions (HOTFIX 7B). **No** BusinessMembership contract change at closure.
+
+**Web-panel refresh cookies (canonical):** Admin **`qalago_admin_refresh`** (`Path=/api/auth/admin`); Business **`qalago_business_refresh`** (`Path=/api/auth/business`); legacy **`qalago_refresh`** retired for these BFF clients. Upstream **`AuthSession`** rotation unchanged; **no DB migration**.
+
+---
+
+## 21. Deferred (post-BIZ)
 - `ownerId` ↔ ACTIVE OWNER reconciliation after manager promotion.
 - Ownership transfer / recovery beyond claim + manager promotion.
 - Public `ownerId` removal (KZ-C).
+- Dashboard `Promise.all` partial-failure resilience (non-blocking UXA debt).

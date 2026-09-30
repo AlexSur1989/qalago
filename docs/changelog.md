@@ -6,9 +6,20 @@
 
 ---
 
+## 2026-09-30 — BIZ PASS — Business Owner Plane finalized (BIZ.9 physical QA verified)
+
+- **Status:** **BIZ.9 PASS — BUSINESS WEB PHYSICAL QA VERIFIED**. **BIZ PASS — BUSINESS OWNER PLANE FINALIZED**. **AOP remains CLOSED / PASS — ADMIN CATALOG / OPERATIONS PLANE FINALIZED**. **UXA not started** (next). **Production / VPS / PSP readiness NOT implied**.
+- **Starting HEAD:** **`283c7e0e3bc1ed62e155600b83850c8815fed7c7`**.
+- **Checkpoint (commit):** _(post-commit docs SHA)_ — `docs(biz): close business owner plane after physical qa`.
+- **Summary:** Physical QA verified on localhost — **OWNER `+77000000002`** (dashboard, modules, F5, switcher); **MANAGER `+77000000003`** (**bar-code-51** ANALYTICS-only sidebar + forbidden routes; **aktobe-coffee-lab** CATALOG_EDIT); **HOTFIX 4** fail-closed direct routes; **5B** `businessTeamEnabled` SUPER_ADMIN toggle + Team OFF/ON without manager permission regression; **6/7B** Admin F5 + simultaneous Admin SUPER_ADMIN + Business OWNER sessions with scoped cookies and independent logout. **BIZ.0–BIZ.9 closed.** Automated closure gate: Admin Web **159** tests, Business Web **309** tests, builds PASS; catalog-api focused owner/platform/team **41** PASS; full catalog-api **218/220** suites (**1524/1527** tests) — **2** local DB-hygiene suites fail (not BIZ product regressions).
+- **Deferred (BIZ track, not reopened):** production PSP; checkout dedup; rate-limiting breadth; public `ownerId`; ownership transfer; account deletion lifecycle; receipts/invoices; dashboard `Promise.all` partial-failure UX; future platform business feature keys; Admin compile-time business-team env gate; **KZ-C.1** notification physical QA (separate track).
+- **Next:** **UXA.0** (Admin + Business Web UI/UX finalization) — do not start without explicit approval; Consumer Web UI/UX after UXA; Mobile UI/UX after Consumer; production/security/pre-VPS later.
+
+---
+
 ## 2026-09-30 — BIZ.9 HOTFIX 7B — Admin / Business Web auth sessions isolated
 
-- **Status:** **BIZ.9 HOTFIX 7B IMPLEMENTATION PASS — AUTOMATED REGRESSION GREEN**. **BIZ.9 physical multi-app QA REMAINS OPEN**. **UXA not started**.
+- **Status:** **BIZ.9 HOTFIX 7B PASS** (implementation + physical multi-app QA verified at BIZ closure). **UXA not started**.
 - **Starting HEAD:** **`0a4741ebcb78c2488e66cffaf780ff34bae93e4b`**.
 - **Checkpoint (commit):** **`edd39e5`** — `fix(auth): isolate admin and business web sessions`.
 - **Summary:** Scoped refresh cookies — Admin **`qalago_admin_refresh`** (`Path=/api/auth/admin`), Business **`qalago_business_refresh`** (`Path=/api/auth/business`); BFF routes under **`/api/auth/admin/*`** and **`/api/auth/business/*`**; legacy **`qalago_refresh`** cleared not read; **HOTFIX 6** admin single-flight retained; **Business Web single-flight bootstrap** added. **No DB migration.** **No backend auth logic duplication.**
