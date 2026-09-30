@@ -11,7 +11,7 @@ let cachedBootstrap: AdminAuthBootstrapResult | null = null;
 let bootstrapInFlight: Promise<AdminAuthBootstrapResult> | null = null;
 let refreshInFlight: Promise<string | null> | null = null;
 
-/** Single-flight refresh — avoids parallel /api/auth/refresh with rotating refresh tokens (BIZ.9 HOTFIX 6). */
+/** Single-flight refresh — avoids parallel admin refresh with rotating tokens (BIZ.9 HOTFIX 6/7B). */
 export async function resolveAdminAccessToken(): Promise<string | null> {
   const existing = getWebAccessToken();
   if (existing) return existing;
@@ -19,7 +19,7 @@ export async function resolveAdminAccessToken(): Promise<string | null> {
   if (!refreshInFlight) {
     refreshInFlight = (async () => {
       try {
-        const res = await fetch('/api/auth/refresh', { method: 'POST' });
+        const res = await fetch('/api/auth/admin/refresh', { method: 'POST' });
         if (!res.ok) return null;
         const data = (await res.json()) as { accessToken?: string; user?: AuthUser };
         if (!data.accessToken) return null;

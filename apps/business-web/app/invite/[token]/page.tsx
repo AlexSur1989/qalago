@@ -41,7 +41,7 @@ export default function InviteAcceptPage() {
       let token = getWebAccessToken();
       if (!token) {
         try {
-          const res = await fetch('/api/auth/refresh', { method: 'POST' });
+          const res = await fetch('/api/auth/business/refresh', { method: 'POST' });
           if (res.ok) {
             const data = (await res.json()) as { accessToken: string };
             token = data.accessToken;

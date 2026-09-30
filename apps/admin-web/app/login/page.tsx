@@ -47,7 +47,7 @@ function LoginPageContent() {
   }
 
   async function loginViaSession(mode: 'verify' | 'dev', payload: { phone: string; code?: string }) {
-    const res = await fetch('/api/auth/login', {
+    const res = await fetch('/api/auth/admin/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(
@@ -115,7 +115,7 @@ function LoginPageContent() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/auth/mfa-verify', {
+      const res = await fetch('/api/auth/admin/mfa-verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

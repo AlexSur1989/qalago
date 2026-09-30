@@ -2,18 +2,20 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-describe('useAuth bootstrap wiring (BIZ.2)', () => {
+describe('useAuth bootstrap wiring (BIZ.2 + BIZ.9 HOTFIX 7B)', () => {
   const src = readFileSync(join(__dirname, 'use-auth.ts'), 'utf8');
+  const bootstrapSrc = readFileSync(join(__dirname, 'business-auth-bootstrap.ts'), 'utf8');
 
-  it('refresh path uses loadCanonicalBusinessUser instead of slim refresh user', () => {
-    expect(src).toContain('loadCanonicalBusinessUser');
-    expect(src).not.toMatch(/setUser\s*\(\s*data\.user\s*\)/);
+  it('delegates session restore to shared runBusinessAuthBootstrap', () => {
+    expect(src).toContain('runBusinessAuthBootstrap');
+    expect(bootstrapSrc).toContain('loadCanonicalBusinessUser');
+    expect(bootstrapSrc).toContain('/api/auth/business/refresh');
   });
 
-  it('does not set ready before canonical user and businesses load', () => {
-    expect(src).toMatch(
-      /loadCanonicalBusinessUser[\s\S]*listMyBusinesses[\s\S]*setReady\(true\)/,
-    );
+  it('does not set ready before bootstrap resolves', () => {
+    expect(src).toContain('useState(false)');
+    expect(src).toMatch(/result\.status === 'unauthenticated'/);
+    expect(src).toMatch(/setReady\(true\)/);
   });
 
   it('re-exports hasBusinessCabinetAccess from business-cabinet-access', () => {

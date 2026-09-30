@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { REFRESH_COOKIE_NAME, refreshCookieOptions } from '@/lib/auth-cookie';
+import { persistRefreshToken } from '@/lib/auth-cookie';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3002/api/v1';
 
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
 
   const secure = process.env.NODE_ENV === 'production';
   const jar = await cookies();
-  jar.set(REFRESH_COOKIE_NAME, data.refreshToken, refreshCookieOptions(secure));
+  persistRefreshToken(jar, data.refreshToken, secure);
 
   return NextResponse.json({
     accessToken: data.accessToken,

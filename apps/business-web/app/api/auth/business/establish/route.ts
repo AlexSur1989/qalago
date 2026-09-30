@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { REFRESH_COOKIE_NAME, refreshCookieOptions } from '@/lib/auth-cookie';
+import { persistRefreshToken } from '@/lib/auth-cookie';
 
 /** Sets HttpOnly refresh cookie after a client-side auth exchange (e.g. social login). */
 export async function POST(request: Request) {
@@ -10,6 +10,6 @@ export async function POST(request: Request) {
   }
   const secure = process.env.NODE_ENV === 'production';
   const jar = await cookies();
-  jar.set(REFRESH_COOKIE_NAME, body.refreshToken, refreshCookieOptions(secure));
+  persistRefreshToken(jar, body.refreshToken, secure);
   return NextResponse.json({ success: true });
 }

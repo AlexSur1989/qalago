@@ -1,6 +1,11 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { REFRESH_COOKIE_NAME, refreshCookieOptions } from '@/lib/auth-cookie';
+import {
+  REFRESH_COOKIE_NAME,
+  clearAppRefreshCookie,
+  clearLegacyRefreshCookie,
+  persistRefreshToken,
+} from '@/lib/auth-cookie';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3002/api/v1';
 
@@ -19,7 +24,8 @@ export async function POST() {
 
   const text = await upstream.text();
   if (!upstream.ok) {
-    jar.delete(REFRESH_COOKIE_NAME);
+    clearAppRefreshCookie(jar);
+    clearLegacyRefreshCookie(jar);
     return new NextResponse(text || upstream.statusText, { status: upstream.status });
   }
 
@@ -29,7 +35,7 @@ export async function POST() {
     user: unknown;
   };
   const secure = process.env.NODE_ENV === 'production';
-  jar.set(REFRESH_COOKIE_NAME, data.refreshToken, refreshCookieOptions(secure));
+  persistRefreshToken(jar, data.refreshToken, secure);
 
   return NextResponse.json({ accessToken: data.accessToken, user: data.user });
 }

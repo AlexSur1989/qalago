@@ -108,6 +108,19 @@ Response `200`: same shape as `/auth/verify-code` (`accessToken`, `user`).
 
 > **NEVER enable `DEV_LOGIN_ENABLED` in production.**
 
+### Web panel auth BFF (Admin / Business — BIZ.9 HOTFIX 7B)
+
+Browser refresh tokens are **HttpOnly cookies** on each Next.js origin. **Not** stored in `localStorage`. Upstream remains **`POST /api/v1/auth/refresh`** with `{ refreshToken }` in JSON (BFF reads scoped cookie server-side).
+
+| App | Cookie name | Cookie Path | BFF routes |
+|-----|-------------|-------------|------------|
+| Admin Web | `qalago_admin_refresh` | `/api/auth/admin` | `POST /api/auth/admin/login`, `refresh`, `logout`, `mfa-verify`, `establish` |
+| Business Web | `qalago_business_refresh` | `/api/auth/business` | `POST /api/auth/business/login`, `refresh`, `logout`, `establish` |
+
+Legacy shared cookie `qalago_refresh` (`Path=/api/auth`) is **cleared on login/refresh/logout** and **never read**. Admin and Business sessions are independent (separate cookies, separate logout). **One re-login per app** may be required after deploy.
+
+Catalog API **`AuthSession`** rotation/replay/`logout-all` semantics unchanged.
+
 ### GET /auth/me
 
 Headers: `Authorization: Bearer <token>`

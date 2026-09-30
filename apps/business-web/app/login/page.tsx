@@ -6,6 +6,7 @@ import { FormEvent, Suspense, useCallback, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ownerApi, AuthUser } from '@/lib/api';
+import { resetBusinessAuthBootstrapState } from '@/lib/business-auth-bootstrap';
 import { setWebAccessToken } from '@/lib/web-auth-token';
 import {
   businessWebAnyLoginMethodConfigured,
@@ -81,9 +82,10 @@ function LoginContent() {
         setError(postLoginErrorMessage(locale, destination.errorKey));
         return;
       }
+      resetBusinessAuthBootstrapState();
       setWebAccessToken(accessToken);
       if (refreshToken) {
-        await fetch('/api/auth/establish', {
+        await fetch('/api/auth/business/establish', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refreshToken }),
@@ -95,7 +97,7 @@ function LoginContent() {
   );
 
   async function loginViaSession(mode: 'verify' | 'dev', payload: { phone: string; code?: string }) {
-    const res = await fetch('/api/auth/login', {
+    const res = await fetch('/api/auth/business/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(

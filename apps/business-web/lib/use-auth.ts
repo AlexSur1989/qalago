@@ -4,15 +4,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthUser, MyBusinessItem, ownerApi } from '@/lib/api';
 import {
-  clearBusinessAuthSession,
-  loadCanonicalBusinessUser,
-} from '@/lib/business-auth-session';
+  resetBusinessAuthBootstrapState,
+  runBusinessAuthBootstrap,
+} from '@/lib/business-auth-bootstrap';
+import { clearBusinessAuthSession } from '@/lib/business-auth-session';
 import { hasBusinessCabinetAccess } from '@/lib/business-cabinet-access';
-import {
-  clearWebAccessToken,
-  getWebAccessToken,
-  setWebAccessToken,
-} from '@/lib/web-auth-token';
+import { clearWebAccessToken } from '@/lib/web-auth-token';
 
 export { hasBusinessCabinetAccess };
 
@@ -24,62 +21,52 @@ export function useAuth(redirectTo = '/login') {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function bootstrap() {
       async function rejectSession() {
         clearWebAccessToken();
+        resetBusinessAuthBootstrapState();
         await clearBusinessAuthSession();
-        router.replace(redirectTo);
-      }
-
-      async function completeBootstrap(access: string) {
-        const loaded = await loadCanonicalBusinessUser(access);
-        if (!loaded.ok) {
-          await rejectSession();
-          return;
-        }
-        setToken(access);
-        setUser(loaded.user);
-        const res = await ownerApi.listMyBusinesses(access);
-        setItems(res.items);
-        setReady(true);
-      }
-
-      let access = getWebAccessToken();
-      if (!access) {
-        try {
-          const res = await fetch('/api/auth/refresh', { method: 'POST' });
-          if (!res.ok) {
-            router.replace(redirectTo);
-            return;
-          }
-          const data = (await res.json()) as { accessToken: string; user: AuthUser };
-          access = data.accessToken;
-          setWebAccessToken(access);
-          await completeBootstrap(access);
-        } catch {
+        if (!cancelled) {
           router.replace(redirectTo);
         }
+      }
+
+      const result = await runBusinessAuthBootstrap();
+      if (cancelled) return;
+
+      if (result.status === 'unauthenticated') {
+        await rejectSession();
         return;
       }
 
-      await completeBootstrap(access);
+      setToken(result.accessToken);
+      setUser(result.user);
+      setItems(result.items);
+      setReady(true);
     }
 
     void bootstrap();
+
+    return () => {
+      cancelled = true;
+    };
   }, [router, redirectTo]);
 
   async function logout() {
     clearWebAccessToken();
+    resetBusinessAuthBootstrapState();
     await clearBusinessAuthSession();
     router.push('/login');
   }
 
   const refreshBusinesses = useCallback(async () => {
-    const access = getWebAccessToken();
+    const access = token ?? null;
     if (!access) return;
     const res = await ownerApi.listMyBusinesses(access);
     setItems(res.items);
-  }, []);
+  }, [token]);
 
   return {
     token,

@@ -26,5 +26,5 @@ export async function loadCanonicalBusinessUser(
 }
 
 export async function clearBusinessAuthSession(): Promise<void> {
-  await fetch('/api/auth/logout', { method: 'POST' }).catch(() => undefined);
+  await fetch('/api/auth/business/logout', { method: 'POST' }).catch(() => undefined);
 }

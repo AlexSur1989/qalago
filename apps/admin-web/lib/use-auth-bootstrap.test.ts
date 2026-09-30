@@ -23,6 +23,10 @@ describe('useAuth bootstrap wiring (AOP.7H.3 + BIZ.9 HOTFIX 6)', () => {
     expect(layout).toMatch(/if \(!ready \|\| !user\)/);
   });
 
+  it('uses admin-scoped refresh BFF route', () => {
+    expect(bootstrapSrc).toContain('/api/auth/admin/refresh');
+  });
+
   it('platform settings page waits for ready and uses auth token', () => {
     const page = readFileSync(join(__dirname, '../app/settings/platform/page.tsx'), 'utf8');
     expect(page).toContain('ready');

@@ -42,5 +42,5 @@ export async function loadCanonicalAdminUser(
 }
 
 export async function clearAdminAuthSession(): Promise<void> {
-  await fetch('/api/auth/logout', { method: 'POST' }).catch(() => undefined);
+  await fetch('/api/auth/admin/logout', { method: 'POST' }).catch(() => undefined);
 }

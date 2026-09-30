@@ -1,6 +1,10 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { REFRESH_COOKIE_NAME } from '@/lib/auth-cookie';
+import {
+  REFRESH_COOKIE_NAME,
+  clearAppRefreshCookie,
+  clearLegacyRefreshCookie,
+} from '@/lib/auth-cookie';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3002/api/v1';
 
@@ -14,6 +18,7 @@ export async function POST() {
       body: JSON.stringify({ refreshToken }),
     });
   }
-  jar.delete(REFRESH_COOKIE_NAME);
+  clearAppRefreshCookie(jar);
+  clearLegacyRefreshCookie(jar);
   return NextResponse.json({ success: true });
 }
