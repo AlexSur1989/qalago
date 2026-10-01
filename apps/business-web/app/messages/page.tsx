@@ -89,14 +89,6 @@ export default function MessagesPage() {
     await load(token);
   }
 
-  if (!ready || !token) {
-    return (
-      <div className="page-content">
-        <BackofficeLoadingState density="page" label={ui.text_89d69a} />
-      </div>
-    );
-  }
-
   const unread = items.filter((n) => !n.isRead).length;
   const visibleItems = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -107,6 +99,14 @@ export default function MessagesPage() {
       return haystack.includes(q);
     });
   }, [items, searchQuery, locale, ui]);
+
+  if (!ready || !token) {
+    return (
+      <div className="page-content">
+        <BackofficeLoadingState density="page" label={ui.text_89d69a} />
+      </div>
+    );
+  }
 
   return (
     <BusinessShell

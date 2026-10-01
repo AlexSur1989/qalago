@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-10-01 — UXA.13 PASS — Backoffice physical browser QA verified; UXA CLOSED
+
+- **Status:** **UXA.13 PASS — BACKOFFICE PHYSICAL BROWSER QA VERIFIED**. **UXA PASS — BACKOFFICE UX / UI SYSTEM FINALIZED**. **UXA STATUS: CLOSED**.
+- **Starting HEAD:** **`cd712af`**.
+- **Checkpoint (commits):** **`fix(ui): resolve final UXA physical qa blockers`** + **`docs(uxa): close backoffice ux after physical qa`** (see git log).
+- **Summary:** UXA.13D final Chromium pass — **SUPER_ADMIN** `+77473850274` (Staff/Audit/platform settings/reports/catalog/applications/moderation); **CITY_ADMIN** Uralsk scope + AOP7 locations; **OWNER** full route sweep including **`/messages`**; **MANAGER** analytics vs catalog-edit contexts + switcher F5; **team flag** OFF/ON with API rev **17→20** restored **ON**; RU↔KK F5; Montserrat Kazakh glyph probe; representative **320/390** body overflow **NO**; mobile drawer + Escape. **Fix:** Business **`/messages`** React hooks order (**P1** crash). Automated: brand **PASS**; Admin **197** vitest + build **PASS**; Business **344** vitest + build **PASS**.
+- **Deferred (POST-UXA):** controllable screen-reader QA; brand token contrast redesign; bulk KK dictionary; table→card mobile; full modal inventory.
+- **Next:** **KZ-C.1** notification physical QA (parallel track); no **UXA.14**.
+
+---
+
 ## 2026-10-01 — UXA.13B — Physical browser QA continuation (still not closed)
 
 - **Status:** **UXA.13 ACTIVE** — broader Chromium walkthrough completed; **UXA not closed**.

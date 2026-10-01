@@ -218,25 +218,33 @@ Canonical: `--radius-xs` (8px), `--radius-md` (12px), `--radius-lg` (16px), `--r
 - **Tests:** `locale-parity.test.ts` (RU/KK key parity), `uxa12-visual-localization.test.ts`, `@qalago/brand/i18n/i18n.contract.test.mjs`.
 - **Deferred:** Full KK rewrite of legacy `____*` hash keys in `locale.ts` (large backlog); remaining mixed RU strings in KK dictionary → **POST-UXA debt** until swept.
 
-## Physical browser QA (UXA.13 — partial, not closed)
+## Physical browser QA (UXA.13 — **PASS**, 2026-10-01)
 
-**Method:** Cursor IDE Browser MCP (Chromium); local dev **`catalog-api` :3002**, Admin **:3001**, Business **:3003**; BFF dev-login where UI automation clicks were unreliable (fetch + navigation).
+**Method:** Cursor IDE Browser MCP (Chromium); **`http://127.0.0.1:3001`** / **`:3003`** / API **`:3002`** (note: **`localhost`** hostname may fail from MCP in some sessions — treat as **environment**); BFF **`/api/auth/*/login`** dev mode where needed.
 
-**Verified (representative):**
+**SUPER_ADMIN (`+77473850274`, not seed `+77000000001`):** dashboard (Staff + Audit nav, multi-city picker), **`/staff`**, **`/audit-logs`**, **`/settings/platform`**, **`/settings/security`**, catalog list + business detail (locations/PRIMARY), business-requests applications/claims, moderation cases, **`/reports/cities`**; platform team toggle exercised.
 
-- Admin **Platform Admin** (`+77000000005`) — login via BFF, **`/dashboard`** KPI cards, moderation queue, skip link, mobile shell (~390), city picker, logout control present.
-- Business **OWNER** (`+77000000002`) — login KK lead/onboarding link after fix; **`/dashboard`** KK shell, locale toggle, KPI grid, plan usage (VIP), skip link.
-- **Stale `.next` dev cache** on long-running Admin/Business processes caused missing chunk / infinite loading — cleared by restart + `.next` delete (**environment**, not product regression).
+**CITY_ADMIN Uralsk (`+79990094502`):** scope **Уральск**; catalog businesses + **AOP7 Test Cafe** detail (PRIMARY Aktobe / Uralsk BL presentation); **no Staff/Audit** nav.
 
-**UXA.13B additions (2026-10-01):** **ADMIN** catalog/detail/locations, audit, business-requests, moderation, reports paths; **CITY_ADMIN Uralsk** catalog (mobile drawer); **OWNER** login via native DOM dev button (MCP `browser_click` still unreliable — **UXA13-003**); **MANAGER** `+77000000003` menu fail-closed on **bar-code-51** (ANALYTICS_VIEW); Business **locations** KK + primary badge @390 **bodyH=no**; **F5** session on dashboard; plan page **P0** `${max}` interpolation + ad bonus display fixed after physical find.
+**OWNER (`+77000000002`):** media, messages (after hooks fix), settings, team, menu, promotions, reviews, monetization + prior dashboard/plan/statistics/locations.
 
-**Still not verified / blocked:** **SUPER_ADMIN** — seed phone `+77000000001` is **`USER`** in local DB (staff/platform toggle untested); full 320–1440 × all routes grid; keyboard-only drawer tab order; **Narrator** not controllable; contrast ratios not numerically captured; team flag **OFF** pass; simultaneous Admin+Business sessions.
+**MANAGER (`+77000000003`):** **bar-code-51** — statistics OK, **`/menu` fail-closed**; **aktobe-coffee-lab** — menu edit UI; switcher + F5 preserves business context.
 
-**UXA.13 fixes (Business KK):** login lead (`____c8191d`), onboarding link (`___c1d1fc`), dashboard KPI/link strings (`__79b074`, `__7__0205a6`, `__bb49cc`, `__19c279`, `__a144ec`, `___ee3b0e`, `__591eff`, `__24c04c`, `___c89390`); contract test **`uxa12-visual-localization.test.ts`**.
+**Team flag:** API rev **17→18 ON**, **19 OFF** (nav hidden + direct `/team` feature-unavailable), **20 ON** restored.
+
+**Locale F5:** RU↔KK on Business shell/dashboard (`html[lang=kk]`, KK **«Шолу»**); persists after reload.
+
+**Responsive / overflow (representative):** body horizontal scroll **NO** at **320/390** on Admin catalog table and Business dashboard; mobile drawer open/close + **Escape** on Admin and Business.
+
+**Kazakh glyphs:** **Montserrat** loaded; probe string **ӘҒҚҢӨҰҮҺІ** renders without obvious fallback/clipping.
+
+**POST-UXA (non-blocking):** screen reader not controllable in MCP; measured brand contrast debt (13C token table); bulk legacy KK `____*` keys; **UXA13-003** MCP click flake; **UXA13-009** API plan feature bullets on KK `/plan`.
+
+**UXA.13D product fix:** **`messages/page.tsx`** — moved **`useMemo`** before auth early return (Rules of Hooks crash on **`/messages`**).
 
 ## UXA.1 does NOT cover
 
-Dark mode, formal WCAG certification, full physical browser closure (UXA.13 — **ACTIVE**).
+Dark mode, formal WCAG certification (numerical debt documented), exhaustive per-route viewport matrix beyond representative samples above.
 
 ## Tests
 

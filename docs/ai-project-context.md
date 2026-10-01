@@ -94,12 +94,12 @@
 | **UXA.10** | **PASS — BACKOFFICE RESPONSIVE LAYOUT STANDARDIZED** — `backoffice-responsive.css`; shell ≤960 drawer; KPI/table/form/chart/modal responsive contracts |
 | **UXA.11** | **PASS — BACKOFFICE ACCESSIBILITY STANDARDIZED** — checkpoint **`76ee055`**; `backoffice-a11y.css`, `@qalago/brand/accessibility`; skip link; drawer inert/focus; static a11y contracts (**WCAG cert / SR QA deferred UXA.13**) |
 | **UXA.12** | **PASS — RU/KK VISUAL LOCALIZATION QA COMPLETED** — checkpoint **`298c327`**; `owner-visual-copy.ts`, `backoffice-i18n.css`; parity/hardcoded guards (**physical visual QA UXA.13**) |
-| **UXA.13** | **ACTIVE — PHYSICAL QA EXTENDED (13B)** — ADMIN/CITY_ADMIN/OWNER/MANAGER browser pass; plan `${max}` P0 fixed; SUPER_ADMIN fixture **blocked** (local DB role `USER` for `+77000000001`); SR/contrast/full matrix **incomplete** |
-| **UXA (track)** | **ACTIVE** — closure blocked on remaining UXA.13; see § UXA below |
+| **UXA.13** | **PASS — BACKOFFICE PHYSICAL BROWSER QA VERIFIED** — SUPER `+77473850274`, CITY_ADMIN Uralsk, OWNER/MANAGER matrix, team flag OFF/ON, RU↔KK F5, representative overflow/keyboard/drawer; **`/messages`** hooks fix |
+| **UXA (track)** | **CLOSED — BACKOFFICE UX / UI SYSTEM FINALIZED** (checkpoints: fix + docs commits after **`cd712af`**) |
 | **Future-ready platform** | **DOCUMENTED** — **`docs/architecture/future-ready-platform.md`** (planning only; **SCALE not started**) |
 | **SCALE (track)** | **PLANNED** — **SCALE.0–SCALE.12 not started**; see future-ready doc §70 |
-| **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = ACTIVE** · Consumer Web UI/UX after UXA · Mobile UI/UX after Consumer · production/security/pre-VPS · **SCALE foundation** · VPS later |
-| **Next** | Finish **UXA.13** physical browser QA (remaining roles/viewports/a11y); then UXA closure; parallel **KZ-C.1** notification physical QA remains open |
+| **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = CLOSED** · Consumer Web UI/UX next · Mobile UI/UX after Consumer · production/security/pre-VPS · **SCALE foundation** · VPS later |
+| **Next** | **KZ-C.1** notification physical QA (parallel); Consumer Web UI/UX planning — **no UXA.14** |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -397,7 +397,7 @@ VPS / production deployment
 |-------|--------|
 | **AOP** | **CLOSED** |
 | **BIZ** | **CLOSED** |
-| **UXA** | **ACTIVE** — **UXA.1–UXA.12 PASS**; **UXA.13 partial** (not closed) |
+| **UXA** | **CLOSED** — **UXA.1–UXA.13 PASS**; backoffice physical browser QA verified **2026-10-01** |
 | **Consumer Web UI/UX** | **PLANNED** (after backoffice functional + UXA) |
 | **Mobile UI/UX** | **PLANNED** |
 | **VPS / production** | **BLOCKED** until readiness gates |
@@ -431,7 +431,7 @@ Canonical planning doc: **`docs/architecture/future-ready-platform.md`**. **Modu
 | **UXA.10** | **PASS** — Responsive layout — `backoffice-responsive.css`; shell drawer ≤960; table inner scroll; KPI breakpoints; static contract tests (**physical QA UXA.13**) |
 | **UXA.11** | **PASS** — Accessibility — skip link, landmarks/nav semantics, drawer inert/focus, forms/tables/dialogs/switch/progress contracts, static tests (**SR/contrast physical QA UXA.13**) |
 | **UXA.12** | **PASS** — RU/KK visual localization — dictionaries + `owner-visual-copy`, long-copy CSS, parity/hardcoded guards (**physical visual QA UXA.13**) |
-| **UXA.13** | Physical browser QA + closure — SUPER_ADMIN, ADMIN, CITY_ADMIN, OWNER, MANAGER → **UXA PASS — QALAGO BACKOFFICE UI/UX FINALIZED** |
+| **UXA.13** | **PASS** — Physical browser QA verified (SUPER `+77473850274`, CITY_ADMIN, OWNER, MANAGER, team flag, RU/KK F5) → **UXA CLOSED** |
 
 ### UXA — known UI/UX debt (carry-in from AOP / BIZ audits)
 
