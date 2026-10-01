@@ -10,7 +10,7 @@
 
 - **Status:** **KZ-C.1 PASS — NOTIFICATIONS / FCM PHYSICAL QA VERIFIED**. **KZ-C.1 STATUS: CLOSED**.
 - **Starting HEAD:** **`be5f880`** (fixture user lookup fix).
-- **Checkpoint (commit):** *(docs closure commit SHA — see git log)*.
+- **Checkpoint (commit):** **`aa9a5a0`** — `docs(kz-c): close KZ-C.1 notification physical qa`.
 - **Summary:** **SM-J610FN / Android 10** — Firebase init **PASS**; **PushDevice** registration **PASS** (`+77000000002`, locale **kk** after in-app **Қазақша**); canonical **`POST /reviews`** → **NEW_REVIEW** producer **PASS**. **Background FCM:** KK shade copy verified — title **Жаңа пікір**, body **«Fitness Pro Aktobe» компаниясы туралы жаңа пікір қалдырылды.** **Normal terminated (recents swipe-away, not force-stop):** FCM delivery **PASS** — **«Beauty Room Aktobe» …** notification posted (no `GCM CANCELLED`). **Prior `adb force-stop`:** `GCM result=CANCELLED` — **Android stopped-state only**; **not** equivalent to user swipe-away. **Notification tap** → owner reviews (**Пікірлер**) **PASS**. **In-app inbox** (**Хабарландырулар**) lists **NEW_REVIEW** rows; tap → **Пікірлер** **PASS**. **RU** push previously verified (Bar Code background). **Automated:** notification-presentation **9/9**, catalog-api notification/push **35/35**, mobile push+notifications **48/48**. **Fixture:** `seed-notification-navigation-fixture.mjs` supports **`NOTIFICATION_FIXTURE_USER_PHONE`** (`be5f880`).
 - **Deferred:** **iOS** physical FCM/APNs (no iPhone in QA); custom Android **`fcm_fallback_notification_channel`** polish; Business Web notification regression spot-check (UXA **CLOSED**); Samsung notification mute/archive UX (device settings).
 - **Next:** **KZ-C.2+** not started; Consumer Web UI/UX planning per roadmap.
