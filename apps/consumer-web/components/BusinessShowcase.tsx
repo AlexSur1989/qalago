@@ -1,6 +1,8 @@
+import { PublicMediaImage, normalizePublicMediaSrc } from '@/components/public/PublicMediaImage';
 import type { BusinessPublicDetailDto } from '@/lib/catalog-api';
 import type { AppLocale, UiLabels } from '@/lib/locale';
 import { subcategoryDisplayName } from '@/lib/locale';
+import { getApiOrigin } from '@/lib/public-config';
 import { resolvePublicMediaUrl, externalMapNavigationUrl } from '@/lib/media-url';
 import {
   detailPhysicalAddress,
@@ -17,13 +19,16 @@ function externalLinkProps(href: string) {
   return { href, target: '_blank' as const, rel: 'noopener noreferrer' };
 }
 
+const API_ORIGIN = getApiOrigin();
+
 export function BusinessShowcase({ business, locale, labels }: Props) {
   const address = detailPhysicalAddress(business);
   const contacts = detailPhysicalContacts(business);
   const ep = business.effectivePhysical;
-  const cover =
+  const coverRaw =
     resolvePublicMediaUrl(business.effectiveMedia?.coverImageUrl) ??
     resolvePublicMediaUrl(business.coverImageUrl);
+  const cover = normalizePublicMediaSrc(coverRaw, API_ORIGIN);
   const gallery = business.effectiveMedia?.galleryPreview.items ?? [];
   const catalogItems = business.effectiveCatalog?.items ?? [];
   const promotions = business.effectivePromotions?.items ?? [];
@@ -44,13 +49,14 @@ export function BusinessShowcase({ business, locale, labels }: Props) {
     <article className="business-showcase">
       <header className="business-showcase__hero">
         {cover ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <PublicMediaImage
             src={cover}
             alt={labels.businessCoverAlt}
             className="business-showcase__cover"
             width={960}
             height={420}
+            sizes="(max-width: 768px) 100vw, 960px"
+            priority
           />
         ) : null}
         <h1 className="page-title business-showcase__title">{business.title}</h1>
@@ -120,12 +126,20 @@ export function BusinessShowcase({ business, locale, labels }: Props) {
           </h2>
           <ul className="business-showcase__gallery">
             {gallery.map((item) => {
-              const src = resolvePublicMediaUrl(item.imageUrl);
+              const src = normalizePublicMediaSrc(
+                resolvePublicMediaUrl(item.imageUrl),
+                API_ORIGIN,
+              );
               if (!src) return null;
               return (
                 <li key={item.id}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={src} alt="" loading="lazy" width={160} height={120} />
+                  <PublicMediaImage
+                    src={src}
+                    alt=""
+                    width={160}
+                    height={120}
+                    sizes="160px"
+                  />
                 </li>
               );
             })}

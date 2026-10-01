@@ -102,7 +102,7 @@ export default async function CityCategoryPage({
   const listPath = cityCategoryPath(locale, city.slug, category.slug);
 
   return (
-    <main className="page">
+    <div className="page">
       <JsonLd data={breadcrumbListJsonLd(jsonLdFromCrumbs(crumbs, listPath))} />
       <Breadcrumbs items={crumbs} />
       <Link href={cityCategoriesPath(locale, city.slug)} className="page-back">
@@ -137,6 +137,6 @@ export default async function CityCategoryPage({
         totalPages={totalPages}
         labels={labels}
       />
-    </main>
+    </div>
   );
 }

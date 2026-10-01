@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { CategoryIconTile, CategoryMoreTile } from '@/components/CategoryIconTile';
+import { PublicEmptyState } from '@/components/public/PublicState';
 import { SearchForm } from '@/components/SearchForm';
 import { requireCity, requireCityCategories } from '@/lib/city-page-data';
 import { homeColumns, sliceHomeCategories } from '@/lib/home-categories';
@@ -35,12 +36,12 @@ export default async function CityHomePage({
   const { preview, showMore } = sliceHomeCategories(categories, columns);
 
   return (
-    <main className="page">
+    <div className="page">
       <h1 className="page-title">{cityDisplayName(city, locale)}</h1>
       <p className="page-lead">{tagline}</p>
       <SearchForm locale={locale} citySlug={city.slug} labels={labels} />
       {!categories.length ? (
-        <p style={{ color: 'var(--muted)' }}>{labels.emptyCategories}</p>
+        <PublicEmptyState message={labels.emptyCategories} />
       ) : (
         <section aria-label={labels.categories} style={{ marginTop: 28 }}>
           <div className="cat-grid">
@@ -65,6 +66,6 @@ export default async function CityHomePage({
       <p style={{ marginTop: 32 }}>
         <Link href={cityCategoriesPath(locale, city.slug)}>{labels.allCategories} →</Link>
       </p>
-    </main>
+    </div>
   );
 }

@@ -29,7 +29,7 @@ export function SearchForm({
           maxLength={100}
           autoComplete="off"
         />
-        <button type="submit" className="search-form__submit">
+        <button type="submit" className="search-form__submit public-btn public-btn--primary">
           {labels.searchSubmit}
         </button>
       </div>

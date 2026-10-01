@@ -8,6 +8,13 @@ const apiOrigin =
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   outputFileTracingRoot: path.join(__dirname, '../..'),
+  images: {
+    remotePatterns: [
+      { protocol: 'http', hostname: 'localhost', pathname: '/uploads/**' },
+      { protocol: 'http', hostname: '127.0.0.1', pathname: '/uploads/**' },
+      { protocol: 'https', hostname: '**', pathname: '/**' },
+    ],
+  },
   async rewrites() {
     return [{ source: '/uploads/:path*', destination: `${apiOrigin}/uploads/:path*` }];
   },

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { BusinessList } from '@/components/BusinessList';
+import { PublicEmptyState } from '@/components/public/PublicState';
 import { PaginationLinks } from '@/components/PaginationLinks';
 import { SearchForm } from '@/components/SearchForm';
 import { requireCity } from '@/lib/city-page-data';
@@ -79,17 +80,17 @@ export default async function CitySearchPage({
   const basePath = citySearchPath(locale, city.slug, query);
 
   return (
-    <main className="page">
+    <div className="page">
       <h1 className="page-title">
         {labels.searchHeading} — {cityDisplayName(city, locale)}
       </h1>
       <SearchForm locale={locale} citySlug={city.slug} labels={labels} defaultQuery={query} />
       {!query ? (
-        <p style={{ color: 'var(--muted)' }}>{labels.searchNoQueryHint}</p>
+        <p className="text-secondary">{labels.searchNoQueryHint}</p>
       ) : isSearchQueryTooShort(query) ? (
-        <p style={{ color: 'var(--muted)' }}>{labels.searchTooShort}</p>
+        <p className="text-secondary">{labels.searchTooShort}</p>
       ) : publicItems.length === 0 ? (
-        <p style={{ color: 'var(--muted)' }}>{labels.searchNoResults}</p>
+        <PublicEmptyState message={labels.searchNoResults} />
       ) : (
         <>
           <BusinessList citySlug={citySlug} items={publicItems} locale={locale} />
@@ -101,6 +102,6 @@ export default async function CitySearchPage({
           />
         </>
       )}
-    </main>
+    </div>
   );
 }

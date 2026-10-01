@@ -52,6 +52,9 @@ export type UiLabels = {
   businessBranchesTitle: string;
   businessPrimaryBranchBadge: string;
   businessCardCoverAlt: string;
+  skipToContent: string;
+  menuOpen: string;
+  menuClose: string;
   mainNavAria: string;
   footerLegalAria: string;
   footerPrivacy: string;
@@ -112,6 +115,9 @@ export const UI_LABELS: Record<AppLocale, UiLabels> = {
     businessBranchesTitle: 'Филиалы',
     businessPrimaryBranchBadge: 'Основной филиал',
     businessCardCoverAlt: 'Фото заведения',
+    skipToContent: 'Перейти к содержимому',
+    menuOpen: 'Меню',
+    menuClose: 'Закрыть меню',
     mainNavAria: 'Основная навигация',
     footerLegalAria: 'Правовая информация',
     footerPrivacy: 'Конфиденциальность',
@@ -170,6 +176,9 @@ export const UI_LABELS: Record<AppLocale, UiLabels> = {
     businessBranchesTitle: 'Филиалдар',
     businessPrimaryBranchBadge: 'Негізгі филиал',
     businessCardCoverAlt: 'Мекеме фотосы',
+    skipToContent: 'Мазмұнға өту',
+    menuOpen: 'Мәзір',
+    menuClose: 'Мәзірді жабу',
     mainNavAria: 'Негізгі навигация',
     footerLegalAria: 'Құқықтық ақпарат',
     footerPrivacy: 'Құпиялылық',

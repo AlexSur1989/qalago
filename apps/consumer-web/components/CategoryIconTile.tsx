@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { PublicMediaImage, normalizePublicMediaSrc } from '@/components/public/PublicMediaImage';
 import { resolveIconUrl } from '@/lib/home-categories';
-
 import { getApiOrigin } from '@/lib/public-config';
 
 const API_ORIGIN = getApiOrigin();
@@ -16,13 +16,12 @@ export function CategoryIconTile({
   icon?: string | null;
   href: string;
 }) {
-  const src = resolveIconUrl(icon ?? null, API_ORIGIN);
+  const src = normalizePublicMediaSrc(resolveIconUrl(icon ?? null, API_ORIGIN), API_ORIGIN);
   return (
     <Link href={href} className="cat-tile" aria-label={title}>
       <div className="cat-tile__icon">
         {src ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={src} alt="" width={56} height={56} loading="lazy" />
+          <PublicMediaImage src={src} alt="" width={56} height={56} sizes="56px" />
         ) : (
           <span className="cat-tile__fallback" aria-hidden />
         )}

@@ -39,7 +39,7 @@ export default async function CityCategoriesPage({
   const listPath = cityCategoriesPath(locale, city.slug);
 
   return (
-    <main className="page">
+    <div className="page">
       <JsonLd data={breadcrumbListJsonLd(jsonLdFromCrumbs(crumbs, listPath))} />
       <Breadcrumbs items={crumbs} />
       <Link href={cityHomePath(locale, city.slug)} className="page-back">
@@ -62,6 +62,6 @@ export default async function CityCategoriesPage({
           ))}
         </div>
       )}
-    </main>
+    </div>
   );
 }

@@ -86,7 +86,7 @@ export default async function CanonicalBusinessPage({
   const jsonLdItems = jsonLdFromCrumbs(crumbs, currentPath);
 
   return (
-    <main className="page">
+    <div className="page">
       <Breadcrumbs items={crumbs} />
       <JsonLd data={breadcrumbListJsonLd(jsonLdItems)} />
       <BusinessShowcase business={data.business} locale={locale} labels={labels} />
@@ -100,6 +100,6 @@ export default async function CanonicalBusinessPage({
           primaryBadge: labels.businessPrimaryBranchBadge,
         }}
       />
-    </main>
+    </div>
   );
 }
