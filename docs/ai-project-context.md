@@ -48,11 +48,11 @@
 | **Public help** | **CLOSED / PASS — PUBLIC HELP FINALIZED** — Consumer Web guest **`/help`**; hotfix **`08b5340…`**; physical QA **PASS** (**2026-09-28**); Business Web **`/help`** = authenticated owner only |
 | **F.8** | **CLOSED / PASS — SOCIAL PREVIEW / OG IMAGE PIPELINE FINALIZED** — **`docs/architecture/public-consumer-web.md`** § **F.8**; implementation checkpoint **`4ab630c…`** (+ docs closure after); local physical QA **PASS** (**2026-09-28**, **localhost:3005**) |
 | **F.8 external debt** | **Public HTTPS social crawler previews** (Telegram/WhatsApp/Facebook/X on **`qalago.kz`**) — **NOT VERIFIED**; trusted **`/uploads/…`** Business cover — **NOT OBSERVED** physically (automated PASS) |
-| **KZ-C.1B** | **PASS — FLUTTER KK-FIRST IMPLEMENTED** — **physical QA partial (KZ-C.1F):** device locale/persistence/glyphs/catalog LAN **PASS** — **`docs/changelog.md`** |
-| **KZ-C.1C** | **PASS — CONSUMER + BUSINESS WEB KK-FIRST IMPLEMENTED** — **physical QA partial (KZ-C.1F):** browser KK-first/switch/persistence **PASS**; **x-default RU** unchanged — **`docs/changelog.md`** |
-| **KZ-C.1F** | **PARTIAL PHYSICAL QA PASS / NOTIFICATION QA DEFERRED** — deep-link hotfix **`346ab5d…`** device **PASS**; Android/Consumer/Business locale authority **PASS**; notification inbox + live FCM **not** verified; fixture user-id/DB mismatch **unresolved** |
+| **KZ-C.1B** | **PASS — FLUTTER KK-FIRST IMPLEMENTED** — device locale/persistence/glyphs/catalog LAN **PASS** — **`docs/changelog.md`** |
+| **KZ-C.1C** | **PASS — CONSUMER + BUSINESS WEB KK-FIRST IMPLEMENTED** — browser KK-first/switch/persistence **PASS**; **x-default RU** unchanged — **`docs/changelog.md`** |
+| **KZ-C.1F** | **PASS — NOTIFICATION / FCM PHYSICAL QA VERIFIED** — **SM-J610FN** Android 10; PushDevice + live FCM foreground/background/recents-swipe; KK/RU push shade; inbox + tap/deep-link; fixture phone lookup **`be5f880`** — **`docs/changelog.md`** KZ-C.1B entry |
 | **KZ-C.1E** | **PASS — KAZAKH-FIRST AUTOMATED REGRESSION GATE** |
-| **KZ-C.1 (umbrella)** | **NOT CLOSED** — notification physical QA + FCM debt remain |
+| **KZ-C.1 (umbrella)** | **CLOSED / PASS — KAZAKH-FIRST + NOTIFICATIONS PHYSICAL QA VERIFIED** |
 | **AOP.0** | **PASS — ADMIN CATALOG / OPERATIONS CONTRACT LOCKED** — **`docs/architecture/admin-catalog-operations.md`** |
 | **AOP.1** | **PASS — BACKEND ADMIN CATALOG CORE** — `POST/GET/PATCH` **`/api/v1/admin/businesses*`** |
 | **AOP.2** | **PASS — ADMIN BUSINESS MANAGEMENT UI** — **`/catalog/businesses`** (list/detail/create/catalog edit) |
@@ -99,7 +99,7 @@
 | **Future-ready platform** | **DOCUMENTED** — **`docs/architecture/future-ready-platform.md`** (planning only; **SCALE not started**) |
 | **SCALE (track)** | **PLANNED** — **SCALE.0–SCALE.12 not started**; see future-ready doc §70 |
 | **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = CLOSED** · Consumer Web UI/UX next · Mobile UI/UX after Consumer · production/security/pre-VPS · **SCALE foundation** · VPS later |
-| **Next** | **KZ-C.1** notification physical QA (parallel); Consumer Web UI/UX planning — **no UXA.14** |
+| **Next** | **KZ-C.2+** not started; Consumer Web UI/UX planning — **no UXA.14** |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -123,7 +123,7 @@
 
 | Topic | Contract (summary) |
 |-------|-------------------|
-| **KK-first** | **QALAGO PRODUCT POLICY (P0 before public launch):** no saved language → **kk**; explicit user choice **wins forever**; Russian fully supported. **Flutter IMPLEMENTED (KZ-C.1B)** + **device physical partial PASS (KZ-C.1F)**; **Consumer + Business Web IMPLEMENTED (KZ-C.1C)** + **browser physical partial PASS (KZ-C.1F)**; **Notifications typed push + Business Web inbox IMPLEMENTED (KZ-C.1D.2)** — **inbox/FCM physical QA DEFERRED (KZ-C.1F)**; Flutter in-app ARB unchanged (E.3). Physical APK dev host: **`QALAGO_DEV_HOST=192.168.8.101`** (not legacy VPS IP for current QA). |
+| **KK-first** | **QALAGO PRODUCT POLICY (P0 before public launch):** no saved language → **kk**; explicit user choice **wins forever**; Russian fully supported. **Flutter IMPLEMENTED (KZ-C.1B)**; **Consumer + Business Web IMPLEMENTED (KZ-C.1C)**; **Notifications typed push + Business Web inbox IMPLEMENTED (KZ-C.1D.2)** + **FCM physical QA VERIFIED (KZ-C.1F / KZ-C.1B closure)** on **SM-J610FN**; Flutter in-app ARB unchanged (E.3). Physical APK dev host: **`QALAGO_DEV_HOST=192.168.8.101`**. **iOS push physical QA deferred** (mobile-release). |
 | **Operator** | **`OPERATOR_IDENTITY = PENDING BUSINESS DECISION`** — P0 **production** blocker for legal publication; **not** internal dev blocker. |
 | **Legal KK/RU** | Target: **approved** KK + RU where applicable; no uncontrolled MT as final legal text. **Current:** RU draft bodies on Consumer Web (F.7). |
 | **Legal source of truth** | **Backend `LegalDocument`** = version authority for tracked docs; **Consumer Web** = public presentation (F.7 neutral URLs); **`LegalAcceptance`** = proof — **clients not wired yet** (KZ-C.2). |

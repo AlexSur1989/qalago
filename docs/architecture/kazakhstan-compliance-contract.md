@@ -79,12 +79,12 @@ Do **not** copy statutory texts into the repository.
 | Consumer Web | **IMPLEMENTED (KZ-C.1C):** `DEFAULT_PUBLIC_LOCALE = kk`; no cookie → **kk** UI/redirect path; explicit `qalago_locale` **kk**/**ru** wins; invalid → **kk**; cookie **not** auto-set on default visit; F.5 **x-default RU** unchanged | KZ-C.1F physical QA |
 | Business Web | **IMPLEMENTED (KZ-C.1C):** `normalizeLocale` / SSR `<html lang>` / client fallback → **kk** when no explicit cookie; same cookie semantics as Consumer Web | Residual RU-hardcoded ops strings (non-blocker); KZ-C.1F physical QA |
 | Admin Web | Operational UI largely RU | Admin ops localization **phased**; public/user/business **legal/compliance** surfaces must not silently stay RU-only for production |
-| Notifications | **IMPLEMENTED (KZ-C.1D.2):** server typed KK/RU for push (per `PushDevice.locale`) + Business Web `/messages`; Flutter in-app ARB (E.3) + push locale sync; legacy `title`/`body` fallback | **Physical FCM QA deferred KZ-C.1F** — see **`docs/architecture/notification-localization.md`** |
+| Notifications | **IMPLEMENTED + PHYSICAL QA VERIFIED (KZ-C.1F):** server typed KK/RU for push (per `PushDevice.locale`) + Business Web `/messages`; Flutter in-app ARB (E.3) + push locale sync; **SM-J610FN** live FCM + inbox/deep-link | **iOS FCM deferred**; **`fcm_fallback_notification_channel`** polish optional |
 | Legal documents | F.7 neutral URLs; body largely RU draft | Approved **KK + RU** where required (§8) |
 
-**KZ-C.1E (automated gate PASS):** Consumer **323/323**, Business **210/210**, notification package **9/9**, catalog-api notification jest **127/127**, builds PASS; Flutter KZ-C.1 focused **98** PASS; ARB **956/956**. **KZ-C.1F** physical QA still required before closing KZ-C.1.
+**KZ-C.1E (automated gate PASS):** Consumer **323/323**, Business **210/210**, notification package **9/9**, catalog-api notification jest **127/127**, builds PASS; Flutter KZ-C.1 focused **98** PASS; ARB **956/956**. **KZ-C.1F / KZ-C.1B physical FCM PASS** — **KZ-C.1 CLOSED** (see **`docs/changelog.md`**).
 
-**DEFERRED:** KZ-C.1F physical FCM/Business Web QA; Admin Web localization; F.5 **x-default=kk** SEO decision (separate from product default); unrelated flaky full-suite jest / network widget tests (documented in changelog).
+**DEFERRED:** iOS physical FCM; Admin Web localization; F.5 **x-default=kk** SEO decision (separate from product default); unrelated flaky full-suite jest / network widget tests (documented in changelog).
 
 ### 4.2 F.5 SEO compatibility (do not reopen F.5)
 
