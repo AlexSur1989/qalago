@@ -94,7 +94,7 @@
 | **UXA.10** | **PASS — BACKOFFICE RESPONSIVE LAYOUT STANDARDIZED** — `backoffice-responsive.css`; shell ≤960 drawer; KPI/table/form/chart/modal responsive contracts |
 | **UXA.11** | **PASS — BACKOFFICE ACCESSIBILITY STANDARDIZED** — checkpoint **`76ee055`**; `backoffice-a11y.css`, `@qalago/brand/accessibility`; skip link; drawer inert/focus; static a11y contracts (**WCAG cert / SR QA deferred UXA.13**) |
 | **UXA.12** | **PASS — RU/KK VISUAL LOCALIZATION QA COMPLETED** — checkpoint **`298c327`**; `owner-visual-copy.ts`, `backoffice-i18n.css`; parity/hardcoded guards (**physical visual QA UXA.13**) |
-| **UXA.13** | **ACTIVE — PHYSICAL QA PARTIAL** (Chromium MCP; Admin dashboard + Business OWNER/KK spot-check; KK login/dashboard copy fixes; full role/viewport/SR/contrast matrix **not done**) |
+| **UXA.13** | **ACTIVE — PHYSICAL QA EXTENDED (13B)** — ADMIN/CITY_ADMIN/OWNER/MANAGER browser pass; plan `${max}` P0 fixed; SUPER_ADMIN fixture **blocked** (local DB role `USER` for `+77000000001`); SR/contrast/full matrix **incomplete** |
 | **UXA (track)** | **ACTIVE** — closure blocked on remaining UXA.13; see § UXA below |
 | **Future-ready platform** | **DOCUMENTED** — **`docs/architecture/future-ready-platform.md`** (planning only; **SCALE not started**) |
 | **SCALE (track)** | **PLANNED** — **SCALE.0–SCALE.12 not started**; see future-ready doc §70 |

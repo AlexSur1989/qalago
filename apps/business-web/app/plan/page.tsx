@@ -291,7 +291,9 @@ export default function PlanPage() {
                 </li>
                 <li>
                   {planFeatureAdBonusPrefix(locale)}{' '}
-                  {plan.limits.monthlyAdBonusKzt > 0 ? ui.text_d8d7ab : '—'}
+                  {plan.limits.monthlyAdBonusKzt > 0
+                    ? `${plan.limits.monthlyAdBonusKzt.toLocaleString(locale === 'kk' ? 'kk-KZ' : 'ru-RU')} ₸`
+                    : '—'}
                 </li>
                 <li>{planFeatureAdDiscountLine(locale, plan.limits.advertisingDiscountPercent)}</li>
               </ul>

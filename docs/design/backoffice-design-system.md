@@ -228,7 +228,9 @@ Canonical: `--radius-xs` (8px), `--radius-md` (12px), `--radius-lg` (16px), `--r
 - Business **OWNER** (`+77000000002`) — login KK lead/onboarding link after fix; **`/dashboard`** KK shell, locale toggle, KPI grid, plan usage (VIP), skip link.
 - **Stale `.next` dev cache** on long-running Admin/Business processes caused missing chunk / infinite loading — cleared by restart + `.next` delete (**environment**, not product regression).
 
-**Not physically verified in this session:** full viewport matrix (320/768/1024/1440 all routes); **SUPER_ADMIN** / **CITY_ADMIN** / **MANAGER** walkthroughs; keyboard-only drawer focus sweep; Windows Narrator; measured contrast ratios; exhaustive modal/table/form/map/media routes; team feature-flag toggle; independent Admin+Business simultaneous sessions.
+**UXA.13B additions (2026-10-01):** **ADMIN** catalog/detail/locations, audit, business-requests, moderation, reports paths; **CITY_ADMIN Uralsk** catalog (mobile drawer); **OWNER** login via native DOM dev button (MCP `browser_click` still unreliable — **UXA13-003**); **MANAGER** `+77000000003` menu fail-closed on **bar-code-51** (ANALYTICS_VIEW); Business **locations** KK + primary badge @390 **bodyH=no**; **F5** session on dashboard; plan page **P0** `${max}` interpolation + ad bonus display fixed after physical find.
+
+**Still not verified / blocked:** **SUPER_ADMIN** — seed phone `+77000000001` is **`USER`** in local DB (staff/platform toggle untested); full 320–1440 × all routes grid; keyboard-only drawer tab order; **Narrator** not controllable; contrast ratios not numerically captured; team flag **OFF** pass; simultaneous Admin+Business sessions.
 
 **UXA.13 fixes (Business KK):** login lead (`____c8191d`), onboarding link (`___c1d1fc`), dashboard KPI/link strings (`__79b074`, `__7__0205a6`, `__bb49cc`, `__19c279`, `__a144ec`, `___ee3b0e`, `__591eff`, `__24c04c`, `___c89390`); contract test **`uxa12-visual-localization.test.ts`**.
 

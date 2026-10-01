@@ -12,7 +12,8 @@ function withDays(locale: AppLocale, table: L, days: number): string {
 }
 
 function withCount(locale: AppLocale, table: L, count: number): string {
-  return pick(locale, table).replace('${count}', String(count));
+  const raw = pick(locale, table);
+  return raw.replace('${count}', String(count)).replace('${max}', String(count));
 }
 
 function withTwoCounts(

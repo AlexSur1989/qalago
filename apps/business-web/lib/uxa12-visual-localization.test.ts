@@ -3,7 +3,11 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { UI_LABELS } from './locale';
 import { planTierLabel } from './presentation';
-import { analyticsPeriodDaysLabel, planCurrentTierTitle } from './owner-visual-copy';
+import {
+  analyticsPeriodDaysLabel,
+  planCurrentTierTitle,
+  planFeaturePhotosLine,
+} from './owner-visual-copy';
 
 describe('UXA.12 canonical terminology', () => {
   it('plan tiers RU/KK (FREE/BUSINESS/PRO/VIP)', () => {
@@ -16,6 +20,12 @@ describe('UXA.12 canonical terminology', () => {
   it('primary branch badge RU/KK', () => {
     expect(UI_LABELS.ru.branchAvailabilityPrimaryBadge).toBe('Основной филиал');
     expect(UI_LABELS.kk.branchAvailabilityPrimaryBadge).toBe('Негізгі филиал');
+  });
+
+  it('plan feature lines interpolate max count (UXA.13 physical QA)', () => {
+    expect(planFeaturePhotosLine('ru', 100)).toBe('Фото: 100');
+    expect(planFeaturePhotosLine('kk', 100)).toBe('Фото: 100');
+    expect(planFeaturePhotosLine('kk', 100)).not.toContain('${');
   });
 
   it('owner visual copy helpers localize analytics period', () => {
