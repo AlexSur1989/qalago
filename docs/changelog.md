@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-10-02 — CW.2 PASS — Public UI foundation
+
+- **Status:** **CW.2 PASS — PUBLIC UI FOUNDATION COMPLETE**. **CW track ACTIVE**. **F.4–F.8 remain CLOSED**. **CW.3+ not started**.
+- **Starting HEAD:** **`ba0d067`** (CW.1 checkpoint).
+- **Checkpoint (commit):** **`bc732ba`** — `feat(cw): CW.2 public UI foundation for consumer-web`.
+- **Summary:** Consumer Web public-product UI foundation: **`@qalago/brand/qalago-theme.css`** + **`apps/consumer-web/styles/consumer-public.css`**; refined **`PublicShell`** (wordmark, skip link, desktop nav **`aria-current`**, footer); accessible **mobile drawer** (`MobileNav`); reusable **buttons**, **layout/page typography**, **cards** (category + business list), **search** chrome, **loading/skeleton**, **empty/error** (`PublicState`); **`PublicMediaImage`** + **`next/image`** config for `/uploads` and HTTPS remotes; route **`loading.tsx`**; **328/328** consumer-web vitest; **`next build` PASS** (API fetch warnings when catalog offline at build time — pre-existing). **No** home CMS, ads, analytics, promotions route, or auth.
+- **Deferred:** Rich home sections (**CW.4**); backend home config (**CW.3**); detail polish (**CW.5**); route-wide skeleton adoption; **`check:ui-strings`** still flags pre-existing **`lib/help-ui.ts`** (F.7 help content — not CW.2 regression); screen-reader certification (**CW.8**); real-device mobile browser matrix (**CW.8**).
+- **Next:** **CW.3** — Backend-controlled home system (simple model/API + admin).
+
+---
+
 ## 2026-10-02 — CW.1 PASS — Consumer Web product scope locked (Option B)
 
 - **Status:** **CW.1 PASS — CONSUMER WEB PRODUCT SCOPE LOCKED**. **CW track ACTIVE**. **F.4–F.8 remain CLOSED** (architecture preserved). **No CW.2+ implementation started**.

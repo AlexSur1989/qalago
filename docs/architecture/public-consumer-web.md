@@ -836,8 +836,8 @@ Consumer Web **CW STATUS: CLOSED** only when:
 
 | Stage | Name | Summary |
 |-------|------|---------|
-| **CW.1** | Product scope lock | **THIS STAGE** — docs contract only |
-| **CW.2** | Public UI foundation | Brand, shell, responsive/a11y baseline; **no** home CMS, ads, or promotions feed |
+| **CW.1** | Product scope lock | **CLOSED** — Option B scope lock (docs) |
+| **CW.2** | Public UI foundation | **CLOSED** — see § **CW.2** below |
 | **CW.3** | Backend-controlled home system | Simple model/API + admin; shared logical config |
 | **CW.4** | Discovery home | Render home from configuration (categories, featured, promos, VIP, etc.) |
 | **CW.5** | Business detail completion | Hours, branch UX, contacts, reviews read-only polish, states |
@@ -845,7 +845,22 @@ Consumer Web **CW STATUS: CLOSED** only when:
 | **CW.7** | Promotions discovery | Dedicated city promotions page |
 | **CW.8** | CI + performance + final physical QA | Closure |
 
-**Do not start CW.2** until CW.1 is committed and agreed.
+**Do not start CW.3** until CW.2 is committed and verified.
+
+### CW.2 — Public UI foundation (IMPLEMENTED)
+
+**Goal:** Reusable public-product chrome and primitives for later CW stages — **not** discovery home content.
+
+**Stack (consumer-web):**
+
+- **Brand tokens:** import **`@qalago/brand/qalago-theme.css`** in **`app/globals.css`** (Montserrat, shared color/spacing/focus tokens). **No** backoffice React primitives on the public site.
+- **Consumer layer:** **`apps/consumer-web/styles/consumer-public.css`** — shell, mobile nav, page layout, buttons/links, search, category/business cards, breadcrumbs, skeletons, empty states.
+- **Shell:** **`PublicShell`** + **`SkipToMain`**, **`QalaGoWordmark`**, **`MobileNav`** (drawer, **`aria-expanded`**), desktop nav with **`aria-current`**, city/locale controls, footer legal links. Single **`<main id="main-content">`** in shell; route bodies use **`<div className="page">`** (no nested `<main>`).
+- **Media:** **`PublicMediaImage`** (`next/image` + **`normalizePublicMediaSrc`**); **`next.config.ts`** `images.remotePatterns` for `/uploads` and HTTPS externals.
+- **States:** **`PublicPageLoading`** / route **`loading.tsx`**; **`PublicEmptyState`** for empty/no-results/error/not-found patterns where wired in CW.2.
+- **Labels:** extend **`UI_LABELS`** (RU/KK) for skip link and mobile menu — preserve KZ-C.1C locale cookie/routing semantics.
+
+**Explicitly out of CW.2:** home CMS sections, ads, analytics, **`/promotions`**, web auth, new backend fields.
 
 ### Global continuity (after CW closes — not started now)
 
