@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-10-02 — CW.2A PASS — CW.2 closure verified
+
+- **Status:** **CW.2A PASS — CW.2 CLOSURE VERIFIED**. **CW.2 STATUS: CLOSED**. **CW track ACTIVE**. **F.4–F.8 remain CLOSED**. **CW.3 not started**.
+- **Starting HEAD:** **`f9d3771`** (CW.2 docs).
+- **Checkpoint (commit):** **`8b48982`** — `fix(cw): sync UI string checker with help-ui dictionary`.
+- **Summary:** Closed remaining CW.2 gates: **`check:ui-strings`** drift — CLI script **`tool/check_hardcoded_ui_strings.mjs`** missing **`help-ui.ts`** dictionary entry (vitest guard already allowed **`lib/help-ui.ts`** as intentional RU/KK help dictionary per F.7); synced script + parity test. **Responsive browser QA** (desktop emulation, production **`next start`**, catalog API live): widths **320 / 390 / 768 / 1024 / 1440** — RU+KK flows (home, categories, category, search, business, help, privacy); **no body horizontal overflow** on spot checks; mobile menu below **768px**, desktop nav from **768px** up. **329/329** vitest; **`next build` PASS**.
+- **Deferred:** CW.8 full physical device matrix; exhaustive per-page overflow automation in CI.
+- **Next:** **CW.3** — Backend-controlled home system.
+
+---
+
 ## 2026-10-02 — CW.2 PASS — Public UI foundation
 
 - **Status:** **CW.2 PASS — PUBLIC UI FOUNDATION COMPLETE**. **CW track ACTIVE**. **F.4–F.8 remain CLOSED**. **CW.3+ not started**.

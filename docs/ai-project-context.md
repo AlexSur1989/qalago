@@ -99,7 +99,7 @@
 | **Future-ready platform** | **DOCUMENTED** — **`docs/architecture/future-ready-platform.md`** (planning only; **SCALE not started**) |
 | **SCALE (track)** | **PLANNED** — **SCALE.0–SCALE.12 not started**; see future-ready doc §70 |
 | **CW.1** | **PASS — CONSUMER WEB PRODUCT SCOPE LOCKED** — **Option B (guest + richer discovery)** — **`docs/architecture/public-consumer-web.md`** § **CW** |
-| **CW.2** | **PASS — PUBLIC UI FOUNDATION COMPLETE** — brand theme + consumer CSS, shell/mobile nav, cards/states/a11y baseline; **`docs/architecture/public-consumer-web.md`** § **CW.2** |
+| **CW.2** | **CLOSED — PUBLIC UI FOUNDATION** (incl. **CW.2A** closure verification — UI string checker + responsive browser QA) |
 | **CW (track)** | **ACTIVE** — **CW.1–CW.2 CLOSED** · **CW.3–CW.8 NOT STARTED** · F.4–F.8 **remain CLOSED** |
 | **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = CLOSED** · **CW ACTIVE** · Mobile UI/UX after CW · production/security/pre-VPS · **SCALE** later |
 | **Next** | **CW.3** — Backend-controlled home system (**no UXA.14**; **KZ-C.2+** not started) |
@@ -207,7 +207,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 **Architecture (CLOSED — preserve):** **F.4–F.8** — routing, locale SEO, legal migration, OG, deep-link well-known files. **Do not rebuild.**
 
-**Product track (ACTIVE):** **CW.1 PASS — scope locked Option B**; **CW.2 PASS — public UI foundation** (brand, shell, mobile nav, tokens, cards/forms/states, a11y/responsive baseline). Contract: **`docs/architecture/public-consumer-web.md`** § **CW**. **CW.3 next** — backend-controlled home config.
+**Product track (ACTIVE):** **CW.1 PASS — scope locked Option B**; **CW.2 CLOSED** (public UI foundation + **CW.2A** verification). Contract: **`docs/architecture/public-consumer-web.md`** § **CW**. **CW.3 next** — backend-controlled home config.
 
 - **6.11F.3 PASS** — public SEO infrastructure (sitemap, robots, temporary business detail **noindex**, etc.).
 - **6.12A.9.3.4 PASS (physical QA finalized)** — Consumer Web discovery/detail physical context; **QA-001 CLOSED**.
