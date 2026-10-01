@@ -10,7 +10,7 @@
 
 - **Status:** **UXA.13 ACTIVE** — broader Chromium walkthrough completed; **UXA not closed**.
 - **Starting HEAD:** **`d56daa2`**.
-- **Checkpoint (commit):** *(this docs commit)* — `fix(ui): resolve remaining UXA physical QA findings`.
+- **Checkpoint (commit):** **`35b4386`** — `fix(ui): resolve remaining UXA physical QA findings`.
 - **Summary:** Continued real-browser QA (Admin **ADMIN** `+77000000005`, **CITY_ADMIN Uralsk** `+79990094502`, Business **OWNER** / **MANAGER** `+77000000003`, team flag **ON** via API). **P0** plan page `${max}` / ad-bonus template leaks fixed; additional KK dashboard/statistics copy. **SUPER_ADMIN** fixture `+77000000001` returns **`USER`** in local DB — staff/platform settings not verifiable as SUPER_ADMIN ( `/staff` fail-closed for ADMIN verified ). Automated: brand contracts **PASS**; Business **344** vitest; Admin **197** vitest; builds **PASS**.
 - **Deferred / blockers:** Full route×viewport matrix; controllable screen reader; measured contrast ratios; SUPER_ADMIN physical pass pending dev DB role; bulk `____*` KK backlog (POST-UXA except reachable flows).
 - **Next:** Restore SUPER_ADMIN seed role in dev DB or alternate fixture → complete SUPER_ADMIN + platform toggle physical pass → UXA closure.
