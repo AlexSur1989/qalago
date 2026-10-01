@@ -7,9 +7,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const CYRILLIC = /[\u0400-\u04FF]/;
+/** Keep in sync with lib/hardcoded-ui-guard.ts DICTIONARY_FILES */
 const DICTIONARY_FILES = new Set([
   'locale.ts',
   'legal-ui.ts',
+  'help-ui.ts',
   'localized-content.ts',
   'metadata-copy.ts',
   'page-metadata.ts',
