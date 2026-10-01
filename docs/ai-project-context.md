@@ -98,8 +98,10 @@
 | **UXA (track)** | **CLOSED — BACKOFFICE UX / UI SYSTEM FINALIZED** (checkpoints: fix + docs commits after **`cd712af`**) |
 | **Future-ready platform** | **DOCUMENTED** — **`docs/architecture/future-ready-platform.md`** (planning only; **SCALE not started**) |
 | **SCALE (track)** | **PLANNED** — **SCALE.0–SCALE.12 not started**; see future-ready doc §70 |
-| **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = CLOSED** · Consumer Web UI/UX next · Mobile UI/UX after Consumer · production/security/pre-VPS · **SCALE foundation** · VPS later |
-| **Next** | **KZ-C.2+** not started; Consumer Web UI/UX planning — **no UXA.14** |
+| **CW.1** | **PASS — CONSUMER WEB PRODUCT SCOPE LOCKED** — **Option B (guest + richer discovery)** — **`docs/architecture/public-consumer-web.md`** § **CW** |
+| **CW (track)** | **ACTIVE** — **CW.1 CLOSED** · **CW.2–CW.8 NOT STARTED** · F.4–F.8 **remain CLOSED** |
+| **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = CLOSED** · **CW ACTIVE** · Mobile UI/UX after CW · production/security/pre-VPS · **SCALE** later |
+| **Next** | **CW.2** — Public UI foundation (**no UXA.14**; **KZ-C.2+** not started) |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -202,11 +204,15 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 ## Consumer Web stage
 
+**Architecture (CLOSED — preserve):** **F.4–F.8** — routing, locale SEO, legal migration, OG, deep-link well-known files. **Do not rebuild.**
+
+**Product track (ACTIVE):** **CW.1 PASS — scope locked Option B** — guest + richer discovery: home config, ads, analytics, promotions page, detail completion, brand, CI/QA. Contract: **`docs/architecture/public-consumer-web.md`** § **CW**. **CW.2 next** — public UI foundation only.
+
 - **6.11F.3 PASS** — public SEO infrastructure (sitemap, robots, temporary business detail **noindex**, etc.).
 - **6.12A.9.3.4 PASS (physical QA finalized)** — Consumer Web discovery/detail physical context; **QA-001 CLOSED**.
 - **6.12A.9.3.5 PASS (physical QA finalized)** — Business Web permission-safe profile PATCH; primary-branch UX; hours-only MANAGER scope verified; closes **`A.9.3.4+`** owner slice; central audit **P1 CLOSED**.
 - **6.12A.9.4.0 PASS (policy gate)** — legacy physical retirement policies & invariants frozen; **`docs/architecture/business-location.md`** § **9.4.0**; **F.4** not blocked on column drop.
-- **F.4** — **CLOSED / PASS** — canonical public Business pages implemented + physically verified; **LocalBusiness** / **AggregateRating** JSON-LD still deferred.
+- **F.4** — **CLOSED / PASS** — canonical public Business pages implemented + physically verified; **LocalBusiness** / **AggregateRating** JSON-LD still deferred (CW: enhancement unless promoted).
 - **F.5** — **CLOSED / PASS** — **F.5 PASS — LOCALE SEO URL ARCHITECTURE IMPLEMENTED AND VERIFIED** (Phase **0** contract; Phase **1** + **1.1–1.4** routing; Phase **2** SEO; PublicShell hotfix — **`docs/changelog.md`**).
 
 ## BusinessLocation track
@@ -324,17 +330,13 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 | QA-007 | DEFERRED | Admin no full branch CRUD | Admin backlog |
 | QA-008 | **CLOSED (A.9.4.4B)** | Runtime no longer uses legacy **Business** geo as physical fallback | **4.4C** column drop |
 
-## Advertising (future architecture — not implemented in location stages)
+## Advertising (unified backend — CW.6 for web UI)
 
-QalaGo must ultimately use **one shared advertising backend** across **Android, iOS, and public Consumer Web**.
+**One shared advertising backend** across **Android, iOS, and Consumer Web** — **CW.1 locked:** web ads **in v1** via **`GET /monetization/ads/serve`** + **`platform=WEB`** (implementation **CW.6**). Placements: **HOME_VIP_BANNER**, **CATEGORY_TOP**, **CATEGORY_BOOST**, **HOME_FEATURED**, **HOME_PROMOTIONS**. Campaign **APP vs WEB channel filter** — future; client platform distinguishes web today. **BusinessLocation** branch target/destination — **6.12A.8 CLOSED** on mobile; web rendering **CW.6**.
 
-Existing products include: **HOME_VIP_BANNER**, **CATEGORY_TOP**, **CATEGORY_BOOST**, **HOME_FEATURED**, **HOME_PROMOTIONS**.
+## Home composition (CW.3 — hard requirement)
 
-Future targeting should support channel/surface concepts such as **ALL**, **APP**, **WEB**, and analytics breakdown such as **APP_ANDROID**, **APP_IOS**, **WEB_MOBILE**, **WEB_DESKTOP**, while keeping aggregate campaign analytics. **BusinessLocation** may later be a campaign target/destination for branch-specific ads.
-
-## Home composition (future Admin/CMS — not A.6/A.7)
-
-Future architecture should allow **backend/admin-central configuration** of consumer Home: **section order**, **enabled/disabled** sections, and appropriate **section content/config**. **Android, iOS, and Consumer Web** consume the **same** backend Home configuration while keeping **platform-specific responsive presentation**. Reordering or toggling Home sections should eventually **not require a new APK** solely for layout changes. **Not implemented** in BusinessLocation stages unless explicitly staged later.
+**CW.1 locked:** backend/admin-controlled home **section order** and **enabled** state — **not** permanently hardcoded in Consumer Web or Flutter. Shared logical config; platform-specific presentation. Implementation **CW.3** (API/admin) + **CW.4** (home UI). Simple model — not over-complex CMS.
 
 ## Workflow discipline
 
@@ -380,7 +382,7 @@ BIZ CLOSED
   ↓
 UXA.0 → UXA.13 — QalaGo Backoffice UI/UX finalization (Admin Web + Business Web) — REQUIRED, not optional polish
   ↓
-Consumer Web UI/UX pass
+CW.1 → CW.8 — Consumer Web product (Option B) — ACTIVE after CW.1 lock
   ↓
 Mobile UI/UX pass
   ↓
@@ -398,7 +400,7 @@ VPS / production deployment
 | **AOP** | **CLOSED** |
 | **BIZ** | **CLOSED** |
 | **UXA** | **CLOSED** — **UXA.1–UXA.13 PASS**; backoffice physical browser QA verified **2026-10-01** |
-| **Consumer Web UI/UX** | **PLANNED** (after backoffice functional + UXA) |
+| **CW (Consumer Web product)** | **ACTIVE** — **CW.1 PASS** · **CW.2–CW.8 not started** |
 | **Mobile UI/UX** | **PLANNED** |
 | **VPS / production** | **BLOCKED** until readiness gates |
 | **SCALE** | **PLANNED** — architecture roadmap documented; **implementation not started** |

@@ -700,7 +700,156 @@ Local tests and localhost builds **cannot** prove external social previews. Fina
 
 **Milestone:** **F.8 PASS — SOCIAL PREVIEW / OG IMAGE PIPELINE FINALIZED**.
 
-**Next:** **Explicit agreement** before any new Consumer Web stage — **do not auto-start** post-F.8 work.
+**Next (architecture):** **F.4–F.8 remain CLOSED** — do not rebuild. Product completion follows **§ CW** (CW.1 locked **2026-10-02**).
+
+---
+
+## CW — Consumer Web product track (v1)
+
+**Status:** **CW.1 PASS — CONSUMER WEB PRODUCT SCOPE LOCKED** (docs only; **no implementation** in CW.1).  
+**Authority:** This section is the **canonical Consumer Web v1 contract** after closed **F.4–F.8** architecture. **Do not reopen** F-series routing/SEO/legal/OG decisions except to preserve them during CW implementation.
+
+### CW.0 baseline (read-only audit)
+
+CW.0 established: **`apps/consumer-web`** implements guest discovery shell (city home, categories, search, canonical business pages, legal/help); **323** vitest tests; **not in CI**; no web auth, ads, analytics, promotions page, or backend home config yet. See engineering history **`docs/changelog.md`**.
+
+### CW.1 — Product scope lock (APPROVED)
+
+**Selected scope:** **Option B — GUEST + RICHER DISCOVERY**.
+
+Consumer Web v1 is a **strong public discovery product** for multi-city local discovery (MVP city **Uralsk / Oral**). It **does not** require full authenticated mobile parity. **Flutter Mobile** remains the richer authenticated consumer surface.
+
+**Closed tracks (must not reopen):** **6.12A**, **MAP** closed substages, **AOP**, **BIZ**, **UXA**, **F.4–F.8**, **KZ-C.1** Android FCM physical QA.
+
+### CW v1 — IN SCOPE (must complete before CW CLOSED)
+
+1. Rich public **city home** (driven by backend home configuration — § CW home)
+2. **Categories** and **subcategories**
+3. **Search** (city-scoped; preserve F.5 search noindex)
+4. **Business detail** pages (branch-aware; § CW business detail)
+5. **BusinessLocation / branch selection** (`?locationId=`; public branches list)
+6. **Address** and **external navigation/map link** (§ CW map — not embedded map)
+7. **Work hours** on detail (from effective physical / branch data)
+8. **Business contacts** (phone, WhatsApp, Instagram, website)
+9. **Read-only reviews** (§ CW reviews)
+10. **Promotions** on business pages **and** dedicated **city promotions discovery** page (§ CW promotions)
+11. **Web advertising** via unified monetization backend (§ CW ads)
+12. **Web analytics** via unified analytics backend (§ CW analytics)
+13. **RU / KK** (preserve **KZ-C.1C** URL/cookie semantics; do not regress F.5)
+14. **Responsive** desktop and mobile web
+15. **Brand alignment** (§ CW brand — consumer-oriented; not UXA backoffice clone)
+16. **Loading / empty / error** states on major surfaces
+17. **Accessibility baseline** (not formal WCAG certification in CW unless explicitly staged)
+18. **SEO** — **preserve** closed F.3/F.4/F.5/F.8 behavior; LocalBusiness/AggregateRating JSON-LD remain **enhancements** unless later promoted
+19. **Deep links** — preserve F.6 code paths; production domain verification remains external debt until recorded
+20. **CI coverage** — consumer-web **build + test** in CI (CW.8)
+21. **Production browser QA** matrix (CW.8)
+22. **Backend/Admin-controlled home sections** (§ CW home — **hard requirement**)
+
+### CW v1 — OUT OF SCOPE (unless later explicitly approved)
+
+- Consumer Web **login / OTP**
+- Consumer **profile** or **settings**
+- **Favorites** or saved businesses (no browser-local favorites — conflicts with account-centric API)
+- **Review submission** on web
+- Consumer **notification inbox** or **browser push**
+- **Full authenticated parity** with mobile
+- **Embedded interactive city map** or new map product on web
+- Dedicated **search engine** cluster
+- **AI consumer assistant**
+- **SCALE** / microservices / premature worker/HA systems (see [future-ready-platform.md](./future-ready-platform.md) — discipline only)
+
+**Report-review** in-app mechanism remains a separate legal/safety product item — **not** conflated with review submission in CW.
+
+### CW map (LOCKED)
+
+- **Embedded map:** **NOT required** for Consumer Web v1.
+- **Minimum UX:** correct branch **address**; coordinates from **BusinessLocation** / **`effectivePhysical`**; working **external** navigation/map link; branch selection preserves **location context**.
+
+### CW promotions (LOCKED)
+
+- Business-page **promotion previews** remain.
+- v1 **includes** a dedicated **city-scoped promotions discovery** surface.
+- **Expected route pattern (implementation):** locale-prefixed city route consistent with F.5, e.g. **`/{locale}/{citySlug}/promotions`** (segment already **reserved** in `lib/reserved-segments.ts`).
+- Reuse public **`GET /promotions?citySlug=`** (and branch/city rules from **6.12A.7.9.4**); SEO rules defined in implementation stage **CW.7**.
+
+### CW ads (LOCKED)
+
+- **Web advertising IS in v1.** Reuse **one** monetization / ad-serving backend — **no separate web ad engine**.
+- Existing placement concepts include: **`HOME_VIP_BANNER`**, **`HOME_FEATURED`**, **`HOME_PROMOTIONS`**, **`CATEGORY_TOP`**, **`CATEGORY_BOOST`**.
+- Serve via existing **`GET /monetization/ads/serve`** with **`platform=WEB`** ( **`AnalyticsPlatform.WEB`** ); impression/click tracking via existing ad analytics endpoints.
+- Implementation must include: web ad **session**, serve calls, rendering, impression/click tracking, **KZ-C.4**-aligned ad labels/transparency (implementation + compliance gates later).
+- Campaign-level **APP vs WEB channel filter** remains **future**; client **`platform`** distinguishes web today.
+
+### CW analytics (LOCKED)
+
+- **Web analytics IS in v1.** Reuse **`POST /analytics/events`** (and related contracts) where possible.
+- **Minimum event coverage (implementation):** page/business view, search, category/subcategory navigation, promotion view/click where applicable, phone/WhatsApp/website clicks, map/navigation click, branch selection, ad impression, ad click.
+- Do not fork a separate web-only analytics pipeline.
+
+### CW home configuration (HARD REQUIREMENT)
+
+Home page **section order** and **enabled/disabled** state **must not** remain permanently hardcoded in Consumer Web or Flutter.
+
+- **Simple** backend-controlled section configuration (not an over-complex CMS).
+- **Admin** can enable/order sections without client store releases for layout-only changes.
+- **Consumer Web and mobile** eventually consume the **same logical** home configuration; **platform-specific rendering** allowed.
+- Concepts (minimum): section **identifier/type**, **enabled**, **display order**, **platform/surface applicability** where needed, optional **city scope**, extensibility for future section types.
+- **Example logical sections:** VIP banner, categories, featured, promotions, nearby, recommendations (if later introduced).
+- **Implementation:** stage **CW.3** (API + admin); **CW.4** renders home from config.
+
+### CW brand (LOCKED)
+
+- Align with **QalaGo product brand**; reuse **`@qalago/brand`** tokens/components **where appropriate** for a **consumer** surface.
+- **Do not** blindly copy Admin/Business UXA UI; **do not reopen UXA**.
+- Preserve **Montserrat** unless later design evidence says otherwise; use consistent **logo/wordmark** assets; establish reusable **consumer** components (CW.2).
+
+### CW business detail (v1 target)
+
+Must eventually include: name; category/subcategory; cover/gallery; description; rating/review count; address; selected branch; branch list; **work hours**; phone; WhatsApp; Instagram; website; **navigation link**; promotions preview; service/catalog preview where API supports; **read-only reviews** with **owner reply** when exposed by public API; correct **SEO/OG** (F.8 preserved). **No** review writing on web v1.
+
+### CW reviews (LOCKED)
+
+- **Read-only** on Consumer Web v1.
+- No web auth added solely for review submission.
+- UX: rating summary, count, previews/list as scoped, owner replies when available, empty states, moderation-hidden content must not appear on public surfaces.
+
+### CW auth / favorites (LOCKED)
+
+- **Guest-first** v1: no login, OTP, favorites, profile, or consumer inbox on web.
+
+### CW SEO preservation (LOCKED)
+
+**Do not rebuild F.4–F.8.** Implementation stages must preserve: canonical business URLs; locale URLs; hreflang; sitemap; robots; search noindex; legacy redirects; OG/Twitter pipeline; App Links / AASA routes; legal/help migration (F.7).
+
+### CW closure gates (CW.8)
+
+Consumer Web **CW STATUS: CLOSED** only when:
+
+- **CI:** `consumer-web` **build + test** pass in pipeline
+- **Physical browser matrix:** desktop Chrome/Edge; mobile Android Chrome; iPhone Safari when available (or documented deferred environmental debt); widths ~320, ~390, 768, 1024, 1440; **RU + KK**
+- Flows: home, city/locale switch, category, subcategory, search, business, branch switch, contacts, promotions (when built), reviews read-only, legal, 404, SEO/deep-link spot checks on production host when available
+
+**Final milestone text:** **CW PASS — CONSUMER WEB PRODUCT FINALIZED** · **CW STATUS: CLOSED**.
+
+### CW implementation sequence (LOCKED — do not reorder without audit)
+
+| Stage | Name | Summary |
+|-------|------|---------|
+| **CW.1** | Product scope lock | **THIS STAGE** — docs contract only |
+| **CW.2** | Public UI foundation | Brand, shell, responsive/a11y baseline; **no** home CMS, ads, or promotions feed |
+| **CW.3** | Backend-controlled home system | Simple model/API + admin; shared logical config |
+| **CW.4** | Discovery home | Render home from configuration (categories, featured, promos, VIP, etc.) |
+| **CW.5** | Business detail completion | Hours, branch UX, contacts, reviews read-only polish, states |
+| **CW.6** | Web ads + analytics | Unified serve + event ingest on web surfaces |
+| **CW.7** | Promotions discovery | Dedicated city promotions page |
+| **CW.8** | CI + performance + final physical QA | Closure |
+
+**Do not start CW.2** until CW.1 is committed and agreed.
+
+### Global continuity (after CW closes — not started now)
+
+Intended high-level order: **CW** → **KZ-C.2** → **KZ-C.3** → **Production Safety / Ops** → **KZ-C.7 / KZ-C.9** → **Mobile Release** → **PSP** (if required) → optional polish → **SCALE** when justified. Change only after new evidence-based audit.
 
 ---
 

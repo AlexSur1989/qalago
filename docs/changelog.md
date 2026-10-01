@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-10-02 — CW.1 PASS — Consumer Web product scope locked (Option B)
+
+- **Status:** **CW.1 PASS — CONSUMER WEB PRODUCT SCOPE LOCKED**. **CW track ACTIVE**. **F.4–F.8 remain CLOSED** (architecture preserved). **No CW.2+ implementation started**.
+- **Starting HEAD:** **`6e8849e`**.
+- **Checkpoint (commit):** *(docs closure commit SHA — see git log)*.
+- **Summary:** Locked **Option B — guest + richer discovery** for Consumer Web v1. **In scope:** rich city home (backend-controlled sections **CW.3**), categories/subcategories, search, branch-aware business detail (incl. work hours, external map link), read-only reviews, promotions on detail + **dedicated city promotions page**, **web ads** (unified serve, `platform=WEB`), **web analytics**, RU/KK, brand alignment, states, a11y baseline, SEO preservation, CI + physical QA (**CW.8**). **Out of scope v1:** web login/OTP, favorites, review write, consumer inbox, browser push, embedded map, authenticated mobile parity, separate ad engine. **Map:** external navigation only. **Sequence locked:** CW.2 UI foundation → CW.3 home config → CW.4 discovery home → CW.5 detail → CW.6 ads/analytics → CW.7 promotions page → CW.8 closure. Contract: **`docs/architecture/public-consumer-web.md`** § **CW**.
+- **Deferred:** All CW.2–CW.8 implementation; post-CW path (KZ-C.2+, ops, mobile release) unchanged until CW closes.
+- **Next:** **CW.2** — Public UI foundation (brand, shell, responsive/a11y baseline; no home CMS, ads, or promotions feed).
+
+---
+
 ## 2026-10-01 — KZ-C.1B PASS — Notifications / FCM physical QA verified; KZ-C.1 CLOSED
 
 - **Status:** **KZ-C.1 PASS — NOTIFICATIONS / FCM PHYSICAL QA VERIFIED**. **KZ-C.1 STATUS: CLOSED**.
