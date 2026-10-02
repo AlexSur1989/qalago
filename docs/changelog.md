@@ -6,6 +6,128 @@
 
 ---
 
+## 2026-10-03 — 6.13M.CLOSE — Monetization Refinement Series Closure
+
+- **Status:** **6.13M series CLOSED** (read-only verification + documentation; **no production code changes** in closure pass). **Checkpoint:** pending user commit of working tree at **`08a371fc5189ca494cb70c6f02dd250f23848be7`**.
+- **Summary:** Canonical audit **`docs/monetization/6.13M-monetization-refinement.md`** §14 series closure; final regression (catalog-api **63** tests, consumer-web **54**, business-web **27**, admin-web **14**, Flutter **13**); migration **`20261003103000_plan_payment_billing_6_13m4`** applied on local **`qalago_dev`**; file manifest + safe staging plan in closure report.
+- **Deferred:** Search/Map ads, ad credit ledger, gateways, plan price admin, moderation SLA — **explicitly out of 6.13M**.
+- **Next:** User executes narrow **`feat(monetization): complete 6.13M refinement`** checkpoint (or split commits per staging plan); **no automatic next monetization stage**.
+
+---
+
+## 2026-10-03 — 6.13M.8 — Sponsored Labeling & Localization
+
+- **Status:** **6.13M.8 Implemented** (Consumer Web + Flutter presentation only). **Checkpoint:** pending user commit.
+- **Summary:** Unified consumer ad disclosure — RU **`Реклама`**, KK **`Жарнама`** — via **`consumerSponsoredLabel`** (Web) and **`consumerSponsoredDisclosure`/`commonAd`** (Flutter); all five active placements; organic cards/promotions unmarked; serve **`displayLabel`** no longer shown to consumers. Audit doc §13 updated.
+- **Tests:** consumer-web sponsored-disclosure **9** + cw6 **21** + i18n **16**; Flutter sponsored_disclosure **5**; consumer **`next build` PASS.
+- **Deferred:** 6.13M series closure commit / optional backend **`displayLabel`** locale pass.
+- **Next:** Agree 6.13M refinement closure or next targeted stage (not auto-started).
+
+---
+
+## 2026-10-03 — 6.13M.7 — Home Monetization Layout Normalization
+
+- **Status:** **6.13M.7 Implemented** (shared-types + Consumer Web + Flutter; backend config unchanged). **Checkpoint:** pending user commit.
+- **Summary:** **`normalizePublicHomeSections`** + **`HOME_SECTION_CANONICAL_FALLBACK`** (10–60 bootstrap); Web no longer uses categories-only outage fallback; Flutter fallback/sort aligned with backend; partial config does not pad missing sections. Audit doc §12 updated.
+- **Tests:** consumer-web home normalize **16**; Flutter home_section_config **5**; catalog-api **stage-6-13m7** **2**; **`shared-types` build** PASS.
+- **Deferred:** **6.13M.8** — agree before start.
+- **Next:** **6.13M.8**.
+
+---
+
+## 2026-10-03 — 6.13M.6 — CATEGORY_TOP / CATEGORY_BOOST Semantic Separation
+
+- **Status:** **6.13M.6 Implemented** (consumer Web + Flutter presentation; backend serve contract unchanged). **Checkpoint:** pending user commit.
+- **Summary:** **CATEGORY_TOP** stays a top sponsored block; **CATEGORY_BOOST** is a single inline sponsored card after 4 organic rows; organic API page size/pagination unchanged; TOP/BOOST dedupe at presentation layer. Audit doc §11 updated.
+- **Tests:** consumer-web compose **8** + cw6 **21**; Flutter compose **3**; catalog-api **stage-6-13m6** **2**; consumer **`next build` PASS**.
+- **Deferred:** **6.13M.7** — agree before start.
+- **Next:** **6.13M.7**.
+
+---
+
+## 2026-10-03 — 6.13M.5 — Owner Monetization UX
+
+- **Status:** **6.13M.5 Implemented** (business-web presentation only). **Checkpoint:** pending user commit.
+- **Summary:** Separated **My Plan** vs **Advertising** on **`/monetization`**; plan pending payment + renew/upgrade/downgrade-safe actions on **`/plan`**; promote-subject chooser on ad products; campaign grouping; packages labeled as ad bundles; **monthlyAdBonusKzt** hidden from purchase UI; RU/KK copy in **`owner-visual-copy`** / **`presentation`**. Audit doc §10 updated.
+- **Tests:** business-web **356 PASS** / **2 pre-existing FAIL** (`legal/accept` hardcoded UI); **`plan-owner-ui`** + extended **`monetization-utils`**; catalog-api plans **31 PASS** unchanged; **`next build` PASS**.
+- **Deferred:** **6.13M.6** — agree before start.
+- **Next:** **6.13M.6**.
+
+---
+
+## 2026-10-03 — 6.13M.4B — Final plan billing smoke closure
+
+- **Status:** **6.13M.4B Implemented** (docs + dev smoke harness; no billing architecture change). **Checkpoint:** pending user commit.
+- **Summary:** **`npx prisma generate` SUCCESS** after stopping local catalog-api on :3002; real HTTP smoke **owner PENDING purchase → admin confirm → idempotent duplicate** on dev fixture **`QA Plan Free`**; ad artifact deltas **0**; audit doc + risks updated.
+- **Harness:** `scripts/dev/_6m4b-plan-billing-smoke.mjs` (dev-login, StaffAccess upsert, staff step-up OTP seed, legal accept when needed).
+- **Deferred:** **6.13M.5** — agree before start.
+- **Next:** **6.13M.5**.
+
+---
+
+## 2026-10-03 — 6.13M.4A — Production plan billing readiness closure
+
+- **Status:** **6.13M.4A Implemented** (readiness pass; no billing architecture change). **Checkpoint:** pending user commit.
+- **Summary:** Applied migration **`20261003103000_plan_payment_billing_6_13m4`** on local **`qalago_dev`**; read-only post-migration PlanPayment aggregates; added **`stage-6-13m4a-plan-billing-isolation.spec.ts`** (owner auth, cross-business idempotency, ad/plan confirm isolation); Admin **`MonetizationSubNav`** link to **`/plans/payments`**; expanded **`docs/monetization/6.13M-monetization-refinement.md`**. HTTP E2E smoke blocked on dev **`STAFF_ACCESS_DISABLED`** for admin dev-login; **`prisma generate` EPERM** until local engine unlock.
+- **Tests:** plans **31 PASS**; monetization regression; admin monetization-utils (+ subnav href test).
+- **Deferred:** **6.13M.5** — agree before start.
+- **Next:** **6.13M.5**.
+
+---
+
+## 2026-10-03 — 6.13M.DOC — Monetization Refinement audit document
+
+- **Status:** **6.13M.DOC Implemented** (documentation-only). **Checkpoint:** pending user commit.
+- **Summary:** Added canonical audit trail **`docs/monetization/6.13M-monetization-refinement.md`** covering 6.13M.0–6.13M.4 (history + current architecture, invariants, risks, change ledger, agent instructions). No production/schema/API changes.
+- **Next:** Maintain this file after each future **6.13M.x** stage (Definition of Done).
+
+---
+
+## 2026-10-03 — 6.13M.4 — Production plan billing foundation
+
+- **Status:** **6.13M.4 Implemented** (PlanPayment PENDING→COMPLETED lifecycle; migration **`20261003103000_plan_payment_billing_6_13m4`**). **Checkpoint:** pending user commit + local **`prisma migrate deploy`**.
+- **Starting HEAD:** **`08a371fc5189ca494cb70c6f02dd250f23848be7`** (+ prior uncommitted 6.13M.x work).
+- **Summary:** Extended **`PlanPayment`** (PENDING/CANCELLED, nullable **`paidAt`**, provider, idempotency, **`periodDays`** snapshot). Owner **`POST …/plan/purchases`**; Admin **`/admin/plans/payments`** confirm/cancel. Same-tier renewal extends from active **`planExpiresAt`**; active downgrade purchase rejected. Mock checkout still **`COMPLETED`** immediately. Advertising Order/Payment untouched.
+- **Tests:** `stage-6-13m4-plan-billing.spec.ts`, updated `plans.service.spec.ts`.
+- **Deferred:** **6.13M.5** — agree before start.
+- **Next:** **6.13M.5**.
+
+---
+
+## 2026-10-03 — 6.13M.3 — Advertising pricing admin
+
+- **Status:** **6.13M.3 Implemented** (Admin ProductPrice CRUD + regression tests; no schema/pricing-engine redesign). **Checkpoint:** pending user commit.
+- **Starting HEAD:** **`08a371fc5189ca494cb70c6f02dd250f23848be7`** (+ prior uncommitted 6.13M.x work).
+- **Summary:** Admin **`/monetization/pricing`** and **`/admin/monetization/product-prices`** (list/create/patch) + **`ad-products`** catalog for safe edits to **`amount`** / **`isActive`** only; duplicate identity guarded at service layer. **OrderItem** snapshots unchanged — new quotes use updated **ProductPrice** + existing plan discounts.
+- **Packages:** **PromotionPackage** pricing unchanged (not in this editor).
+- **Tests:** `stage-6-13m3-advertising-pricing-admin.spec.ts`, admin-web pricing validation helpers.
+- **Deferred:** **6.13M.4** — agree before start.
+- **Next:** **6.13M.4**.
+
+---
+
+## 2026-10-03 — 6.13M.2 — Campaign lifecycle / moderation period safety
+
+- **Status:** **6.13M.2 Implemented** (backend lifecycle only; no schema/API/pricing changes). **Checkpoint:** pending user commit.
+- **Starting HEAD:** **`08a371fc5189ca494cb70c6f02dd250f23848be7`** (+ uncommitted 6.13M.0/6.13M.1 work).
+- **Summary:** Creative-required campaigns (**VIP_BANNER**) no longer assign `endAt = paidAt + duration` while awaiting moderation; placeholder end until creative approval, then `resolveOnCreativeApproved` sets real delivery window. **`resolveEffectiveStatus`** no longer maps **PENDING_MODERATION** to **COMPLETED** when legacy short `endAt` passed.
+- **Tests:** `stage-6-13m2-campaign-moderation-period.spec.ts`, extended campaign-status / availability specs; full monetization + plans regression.
+- **Deferred:** **6.13M.3** — agree before start.
+- **Next:** **6.13M.3**.
+
+---
+
+## 2026-10-03 — 6.13M.1 — Monetization semantic cleanup (owner-facing labels)
+
+- **Status:** **6.13M.1 Implemented** (owner-facing naming only; no schema/API/serving changes). **Checkpoint:** pending user commit.
+- **Starting HEAD:** **`08a371fc5189ca494cb70c6f02dd250f23848be7`** (+ **6.13M.0** baseline spec untracked until commit).
+- **Summary:** Unified **RU/KK** owner labels for ad products/placements in **business-web** (`presentation.ts` — code-first `placementLabel` overrides DB seed names), **admin-web** display helpers, **business-web** locale copy (banner vs VIP plan), **mobile owner** monetization product l10n. **VIP plan** naming unchanged; **HOME_VIP_BANNER** / **VIP_BANNER** codes unchanged. Consumer **«Реклама»** marking untouched.
+- **Tests:** business-web + admin monetization-utils; catalog-api **6.13M.0** baseline + monetization/plans suites (regression).
+- **Deferred:** **6.13M.2** campaign lifecycle / moderation period safety.
+- **Next:** **6.13M.2** — agree before start.
+
+---
+
 ## 2026-10-02 — WEB-HOME.3 PASS — Flutter HomeSectionConfig parity
 
 - **Status:** **WEB-HOME.3 PASS — SHARED HOME CONFIG PARITY VERIFIED**. **WEB-HOME STATUS: CLOSED**. **READY TO RETURN TO PROD.3: YES**. **PROD.3 NOT STARTED**.

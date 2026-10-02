@@ -888,9 +888,9 @@ Consumer Web **CW STATUS: CLOSED** only when:
 
 **Fetch policy:** `fetchPublicHomeSections` / `fetchPublicHomeSectionsSafe` use **`cache: 'no-store'`** so Admin **`HomeSectionConfig`** changes apply on **refresh without a Consumer Web rebuild**.
 
-**Layout resolution:** `resolveHomeSectionLayout` + **`HomeDiscoverySections`** map `HomeSectionType` → renderer. Order = API row order (no client re-sort).
+**Layout resolution:** `resolveHomeSectionLayout` + **`HomeDiscoverySections`** map `HomeSectionType` → renderer. Enabled sections are **`normalizePublicHomeSections`** (sort by position, dedupe by type) — **6.13M.7**.
 
-**Config failure fallback:** if `/home/sections` is unavailable, **`HOME_SECTION_CONFIG_FALLBACK`** renders **CATEGORIES only** (documented; not a full default clone).
+**Config failure fallback:** if `/home/sections` is unavailable or returns zero enabled sections, clients use **`HOME_SECTION_CANONICAL_FALLBACK`** (VIP 10 → Categories 20 → Featured 30 → Promotions 40 → Nearby 50 → Popular 60). A **partial** valid API payload renders **only** configured sections (no padding from fallback) — **6.13M.7**.
 
 **Section matrix (CW.4):**
 
