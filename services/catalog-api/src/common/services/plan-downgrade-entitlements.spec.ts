@@ -414,10 +414,10 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
       );
 
       const result = await businessesService.findOne('b1');
-      expect(result.galleryPreview.items.length).toBeLessThanOrEqual(6);
-      expect(result.galleryPreview.totalCount).toBe(15);
-      expect(result.promotionsPreview.items).toHaveLength(3);
-      expect(result.promotionsPreview.totalCount).toBe(3);
+      expect(result.galleryPreview?.items.length).toBeLessThanOrEqual(6);
+      expect(result.galleryPreview?.totalCount).toBe(15);
+      expect(result.promotionsPreview?.items).toHaveLength(3);
+      expect(result.promotionsPreview?.totalCount).toBe(3);
       expect(images).toHaveLength(40);
     });
   });

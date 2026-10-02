@@ -84,7 +84,7 @@ describe('PromotionsService — owner list geo retirement (BIZ.9 HOTFIX 1)', () 
     );
   });
 
-  it('public city feed path still uses promotionFeedBusinessSelect (unchanged)', async () => {
+  it('public city feed path uses guest-safe promotionFeedBusinessSelect (no plan fields)', async () => {
     const findMany = jest.fn().mockResolvedValue([]);
     const prisma = {
       promotion: { findMany, count: jest.fn() },
@@ -120,7 +120,9 @@ describe('PromotionsService — owner list geo retirement (BIZ.9 HOTFIX 1)', () 
     expect(findMany).toHaveBeenCalled();
     const select = (findMany.mock.calls[0][0] as { include: { business: { select: object } } })
       .include.business.select;
-    expect(select).toHaveProperty('planTier', true);
+    expect(select).not.toHaveProperty('planTier');
+    expect(select).not.toHaveProperty('planExpiresAt');
+    expect(select).not.toHaveProperty('featuredSlot');
     expect(select).not.toHaveProperty('cityId');
   });
 });

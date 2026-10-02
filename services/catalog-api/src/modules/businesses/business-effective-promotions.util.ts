@@ -28,7 +28,6 @@ export type EffectivePromotionsDto = {
     discountText: string | null;
     startDate: Date | null;
     endDate: Date | null;
-    status: PromotionStatus;
   }>;
   totalCount: number;
 };
@@ -41,7 +40,7 @@ export function filterPromotionsByBranchEligibility<
   );
 }
 
-export function serializeEffectivePromotionItem(row: PromotionBranchRow) {
+export function serializePublicPromotionItem(row: PromotionBranchRow) {
   return {
     id: row.id,
     title: row.title,
@@ -50,8 +49,12 @@ export function serializeEffectivePromotionItem(row: PromotionBranchRow) {
     discountText: row.discountText,
     startDate: row.startDate,
     endDate: row.endDate,
-    status: row.status,
   };
+}
+
+/** @deprecated Use serializePublicPromotionItem for guest-facing responses. */
+export function serializeEffectivePromotionItem(row: PromotionBranchRow) {
+  return serializePublicPromotionItem(row);
 }
 
 export function buildEffectivePromotionsDto(

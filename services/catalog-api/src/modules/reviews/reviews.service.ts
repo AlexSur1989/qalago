@@ -40,6 +40,7 @@ import {
 } from './dto/review.dto';
 import { ReviewErrorCode } from './review-errors';
 import { ReviewRateLimitService } from './review-rate-limit.service';
+import { mapPublicReviews } from '../../common/dto/public-review.dto.mapper';
 
 const reviewAuthorInclude = {
   user: { select: { id: true, name: true, avatarUrl: true } },
@@ -91,7 +92,7 @@ export class ReviewsService {
     ]);
 
     return {
-      items,
+      items: mapPublicReviews(items),
       pagination: {
         page,
         limit,

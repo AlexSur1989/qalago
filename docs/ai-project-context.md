@@ -110,7 +110,8 @@
 | **CW (track)** | **CLOSED** — **CW.1–CW.8 COMPLETE** · **Option B — guest + richer discovery** · F.4–F.8 **remain CLOSED** |
 | **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = CLOSED** · **CW CLOSED** · Mobile UI/UX after CW · production/security/pre-VPS · **SCALE** later |
 | **KZ-C.2 / KZ-C.2A** | **CLOSED — LEGAL ACCEPTANCE + LIVE QA VERIFIED** — checkpoint **`4794847`** + docs; manifest **`2026-09-10`**, guard, mobile/Business Web gates, Consumer Web version sync |
-| **Next** | **KZ-C.3** — public DTO privacy hardening (**not started**) |
+| **KZ-C.3** | **CLOSED — PUBLIC DTO PRIVACY HARDENING** — explicit guest mappers; no public `ownerId` / review `userId` / plan fields; promotions nested business summary hardened |
+| **Next** | **KZ-C.4** (ads/compliance) or **Production Safety/Ops** — **not started**; agree before implementation |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -139,7 +140,7 @@
 | **Legal KK/RU** | Target: **approved** KK + RU where applicable; no uncontrolled MT as final legal text. **Current:** RU draft bodies on Consumer Web (F.7). |
 | **Legal source of truth** | **`PUBLISHED_PLATFORM_LEGAL_VERSIONS`** (`packages/shared-types`) + backend **`LegalDocument`** (seed aligned); **Consumer Web** = public presentation (F.7) with synced **version** metadata; **`LegalAcceptance`** = proof; **mobile + business web wired** (KZ-C.2). Staff roles **exempt** from consumer Terms gate. |
 | **Providers / location** | Production **register** required; UNKNOWN dev OK; UNKNOWN prod PD systems **not** OK — **KZ-C.7** gate. |
-| **Public DTO privacy** | **`Business.ownerId`** must be removed/minimized pre-production (**P0**, KZ-C.3); review **`user.id`** in public previews lower priority unless escalated. |
+| **Public DTO privacy** | **IMPLEMENTED (KZ-C.3):** guest catalog JSON uses explicit allowlist mappers — no public **`ownerId`**, review **`userId`**, or plan/moderation scalars; author = **`author.name`** only. Owner/admin DTOs unchanged. |
 | **Ads** | Shared Ad Engine; locale-aware labels + transparency + separate retention class — **KZ-C.4**; fixed API **`Реклама`** is not final. |
 | **AI** | Consumer AI **not launched**; external LLM / content-origin schema — **KZ-C.6** gate before launch. |
 | **Production gate** | Do **not** claim LEGAL READY / COMPLIANCE COMPLETE until §30 checklist in contract (+ **KZ-C.9**). |

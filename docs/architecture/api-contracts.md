@@ -460,7 +460,7 @@ See [catalog-geo-query.md](./catalog-geo-query.md) for modes A/B/C and C.5 perfo
 
 **Sort semantics:** `rating` — avg rating desc (businesses with no reviews last), review count desc, title asc; may include `averageRating`, `reviewCount`. `popular` — sum of organic `AnalyticsDailyMetric.views` last 30 days desc, title asc. Plan tier, ads, and subscriptions never affect organic order (Stage 4C.1 / 6.7D). Paid visibility via AdCampaign serve only.
 
-List items may include `planTier`, `planExpiresAt`, `featuredSlot`, `isFeatured` for display; these fields are deprecated for catalog ranking. Query param `featured` is ignored on public catalog.
+**KZ-C.3:** Public list/detail card DTOs **omit** `ownerId`, `planTier`, `planExpiresAt`, `featuredSlot`, `isFeatured`, and internal `status` — server-side sort may still use plan data internally; it is not returned to guests. Query param `featured` is ignored on public catalog.
 
 **Search semantics (Stage 6.11B.1 + A.7.9.3B, IMPLEMENTED):** `search` is **city-scoped** (requires resolved `citySlug` / `cityId` like other list queries) and combined with **`BusinessLocation` city membership (A.7.9.3A)**, `status` (default `ACTIVE`), optional `categoryId`, and optional `subcategoryId` using **AND**. Text matching uses a single **OR** group across:
 

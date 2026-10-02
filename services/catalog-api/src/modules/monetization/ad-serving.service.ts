@@ -446,7 +446,15 @@ export class AdServingService {
         );
         return {
           ...base,
-          business: businessCard,
+          business: {
+            id: businessCard.id,
+            slug: businessCard.slug,
+            title: businessCard.title,
+            address: businessCard.address,
+            latitude: businessCard.latitude,
+            longitude: businessCard.longitude,
+            phone: businessCard.phone,
+          },
         };
       }
     }

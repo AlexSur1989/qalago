@@ -11,7 +11,12 @@ import {
   buildCatalogMapLocationViewportWhereSql,
   queryCatalogMapLocationViewportPage,
 } from './business-catalog-postgis-geo.query';
-import type { MapLocationBusinessListItem } from './business-map-location-list.presenter';
+import type { PublicBusinessCardDto } from '../../common/dto/public-business.dto.mapper';
+
+type MapLocationListRow = PublicBusinessCardDto & {
+  locationId: string;
+  contextLocationId?: string;
+};
 import type { BusinessDiscoveryContext } from './business-discovery-context.util';
 import { specCreateInitialPrimary, testPrimaryPhysical, createTestBusinessWithPrimary } from './business-with-primary.test-fixture';
 
@@ -165,7 +170,7 @@ describe('Stage 6.12A.7.1 — map forMap viewport (BusinessLocation grain)', () 
       limit: 50,
     });
     const rows = result.items.filter(
-      (item): item is MapLocationBusinessListItem =>
+      (item): item is MapLocationListRow =>
         item.id === business.id && 'locationId' in item,
     );
     expect(rows.length).toBeGreaterThanOrEqual(1);
@@ -211,7 +216,7 @@ describe('Stage 6.12A.7.1 — map forMap viewport (BusinessLocation grain)', () 
       limit: 100,
     });
     const apiRows = api.items.filter(
-      (i): i is MapLocationBusinessListItem =>
+      (i): i is MapLocationListRow =>
         i.id === business.id && 'locationId' in i,
     );
     expect(apiRows).toHaveLength(3);
@@ -280,7 +285,7 @@ describe('Stage 6.12A.7.1 — map forMap viewport (BusinessLocation grain)', () 
       limit: 100,
     });
     const uralskRows = uralskResult.items.filter(
-      (i): i is MapLocationBusinessListItem => i.id === business.id && 'locationId' in i,
+      (i): i is MapLocationListRow => i.id === business.id && 'locationId' in i,
     );
     expect(uralskRows.some((r) => r.locationId === aktobeBranch.id)).toBe(false);
     expect(uralskRows.length).toBeGreaterThanOrEqual(1);
@@ -294,7 +299,7 @@ describe('Stage 6.12A.7.1 — map forMap viewport (BusinessLocation grain)', () 
       limit: 50,
     });
     const aktobeRows = aktobeResult.items.filter(
-      (i): i is MapLocationBusinessListItem => i.id === business.id && 'locationId' in i,
+      (i): i is MapLocationListRow => i.id === business.id && 'locationId' in i,
     );
     expect(aktobeRows).toHaveLength(1);
     expect(aktobeRows[0]?.locationId).toBe(aktobeBranch.id);
@@ -334,7 +339,7 @@ describe('Stage 6.12A.7.1 — map forMap viewport (BusinessLocation grain)', () 
       limit: 100,
     });
     const rows = result.items.filter(
-      (i): i is MapLocationBusinessListItem => i.id === business.id && 'locationId' in i,
+      (i): i is MapLocationListRow => i.id === business.id && 'locationId' in i,
     );
     expect(rows).toHaveLength(1);
     expect(rows[0]?.address).toBe('Primary Uralsk addr');
@@ -361,7 +366,7 @@ describe('Stage 6.12A.7.1 — map forMap viewport (BusinessLocation grain)', () 
       limit: 50,
     });
     const rows = result.items.filter(
-      (i): i is MapLocationBusinessListItem => i.id === business.id && 'locationId' in i,
+      (i): i is MapLocationListRow => i.id === business.id && 'locationId' in i,
     );
     expect(rows.length).toBeGreaterThanOrEqual(2);
     expect(new Set(rows.map((r) => r.locationId)).size).toBeGreaterThanOrEqual(2);
@@ -387,7 +392,7 @@ describe('Stage 6.12A.7.1 — map forMap viewport (BusinessLocation grain)', () 
     });
     const catRows = withCat.items.filter((i) => i.id === business.id);
     expect(catRows.length).toBeGreaterThanOrEqual(2);
-    expect(new Set(catRows.map((r) => (r as MapLocationBusinessListItem).locationId)).size)
+    expect(new Set(catRows.map((r) => (r as MapLocationListRow).locationId)).size)
       .toBeGreaterThanOrEqual(2);
 
     const withSub = await service.findAll({

@@ -240,6 +240,25 @@ describe('Stage F.4 Phase 1 — public slug + city detail', () => {
     expect(res.body.effectivePhysical.locationId).toBe(lUralsk.id);
   });
 
+  it('KZ-C.3 — public business detail JSON omits internal scalars', async () => {
+    if (skip) return;
+    const { slug } = await seedMultiCityBrand();
+    const res = await request(app.getHttpServer())
+      .get(`/api/v1/businesses/by-slug/${encodeURIComponent(slug)}`)
+      .query({ citySlug: 'uralsk' })
+      .expect(200);
+    for (const key of [
+      'ownerId',
+      'planTier',
+      'planExpiresAt',
+      'status',
+      'isFeatured',
+      'featuredSlot',
+    ] as const) {
+      expect(res.body[key]).toBeUndefined();
+    }
+  });
+
   it('HTTP — city-default when primary elsewhere', async () => {
     if (skip) return;
     const { slug, lU1 } = await seedUralskOnlySecondaryPrimaryElsewhere();

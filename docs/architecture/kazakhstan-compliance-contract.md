@@ -210,15 +210,11 @@ Informational pages (e.g. account-deletion **instructions**) may not require the
 
 ## 12. Public DTO privacy
 
-**CURRENT STATE (audit):** Public business detail may include full Prisma **`Business`** (including **`ownerId`**). Review previews may include review author **`user.id`**.
+**IMPLEMENTED (KZ-C.3):** Guest catalog responses use explicit mappers in **`catalog-api`** (`public-business`, `public-review`, `public-promotion` DTOs). Runtime JSON **must not** include **`ownerId`**, **`planTier`**, **`planExpiresAt`**, internal **`status`** / featured / moderation workflow scalars on business/review/promotion payloads, or review **`userId`** / nested **`user`** — only **`author.name`** / **`author.avatarUrl`**. Stable resource ids (**`businessId`**, **`locationId`**, **`reviewId`**, promotion id, ad **campaign/creative/placement** ids) remain for product and CW.6 analytics. Owner/admin/authenticated business-management APIs **unchanged**.
 
-**AGREED TARGET:**
+**ID POLICY:** Remove **relationship/identity** ids that reveal private actors; keep **public resource** ids required by UI and tracking.
 
-- **PUBLIC APIs MUST NOT** expose internal personal identifiers merely because domain models contain them.
-- **`Business.ownerId`:** remove/minimize before public production unless a concrete public need is established — **P0 pre-production privacy hardening** (**KZ-C.3**).
-- **Review author internal `User.id`:** minimize in public DTOs — **KZ-C.3** (lower priority than `ownerId` unless counsel/security review escalates).
-
-**DEFERRED:** DTO changes — **KZ-C.3**; informs **AOP.0** public read paths.
+**DEFERRED:** Broader PD lifecycle (**KZ-C.4+**); full provider register (**KZ-C.7**).
 
 ---
 

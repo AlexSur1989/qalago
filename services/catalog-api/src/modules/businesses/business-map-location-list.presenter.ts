@@ -28,13 +28,10 @@ type BusinessBrandListRow = {
   shortDesc: string | null;
   phone: string | null;
   whatsapp: string | null;
+  instagram?: string | null;
+  website?: string | null;
+  workHours?: unknown;
   coverImageUrl: string | null;
-  status: import('@prisma/client').BusinessStatus;
-  isFeatured: boolean;
-  planTier: import('@prisma/client').BusinessPlanTier;
-  planExpiresAt: Date | null;
-  featuredSlot: number | null;
-  createdAt: Date;
   category: {
     id: string;
     title: string;
@@ -107,12 +104,6 @@ export function assembleMapLocationBusinessListItems(
       website: location.website,
       workHours: location.workHours,
       coverImageUrl: business.coverImageUrl,
-      status: business.status,
-      isFeatured: business.isFeatured,
-      planTier: business.planTier,
-      planExpiresAt: business.planExpiresAt,
-      featuredSlot: business.featuredSlot,
-      createdAt: business.createdAt,
       category: business.category,
       ...(distanceMeters != null ? { distanceMeters } : {}),
       ...(rating

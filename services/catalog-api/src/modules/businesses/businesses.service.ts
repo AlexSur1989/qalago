@@ -98,6 +98,11 @@ import { loadPrimaryCityPresentationByBusinessId } from '../../common/utils/busi
 import { assertPublicCatalogBusinessStatus } from '../../common/utils/public-catalog-business-status.util';
 import { resolveCityContextLocationIds } from './business-discovery-city-context.util';
 import type { CatalogPostgisNearestRow } from './business-catalog-postgis-geo.query';
+import {
+  mapPublicBusinessListItems,
+  toPublicBusinessDetailDto,
+} from '../../common/dto/public-business.dto.mapper';
+import { mapPublicReviewsPreviewBlock } from '../../common/dto/public-review.dto.mapper';
 
 const businessListSelect = {
   id: true,
@@ -107,14 +112,24 @@ const businessListSelect = {
   shortDesc: true,
   phone: true,
   whatsapp: true,
+  instagram: true,
+  website: true,
+  workHours: true,
   coverImageUrl: true,
-  status: true,
-  isFeatured: true,
+  category: { select: { id: true, title: true, slug: true, icon: true } },
+} satisfies Prisma.BusinessSelect;
+
+/** Internal monetization/ranking fields — fetch for in-memory sort only; stripped before HTTP. */
+const businessListSelectSortScalars = {
   planTier: true,
   planExpiresAt: true,
+  isFeatured: true,
   featuredSlot: true,
-  createdAt: true,
-  category: { select: { id: true, title: true, slug: true, icon: true } },
+} satisfies Prisma.BusinessSelect;
+
+const businessListSelectForSort = {
+  ...businessListSelect,
+  ...businessListSelectSortScalars,
 } satisfies Prisma.BusinessSelect;
 
 const businessListSelectForSearchRelevance = {
@@ -277,7 +292,9 @@ export class BusinessesService {
     );
 
     return {
-      items: normalizedItems,
+      items: mapPublicBusinessListItems(
+        normalizedItems as unknown as Record<string, unknown>[],
+      ),
       meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
     };
   }
@@ -443,7 +460,7 @@ export class BusinessesService {
 
     const allItems = await this.prisma.business.findMany({
       where,
-      select: businessListSelect,
+      select: businessListSelectForSort,
     });
 
     const metrics =
@@ -563,7 +580,7 @@ export class BusinessesService {
       });
       const allItems = await this.prisma.business.findMany({
         where,
-        select: businessListSelect,
+        select: businessListSelectForSort,
       });
       const metrics =
         effectiveSort === BusinessCatalogSort.RATING ||
@@ -673,7 +690,7 @@ export class BusinessesService {
       } else {
         const allItems = await this.prisma.business.findMany({
           where,
-          select: businessListSelect,
+          select: businessListSelectForSort,
         });
         const metrics =
           effectiveSort === BusinessCatalogSort.RATING ||
@@ -880,7 +897,7 @@ export class BusinessesService {
 
     const allItems = await this.prisma.business.findMany({
       where,
-      select: businessListSelect,
+      select: businessListSelectForSort,
     });
 
     const metrics =
@@ -1034,10 +1051,10 @@ export class BusinessesService {
     item: {
       id: string;
       title: string;
-      planTier: import('@prisma/client').BusinessPlanTier;
-      planExpiresAt: Date | null;
-      isFeatured: boolean;
-      featuredSlot: number | null;
+      planTier?: import('@prisma/client').BusinessPlanTier;
+      planExpiresAt?: Date | null;
+      isFeatured?: boolean;
+      featuredSlot?: number | null;
     },
     distanceMeters: number | null,
     metrics: Awaited<ReturnType<BusinessesService['loadCatalogSortMetrics']>> | null,
@@ -1047,9 +1064,9 @@ export class BusinessesService {
       id: item.id,
       title: item.title,
       planTier: item.planTier,
-      planExpiresAt: item.planExpiresAt,
+      planExpiresAt: item.planExpiresAt ?? null,
       isFeatured: item.isFeatured,
-      featuredSlot: item.featuredSlot,
+      featuredSlot: item.featuredSlot ?? null,
       distanceMeters,
       averageRating: rating?.averageRating ?? null,
       reviewCount: rating?.reviewCount ?? 0,
@@ -1215,12 +1232,13 @@ export class BusinessesService {
       ),
     ]);
 
-    return {
+    return toPublicBusinessDetailDto({
       ...withNormalizedTopLevel,
+      reviewsPreview: mapPublicReviewsPreviewBlock(reviewsPreview),
       effectiveMedia,
       effectiveCatalog,
       effectivePromotions,
-    };
+    } as Record<string, unknown>);
   }
 
   async findMy(user: AuthUser) {
@@ -1333,7 +1351,7 @@ export class BusinessesService {
 
     const items = await this.prisma.business.findMany({
       where,
-      select: businessListSelect,
+      select: businessListSelectForSort,
       take: 50,
     });
     const ranked = [...items].sort(compareBusinessCatalogRank).slice(0, 10);

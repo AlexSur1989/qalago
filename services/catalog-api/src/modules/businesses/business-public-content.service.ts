@@ -40,9 +40,10 @@ import {
 import {
   buildEffectivePromotionsDto,
   filterPromotionsByBranchEligibility,
-  serializeEffectivePromotionItem,
+  serializePublicPromotionItem,
   type PromotionBranchRow,
 } from './business-effective-promotions.util';
+import { mapPublicReviewsPreviewBlock } from '../../common/dto/public-review.dto.mapper';
 
 const catalogItemSelect = {
   id: true,
@@ -261,7 +262,7 @@ export class BusinessPublicContentService {
       }),
       this.reviewAggregation.aggregateForBusiness(businessId),
     ]);
-    return { items, totalCount: metrics.reviewCount };
+    return mapPublicReviewsPreviewBlock({ items, totalCount: metrics.reviewCount });
   }
 
   async findPublicPromotions(businessId: string, query: ListBusinessPromotionsQueryDto) {
@@ -286,7 +287,7 @@ export class BusinessPublicContentService {
 
     return {
       ...(branchScoped ? { activeLocationId } : {}),
-      items: pageItems.map(serializeEffectivePromotionItem),
+      items: pageItems.map(serializePublicPromotionItem),
       pagination: {
         page,
         limit,

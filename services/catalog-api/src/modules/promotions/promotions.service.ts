@@ -38,6 +38,7 @@ import {
   applyPublicPhysicalReadProjection,
   loadBusinessLocationsGroupedByBusinessId,
 } from '../businesses/business-physical-read-normalization.util';
+import { mapPublicPromotionItems } from '../../common/dto/public-promotion.dto.mapper';
 
 const promotionFeedBusinessSelect = {
   id: true,
@@ -49,9 +50,6 @@ const promotionFeedBusinessSelect = {
   website: true,
   workHours: true,
   coverImageUrl: true,
-  planTier: true,
-  planExpiresAt: true,
-  featuredSlot: true,
 } as const;
 
 type FeedPromotion = Prisma.PromotionGetPayload<{
@@ -141,7 +139,7 @@ export class PromotionsService {
       }
 
       return {
-        items,
+        items: mapPublicPromotionItems(items),
         meta: {
           page,
           limit,
@@ -195,7 +193,9 @@ export class PromotionsService {
         )) as typeof responseItems;
       }
       return {
-        items: responseItems,
+        items: ownerView
+          ? responseItems
+          : mapPublicPromotionItems(responseItems),
         meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
       };
     }
@@ -224,7 +224,7 @@ export class PromotionsService {
     const pageItems = publicItems.slice(skip, skip + limit);
 
     return {
-      items: pageItems,
+      items: mapPublicPromotionItems(pageItems),
       meta: {
         page,
         limit,
