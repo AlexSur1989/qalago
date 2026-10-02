@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-10-02 — CW.8 PASS — Consumer Web final CI / QA / closure
+
+- **Status:** **CW.8 PASS — CONSUMER WEB FINAL QA VERIFIED**. **CW PASS — CONSUMER WEB PRODUCT FINALIZED**. **CW STATUS: CLOSED**. **F.4–F.8 remain CLOSED**. **CW.8 scope not expanded**.
+- **Starting HEAD:** **`d07c505fb84fbdc2ee9cc02ecbb5e8b47635ce03`** (CW.7 docs closure). **Implementation checkpoint (CW.7):** **`94a3b67`**.
+- **Checkpoint (commit):** **`9f0112b`** — `feat(cw): CW.8 consumer-web CI and promotions sitemap`.
+- **Summary:** **CI** — added **`consumer-web`** job (vitest **385/385**, **`check:ui-strings`**, production **`build`**). **SEO debt closed** — indexable **`/{locale}/{citySlug}/promotions`** URLs in **`buildDiscoverySitemapEntries`** (RU+KK per city; no search/legacy). **Regression:** consumer-web tests + build PASS on canonical ports (**3001/3002/3005**). **Product scope:** Option B guest + richer discovery verified — no auth/favorites/review-write/map creep. **Live:** sitemap contains **`/ru/uralsk/promotions`**; production server **200** on **:3005**.
+- **Deferred (non-CW blockers):** **iPhone Safari** physical QA — environmental debt; **Android Chrome** on SM-J610FN not run this session (LAN/device not exercised); **production HTTPS** OG/crawler/App Links on **`qalago.kz`** — external verification debt; **KZ-C.3** public DTO trim; **KZ-C.2+** legal/compliance; **Remote GitHub Actions** run not claimed (CI config verified locally + structural test).
+- **Next:** **KZ-C.2** (LegalAcceptance / backend legal wiring) — **not started** in this stage.
+
+---
+
 ## 2026-10-02 — CW.7 PASS — City promotions discovery
 
 - **Status:** **CW.7 PASS — CITY PROMOTIONS DISCOVERY COMPLETE**. **CW.8 not started**. **F.4–F.8 remain CLOSED**.

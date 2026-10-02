@@ -106,9 +106,10 @@
 | **CW.6** | **CLOSED — WEB ADS + ANALYTICS (CW.6 + CW.6A live QA)** — **`public-consumer-web.md`** § **CW.6** |
 | **CW.6A** | **PASS — LIVE WEB ADS + ANALYTICS QA** — serve/impression/click/session/analytics verified; **SEARCH_PERFORMED** live DB verified (post-fix); a84 fixture cleaned |
 | **CW.7** | **CLOSED — CITY PROMOTIONS DISCOVERY** — **`/{locale}/{citySlug}/promotions`**, organic feed + home CTA, live **PROMOTION_VIEW** verified |
-| **CW (track)** | **ACTIVE** — **CW.1–CW.7 CLOSED** · **CW.8 NOT STARTED** · F.4–F.8 **remain CLOSED** |
-| **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = CLOSED** · **CW ACTIVE** · Mobile UI/UX after CW · production/security/pre-VPS · **SCALE** later |
-| **Next** | **CW.8** — Consumer Web final CI / performance / closure (**no UXA.14**; **KZ-C.2+** not started) |
+| **CW.8** | **PASS — CONSUMER WEB FINAL QA** — CI job + promotions sitemap + closure matrix (Chrome; Edge spot; Android/iPhone deferred environmental) |
+| **CW (track)** | **CLOSED** — **CW.1–CW.8 COMPLETE** · **Option B — guest + richer discovery** · F.4–F.8 **remain CLOSED** |
+| **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = CLOSED** · **CW CLOSED** · Mobile UI/UX after CW · production/security/pre-VPS · **SCALE** later |
+| **Next** | **KZ-C.2** — LegalAcceptance / backend legal wiring (**not started**) |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -213,7 +214,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 **Architecture (CLOSED — preserve):** **F.4–F.8** — routing, locale SEO, legal migration, OG, deep-link well-known files. **Do not rebuild.**
 
-**Product track (ACTIVE):** **CW.1–CW.7 CLOSED** (latest **CW.7** city promotions discovery). Contract: **`docs/architecture/public-consumer-web.md`** § **CW**. **CW.8 next** — final CI / performance / closure.
+**Product track:** **CW CLOSED** — **CW.1–CW.8 COMPLETE** (**Option B — guest + richer discovery**). Contract: **`docs/architecture/public-consumer-web.md`** § **CW**. **Next product gate:** **KZ-C.2+** / production readiness (not Consumer Web scope).
 
 - **6.11F.3 PASS** — public SEO infrastructure (sitemap, robots, temporary business detail **noindex**, etc.).
 - **6.12A.9.3.4 PASS (physical QA finalized)** — Consumer Web discovery/detail physical context; **QA-001 CLOSED**.
@@ -407,7 +408,7 @@ VPS / production deployment
 | **AOP** | **CLOSED** |
 | **BIZ** | **CLOSED** |
 | **UXA** | **CLOSED** — **UXA.1–UXA.13 PASS**; backoffice physical browser QA verified **2026-10-01** |
-| **CW (Consumer Web product)** | **ACTIVE** — **CW.1–CW.6 PASS** · **CW.7–CW.8 not started** |
+| **CW (Consumer Web product)** | **CLOSED** — **CW.1–CW.8 COMPLETE** · Option B guest + richer discovery |
 | **Mobile UI/UX** | **PLANNED** |
 | **VPS / production** | **BLOCKED** until readiness gates |
 | **SCALE** | **PLANNED** — architecture roadmap documented; **implementation not started** |

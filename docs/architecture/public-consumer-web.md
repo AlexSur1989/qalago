@@ -842,8 +842,8 @@ Consumer Web **CW STATUS: CLOSED** only when:
 | **CW.4** | Discovery home | **CLOSED** — see § **CW.4** below |
 | **CW.5** | Business detail completion | **CLOSED** — see § **CW.5** below |
 | **CW.6** | Web ads + analytics | **IMPLEMENTED** — see § **CW.6** below |
-| **CW.7** | Promotions discovery | Dedicated city promotions page |
-| **CW.8** | CI + performance + final physical QA | Closure |
+| **CW.7** | Promotions discovery | **CLOSED** — dedicated city promotions page |
+| **CW.8** | CI + performance + final physical QA | **CLOSED** — see § **CW.8** below |
 
 **Do not start CW.3** until CW.2 is committed and verified.
 
@@ -958,7 +958,19 @@ Consumer Web **CW STATUS: CLOSED** only when:
 
 **SEO:** indexable **`metadataForCityPromotions`** — localized title/description, self-canonical, reciprocal **hreflang**; **BreadcrumbList** JSON-LD (Home → Promotions).
 
-**Handoff:** **CW.8** — Consumer Web final CI / performance / closure gate.
+**Handoff:** **CW track closed** — **KZ-C.2+** / production readiness (see **`docs/ai-project-context.md`**).
+
+### CW.8 — Final CI / QA / closure (IMPLEMENTED)
+
+**CI (`.github/workflows/ci.yml`):** job **`consumer-web`** runs **`npm run test`**, **`check:ui-strings`**, **`npm run build`** (workspace **`@qalago/consumer-web`**).
+
+**Sitemap:** **`buildDiscoverySitemapEntries`** emits **`/{ru|kk}/{citySlug}/promotions`** for each public city (indexable; no **`/search`**; no legacy **`/businesses/`**).
+
+**Product scope verified:** Option B in/out scope unchanged — guest discovery, ads, analytics, promotions page; **no** web auth, favorites, review write, embedded map, push, AI.
+
+**Environmental QA debt (non-CW blockers):** iPhone Safari physical matrix; production-domain HTTPS crawler/OG/App Links verification when **`qalago.kz`** is deployed.
+
+**Final milestone:** **CW PASS — CONSUMER WEB PRODUCT FINALIZED** · **CW STATUS: CLOSED**.
 
 ### Global continuity (after CW closes — not started now)
 
