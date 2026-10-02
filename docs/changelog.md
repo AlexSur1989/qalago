@@ -10,7 +10,7 @@
 
 - **Status:** **KZ-C.2A PASS — LIVE LEGAL ACCEPTANCE QA VERIFIED**. **KZ-C.2 STATUS: CLOSED**. **READY FOR KZ-C.3: YES**. **KZ-C.3 not started**.
 - **Starting HEAD:** **`03edf3d8c05dd8a13d42bdb39e432f9205a08f9c`**.
-- **Checkpoint (implementation):** **`4794847`**. **Checkpoint (docs closure):** *(this commit)*.
+- **Checkpoint (implementation):** **`4794847`**. **Checkpoint (docs closure):** **`815c581`**.
 - **Live QA (catalog-api :3002, rebuilt):** **`GET /health` 200**; **`GET /legal/current?locale=RU` 200** with Terms/Privacy **`2026-09-10`**; unaccepted **`+77000000003`** → **`GET /favorites` 403 `LEGAL_ACCEPTANCE_REQUIRED`**; **`GET /users/me` 200**; unauthenticated accept **401**; accept-required **201** (2 rows); idempotent repeat **`alreadySatisfied`** (2 DB rows); post-accept **`/favorites` 200**; stale version **400 `LEGAL_VERSION_STALE`**; reversible Terms v2 bump → re-gate → v2 accept → **3 historical rows**; canonical restore → public current **`2026-09-10`** only; relogin **`acceptanceRequired: false`**; **CITY_ADMIN** favorites **200** (staff exempt). **Consumer Web build** embeds manifest versions on **`/terms`**. **Business Web** login-session legal gate tests **7/7**. **Flutter** legal tests **3/3** (RU/KK l10n); **physical Android/iOS acceptance not run** this session.
 - **Deferred:** Counsel approval / approved KK legal bodies / operator identity (**KZ-C.9**); iOS physical; Samsung physical gate walkthrough.
 - **Next:** **KZ-C.3** — public DTO privacy hardening.
