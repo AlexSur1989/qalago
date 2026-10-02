@@ -72,6 +72,10 @@ export enum StaffPermission {
   RELEASE_CONFIG_EDIT = 'RELEASE_CONFIG_EDIT',
   MAINTENANCE_MODE_EDIT = 'MAINTENANCE_MODE_EDIT',
 
+  /** CW.3 — home section order/visibility (city-scoped for CITY_ADMIN). */
+  HOME_CONFIG_VIEW = 'HOME_CONFIG_VIEW',
+  HOME_CONFIG_EDIT = 'HOME_CONFIG_EDIT',
+
   AUDIT_VIEW = 'AUDIT_VIEW',
   AUDIT_SECURITY_VIEW = 'AUDIT_SECURITY_VIEW',
 }
@@ -146,6 +150,8 @@ const ROLE_PERMISSIONS: Record<UserRole, ReadonlySet<StaffPermission>> = {
     StaffPermission.FEATURE_FLAG_VIEW,
     StaffPermission.RELEASE_CONFIG_VIEW,
     StaffPermission.AUDIT_VIEW,
+    StaffPermission.HOME_CONFIG_VIEW,
+    StaffPermission.HOME_CONFIG_EDIT,
   ]),
   [UserRole.CITY_ADMIN]: new Set([
     StaffPermission.BUSINESS_VIEW,
@@ -171,6 +177,8 @@ const ROLE_PERMISSIONS: Record<UserRole, ReadonlySet<StaffPermission>> = {
     StaffPermission.REPORT_ADS_VIEW,
     StaffPermission.REPORT_PLANS_VIEW,
     StaffPermission.REPORT_MODERATION_VIEW,
+    StaffPermission.HOME_CONFIG_VIEW,
+    StaffPermission.HOME_CONFIG_EDIT,
   ]),
   [UserRole.MODERATOR]: new Set([
     StaffPermission.MODERATION_VIEW,

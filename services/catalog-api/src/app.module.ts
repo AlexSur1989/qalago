@@ -35,6 +35,7 @@ import { SafetyModule } from './modules/safety/safety.module';
 import { StaffModule } from './modules/staff/staff.module';
 import { AdminReportingModule } from './modules/admin-reporting/admin-reporting.module';
 import { GeocodingModule } from './modules/geocoding/geocoding.module';
+import { HomeConfigModule } from './modules/home-config/home-config.module';
 
 @Module({
   imports: [
@@ -79,6 +80,7 @@ import { GeocodingModule } from './modules/geocoding/geocoding.module';
     StaffModule,
     AdminReportingModule,
     GeocodingModule,
+    HomeConfigModule,
   ],
   controllers: [HealthController],
   providers: [

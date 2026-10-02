@@ -249,6 +249,15 @@ export {
 } from './rbac';
 
 export {
+  HomeSectionPlatform,
+  HomeSectionType,
+  HOME_SECTION_TYPES,
+  type AdminHomeSectionRowDto,
+  type AdminHomeSectionsResponseDto,
+  type PublicHomeSectionDto,
+} from './home-sections';
+
+export {
   StaffPermission,
   STAFF_ROLES,
   STEP_UP_REQUIRED_PERMISSIONS,

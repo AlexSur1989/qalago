@@ -164,6 +164,21 @@ enum AnalyticsPlatform {
   UNKNOWN
 }
 
+/// Logical home feed sections (CW.3 — shared mobile + web config; not ad placements).
+enum HomeSectionType {
+  HOME_VIP_BANNER
+  CATEGORIES
+  HOME_FEATURED
+  HOME_PROMOTIONS
+  NEARBY
+}
+
+enum HomeSectionPlatform {
+  APP
+  WEB
+  ALL
+}
+
 enum AnalyticsVisitorType {
   NEW
   RETURNING
@@ -310,6 +325,7 @@ model City {
   moderationCases         ModerationCase[]
   staffCityScopes         StaffCityScope[]
   businessLocations       BusinessLocation[]
+  homeSectionConfigs      HomeSectionConfig[]
 }
 
 model AppReleaseSettings {
@@ -676,6 +692,22 @@ model CategoryCityOrder {
 
   @@unique([cityId, categoryId])
   @@index([cityId, sortOrder])
+}
+
+/// Backend-controlled home section order/visibility (CW.3). cityId null = global default row.
+model HomeSectionConfig {
+  id           String              @id @default(cuid())
+  sectionType  HomeSectionType
+  platform     HomeSectionPlatform @default(ALL)
+  enabled      Boolean             @default(true)
+  position     Int
+  cityId       String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  city         City?               @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@unique([cityId, sectionType])
+  @@index([cityId, position])
 }
 
 model Business {
