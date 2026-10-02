@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-10-02 — CW.4 PASS — Discovery home
+
+- **Status:** **CW.4 PASS — DISCOVERY HOME COMPLETE**. **CW.4 STATUS: CLOSED**. **CW.5+ not started**. **F.4–F.8 remain CLOSED**.
+- **Starting HEAD:** **`f6f82ebcd01a32299bdf42bb632d262e882b75d6`** (CW.3A closure).
+- **Checkpoint (commit):** _(set on commit)_ — `feat(cw): CW.4 discovery home from home section config`.
+- **Summary:** Consumer Web city home driven by **`GET /home/sections?platform=WEB`** (`cache: 'no-store'`). **`HomeDiscoverySections`** renders API order; **CATEGORIES** + **HOME_PROMOTIONS** preview implemented; **HOME_VIP_BANNER**, **HOME_FEATURED** (paid-slot semantics aligned with mobile), **NEARBY** (geo) deferred to **CW.6/CW.7**. Config failure → **CATEGORIES-only** fallback. Conditional parallel data load; no **`/monetization/ads/serve`**. Tests: **`cw4-discovery-home`**, extended **`home-sections-api`**. **Verification:** consumer-web **340/340** tests, **`check:ui-strings` PASS**, **`next build` PASS**. **Dynamic config:** live Admin PATCH **CATEGORIES 20→60** reflected in public GET order; production **`next start`** HTML section order matches API (canonical config restored).
+- **Deferred:** Visible **HOME_VIP_BANNER** / **HOME_FEATURED** ad blocks (**CW.6**); **NEARBY** with honest geo (**future mobile/web policy**); **`/{locale}/{citySlug}/promotions`** page (**CW.7**); Flutter home config consumption.
+- **Next:** **CW.5** — Business detail completion.
+
+---
+
 ## 2026-10-02 — CW.3A PASS — Home config invariants and closure verified
 
 - **Status:** **CW.3A PASS — HOME CONFIG INVARIANTS AND CLOSURE VERIFIED**. **CW.3 STATUS: CLOSED**. **CW.4 not started**. **F.4–F.8 remain CLOSED**.

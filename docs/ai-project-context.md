@@ -101,9 +101,10 @@
 | **CW.1** | **PASS — CONSUMER WEB PRODUCT SCOPE LOCKED** — **Option B (guest + richer discovery)** — **`docs/architecture/public-consumer-web.md`** § **CW** |
 | **CW.2** | **CLOSED — PUBLIC UI FOUNDATION** (incl. **CW.2A** closure verification) |
 | **CW.3** | **CLOSED — BACKEND-CONTROLLED HOME SYSTEM** (incl. **CW.3A** DB invariants + closure verification) |
-| **CW (track)** | **ACTIVE** — **CW.1–CW.3 CLOSED** · **CW.4–CW.8 NOT STARTED** · F.4–F.8 **remain CLOSED** |
+| **CW.4** | **CLOSED — DISCOVERY HOME** (config-driven city home; categories + promotions preview; VIP/featured/nearby deferred per § CW.4 in **`public-consumer-web.md`**) |
+| **CW (track)** | **ACTIVE** — **CW.1–CW.4 CLOSED** · **CW.5–CW.8 NOT STARTED** · F.4–F.8 **remain CLOSED** |
 | **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = CLOSED** · **CW ACTIVE** · Mobile UI/UX after CW · production/security/pre-VPS · **SCALE** later |
-| **Next** | **CW.4** — Discovery home UI from config (**no UXA.14**; **KZ-C.2+** not started) |
+| **Next** | **CW.5** — Business detail completion (**no UXA.14**; **KZ-C.2+** not started) |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -208,7 +209,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 **Architecture (CLOSED — preserve):** **F.4–F.8** — routing, locale SEO, legal migration, OG, deep-link well-known files. **Do not rebuild.**
 
-**Product track (ACTIVE):** **CW.1–CW.3 CLOSED** (scope lock, public UI foundation, backend home section config). Contract: **`docs/architecture/public-consumer-web.md`** § **CW**. **CW.4 next** — render discovery home from config.
+**Product track (ACTIVE):** **CW.1–CW.4 CLOSED** (scope lock, UI foundation, home config API, discovery home). Contract: **`docs/architecture/public-consumer-web.md`** § **CW**. **CW.5 next** — business detail completion.
 
 - **6.11F.3 PASS** — public SEO infrastructure (sitemap, robots, temporary business detail **noindex**, etc.).
 - **6.12A.9.3.4 PASS (physical QA finalized)** — Consumer Web discovery/detail physical context; **QA-001 CLOSED**.
@@ -402,7 +403,7 @@ VPS / production deployment
 | **AOP** | **CLOSED** |
 | **BIZ** | **CLOSED** |
 | **UXA** | **CLOSED** — **UXA.1–UXA.13 PASS**; backoffice physical browser QA verified **2026-10-01** |
-| **CW (Consumer Web product)** | **ACTIVE** — **CW.1–CW.3 PASS** · **CW.4–CW.8 not started** |
+| **CW (Consumer Web product)** | **ACTIVE** — **CW.1–CW.4 PASS** · **CW.5–CW.8 not started** |
 | **Mobile UI/UX** | **PLANNED** |
 | **VPS / production** | **BLOCKED** until readiness gates |
 | **SCALE** | **PLANNED** — architecture roadmap documented; **implementation not started** |

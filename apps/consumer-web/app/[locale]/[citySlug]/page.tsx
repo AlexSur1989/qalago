@@ -1,14 +1,11 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { CategoryIconTile, CategoryMoreTile } from '@/components/CategoryIconTile';
-import { PublicEmptyState } from '@/components/public/PublicState';
+import { HomeDiscoverySections } from '@/components/home/HomeDiscoverySections';
 import { SearchForm } from '@/components/SearchForm';
-import { requireCity, requireCityCategories } from '@/lib/city-page-data';
-import { homeColumns, sliceHomeCategories } from '@/lib/home-categories';
+import { requireCity } from '@/lib/city-page-data';
+import { loadHomeDiscoveryPageData } from '@/lib/home-discovery-data';
 import { cityDisplayName, homeTaglineForCity } from '@/lib/localized-content';
-import { UI_LABELS, categoryDisplayName } from '@/lib/locale';
+import { UI_LABELS } from '@/lib/locale';
 import { getRouteAppLocaleFromParams } from '@/lib/locale-server';
-import { cityCategoriesPath, cityCategoryPath } from '@/lib/routes';
 import { metadataForCity } from '@/lib/seo/page-metadata';
 
 export async function generateMetadata({
@@ -30,42 +27,21 @@ export default async function CityHomePage({
   const { locale: localeParam, citySlug } = await params;
   const locale = getRouteAppLocaleFromParams(localeParam);
   const labels = UI_LABELS[locale];
-  const { city, categories } = await requireCityCategories(citySlug);
+  const city = await requireCity(citySlug);
   const tagline = homeTaglineForCity(locale, cityDisplayName(city, locale));
-  const columns = homeColumns(720);
-  const { preview, showMore } = sliceHomeCategories(categories, columns);
+  const discovery = await loadHomeDiscoveryPageData(city.slug);
 
   return (
     <div className="page">
       <h1 className="page-title">{cityDisplayName(city, locale)}</h1>
       <p className="page-lead">{tagline}</p>
       <SearchForm locale={locale} citySlug={city.slug} labels={labels} />
-      {!categories.length ? (
-        <PublicEmptyState message={labels.emptyCategories} />
-      ) : (
-        <section aria-label={labels.categories} style={{ marginTop: 28 }}>
-          <div className="cat-grid">
-            {preview.map((c) => (
-              <CategoryIconTile
-                key={c.id}
-                title={categoryDisplayName(c, locale)}
-                icon={c.iconUrl ?? c.icon}
-                href={cityCategoryPath(locale, city.slug, c.slug)}
-              />
-            ))}
-            {showMore ? (
-              <CategoryMoreTile
-                href={cityCategoriesPath(locale, city.slug)}
-                title={labels.moreCategories}
-                ariaLabel={labels.moreCategoriesAria}
-              />
-            ) : null}
-          </div>
-        </section>
-      )}
-      <p style={{ marginTop: 32 }}>
-        <Link href={cityCategoriesPath(locale, city.slug)}>{labels.allCategories} →</Link>
-      </p>
+      <HomeDiscoverySections
+        locale={locale}
+        citySlug={city.slug}
+        labels={labels}
+        data={discovery}
+      />
     </div>
   );
 }

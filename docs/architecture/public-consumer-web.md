@@ -839,7 +839,7 @@ Consumer Web **CW STATUS: CLOSED** only when:
 | **CW.1** | Product scope lock | **CLOSED** — Option B scope lock (docs) |
 | **CW.2** | Public UI foundation | **CLOSED** — see § **CW.2** below |
 | **CW.3** | Backend-controlled home system | **CLOSED** — see § **CW.3** below |
-| **CW.4** | Discovery home | Render home from configuration (categories, featured, promos, VIP, etc.) |
+| **CW.4** | Discovery home | **CLOSED** — see § **CW.4** below |
 | **CW.5** | Business detail completion | Hours, branch UX, contacts, reviews read-only polish, states |
 | **CW.6** | Web ads + analytics | Unified serve + event ingest on web surfaces |
 | **CW.7** | Promotions discovery | Dedicated city promotions page |
@@ -880,7 +880,33 @@ Consumer Web **CW STATUS: CLOSED** only when:
 
 **Mobile:** Flutter home order unchanged in CW.3; API ready for later client adoption.
 
-**Consumer Web:** `lib/home-sections-api.ts` fetch helper only — **CW.4** renders UI from config.
+**Consumer Web (CW.3):** `lib/home-sections-api.ts` typed fetch helper; **CW.4** consumes it on the city home.
+
+### CW.4 — Discovery home (IMPLEMENTED)
+
+**Goal:** City home **`/{locale}/{citySlug}`** renders discovery sections in **API order** from **`GET /api/v1/home/sections?citySlug=&platform=WEB`**. No permanent hardcoded section order in React; **`enabled=false`** omits a section entirely.
+
+**Fetch policy:** `fetchPublicHomeSections` / `fetchPublicHomeSectionsSafe` use **`cache: 'no-store'`** so Admin **`HomeSectionConfig`** changes apply on **refresh without a Consumer Web rebuild**.
+
+**Layout resolution:** `resolveHomeSectionLayout` + **`HomeDiscoverySections`** map `HomeSectionType` → renderer. Order = API row order (no client re-sort).
+
+**Config failure fallback:** if `/home/sections` is unavailable, **`HOME_SECTION_CONFIG_FALLBACK`** renders **CATEGORIES only** (documented; not a full default clone).
+
+**Section matrix (CW.4):**
+
+| `sectionType` | CW.4 behavior | Data source | Deferred |
+|---------------|---------------|-------------|----------|
+| **CATEGORIES** | Full section (grid, heading, “all categories” CTA, empty state) | Existing public categories API | — |
+| **HOME_PROMOTIONS** | Home preview (limited count); cards link to **business detail** only | **`GET /promotions?citySlug&activeNow=true&limit=6`** | Dedicated **`/{locale}/{citySlug}/promotions`** route → **CW.7** (no broken CTA in CW.4) |
+| **HOME_VIP_BANNER** | **Skipped** (no ad chrome, no synthetic banner) | — | Paid serve + analytics → **CW.6** (`/monetization/ads/serve`) |
+| **HOME_FEATURED** | **Skipped** | — | Same semantics as mobile **HOME_FEATURED ad placement** (paid slot), not organic “featured” catalog query → **CW.6** |
+| **NEARBY** | **Skipped** | — | Requires device geo (mobile contract); no fabricated browser “nearby” |
+
+**Data loading:** `loadHomeDiscoveryData` fetches categories **only** when **CATEGORIES** enabled; promotions **only** when **HOME_PROMOTIONS** enabled; parallel where independent. Optional section fetch failures degrade per-section (home shell + other sections still render).
+
+**Ads boundary (CW.4):** Consumer Web **does not** call ad serve or emit ad impression/click events.
+
+**Handoff:** **CW.5** — business detail completion; **CW.6** — VIP/featured ad-backed blocks + web analytics; **CW.7** — city promotions discovery page.
 
 ### Global continuity (after CW closes — not started now)
 

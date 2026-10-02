@@ -84,6 +84,8 @@ export type UiLabels = {
   businessOpenMap: string;
   businessNoReviews: string;
   businessReadMoreReviews: string;
+  homeSectionPromotions: string;
+  emptyHomePromotions: string;
 };
 
 export const UI_LABELS: Record<AppLocale, UiLabels> = {
@@ -147,6 +149,8 @@ export const UI_LABELS: Record<AppLocale, UiLabels> = {
     businessOpenMap: 'Открыть на карте',
     businessNoReviews: 'Отзывов пока нет.',
     businessReadMoreReviews: 'и ещё отзывы',
+    homeSectionPromotions: 'Акции',
+    emptyHomePromotions: 'Сейчас нет активных акций в этом городе.',
   },
   kk: {
     siteTitle: 'QalaGo',
@@ -208,6 +212,8 @@ export const UI_LABELS: Record<AppLocale, UiLabels> = {
     businessOpenMap: 'Картада ашу',
     businessNoReviews: 'Пікірлер әлі жоқ.',
     businessReadMoreReviews: 'тағы пікірлер',
+    homeSectionPromotions: 'Акциялар',
+    emptyHomePromotions: 'Бұл қалада белсенді акциялар жоқ.',
   },
 };
 
