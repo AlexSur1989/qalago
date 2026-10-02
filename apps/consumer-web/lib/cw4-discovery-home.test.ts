@@ -59,12 +59,10 @@ describe('CW.4 discovery home', () => {
     expect(src).not.toContain('sliceHomeCategories');
   });
 
-  it('does not call monetization ad serve in consumer-web', () => {
-    const src = readFileSync(
-      join(APP_ROOT, 'components/home/HomeDiscoverySections.tsx'),
-      'utf8',
-    );
-    expect(src).not.toMatch(/ads\/serve|monetization\/ads/);
+  it('delegates ad-backed sections to CW.6 loaders (config-gated)', () => {
+    const src = readFileSync(join(APP_ROOT, 'lib/home-discovery-data.ts'), 'utf8');
+    expect(src).toContain('fetchAdServe');
+    expect(src).toContain('layoutIncludes(HomeSectionType.HOME_VIP_BANNER');
   });
 
   it('promotions section has no link to reserved promotions route', () => {

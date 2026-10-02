@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { TrackedPromotionLink } from '@/components/analytics/TrackedPromotionLink';
 import { PublicEmptyState } from '@/components/public/PublicState';
 import { PublicMediaImage, normalizePublicMediaSrc } from '@/components/public/PublicMediaImage';
 import type { CityPromotionPreviewDto } from '@/lib/promotions-api';
@@ -13,11 +13,13 @@ export function HomePromotionsSection({
   citySlug,
   labels,
   items,
+  showEmpty = true,
 }: {
   locale: AppLocale;
   citySlug: string;
   labels: UiLabels;
   items: CityPromotionPreviewDto[];
+  showEmpty?: boolean;
 }) {
   return (
     <section className="home-section" aria-labelledby="home-section-promotions-heading">
@@ -27,7 +29,7 @@ export function HomePromotionsSection({
         </h2>
       </div>
       {!items.length ? (
-        <PublicEmptyState message={labels.emptyHomePromotions} />
+        showEmpty ? <PublicEmptyState message={labels.emptyHomePromotions} /> : null
       ) : (
         <ul className="home-promo-list">
           {items.map((promo) => {
@@ -43,7 +45,13 @@ export function HomePromotionsSection({
             );
             return (
               <li key={promo.id}>
-                <Link href={href} className="home-promo-card">
+                <TrackedPromotionLink
+                  href={href}
+                  className="home-promo-card"
+                  businessId={promo.business.id}
+                  promotionId={promo.id}
+                  businessLocationId={promo.contextLocationId}
+                >
                   <div className="home-promo-card__media">
                     {cover ? (
                       <PublicMediaImage
@@ -64,7 +72,7 @@ export function HomePromotionsSection({
                       <p className="home-promo-card__discount">{promo.discountText}</p>
                     ) : null}
                   </div>
-                </Link>
+                </TrackedPromotionLink>
               </li>
             );
           })}

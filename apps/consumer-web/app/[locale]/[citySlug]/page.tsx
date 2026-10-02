@@ -3,6 +3,7 @@ import { HomeDiscoverySections } from '@/components/home/HomeDiscoverySections';
 import { SearchForm } from '@/components/SearchForm';
 import { requireCity } from '@/lib/city-page-data';
 import { loadHomeDiscoveryPageData } from '@/lib/home-discovery-data';
+import { getOrCreateWebSessionId } from '@/lib/web-session-server';
 import { cityDisplayName, homeTaglineForCity } from '@/lib/localized-content';
 import { UI_LABELS } from '@/lib/locale';
 import { getRouteAppLocaleFromParams } from '@/lib/locale-server';
@@ -29,7 +30,8 @@ export default async function CityHomePage({
   const labels = UI_LABELS[locale];
   const city = await requireCity(citySlug);
   const tagline = homeTaglineForCity(locale, cityDisplayName(city, locale));
-  const discovery = await loadHomeDiscoveryPageData(city.slug);
+  const webSessionId = await getOrCreateWebSessionId();
+  const discovery = await loadHomeDiscoveryPageData(city.slug, webSessionId);
 
   return (
     <div className="page">

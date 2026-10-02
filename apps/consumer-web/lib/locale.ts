@@ -96,6 +96,8 @@ export type UiLabels = {
   businessDescriptionTitle: string;
   workHoursWeekdays: readonly [string, string, string, string, string, string, string];
   homeSectionPromotions: string;
+  homeSectionFeatured: string;
+  categorySponsored: string;
   emptyHomePromotions: string;
 };
 
@@ -172,6 +174,8 @@ export const UI_LABELS: Record<AppLocale, UiLabels> = {
     businessDescriptionTitle: 'Описание',
     workHoursWeekdays: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
     homeSectionPromotions: 'Акции',
+    homeSectionFeatured: 'Популярные места',
+    categorySponsored: 'Рекламные места',
     emptyHomePromotions: 'Сейчас нет активных акций в этом городе.',
   },
   kk: {
@@ -246,6 +250,8 @@ export const UI_LABELS: Record<AppLocale, UiLabels> = {
     businessDescriptionTitle: 'Сипаттама',
     workHoursWeekdays: ['Дс', 'Се', 'Ср', 'Бс', 'Жм', 'Сн', 'Жс'],
     homeSectionPromotions: 'Акциялар',
+    homeSectionFeatured: 'Танымал орындар',
+    categorySponsored: 'Жарнамалық орындар',
     emptyHomePromotions: 'Бұл қалада белсенді акциялар жоқ.',
   },
 };

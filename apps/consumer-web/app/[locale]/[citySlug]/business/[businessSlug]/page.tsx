@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { TrackBusinessView } from '@/components/analytics/TrackBusinessView';
 import { BusinessShowcase } from '@/components/BusinessShowcase';
 import { JsonLd } from '@/components/JsonLd';
 import {
@@ -86,6 +87,11 @@ export default async function CanonicalBusinessPage({
 
   return (
     <div className="page">
+      <TrackBusinessView
+        businessId={data.business.id}
+        cityId={data.business.effectivePhysical?.cityId ?? city?.id}
+        businessLocationId={data.activeLocationId ?? data.business.effectivePhysical?.locationId}
+      />
       <Breadcrumbs items={crumbs} />
       <JsonLd data={breadcrumbListJsonLd(jsonLdItems)} />
       <BusinessShowcase

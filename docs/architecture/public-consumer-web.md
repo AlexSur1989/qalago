@@ -841,7 +841,7 @@ Consumer Web **CW STATUS: CLOSED** only when:
 | **CW.3** | Backend-controlled home system | **CLOSED** — see § **CW.3** below |
 | **CW.4** | Discovery home | **CLOSED** — see § **CW.4** below |
 | **CW.5** | Business detail completion | **CLOSED** — see § **CW.5** below |
-| **CW.6** | Web ads + analytics | Unified serve + event ingest on web surfaces |
+| **CW.6** | Web ads + analytics | **IMPLEMENTED** — see § **CW.6** below |
 | **CW.7** | Promotions discovery | Dedicated city promotions page |
 | **CW.8** | CI + performance + final physical QA | Closure |
 
@@ -923,6 +923,24 @@ Consumer Web **CW STATUS: CLOSED** only when:
 **Not in CW.5:** embedded map, web analytics on contacts (CW.6), ad serve, review write, DTO privacy hardening (see changelog — `ownerId` / plan fields still in raw JSON).
 
 **Config failure N/A** on detail (404/409 redirect per F.4 unchanged).
+
+### CW.6 — Web ads + analytics (IMPLEMENTED)
+
+**Goal:** Reuse unified **`GET /monetization/ads/serve?platform=WEB`** and existing **`POST /monetization/ads/events`** + **`POST /analytics/events`** — no second ad engine.
+
+**Web session:** first-party cookie **`qalago_web_session`** (32-char hex, ~30d `maxAge`, `SameSite=Lax`, not HttpOnly so client analytics can read). Created server-side via **`getOrCreateWebSessionId()`** when missing; used for serve + ad events + optional organic **`sessionId`**.
+
+**Home (config-gated):** **`loadHomeDiscoveryPageData`** fetches ads **only** when **`HomeSectionConfig`** includes the section type — VIP / FEATURED / paid HOME_PROMOTIONS never called when disabled. **HOME_PROMOTIONS:** organic preview remains **`GET /promotions`** (CW.4); paid strip is separate **`HOME_PROMOTIONS`** placement below organic (mobile parity). **Impressions:** client **`AdViewabilityTracker`** (≥50% visible 1s) + session dedupe **`campaignId:placementId`** before **`AD_IMPRESSION`**. **Clicks:** **`AD_CLICK`** via **`keepalive`** fetch; navigation not blocked.
+
+**Category:** **`CATEGORY_TOP`** + **`CATEGORY_BOOST`** serve with **`categoryId`**; merged sponsored block above paginated organic list; **dedupe** via **`collectPaidBusinessIds`** + **`categoryAllPlacesAfterSponsored`** (mobile parity). Organic pagination unchanged.
+
+**Labels:** UI chrome **`UI_LABELS.adLabel`** — RU **Реклама** / KK **Жарнама**; backend **`displayLabel`** when present.
+
+**Organic analytics (client, best-effort):** **`VIEW_BUSINESS`**, **`SEARCH_PERFORMED`**, contact **`CALL_CLICK` / `WHATSAPP_CLICK` / `WEBSITE_CLICK` / `ROUTE_CLICK` / `INSTAGRAM_CLICK`**, home **`PROMOTION_VIEW`** on organic promo cards; **`platform=WEB`**. Failures non-blocking.
+
+**Deferred / out of scope:** **`PAGE_VIEW`** (no taxonomy event), dedicated **`BRANCH_SELECT`** (branch switch re-tracks **`VIEW_BUSINESS`** on navigation reload), **`CW.7`** promotions hub, **`KZ-C.3`** DTO hardening, embedded map.
+
+**Handoff:** **CW.7** — dedicated city promotions discovery page.
 
 ### Global continuity (after CW closes — not started now)
 

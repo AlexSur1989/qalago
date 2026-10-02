@@ -16,6 +16,7 @@ import {
 } from '@/lib/contact-url';
 import { formatReviewDate } from '@/lib/format-public-date';
 import { hasWorkHours, workHoursRows } from '@/lib/work-hours-display';
+import { TrackedContactLink } from '@/components/analytics/TrackedContactLink';
 import { BusinessBranchesSection } from '@/components/BusinessBranchesSection';
 import type { PublicBusinessLocation } from '@/lib/public-business-location';
 import type { PublicLocale } from '@/lib/public-locale';
@@ -29,10 +30,6 @@ type Props = {
   branches: PublicBusinessLocation[];
   activeLocationId: string | null;
 };
-
-function externalLinkProps(href: string) {
-  return { href, target: '_blank' as const, rel: 'noopener noreferrer' };
-}
 
 const API_ORIGIN = getApiOrigin();
 
@@ -52,6 +49,7 @@ export function BusinessShowcase({
   const address = detailPhysicalAddress(business);
   const contacts = detailPhysicalContacts(business);
   const ep = business.effectivePhysical;
+  const businessLocationId = ep?.locationId ?? activeLocationId;
   const coverRaw =
     resolvePublicMediaUrl(business.effectiveMedia?.coverImageUrl) ??
     resolvePublicMediaUrl(business.coverImageUrl);
@@ -157,39 +155,57 @@ export function BusinessShowcase({
           <ul className="business-showcase__actions">
             {phone ? (
               <li>
-                <a className="business-showcase__action" href={buildTelHref(phone)}>
+                <TrackedContactLink
+                  className="business-showcase__action"
+                  href={buildTelHref(phone)}
+                  businessId={business.id}
+                  businessLocationId={businessLocationId}
+                  eventType="CALL_CLICK"
+                >
                   {labels.businessContactPhone}
-                </a>
+                </TrackedContactLink>
               </li>
             ) : null}
             {whatsapp ? (
               <li>
-                <a
+                <TrackedContactLink
                   className="business-showcase__action"
-                  {...externalLinkProps(buildWhatsAppHref(whatsapp))}
+                  href={buildWhatsAppHref(whatsapp)}
+                  businessId={business.id}
+                  businessLocationId={businessLocationId}
+                  eventType="WHATSAPP_CLICK"
+                  external
                 >
                   {labels.businessContactWhatsApp}
-                </a>
+                </TrackedContactLink>
               </li>
             ) : null}
             {instagram ? (
               <li>
-                <a
+                <TrackedContactLink
                   className="business-showcase__action"
-                  {...externalLinkProps(buildInstagramHref(instagram))}
+                  href={buildInstagramHref(instagram)}
+                  businessId={business.id}
+                  businessLocationId={businessLocationId}
+                  eventType="INSTAGRAM_CLICK"
+                  external
                 >
                   {labels.businessContactInstagram}
-                </a>
+                </TrackedContactLink>
               </li>
             ) : null}
             {website ? (
               <li>
-                <a
+                <TrackedContactLink
                   className="business-showcase__action"
-                  {...externalLinkProps(buildWebsiteHref(website))}
+                  href={buildWebsiteHref(website)}
+                  businessId={business.id}
+                  businessLocationId={businessLocationId}
+                  eventType="WEBSITE_CLICK"
+                  external
                 >
                   {labels.businessContactWebsite}
-                </a>
+                </TrackedContactLink>
               </li>
             ) : null}
           </ul>
@@ -222,12 +238,16 @@ export function BusinessShowcase({
             {labels.businessLocationTitle}
           </h2>
           <p>
-            <a
+            <TrackedContactLink
               className="business-showcase__action business-showcase__action--inline"
-              {...externalLinkProps(externalMapNavigationUrl(lat!, lng!))}
+              href={externalMapNavigationUrl(lat!, lng!)}
+              businessId={business.id}
+              businessLocationId={businessLocationId}
+              eventType="ROUTE_CLICK"
+              external
             >
               {labels.businessOpenMap}
-            </a>
+            </TrackedContactLink>
           </p>
         </section>
       ) : null}

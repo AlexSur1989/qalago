@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { CategorySponsoredBlock } from '@/components/ads/CategorySponsoredBlock';
 import { BusinessList } from '@/components/BusinessList';
 import { JsonLd } from '@/components/JsonLd';
 import { PaginationLinks } from '@/components/PaginationLinks';
@@ -20,7 +21,9 @@ import {
 } from '@/lib/locale';
 import { cityDisplayName } from '@/lib/localized-content';
 import { getRouteAppLocaleFromParams } from '@/lib/locale-server';
+import { applyCategoryOrganicDedupe, loadCategoryAds } from '@/lib/category-ads-data';
 import { toPublicBusinessCard } from '@/lib/public-business';
+import { getOrCreateWebSessionId } from '@/lib/web-session-server';
 import { cityCategoryPath, citySubcategoryPath } from '@/lib/routes';
 import {
   breadcrumbsForSubcategory,
@@ -102,7 +105,12 @@ export default async function CitySubcategoryPage({
           })
         ).items;
 
-  const publicItems = items.map((b) => toPublicBusinessCard(b));
+  const webSessionId = await getOrCreateWebSessionId();
+  const { sponsoredItems } = await loadCategoryAds(city.slug, category.id, webSessionId);
+  const publicItems = applyCategoryOrganicDedupe(
+    items.map((b) => toPublicBusinessCard(b)),
+    sponsoredItems,
+  );
   const crumbs = breadcrumbsForSubcategory(city, category, sub, locale);
   const listPath = citySubcategoryPath(locale, city.slug, category.slug, sub.slug);
 
@@ -115,6 +123,16 @@ export default async function CitySubcategoryPage({
       </Link>
       <h1 className="page-title">{subcategoryDisplayName(sub, locale)}</h1>
       <p style={{ color: 'var(--muted)' }}>{categoryDisplayName(category, locale)}</p>
+      {sponsoredItems.length ? (
+        <CategorySponsoredBlock
+          items={sponsoredItems}
+          sessionId={webSessionId}
+          locale={locale}
+          citySlug={city.slug}
+          labels={labels}
+          title={labels.categorySponsored}
+        />
+      ) : null}
       <h2 style={{ marginTop: 28 }}>{labels.businesses}</h2>
       <BusinessList citySlug={citySlug} items={publicItems} locale={locale} />
       <PaginationLinks

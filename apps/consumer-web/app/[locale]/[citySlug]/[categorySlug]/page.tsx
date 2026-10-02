@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { CategoryIconTile } from '@/components/CategoryIconTile';
+import { CategorySponsoredBlock } from '@/components/ads/CategorySponsoredBlock';
 import { BusinessList } from '@/components/BusinessList';
 import { JsonLd } from '@/components/JsonLd';
 import { PaginationLinks } from '@/components/PaginationLinks';
@@ -18,7 +19,9 @@ import {
 } from '@/lib/locale';
 import { cityDisplayName } from '@/lib/localized-content';
 import { getRouteAppLocaleFromParams } from '@/lib/locale-server';
+import { applyCategoryOrganicDedupe, loadCategoryAds } from '@/lib/category-ads-data';
 import { toPublicBusinessCard } from '@/lib/public-business';
+import { getOrCreateWebSessionId } from '@/lib/web-session-server';
 import {
   cityCategoriesPath,
   cityCategoryPath,
@@ -97,7 +100,16 @@ export default async function CityCategoryPage({
           })
         ).items;
 
-  const publicItems = items.map((b) => toPublicBusinessCard(b));
+  const webSessionId = await getOrCreateWebSessionId();
+  const { sponsoredItems } = await loadCategoryAds(
+    city.slug,
+    category.id,
+    webSessionId,
+  );
+  const publicItems = applyCategoryOrganicDedupe(
+    items.map((b) => toPublicBusinessCard(b)),
+    sponsoredItems,
+  );
   const crumbs = breadcrumbsForCategory(city, category, locale);
   const listPath = cityCategoryPath(locale, city.slug, category.slug);
 
@@ -128,6 +140,16 @@ export default async function CityCategoryPage({
             ))}
           </div>
         </>
+      ) : null}
+      {sponsoredItems.length ? (
+        <CategorySponsoredBlock
+          items={sponsoredItems}
+          sessionId={webSessionId}
+          locale={locale}
+          citySlug={city.slug}
+          labels={labels}
+          title={labels.categorySponsored}
+        />
       ) : null}
       <h2 style={{ marginTop: 28 }}>{labels.businesses}</h2>
       <BusinessList citySlug={citySlug} items={publicItems} locale={locale} />

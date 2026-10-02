@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { SearchAnalyticsTracker } from '@/components/analytics/SearchAnalyticsTracker';
 import { BusinessList } from '@/components/BusinessList';
 import { PublicEmptyState } from '@/components/public/PublicState';
 import { PaginationLinks } from '@/components/PaginationLinks';
@@ -93,6 +94,11 @@ export default async function CitySearchPage({
         <PublicEmptyState message={labels.searchNoResults} />
       ) : (
         <>
+          <SearchAnalyticsTracker
+            cityId={city.id}
+            searchQuery={query}
+            resultsCount={publicItems.length}
+          />
           <BusinessList citySlug={citySlug} items={publicItems} locale={locale} />
           <PaginationLinks
             basePath={basePath}
