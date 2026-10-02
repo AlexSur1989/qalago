@@ -10,7 +10,7 @@
 
 - **Status:** **CW.3 PASS — BACKEND-CONTROLLED HOME SYSTEM COMPLETE**. **CW track ACTIVE**. **CW.4+ not started**. **F.4–F.8 remain CLOSED**.
 - **Starting HEAD:** **`81e3453`** (CW.2A closure).
-- **Checkpoint (commit):** *(see git log — implementation + docs)*.
+- **Checkpoint (commit):** **`b5f8cd4`** — `feat(cw): CW.3 home section config API and schema` (admin/docs: **`ffe22a5`**, **`defaa98`**).
 - **Summary:** **`HomeSectionConfig`** Prisma model + migration with global seed (VIP → categories → featured → promotions → nearby); public **`GET /api/v1/home/sections`**, admin **`GET/PATCH /api/v1/admin/home-sections`** with **`HOME_CONFIG_*`** staff permissions; city override resolution; **`@qalago/shared-types`** home section DTOs; Admin Web **`/settings/home-sections`**; Consumer Web **`fetchPublicHomeSections`** helper only (no CW.4 UI). Mobile unchanged (deferred consumption).
 - **Deferred:** Flutter/mobile home reads config (**CW.4+**); audit log on home config mutations; CITY_ADMIN auto city slug in admin UI.
 - **Next:** **CW.4** — Discovery home (render sections from config).
