@@ -10,7 +10,7 @@
 
 - **Status:** **PROD.2 PASS — PRODUCTION ENVIRONMENT CONTRACT VERIFIED**. **PROD.2 STATUS: CLOSED**. **READY FOR PROD.3: YES**. **PROD.1 / VPS / TLS / S3 implementation not started**.
 - **Starting HEAD:** **`03f1021`** (post KZ-C.3 client regression docs).
-- **Checkpoint (commit):** _(set at commit)_.
+- **Checkpoint (commit):** **`a2e59a6`**.
 - **Summary:** Canonical **`infra/env/.env.production.example`** + **`docs/infra/production-environment.md`**; dev template JWT TTL aligned to code **`20m`**; **`QALAGO_ENV`** staging vs strict production in **`assertProductionConfig`** (DATABASE_URL, HTTPS CORS/base URLs, geocoding not mock, push/MFA conditional secrets); Docker **staging** `QALAGO_ENV=STAGING`, **prod** compose required env interpolation; client static guards (consumer/admin/business); production config unit tests extended. **No real secrets committed.** **No VPS deploy performed.**
 - **Deferred:** **PROD.3** S3 wiring; **PROD.5** Redis mandatory; real SMS provider; multi-key JWT rotation.
 - **Next:** **PROD.3** object storage — agree before start.
