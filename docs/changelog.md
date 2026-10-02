@@ -10,7 +10,7 @@
 
 - **Status:** **CW.6 PASS — WEB ADS AND ANALYTICS COMPLETE**. **CW.7+ not started**. **F.4–F.8 remain CLOSED**.
 - **Starting HEAD:** **`a1dcb47704d492df05f04c850fe2154a3fb5e6b2`** (CW.5A closure).
-- **Checkpoint (commit):** _(implementation commit — see git log)_.
+- **Checkpoint (commit):** **`0a61d65`** — `feat(cw): CW.6 unified web ads and analytics on Consumer Web`.
 - **Summary:** Consumer Web wired to unified **`GET /monetization/ads/serve?platform=WEB`**: **HOME_VIP_BANNER**, **HOME_FEATURED**, paid **HOME_PROMOTIONS** strip (organic CW.4 preview unchanged), **CATEGORY_TOP** + **CATEGORY_BOOST** with mobile-style organic dedupe. **`qalago_web_session`** cookie + **`AdViewabilityTracker`** impression parity; **`AD_CLICK`** + organic analytics (**`VIEW_BUSINESS`**, **`SEARCH_PERFORMED`**, contact clicks, promo views). Home fetches gated by **`HomeSectionConfig`**. **Verification:** consumer-web **367/367**, **`check:ui-strings`**, **`build`** PASS.
 - **Deferred:** **CW.7** promotions page; **CW.8** CI/physical closure matrix; **KZ-C.3** public DTO trim; live ad QA fixture documentation when no WEB campaigns in local DB.
 - **Next:** **CW.7** — Promotions discovery page.
