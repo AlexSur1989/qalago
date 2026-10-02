@@ -56,7 +56,7 @@ class SponsoredBusinessSection extends ConsumerWidget {
                 ),
               ),
             ),
-            SponsoredLabel(label: items.first.displayLabel),
+            const SponsoredLabel(),
           ],
         ),
         const SizedBox(height: 12),
@@ -78,6 +78,30 @@ class SponsoredBusinessSection extends ConsumerWidget {
           const SizedBox(height: 12),
         ],
       ],
+    );
+  }
+}
+
+/// Single inline sponsored business card (e.g. CATEGORY_BOOST in category list).
+class SponsoredBusinessInlineCard extends ConsumerWidget {
+  const SponsoredBusinessInlineCard({super.key, required this.item});
+
+  final AdItemModel item;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sessionId = ref.watch(adSessionIdProvider);
+    final tracking = ref.read(adTrackingServiceProvider);
+    return _SponsoredBusinessTile(
+      item: item,
+      adContext: item.toContext(sessionId),
+      tracking: tracking,
+      onTap: () {
+        final business = item.toBusinessModel();
+        if (business == null) return;
+        tracking.trackEvent(item.toContext(sessionId), AdEventTypes.cardOpen);
+        openBusinessFromAdItem(context, item, BusinessTrafficSource.ad);
+      },
     );
   }
 }
@@ -108,7 +132,6 @@ class _SponsoredBusinessTile extends StatelessWidget {
       child: BusinessCard(
         business: business,
         sponsored: true,
-        sponsoredLabel: item.displayLabel,
         onTap: onTap,
       ),
     );
@@ -141,26 +164,10 @@ class SponsoredPromotionStrip extends ConsumerWidget {
 
     if (entries.isEmpty) return const SizedBox.shrink();
 
-    final l10n = context.l10n;
     final localeCode = resolveLocaleCode(ref.watch(appLocaleCodeProvider));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                l10n.sponsoredPromoted,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-            SponsoredLabel(label: items.first.displayLabel),
-          ],
-        ),
         const SizedBox(height: 12),
         SizedBox(
           height: 210,
@@ -182,7 +189,6 @@ class SponsoredPromotionStrip extends ConsumerWidget {
                 child: _SponsoredPromotionCard(
                   localeCode: localeCode,
                   promotion: promotion,
-                  displayLabel: item.displayLabel,
                   onTap: () {
                     tracking.trackEvent(
                       item.toContext(sessionId),
@@ -204,13 +210,11 @@ class _SponsoredPromotionCard extends StatelessWidget {
   const _SponsoredPromotionCard({
     required this.localeCode,
     required this.promotion,
-    required this.displayLabel,
     required this.onTap,
   });
 
   final String localeCode;
   final PromotionModel promotion;
-  final String displayLabel;
   final VoidCallback onTap;
 
   @override
@@ -256,7 +260,7 @@ class _SponsoredPromotionCard extends StatelessWidget {
                     Positioned(
                       left: 8,
                       top: 8,
-                      child: SponsoredLabel(label: displayLabel),
+                      child: const SponsoredLabel(),
                     ),
                   ],
                 ),

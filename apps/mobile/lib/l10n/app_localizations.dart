@@ -3443,31 +3443,31 @@ abstract class AppLocalizations {
   /// No description provided for @monetizationProductBoost.
   ///
   /// In ru, this message translates to:
-  /// **'Поднять карточку'**
+  /// **'Продвижение в категории'**
   String get monetizationProductBoost;
 
   /// No description provided for @monetizationProductTopCategory.
   ///
   /// In ru, this message translates to:
-  /// **'TOP категории'**
+  /// **'ТОП категории'**
   String get monetizationProductTopCategory;
 
   /// No description provided for @monetizationProductPromotedPromotion.
   ///
   /// In ru, this message translates to:
-  /// **'Продвинуть акцию'**
+  /// **'Продвижение акции'**
   String get monetizationProductPromotedPromotion;
 
   /// No description provided for @monetizationProductFeaturedBusiness.
   ///
   /// In ru, this message translates to:
-  /// **'Популярное место'**
+  /// **'Продвижение на главной'**
   String get monetizationProductFeaturedBusiness;
 
   /// No description provided for @monetizationProductVipBanner.
   ///
   /// In ru, this message translates to:
-  /// **'VIP-баннер'**
+  /// **'Баннер на главной'**
   String get monetizationProductVipBanner;
 
   /// No description provided for @monetizationProductBoostDesc.

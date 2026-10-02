@@ -1,14 +1,11 @@
 import { AD_PLACEMENT } from './ad-placements';
 import { fetchAdServe } from './ads-api';
 import type { AdServeItemDto } from './ads-types';
-import {
-  categoryAllPlacesAfterSponsored,
-  collectPaidBusinessIds,
-  filterOrganicByPaidIds,
-} from './ads-dedupe';
+import { splitCategoryServeAds, preserveCategoryOrganicPage } from './category-feed-compose';
 
 export type CategoryAdsBundle = {
-  sponsoredItems: AdServeItemDto[];
+  topItems: AdServeItemDto[];
+  boostItems: AdServeItemDto[];
 };
 
 export async function loadCategoryAds(
@@ -16,7 +13,7 @@ export async function loadCategoryAds(
   categoryId: string,
   sessionId: string,
 ): Promise<CategoryAdsBundle> {
-  const [topItems, boostItems] = await Promise.all([
+  const [topRaw, boostRaw] = await Promise.all([
     fetchAdServe({
       placementCode: AD_PLACEMENT.CATEGORY_TOP,
       citySlug,
@@ -28,20 +25,16 @@ export async function loadCategoryAds(
       citySlug,
       sessionId,
       categoryId,
+      limit: 1,
     }),
   ]);
-  const sponsoredItems = [...topItems, ...boostItems];
-  return { sponsoredItems };
+  return splitCategoryServeAds(topRaw, boostRaw);
 }
 
+/** @deprecated 6.13M.6 — organic page size is preserved; use composeCategoryOrganicListWithBoost. */
 export function applyCategoryOrganicDedupe<T extends { id: string }>(
   organicItems: T[],
-  sponsoredItems: AdServeItemDto[],
+  _sponsoredItems: AdServeItemDto[],
 ): T[] {
-  const paidIds = collectPaidBusinessIds(sponsoredItems);
-  const withoutPaidDupes = filterOrganicByPaidIds(organicItems, paidIds);
-  const sponsoredIds = sponsoredItems
-    .map((ad) => ad.business?.id)
-    .filter((id): id is string => Boolean(id));
-  return categoryAllPlacesAfterSponsored(withoutPaidDupes, sponsoredIds);
+  return preserveCategoryOrganicPage(organicItems);
 }

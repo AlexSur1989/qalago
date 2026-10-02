@@ -5,7 +5,7 @@ import type { AppLocale, UiLabels } from '@/lib/locale';
 import { SponsoredBusinessAdCard } from '@/components/ads/SponsoredBusinessAdCard';
 import { SponsoredLabel } from '@/components/ads/SponsoredLabel';
 
-/** CATEGORY_TOP + CATEGORY_BOOST served items (deduped upstream). */
+/** CATEGORY_TOP sponsored block (above organic results). */
 export function CategorySponsoredBlock({
   items,
   sessionId,

@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { CategoryOrganicFeed } from '@/components/ads/CategoryOrganicFeed';
 import { CategorySponsoredBlock } from '@/components/ads/CategorySponsoredBlock';
-import { BusinessList } from '@/components/BusinessList';
 import { JsonLd } from '@/components/JsonLd';
 import { PaginationLinks } from '@/components/PaginationLinks';
 import {
@@ -21,7 +21,11 @@ import {
 } from '@/lib/locale';
 import { cityDisplayName } from '@/lib/localized-content';
 import { getRouteAppLocaleFromParams } from '@/lib/locale-server';
-import { applyCategoryOrganicDedupe, loadCategoryAds } from '@/lib/category-ads-data';
+import { loadCategoryAds } from '@/lib/category-ads-data';
+import {
+  composeCategoryOrganicListWithBoost,
+  preserveCategoryOrganicPage,
+} from '@/lib/category-feed-compose';
 import { toPublicBusinessCard } from '@/lib/public-business';
 import { getOrCreateWebSessionId } from '@/lib/web-session-server';
 import { cityCategoryPath, citySubcategoryPath } from '@/lib/routes';
@@ -106,10 +110,12 @@ export default async function CitySubcategoryPage({
         ).items;
 
   const webSessionId = await getOrCreateWebSessionId();
-  const { sponsoredItems } = await loadCategoryAds(city.slug, category.id, webSessionId);
-  const publicItems = applyCategoryOrganicDedupe(
-    items.map((b) => toPublicBusinessCard(b)),
-    sponsoredItems,
+  const { topItems, boostItems } = await loadCategoryAds(city.slug, category.id, webSessionId);
+  const organicCards = preserveCategoryOrganicPage(items.map((b) => toPublicBusinessCard(b)));
+  const feedEntries = composeCategoryOrganicListWithBoost(
+    organicCards,
+    boostItems,
+    topItems,
   );
   const crumbs = breadcrumbsForSubcategory(city, category, sub, locale);
   const listPath = citySubcategoryPath(locale, city.slug, category.slug, sub.slug);
@@ -123,9 +129,9 @@ export default async function CitySubcategoryPage({
       </Link>
       <h1 className="page-title">{subcategoryDisplayName(sub, locale)}</h1>
       <p style={{ color: 'var(--muted)' }}>{categoryDisplayName(category, locale)}</p>
-      {sponsoredItems.length ? (
+      {topItems.length ? (
         <CategorySponsoredBlock
-          items={sponsoredItems}
+          items={topItems}
           sessionId={webSessionId}
           locale={locale}
           citySlug={city.slug}
@@ -134,7 +140,13 @@ export default async function CitySubcategoryPage({
         />
       ) : null}
       <h2 style={{ marginTop: 28 }}>{labels.businesses}</h2>
-      <BusinessList citySlug={citySlug} items={publicItems} locale={locale} />
+      <CategoryOrganicFeed
+        citySlug={citySlug}
+        entries={feedEntries}
+        sessionId={webSessionId}
+        locale={locale}
+        labels={labels}
+      />
       <PaginationLinks
         basePath={citySubcategoryPath(locale, city.slug, category.slug, sub.slug)}
         page={safePage}

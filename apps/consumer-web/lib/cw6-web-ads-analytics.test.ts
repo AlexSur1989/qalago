@@ -70,7 +70,7 @@ describe('CW.6 web ads + analytics', () => {
     expect(UI_LABELS.kk.adLabel).toBe('Жарнама');
   });
 
-  it('category dedupe excludes paid ids from organic list', () => {
+  it('category organic page preserves API page size (6.13M.6)', () => {
     const ads = [
       parseAdServeItem({
         campaignId: 'c1',
@@ -82,7 +82,7 @@ describe('CW.6 web ads + analytics', () => {
     const paid = collectPaidBusinessIds(ads);
     const organic = [{ id: 'b-paid' }, { id: 'b-org' }];
     const result = applyCategoryOrganicDedupe(organic, ads);
-    expect(result.map((b) => b.id)).toEqual(['b-org']);
+    expect(result.map((b) => b.id)).toEqual(['b-paid', 'b-org']);
     expect(paid.has('b-paid')).toBe(true);
   });
 
@@ -143,9 +143,10 @@ describe('CW.6 web ads + analytics', () => {
     expect(src).not.toContain('discoverySurface');
   });
 
-  it('KK ad disclosure prefers locale over generic serve label', () => {
+  it('consumer ad disclosure is locale-only (ignores serve displayLabel)', () => {
     const src = readFileSync(join(APP_ROOT, 'components/ads/SponsoredLabel.tsx'), 'utf8');
-    expect(src).toContain('GENERIC_AD_DISCLOSURE');
+    expect(src).toContain('consumerSponsoredLabel');
+    expect(src).not.toContain('GENERIC_AD_DISCLOSURE');
   });
 
   it('organic home promotions stay separate from paid strip', () => {

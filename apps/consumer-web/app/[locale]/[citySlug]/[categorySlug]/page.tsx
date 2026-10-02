@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { CategoryIconTile } from '@/components/CategoryIconTile';
+import { CategoryOrganicFeed } from '@/components/ads/CategoryOrganicFeed';
 import { CategorySponsoredBlock } from '@/components/ads/CategorySponsoredBlock';
-import { BusinessList } from '@/components/BusinessList';
 import { JsonLd } from '@/components/JsonLd';
 import { PaginationLinks } from '@/components/PaginationLinks';
 import { findCategoryBySlug } from '@/lib/category-resolve';
@@ -19,7 +19,11 @@ import {
 } from '@/lib/locale';
 import { cityDisplayName } from '@/lib/localized-content';
 import { getRouteAppLocaleFromParams } from '@/lib/locale-server';
-import { applyCategoryOrganicDedupe, loadCategoryAds } from '@/lib/category-ads-data';
+import { loadCategoryAds } from '@/lib/category-ads-data';
+import {
+  composeCategoryOrganicListWithBoost,
+  preserveCategoryOrganicPage,
+} from '@/lib/category-feed-compose';
 import { toPublicBusinessCard } from '@/lib/public-business';
 import { getOrCreateWebSessionId } from '@/lib/web-session-server';
 import {
@@ -101,14 +105,16 @@ export default async function CityCategoryPage({
         ).items;
 
   const webSessionId = await getOrCreateWebSessionId();
-  const { sponsoredItems } = await loadCategoryAds(
+  const { topItems, boostItems } = await loadCategoryAds(
     city.slug,
     category.id,
     webSessionId,
   );
-  const publicItems = applyCategoryOrganicDedupe(
-    items.map((b) => toPublicBusinessCard(b)),
-    sponsoredItems,
+  const organicCards = preserveCategoryOrganicPage(items.map((b) => toPublicBusinessCard(b)));
+  const feedEntries = composeCategoryOrganicListWithBoost(
+    organicCards,
+    boostItems,
+    topItems,
   );
   const crumbs = breadcrumbsForCategory(city, category, locale);
   const listPath = cityCategoryPath(locale, city.slug, category.slug);
@@ -141,9 +147,9 @@ export default async function CityCategoryPage({
           </div>
         </>
       ) : null}
-      {sponsoredItems.length ? (
+      {topItems.length ? (
         <CategorySponsoredBlock
-          items={sponsoredItems}
+          items={topItems}
           sessionId={webSessionId}
           locale={locale}
           citySlug={city.slug}
@@ -152,7 +158,13 @@ export default async function CityCategoryPage({
         />
       ) : null}
       <h2 style={{ marginTop: 28 }}>{labels.businesses}</h2>
-      <BusinessList citySlug={citySlug} items={publicItems} locale={locale} />
+      <CategoryOrganicFeed
+        citySlug={citySlug}
+        entries={feedEntries}
+        sessionId={webSessionId}
+        locale={locale}
+        labels={labels}
+      />
       <PaginationLinks
         basePath={cityCategoryPath(locale, city.slug, category.slug)}
         page={safePage}

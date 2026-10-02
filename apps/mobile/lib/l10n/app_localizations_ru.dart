@@ -1891,19 +1891,19 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get monetizationProductBoost => 'Поднять карточку';
+  String get monetizationProductBoost => 'Продвижение в категории';
 
   @override
-  String get monetizationProductTopCategory => 'TOP категории';
+  String get monetizationProductTopCategory => 'ТОП категории';
 
   @override
-  String get monetizationProductPromotedPromotion => 'Продвинуть акцию';
+  String get monetizationProductPromotedPromotion => 'Продвижение акции';
 
   @override
-  String get monetizationProductFeaturedBusiness => 'Популярное место';
+  String get monetizationProductFeaturedBusiness => 'Продвижение на главной';
 
   @override
-  String get monetizationProductVipBanner => 'VIP-баннер';
+  String get monetizationProductVipBanner => 'Баннер на главной';
 
   @override
   String get monetizationProductBoostDesc =>

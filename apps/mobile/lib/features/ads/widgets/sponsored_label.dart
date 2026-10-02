@@ -2,18 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../../core/locale/l10n_extension.dart';
 import '../../../core/theme/app_theme.dart';
+import '../utils/consumer_sponsored_disclosure.dart';
 
 class SponsoredLabel extends StatelessWidget {
-  const SponsoredLabel({
-    super.key,
-    this.label,
-  });
-
-  final String? label;
+  const SponsoredLabel({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final text = label ?? context.l10n.commonAd;
+    final text = consumerSponsoredDisclosure(context.l10n);
     return Semantics(
       label: text,
       child: DecoratedBox(

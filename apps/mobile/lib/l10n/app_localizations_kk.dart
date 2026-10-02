@@ -1881,19 +1881,19 @@ class AppLocalizationsKk extends AppLocalizations {
   }
 
   @override
-  String get monetizationProductBoost => 'Картаны көтеру';
+  String get monetizationProductBoost => 'Санатта ілгерілету';
 
   @override
-  String get monetizationProductTopCategory => 'TOP санаты';
+  String get monetizationProductTopCategory => 'Санатта ТОП';
 
   @override
   String get monetizationProductPromotedPromotion => 'Акцияны насихаттау';
 
   @override
-  String get monetizationProductFeaturedBusiness => 'Танымал орын';
+  String get monetizationProductFeaturedBusiness => 'Басты бетте ілгерілету';
 
   @override
-  String get monetizationProductVipBanner => 'VIP-бanner';
+  String get monetizationProductVipBanner => 'Басты бетте баннер';
 
   @override
   String get monetizationProductBoostDesc =>

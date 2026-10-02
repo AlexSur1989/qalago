@@ -252,6 +252,8 @@ export {
   HomeSectionPlatform,
   HomeSectionType,
   HOME_SECTION_TYPES,
+  HOME_SECTION_CANONICAL_FALLBACK,
+  normalizePublicHomeSections,
   type AdminHomeSectionRowDto,
   type AdminHomeSectionsResponseDto,
   type PublicHomeSectionDto,

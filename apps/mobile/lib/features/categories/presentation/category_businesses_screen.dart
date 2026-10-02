@@ -33,6 +33,7 @@ import '../data/category_catalog_sort.dart';
 import '../data/category_l10n.dart';
 import '../providers/category_sort_provider.dart';
 import '../utils/category_display.dart';
+import '../utils/category_feed_compose.dart';
 import '../utils/category_list_utils.dart';
 import 'category_subcategory_filter.dart';
 import 'subcategory_icon_grid.dart';
@@ -224,9 +225,12 @@ class CategoryBusinessesScreen extends ConsumerWidget {
           },
           data: (data) {
             final topAds = topAdsAsync.valueOrNull ?? const [];
-            final boostAds = boostAdsAsync.valueOrNull ?? const [];
-            final sponsoredAds = [...topAds, ...boostAds];
-            final paidIds = collectPaidBusinessIds(sponsoredAds);
+            final boostAdsRaw = boostAdsAsync.valueOrNull ?? const [];
+            final adsSplit = splitCategoryServeAds(topAds, boostAdsRaw);
+            final paidIds = collectPaidBusinessIds([
+              ...adsSplit.topItems,
+              ...adsSplit.boostItems,
+            ]);
 
             final recommendedOrganic = recommendedAsync.valueOrNull == null
                 ? const <BusinessModel>[]
@@ -235,24 +239,24 @@ class CategoryBusinessesScreen extends ConsumerWidget {
                     paidBusinessIds: paidIds,
                   );
 
-            final allPlaces = categoryAllPlacesAfterSponsored(
-              allPlaces: data.items,
-              sponsoredBusinessIdsInOrder: sponsoredAds
-                  .map((ad) => ad.business?['id'] as String?)
-                  .whereType<String>(),
+            final allPlacesEntries = composeCategoryAllPlacesWithBoost(
+              organicItems: data.items,
+              boostItems: adsSplit.boostItems,
+              topItems: adsSplit.topItems,
             );
 
             final subFilterActive =
                 subcategoryId != null && subcategoryId.isNotEmpty;
             final listEmpty = data.items.isEmpty &&
                 recommendedOrganic.isEmpty &&
-                sponsoredAds.isEmpty;
+                adsSplit.topItems.isEmpty &&
+                adsSplit.boostItems.isEmpty;
 
             final allPlacesSubtitle = _allPlacesSubtitle(
               l10n: l10n,
               cityName: cityName,
               catalogTotal: data.total,
-              loadedCount: allPlaces.length,
+              loadedCount: data.items.length,
             );
 
             if (listEmpty) {
@@ -315,20 +319,20 @@ class CategoryBusinessesScreen extends ConsumerWidget {
                   ..._organicBusinessCards(context, recommendedOrganic),
                   const SizedBox(height: QalaGoSpacing.space20),
                 ],
-                if (sponsoredAds.isNotEmpty) ...[
+                if (adsSplit.topItems.isNotEmpty) ...[
                   SponsoredBusinessSection(
                     title: l10n.categorySponsored,
-                    items: sponsoredAds,
+                    items: adsSplit.topItems,
                   ),
                   const SizedBox(height: QalaGoSpacing.space20),
                 ],
-                if (allPlaces.isNotEmpty) ...[
+                if (allPlacesEntries.isNotEmpty) ...[
                   QalaGoSectionHeader(
                     title: l10n.categoryAllPlaces,
                     subtitle: allPlacesSubtitle,
                   ),
                   const SizedBox(height: QalaGoSpacing.space12),
-                  ..._organicBusinessCards(context, allPlaces),
+                  ..._categoryAllPlacesEntries(context, ref, allPlacesEntries),
                 ],
               ],
             );
@@ -371,6 +375,33 @@ class CategoryBusinessesScreen extends ConsumerWidget {
               BusinessTrafficSource.category,
             ),
           ),
+        ),
+    ];
+  }
+
+  static List<Widget> _categoryAllPlacesEntries(
+    BuildContext context,
+    WidgetRef ref,
+    List<CategoryAllPlacesEntry> entries,
+  ) {
+    return [
+      for (final entry in entries)
+        Padding(
+          padding: const EdgeInsets.only(bottom: QalaGoSpacing.space12),
+          child: switch (entry) {
+            CategoryAllPlacesOrganic(:final business) => TrackedBusinessCard(
+                business: business,
+                trafficSource: BusinessTrafficSource.category,
+                onTap: () => openBusinessFromDiscovery(
+                  context,
+                  business,
+                  BusinessTrafficSource.category,
+                ),
+              ),
+            CategoryAllPlacesBoost(:final ad) => SponsoredBusinessInlineCard(
+                item: ad,
+              ),
+          },
         ),
     ];
   }

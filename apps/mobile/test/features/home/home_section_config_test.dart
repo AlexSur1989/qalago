@@ -11,9 +11,9 @@ void main() {
       expect(HomeSectionType.tryParse('UNKNOWN_FUTURE'), isNull);
     });
 
-    test('parseOrderedList preserves API order and skips disabled/unknown', () {
+    test('parseAndNormalizeHomeSections sorts by position and skips disabled/unknown', () {
       final unknown = <String>[];
-      final parsed = HomeSectionType.parseOrderedList(
+      final parsed = HomeSectionType.parseAndNormalizeHomeSections(
         [
           {'type': 'HOME_POPULAR', 'enabled': true, 'position': 60},
           {'type': 'CATEGORIES', 'enabled': true, 'position': 20},
@@ -23,8 +23,8 @@ void main() {
         onUnknown: unknown.add,
       );
       expect(parsed, [
-        HomeSectionType.homePopular,
         HomeSectionType.categories,
+        HomeSectionType.homePopular,
       ]);
       expect(unknown, ['FUTURE_WEB_ONLY']);
     });
@@ -86,15 +86,15 @@ void main() {
     });
   });
 
-  test('fallback order matches legacy mobile Home', () {
+  test('fallback order matches backend canonical bootstrap (6.13M.7)', () {
     expect(
       kHomeDiscoverySectionFallback,
       [
-        HomeSectionType.categories,
         HomeSectionType.homeVipBanner,
-        HomeSectionType.nearby,
+        HomeSectionType.categories,
         HomeSectionType.homeFeatured,
         HomeSectionType.homePromotions,
+        HomeSectionType.nearby,
         HomeSectionType.homePopular,
       ],
     );

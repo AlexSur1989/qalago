@@ -7,6 +7,7 @@ import '../../core/theme/qalago_colors.dart';
 import '../../core/theme/qalago_radius.dart';
 import '../../core/theme/qalago_spacing.dart';
 import '../../core/theme/theme_extensions.dart';
+import '../../features/ads/utils/consumer_sponsored_disclosure.dart';
 import '../../features/ads/widgets/sponsored_label.dart';
 import '../../shared/models/models.dart';
 import 'business_card_layout.dart';
@@ -73,13 +74,9 @@ class BusinessCard extends StatelessWidget {
       parts.add(business.address);
     }
     if (sponsored) {
-      if (sponsoredLabel != null && sponsoredLabel!.trim().isNotEmpty) {
-        parts.add(sponsoredLabel!.trim());
-      } else {
-        final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
-        if (l10n != null) {
-          parts.add(l10n.commonAd);
-        }
+      final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
+      if (l10n != null) {
+        parts.add(consumerSponsoredDisclosure(l10n));
       }
     }
     if (subtitle != null && subtitle!.trim().isNotEmpty) {
@@ -223,9 +220,7 @@ class _StandardBusinessCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (sponsored) ...[
-                  SponsoredLabel(
-                    label: sponsoredLabel ?? context.l10n.commonAd,
-                  ),
+                  const SponsoredLabel(),
                   const SizedBox(height: QalaGoSpacing.space8),
                 ],
                 Row(

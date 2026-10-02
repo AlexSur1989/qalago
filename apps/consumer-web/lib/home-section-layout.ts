@@ -1,7 +1,8 @@
 import { HomeSectionType, type PublicHomeSectionDto } from '@qalago/shared-types';
 import {
   fetchPublicHomeSectionsSafe,
-  HOME_SECTION_CONFIG_FALLBACK,
+  HOME_SECTION_CANONICAL_FALLBACK,
+  normalizePublicHomeSections,
   orderedSectionTypes,
 } from './home-sections-api';
 
@@ -12,10 +13,20 @@ export type HomeSectionLayoutResult = {
 
 export async function resolveHomeSectionLayout(citySlug: string): Promise<HomeSectionLayoutResult> {
   const result = await fetchPublicHomeSectionsSafe(citySlug);
-  if (!result.ok || result.sections.length === 0) {
-    return { sections: HOME_SECTION_CONFIG_FALLBACK, usedConfigFallback: true };
+  if (!result.ok) {
+    return {
+      sections: normalizePublicHomeSections(HOME_SECTION_CANONICAL_FALLBACK),
+      usedConfigFallback: true,
+    };
   }
-  return { sections: result.sections, usedConfigFallback: false };
+  const sections = normalizePublicHomeSections(result.sections);
+  if (sections.length === 0) {
+    return {
+      sections: normalizePublicHomeSections(HOME_SECTION_CANONICAL_FALLBACK),
+      usedConfigFallback: true,
+    };
+  }
+  return { sections, usedConfigFallback: false };
 }
 
 export function sectionTypesFromLayout(layout: HomeSectionLayoutResult): HomeSectionType[] {

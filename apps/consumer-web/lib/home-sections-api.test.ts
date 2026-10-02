@@ -28,11 +28,11 @@ describe('home-sections-api contract', () => {
     vi.unstubAllGlobals();
   });
 
-  it('orderedSectionTypes preserves API order', () => {
+  it('orderedSectionTypes sorts by position', () => {
     const types = orderedSectionTypes([
       { type: HomeSectionType.NEARBY, enabled: true, position: 50 },
       { type: HomeSectionType.CATEGORIES, enabled: true, position: 20 },
     ]);
-    expect(types).toEqual([HomeSectionType.NEARBY, HomeSectionType.CATEGORIES]);
+    expect(types).toEqual([HomeSectionType.CATEGORIES, HomeSectionType.NEARBY]);
   });
 });

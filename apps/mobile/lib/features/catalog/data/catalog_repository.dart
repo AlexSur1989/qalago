@@ -172,7 +172,7 @@ class CatalogRepository {
     );
     final data = response.data;
     if (data is List<dynamic>) {
-      return HomeSectionType.parseOrderedList(data);
+      return HomeSectionType.parseAndNormalizeHomeSections(data);
     }
     return const [];
   }

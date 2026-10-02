@@ -13,18 +13,18 @@ import { UI_LABELS } from './locale';
 const APP_ROOT = join(import.meta.dirname, '..');
 
 describe('CW.4 discovery home', () => {
-  it('orders sections exactly as API rows (no client re-sort)', () => {
+  it('orders sections by backend position (normalized)', () => {
     const rows = [
       { type: HomeSectionType.HOME_PROMOTIONS, enabled: true, position: 40 },
       { type: HomeSectionType.CATEGORIES, enabled: true, position: 20 },
     ];
     expect(orderedSectionTypes(rows)).toEqual([
-      HomeSectionType.HOME_PROMOTIONS,
       HomeSectionType.CATEGORIES,
+      HomeSectionType.HOME_PROMOTIONS,
     ]);
   });
 
-  it('uses categories-only documented fallback when config fetch fails', async () => {
+  it('uses canonical fallback when config fetch fails', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => ({ ok: false, status: 503, json: async () => ({}) })),
@@ -32,7 +32,12 @@ describe('CW.4 discovery home', () => {
     const result = await fetchPublicHomeSectionsSafe('uralsk');
     expect(result.ok).toBe(false);
     expect(HOME_SECTION_CONFIG_FALLBACK.map((s) => s.type)).toEqual([
+      HomeSectionType.HOME_VIP_BANNER,
       HomeSectionType.CATEGORIES,
+      HomeSectionType.HOME_FEATURED,
+      HomeSectionType.HOME_PROMOTIONS,
+      HomeSectionType.NEARBY,
+      HomeSectionType.HOME_POPULAR,
     ]);
     vi.unstubAllGlobals();
   });
