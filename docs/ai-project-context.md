@@ -109,7 +109,8 @@
 | **CW.8** | **PASS — CONSUMER WEB FINAL QA** — CI job + promotions sitemap + closure matrix (Chrome; Edge spot; Android/iPhone deferred environmental) |
 | **CW (track)** | **CLOSED** — **CW.1–CW.8 COMPLETE** · **Option B — guest + richer discovery** · F.4–F.8 **remain CLOSED** |
 | **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = CLOSED** · **CW CLOSED** · Mobile UI/UX after CW · production/security/pre-VPS · **SCALE** later |
-| **Next** | **KZ-C.2** — LegalAcceptance / backend legal wiring (**not started**) |
+| **KZ-C.2 / KZ-C.2A** | **CLOSED — LEGAL ACCEPTANCE + LIVE QA VERIFIED** — checkpoint **`4794847`** + docs; manifest **`2026-09-10`**, guard, mobile/Business Web gates, Consumer Web version sync |
+| **Next** | **KZ-C.3** — public DTO privacy hardening (**not started**) |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -136,7 +137,7 @@
 | **KK-first** | **QALAGO PRODUCT POLICY (P0 before public launch):** no saved language → **kk**; explicit user choice **wins forever**; Russian fully supported. **Flutter IMPLEMENTED (KZ-C.1B)**; **Consumer + Business Web IMPLEMENTED (KZ-C.1C)**; **Notifications typed push + Business Web inbox IMPLEMENTED (KZ-C.1D.2)** + **FCM physical QA VERIFIED (KZ-C.1F / KZ-C.1B closure)** on **SM-J610FN**; Flutter in-app ARB unchanged (E.3). Physical APK dev host: **`QALAGO_DEV_HOST=192.168.8.101`**. **iOS push physical QA deferred** (mobile-release). |
 | **Operator** | **`OPERATOR_IDENTITY = PENDING BUSINESS DECISION`** — P0 **production** blocker for legal publication; **not** internal dev blocker. |
 | **Legal KK/RU** | Target: **approved** KK + RU where applicable; no uncontrolled MT as final legal text. **Current:** RU draft bodies on Consumer Web (F.7). |
-| **Legal source of truth** | **Backend `LegalDocument`** = version authority for tracked docs; **Consumer Web** = public presentation (F.7 neutral URLs); **`LegalAcceptance`** = proof — **clients not wired yet** (KZ-C.2). |
+| **Legal source of truth** | **`PUBLISHED_PLATFORM_LEGAL_VERSIONS`** (`packages/shared-types`) + backend **`LegalDocument`** (seed aligned); **Consumer Web** = public presentation (F.7) with synced **version** metadata; **`LegalAcceptance`** = proof; **mobile + business web wired** (KZ-C.2). Staff roles **exempt** from consumer Terms gate. |
 | **Providers / location** | Production **register** required; UNKNOWN dev OK; UNKNOWN prod PD systems **not** OK — **KZ-C.7** gate. |
 | **Public DTO privacy** | **`Business.ownerId`** must be removed/minimized pre-production (**P0**, KZ-C.3); review **`user.id`** in public previews lower priority unless escalated. |
 | **Ads** | Shared Ad Engine; locale-aware labels + transparency + separate retention class — **KZ-C.4**; fixed API **`Реклама`** is not final. |

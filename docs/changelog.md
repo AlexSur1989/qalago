@@ -6,6 +6,26 @@
 
 ---
 
+## 2026-10-02 — KZ-C.2A PASS — Live legal acceptance QA + canonical closure
+
+- **Status:** **KZ-C.2A PASS — LIVE LEGAL ACCEPTANCE QA VERIFIED**. **KZ-C.2 STATUS: CLOSED**. **READY FOR KZ-C.3: YES**. **KZ-C.3 not started**.
+- **Starting HEAD:** **`03edf3d8c05dd8a13d42bdb39e432f9205a08f9c`**.
+- **Checkpoint (implementation):** **`4794847`**. **Checkpoint (docs closure):** *(this commit)*.
+- **Live QA (catalog-api :3002, rebuilt):** **`GET /health` 200**; **`GET /legal/current?locale=RU` 200** with Terms/Privacy **`2026-09-10`**; unaccepted **`+77000000003`** → **`GET /favorites` 403 `LEGAL_ACCEPTANCE_REQUIRED`**; **`GET /users/me` 200**; unauthenticated accept **401**; accept-required **201** (2 rows); idempotent repeat **`alreadySatisfied`** (2 DB rows); post-accept **`/favorites` 200**; stale version **400 `LEGAL_VERSION_STALE`**; reversible Terms v2 bump → re-gate → v2 accept → **3 historical rows**; canonical restore → public current **`2026-09-10`** only; relogin **`acceptanceRequired: false`**; **CITY_ADMIN** favorites **200** (staff exempt). **Consumer Web build** embeds manifest versions on **`/terms`**. **Business Web** login-session legal gate tests **7/7**. **Flutter** legal tests **3/3** (RU/KK l10n); **physical Android/iOS acceptance not run** this session.
+- **Deferred:** Counsel approval / approved KK legal bodies / operator identity (**KZ-C.9**); iOS physical; Samsung physical gate walkthrough.
+- **Next:** **KZ-C.3** — public DTO privacy hardening.
+
+---
+
+## 2026-10-02 — KZ-C.2 — Legal acceptance + published legal sync (implementation)
+
+- **Status:** **Implemented** (see **KZ-C.2A** for live closure).
+- **Starting HEAD:** **`03edf3d8c05dd8a13d42bdb39e432f9205a08f9c`** (CW.8 closure).
+- **Summary:** Single version authority via **`@qalago/shared-types`** **`PUBLISHED_PLATFORM_LEGAL_VERSIONS`** (`2026-09-10` Terms/Privacy) + backend **`LegalDocument`** seed; public **`GET /api/v1/legal/current`**; authenticated **`POST /legal/me/accept`** (explicit version, stale reject, idempotent), **`POST /legal/me/accept-required`**; **`LegalAcceptanceGuard`** for **USER/BUSINESS** with skip list (auth, legal, health, **`users/me`**); staff roles exempt. **Mobile** post-auth **`/legal/accept`** gate (RU/KK UI). **Business Web** **`/legal/accept`** after login. **Consumer Web** Terms/Privacy show manifest **version** metadata aligned with backend.
+- **Next:** **KZ-C.2A** live QA (this track).
+
+---
+
 ## 2026-10-02 — CW.8 PASS — Consumer Web final CI / QA / closure
 
 - **Status:** **CW.8 PASS — CONSUMER WEB FINAL QA VERIFIED**. **CW PASS — CONSUMER WEB PRODUCT FINALIZED**. **CW STATUS: CLOSED**. **F.4–F.8 remain CLOSED**. **CW.8 scope not expanded**.

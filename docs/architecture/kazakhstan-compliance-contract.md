@@ -159,13 +159,13 @@ Resolves audit conflict: **F.7 static Consumer Web pages** vs **backend `LegalDo
 
 Static TSX may remain for presentation until KZ-C.2 defines sync/render from published records; **target** is alignment so displayed version matches provable acceptance.
 
-**DEFERRED:** Fetch/render/sync implementation — **KZ-C.2**.
+**IMPLEMENTED (KZ-C.2):** Shared manifest **`PUBLISHED_PLATFORM_LEGAL_VERSIONS`**; published **`LegalDocument`** rows seeded to match; Consumer Web Terms/Privacy display **version** from manifest; backend **`GET /legal/current`** exposes same versions + public URLs.
 
 ---
 
 ## 9. Legal acceptance
 
-**CURRENT STATE:** API `POST /legal/me/accept`, `GET /legal/me/status`; **clients do not call** acceptance API (login footers link to static pages only).
+**CURRENT STATE (KZ-C.2):** **`GET /legal/current`**, **`POST /legal/me/accept`** (version + idempotency), **`POST /legal/me/accept-required`**; **`LegalAcceptanceGuard`** on product APIs; **Flutter** and **Business Web** acceptance gates; **staff roles exempt** from consumer mandatory Terms/Privacy gate.
 
 **AGREED TARGET** — where acceptance is legally/product-required, proof must support at minimum:
 
