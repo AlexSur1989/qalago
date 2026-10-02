@@ -864,9 +864,13 @@ Consumer Web **CW STATUS: CLOSED** only when:
 
 ### CW.3 — Backend-controlled home system (IMPLEMENTED)
 
-**Model:** `HomeSectionConfig` — `sectionType`, `enabled`, `position`, `platform` (`APP` | `WEB` | `ALL`), optional `cityId` (null = global default). Unique `(cityId, sectionType)`.
+**Model:** `HomeSectionConfig` — `sectionType`, `enabled`, `position`, `platform` (`APP` | `WEB` | `ALL`), optional `cityId` (null = global default).
 
-**Resolution (public `GET /home/sections`):** global rows + city rows → city overrides global per type → filter `enabled` → filter platform → sort by `position`.
+**DB uniqueness (CW.3A):** PostgreSQL partial indexes — at most **one global row per `sectionType`** (`cityId IS NULL`) and at most **one city row per (`cityId`, `sectionType`)** (`cityId IS NOT NULL`). Plain `UNIQUE(cityId, sectionType)` is **not** sufficient (NULL duplicates).
+
+**Platform semantics (CW.1 aligned):** one configuration row per scope + `sectionType`; `platform` expresses **applicability** (ALL / APP-only / WEB-only), **not** separate order rows for APP vs WEB for the same section. Example: you cannot have CATEGORIES at position 10 on APP and 30 on WEB as two rows for the same city — use one row with `platform=ALL` or choose a single applicability.
+
+**Resolution (public `GET /home/sections`):** global rows + city rows → city overrides global per type → filter `enabled` → filter platform → sort by `position`, then **`sectionType`** (stable tie-break).
 
 **Default global seed:** `HOME_VIP_BANNER` (10), `CATEGORIES` (20), `HOME_FEATURED` (30), `HOME_PROMOTIONS` (40), `NEARBY` (50); all `enabled`, `platform=ALL`.
 

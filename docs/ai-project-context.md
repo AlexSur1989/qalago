@@ -100,7 +100,7 @@
 | **SCALE (track)** | **PLANNED** — **SCALE.0–SCALE.12 not started**; see future-ready doc §70 |
 | **CW.1** | **PASS — CONSUMER WEB PRODUCT SCOPE LOCKED** — **Option B (guest + richer discovery)** — **`docs/architecture/public-consumer-web.md`** § **CW** |
 | **CW.2** | **CLOSED — PUBLIC UI FOUNDATION** (incl. **CW.2A** closure verification) |
-| **CW.3** | **PASS — BACKEND-CONTROLLED HOME SYSTEM** — `HomeSectionConfig`, public/admin API, Admin settings UI |
+| **CW.3** | **CLOSED — BACKEND-CONTROLLED HOME SYSTEM** (incl. **CW.3A** DB invariants + closure verification) |
 | **CW (track)** | **ACTIVE** — **CW.1–CW.3 CLOSED** · **CW.4–CW.8 NOT STARTED** · F.4–F.8 **remain CLOSED** |
 | **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = CLOSED** · **CW ACTIVE** · Mobile UI/UX after CW · production/security/pre-VPS · **SCALE** later |
 | **Next** | **CW.4** — Discovery home UI from config (**no UXA.14**; **KZ-C.2+** not started) |
@@ -338,7 +338,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 ## Home composition (CW.3 — hard requirement)
 
-**CW.1 locked:** backend/admin-controlled home **section order** and **enabled** state — **not** permanently hardcoded in Consumer Web or Flutter. Shared logical config; platform-specific presentation. Implementation **CW.3** (API/admin) + **CW.4** (home UI). Simple model — not over-complex CMS.
+**CW.1 locked:** backend/admin-controlled home **section order** and **enabled** state — **not** permanently hardcoded in Consumer Web or Flutter. Shared logical config; **`platform`** = applicability on **one row per scope + sectionType** (not dual APP/WEB order rows). **CW.3A:** PostgreSQL partial uniques enforce global + city row cardinality. Implementation **CW.3** (API/admin) + **CW.4** (home UI). Simple model — not over-complex CMS.
 
 ## Workflow discipline
 

@@ -347,7 +347,9 @@ Response: ordered array:
 ]
 ```
 
-**Resolution:** load global rows (`cityId` null) + city rows; **city overrides global per `sectionType`**; drop disabled; keep rows where `platform` is `ALL` or matches query; sort by `position`.
+**Resolution:** load global rows (`cityId` null) + city rows; **city overrides global per `sectionType`**; drop disabled; keep rows where `platform` is `ALL` or matches query; sort by `position`, then `sectionType`.
+
+**Persistence (CW.3A):** DB-enforced partial uniques — global: one row per `sectionType` when `cityId` IS NULL; city: one row per (`cityId`, `sectionType`) when `cityId` IS NOT NULL.
 
 ### Admin
 

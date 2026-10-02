@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-10-02 — CW.3A PASS — Home config invariants and closure verified
+
+- **Status:** **CW.3A PASS — HOME CONFIG INVARIANTS AND CLOSURE VERIFIED**. **CW.3 STATUS: CLOSED**. **CW.4 not started**. **F.4–F.8 remain CLOSED**.
+- **Starting HEAD:** **`b404e3539b0612e22ed88469898ce91222710b2f`** (CW.2A / CW.3 docs checkpoint).
+- **Checkpoint (commit):** **`3b7eead`** — `fix(cw): CW.3A enforce home section DB partial uniques`; docs closure in same series.
+- **Summary:** Verified PostgreSQL **NULL ≠ NULL** defect on original `UNIQUE (cityId, sectionType)` (duplicate globals possible). **Additive migration** `20261002103000_cw3a_home_section_partial_unique`: pre-duplicate guard, drop plain unique, add partial uniques — global `UNIQUE(sectionType) WHERE cityId IS NULL`, city `UNIQUE(cityId, sectionType) WHERE cityId IS NOT NULL`. **Deterministic public sort:** `position` then `sectionType`. **Live QA:** public WEB/APP **`GET /home/sections`** 200, shape `{ type, enabled, position }[]`; invalid city 404; invalid platform 400. **Admin UI:** `/settings/home-sections` loads (ADMIN), five sections, global/city modes. **RBAC live smoke:** ADMIN global/city read+write; CITY_ADMIN scoped city (no global PATCH); BUSINESS/USER denied; unauthenticated PATCH 401. **Tests/build:** home-config Jest **11/11** + `cw3a-db-invariant`; catalog-api **build PASS**; admin-web **199/199** + build; consumer-web **330/330** + build. **Platform model (CW.1):** one row per scope+`sectionType` with single `platform` applicability — **not** independent APP vs WEB order rows (documented intentional).
+- **Deferred:** SUPER_ADMIN live OTP blocked locally by `STAFF_ACCESS_DISABLED` on seed phone (HOME_CONFIG parity via ADMIN live + unit RBAC); audit log on home config mutations; Flutter consumption (**CW.4+**).
+- **Next:** **CW.4** — Discovery home (render sections from config).
+
+---
+
 ## 2026-10-02 — CW.3 PASS — Backend-controlled home system
 
 - **Status:** **CW.3 PASS — BACKEND-CONTROLLED HOME SYSTEM COMPLETE**. **CW track ACTIVE**. **CW.4+ not started**. **F.4–F.8 remain CLOSED**.
