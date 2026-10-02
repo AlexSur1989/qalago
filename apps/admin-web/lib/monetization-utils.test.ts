@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  MONETIZATION_SUBNAV_HREFS,
   campaignActionsForStatus,
   campaignStatusLabel,
   canConfirmPayment,
@@ -22,13 +23,19 @@ describe('monetization-utils', () => {
     expect(formatCtr(15.4)).toBe('15,4%');
   });
 
-  it('maps product labels', () => {
-    expect(productLabel('TOP_CATEGORY')).toBe('TOP категории');
-    expect(productLabel('VIP_BANNER')).toBe('VIP-баннер');
+  it('maps product labels (6.13M.1)', () => {
+    expect(productLabel('TOP_CATEGORY')).toBe('ТОП категории');
+    expect(productLabel('VIP_BANNER')).toBe('Баннер на главной');
+    expect(productLabel('VIP_BANNER')).not.toBe('VIP-баннер');
   });
 
-  it('maps placement labels', () => {
-    expect(placementLabel('HOME_VIP_BANNER')).toBe('VIP-баннер на главной');
+  it('maps placement labels (6.13M.1)', () => {
+    expect(placementLabel('HOME_VIP_BANNER')).toBe('Баннер на главной');
+    expect(placementLabel('CATEGORY_BOOST')).toBe('Продвижение в категории');
+  });
+
+  it('exposes plan payments in monetization subnav (6.13M.4A)', () => {
+    expect(MONETIZATION_SUBNAV_HREFS).toContain('/plans/payments');
   });
 
   it('maps order statuses', () => {

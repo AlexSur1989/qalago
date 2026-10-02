@@ -66,12 +66,13 @@ export function purchaseActionLabel(locale: AppLocale, action?: string | null): 
   return pick(locale, PURCHASE_ACTION[action] ?? { ru: action, kk: action });
 }
 
+/** Owner-facing product names (6.13M.1) — codes unchanged; not consumer «Реклама» labels. */
 const PRODUCT_CODE: Record<string, L> = {
-  BOOST: { ru: 'Поднять карточку', kk: 'Картаны көтеру' },
-  TOP_CATEGORY: { ru: 'TOP категории', kk: 'TOP санаттары' },
-  PROMOTED_PROMOTION: { ru: 'Продвинуть акцию', kk: 'Акцияны насихаттау' },
-  FEATURED_BUSINESS: { ru: 'Популярное место', kk: 'Танымал орын' },
-  VIP_BANNER: { ru: 'VIP-баннер', kk: 'VIP-banner' },
+  BOOST: { ru: 'Продвижение в категории', kk: 'Санатта ілгерілету' },
+  TOP_CATEGORY: { ru: 'ТОП категории', kk: 'Санатта ТОП' },
+  PROMOTED_PROMOTION: { ru: 'Продвижение акции', kk: 'Акцияны насихаттау' },
+  FEATURED_BUSINESS: { ru: 'Продвижение на главной', kk: 'Басты бетте ілгерілету' },
+  VIP_BANNER: { ru: 'Баннер на главной', kk: 'Басты бетте баннер' },
   PACKAGE: { ru: 'Пакет', kk: 'Пакет' },
 };
 
@@ -80,12 +81,13 @@ export function productLabel(locale: AppLocale, code?: string | null): string {
   return pick(locale, PRODUCT_CODE[code] ?? { ru: code, kk: code });
 }
 
+/** Owner-facing placement names (6.13M.1). Prefer code map over API/DB seed names. */
 const PLACEMENT_CODE: Record<string, L> = {
-  HOME_VIP_BANNER: { ru: 'VIP-баннер на главной', kk: 'Басты бетте VIP-banner' },
-  HOME_FEATURED: { ru: 'Популярные места', kk: 'Танымал орындар' },
-  HOME_PROMOTIONS: { ru: 'Продвигаемые акции', kk: 'Насихатталған акциялар' },
-  CATEGORY_TOP: { ru: 'TOP категории', kk: 'TOP санаттары' },
-  CATEGORY_BOOST: { ru: 'Поднятые карточки', kk: 'Көтерілген карточкалар' },
+  HOME_VIP_BANNER: { ru: 'Баннер на главной', kk: 'Басты бетте баннер' },
+  HOME_FEATURED: { ru: 'Продвижение на главной', kk: 'Басты бетте ілгерілету' },
+  HOME_PROMOTIONS: { ru: 'Продвижение акции', kk: 'Акцияны насихаттау' },
+  CATEGORY_TOP: { ru: 'ТОП категории', kk: 'Санатта ТОП' },
+  CATEGORY_BOOST: { ru: 'Продвижение в категории', kk: 'Санатта ілгерілету' },
   SEARCH_TOP: { ru: 'Поиск (топ)', kk: 'Іздеу (топ)' },
   MAP_FEATURED: { ru: 'Карта (избранное)', kk: 'Карта (таңдаулылар)' },
 };
@@ -95,6 +97,9 @@ export function placementLabel(
   code?: string | null,
   name?: string | null,
 ): string {
+  if (code && PLACEMENT_CODE[code]) {
+    return pick(locale, PLACEMENT_CODE[code]!);
+  }
   if (name) return name;
   if (!code) return '—';
   return pick(locale, PLACEMENT_CODE[code] ?? { ru: code, kk: code });
@@ -124,6 +129,58 @@ const PAYMENT_STATUS: Record<string, L> = {
 
 export function paymentStatusLabel(locale: AppLocale, status: string): string {
   return pick(locale, PAYMENT_STATUS[status] ?? { ru: status, kk: status });
+}
+
+/** Owner plan billing rows (PlanPayment), distinct from ad Payment. */
+const PLAN_PAYMENT_STATUS: Record<string, L> = {
+  PENDING: { ru: 'Ожидает подтверждения', kk: 'Растау күтілуде' },
+  COMPLETED: { ru: 'Подтверждена', kk: 'Расталған' },
+  CANCELLED: { ru: 'Отменена', kk: 'Болдырылмаған' },
+};
+
+export function planPaymentStatusLabel(locale: AppLocale, status: string): string {
+  return pick(locale, PLAN_PAYMENT_STATUS[status] ?? { ru: status, kk: status });
+}
+
+/** Short owner-facing ad product explanations (6.13M.5) — matches current serving behavior. */
+const PRODUCT_OWNER_DESCRIPTION: Record<string, L> = {
+  VIP_BANNER: {
+    ru: 'Крупное рекламное размещение на главном экране QalaGo.',
+    kk: 'QalaGo басты экранында ірі жарнамалық орналастыру.',
+  },
+  FEATURED_BUSINESS: {
+    ru: 'Ваше заведение в блоке рекомендованных на главной.',
+    kk: 'Заведениеңіз басты беттегі ұсынылған блокта.',
+  },
+  PROMOTED_PROMOTION: {
+    ru: 'Выбранная акция получает платное размещение на главной.',
+    kk: 'Таңдалған акция басты бетте ақылы орналастыру алады.',
+  },
+  TOP_CATEGORY: {
+    ru: 'Заведение в отдельном спонсорском блоке вверху категории.',
+    kk: 'Заведение санаттың жоғарғы бөлек спонсорлық блокында.',
+  },
+  BOOST: {
+    ru: 'Дополнительное спонсорское размещение внутри ленты категории.',
+    kk: 'Санат тізімінің ішінде қосымша спонсорлық орналастыру.',
+  },
+};
+
+export function productOwnerDescription(locale: AppLocale, code?: string | null): string {
+  if (!code) return '';
+  return pick(locale, PRODUCT_OWNER_DESCRIPTION[code] ?? { ru: '', kk: '' });
+}
+
+const CAMPAIGN_GROUP_TITLE: Record<string, L> = {
+  active: { ru: 'Активные', kk: 'Белсенді' },
+  scheduled: { ru: 'Запланированные', kk: 'Жоспарланған' },
+  moderation: { ru: 'На модерации', kk: 'Модерацияда' },
+  finished: { ru: 'Завершённые', kk: 'Аяқталған' },
+  other: { ru: 'Другие', kk: 'Басқа' },
+};
+
+export function campaignOwnerGroupTitle(locale: AppLocale, bucket: string): string {
+  return pick(locale, CAMPAIGN_GROUP_TITLE[bucket] ?? { ru: bucket, kk: bucket });
 }
 
 const CAMPAIGN_STATUS: Record<string, L> = {
@@ -187,14 +244,14 @@ export function vipModerationNotice(
   const creativeStatus = campaign.creative?.moderationStatus;
   if (creativeStatus === 'DRAFT' || creativeStatus === 'REJECTED') {
     return pick(locale, {
-      ru: 'Отправьте креатив на модерацию, чтобы начать проверку VIP-баннера.',
-      kk: 'VIP-banner тексеруін бастау үшін креативті модерацияға жіберіңіз.',
+      ru: 'Отправьте креатив на модерацию, чтобы начать проверку баннера на главной.',
+      kk: 'Басты бетте бannerді тексеруді бастау үшін креативті модерацияға жіберіңіз.',
     });
   }
   if (creativeStatus === 'PENDING' || campaign.status === 'PENDING_MODERATION') {
     return pick(locale, {
-      ru: 'VIP-баннер ожидает одобрения креатива. Период размещения начнётся после модерации.',
-      kk: 'VIP-banner креатив бекітілуді күтуде. Орналастыру мерзімі модерациядан кейін басталады.',
+      ru: 'Баннер на главной ожидает одобрения креатива. Период размещения начнётся после модерации.',
+      kk: 'Басты бетте бanner креатив бекітілуді күтуде. Орналастыру мерзімі модерациядан кейін басталады.',
     });
   }
   return null;

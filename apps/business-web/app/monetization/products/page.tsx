@@ -2,7 +2,8 @@
 
 import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { MonetizationProduct, ownerApi } from '@/lib/api';
 import { useMonetizationContext } from '@/components/monetization/monetization-shell';
 import {
@@ -11,15 +12,33 @@ import {
   formatKzt,
   parseApiError,
   productLabel,
+  productOwnerDescription,
   purchaseActionLabel,
   purchaseStateLabel,
 } from '@/lib/monetization-utils';
 import { monetizationProductsPageMeta } from '@/lib/owner-visual-copy';
+import {
+  promoteSubjectBusinessLabel,
+  promoteSubjectPromotionLabel,
+  promoteBackToSubjectChoice,
+  promoteWhatTitle,
+} from '@/lib/owner-visual-copy';
+import type { MonetizationPromoteSubject } from '@/lib/monetization-owner-ui';
+import {
+  filterProductsByPromoteSubject,
+} from '@/lib/monetization-owner-ui';
 import type { MonetizationPurchaseState } from '@/lib/api';
+
+function parseSubject(raw: string | null): MonetizationPromoteSubject | null {
+  if (raw === 'business' || raw === 'promotion') return raw;
+  return null;
+}
 
 export default function MonetizationProductsPage() {
   const locale = useLocale();
   const ui = useUi();
+  const searchParams = useSearchParams();
+  const subject = parseSubject(searchParams.get('subject'));
 
   const { token, business } = useMonetizationContext();
   const [products, setProducts] = useState<MonetizationProduct[]>([]);
@@ -57,36 +76,24 @@ export default function MonetizationProductsPage() {
     return () => {
       cancelled = true;
     };
-  }, [token, business]);
+  }, [token, business, locale]);
 
-  return (
-    <>
-      <header className="page-header">
-        <div>
-          <h1>{ui.__ebd04c}</h1>
-          <p className="page-header-meta">
-            {monetizationProductsPageMeta(locale, business.title)}
-          </p>
-        </div>
-      </header>
+  const visibleProducts = useMemo(() => {
+    if (!subject) return [];
+    return filterProductsByPromoteSubject(products, subject);
+  }, [products, subject]);
 
-      {error && <div className="alert alert-error">{error}</div>}
-      {loading && <p style={{ color: 'var(--text-muted)' }}>{ui.__c53959}</p>}
-
-      {!loading && products.length === 0 && (
-        <section className="form-card">
-          <p style={{ color: 'var(--text-muted)' }}>{ui.____187ccf}</p>
-        </section>
-      )}
-
+  function renderProductGrid() {
+    return (
       <div className="catalog-grid">
-        {products.map((product) => {
+        {visibleProducts.map((product) => {
           const minPrice = product.durations.reduce(
             (min, d) => (d.finalPrice < min ? d.finalPrice : min),
             product.durations[0]?.finalPrice ?? Infinity,
           );
           const minDuration = product.durations[0];
           const state = purchaseStates[product.code];
+          const ownerDesc = productOwnerDescription(locale, product.code);
           const detail =
             state?.state === 'ACTIVE' && state.activeUntil
               ? ui.__c6125a
@@ -119,13 +126,13 @@ export default function MonetizationProductsPage() {
                   </span>
                 )}
               </div>
+              {ownerDesc && (
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{ownerDesc}</p>
+              )}
               {detail && (
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', margin: '0 0 8px' }}>
                   {detail}
                 </p>
-              )}
-              {product.description && (
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{product.description}</p>
               )}
               {product.durations.length > 0 && (
                 <p style={{ margin: '12px 0' }}>
@@ -152,6 +159,55 @@ export default function MonetizationProductsPage() {
           );
         })}
       </div>
+    );
+  }
+
+  return (
+    <>
+      <header className="page-header">
+        <div>
+          <h1>{ui.__ebd04c}</h1>
+          <p className="page-header-meta">
+            {monetizationProductsPageMeta(locale, business.title)}
+          </p>
+        </div>
+        {subject && (
+          <Link href="/monetization/products" className="btn btn-ghost btn-sm">
+            {promoteBackToSubjectChoice(locale)}
+          </Link>
+        )}
+      </header>
+
+      {error && <div className="alert alert-error">{error}</div>}
+      {loading && <p style={{ color: 'var(--text-muted)' }}>{ui.__c53959}</p>}
+
+      {!loading && products.length === 0 && (
+        <section className="form-card">
+          <p style={{ color: 'var(--text-muted)' }}>{ui.____187ccf}</p>
+        </section>
+      )}
+
+      {!loading && products.length > 0 && !subject && (
+        <section className="form-card" style={{ maxWidth: 640 }}>
+          <h2 style={{ marginTop: 0 }}>{promoteWhatTitle(locale)}</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <Link href="/monetization/products?subject=business" className="btn">
+              {promoteSubjectBusinessLabel(locale)}
+            </Link>
+            <Link href="/monetization/products?subject=promotion" className="btn btn-secondary">
+              {promoteSubjectPromotionLabel(locale)}
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {!loading && subject && visibleProducts.length === 0 && (
+        <section className="form-card">
+          <p style={{ color: 'var(--text-muted)' }}>{ui.____187ccf}</p>
+        </section>
+      )}
+
+      {!loading && subject && visibleProducts.length > 0 && renderProductGrid()}
     </>
   );
 }

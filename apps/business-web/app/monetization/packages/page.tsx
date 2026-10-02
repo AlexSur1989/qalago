@@ -12,6 +12,7 @@ import {
   parseApiError,
   productLabel,
 } from '@/lib/monetization-utils';
+import { adPackagesNotSubscriptionPlans } from '@/lib/owner-visual-copy';
 
 export default function MonetizationPackagesPage() {
   const locale = useLocale();
@@ -46,6 +47,9 @@ export default function MonetizationPackagesPage() {
         <div>
           <h1>{ui.__13dad9}</h1>
           <p className="page-header-meta">{ui.____724c24}</p>
+          <p className="page-header-meta" style={{ marginTop: 4 }}>
+            {adPackagesNotSubscriptionPlans(locale)}
+          </p>
         </div>
       </header>
 

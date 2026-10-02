@@ -7,10 +7,12 @@ import type { MonetizationSubNavId } from '@/lib/monetization-utils';
 const ITEMS: { id: MonetizationSubNavId; href: string; label: string }[] = [
   { id: 'overview', href: '/monetization', label: 'Обзор' },
   { id: 'orders', href: '/monetization/orders', label: 'Заказы' },
-  { id: 'payments', href: '/monetization/payments', label: 'Оплаты' },
+  { id: 'payments', href: '/monetization/payments', label: 'Оплаты (реклама)' },
+  { id: 'planPayments', href: '/plans/payments', label: 'Оплаты тарифов' },
   { id: 'campaigns', href: '/monetization/campaigns', label: 'Кампании' },
   { id: 'creatives', href: '/monetization/creatives', label: 'Креативы' },
   { id: 'placements', href: '/monetization/placements', label: 'Рекламные места' },
+  { id: 'pricing', href: '/monetization/pricing', label: 'Цены' },
 ];
 
 type MonetizationSubNavProps = {

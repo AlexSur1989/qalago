@@ -345,6 +345,159 @@ export function monetizationProductsPageMeta(locale: AppLocale, businessTitle: s
   return pick(locale, MONETIZATION_PRODUCTS_META).replace('${name}', businessTitle);
 }
 
+const MONETIZATION_LANDING_INTRO: L = {
+  ru: 'Тариф QalaGo — возможности заведения и скидка на рекламу. Рекламные размещения покупаются отдельно и не включаются в тариф автоматически.',
+  kk: 'QalaGo тарифі — орын мүмкіндіктері және жарнама жеңілдігі. Жарнамалық орналастырулар бөлек сатып алынады және тарифке автоматты қосылмайды.',
+};
+
+export function monetizationLandingIntro(locale: AppLocale): string {
+  return pick(locale, MONETIZATION_LANDING_INTRO);
+}
+
+const OWNER_MY_PLAN_SECTION: L = {
+  ru: 'Мой тариф',
+  kk: 'Менің тарифім',
+};
+
+export function ownerMyPlanSectionTitle(locale: AppLocale): string {
+  return pick(locale, OWNER_MY_PLAN_SECTION);
+}
+
+const OWNER_ADVERTISING_SECTION: L = {
+  ru: 'Реклама',
+  kk: 'Жарнама',
+};
+
+export function ownerAdvertisingSectionTitle(locale: AppLocale): string {
+  return pick(locale, OWNER_ADVERTISING_SECTION);
+}
+
+const PLAN_PENDING_PAYMENT_TITLE: L = {
+  ru: 'Ожидает подтверждения оплаты',
+  kk: 'Төлем растауы күтілуде',
+};
+
+const PLAN_PENDING_PAYMENT_BODY: L = {
+  ru: 'Заявка на тариф «${tier}» (${amount} ₸) отправлена. После подтверждения администратором тариф активируется.',
+  kk: '«${tier}» тарифіне өтінім (${amount} ₸) жіберілді. Әкімші растағаннан кейін тариф белсенді болады.',
+};
+
+export function planPendingPaymentTitle(locale: AppLocale): string {
+  return pick(locale, PLAN_PENDING_PAYMENT_TITLE);
+}
+
+export function planPendingPaymentBody(
+  locale: AppLocale,
+  tierName: string,
+  amountKzt: number,
+): string {
+  const amount = amountKzt.toLocaleString(locale === 'kk' ? 'kk-KZ' : 'ru-RU');
+  return pick(locale, PLAN_PENDING_PAYMENT_BODY)
+    .replace('${tier}', tierName)
+    .replace('${amount}', amount);
+}
+
+const PLAN_RENEW_PERIOD_HINT: L = {
+  ru: 'Продлевает текущий тариф: срок добавляется к оставшимся дням подписки.',
+  kk: 'Ағымдағы тарифті ұзартады: мерзім қалған күндерге қосылады.',
+};
+
+export function planSameTierRenewalHint(locale: AppLocale): string {
+  return pick(locale, PLAN_RENEW_PERIOD_HINT);
+}
+
+const PLAN_PURCHASE_CHOOSE: L = { ru: 'Выбрать тариф', kk: 'Тариф таңдау' };
+const PLAN_PURCHASE_RENEW: L = { ru: 'Продлить', kk: 'Ұзарту' };
+const PLAN_PURCHASE_UPGRADE: L = { ru: 'Перейти', kk: 'Ауысу' };
+
+export function planPurchaseActionLabel(
+  locale: AppLocale,
+  kind: 'choose' | 'renew' | 'upgrade',
+): string {
+  switch (kind) {
+    case 'renew':
+      return pick(locale, PLAN_PURCHASE_RENEW);
+    case 'upgrade':
+      return pick(locale, PLAN_PURCHASE_UPGRADE);
+    default:
+      return pick(locale, PLAN_PURCHASE_CHOOSE);
+  }
+}
+
+const PLAN_DOWNGRADE_DISABLED: L = {
+  ru: 'Понижение тарифа недоступно, пока действует текущий.',
+  kk: 'Ағымдағы тариф белсенді кезде төмендеу мүмкін емес.',
+};
+
+export function planDowngradeDisabledHint(locale: AppLocale): string {
+  return pick(locale, PLAN_DOWNGRADE_DISABLED);
+}
+
+const PROMOTE_WHAT_TITLE: L = {
+  ru: 'Что вы хотите продвинуть?',
+  kk: 'Нені насихаттағыңыз келеді?',
+};
+
+const PROMOTE_SUBJECT_BUSINESS: L = {
+  ru: 'Заведение',
+  kk: 'Орын',
+};
+
+const PROMOTE_SUBJECT_PROMOTION: L = {
+  ru: 'Акцию',
+  kk: 'Акция',
+};
+
+export function promoteWhatTitle(locale: AppLocale): string {
+  return pick(locale, PROMOTE_WHAT_TITLE);
+}
+
+export function promoteSubjectBusinessLabel(locale: AppLocale): string {
+  return pick(locale, PROMOTE_SUBJECT_BUSINESS);
+}
+
+export function promoteSubjectPromotionLabel(locale: AppLocale): string {
+  return pick(locale, PROMOTE_SUBJECT_PROMOTION);
+}
+
+const PROMOTE_BACK_TO_CHOICE: L = {
+  ru: '← Выбор типа продвижения',
+  kk: '← Насихаттау түрін таңдау',
+};
+
+export function promoteBackToSubjectChoice(locale: AppLocale): string {
+  return pick(locale, PROMOTE_BACK_TO_CHOICE);
+}
+
+const MONETIZATION_AD_PRODUCTS_HINT: L = {
+  ru: 'Баннер на главной, продвижение на главной, ТОП категории и др.',
+  kk: 'Басты бетте баннер, басты бетте ілгерілету, санатта ТОП және т.б.',
+};
+
+export function monetizationAdProductsHint(locale: AppLocale): string {
+  return pick(locale, MONETIZATION_AD_PRODUCTS_HINT);
+}
+
+const AD_PACKAGES_NOT_PLANS: L = {
+  ru: 'Рекламные пакеты — наборы размещений, не подписка на тариф QalaGo.',
+  kk: 'Жарнама пакеттері — орналастыру жиынтықтары, QalaGo тарифіне жазылу емес.',
+};
+
+export function adPackagesNotSubscriptionPlans(locale: AppLocale): string {
+  return pick(locale, AD_PACKAGES_NOT_PLANS);
+}
+
+const PLAN_STATUS_ACTIVE: L = { ru: 'Активен', kk: 'Белсенді' };
+const PLAN_STATUS_PENDING: L = { ru: 'Ожидает оплаты', kk: 'Төлем күтілуде' };
+
+export function ownerPlanStatusActiveLabel(locale: AppLocale): string {
+  return pick(locale, PLAN_STATUS_ACTIVE);
+}
+
+export function ownerPlanStatusPendingLabel(locale: AppLocale): string {
+  return pick(locale, PLAN_STATUS_PENDING);
+}
+
 const MONETIZATION_CAMPAIGN_META: L = {
   ru: 'Кампания #${id}',
   kk: 'Науқан #${id}',

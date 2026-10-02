@@ -2,9 +2,40 @@ export type MonetizationSubNavId =
   | 'overview'
   | 'orders'
   | 'payments'
+  | 'planPayments'
   | 'campaigns'
   | 'creatives'
-  | 'placements';
+  | 'placements'
+  | 'pricing';
+
+/** Monetization area subnav routes (includes plan billing separate from ad payments). */
+export const MONETIZATION_SUBNAV_HREFS: readonly string[] = [
+  '/monetization',
+  '/monetization/orders',
+  '/monetization/payments',
+  '/plans/payments',
+  '/monetization/campaigns',
+  '/monetization/creatives',
+  '/monetization/placements',
+  '/monetization/pricing',
+];
+
+/** Parse admin KZT amount (positive integer). */
+export function parseAdminProductPriceAmount(raw: string): number | null {
+  const trimmed = raw.trim().replace(/\s/g, '');
+  if (!/^\d+$/.test(trimmed)) return null;
+  const value = Number.parseInt(trimmed, 10);
+  if (!Number.isSafeInteger(value) || value < 1) return null;
+  return value;
+}
+
+export function validateAdminProductPriceAmount(amount: number | null): string | null {
+  if (amount == null) return 'Укажите целую сумму в KZT (минимум 1)';
+  if (!Number.isSafeInteger(amount) || amount < 1) {
+    return 'Цена должна быть положительным целым числом KZT';
+  }
+  return null;
+}
 
 export function formatKzt(amount: number, currency = 'KZT'): string {
   if (currency !== 'KZT') {
@@ -56,15 +87,15 @@ export function formatDuration(days: number | null, hours: number | null): strin
 export function productLabel(code?: string | null): string {
   switch (code) {
     case 'BOOST':
-      return 'Поднять карточку';
+      return 'Продвижение в категории';
     case 'TOP_CATEGORY':
-      return 'TOP категории';
+      return 'ТОП категории';
     case 'PROMOTED_PROMOTION':
-      return 'Продвинуть акцию';
+      return 'Продвижение акции';
     case 'FEATURED_BUSINESS':
-      return 'Популярное место';
+      return 'Продвижение на главной';
     case 'VIP_BANNER':
-      return 'VIP-баннер';
+      return 'Баннер на главной';
     case 'PACKAGE':
       return 'Пакет';
     default:
@@ -75,15 +106,15 @@ export function productLabel(code?: string | null): string {
 export function placementLabel(code?: string | null): string {
   switch (code) {
     case 'HOME_VIP_BANNER':
-      return 'VIP-баннер на главной';
+      return 'Баннер на главной';
     case 'HOME_FEATURED':
-      return 'Популярные места';
+      return 'Продвижение на главной';
     case 'HOME_PROMOTIONS':
-      return 'Продвигаемые акции';
+      return 'Продвижение акции';
     case 'CATEGORY_TOP':
-      return 'TOP категории';
+      return 'ТОП категории';
     case 'CATEGORY_BOOST':
-      return 'Поднятые карточки';
+      return 'Продвижение в категории';
     case 'SEARCH_TOP':
       return 'Поиск (топ)';
     case 'MAP_FEATURED':

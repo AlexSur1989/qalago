@@ -13,9 +13,12 @@ import {
   placementLabel,
   planTierLabel,
   productLabel,
+  productOwnerDescription,
   vipCampaignDisplayStatus,
   vipModerationNotice,
 } from './monetization-utils';
+import { adPackagesNotSubscriptionPlans } from './owner-visual-copy';
+import { filterProductsByPromoteSubject } from './monetization-owner-ui';
 
 const ru = 'ru' as const;
 
@@ -31,13 +34,42 @@ describe('monetization-utils', () => {
     expect(formatDuration(ru, 7, null)).toBe('7 дней');
   });
 
-  it('maps product labels', () => {
-    expect(productLabel(ru, 'TOP_CATEGORY')).toBe('TOP категории');
-    expect(productLabel(ru, 'VIP_BANNER')).toBe('VIP-баннер');
+  const kk = 'kk' as const;
+
+  const OWNER_PLACEMENT_RU: Record<string, string> = {
+    HOME_VIP_BANNER: 'Баннер на главной',
+    HOME_FEATURED: 'Продвижение на главной',
+    HOME_PROMOTIONS: 'Продвижение акции',
+    CATEGORY_TOP: 'ТОП категории',
+    CATEGORY_BOOST: 'Продвижение в категории',
+  };
+
+  const OWNER_PLACEMENT_KK: Record<string, string> = {
+    HOME_VIP_BANNER: 'Басты бетте баннер',
+    HOME_FEATURED: 'Басты бетте ілгерілету',
+    HOME_PROMOTIONS: 'Акцияны насихаттау',
+    CATEGORY_TOP: 'Санатта ТОП',
+    CATEGORY_BOOST: 'Санатта ілгерілету',
+  };
+
+  it('maps owner product labels (6.13M.1)', () => {
+    expect(productLabel(ru, 'VIP_BANNER')).toBe('Баннер на главной');
+    expect(productLabel(ru, 'FEATURED_BUSINESS')).toBe('Продвижение на главной');
+    expect(productLabel(kk, 'VIP_BANNER')).toBe('Басты бетте баннер');
+    expect(productLabel(ru, 'VIP_BANNER')).not.toContain('HOME_VIP_BANNER');
   });
 
-  it('maps placement labels', () => {
-    expect(placementLabel(ru, 'HOME_VIP_BANNER')).toBe('VIP-баннер на главной');
+  it('maps all five owner placement labels RU/KK', () => {
+    for (const [code, label] of Object.entries(OWNER_PLACEMENT_RU)) {
+      expect(placementLabel(ru, code)).toBe(label);
+      expect(placementLabel(ru, code, 'VIP баннер на главной из seed')).toBe(label);
+    }
+    for (const [code, label] of Object.entries(OWNER_PLACEMENT_KK)) {
+      expect(placementLabel(kk, code)).toBe(label);
+    }
+  });
+
+  it('falls back to custom placement name for unknown codes', () => {
     expect(placementLabel(ru, 'CUSTOM', 'Кастомное место')).toBe('Кастомное место');
   });
 
@@ -116,6 +148,32 @@ describe('monetization-utils', () => {
         effectivePeriodStarted: false,
       }),
     ).toBe('Начнётся после одобрения');
+  });
+
+  it('provides owner product descriptions without raw placement codes', () => {
+    expect(productOwnerDescription(ru, 'VIP_BANNER')).toContain('главн');
+    expect(productOwnerDescription(kk, 'BOOST')).toMatch(/[Сс]анат/);
+    expect(productLabel(ru, 'VIP_BANNER')).not.toMatch(/HOME_VIP_BANNER/);
+  });
+
+  it('labels ad packages distinct from subscription plans RU/KK', () => {
+    expect(adPackagesNotSubscriptionPlans('ru')).toContain('не подписка');
+    expect(adPackagesNotSubscriptionPlans('kk')).toContain('емес');
+  });
+
+  it('filters products by promote subject', () => {
+    const products = [
+      { code: 'VIP_BANNER' },
+      { code: 'PROMOTED_PROMOTION' },
+      { code: 'BOOST' },
+    ];
+    expect(filterProductsByPromoteSubject(products, 'business').map((p) => p.code)).toEqual([
+      'VIP_BANNER',
+      'BOOST',
+    ]);
+    expect(filterProductsByPromoteSubject(products, 'promotion').map((p) => p.code)).toEqual([
+      'PROMOTED_PROMOTION',
+    ]);
   });
 
   it('detects VIP in package', () => {

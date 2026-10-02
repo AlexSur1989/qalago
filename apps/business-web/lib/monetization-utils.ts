@@ -57,6 +57,9 @@ export const creativeStatusLabel = pres.creativeStatusLabel;
 export const vipCampaignDisplayStatus = pres.vipCampaignDisplayStatus;
 export const vipModerationNotice = pres.vipModerationNotice;
 export const planTierLabel = pres.planTierLabel;
+export const planPaymentStatusLabel = pres.planPaymentStatusLabel;
+export const productOwnerDescription = pres.productOwnerDescription;
+export const campaignOwnerGroupTitle = pres.campaignOwnerGroupTitle;
 export const analyticsActionLabel = pres.analyticsActionLabel;
 
 export function canSubmitCreative(creative?: { moderationStatus?: string } | null): boolean {

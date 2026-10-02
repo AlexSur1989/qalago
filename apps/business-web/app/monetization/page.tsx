@@ -3,7 +3,13 @@
 import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { BusinessPlanStatus, MonetizationCampaign, MonetizationOrder, ownerApi } from '@/lib/api';
+import {
+  BusinessPlanStatus,
+  MonetizationCampaign,
+  MonetizationOrder,
+  PlanPaymentRow,
+  ownerApi,
+} from '@/lib/api';
 import { useMonetizationContext } from '@/components/monetization/monetization-shell';
 import { canViewPayments } from '@/lib/business-access';
 import {
@@ -14,10 +20,22 @@ import {
   orderStatusLabel,
   parseApiError,
   planTierLabel,
+  productLabel,
 } from '@/lib/monetization-utils';
 import { BackofficeKpiCard, BackofficeKpiGrid } from '@qalago/brand/dashboards';
 import { BackofficeLoadingState } from '@qalago/brand/states';
-import { monetizationAdvertisingDiscountLine } from '@/lib/owner-visual-copy';
+import {
+  monetizationAdProductsHint,
+  monetizationAdvertisingDiscountLine,
+  monetizationLandingIntro,
+  ownerAdvertisingSectionTitle,
+  ownerMyPlanSectionTitle,
+  ownerPlanStatusActiveLabel,
+  ownerPlanStatusPendingLabel,
+  planPendingPaymentTitle,
+  planValidUntilPrefix,
+} from '@/lib/owner-visual-copy';
+import { findPendingPlanPayment, planCatalogDisplayName } from '@/lib/plan-owner-ui';
 
 export default function MonetizationOverviewPage() {
   const locale = useLocale();
@@ -27,6 +45,7 @@ export default function MonetizationOverviewPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [planStatus, setPlanStatus] = useState<BusinessPlanStatus | null>(null);
+  const [pendingPayment, setPendingPayment] = useState<PlanPaymentRow | null>(null);
   const [orders, setOrders] = useState<MonetizationOrder[]>([]);
   const [campaigns, setCampaigns] = useState<MonetizationCampaign[]>([]);
 
@@ -39,12 +58,16 @@ export default function MonetizationOverviewPage() {
       canViewPayments(access)
         ? ownerApi.getBusinessPlan(token, business.id)
         : Promise.resolve(null),
+      canViewPayments(access)
+        ? ownerApi.listPlanPayments(token, business.id).then((r) => r.items)
+        : Promise.resolve([] as PlanPaymentRow[]),
       ownerApi.listMonetizationOrders(token, business.id),
       ownerApi.listMonetizationCampaigns(token, business.id),
     ])
-      .then(([plan, orderList, campaignList]) => {
+      .then(([plan, planPayments, orderList, campaignList]) => {
         if (cancelled) return;
         setPlanStatus(plan);
+        setPendingPayment(findPendingPlanPayment(planPayments) ?? null);
         setOrders(orderList);
         setCampaigns(campaignList);
       })
@@ -58,7 +81,7 @@ export default function MonetizationOverviewPage() {
     return () => {
       cancelled = true;
     };
-  }, [token, business.id, access]);
+  }, [token, business.id, access, locale]);
 
   const activeCount = campaigns.filter(
     (c) => (c.effectiveStatus ?? c.status) === 'ACTIVE',
@@ -72,6 +95,10 @@ export default function MonetizationOverviewPage() {
   const recentOrders = [...orders]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
+
+  const planStatusLabel = pendingPayment
+    ? ownerPlanStatusPendingLabel(locale)
+    : ownerPlanStatusActiveLabel(locale);
 
   return (
     <>
@@ -89,27 +116,58 @@ export default function MonetizationOverviewPage() {
       {error && <div className="alert alert-error">{error}</div>}
 
       <section className="form-card" style={{ marginBottom: 16 }}>
-        <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.92rem' }}>{ui.____a5f597}</p>
+        <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.92rem' }}>
+          {monetizationLandingIntro(locale)}
+        </p>
       </section>
 
       {loading ? (
         <BackofficeLoadingState density="section" label={ui.text_89d69a} />
       ) : (
         <>
+          <section className="form-card" style={{ marginBottom: 16 }}>
+            <div className="card-header" style={{ marginBottom: 12 }}>
+              <h2 style={{ margin: 0 }}>{ownerMyPlanSectionTitle(locale)}</h2>
+              <Link href="/plan" className="card-link">{ui.ownerNavPlan}</Link>
+            </div>
+            {planStatus ? (
+              <>
+                <p style={{ margin: '0 0 8px' }}>
+                  <strong>{planTierLabel(locale, planStatus.effectiveTier)}</strong>
+                  <span className={`tag tag-${pendingPayment ? 'warning' : 'success'}`} style={{ marginLeft: 8 }}>
+                    {planStatusLabel}
+                  </span>
+                </p>
+                {planStatus.expiresAt && (
+                  <p style={{ margin: '0 0 8px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                    {planValidUntilPrefix(locale)}{' '}
+                    {new Date(planStatus.expiresAt).toLocaleDateString(
+                      locale === 'kk' ? 'kk-KZ' : 'ru-RU',
+                    )}
+                  </p>
+                )}
+                <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                  {monetizationAdvertisingDiscountLine(
+                    locale,
+                    planStatus.limits.advertisingDiscountPercent,
+                  )}
+                </p>
+                {pendingPayment && (
+                  <p style={{ margin: '12px 0 0', fontSize: '0.9rem' }} role="status">
+                    <strong>{planPendingPaymentTitle(locale)}:</strong>{' '}
+                    {planCatalogDisplayName(locale, pendingPayment.tier)} —{' '}
+                    {pendingPayment.amountKzt.toLocaleString(locale === 'kk' ? 'kk-KZ' : 'ru-RU')} ₸
+                  </p>
+                )}
+              </>
+            ) : (
+              <p style={{ margin: 0, color: 'var(--text-muted)' }}>{ui.text_ab6cb7}</p>
+            )}
+          </section>
+
+          <h2 style={{ fontSize: '1.1rem', margin: '0 0 12px' }}>{ownerAdvertisingSectionTitle(locale)}</h2>
+
           <BackofficeKpiGrid>
-            <BackofficeKpiCard
-              label={ui.ownerNavPlan}
-              icon="plan"
-              value={planStatus ? planTierLabel(locale, planStatus.effectiveTier) : '—'}
-              secondary={
-                planStatus
-                  ? monetizationAdvertisingDiscountLine(
-                      locale,
-                      planStatus.limits.advertisingDiscountPercent,
-                    )
-                  : undefined
-              }
-            />
             <BackofficeKpiCard label={ui.__bb49cc} icon="megaphone" value={activeCount} />
             <BackofficeKpiCard label={ui.text_b911f5} icon="megaphone" value={scheduledCount} />
             <BackofficeKpiCard label={ui.__d9d74d} icon="moderation" value={moderationCount} />
@@ -159,7 +217,7 @@ export default function MonetizationOverviewPage() {
                     <Link href="/monetization/products">
                       <strong>{ui.__ebd04c}</strong>
                     </Link>
-                    <span>{ui.top__vip__239541}</span>
+                    <span>{monetizationAdProductsHint(locale)}</span>
                   </div>
                 </li>
                 <li className="action-item">
@@ -210,7 +268,7 @@ export default function MonetizationOverviewPage() {
                         <tr key={c.id}>
                           <td>
                             <Link href={`/monetization/campaigns/${c.id}`}>
-                              {c.product?.name ?? c.product?.code}
+                              {productLabel(locale, c.product?.code)}
                             </Link>
                           </td>
                           <td>
@@ -234,7 +292,7 @@ export default function MonetizationOverviewPage() {
                     <div key={c.id} className="promo-item">
                       <div className="promo-body">
                         <Link href={`/monetization/campaigns/${c.id}`}>
-                          <strong>{c.product?.name ?? c.product?.code}</strong>
+                          <strong>{productLabel(locale, c.product?.code)}</strong>
                         </Link>
                         <span className={monetizationStatusClass(status)}>
                           {campaignStatusLabel(locale, status)}

@@ -189,11 +189,14 @@ export type PlanPaymentRow = {
   businessId: string;
   tier: string;
   amountKzt: number;
+  periodDays?: number | null;
   status: string;
   isMock: boolean;
-  paidAt: string;
+  provider?: string;
+  paidAt: string | null;
   expiresAt: string | null;
   createdAt: string;
+  updatedAt?: string;
 };
 
 export type BusinessPlanStatus = {
@@ -1140,6 +1143,13 @@ export const ownerApi = {
       `/businesses/${businessId}/plan/payments`,
       { token },
     ),
+
+  createPlanPurchase: (token: string, businessId: string, tier: string, idempotencyKey?: string) =>
+    api<PlanPaymentRow>(`/businesses/${businessId}/plan/purchases`, {
+      method: 'POST',
+      token,
+      body: JSON.stringify({ tier, idempotencyKey }),
+    }),
 
   mockPlanCheckout: (token: string, businessId: string, tier: string) =>
     api<{

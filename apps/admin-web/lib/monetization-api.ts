@@ -168,6 +168,32 @@ export type MonetizationProductRow = {
   }>;
 };
 
+export type AdminProductPriceRow = {
+  id: string;
+  productId: string;
+  productCode: string;
+  productName: string;
+  productType: string;
+  placementCode: string | null;
+  cityId: string | null;
+  citySlug: string | null;
+  cityNameRu: string | null;
+  durationHours: number | null;
+  durationDays: number | null;
+  price: number;
+  currency: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AdminAdvertisingProductRow = {
+  id: string;
+  code: string;
+  name: string;
+  type: string;
+};
+
 export type MonetizationPackageRow = {
   code: string;
   name: string;
@@ -296,4 +322,50 @@ export const monetizationApi = {
 
   listPackages: (token: string) =>
     api<MonetizationPackageRow[]>('/monetization/packages', { token }),
+
+  listAdProducts: (token: string) =>
+    api<AdminAdvertisingProductRow[]>('/admin/monetization/ad-products', { token }),
+
+  listProductPrices: (
+    token: string,
+    params: { citySlug?: string; productId?: string; isActive?: boolean } = {},
+  ) => {
+    const search = new URLSearchParams();
+    if (params.citySlug) search.set('citySlug', params.citySlug);
+    if (params.productId) search.set('productId', params.productId);
+    if (params.isActive !== undefined) search.set('isActive', String(params.isActive));
+    const q = search.toString();
+    return api<AdminProductPriceRow[]>(
+      `/admin/monetization/product-prices${q ? `?${q}` : ''}`,
+      { token },
+    );
+  },
+
+  createProductPrice: (
+    token: string,
+    body: {
+      productId: string;
+      cityId: string;
+      durationHours?: number;
+      durationDays?: number;
+      price: number;
+      isActive?: boolean;
+    },
+  ) =>
+    api<AdminProductPriceRow>('/admin/monetization/product-prices', {
+      method: 'POST',
+      token,
+      body: JSON.stringify(body),
+    }),
+
+  updateProductPrice: (
+    token: string,
+    id: string,
+    body: { price?: number; isActive?: boolean },
+  ) =>
+    api<AdminProductPriceRow>(`/admin/monetization/product-prices/${id}`, {
+      method: 'PATCH',
+      token,
+      body: JSON.stringify(body),
+    }),
 };
