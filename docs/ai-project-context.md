@@ -113,7 +113,7 @@
 | **KZ-C.3** | **CLOSED — PUBLIC DTO PRIVACY HARDENING** — explicit guest mappers; no public `ownerId` / review `userId` / plan fields; promotions nested business summary hardened |
 | **PROD.0** | **PASS — READ-ONLY PRODUCTION SAFETY AUDIT** — no product diff; baseline **`03f1021`** |
 | **PROD.2** | **CLOSED — PRODUCTION ENVIRONMENT CONTRACT** — templates, `QALAGO_ENV` profiles, strict validation, docs **`docs/infra/production-environment.md`** |
-| **Next** | **PROD.3** (object storage) or **KZ-C.4** — **agree before start**; **PROD.1 VPS not started** |
+| **Next** | **PROD.3** (object storage) — **agree before start**; **PROD.1 VPS not started** |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
@@ -226,7 +226,8 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 |-------|--------|--------|
 | **WEB-HOME.1** | **PASS (read-only audit)** | Gaps: Web **NEARBY** null; no **Popular**; Flutter ignores **`home/sections`**. Baseline **`aa08524…`**. |
 | **WEB-HOME.2** | **CLOSED / PASS (2A live QA)** | Web **NEARBY** + **`HOME_POPULAR`**; migrations applied; live geo/fallback/Popular/Admin config QA on **:3005**. See **`docs/changelog.md`** WEB-HOME.2A. |
-| **WEB-HOME.3** | **NOT STARTED** | Flutter consumes **`GET /home/sections`** — agree before start. |
+| **WEB-HOME.3** | **CLOSED / PASS** | Flutter Home **`platform=APP`** config-driven order + fallback; shared Admin authority with Consumer Web. |
+| **WEB-HOME (umbrella)** | **CLOSED** | **WEB-HOME.1–3** complete |
 
 - **6.11F.3 PASS** — public SEO infrastructure (sitemap, robots, temporary business detail **noindex**, etc.).
 - **6.12A.9.3.4 PASS (physical QA finalized)** — Consumer Web discovery/detail physical context; **QA-001 CLOSED**.

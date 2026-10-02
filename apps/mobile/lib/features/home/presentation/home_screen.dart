@@ -1,29 +1,20 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../shared/navigation/business_traffic_source.dart';
-import '../../../shared/navigation/open_business.dart';
-import '../../../core/providers/city_catalog_provider.dart';
 import '../../../core/deep_links/deep_link_session_city.dart';
+import '../../../core/providers/city_catalog_provider.dart';
 import '../../../core/locale/app_locale_provider.dart';
-import '../../../core/locale/localized_content.dart';
 import '../../auth/presentation/dev_quick_login_panel.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../ads/providers/ad_serve_provider.dart';
-import '../../ads/widgets/home_ad_slots.dart';
-import '../../catalog/data/catalog_repository.dart';
 import '../../categories/presentation/category_businesses_screen.dart';
+import '../data/home_section_type.dart';
+import '../providers/home_discovery_layout_provider.dart';
 import '../providers/home_organic_recommendations_provider.dart';
+import 'home_discovery_sections.dart';
 import 'home_layout.dart';
-import 'sections/home_categories_section.dart';
 import 'sections/home_header_section.dart';
-import 'sections/home_nearby_section.dart';
-import 'sections/home_popular_section.dart';
-import 'sections/home_promoted_section.dart';
-import 'sections/home_promotions_section.dart';
 import 'sections/home_search_section.dart';
 import '../../../shared/widgets/city_picker.dart';
 import '../../../shared/widgets/empty_city_view.dart';
@@ -39,12 +30,19 @@ class HomeScreen extends ConsumerWidget {
     final isEmptyCity =
         catalogTotalAsync.hasValue && catalogTotalAsync.value == 0;
     final localeCode = resolveLocaleCode(ref.watch(appLocaleCodeProvider));
+    final layoutAsync = ref.watch(homeDiscoveryLayoutProvider);
+    final discoverySections = layoutAsync.when(
+      data: (sections) => sections,
+      loading: () => kHomeDiscoverySectionFallback,
+      error: (_, _stack) => kHomeDiscoverySectionFallback,
+    );
 
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
           color: Theme.of(context).colorScheme.primary,
           onRefresh: () async {
+            ref.invalidate(homeDiscoveryLayoutProvider);
             ref.invalidate(categoriesProvider);
             ref.invalidate(cityCatalogTotalProvider);
             ref.invalidate(businessesProvider);
@@ -92,8 +90,9 @@ class HomeScreen extends ConsumerWidget {
                           isComingSoon: city.isComingSoon,
                           onPickCity: () => showCityPickerSheet(context, ref),
                         )
-                      else ...[
-                        HomeCategoriesSection(
+                      else
+                        HomeDiscoverySections(
+                          sections: discoverySections,
                           localeCode: localeCode,
                           onCategorySelected: (category) {
                             openCategory(
@@ -103,40 +102,6 @@ class HomeScreen extends ConsumerWidget {
                             );
                           },
                         ),
-                        const SizedBox(height: HomeLayout.sectionGap),
-                        const HomeVipBannerSlot(),
-                        // Canonical #5 QalaGo AI — reserved, not rendered in UI.4B.
-                        const SizedBox(height: HomeLayout.sectionGap),
-                        const HomeNearbySection(),
-                        const SizedBox(height: HomeLayout.sectionGap),
-                        const HomePromotedSection(),
-                        const SizedBox(height: HomeLayout.sectionGap),
-                        HomePromotionsSection(
-                          onOrganicPromotionTap: (promotion) {
-                            final business = promotion.business;
-                            if (business == null) return;
-                            unawaited(
-                              ref
-                                  .read(catalogRepositoryProvider)
-                                  .trackPromotionView(
-                                    business.id,
-                                    promotionId: promotion.id,
-                                  ),
-                            );
-                            openBusinessFromPromotion(
-                              context,
-                              promotion,
-                              BusinessTrafficSource.promotions,
-                            );
-                          },
-                          onPaidPromotionTap: (item) {
-                            openAdPromotion(context, item);
-                          },
-                        ),
-                        const SizedBox(height: HomeLayout.sectionGap),
-                        const HomePopularSection(),
-                        // Canonical #8 Events / #11 News — reserved, not rendered.
-                      ],
                     ],
                   ),
                 ),

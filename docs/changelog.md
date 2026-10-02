@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-10-02 — WEB-HOME.3 PASS — Flutter HomeSectionConfig parity
+
+- **Status:** **WEB-HOME.3 PASS — SHARED HOME CONFIG PARITY VERIFIED**. **WEB-HOME STATUS: CLOSED**. **READY TO RETURN TO PROD.3: YES**. **PROD.3 NOT STARTED**.
+- **Starting HEAD:** **`55cf2893b1697d722c762b76380873cffc53af77`**.
+- **Checkpoint (commit):** _(set at commit)_.
+- **Summary:** Flutter Home consumes **`GET /home/sections?citySlug=&platform=APP`** via **`homeDiscoveryLayoutProvider`**; config-driven **`HomeDiscoverySections`** renderer maps all six **`HomeSectionType`** values; fixed chrome unchanged; API failure → **`kHomeDiscoverySectionFallback`** (legacy mobile order). Section gating: widgets not mounted when disabled (Nearby geo / Popular / ad slots). **Tests:** **`home_section_config_test`**, **`home_discovery_layout_test`**, **`home_screen_layout_test` 7/7**, **`home_organic_dedupe_test`**. **Backend APP endpoint verified** (includes **`HOME_POPULAR`**). **Live Admin mobile QA:** deferred to device session (automated order/disable/city/fallback tests PASS). **Consumer Web:** no semantic changes.
+- **Deferred:** Physical Android Admin order/disable walkthrough when device available; iOS physical QA deferred.
+- **Next:** **PROD.3** object storage — agree before start.
+
+---
+
 ## 2026-10-02 — WEB-HOME.2A PASS — Live Web home parity QA + canonical closure
 
 - **Status:** **WEB-HOME.2A PASS — LIVE WEB HOME PARITY QA VERIFIED**. **WEB-HOME.2 STATUS: CLOSED**. **READY FOR WEB-HOME.3: YES**. **PROD.3 NOT STARTED**.

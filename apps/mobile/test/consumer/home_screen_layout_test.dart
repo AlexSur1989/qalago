@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qalago_mobile/core/locale/app_locale_provider.dart';
 import 'package:qalago_mobile/core/location/user_location_provider.dart';
+import 'package:qalago_mobile/features/home/data/home_section_type.dart';
+import 'package:qalago_mobile/features/home/providers/home_discovery_layout_provider.dart';
 import 'package:qalago_mobile/core/providers/city_catalog_provider.dart';
 import 'package:qalago_mobile/core/providers/city_provider.dart';
 import 'package:qalago_mobile/features/ads/data/ad_models.dart';
@@ -51,6 +54,12 @@ Future<void> _pumpHome(
     ProviderScope(
       overrides: [
         cityProvider.overrideWith(() => _UralskCityNotifier()),
+        appLocaleCodeProvider.overrideWith(
+          (ref) => locale.languageCode.startsWith('kk') ? 'kk' : 'ru',
+        ),
+        homeDiscoveryLayoutProvider.overrideWith(
+          (ref) async => kHomeDiscoverySectionFallback,
+        ),
         cityCatalogTotalProvider.overrideWith((ref) async => 20),
         categoriesProvider.overrideWith((ref) async => cats),
         promotionsProvider.overrideWith(
@@ -171,6 +180,10 @@ void main() {
         child: ProviderScope(
           overrides: [
             cityProvider.overrideWith(() => _UralskCityNotifier()),
+            appLocaleCodeProvider.overrideWith((ref) => 'kk'),
+            homeDiscoveryLayoutProvider.overrideWith(
+              (ref) async => kHomeDiscoverySectionFallback,
+            ),
             cityCatalogTotalProvider.overrideWith((ref) async => 20),
             categoriesProvider.overrideWith((ref) async => cats),
             promotionsProvider.overrideWith(
@@ -211,6 +224,10 @@ void main() {
         child: ProviderScope(
           overrides: [
             cityProvider.overrideWith(() => _UralskCityNotifier()),
+            appLocaleCodeProvider.overrideWith((ref) => 'ru'),
+            homeDiscoveryLayoutProvider.overrideWith(
+              (ref) async => kHomeDiscoverySectionFallback,
+            ),
             cityCatalogTotalProvider.overrideWith((ref) async => 20),
             categoriesProvider.overrideWith((ref) async => cats),
             promotionsProvider.overrideWith(

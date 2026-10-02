@@ -6,6 +6,7 @@ import '../../../shared/models/models.dart';
 import '../../../shared/models/business_branch_location.dart';
 import '../../../shared/navigation/business_traffic_source.dart';
 import '../../../shared/utils/audience_distance_bucket.dart';
+import '../../home/data/home_section_type.dart';
 import '../../notifications/data/notification_model.dart';
 import '../../reviews/data/review_pagination.dart';
 
@@ -155,6 +156,25 @@ class CatalogRepository {
     return (response.data as List<dynamic>)
         .map((e) => CategoryModel.fromJson(e as Map<String, dynamic>))
         .toList();
+  }
+
+  /// Public home layout (`platform=APP`). Order matches backend resolution.
+  Future<List<HomeSectionType>> fetchHomeDiscoverySections({
+    required String citySlug,
+    String platform = 'APP',
+  }) async {
+    final response = await _dio.get(
+      '/home/sections',
+      queryParameters: {
+        'citySlug': citySlug,
+        'platform': platform,
+      },
+    );
+    final data = response.data;
+    if (data is List<dynamic>) {
+      return HomeSectionType.parseOrderedList(data);
+    }
+    return const [];
   }
 
   Future<PaginatedBusinesses> fetchBusinesses({

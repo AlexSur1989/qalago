@@ -911,7 +911,19 @@ Consumer Web **CW STATUS: CLOSED** only when:
 
 **HOME_POPULAR (organic, config-gated):** Distinct from paid **`HOME_FEATURED`**. Server **`loadHomePopularSection`**: guest-safe **`POST /ai/recommendations`** (`@Public()` proxy) when orchestrator returns items; else **`GET /businesses`** organic fallback (mirrors Flutter). **Dedupes** paid **`HOME_FEATURED`** business IDs when featured ads loaded. UI **`HomePopularOrganicSection`** horizontal strip; analytics **`BUSINESS_IMPRESSION`** / **`VIEW_BUSINESS`** with **`discoverySurface=HOME_RECOMMENDED`** (organic — not **`AD_*`**). **NEARBY** uses **`NEARBY_LIST`**.
 
-**RSC boundary:** city home remains server-rendered; **NEARBY** is the only geo-driven client island. **WEB-HOME.3** (Flutter consumes **`GET /home/sections`**) **not started**.
+**RSC boundary:** city home remains server-rendered; **NEARBY** is the only geo-driven client island.
+
+### WEB-HOME.3 — Flutter HomeSectionConfig parity (IMPLEMENTED)
+
+**Authority:** Admin → PostgreSQL **`HomeSectionConfig`** → **`GET /api/v1/home/sections?citySlug=&platform=APP|WEB`**. Consumer Web uses **`platform=WEB`**; Flutter Home uses **`platform=APP`** (same resolution rules: global + city override, **`ALL`** platform, sort by **`position`**).
+
+**Flutter fixed chrome (not config-driven):** header, city picker, notifications bell, dev quick login, search, empty-city shell.
+
+**Flutter discovery sections (config-driven order):** **`CATEGORIES`**, **`HOME_VIP_BANNER`**, **`NEARBY`**, **`HOME_FEATURED`** (paid), **`HOME_PROMOTIONS`**, **`HOME_POPULAR`** (organic). Disabled types are not built (no Nearby geo / Popular fetch for absent sections). Unknown future types are ignored safely.
+
+**Failure fallback:** deterministic legacy mobile order (categories → VIP → nearby → featured → promotions → popular) when the public config request fails — Home remains usable offline/degraded.
+
+**Rollout:** Admin layout changes affect **updated mobile builds only**; older app versions keep hardcoded order until upgraded.
 
 **Ads boundary (CW.4):** Consumer Web **does not** call ad serve or emit ad impression/click events.
 
