@@ -16,6 +16,8 @@ build/
 .env.*.local
 !.env.example
 !infra/env/.env.example
+!infra/env/.env.staging.example
+!infra/env/.env.production.example
 
 # Flutter
 apps/mobile/.flutter-plugins

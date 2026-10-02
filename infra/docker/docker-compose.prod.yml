@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: qalago
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
       POSTGRES_DB: qalago
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -27,12 +27,23 @@ services:
       - '3000:3000'
     environment:
       NODE_ENV: production
+      QALAGO_ENV: PRODUCTION
       PORT: 3000
-      DATABASE_URL: postgresql://qalago:${POSTGRES_PASSWORD:-change_me}@postgres:5432/qalago?schema=public
+      DATABASE_URL: postgresql://qalago:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/qalago?schema=public
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
-      OTP_DEBUG: 'false'
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-20m}
+      OTP_DEBUG: "false"
+      DEV_LOGIN_ENABLED: "false"
+      MOCK_PLAN_CHECKOUT_ENABLED: "false"
+      TEST_AUTH_BYPASS_ENABLED: "false"
+      AI_INTEGRATION_ENABLED: ${AI_INTEGRATION_ENABLED:-false}
+      QALAGO_INTERNAL_SERVICE_TOKEN: ${QALAGO_INTERNAL_SERVICE_TOKEN:-}
+      QALAGO_GEOCODING_PROVIDER: ${QALAGO_GEOCODING_PROVIDER:-maptiler}
+      MAPTILER_API_KEY: ${MAPTILER_API_KEY:-}
+      CONSUMER_WEB_BASE_URL: ${CONSUMER_WEB_BASE_URL:?set CONSUMER_WEB_BASE_URL}
+      BUSINESS_WEB_BASE_URL: ${BUSINESS_WEB_BASE_URL:?set BUSINESS_WEB_BASE_URL}
       DEFAULT_CITY_SLUG: uralsk
-      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:?set CORS_ORIGINS}
       UPLOAD_DIR: /app/services/catalog-api/uploads
       MAX_UPLOAD_MB: 5
     volumes:

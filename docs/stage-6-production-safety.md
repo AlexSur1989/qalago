@@ -1,12 +1,18 @@
 # Stage 6.0.1 — Production Safety Prerequisites
 
-Status: implemented in code (Stage 6.0.1). Infrastructure and store release items remain open.
+Status: implemented in code (Stage 6.0.1 + **PROD.2** env contract). Infrastructure and store release items remain open.
+
+**PROD.2 (2026-10-02):** Canonical templates `infra/env/.env.production.example`, staging profile `QALAGO_ENV=STAGING`, strict validation when `QALAGO_ENV=PRODUCTION` — see **`docs/infra/production-environment.md`**.
 
 ## Implemented (code-level)
 
 | Area | Behavior |
 |------|----------|
-| CORS | Production requires explicit `CORS_ORIGINS`; empty/wildcard fails startup |
+| CORS | Strict production: HTTPS origins only, no localhost; staging profile allows localhost QA |
+| Env profiles | `QALAGO_ENV` separates Docker staging QA from public production |
+| DATABASE_URL | Strict production: required postgres URL, no localhost |
+| Public URLs | `CONSUMER_WEB_BASE_URL` / `BUSINESS_WEB_BASE_URL` must be HTTPS in strict production |
+| JWT TTL | Canonical access token **`20m`** (`JWT_EXPIRES_IN`); refresh **`REFRESH_TOKEN_EXPIRES_DAYS=30`** |
 | OTP | Send/verify rate limits (phone + IP, cooldown, attempt caps) |
 | OTP security | Hash storage, expiry, replay prevention, `OTP_DEBUG` gated |
 | Mock checkout | Blocked in `NODE_ENV=production`; dev requires `MOCK_PLAN_CHECKOUT_ENABLED=true` |

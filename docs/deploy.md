@@ -8,27 +8,33 @@
 
 ## 1. Environment
 
-Copy and edit on the server:
+Copy and edit on the server (use the production contract template, not dev defaults):
 
 ```bash
-cp infra/env/.env.example .env.prod
+cp infra/env/.env.production.example .env.prod
+# fill secrets via host env / secret manager; chmod 600; never commit
 ```
 
-Required for production:
+Canonical matrix: **`docs/infra/production-environment.md`**.
+
+Required for **public production** (`NODE_ENV=production`, `QALAGO_ENV=PRODUCTION`):
 
 | Variable | Example |
 |----------|---------|
 | `POSTGRES_PASSWORD` | strong random |
+| `DATABASE_URL` | managed Postgres URL (no localhost) |
 | `JWT_SECRET` | min 32 chars, not a dev placeholder |
-| `QALAGO_INTERNAL_SERVICE_TOKEN` | strong random (catalog-api ↔ ai-orchestrator) |
-| `CORS_ORIGINS` | `https://qalago.kz,https://www.qalago.kz,https://admin.qalago.kz,https://business.qalago.kz` |
-| `OTP_DEBUG` | `false` (startup fails if `true`) |
-| `DEV_LOGIN_ENABLED` | `false` (startup fails if `true`) |
-| `MOCK_PLAN_CHECKOUT_ENABLED` | `false` (startup fails if `true`) |
+| `CORS_ORIGINS` | HTTPS admin/business/consumer origins only |
+| `CONSUMER_WEB_BASE_URL` / `BUSINESS_WEB_BASE_URL` | HTTPS public URLs |
+| `QALAGO_GEOCODING_PROVIDER` | `maptiler` (+ `MAPTILER_API_KEY`) |
+| `QALAGO_INTERNAL_SERVICE_TOKEN` | required if `AI_INTEGRATION_ENABLED=true` |
+| `OTP_DEBUG` / `DEV_LOGIN_ENABLED` / `MOCK_PLAN_CHECKOUT_ENABLED` | all `false` |
 
-Never expose `QALAGO_INTERNAL_SERVICE_TOKEN` in browser or mobile public env vars.
+Never expose server secrets in `NEXT_PUBLIC_*`, Flutter dart-defines, or mobile source constants.
 
-**Production safety (Stage 6.0.1):** empty `CORS_ORIGINS`, wildcard origins, weak JWT, and dangerous dev flags cause startup failure in `NODE_ENV=production`.
+**Local Docker staging** uses `QALAGO_ENV=STAGING` (`infra/env/.env.staging.example`) — not equivalent to public production validation.
+
+**Production safety:** catalog-api Joi + `assertProductionConfig()` fail fast on unsafe production config (see Stage 6 production safety doc).
 
 ## 2. Build & run API
 

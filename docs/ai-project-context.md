@@ -111,7 +111,9 @@
 | **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = CLOSED** · **CW CLOSED** · Mobile UI/UX after CW · production/security/pre-VPS · **SCALE** later |
 | **KZ-C.2 / KZ-C.2A** | **CLOSED — LEGAL ACCEPTANCE + LIVE QA VERIFIED** — checkpoint **`4794847`** + docs; manifest **`2026-09-10`**, guard, mobile/Business Web gates, Consumer Web version sync |
 | **KZ-C.3** | **CLOSED — PUBLIC DTO PRIVACY HARDENING** — explicit guest mappers; no public `ownerId` / review `userId` / plan fields; promotions nested business summary hardened |
-| **Next** | **KZ-C.4** (ads/compliance) or **Production Safety/Ops** — **not started**; agree before implementation |
+| **PROD.0** | **PASS — READ-ONLY PRODUCTION SAFETY AUDIT** — no product diff; baseline **`03f1021`** |
+| **PROD.2** | **CLOSED — PRODUCTION ENVIRONMENT CONTRACT** — templates, `QALAGO_ENV` profiles, strict validation, docs **`docs/infra/production-environment.md`** |
+| **Next** | **PROD.3** (object storage) or **KZ-C.4** — **agree before start**; **PROD.1 VPS not started** |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 

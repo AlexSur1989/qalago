@@ -36,11 +36,15 @@ services:
       - "3002:3000"
     environment:
       NODE_ENV: production
+      QALAGO_ENV: STAGING
       PORT: 3000
       DATABASE_URL: postgresql://qalago:${POSTGRES_PASSWORD:-qalago_staging}@postgres:5432/qalago?schema=public
       JWT_SECRET: ${JWT_SECRET:-qalago-staging-jwt-secret-min-32-chars}
-      JWT_EXPIRES_IN: 7d
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-20m}
       OTP_DEBUG: ${OTP_DEBUG:-true}
+      DEV_LOGIN_ENABLED: "false"
+      MOCK_PLAN_CHECKOUT_ENABLED: "false"
+      AI_INTEGRATION_ENABLED: "false"
       DEFAULT_CITY_SLUG: uralsk
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:8080}
       UPLOAD_DIR: /app/services/catalog-api/uploads

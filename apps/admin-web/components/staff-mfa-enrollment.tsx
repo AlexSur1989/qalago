@@ -145,8 +145,8 @@ export function StaffMfaEnrollment({ token, onEnrolled, onComplete }: Props) {
 
 function formatEnrollError(err: unknown): string {
   const raw = String(err);
-  if (raw.includes('STAFF_MFA_ENCRYPTION_KEY') || raw.includes('encryption')) {
-    return 'На сервере не настроен STAFF_MFA_ENCRYPTION_KEY. Добавьте ключ в .env catalog-api и перезапустите API.';
+  if (raw.toLowerCase().includes('mfa') && raw.toLowerCase().includes('encryption')) {
+    return 'На сервере не настроён ключ шифрования MFA для catalog-api. Добавьте секрет в env API и перезапустите сервер.';
   }
   return raw;
 }

@@ -66,7 +66,12 @@ export const validationSchema = Joi.object({
   FIREBASE_PROJECT_ID: Joi.string().allow('').default(''),
   FIREBASE_CLIENT_EMAIL: Joi.string().allow('').default(''),
   FIREBASE_PRIVATE_KEY: Joi.string().allow('').default(''),
+  CONSUMER_WEB_BASE_URL: Joi.string().allow('').default(''),
+  BUSINESS_WEB_BASE_URL: Joi.string().allow('').default(''),
+  QALAGO_PUBLIC_BASE_URL: Joi.string().allow('').default(''),
 }).custom((value, helpers) => {
+  const consumerWebBaseUrl =
+    (value.CONSUMER_WEB_BASE_URL?.trim() || value.QALAGO_PUBLIC_BASE_URL?.trim() || '') as string;
   try {
     assertProductionConfig({
       nodeEnv: value.NODE_ENV,
@@ -87,6 +92,16 @@ export const validationSchema = Joi.object({
       appleClientIdWeb: value.APPLE_CLIENT_ID_WEB ?? '',
       otpAuthEnabled: value.OTP_AUTH_ENABLED !== false,
       qalagoEnv: value.QALAGO_ENV ?? (value.NODE_ENV === 'production' ? 'PRODUCTION' : 'LOCAL'),
+      databaseUrl: value.DATABASE_URL ?? '',
+      consumerWebBaseUrl,
+      businessWebBaseUrl: value.BUSINESS_WEB_BASE_URL ?? '',
+      geocodingProvider: value.QALAGO_GEOCODING_PROVIDER ?? 'mock',
+      pushEnabled: value.PUSH_ENABLED === true,
+      firebaseProjectId: value.FIREBASE_PROJECT_ID ?? '',
+      firebaseClientEmail: value.FIREBASE_CLIENT_EMAIL ?? '',
+      firebasePrivateKey: value.FIREBASE_PRIVATE_KEY ?? '',
+      staffMfaRequired: value.STAFF_MFA_REQUIRED === true,
+      staffMfaEncryptionKey: value.STAFF_MFA_ENCRYPTION_KEY ?? '',
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Invalid production configuration';

@@ -2,11 +2,37 @@ import {
   assertProductionConfig,
   isMockPlanCheckoutAllowed,
   isProductionNodeEnv,
+  isStrictProductionEnv,
 } from './production-config.util';
 
 const prodAiToken = 'a'.repeat(48);
 
+const strictProdBase = {
+  nodeEnv: 'production' as const,
+  qalagoEnv: 'PRODUCTION' as const,
+  jwtSecret: 'a'.repeat(32),
+  corsOrigins: 'https://qalago.kz',
+  otpDebug: false,
+  devLoginEnabled: false,
+  mockPlanCheckoutEnabled: false,
+  internalServiceToken: prodAiToken,
+  databaseUrl: 'postgresql://qalago:secret@db.internal:5432/qalago?schema=public',
+  consumerWebBaseUrl: 'https://qalago.kz',
+  businessWebBaseUrl: 'https://business.qalago.kz',
+  geocodingProvider: 'maptiler',
+  otpAuthEnabled: true,
+};
+
 describe('production-config.util', () => {
+  describe('isStrictProductionEnv', () => {
+    it('treats NODE_ENV=production + QALAGO_ENV=PRODUCTION as strict', () => {
+      expect(isStrictProductionEnv('production', 'PRODUCTION')).toBe(true);
+    });
+    it('treats staging profile as non-strict', () => {
+      expect(isStrictProductionEnv('production', 'STAGING')).toBe(false);
+    });
+  });
+
   describe('assertProductionConfig', () => {
     it('allows development with empty CORS', () => {
       expect(() =>
@@ -21,15 +47,11 @@ describe('production-config.util', () => {
       ).not.toThrow();
     });
 
-    it('rejects production without CORS_ORIGINS', () => {
+    it('rejects strict production without CORS_ORIGINS', () => {
       expect(() =>
         assertProductionConfig({
-          nodeEnv: 'production',
-          jwtSecret: 'a'.repeat(32),
+          ...strictProdBase,
           corsOrigins: '',
-          otpDebug: false,
-          devLoginEnabled: false,
-          mockPlanCheckoutEnabled: false,
         }),
       ).toThrow(/CORS_ORIGINS must be explicitly set/);
     });
@@ -37,51 +59,86 @@ describe('production-config.util', () => {
     it('rejects production wildcard CORS', () => {
       expect(() =>
         assertProductionConfig({
-          nodeEnv: 'production',
-          jwtSecret: 'a'.repeat(32),
+          ...strictProdBase,
           corsOrigins: '*',
-          otpDebug: false,
-          devLoginEnabled: false,
-          mockPlanCheckoutEnabled: false,
         }),
       ).toThrow(/wildcard/);
     });
 
-    it('rejects production OTP_DEBUG', () => {
+    it('rejects strict production localhost CORS', () => {
+      expect(() =>
+        assertProductionConfig({
+          ...strictProdBase,
+          corsOrigins: 'http://localhost:3005',
+        }),
+      ).toThrow(/localhost/);
+    });
+
+    it('rejects strict production HTTP CORS', () => {
+      expect(() =>
+        assertProductionConfig({
+          ...strictProdBase,
+          corsOrigins: 'http://qalago.kz',
+        }),
+      ).toThrow(/HTTPS/);
+    });
+
+    it('rejects strict production OTP_DEBUG', () => {
+      expect(() =>
+        assertProductionConfig({
+          ...strictProdBase,
+          otpDebug: true,
+        }),
+      ).toThrow(/OTP_DEBUG/);
+    });
+
+    it('allows staging profile OTP_DEBUG with localhost CORS', () => {
       expect(() =>
         assertProductionConfig({
           nodeEnv: 'production',
+          qalagoEnv: 'STAGING',
           jwtSecret: 'a'.repeat(32),
-          corsOrigins: 'https://qalago.kz',
+          corsOrigins: 'http://localhost:3005',
           otpDebug: true,
           devLoginEnabled: false,
           mockPlanCheckoutEnabled: false,
+          aiIntegrationEnabled: false,
+          otpAuthEnabled: true,
         }),
-      ).toThrow(/OTP_DEBUG/);
+      ).not.toThrow();
     });
 
     it('rejects production DEV_LOGIN_ENABLED', () => {
       expect(() =>
         assertProductionConfig({
-          nodeEnv: 'production',
-          jwtSecret: 'a'.repeat(32),
-          corsOrigins: 'https://qalago.kz',
-          otpDebug: false,
+          ...strictProdBase,
           devLoginEnabled: true,
-          mockPlanCheckoutEnabled: false,
         }),
       ).toThrow(/DEV_LOGIN_ENABLED/);
+    });
+
+    it('rejects strict production missing DATABASE_URL', () => {
+      expect(() =>
+        assertProductionConfig({
+          ...strictProdBase,
+          databaseUrl: '',
+        }),
+      ).toThrow(/DATABASE_URL/);
+    });
+
+    it('rejects strict production localhost DATABASE_URL', () => {
+      expect(() =>
+        assertProductionConfig({
+          ...strictProdBase,
+          databaseUrl: 'postgresql://qalago:pass@localhost:5432/qalago',
+        }),
+      ).toThrow(/localhost/);
     });
 
     it('rejects production GOOGLE_AUTH_ENABLED without client IDs', () => {
       expect(() =>
         assertProductionConfig({
-          nodeEnv: 'production',
-          jwtSecret: 'a'.repeat(32),
-          corsOrigins: 'https://qalago.kz',
-          otpDebug: false,
-          devLoginEnabled: false,
-          mockPlanCheckoutEnabled: false,
+          ...strictProdBase,
           googleAuthEnabled: true,
           googleClientIdAndroid: '',
           googleClientIdIos: '',
@@ -93,12 +150,7 @@ describe('production-config.util', () => {
     it('rejects production APPLE_AUTH_ENABLED without client IDs', () => {
       expect(() =>
         assertProductionConfig({
-          nodeEnv: 'production',
-          jwtSecret: 'a'.repeat(32),
-          corsOrigins: 'https://qalago.kz',
-          otpDebug: false,
-          devLoginEnabled: false,
-          mockPlanCheckoutEnabled: false,
+          ...strictProdBase,
           appleAuthEnabled: true,
           appleClientIdIos: '',
           appleClientIdWeb: '',
@@ -109,16 +161,9 @@ describe('production-config.util', () => {
     it('allows production APPLE_AUTH_ENABLED with at least one client ID', () => {
       expect(() =>
         assertProductionConfig({
-          nodeEnv: 'production',
-          jwtSecret: 'a'.repeat(32),
-          corsOrigins: 'https://qalago.kz',
-          otpDebug: false,
-          devLoginEnabled: false,
-          mockPlanCheckoutEnabled: false,
+          ...strictProdBase,
           appleAuthEnabled: true,
           appleClientIdIos: 'kz.qalago.qalagoMobile',
-          internalServiceToken: prodAiToken,
-          qalagoEnv: 'PRODUCTION',
         }),
       ).not.toThrow();
     });
@@ -126,16 +171,9 @@ describe('production-config.util', () => {
     it('allows production GOOGLE_AUTH_ENABLED with at least one client ID', () => {
       expect(() =>
         assertProductionConfig({
-          nodeEnv: 'production',
-          jwtSecret: 'a'.repeat(32),
-          corsOrigins: 'https://qalago.kz',
-          otpDebug: false,
-          devLoginEnabled: false,
-          mockPlanCheckoutEnabled: false,
+          ...strictProdBase,
           googleAuthEnabled: true,
           googleClientIdWeb: 'web-client.apps.googleusercontent.com',
-          internalServiceToken: prodAiToken,
-          qalagoEnv: 'PRODUCTION',
         }),
       ).not.toThrow();
     });
@@ -143,12 +181,7 @@ describe('production-config.util', () => {
     it('rejects production when all auth methods are disabled', () => {
       expect(() =>
         assertProductionConfig({
-          nodeEnv: 'production',
-          jwtSecret: 'a'.repeat(32),
-          corsOrigins: 'https://qalago.kz',
-          otpDebug: false,
-          devLoginEnabled: false,
-          mockPlanCheckoutEnabled: false,
+          ...strictProdBase,
           otpAuthEnabled: false,
           googleAuthEnabled: false,
           appleAuthEnabled: false,
@@ -159,47 +192,48 @@ describe('production-config.util', () => {
     it('allows production OTP-only auth', () => {
       expect(() =>
         assertProductionConfig({
-          nodeEnv: 'production',
-          jwtSecret: 'a'.repeat(32),
-          corsOrigins: 'https://qalago.kz',
-          otpDebug: false,
-          devLoginEnabled: false,
-          mockPlanCheckoutEnabled: false,
+          ...strictProdBase,
           otpAuthEnabled: true,
           googleAuthEnabled: false,
           appleAuthEnabled: false,
-          internalServiceToken: prodAiToken,
-          qalagoEnv: 'PRODUCTION',
         }),
       ).not.toThrow();
     });
 
-    it('rejects production when QALAGO_ENV is not PRODUCTION', () => {
+    it('rejects production when QALAGO_ENV is LOCAL', () => {
       expect(() =>
         assertProductionConfig({
-          nodeEnv: 'production',
-          jwtSecret: 'a'.repeat(32),
-          corsOrigins: 'https://qalago.kz',
-          otpDebug: false,
-          devLoginEnabled: false,
-          mockPlanCheckoutEnabled: false,
-          internalServiceToken: prodAiToken,
+          ...strictProdBase,
           qalagoEnv: 'LOCAL',
         }),
       ).toThrow(/QALAGO_ENV/);
     });
 
-    it('rejects weak JWT in production', () => {
+    it('rejects weak JWT in strict production', () => {
       expect(() =>
         assertProductionConfig({
-          nodeEnv: 'production',
+          ...strictProdBase,
           jwtSecret: 'dev-secret-change-me',
-          corsOrigins: 'https://qalago.kz',
-          otpDebug: false,
-          devLoginEnabled: false,
-          mockPlanCheckoutEnabled: false,
         }),
       ).toThrow(/JWT_SECRET/);
+    });
+
+    it('rejects mock geocoding in strict production', () => {
+      expect(() =>
+        assertProductionConfig({
+          ...strictProdBase,
+          geocodingProvider: 'mock',
+        }),
+      ).toThrow(/GEOCODING/);
+    });
+
+    it('rejects mock checkout flag in production', () => {
+      expect(() =>
+        assertProductionConfig({
+          ...strictProdBase,
+          mockPlanCheckoutEnabled: true,
+        }),
+      ).toThrow(/MOCK_PLAN_CHECKOUT/);
     });
   });
 

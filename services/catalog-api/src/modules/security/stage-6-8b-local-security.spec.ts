@@ -22,6 +22,7 @@ describe('Stage 6.8B local security', () => {
       expect(() =>
         assertProductionConfig({
           nodeEnv: 'production',
+          qalagoEnv: 'PRODUCTION',
           jwtSecret: 'dev-secret-change-me-32-chars-minimum!!',
           corsOrigins: 'https://admin.example.com',
           otpDebug: false,
@@ -29,6 +30,10 @@ describe('Stage 6.8B local security', () => {
           mockPlanCheckoutEnabled: false,
           internalServiceToken: 'abcdefghijklmnopqrstuvwxyz0123456789ABCD',
           otpAuthEnabled: true,
+          databaseUrl: 'postgresql://qalago:secret@db.internal:5432/qalago',
+          consumerWebBaseUrl: 'https://www.example.com',
+          businessWebBaseUrl: 'https://business.example.com',
+          geocodingProvider: 'maptiler',
         }),
       ).toThrow(/JWT_SECRET/);
     });
@@ -37,6 +42,7 @@ describe('Stage 6.8B local security', () => {
       expect(() =>
         assertProductionConfig({
           nodeEnv: 'production',
+          qalagoEnv: 'PRODUCTION',
           jwtSecret: 'abcdefghijklmnopqrstuvwxyz0123456789ABCD',
           corsOrigins: 'https://admin.example.com',
           otpDebug: false,
@@ -45,6 +51,10 @@ describe('Stage 6.8B local security', () => {
           internalServiceToken: '',
           aiIntegrationEnabled: true,
           otpAuthEnabled: true,
+          databaseUrl: 'postgresql://qalago:secret@db.internal:5432/qalago',
+          consumerWebBaseUrl: 'https://www.example.com',
+          businessWebBaseUrl: 'https://business.example.com',
+          geocodingProvider: 'maptiler',
         }),
       ).toThrow(/QALAGO_INTERNAL_SERVICE_TOKEN/);
     });
