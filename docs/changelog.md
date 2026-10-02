@@ -6,7 +6,7 @@
 
 ---
 
-## 2026-09-30 — WEB-HOME.2A PASS — Live Web home parity QA + canonical closure
+## 2026-10-02 — WEB-HOME.2A PASS — Live Web home parity QA + canonical closure
 
 - **Status:** **WEB-HOME.2A PASS — LIVE WEB HOME PARITY QA VERIFIED**. **WEB-HOME.2 STATUS: CLOSED**. **READY FOR WEB-HOME.3: YES**. **PROD.3 NOT STARTED**.
 - **Starting HEAD:** **`aa08524f4c5e14b3a2c2be37e45e51854ac76975`**.
