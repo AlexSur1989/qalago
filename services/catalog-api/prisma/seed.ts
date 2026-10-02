@@ -13,6 +13,7 @@ import { upsertSeedBusinessWithPrimaryLocationInTx } from '../src/common/utils/b
 import type { AuthoritativePrimaryPhysicalInput } from '../src/common/utils/business-primary-location.util';
 import { seedMonetizationCatalog } from './seed-monetization';
 import { seedSubcategories } from './seed-subcategories';
+import { seedPublishedPlatformLegalDocuments } from './seed-legal';
 
 const prisma = new PrismaClient();
 
@@ -1232,6 +1233,8 @@ async function main() {
       await ensureActiveOwnerMembership(prisma, row.ownerId, row.id);
     }
   }
+
+  await seedPublishedPlatformLegalDocuments(prisma);
 
   console.log('Seed OK:', {
     cities: [city.slug, aktobe.slug],

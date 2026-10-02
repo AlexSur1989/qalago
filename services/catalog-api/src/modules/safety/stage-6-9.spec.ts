@@ -31,7 +31,7 @@ describe('Stage 6.9 Legal & Safety', () => {
   describe('LegalService', () => {
     let prisma: {
       legalDocument: { findFirst: jest.Mock; findMany: jest.Mock; findUnique: jest.Mock; update: jest.Mock };
-      legalAcceptance: { findMany: jest.Mock; create: jest.Mock };
+        legalAcceptance: { findMany: jest.Mock; findFirst: jest.Mock; create: jest.Mock };
     };
     let auditLog: { record: jest.Mock };
     let service: LegalService;
@@ -47,10 +47,12 @@ describe('Stage 6.9 Legal & Safety', () => {
         },
         legalAcceptance: {
           findMany: jest.fn().mockResolvedValue([]),
+          findFirst: jest.fn().mockResolvedValue(null),
           create: jest.fn(),
         },
       };
-      service = new LegalService(prisma as never, auditLog as never);
+      const config = { get: jest.fn().mockReturnValue('http://localhost:3005') };
+      service = new LegalService(prisma as never, auditLog as never, config as never);
     });
 
     it('A guest can read published legal document', async () => {

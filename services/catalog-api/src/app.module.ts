@@ -6,6 +6,7 @@ import { join } from 'path';
 import envConfig from './config/env.config';
 import { validationSchema } from './config/validation.schema';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { LegalAcceptanceGuard } from './common/guards/legal-acceptance.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { StaffAuthorizationGuard } from './common/guards/staff-authorization.guard';
 import { PrismaModule } from './prisma/prisma.module';
@@ -85,6 +86,7 @@ import { HomeConfigModule } from './modules/home-config/home-config.module';
   controllers: [HealthController],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: LegalAcceptanceGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_GUARD, useClass: StaffAuthorizationGuard },
   ],

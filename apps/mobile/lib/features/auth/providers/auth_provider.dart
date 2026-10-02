@@ -17,6 +17,7 @@ import '../../notifications/providers/notifications_repository_provider.dart';
 export '../../notifications/providers/notifications_repository_provider.dart';
 import '../../recommendations/data/ai_repository.dart';
 import '../../business_onboarding/providers/onboarding_providers.dart';
+import '../../legal/providers/legal_provider.dart';
 import '../data/apple_sign_in_adapter.dart';
 import '../data/google_sign_in_adapter.dart';
 import '../data/social_sign_in_types.dart';
@@ -64,6 +65,7 @@ void invalidateUserScopedProviders(Ref ref) {
   ref.invalidate(businessFavoriteProvider);
   ref.invalidate(adminPendingBusinessesProvider);
   invalidateOnboardingProviders(ref);
+  ref.invalidate(legalCurrentProvider);
 }
 
 /// Clears user-private caches when auth session ends or a new user logs in.

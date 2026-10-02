@@ -63,6 +63,8 @@ import '../../shared/widgets/qalago_startup_surface.dart';
 import '../../core/onboarding/onboarding_provider.dart';
 import '../../features/onboarding/presentation/welcome_screen.dart';
 import '../../features/onboarding/presentation/onboarding_city_screen.dart';
+import '../../features/legal/presentation/legal_acceptance_screen.dart';
+import '../../features/legal/providers/legal_provider.dart';
 import 'consumer_shell_navigation.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -76,6 +78,7 @@ class _RouterRefresh extends ChangeNotifier {
     _ref.listen(authProvider, (_, __) => notifyListeners());
     _ref.listen(myBusinessEntriesProvider, (_, __) => notifyListeners());
     _ref.listen(onboardingProvider, (_, __) => notifyListeners());
+    _ref.listen(legalAcceptanceRequiredProvider, (_, __) => notifyListeners());
   }
 
   final Ref _ref;
@@ -153,6 +156,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         );
       }
 
+      final legalRequired = ref.read(legalAcceptanceRequiredProvider);
+      final onLegalAccept = location.startsWith('/legal/accept');
+      if (isAuthed && legalRequired && !onLegalAccept) {
+        final redirect = Uri.encodeComponent(state.uri.toString());
+        return '/legal/accept?redirect=$redirect';
+      }
+      if (isAuthed && !legalRequired && onLegalAccept) {
+        return '/home';
+      }
+
       if (isOwnerRoute(location)) {
         if (location == '/owner/create-business') return null;
         if (!_hasBusinessCabinetAccess(ref, authState)) {
@@ -180,6 +193,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const OnboardingCityScreen(),
       ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(
+        path: '/legal/accept',
+        builder: (context, state) => LegalAcceptanceScreen(
+          redirectPath: state.uri.queryParameters['redirect'],
+        ),
+      ),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
         builder: (context, state, child) => AppShell(child: child),

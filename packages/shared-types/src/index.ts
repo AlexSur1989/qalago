@@ -258,6 +258,14 @@ export {
 } from './home-sections';
 
 export {
+  MANDATORY_PLATFORM_LEGAL_DOCUMENT_TYPES,
+  PUBLISHED_PLATFORM_LEGAL_VERSIONS,
+  mandatoryLegalPublicPath,
+  type MandatoryPlatformLegalDocumentType,
+  type PublishedLegalVersionMeta,
+} from './legal-published-manifest';
+
+export {
   StaffPermission,
   STAFF_ROLES,
   STEP_UP_REQUIRED_PERMISSIONS,

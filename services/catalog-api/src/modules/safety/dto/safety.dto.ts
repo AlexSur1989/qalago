@@ -13,12 +13,14 @@ import {
 } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsEnum,
   IsInt,
   IsOptional,
   IsString,
   MaxLength,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
 import { MAX_APPEAL_REASON_LENGTH, MAX_REPORT_DETAILS_LENGTH } from '../safety.constants';
 
@@ -32,11 +34,41 @@ export class AcceptLegalDto {
   @IsString()
   documentId!: string;
 
+  @IsString()
+  documentVersion!: string;
+
   @IsEnum(LegalAcceptanceSource)
   acceptanceSource!: LegalAcceptanceSource;
 
   @IsEnum(LegalLocale)
   locale!: LegalLocale;
+}
+
+export class AcceptLegalItemDto {
+  @IsString()
+  documentId!: string;
+
+  @IsString()
+  documentVersion!: string;
+}
+
+export class AcceptRequiredLegalDto {
+  @IsEnum(LegalAcceptanceSource)
+  acceptanceSource!: LegalAcceptanceSource;
+
+  @IsEnum(LegalLocale)
+  locale!: LegalLocale;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AcceptLegalItemDto)
+  items!: AcceptLegalItemDto[];
+}
+
+export class LegalCurrentQueryDto {
+  @IsOptional()
+  @IsEnum(LegalLocale)
+  locale?: LegalLocale;
 }
 
 export class CreateReportDto {

@@ -2282,6 +2282,42 @@ abstract class AppLocalizations {
   /// **'Политикой конфиденциальности'**
   String get legalConsentPrivacy;
 
+  /// No description provided for @legalAcceptanceTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Правовые документы'**
+  String get legalAcceptanceTitle;
+
+  /// No description provided for @legalAcceptanceBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Чтобы продолжить, подтвердите, что вы принимаете актуальные Условия использования и ознакомлены с Политикой конфиденциальности QalaGo.'**
+  String get legalAcceptanceBody;
+
+  /// No description provided for @legalAcceptanceCheckbox.
+  ///
+  /// In ru, this message translates to:
+  /// **'Я принимаю Условия использования и ознакомлен(а) с Политикой конфиденциальности'**
+  String get legalAcceptanceCheckbox;
+
+  /// No description provided for @legalAcceptanceContinue.
+  ///
+  /// In ru, this message translates to:
+  /// **'Продолжить'**
+  String get legalAcceptanceContinue;
+
+  /// No description provided for @legalAcceptanceError.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить принятие документов. Проверьте соединение и попробуйте снова.'**
+  String get legalAcceptanceError;
+
+  /// No description provided for @legalAcceptanceVersionNote.
+  ///
+  /// In ru, this message translates to:
+  /// **'Текст документов открывается на сайте QalaGo; версия проверяется сервером.'**
+  String get legalAcceptanceVersionNote;
+
   /// No description provided for @releaseUpdateAvailable.
   ///
   /// In ru, this message translates to:

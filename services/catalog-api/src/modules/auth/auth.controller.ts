@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { Public } from '../../common/decorators/public.decorator';
+import { SkipLegalAcceptance } from '../../common/decorators/skip-legal-acceptance.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { resolveRequestIp } from '../../common/utils/request-ip.util';
@@ -27,6 +28,7 @@ import { REFRESH_COOKIE_NAME, setRefreshCookie, clearRefreshCookie, readRefreshT
 import { AppleAuthLoginService } from './social-auth/apple-auth-login.service';
 import { GoogleAuthLoginService } from './social-auth/google-auth-login.service';
 
+@SkipLegalAcceptance()
 @Controller('auth')
 export class AuthController {
   constructor(

@@ -1395,3 +1395,56 @@ export type OwnershipClaimRow = {
 };
 
 export const TOKEN_KEY = 'qalago_business_token';
+
+export type LegalPendingDocument = {
+  documentId: string;
+  type: string;
+  version: string;
+  publicUrl?: string | null;
+};
+
+export type LegalCurrentResponse = {
+  acceptanceRequired: boolean;
+  pendingAcceptance: LegalPendingDocument[];
+};
+
+export const legalApi = {
+  async fetchCurrent(accessToken: string, locale: 'RU' | 'KK' = 'RU'): Promise<LegalCurrentResponse> {
+    const res = await fetch(`${API_BASE}/legal/current?locale=${locale}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!res.ok) {
+      throw new Error(await res.text());
+    }
+    return res.json() as Promise<LegalCurrentResponse>;
+  },
+
+  async acceptRequired(
+    accessToken: string,
+    pending: LegalPendingDocument[],
+    locale: 'RU' | 'KK' = 'RU',
+  ): Promise<void> {
+    const res = await fetch(`${API_BASE}/legal/me/accept-required`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        acceptanceSource: 'LOGIN',
+        locale,
+        items: pending.map((p) => ({
+          documentId: p.documentId,
+          documentVersion: p.version,
+        })),
+      }),
+    });
+    if (!res.ok) {
+      throw new Error(await res.text());
+    }
+  },
+};
+
+export function userRequiresPlatformLegalAcceptance(role: string): boolean {
+  return role === 'USER' || role === 'BUSINESS';
+}

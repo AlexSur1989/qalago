@@ -1236,6 +1236,28 @@ class AppLocalizationsKk extends AppLocalizations {
   String get legalConsentPrivacy => 'Құпиялылық саясатымен';
 
   @override
+  String get legalAcceptanceTitle => 'Құқықтық құжаттар';
+
+  @override
+  String get legalAcceptanceBody =>
+      'Жалғастыру үшін QalaGo-ның ағымдағы Пайдалану шарттарын қабылдайтыныңызды және Құпиялылық саясатымен таныс екеніңізді растаңыз.';
+
+  @override
+  String get legalAcceptanceCheckbox =>
+      'Мен Пайдалану шарттарын қабылдаймын және Құпиялылық саясатымен таныстым';
+
+  @override
+  String get legalAcceptanceContinue => 'Жалғастыру';
+
+  @override
+  String get legalAcceptanceError =>
+      'Құжаттарды қабылдау сақталмады. Байланысты тексеріп, қайта көріңіз.';
+
+  @override
+  String get legalAcceptanceVersionNote =>
+      'Құжат мәтіні QalaGo сайтында ашылады; нұсқаны сервер тексереді.';
+
+  @override
   String get releaseUpdateAvailable => 'Жаңарту қолжетімді';
 
   @override

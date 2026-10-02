@@ -3,6 +3,7 @@ import { LegalPageLayout } from '@/components/LegalPageLayout';
 import { LEGAL_PLACEHOLDERS } from '@/lib/legal-config';
 import { getServerLocale } from '@/lib/locale-server';
 import { metadataForLegalPage } from '@/lib/seo/page-metadata';
+import { publishedLegalMetaForPage } from '@/lib/legal-published-sync';
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getServerLocale();
@@ -11,9 +12,14 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function TermsPage() {
   const p = LEGAL_PLACEHOLDERS;
+  const meta = publishedLegalMetaForPage('terms');
 
   return (
-    <LegalPageLayout page="terms" lastUpdated="2026-09-10">
+    <LegalPageLayout
+      page="terms"
+      lastUpdated={meta?.effectiveDate ?? '2026-09-10'}
+      documentVersion={meta?.version}
+    >
       <p>
         Настоящие Условия регулируют использование сервиса <strong>QalaGo</strong>. Черновик
         отражает фактические возможности продукта и требует юридической проверки перед

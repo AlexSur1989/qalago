@@ -8,6 +8,7 @@ import { publicLegalPath, type PublicLegalRootSegment } from '@/lib/legal-paths'
 type LegalPageLayoutProps = {
   page: PublicLegalRootSegment;
   lastUpdated: string;
+  documentVersion?: string;
   children: ReactNode;
   draftNotice?: boolean;
 };
@@ -15,6 +16,7 @@ type LegalPageLayoutProps = {
 export async function LegalPageLayout({
   page,
   lastUpdated,
+  documentVersion,
   children,
   draftNotice = true,
 }: LegalPageLayoutProps) {
@@ -31,6 +33,7 @@ export async function LegalPageLayout({
           <h1>{title}</h1>
           <p className="legal-page-meta">
             {ui.legalUpdatedLabel}: {lastUpdated}
+            {documentVersion ? ` · v${documentVersion}` : null}
           </p>
           {draftNotice && <p className="legal-page-draft">{ui.legalDraftNotice}</p>}
         </header>

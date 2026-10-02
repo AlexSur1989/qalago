@@ -11,6 +11,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { SkipLegalAcceptance } from '../../common/decorators/skip-legal-acceptance.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { AccountDeletionService } from './account-deletion.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -25,6 +26,7 @@ export class UsersController {
     private readonly accountDeletion: AccountDeletionService,
   ) {}
 
+  @SkipLegalAcceptance()
   @Get('me')
   getMe(@CurrentUser() user: AuthUser) {
     return this.usersService.getMe(user.id);

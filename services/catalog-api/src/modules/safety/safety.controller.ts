@@ -2,13 +2,16 @@ import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
 import { LegalDocumentType, LegalLocale } from '@prisma/client';
 import { Request } from 'express';
 import { Public } from '../../common/decorators/public.decorator';
+import { SkipLegalAcceptance } from '../../common/decorators/skip-legal-acceptance.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { resolveRequestIp } from '../../common/utils/request-ip.util';
 import {
   AcceptLegalDto,
+  AcceptRequiredLegalDto,
   CreateDataRightsRequestDto,
   CreateReportDto,
+  LegalCurrentQueryDto,
   PublicLegalQueryDto,
   SubmitAppealDto,
 } from './dto/safety.dto';
@@ -36,14 +39,30 @@ export class SafetyController {
     return this.legal.getPublishedDocument(type, locale);
   }
 
-  @Get('legal/me/status')
-  getMyLegalStatus(@CurrentUser() user: AuthUser) {
-    return this.legal.getUserLegalStatus(user.id);
+  @Public()
+  @Get('legal/current')
+  getLegalCurrent(@Query() query: LegalCurrentQueryDto, @CurrentUser() user?: AuthUser) {
+    const locale = query.locale ?? LegalLocale.RU;
+    return this.legal.getLegalCurrent(locale, user?.id);
   }
 
+  @SkipLegalAcceptance()
+  @Get('legal/me/status')
+  getMyLegalStatus(@CurrentUser() user: AuthUser, @Query() query: LegalCurrentQueryDto) {
+    const locale = query.locale ?? LegalLocale.RU;
+    return this.legal.getUserLegalStatus(user.id, locale);
+  }
+
+  @SkipLegalAcceptance()
   @Post('legal/me/accept')
   acceptLegal(@CurrentUser() user: AuthUser, @Body() dto: AcceptLegalDto) {
     return this.legal.recordAcceptance(user, dto);
+  }
+
+  @SkipLegalAcceptance()
+  @Post('legal/me/accept-required')
+  acceptRequiredLegal(@CurrentUser() user: AuthUser, @Body() dto: AcceptRequiredLegalDto) {
+    return this.legal.recordRequiredAcceptances(user, dto);
   }
 
   @Post('reports')

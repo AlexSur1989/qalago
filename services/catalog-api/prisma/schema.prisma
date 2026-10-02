@@ -1641,6 +1641,7 @@ model LegalAcceptance {
   user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   document         LegalDocument         @relation(fields: [documentId], references: [id], onDelete: Restrict)
 
+  @@unique([userId, documentId, documentVersion])
   @@index([userId, documentId])
   @@index([userId, acceptedAt])
 }

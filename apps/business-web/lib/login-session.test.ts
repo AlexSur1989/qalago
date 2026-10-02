@@ -5,13 +5,22 @@ vi.mock('@/lib/api', () => ({
   ownerApi: {
     listMyBusinesses: vi.fn(),
   },
+  legalApi: {
+    fetchCurrent: vi.fn(),
+  },
+  userRequiresPlatformLegalAcceptance: (role: string) =>
+    role === 'USER' || role === 'BUSINESS',
 }));
 
-import { ownerApi } from '@/lib/api';
+import { legalApi, ownerApi } from '@/lib/api';
 
 describe('resolvePostLoginDestination', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(legalApi.fetchCurrent).mockResolvedValue({
+      acceptanceRequired: false,
+      pendingAcceptance: [],
+    });
   });
 
   it('redirects ADMIN without membership to onboarding (BIZ.2)', async () => {
@@ -24,7 +33,31 @@ describe('resolvePostLoginDestination', () => {
     expect(result.path).toBe('/onboarding');
   });
 
-  it('redirects social USER without membership to onboarding', async () => {
+  it('redirects unaccepted USER to legal accept gate (KZ-C.2)', async () => {
+    vi.mocked(legalApi.fetchCurrent).mockResolvedValue({
+      acceptanceRequired: true,
+      pendingAcceptance: [
+        {
+          documentId: 'd1',
+          type: 'TERMS_OF_SERVICE',
+          version: '2026-09-10',
+        },
+      ],
+    });
+    const result = await resolvePostLoginDestination(
+      'jwt',
+      { id: 'u1', role: 'USER', name: null, phone: null },
+      null,
+    );
+    expect(result.path).toBe('/legal/accept');
+    expect(ownerApi.listMyBusinesses).not.toHaveBeenCalled();
+  });
+
+  it('redirects social USER without membership to onboarding when legal satisfied', async () => {
+    vi.mocked(legalApi.fetchCurrent).mockResolvedValue({
+      acceptanceRequired: false,
+      pendingAcceptance: [],
+    });
     vi.mocked(ownerApi.listMyBusinesses).mockResolvedValue({ items: [] });
     const result = await resolvePostLoginDestination('jwt', {
       id: 'u1',

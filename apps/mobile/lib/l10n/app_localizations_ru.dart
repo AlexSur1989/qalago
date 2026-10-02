@@ -1237,6 +1237,28 @@ class AppLocalizationsRu extends AppLocalizations {
   String get legalConsentPrivacy => 'Политикой конфиденциальности';
 
   @override
+  String get legalAcceptanceTitle => 'Правовые документы';
+
+  @override
+  String get legalAcceptanceBody =>
+      'Чтобы продолжить, подтвердите, что вы принимаете актуальные Условия использования и ознакомлены с Политикой конфиденциальности QalaGo.';
+
+  @override
+  String get legalAcceptanceCheckbox =>
+      'Я принимаю Условия использования и ознакомлен(а) с Политикой конфиденциальности';
+
+  @override
+  String get legalAcceptanceContinue => 'Продолжить';
+
+  @override
+  String get legalAcceptanceError =>
+      'Не удалось сохранить принятие документов. Проверьте соединение и попробуйте снова.';
+
+  @override
+  String get legalAcceptanceVersionNote =>
+      'Текст документов открывается на сайте QalaGo; версия проверяется сервером.';
+
+  @override
   String get releaseUpdateAvailable => 'Доступно обновление';
 
   @override
