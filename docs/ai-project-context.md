@@ -102,8 +102,8 @@
 | **CW.2** | **CLOSED — PUBLIC UI FOUNDATION** (incl. **CW.2A** closure verification) |
 | **CW.3** | **CLOSED — BACKEND-CONTROLLED HOME SYSTEM** (incl. **CW.3A** DB invariants + closure verification) |
 | **CW.4** | **CLOSED — DISCOVERY HOME** (incl. **CW.4A** closure verification) |
-| **CW.5** | **CLOSED — BUSINESS DETAIL COMPLETION** — see **`public-consumer-web.md`** § **CW.5** |
-| **CW (track)** | **ACTIVE** — **CW.1–CW.5 CLOSED** · **CW.6–CW.8 NOT STARTED** · F.4–F.8 **remain CLOSED** |
+| **CW.5** | **CLOSED — BUSINESS DETAIL COMPLETION** (+ **CW.5A** live browser closure verified **2026-10-02**) — **`public-consumer-web.md`** § **CW.5** |
+| **CW (track)** | **ACTIVE** — **CW.1–CW.5 CLOSED** (incl. **CW.5A** physical QA) · **CW.6–CW.8 NOT STARTED** · F.4–F.8 **remain CLOSED** |
 | **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = CLOSED** · **CW ACTIVE** · Mobile UI/UX after CW · production/security/pre-VPS · **SCALE** later |
 | **Next** | **CW.6** — Web ads + analytics (**no UXA.14**; **KZ-C.2+** not started) |
 
@@ -210,7 +210,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 **Architecture (CLOSED — preserve):** **F.4–F.8** — routing, locale SEO, legal migration, OG, deep-link well-known files. **Do not rebuild.**
 
-**Product track (ACTIVE):** **CW.1–CW.5 CLOSED** (through business detail completion). Contract: **`docs/architecture/public-consumer-web.md`** § **CW**. **CW.6 next** — web ads + analytics.
+**Product track (ACTIVE):** **CW.1–CW.5 CLOSED** (through business detail completion + **CW.5A** live browser verification on **`autodrive-service`** / **`aop7-test-cafe`**). Contract: **`docs/architecture/public-consumer-web.md`** § **CW**. **CW.6 next** — web ads + analytics.
 
 - **6.11F.3 PASS** — public SEO infrastructure (sitemap, robots, temporary business detail **noindex**, etc.).
 - **6.12A.9.3.4 PASS (physical QA finalized)** — Consumer Web discovery/detail physical context; **QA-001 CLOSED**.
@@ -404,7 +404,7 @@ VPS / production deployment
 | **AOP** | **CLOSED** |
 | **BIZ** | **CLOSED** |
 | **UXA** | **CLOSED** — **UXA.1–UXA.13 PASS**; backoffice physical browser QA verified **2026-10-01** |
-| **CW (Consumer Web product)** | **ACTIVE** — **CW.1–CW.5 PASS** · **CW.6–CW.8 not started** |
+| **CW (Consumer Web product)** | **ACTIVE** — **CW.1–CW.5 PASS** (incl. **CW.5A** closure QA) · **CW.6–CW.8 not started** |
 | **Mobile UI/UX** | **PLANNED** |
 | **VPS / production** | **BLOCKED** until readiness gates |
 | **SCALE** | **PLANNED** — architecture roadmap documented; **implementation not started** |
