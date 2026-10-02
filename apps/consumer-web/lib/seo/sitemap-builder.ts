@@ -32,6 +32,7 @@ export function buildDiscoverySitemapEntries(input: {
   for (const city of input.cities) {
     addLocalized(city.slug);
     addLocalized(city.slug, ['categories']);
+    addLocalized(city.slug, ['promotions']);
     const categories = input.categoriesByCitySlug[city.slug] ?? [];
     for (const cat of categories) {
       addLocalized(city.slug, [cat.slug]);

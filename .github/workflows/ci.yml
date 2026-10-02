@@ -68,6 +68,25 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: http://localhost:3002/api/v1
 
+  consumer-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Consumer Web tests
+        run: npm run test -w @qalago/consumer-web
+      - name: Consumer Web UI string checker
+        run: npm run check:ui-strings -w @qalago/consumer-web
+      - name: Consumer Web production build
+        run: npm run build -w @qalago/consumer-web
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3002/api/v1
+
   ai-orchestrator:
     runs-on: ubuntu-latest
     steps:

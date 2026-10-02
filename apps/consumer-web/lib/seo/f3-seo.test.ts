@@ -171,11 +171,14 @@ describe('F.3 robots and sitemap', () => {
     expect(urls).toContain('https://qalago.kz/ru/uralsk');
     expect(urls).toContain('https://qalago.kz/kk/uralsk');
     expect(urls).toContain('https://qalago.kz/ru/uralsk/categories');
+    expect(urls).toContain('https://qalago.kz/ru/uralsk/promotions');
+    expect(urls).toContain('https://qalago.kz/kk/uralsk/promotions');
     expect(urls).toContain('https://qalago.kz/ru/uralsk/food');
     expect(urls).toContain('https://qalago.kz/kk/uralsk/food/cafes');
     expect(urls.some((u) => u.includes('/search'))).toBe(false);
     expect(urls.some((u) => u.includes('/businesses/'))).toBe(false);
     expect(urls.some((u) => u === 'https://qalago.kz/uralsk')).toBe(false);
+    expect(urls.filter((u) => u.includes('/promotions')).length).toBe(2);
   });
 
   it('sitemap skips unknown city categories bucket', () => {
@@ -191,6 +194,8 @@ describe('F.3 robots and sitemap', () => {
       'https://qalago.kz/kk/ghost',
       'https://qalago.kz/ru/ghost/categories',
       'https://qalago.kz/kk/ghost/categories',
+      'https://qalago.kz/ru/ghost/promotions',
+      'https://qalago.kz/kk/ghost/promotions',
     ]);
   });
 });
