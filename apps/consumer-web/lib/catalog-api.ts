@@ -119,6 +119,7 @@ export type ReviewPreviewItemDto = {
   rating: number;
   text?: string | null;
   createdAt: string;
+  ownerReply?: string | null;
   user?: { id: string; name: string | null };
 };
 

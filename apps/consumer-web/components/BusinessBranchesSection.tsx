@@ -12,6 +12,7 @@ type Props = {
   labels: {
     branchesTitle: string;
     primaryBadge: string;
+    selectedBranch: string;
   };
 };
 
@@ -25,9 +26,11 @@ export function BusinessBranchesSection({
   if (branches.length <= 1) return null;
 
   return (
-    <section style={{ marginTop: 24 }}>
-      <h2 style={{ fontSize: 18, marginBottom: 12 }}>{labels.branchesTitle}</h2>
-      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+    <section className="business-branches" aria-labelledby="business-branches-heading">
+      <h2 id="business-branches-heading" className="business-showcase__heading">
+        {labels.branchesTitle}
+      </h2>
+      <ul className="business-branches__list">
         {branches.map((branch) => {
           const isActive = activeLocationId != null && branch.id === activeLocationId;
           const href = canonicalBusinessPagePath(
@@ -37,33 +40,30 @@ export function BusinessBranchesSection({
             branch.id,
           );
           return (
-            <li
-              key={branch.id}
-              style={{
-                border: isActive
-                  ? '2px solid var(--blue)'
-                  : '1px solid var(--border)',
-                borderRadius: 12,
-                padding: '12px 14px',
-                marginBottom: 10,
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                <strong>{cityNameForLocale(locale, branch.city)}</strong>
-                {branch.isPrimary ? (
-                  <span style={{ fontSize: 12, color: 'var(--muted)' }}>
-                    {labels.primaryBadge}
+            <li key={branch.id}>
+              <Link
+                href={href}
+                className={`business-branches__card${isActive ? ' business-branches__card--active' : ''}`}
+                aria-current={isActive ? 'true' : undefined}
+              >
+                <div className="business-branches__card-head">
+                  <strong>{cityNameForLocale(locale, branch.city)}</strong>
+                  <span className="business-branches__badges">
+                    {isActive ? (
+                      <span className="business-branches__badge business-branches__badge--selected">
+                        {labels.selectedBranch}
+                      </span>
+                    ) : null}
+                    {branch.isPrimary ? (
+                      <span className="business-branches__badge">{labels.primaryBadge}</span>
+                    ) : null}
                   </span>
+                </div>
+                <p className="business-branches__address">{branch.address}</p>
+                {branch.phone ? (
+                  <p className="business-branches__phone">{branch.phone}</p>
                 ) : null}
-              </div>
-              <p style={{ margin: '6px 0 0', color: 'var(--muted)' }}>
-                <Link href={href} style={{ color: 'inherit', textDecoration: isActive ? 'underline' : 'none' }}>
-                  {branch.address}
-                </Link>
-              </p>
-              {branch.phone ? (
-                <p style={{ margin: '4px 0 0', fontSize: 14 }}>{branch.phone}</p>
-              ) : null}
+              </Link>
             </li>
           );
         })}

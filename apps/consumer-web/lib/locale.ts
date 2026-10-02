@@ -84,6 +84,17 @@ export type UiLabels = {
   businessOpenMap: string;
   businessNoReviews: string;
   businessReadMoreReviews: string;
+  businessWorkHoursTitle: string;
+  businessHoursClosed: string;
+  businessSelectedBranch: string;
+  businessContactPhone: string;
+  businessContactWhatsApp: string;
+  businessContactInstagram: string;
+  businessContactWebsite: string;
+  businessNoRatingYet: string;
+  businessOwnerReply: string;
+  businessDescriptionTitle: string;
+  workHoursWeekdays: readonly [string, string, string, string, string, string, string];
   homeSectionPromotions: string;
   emptyHomePromotions: string;
 };
@@ -149,6 +160,17 @@ export const UI_LABELS: Record<AppLocale, UiLabels> = {
     businessOpenMap: 'Открыть на карте',
     businessNoReviews: 'Отзывов пока нет.',
     businessReadMoreReviews: 'и ещё отзывы',
+    businessWorkHoursTitle: 'График работы',
+    businessHoursClosed: 'Закрыто',
+    businessSelectedBranch: 'Выбранный филиал',
+    businessContactPhone: 'Позвонить',
+    businessContactWhatsApp: 'WhatsApp',
+    businessContactInstagram: 'Instagram',
+    businessContactWebsite: 'Сайт',
+    businessNoRatingYet: 'Пока нет оценок',
+    businessOwnerReply: 'Ответ заведения',
+    businessDescriptionTitle: 'Описание',
+    workHoursWeekdays: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
     homeSectionPromotions: 'Акции',
     emptyHomePromotions: 'Сейчас нет активных акций в этом городе.',
   },
@@ -212,6 +234,17 @@ export const UI_LABELS: Record<AppLocale, UiLabels> = {
     businessOpenMap: 'Картада ашу',
     businessNoReviews: 'Пікірлер әлі жоқ.',
     businessReadMoreReviews: 'тағы пікірлер',
+    businessWorkHoursTitle: 'Жұмыс уақыты',
+    businessHoursClosed: 'Жабық',
+    businessSelectedBranch: 'Таңдалған филиал',
+    businessContactPhone: 'Қоңырау шалу',
+    businessContactWhatsApp: 'WhatsApp',
+    businessContactInstagram: 'Instagram',
+    businessContactWebsite: 'Сайт',
+    businessNoRatingYet: 'Бағалаулар әлі жоқ',
+    businessOwnerReply: 'Мекеме жауабы',
+    businessDescriptionTitle: 'Сипаттама',
+    workHoursWeekdays: ['Дс', 'Се', 'Ср', 'Бс', 'Жм', 'Сн', 'Жс'],
     homeSectionPromotions: 'Акциялар',
     emptyHomePromotions: 'Бұл қалада белсенді акциялар жоқ.',
   },

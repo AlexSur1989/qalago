@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
-import { BusinessBranchesSection } from '@/components/BusinessBranchesSection';
 import { BusinessShowcase } from '@/components/BusinessShowcase';
 import { JsonLd } from '@/components/JsonLd';
 import {
@@ -89,16 +88,14 @@ export default async function CanonicalBusinessPage({
     <div className="page">
       <Breadcrumbs items={crumbs} />
       <JsonLd data={breadcrumbListJsonLd(jsonLdItems)} />
-      <BusinessShowcase business={data.business} locale={locale} labels={labels} />
-      <BusinessBranchesSection
-        locale={routeLocale}
+      <BusinessShowcase
+        business={data.business}
+        locale={locale}
+        labels={labels}
+        routeLocale={routeLocale}
         businessSlug={businessSlug}
         branches={data.branches}
         activeLocationId={data.activeLocationId}
-        labels={{
-          branchesTitle: labels.businessBranchesTitle,
-          primaryBadge: labels.businessPrimaryBranchBadge,
-        }}
       />
     </div>
   );

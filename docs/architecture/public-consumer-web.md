@@ -840,7 +840,7 @@ Consumer Web **CW STATUS: CLOSED** only when:
 | **CW.2** | Public UI foundation | **CLOSED** — see § **CW.2** below |
 | **CW.3** | Backend-controlled home system | **CLOSED** — see § **CW.3** below |
 | **CW.4** | Discovery home | **CLOSED** — see § **CW.4** below |
-| **CW.5** | Business detail completion | Hours, branch UX, contacts, reviews read-only polish, states |
+| **CW.5** | Business detail completion | **CLOSED** — see § **CW.5** below |
 | **CW.6** | Web ads + analytics | Unified serve + event ingest on web surfaces |
 | **CW.7** | Promotions discovery | Dedicated city promotions page |
 | **CW.8** | CI + performance + final physical QA | Closure |
@@ -906,7 +906,23 @@ Consumer Web **CW STATUS: CLOSED** only when:
 
 **Ads boundary (CW.4):** Consumer Web **does not** call ad serve or emit ad impression/click events.
 
-**Handoff:** **CW.5** — business detail completion; **CW.6** — VIP/featured ad-backed blocks + web analytics; **CW.7** — city promotions discovery page.
+**Handoff:** **CW.6** — VIP/featured ad-backed blocks + web analytics; **CW.7** — city promotions discovery page.
+
+### CW.5 — Business detail completion (IMPLEMENTED)
+
+**Route (unchanged F.4):** `/{locale}/{citySlug}/business/{businessSlug}?locationId=` — branch context via query; SEO canonical excludes `locationId`.
+
+**Data:** single slug detail fetch (`GET /businesses/by-slug/...`) + `GET /businesses/:id/locations/public` for branch list. Effective physical/media/catalog/promotions follow **`activeLocationId`** / **`effectivePhysical`** (BusinessLocation authority).
+
+**Rendered (public DTO):** identity (cover, title, category/subcategories, rating when `reviewCount > 0`, tagline); long **description** section when distinct from tagline; **contacts** (address + tel/WhatsApp/Instagram/website actions); **work hours** table from `effectivePhysical.workHours` (mon–sun string/object contract, localized weekday labels); **external map** link when lat/lon present; gallery/catalog/promotions previews; **read-only reviews** preview (`PUBLIC_REVIEWS_PREVIEW_LIMIT` = 3) with dates and **ownerReply** when present — **no** review submission UI.
+
+**Reviews scope:** finite **preview only** on the business page (no separate reviews route; no extra public list fetch in CW.5).
+
+**Branch UX:** multi-branch list under header; **`aria-current`** on selected branch; links preserve canonical path + `locationId`; full navigation reloads detail with branch-effective contacts/hours/address.
+
+**Not in CW.5:** embedded map, web analytics on contacts (CW.6), ad serve, review write, DTO privacy hardening (see changelog — `ownerId` / plan fields still in raw JSON).
+
+**Config failure N/A** on detail (404/409 redirect per F.4 unchanged).
 
 ### Global continuity (after CW closes — not started now)
 
