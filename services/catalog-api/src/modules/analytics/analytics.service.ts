@@ -315,9 +315,11 @@ export class AnalyticsService {
   }
 
   private assertContextRules(dto: CreateAnalyticsEventDto) {
+    const searchQueryCountsAsAttribution =
+      dto.searchQuery != null && dto.type !== AnalyticsEventType.SEARCH_PERFORMED;
     const hasAttribution =
       dto.trafficSource != null ||
-      dto.searchQuery != null ||
+      searchQueryCountsAsAttribution ||
       dto.audienceDistanceBucket != null ||
       dto.discoverySurface != null;
 

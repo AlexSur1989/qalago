@@ -117,6 +117,32 @@ describe('Stage 6.5 analytics foundation', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
+  it('accepts SEARCH_PERFORMED with cityId and searchQuery (web search funnel)', async () => {
+    const { prisma, service } = createService();
+    prisma.city.findFirst.mockResolvedValue({ id: 'city-1' });
+    prisma.analyticsEvent.findUnique.mockResolvedValue(null);
+    prisma.analyticsEvent.create.mockResolvedValue({ id: 'e-search' });
+
+    await service.track({
+      type: AnalyticsEventType.SEARCH_PERFORMED,
+      cityId: 'city-1',
+      searchQuery: '  bar  ',
+      platform: AnalyticsPlatform.WEB,
+      sessionId: 'a'.repeat(32),
+    });
+
+    expect(prisma.analyticsEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          type: AnalyticsEventType.SEARCH_PERFORMED,
+          cityId: 'city-1',
+          searchQuery: 'bar',
+          platform: AnalyticsPlatform.WEB,
+        }),
+      }),
+    );
+  });
+
   it('normalizes search query and rejects attribution on actions', async () => {
     const { prisma, service } = createService();
     prisma.business.findFirst.mockResolvedValue({ id: 'biz-1', cityId: 'city-1' });

@@ -104,7 +104,7 @@
 | **CW.4** | **CLOSED — DISCOVERY HOME** (incl. **CW.4A** closure verification) |
 | **CW.5** | **CLOSED — BUSINESS DETAIL COMPLETION** (+ **CW.5A** live browser closure verified **2026-10-02**) — **`public-consumer-web.md`** § **CW.5** |
 | **CW.6** | **CLOSED — WEB ADS + ANALYTICS (CW.6 + CW.6A live QA)** — **`public-consumer-web.md`** § **CW.6** |
-| **CW.6A** | **PASS — LIVE WEB ADS + ANALYTICS QA** — serve/impression/click/session/analytics verified; a84 fixture cleaned |
+| **CW.6A** | **PASS — LIVE WEB ADS + ANALYTICS QA** — serve/impression/click/session/analytics verified; **SEARCH_PERFORMED** live DB verified (post-fix); a84 fixture cleaned |
 | **CW (track)** | **ACTIVE** — **CW.1–CW.6 CLOSED** · **CW.7–CW.8 NOT STARTED** · F.4–F.8 **remain CLOSED** |
 | **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = CLOSED** · **CW ACTIVE** · Mobile UI/UX after CW · production/security/pre-VPS · **SCALE** later |
 | **Next** | **CW.7** — Promotions discovery page (**no UXA.14**; **KZ-C.2+** not started) |
