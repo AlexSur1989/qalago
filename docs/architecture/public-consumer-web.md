@@ -897,7 +897,7 @@ Consumer Web **CW STATUS: CLOSED** only when:
 | `sectionType` | CW.4 behavior | Data source | Deferred |
 |---------------|---------------|-------------|----------|
 | **CATEGORIES** | Full section (grid, heading, “all categories” CTA, empty state) | Existing public categories API | — |
-| **HOME_PROMOTIONS** | Home preview (limited count); cards link to **business detail** only | **`GET /promotions?citySlug&activeNow=true&limit=6`** | Dedicated **`/{locale}/{citySlug}/promotions`** route → **CW.7** (no broken CTA in CW.4) |
+| **HOME_PROMOTIONS** | Home preview (limit 6) + **«Все акции»** CTA → **`/{locale}/{citySlug}/promotions`**; cards → canonical business | **`GET /promotions?citySlug&activeNow=true&limit=6`** | Paid **HOME_PROMOTIONS** strip → **CW.6** only |
 | **HOME_VIP_BANNER** | **Skipped** (no ad chrome, no synthetic banner) | — | Paid serve + analytics → **CW.6** (`/monetization/ads/serve`) |
 | **HOME_FEATURED** | **Skipped** | — | Same semantics as mobile **HOME_FEATURED ad placement** (paid slot), not organic “featured” catalog query → **CW.6** |
 | **NEARBY** | **Skipped** | — | Requires device geo (mobile contract); no fabricated browser “nearby” |
@@ -938,9 +938,27 @@ Consumer Web **CW STATUS: CLOSED** only when:
 
 **Organic analytics (client, best-effort):** **`VIEW_BUSINESS`**, **`SEARCH_PERFORMED`**, contact **`CALL_CLICK` / `WHATSAPP_CLICK` / `WEBSITE_CLICK` / `ROUTE_CLICK` / `INSTAGRAM_CLICK`**, home **`PROMOTION_VIEW`** on organic promo cards; **`platform=WEB`**. Failures non-blocking.
 
-**Deferred / out of scope:** **`PAGE_VIEW`** (no taxonomy event), dedicated **`BRANCH_SELECT`** (branch switch re-tracks **`VIEW_BUSINESS`** on navigation reload), **`CW.7`** promotions hub, **`KZ-C.3`** DTO hardening, embedded map.
+**Deferred / out of scope:** **`PAGE_VIEW`** (no taxonomy event), dedicated **`BRANCH_SELECT`** (branch switch re-tracks **`VIEW_BUSINESS`** on navigation reload), **`KZ-C.3`** DTO hardening, embedded map.
 
-**Handoff:** **CW.7** — dedicated city promotions discovery page.
+**Handoff:** **CW.7** — city promotions discovery (implemented); **CW.8** — final CI / performance / closure.
+
+### CW.7 — City promotions discovery (IMPLEMENTED)
+
+**Route:** **`/{locale}/{citySlug}/promotions`** — reserved segment (no category collision); invalid city → **404**.
+
+**Data:** public **`GET /promotions?citySlug=&activeNow=true&page=&limit=20`** (same backend as CW.4 home preview; expiry/plan/city eligibility owned by **`PromotionsService`** — no duplicate frontend filters).
+
+**UI:** organic **`OrganicPromotionCard`** list (image, title, business, optional description/period, **`discountText`** when present); **no ad labels**; **`PaginationLinks`** via **`?page=`**; localized empty + load-error states.
+
+**Business links:** **`/{locale}/{citySlug}/business/{slug}?locationId=`** when **`contextLocationId`** present.
+
+**Home:** **`HomePromotionsSection`** CTA **RU «Все акции»** / **KK «Барлық акциялар»** → promotions page; organic preview + paid strip unchanged (**CW.6**).
+
+**Analytics:** **`TrackedPromotionLink`** → **`PROMOTION_VIEW`** with **`trafficSource=PROMOTIONS`**, **`discoverySurface=PROMOTION_LIST`**, **`platform=WEB`** (organic endpoint; not **`AD_CLICK`**).
+
+**SEO:** indexable **`metadataForCityPromotions`** — localized title/description, self-canonical, reciprocal **hreflang**; **BreadcrumbList** JSON-LD (Home → Promotions).
+
+**Handoff:** **CW.8** — Consumer Web final CI / performance / closure gate.
 
 ### Global continuity (after CW closes — not started now)
 

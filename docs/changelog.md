@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-02 — CW.7 PASS — City promotions discovery
+
+- **Status:** **CW.7 PASS — CITY PROMOTIONS DISCOVERY COMPLETE**. **CW.8 not started**. **F.4–F.8 remain CLOSED**.
+- **Starting HEAD:** **`81df621962dc95f9f4cea26fb25fe24d8ecdd86c`** (CW.6 search closure).
+- **Checkpoint (commit):** **`94a3b67`** — `feat(cw): CW.7 city promotions discovery page`.
+- **Summary:** Dedicated organic route **`/{locale}/{citySlug}/promotions`** on Consumer Web — **`GET /promotions?citySlug&activeNow=true&page&limit=20`**, pagination, **`OrganicPromotionCard`**, canonical business links with **`locationId`**, RU/KK UI + SEO (indexable canonical/hreflang) + breadcrumbs JSON-LD. Home **`HomePromotionsSection`** CTA **«Все акции»** / **«Барлық акциялар»**. Organic analytics **`PROMOTION_VIEW`** (**`discoverySurface=PROMOTION_LIST`**) — live DB verified after minimal backend attribution fix for promotion events. **Regression:** consumer-web **383/383**, **`check:ui-strings`**, **`build`** PASS; **`analytics-stage-6-5`** PASS.
+- **Live QA:** **`/ru/uralsk/promotions`**, **`/kk/uralsk/promotions`** — cards, city scope, business navigation; **Uralsk vs Aktobe** feed isolation; home CTA; **PROMOTION_VIEW** persisted (**platform=WEB**, **promotionId**). No paid ad labels on organic page.
+- **Deferred:** Dedicated promotions sitemap entries (global SEO architecture unchanged); exhaustive multi-page pagination manual QA when seed exceeds one page.
+- **Next:** **CW.8** — final CI / performance / Consumer Web closure.
+
+---
+
 ## 2026-10-02 — CW.6A PASS — Web ads + analytics live closure QA
 
 - **Status:** **CW.6A PASS — WEB ADS AND ANALYTICS LIVE QA VERIFIED**. **CW.6 STATUS: CLOSED**. **CW.7 not started**. **F.4–F.8 remain CLOSED**.
