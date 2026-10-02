@@ -50,7 +50,11 @@ export class HomeSectionConfigService {
     return effective
       .filter((r) => r.enabled)
       .filter((r) => r.platform === HomeSectionPlatform.ALL || r.platform === platform)
-      .sort((a, b) => a.position - b.position)
+      .sort(
+        (a, b) =>
+          a.position - b.position ||
+          String(a.sectionType).localeCompare(String(b.sectionType)),
+      )
       .map((r) => ({
         type: r.sectionType as unknown as import('@qalago/shared-types').HomeSectionType,
         enabled: r.enabled,

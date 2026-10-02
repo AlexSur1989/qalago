@@ -117,6 +117,101 @@ describe('HomeSectionConfigService (CW.3)', () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
+  it('resolution: WEB-only global excluded from APP query', async () => {
+    const rows = [
+      {
+        id: 'w1',
+        sectionType: HomeSectionType.HOME_FEATURED,
+        platform: HomeSectionPlatform.WEB,
+        enabled: true,
+        position: 30,
+        cityId: null,
+      },
+    ];
+    const prisma = {
+      homeSectionConfig: {
+        findMany: jest.fn(async ({ where }: { where: { cityId: string | null } }) => {
+          if (where.cityId === null) return [...globalRows, ...rows];
+          return [];
+        }),
+      },
+    } as unknown as PrismaService;
+    const cityScope = {
+      resolveCityId: jest.fn(async () => cityId),
+    } as unknown as CityScopeService;
+    const service = new HomeSectionConfigService(prisma, cityScope);
+    const app = await service.resolvePublicSections('uralsk', HomeSectionPlatform.APP);
+    expect(app.some((s) => s.type === 'HOME_FEATURED')).toBe(false);
+    const web = await service.resolvePublicSections('uralsk', HomeSectionPlatform.WEB);
+    expect(web.some((s) => s.type === 'HOME_FEATURED')).toBe(true);
+  });
+
+  it('resolution: tie-break by sectionType when positions equal', async () => {
+    const tied = [
+      {
+        id: 't1',
+        sectionType: HomeSectionType.NEARBY,
+        platform: HomeSectionPlatform.ALL,
+        enabled: true,
+        position: 10,
+        cityId: null,
+      },
+      {
+        id: 't2',
+        sectionType: HomeSectionType.HOME_VIP_BANNER,
+        platform: HomeSectionPlatform.ALL,
+        enabled: true,
+        position: 10,
+        cityId: null,
+      },
+    ];
+    const prisma = {
+      homeSectionConfig: {
+        findMany: jest.fn(async ({ where }: { where: { cityId: string | null } }) => {
+          if (where.cityId === null) return tied;
+          return [];
+        }),
+      },
+    } as unknown as PrismaService;
+    const cityScope = {
+      resolveCityId: jest.fn(async () => cityId),
+    } as unknown as CityScopeService;
+    const service = new HomeSectionConfigService(prisma, cityScope);
+    const out = await service.resolvePublicSections('uralsk', HomeSectionPlatform.WEB);
+    expect(out.map((s) => s.type)).toEqual(['HOME_VIP_BANNER', 'NEARBY']);
+  });
+
+  it('resolution: no duplicate sectionType in output', async () => {
+    const { service } = createService([
+      {
+        id: 'c1',
+        sectionType: HomeSectionType.CATEGORIES,
+        platform: HomeSectionPlatform.ALL,
+        enabled: true,
+        position: 15,
+        cityId,
+      },
+    ]);
+    const out = await service.resolvePublicSections('uralsk', HomeSectionPlatform.WEB);
+    const types = out.map((s) => s.type);
+    expect(new Set(types).size).toBe(types.length);
+  });
+
+  it('city admin cannot write other city', async () => {
+    const { service, cityScope } = createService();
+    (cityScope.getCityAdminScopeCityIds as jest.Mock).mockResolvedValue(['other-city']);
+    const user = { id: 'u1', role: UserRole.CITY_ADMIN } as AuthUser;
+    await expect(
+      service.upsertForAdmin(user, {
+        sectionType: SharedHomeSectionType.CATEGORIES,
+        citySlug: 'uralsk',
+        enabled: true,
+        position: 20,
+        platform: SharedHomeSectionPlatform.ALL,
+      }),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
   it('city admin can upsert city-scoped row', async () => {
     const { service, prisma } = createService();
     const user = { id: 'u1', role: UserRole.CITY_ADMIN } as AuthUser;

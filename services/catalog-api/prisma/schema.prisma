@@ -706,7 +706,8 @@ model HomeSectionConfig {
   updatedAt    DateTime            @updatedAt
   city         City?               @relation(fields: [cityId], references: [id], onDelete: Cascade)
 
-  @@unique([cityId, sectionType])
+  /// DB-enforced partial uniques (CW.3A): one row per sectionType when cityId IS NULL;
+  /// one row per (cityId, sectionType) when cityId IS NOT NULL — see migration SQL.
   @@index([cityId, position])
 }
 

@@ -46,7 +46,10 @@ export default function HomeSectionsSettingsPage() {
 
   useEffect(() => {
     if (!ready || !token || !user) return;
-    if (!globalAdmin) setEditScope('city');
+    if (!globalAdmin) {
+      setEditScope('city');
+      if (user.managedCity?.slug) setCitySlug(user.managedCity.slug);
+    }
     void load();
   }, [ready, token, user, load, globalAdmin]);
 
@@ -112,9 +115,12 @@ export default function HomeSectionsSettingsPage() {
           </label>
         </div>
       ) : (
-        <p className="muted">Городской администратор — только override для своего города.</p>
+        <p className="muted">
+          Городской администратор — только override для города{' '}
+          <strong>{citySlug || user.managedCity?.slug || '…'}</strong> (глобальные строки недоступны).
+        </p>
       )}
-      {editScope === 'city' || !globalAdmin ? (
+      {globalAdmin && editScope === 'city' ? (
         <div className="form-row" style={{ marginBottom: '1rem', maxWidth: 360 }}>
           <label htmlFor="home-config-city">citySlug</label>
           <input
@@ -122,7 +128,6 @@ export default function HomeSectionsSettingsPage() {
             className="input"
             value={citySlug}
             onChange={(e) => setCitySlug(e.target.value.trim())}
-            disabled={!globalAdmin}
           />
         </div>
       ) : null}
