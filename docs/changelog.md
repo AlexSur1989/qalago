@@ -10,7 +10,7 @@
 
 - **Status:** **CW.5 PASS — BUSINESS DETAIL COMPLETE**. **CW.5 STATUS: CLOSED**. **CW.6+ not started**. **F.4–F.8 remain CLOSED**.
 - **Starting HEAD:** **`5558e6f86da8d6bb19683b4b2cdfa6a249c4aede`** (CW.4A closure).
-- **Checkpoint (commit):** _(set on commit)_ — `feat(cw): CW.5 business detail completion`.
+- **Checkpoint (commit):** **`f647774`** — `feat(cw): CW.5 business detail completion`.
 - **Summary:** Polished **BusinessShowcase** on canonical F.4 route: identity/rating zero-state, description section, contact action links (tel/WhatsApp/Instagram/website), **work hours** from `effectivePhysical.workHours`, external OSM navigation, gallery/catalog/promotion cards with media, read-only reviews preview (dates + owner reply). **Branch UX** moved under header with selected-state styling + `locationId` links. **`loading.tsx`** for business route. **No backend changes.** **Privacy debt noted:** raw detail JSON still exposes `ownerId`, plan/featured fields, review `userId` — not hardened in CW.5. **Verification:** consumer-web **348/348**, **`check:ui-strings`**, **`build`** PASS; branch effective-address switch verified on **`aop7-test-cafe`** via public API.
 - **Deferred:** Public DTO field trimming (**KZ-C.3+**); contact/review analytics (**CW.6**); full paginated reviews route; embedded map.
 - **Next:** **CW.6** — Web ads + analytics.
