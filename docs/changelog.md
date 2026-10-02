@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-10-02 — CW.4A PASS — Discovery home closure verified
+
+- **Status:** **CW.4A PASS — DISCOVERY HOME CLOSURE VERIFIED**. **CW.4 STATUS: CLOSED**. **CW.5+ not started**. **F.4–F.8 remain CLOSED**.
+- **Starting HEAD:** **`d36413d3cebd66aeb5b819ad7c2025f653905979`** (CW.4 implementation + docs checkpoint).
+- **Checkpoint (commit):** _(docs-only closure — see git log)_.
+- **Summary:** **Live Admin UI QA** (Platform Admin, **`/settings/home-sections`**, GLOBAL): **CATEGORIES enabled=false** → save → public GET omits CATEGORIES → Consumer Web **`next start`** refresh hides Categories, Promotions remain; **restore enabled=true** → API + Consumer Web show Categories again (**no Consumer Web rebuild**). **Order QA:** GLOBAL **CATEGORIES 20→60** → visible home **Акции before Категории** (DOM + a11y); **restored 20**. **Responsive** (production build, `/ru/uralsk`): **320 / 390 / 768 / 1024 / 1440** — no horizontal body overflow; hero/search/categories/promotions/shell present. **RU/KK** spot-check PASS. **Regression:** consumer-web **340/340**, **`check:ui-strings`**, **`build`** PASS. **Fallback:** `cw4-discovery-home.test.ts` — `uses categories-only documented fallback when config fetch fails`.
+- **Deferred:** Unchanged from CW.4 (VIP/featured ad blocks **CW.6**, promotions page **CW.7**, Flutter home config).
+- **Next:** **CW.5** — Business detail completion.
+
+---
+
 ## 2026-10-02 — CW.4 PASS — Discovery home
 
 - **Status:** **CW.4 PASS — DISCOVERY HOME COMPLETE**. **CW.4 STATUS: CLOSED**. **CW.5+ not started**. **F.4–F.8 remain CLOSED**.

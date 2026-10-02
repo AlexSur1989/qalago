@@ -101,7 +101,7 @@
 | **CW.1** | **PASS — CONSUMER WEB PRODUCT SCOPE LOCKED** — **Option B (guest + richer discovery)** — **`docs/architecture/public-consumer-web.md`** § **CW** |
 | **CW.2** | **CLOSED — PUBLIC UI FOUNDATION** (incl. **CW.2A** closure verification) |
 | **CW.3** | **CLOSED — BACKEND-CONTROLLED HOME SYSTEM** (incl. **CW.3A** DB invariants + closure verification) |
-| **CW.4** | **CLOSED — DISCOVERY HOME** (config-driven city home; categories + promotions preview; VIP/featured/nearby deferred per § CW.4 in **`public-consumer-web.md`**) |
+| **CW.4** | **CLOSED — DISCOVERY HOME** (incl. **CW.4A** live Admin disable/order QA + responsive matrix **2026-10-02**; see **`docs/changelog.md`**) |
 | **CW (track)** | **ACTIVE** — **CW.1–CW.4 CLOSED** · **CW.5–CW.8 NOT STARTED** · F.4–F.8 **remain CLOSED** |
 | **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = CLOSED** · **CW ACTIVE** · Mobile UI/UX after CW · production/security/pre-VPS · **SCALE** later |
 | **Next** | **CW.5** — Business detail completion (**no UXA.14**; **KZ-C.2+** not started) |
