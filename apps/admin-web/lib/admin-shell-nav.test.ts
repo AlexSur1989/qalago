@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { UserRole } from './rbac';
 import {
   showAdminAuditNav,
+  showAdminHomeSectionsNav,
   showAdminPlatformSettingsNav,
   showAdminSettingsNav,
   showAdminStaffNav,
@@ -23,6 +24,12 @@ describe('admin shell nav visibility (UXA.2)', () => {
   it('platform settings subnav is SUPER_ADMIN only', () => {
     expect(showAdminPlatformSettingsNav(UserRole.SUPER_ADMIN)).toBe(true);
     expect(showAdminPlatformSettingsNav(UserRole.ADMIN)).toBe(false);
+  });
+
+  it('home sections nav for global admin and city admin', () => {
+    expect(showAdminHomeSectionsNav(UserRole.ADMIN)).toBe(true);
+    expect(showAdminHomeSectionsNav(UserRole.CITY_ADMIN)).toBe(true);
+    expect(showAdminHomeSectionsNav(UserRole.MODERATOR)).toBe(false);
   });
 
   it('audit nav uses canViewAdminAuditLogs matrix', () => {

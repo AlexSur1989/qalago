@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { showAdminPlatformSettingsNav } from '@/lib/admin-shell-nav';
+import { showAdminHomeSectionsNav, showAdminPlatformSettingsNav } from '@/lib/admin-shell-nav';
 import type { AuthUser } from '@/lib/api';
 
 type SettingsSubNavProps = {
@@ -12,6 +12,7 @@ type SettingsSubNavProps = {
 export function SettingsSubNav({ user }: SettingsSubNavProps) {
   const pathname = usePathname();
   const superPlatform = showAdminPlatformSettingsNav(user.role);
+  const homeSections = showAdminHomeSectionsNav(user.role);
 
   return (
     <nav className="shell-section-subnav" aria-label="Настройки">
@@ -22,6 +23,15 @@ export function SettingsSubNav({ user }: SettingsSubNavProps) {
       >
         Безопасность
       </Link>
+      {homeSections ? (
+        <Link
+          href="/settings/home-sections"
+          className={`shell-section-subnav-item${pathname === '/settings/home-sections' ? ' active' : ''}`}
+          aria-current={pathname === '/settings/home-sections' ? 'page' : undefined}
+        >
+          Главная (секции)
+        </Link>
+      ) : null}
       {superPlatform ? (
         <Link
           href="/settings/platform"
