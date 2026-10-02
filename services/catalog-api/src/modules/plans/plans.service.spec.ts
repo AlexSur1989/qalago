@@ -71,6 +71,8 @@ describe('PlansService — subscription vs paid visibility (Stage 4C.1)', () => 
       asBusinessAccessService(createMockBusinessAccess()),
       asAuditLogService(createMockAuditLog()),
       config,
+      { resolveAdminCityId: jest.fn(), assertCityInAdminScope: jest.fn() } as never,
+      { assertPermission: jest.fn() } as never,
     );
     return { service, tx, prisma };
   }
@@ -107,6 +109,11 @@ describe('PlansService — subscription vs paid visibility (Stage 4C.1)', () => 
     expect(tx.adCampaign.create).not.toHaveBeenCalled();
     expect(tx.adCampaign.updateMany).not.toHaveBeenCalled();
     expect(tx.adCampaign.deleteMany).not.toHaveBeenCalled();
+    expect(tx.planPayment.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ status: 'COMPLETED' }),
+      }),
+    );
   });
 
   it('does not archive promotions on tier change', async () => {

@@ -212,6 +212,9 @@ export class AvailabilityService {
     ) {
       return status;
     }
+    if (status === AdCampaignStatus.PENDING_MODERATION) {
+      return status;
+    }
     if (this.isExpired(endAt, now)) {
       return AdCampaignStatus.COMPLETED;
     }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { StaffPermission } from '@qalago/shared-types';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import {
@@ -13,13 +13,17 @@ import {
   AdminListCreativesQueryDto,
   AdminListOrdersQueryDto,
   AdminListPaymentsQueryDto,
+  AdminListProductPricesQueryDto,
   CampaignAnalyticsQueryDto,
   ConfirmPaymentDto,
+  CreateAdminProductPriceDto,
   RejectCreativeDto,
+  UpdateAdminProductPriceDto,
 } from './dto/monetization.dto';
 import { AdAnalyticsService } from './ad-analytics.service';
 import { MonetizationService } from './monetization.service';
 import { OrderService } from './order.service';
+import { ProductPriceAdminService } from './product-price-admin.service';
 
 @Controller('admin/monetization')
 @AdminStaffRoute()
@@ -29,6 +33,7 @@ export class MonetizationAdminController {
     private readonly monetizationService: MonetizationService,
     private readonly creativeService: CreativeService,
     private readonly adAnalyticsService: AdAnalyticsService,
+    private readonly productPriceAdmin: ProductPriceAdminService,
   ) {}
 
   @RequireStaffPermission(StaffPermission.ORDER_VIEW)
@@ -153,5 +158,46 @@ export class MonetizationAdminController {
   @Get('placements')
   listPlacements(@CurrentUser() user: AuthUser) {
     return this.monetizationService.listAdminPlacements(user);
+  }
+
+  @RequireStaffPermission(StaffPermission.AD_VIEW)
+  @Get('ad-products')
+  listAdvertisingProducts(@CurrentUser() user: AuthUser) {
+    return this.productPriceAdmin.listAdvertisingProducts(user);
+  }
+
+  @RequireStaffPermission(StaffPermission.AD_VIEW)
+  @Get('product-prices')
+  listProductPrices(
+    @CurrentUser() user: AuthUser,
+    @Query() query: AdminListProductPricesQueryDto,
+  ) {
+    return this.productPriceAdmin.listProductPrices(user, query);
+  }
+
+  @RequireStaffPermission(StaffPermission.AD_MANAGE)
+  @Post('product-prices')
+  createProductPrice(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: CreateAdminProductPriceDto,
+  ) {
+    return this.productPriceAdmin.createProductPrice(user, {
+      productId: dto.productId,
+      cityId: dto.cityId,
+      durationHours: dto.durationHours ?? null,
+      durationDays: dto.durationDays ?? null,
+      price: dto.price,
+      isActive: dto.isActive,
+    });
+  }
+
+  @RequireStaffPermission(StaffPermission.AD_MANAGE)
+  @Patch('product-prices/:id')
+  updateProductPrice(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateAdminProductPriceDto,
+  ) {
+    return this.productPriceAdmin.updateProductPrice(user, id, dto);
   }
 }

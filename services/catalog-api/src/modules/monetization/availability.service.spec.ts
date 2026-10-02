@@ -228,4 +228,14 @@ describe('AvailabilityService', () => {
     );
     expect(status).toBe(AdCampaignStatus.COMPLETED);
   });
+
+  it('31b. PENDING_MODERATION ignores expired endAt (6.13M.2)', () => {
+    const status = service.resolveEffectiveStatus(
+      AdCampaignStatus.PENDING_MODERATION,
+      new Date('2026-08-01'),
+      new Date('2026-08-10'),
+      new Date('2026-09-05'),
+    );
+    expect(status).toBe(AdCampaignStatus.PENDING_MODERATION);
+  });
 });

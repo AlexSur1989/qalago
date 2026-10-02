@@ -6,6 +6,7 @@ import {
 import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsIn,
@@ -316,6 +317,62 @@ export class ConfirmPaymentDto {
   @IsOptional()
   @IsString()
   note?: string;
+}
+
+export class AdminListProductPricesQueryDto {
+  @IsOptional()
+  @IsString()
+  citySlug?: string;
+
+  @IsOptional()
+  @IsString()
+  productId?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  isActive?: boolean;
+}
+
+export class CreateAdminProductPriceDto {
+  @IsString()
+  productId!: string;
+
+  @IsString()
+  cityId!: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  durationHours?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  durationDays?: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  price!: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
+}
+
+export class UpdateAdminProductPriceDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  price?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }
 
 export class ServeAdsQueryDto extends MonetizationCityQueryDto {

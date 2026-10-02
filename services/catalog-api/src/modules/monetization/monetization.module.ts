@@ -26,6 +26,7 @@ import { PlacementCapacityService } from './placement-capacity.service';
 import { PackageSnapshotService } from './package-snapshot.service';
 import { InventoryReservationService } from './inventory-reservation.service';
 import { ProductPurchaseStateService } from './product-purchase-state.service';
+import { ProductPriceAdminService } from './product-price-admin.service';
 
 @Module({
   imports: [PlansModule, NotificationsModule, ScheduleModule.forRoot()],
@@ -53,6 +54,7 @@ import { ProductPurchaseStateService } from './product-purchase-state.service';
     AdAnalyticsService,
     AdEventsRateLimitGuard,
     CityScopeService,
+    ProductPriceAdminService,
   ],
   exports: [
     MonetizationService,

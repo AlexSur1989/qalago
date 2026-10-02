@@ -4,7 +4,7 @@ import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
-import { MockPlanCheckoutDto } from './dto/plans.dto';
+import { CreatePlanPurchaseDto, MockPlanCheckoutDto } from './dto/plans.dto';
 import { PlansService } from './plans.service';
 
 @Controller()
@@ -33,6 +33,21 @@ export class PlansController {
     @Param('businessId') businessId: string,
   ) {
     return this.plansService.listPlanPayments(user, businessId);
+  }
+
+  @Roles(UserRole.BUSINESS, UserRole.ADMIN, UserRole.CITY_ADMIN)
+  @Post('businesses/:businessId/plan/purchases')
+  createPlanPurchase(
+    @CurrentUser() user: AuthUser,
+    @Param('businessId') businessId: string,
+    @Body() dto: CreatePlanPurchaseDto,
+  ) {
+    return this.plansService.createPlanPurchase(
+      user,
+      businessId,
+      dto.tier,
+      dto.idempotencyKey,
+    );
   }
 
   @Roles(UserRole.BUSINESS, UserRole.ADMIN, UserRole.CITY_ADMIN)

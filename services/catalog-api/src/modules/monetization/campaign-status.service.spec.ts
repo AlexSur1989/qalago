@@ -33,9 +33,10 @@ describe('CampaignStatusService', () => {
   });
 
   it('28b. VIP with PENDING creative enters PENDING_MODERATION', () => {
+    const paidAt = new Date('2026-09-05T10:00:00Z');
     const result = service.resolveInitialStatus({
       desiredStartAt: null,
-      paidAt: new Date('2026-09-05T10:00:00Z'),
+      paidAt,
       creativeModerationStatus: AdModerationStatus.PENDING,
       productType: MonetizationProductType.VIP_BANNER,
       durationDays: 7,
@@ -43,6 +44,9 @@ describe('CampaignStatusService', () => {
     });
 
     expect(result.status).toBe(AdCampaignStatus.PENDING_MODERATION);
+    expect(result.endAt.getTime()).toBeGreaterThan(
+      availability.addDuration(paidAt, null, 7).getTime(),
+    );
   });
 
   it('29. approved creative with immediate start → ACTIVE', () => {

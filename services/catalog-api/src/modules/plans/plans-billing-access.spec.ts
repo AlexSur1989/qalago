@@ -68,6 +68,8 @@ describe('PlansService billing access (BIZ.7)', () => {
       businessAccess as never,
       asAuditLogService(createMockAuditLog()),
       config,
+      { resolveAdminCityId: jest.fn(), assertCityInAdminScope: jest.fn() } as never,
+      { assertPermission: jest.fn() } as never,
     );
 
     return { service, businessAccess, prisma };

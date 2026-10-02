@@ -17,6 +17,15 @@ export type CampaignActivationInput = {
   requiresCreative: boolean;
 };
 
+/** Delivery duration starts after creative approval — not during moderation. */
+export const MODERATION_PENDING_PLACEHOLDER_YEARS = 10;
+
+export function moderationPendingPlaceholderEnd(anchor: Date): Date {
+  const endAt = new Date(anchor);
+  endAt.setUTCFullYear(endAt.getUTCFullYear() + MODERATION_PENDING_PLACEHOLDER_YEARS);
+  return endAt;
+}
+
 @Injectable()
 export class CampaignStatusService {
   constructor(private readonly availability: AvailabilityService) {}
@@ -36,11 +45,6 @@ export class CampaignStatusService {
 
       if (!hasApprovedCreative) {
         const anchor = input.desiredStartAt ?? input.paidAt;
-        const endAt = this.availability.addDuration(
-          anchor,
-          input.durationHours,
-          input.durationDays,
-        );
         const awaitingModeration =
           input.creativeModerationStatus === AdModerationStatus.PENDING;
         return {
@@ -48,7 +52,7 @@ export class CampaignStatusService {
             ? AdCampaignStatus.PENDING_MODERATION
             : AdCampaignStatus.SCHEDULED,
           startAt: anchor,
-          endAt,
+          endAt: moderationPendingPlaceholderEnd(anchor),
         };
       }
 

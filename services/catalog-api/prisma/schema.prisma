@@ -98,8 +98,10 @@ enum BusinessPlanTier {
 }
 
 enum PlanPaymentStatus {
+  PENDING
   COMPLETED
   FAILED
+  CANCELLED
 }
 
 enum PromotionStatus {
@@ -1147,18 +1149,25 @@ model AnalyticsDailyDimensionMetric {
 }
 
 model PlanPayment {
-  id         String            @id @default(cuid())
-  businessId String
-  tier       BusinessPlanTier
-  amountKzt  Int               @default(0)
-  status     PlanPaymentStatus @default(COMPLETED)
-  isMock     Boolean           @default(true)
-  paidAt     DateTime          @default(now())
-  expiresAt  DateTime?
-  createdAt  DateTime          @default(now())
-  business   Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  id                String              @id @default(cuid())
+  businessId        String
+  tier              BusinessPlanTier
+  amountKzt         Int                 @default(0)
+  periodDays        Int?
+  status            PlanPaymentStatus   @default(COMPLETED)
+  isMock            Boolean             @default(true)
+  provider          PaymentProvider     @default(MANUAL)
+  providerReference String?
+  idempotencyKey    String?             @unique
+  paidAt            DateTime?
+  expiresAt         DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  business          Business            @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
   @@index([businessId, paidAt])
+  @@index([businessId, status])
+  @@index([status, createdAt])
 }
 
 // ---------------------------------------------------------------------------
