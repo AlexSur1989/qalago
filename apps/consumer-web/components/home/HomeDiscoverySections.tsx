@@ -5,6 +5,8 @@ import { HomeVipBannerAd } from '@/components/ads/HomeVipBannerAd';
 import type { HomeDiscoveryPageData } from '@/lib/home-discovery-data';
 import type { AppLocale, UiLabels } from '@/lib/locale';
 import { HomeCategoriesSection } from './HomeCategoriesSection';
+import { HomeNearbySection } from './HomeNearbySection';
+import { HomePopularOrganicSection } from './HomePopularOrganicSection';
 import { HomePromotionsSection } from './HomePromotionsSection';
 
 export function HomeDiscoverySections({
@@ -18,8 +20,22 @@ export function HomeDiscoverySections({
   labels: UiLabels;
   data: HomeDiscoveryPageData;
 }) {
-  const { layout, categories, promotions, vipBanner, featured, promotionsPaid, webSessionId } =
-    data;
+  const {
+    layout,
+    city,
+    categories,
+    promotions,
+    vipBanner,
+    featured,
+    promotionsPaid,
+    popular,
+    webSessionId,
+  } = data;
+
+  const cityCenter =
+    city.centerLat != null && city.centerLng != null
+      ? { centerLat: city.centerLat, centerLng: city.centerLng }
+      : null;
 
   if (!layout.sections.length) {
     return null;
@@ -99,7 +115,28 @@ export function HomeDiscoverySections({
               </div>
             );
           case HomeSectionType.NEARBY:
-            return null;
+            return (
+              <HomeNearbySection
+                key={section.type}
+                locale={locale}
+                citySlug={citySlug}
+                cityId={city.id}
+                labels={labels}
+                cityCenter={cityCenter}
+              />
+            );
+          case HomeSectionType.HOME_POPULAR:
+            if (popular.status !== 'ready' || !popular.data.length) return null;
+            return (
+              <HomePopularOrganicSection
+                key={section.type}
+                locale={locale}
+                citySlug={citySlug}
+                cityId={city.id}
+                labels={labels}
+                items={popular.data}
+              />
+            );
           default:
             return null;
         }

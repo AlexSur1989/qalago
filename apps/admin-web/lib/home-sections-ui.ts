@@ -6,6 +6,7 @@ export const HOME_SECTION_LABELS: Record<HomeSectionType, string> = {
   [HomeSectionType.HOME_FEATURED]: 'Рекомендуемые',
   [HomeSectionType.HOME_PROMOTIONS]: 'Акции',
   [HomeSectionType.NEARBY]: 'Рядом',
+  [HomeSectionType.HOME_POPULAR]: 'Популярное (органика)',
 };
 
 export const HOME_PLATFORM_LABELS: Record<HomeSectionPlatform, string> = {

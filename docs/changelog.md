@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-09-30 — WEB-HOME.2A PASS — Live Web home parity QA + canonical closure
+
+- **Status:** **WEB-HOME.2A PASS — LIVE WEB HOME PARITY QA VERIFIED**. **WEB-HOME.2 STATUS: CLOSED**. **READY FOR WEB-HOME.3: YES**. **PROD.3 NOT STARTED**.
+- **Starting HEAD:** **`aa08524f4c5e14b3a2c2be37e45e51854ac76975`**.
+- **Checkpoint (commit):** **`506d77e0ee4bda1d27d049f73c396502d1ae9dcb`**.
+- **Summary:** **Prisma generate PASS** after stopping local catalog-api node holding engine lock. **Migrations applied:** `20261002110000_web_home2_home_popular` (enum only) + `20261002110001_web_home2_home_popular_seed` (PG safe split). **DB:** `HomeSectionConfig` **7→8** rows; **`HOME_POPULAR@60`** global; positions **10–50** preserved. **API:** `GET /home/sections?citySlug=uralsk&platform=WEB` includes **NEARBY** + **HOME_POPULAR**. **Live QA (:3005 `npm run start`):** geo success (CDP **51.2278/51.3865**) → **«Рядом с вами»** + nearby list; far GPS / city fallback → **«Места в городе»**; **Popular** organic (no ad label); **Kids Planet** in **HOME_FEATURED** ad but excluded from **Popular** strip; **AI** `POST /ai/recommendations` **500** (orchestrator down) → **organic fallback**. **Admin-equivalent config QA:** NEARBY/POPULAR enable/disable + order swap via **`HomeSectionConfig`** (API order verified, restored). **RU/KK** section labels verified. **Responsive:** **320** body overflow **PASS** (CDP); **390/768/1024/1440 PASS** (layout/strip). **Privacy:** no geo in cookies/localStorage; analytics organic only (**no lat/lng**). **Fix:** `'use client'` on **`HomeOrganicBusinessCards`**. **Tests/builds:** Consumer **400/400**, Admin **200/200**, `home-section-config` **8/8**, catalog-api + admin + consumer **build PASS**. **Flutter:** `home_organic_dedupe_test` **PASS**; `flutter analyze` pre-existing warnings; `home_screen_layout_test` **1 pre-existing fail** (category shortcut count — unrelated).
+- **Deferred:** Production **HTTPS** geolocation gate (**PROD.1** not started); physical Admin UI click-through optional (API/DB parity verified).
+- **Next:** **WEB-HOME.3** — Flutter consumes **`GET /home/sections`** (agree before start).
+
+---
+
 ## 2026-10-02 — PROD.2 PASS — Production environment contract
 
 - **Status:** **PROD.2 PASS — PRODUCTION ENVIRONMENT CONTRACT VERIFIED**. **PROD.2 STATUS: CLOSED**. **READY FOR PROD.3: YES**. **PROD.1 / VPS / TLS / S3 implementation not started**.

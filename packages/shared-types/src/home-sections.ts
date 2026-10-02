@@ -5,6 +5,7 @@ export enum HomeSectionType {
   HOME_FEATURED = 'HOME_FEATURED',
   HOME_PROMOTIONS = 'HOME_PROMOTIONS',
   NEARBY = 'NEARBY',
+  HOME_POPULAR = 'HOME_POPULAR',
 }
 
 export enum HomeSectionPlatform {

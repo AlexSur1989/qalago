@@ -101,6 +101,12 @@ export type UiLabels = {
   promotionsPageIntro: string;
   promotionsLoadError: string;
   homeSectionFeatured: string;
+  homeSectionPopular: string;
+  homeNearbySection: string;
+  homeNearbySubtitle: string;
+  homeNearbyCitySection: string;
+  homeNearbyCitySubtitle: string;
+  homeNearbyLoading: string;
   categorySponsored: string;
   emptyHomePromotions: string;
 };
@@ -183,6 +189,12 @@ export const UI_LABELS: Record<AppLocale, UiLabels> = {
     promotionsPageIntro: 'Актуальные акции заведений в вашем городе.',
     promotionsLoadError: 'Не удалось загрузить акции. Попробуйте обновить страницу позже.',
     homeSectionFeatured: 'Популярные места',
+    homeSectionPopular: 'Популярное',
+    homeNearbySection: 'Рядом с вами',
+    homeNearbySubtitle: 'Места рядом с вами · до 3 км',
+    homeNearbyCitySection: 'Места в городе',
+    homeNearbyCitySubtitle: 'Заведения в радиусе 3 км от центра города',
+    homeNearbyLoading: 'Определяем местоположение…',
     categorySponsored: 'Рекламные места',
     emptyHomePromotions: 'Сейчас нет активных акций в этом городе.',
   },
@@ -263,6 +275,12 @@ export const UI_LABELS: Record<AppLocale, UiLabels> = {
     promotionsPageIntro: 'Қаладағы мекемелердің белсенді акциялары.',
     promotionsLoadError: 'Акцияларды жүктеу сәтсіз аяқталды. Кейінірек қайталап көріңіз.',
     homeSectionFeatured: 'Танымал орындар',
+    homeSectionPopular: 'Танымал',
+    homeNearbySection: 'Жаныңызда',
+    homeNearbySubtitle: 'Жаныңыздағы орындар · 3 км дейін',
+    homeNearbyCitySection: 'Қаладағы орындар',
+    homeNearbyCitySubtitle: 'Қала орталығынан 3 км радиусындағы мекемелер',
+    homeNearbyLoading: 'Орналасу анықталуда…',
     categorySponsored: 'Жарнамалық орындар',
     emptyHomePromotions: 'Бұл қалада белсенді акциялар жоқ.',
   },

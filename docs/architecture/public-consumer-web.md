@@ -872,7 +872,7 @@ Consumer Web **CW STATUS: CLOSED** only when:
 
 **Resolution (public `GET /home/sections`):** global rows + city rows → city overrides global per type → filter `enabled` → filter platform → sort by `position`, then **`sectionType`** (stable tie-break).
 
-**Default global seed:** `HOME_VIP_BANNER` (10), `CATEGORIES` (20), `HOME_FEATURED` (30), `HOME_PROMOTIONS` (40), `NEARBY` (50); all `enabled`, `platform=ALL`.
+**Default global seed:** `HOME_VIP_BANNER` (10), `CATEGORIES` (20), `HOME_FEATURED` (30), `HOME_PROMOTIONS` (40), `NEARBY` (50), **`HOME_POPULAR` (60)**; all `enabled`, `platform=ALL` ( **`HOME_POPULAR`** added in **WEB-HOME.2** migration).
 
 **Admin:** `GET/PATCH /admin/home-sections` — staff permissions `HOME_CONFIG_VIEW` / `HOME_CONFIG_EDIT`; ADMIN/SUPER_ADMIN global + any city; CITY_ADMIN city overrides only.
 
@@ -900,9 +900,18 @@ Consumer Web **CW STATUS: CLOSED** only when:
 | **HOME_PROMOTIONS** | Home preview (limit 6) + **«Все акции»** CTA → **`/{locale}/{citySlug}/promotions`**; cards → canonical business | **`GET /promotions?citySlug&activeNow=true&limit=6`** | Paid **HOME_PROMOTIONS** strip → **CW.6** only |
 | **HOME_VIP_BANNER** | **Skipped** (no ad chrome, no synthetic banner) | — | Paid serve + analytics → **CW.6** (`/monetization/ads/serve`) |
 | **HOME_FEATURED** | **Skipped** | — | Same semantics as mobile **HOME_FEATURED ad placement** (paid slot), not organic “featured” catalog query → **CW.6** |
-| **NEARBY** | **Skipped** | — | Requires device geo (mobile contract); no fabricated browser “nearby” |
+| **NEARBY** | *(pre–WEB-HOME.2: skipped)* | — | **WEB-HOME.2:** see below |
+| **HOME_POPULAR** | *(pre–WEB-HOME.2: N/A)* | — | **WEB-HOME.2:** see below |
 
-**Data loading:** `loadHomeDiscoveryData` fetches categories **only** when **CATEGORIES** enabled; promotions **only** when **HOME_PROMOTIONS** enabled; parallel where independent. Optional section fetch failures degrade per-section (home shell + other sections still render).
+**Data loading:** `loadHomeDiscoveryPageData` fetches categories **only** when **CATEGORIES** enabled; promotions **only** when **HOME_PROMOTIONS** enabled; parallel where independent. Optional section fetch failures degrade per-section (home shell + other sections still render).
+
+### WEB-HOME.2 — Nearby + organic Popular (IMPLEMENTED)
+
+**NEARBY (organic, config-gated):** Rendered only when **`HomeSectionConfig`** includes **`NEARBY`** for **`platform=WEB`**. Client island **`HomeNearbySection`** — no geolocation prompt when section disabled. **Browser Geolocation API** (one-shot, passive): on success, query **`GET /businesses?citySlug&latitude&longitude&radiusKm=3`** (same contract as Flutter, **`radiusKm=3`**). On deny/unsupported/error, fallback to **selected city `centerLat`/`centerLng`** from public city DTO (no hardcoded Uralsk in UI). Copy distinguishes **«Рядом с вами»** (real GPS within **25 km** of city center) vs **«Места в городе»** (city-center query — not claimed as user GPS). Empty nearby → section hidden. **No** precise coordinates in cookies/localStorage/analytics. **Production:** geolocation requires **secure context** (HTTPS); **`localhost`** valid for local QA (**PROD.1/TLS not started**).
+
+**HOME_POPULAR (organic, config-gated):** Distinct from paid **`HOME_FEATURED`**. Server **`loadHomePopularSection`**: guest-safe **`POST /ai/recommendations`** (`@Public()` proxy) when orchestrator returns items; else **`GET /businesses`** organic fallback (mirrors Flutter). **Dedupes** paid **`HOME_FEATURED`** business IDs when featured ads loaded. UI **`HomePopularOrganicSection`** horizontal strip; analytics **`BUSINESS_IMPRESSION`** / **`VIEW_BUSINESS`** with **`discoverySurface=HOME_RECOMMENDED`** (organic — not **`AD_*`**). **NEARBY** uses **`NEARBY_LIST`**.
+
+**RSC boundary:** city home remains server-rendered; **NEARBY** is the only geo-driven client island. **WEB-HOME.3** (Flutter consumes **`GET /home/sections`**) **not started**.
 
 **Ads boundary (CW.4):** Consumer Web **does not** call ad serve or emit ad impression/click events.
 
@@ -930,7 +939,7 @@ Consumer Web **CW STATUS: CLOSED** only when:
 
 **Web session:** first-party cookie **`qalago_web_session`** (32-char hex, ~30d `maxAge`, `SameSite=Lax`, not HttpOnly so client analytics can read). Created server-side via **`getOrCreateWebSessionId()`** when missing; used for serve + ad events + optional organic **`sessionId`**.
 
-**Home (config-gated):** **`loadHomeDiscoveryPageData`** fetches ads **only** when **`HomeSectionConfig`** includes the section type — VIP / FEATURED / paid HOME_PROMOTIONS never called when disabled. **HOME_PROMOTIONS:** organic preview remains **`GET /promotions`** (CW.4); paid strip is separate **`HOME_PROMOTIONS`** placement below organic (mobile parity). **Impressions:** client **`AdViewabilityTracker`** (≥50% visible 1s) + session dedupe **`campaignId:placementId`** before **`AD_IMPRESSION`**. **Clicks:** **`AD_CLICK`** via **`keepalive`** fetch; navigation not blocked.
+**Home (config-gated):** **`loadHomeDiscoveryPageData`** fetches ads **only** when **`HomeSectionConfig`** includes the section type — VIP / FEATURED / paid HOME_PROMOTIONS never called when disabled; **`HOME_POPULAR`** loads organic recommendations/fallback only when enabled (**WEB-HOME.2**). **HOME_PROMOTIONS:** organic preview remains **`GET /promotions`** (CW.4); paid strip is separate **`HOME_PROMOTIONS`** placement below organic (mobile parity). **Impressions:** client **`AdViewabilityTracker`** (≥50% visible 1s) + session dedupe **`campaignId:placementId`** before **`AD_IMPRESSION`**. **Clicks:** **`AD_CLICK`** via **`keepalive`** fetch; navigation not blocked. Organic home blocks (**NEARBY**, **HOME_POPULAR**) use **`postOrganicAnalyticsEvent`** — not ad events.
 
 **Category:** **`CATEGORY_TOP`** + **`CATEGORY_BOOST`** serve with **`categoryId`**; merged sponsored block above paginated organic list; **dedupe** via **`collectPaidBusinessIds`** + **`categoryAllPlacesAfterSponsored`** (mobile parity). Organic pagination unchanged.
 

@@ -18,6 +18,8 @@ export type CityDto = {
   slug: string;
   nameRu: string;
   nameKk?: string | null;
+  centerLat?: number | null;
+  centerLng?: number | null;
 };
 
 export async function fetchCities(): Promise<CityDto[]> {
@@ -139,6 +141,8 @@ export type BusinessSummaryDto = {
   activeLocationId?: string | null;
   /** Discovery navigation hint (A.7.9.1+) — open detail with ?locationId=. */
   contextLocationId?: string | null;
+  /** Present when listing with latitude/longitude geo query. */
+  distanceMeters?: number | null;
   effectivePhysical?: EffectivePhysicalDto;
   effectiveMedia?: EffectiveMediaDto;
   effectiveCatalog?: EffectiveCatalogDto;
@@ -202,6 +206,9 @@ export type FetchBusinessesParams = {
   search?: string;
   page?: number;
   limit?: number;
+  latitude?: number;
+  longitude?: number;
+  radiusKm?: number;
 };
 
 export async function fetchBusinesses(
@@ -215,9 +222,15 @@ export async function fetchBusinesses(
   if (params.categoryId) q.set('categoryId', params.categoryId);
   if (params.subcategoryId) q.set('subcategoryId', params.subcategoryId);
   if (params.search) q.set('search', params.search);
+  if (params.latitude != null && params.longitude != null) {
+    q.set('latitude', String(params.latitude));
+    q.set('longitude', String(params.longitude));
+    if (params.radiusKm != null) q.set('radiusKm', String(params.radiusKm));
+  }
 
+  const geoQuery = params.latitude != null && params.longitude != null;
   const res = await fetch(`${API_BASE}/businesses?${q.toString()}`, {
-    next: { revalidate: REVALIDATE_BUSINESS_LIST_SECONDS },
+    ...(geoQuery ? { cache: 'no-store' as const } : { next: { revalidate: REVALIDATE_BUSINESS_LIST_SECONDS } }),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json() as Promise<BusinessListResponse>;

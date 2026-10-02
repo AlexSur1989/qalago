@@ -31,7 +31,15 @@ export default async function CityHomePage({
   const city = await requireCity(citySlug);
   const tagline = homeTaglineForCity(locale, cityDisplayName(city, locale));
   const webSessionId = await getOrCreateWebSessionId();
-  const discovery = await loadHomeDiscoveryPageData(city.slug, webSessionId);
+  const discovery = await loadHomeDiscoveryPageData(
+    {
+      id: city.id,
+      slug: city.slug,
+      centerLat: city.centerLat ?? null,
+      centerLng: city.centerLng ?? null,
+    },
+    webSessionId,
+  );
 
   return (
     <div className="page">

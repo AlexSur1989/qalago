@@ -220,6 +220,14 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 **Product track:** **CW CLOSED** — **CW.1–CW.8 COMPLETE** (**Option B — guest + richer discovery**). Contract: **`docs/architecture/public-consumer-web.md`** § **CW**. **Next product gate:** **KZ-C.2+** / production readiness (not Consumer Web scope).
 
+**Discovery home parity (Flutter ↔ Web):**
+
+| Stage | Status | Notes |
+|-------|--------|--------|
+| **WEB-HOME.1** | **PASS (read-only audit)** | Gaps: Web **NEARBY** null; no **Popular**; Flutter ignores **`home/sections`**. Baseline **`aa08524…`**. |
+| **WEB-HOME.2** | **CLOSED / PASS (2A live QA)** | Web **NEARBY** + **`HOME_POPULAR`**; migrations applied; live geo/fallback/Popular/Admin config QA on **:3005**. See **`docs/changelog.md`** WEB-HOME.2A. |
+| **WEB-HOME.3** | **NOT STARTED** | Flutter consumes **`GET /home/sections`** — agree before start. |
+
 - **6.11F.3 PASS** — public SEO infrastructure (sitemap, robots, temporary business detail **noindex**, etc.).
 - **6.12A.9.3.4 PASS (physical QA finalized)** — Consumer Web discovery/detail physical context; **QA-001 CLOSED**.
 - **6.12A.9.3.5 PASS (physical QA finalized)** — Business Web permission-safe profile PATCH; primary-branch UX; hours-only MANAGER scope verified; closes **`A.9.3.4+`** owner slice; central audit **P1 CLOSED**.

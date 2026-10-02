@@ -11,6 +11,8 @@ import {
 } from './home-section-layout';
 import type { CityPromotionPreviewDto } from './promotions-api';
 import { fetchCityPromotionsPreview } from './promotions-api';
+import { loadHomePopularSection, type HomePopularEntry } from './home-popular-data';
+import type { CityDto } from './catalog-api';
 
 export type HomeSectionDataSlice<T> =
   | { status: 'idle' }
@@ -19,11 +21,13 @@ export type HomeSectionDataSlice<T> =
 
 export type HomeDiscoveryPageData = {
   layout: HomeSectionLayoutResult;
+  city: Pick<CityDto, 'id' | 'slug' | 'centerLat' | 'centerLng'>;
   categories: HomeSectionDataSlice<CategoryDto[]>;
   promotions: HomeSectionDataSlice<CityPromotionPreviewDto[]>;
   vipBanner: HomeSectionDataSlice<AdServeItemDto[]>;
   featured: HomeSectionDataSlice<AdServeItemDto[]>;
   promotionsPaid: HomeSectionDataSlice<AdServeItemDto[]>;
+  popular: HomeSectionDataSlice<HomePopularEntry[]>;
   webSessionId: string;
 };
 
@@ -65,15 +69,17 @@ async function loadAdPlacement(
 }
 
 export async function loadHomeDiscoveryPageData(
-  citySlug: string,
+  city: Pick<CityDto, 'id' | 'slug' | 'centerLat' | 'centerLng'>,
   webSessionId: string,
 ): Promise<HomeDiscoveryPageData> {
+  const citySlug = city.slug;
   const layout = await resolveHomeSectionLayout(citySlug);
 
   const needsCategories = layoutIncludes(HomeSectionType.CATEGORIES, layout);
   const needsPromotions = layoutIncludes(HomeSectionType.HOME_PROMOTIONS, layout);
   const needsVip = layoutIncludes(HomeSectionType.HOME_VIP_BANNER, layout);
   const needsFeatured = layoutIncludes(HomeSectionType.HOME_FEATURED, layout);
+  const needsPopular = layoutIncludes(HomeSectionType.HOME_POPULAR, layout);
 
   const [categories, promotions, vipBanner, featured, promotionsPaid] = await Promise.all([
     needsCategories ? loadCategories(citySlug) : ({ status: 'idle' } as const),
@@ -88,13 +94,22 @@ export async function loadHomeDiscoveryPageData(
     ),
   ]);
 
+  let popular: HomeSectionDataSlice<HomePopularEntry[]> = { status: 'idle' };
+  if (needsPopular) {
+    const featuredForDedupe =
+      featured.status === 'ready' ? featured.data : [];
+    popular = await loadHomePopularSection(citySlug, featuredForDedupe);
+  }
+
   return {
     layout,
+    city,
     categories,
     promotions,
     vipBanner,
     featured,
     promotionsPaid,
+    popular,
     webSessionId,
   };
 }

@@ -171,6 +171,7 @@ enum HomeSectionType {
   HOME_FEATURED
   HOME_PROMOTIONS
   NEARBY
+  HOME_POPULAR
 }
 
 enum HomeSectionPlatform {
