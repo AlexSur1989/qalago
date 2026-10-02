@@ -113,6 +113,13 @@ describe('CW.6 web ads + analytics', () => {
     expect(isValidWebSessionId('not-valid')).toBe(false);
   });
 
+  it('web session cookie is set in middleware not RSC', () => {
+    const serverSrc = readFileSync(join(APP_ROOT, 'lib/web-session-server.ts'), 'utf8');
+    expect(serverSrc).not.toContain('.set(');
+    const mwSrc = readFileSync(join(APP_ROOT, 'middleware.ts'), 'utf8');
+    expect(mwSrc).toContain('setWebSessionCookieOnResponse');
+  });
+
   it('impression dedupe is session-local per campaign+placement', () => {
     resetAdImpressionSessionForTests();
     expect(hasAdImpressionBeenSent('c1', 'p1')).toBe(false);
@@ -132,6 +139,13 @@ describe('CW.6 web ads + analytics', () => {
     const src = readFileSync(join(APP_ROOT, 'components/analytics/TrackedContactLink.tsx'), 'utf8');
     expect(src).toContain('href={href}');
     expect(src).toContain('postOrganicAnalyticsEvent');
+    expect(src).not.toContain('trafficSource');
+    expect(src).not.toContain('discoverySurface');
+  });
+
+  it('KK ad disclosure prefers locale over generic serve label', () => {
+    const src = readFileSync(join(APP_ROOT, 'components/ads/SponsoredLabel.tsx'), 'utf8');
+    expect(src).toContain('GENERIC_AD_DISCLOSURE');
   });
 
   it('organic home promotions stay separate from paid strip', () => {

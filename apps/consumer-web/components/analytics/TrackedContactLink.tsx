@@ -27,8 +27,6 @@ export function TrackedContactLink({
       type: eventType,
       businessId,
       ...(businessLocationId ? { businessLocationId } : {}),
-      trafficSource: 'DIRECT',
-      discoverySurface: 'BUSINESS_DETAIL',
     });
   };
 

@@ -1,31 +1,23 @@
-import { randomBytes } from 'node:crypto';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import {
   WEB_SESSION_COOKIE,
-  WEB_SESSION_MAX_AGE_SEC,
+  WEB_SESSION_REQUEST_HEADER,
   isValidWebSessionId,
 } from './web-session-constants';
 
-function generateWebSessionId(): string {
-  return randomBytes(16).toString('hex');
-}
-
 /**
  * Stable anonymous session for ad serve + analytics on Consumer Web.
- * Stored in a first-party cookie; rotated only when missing/invalid.
+ * Cookie is created in middleware; RSC must not mutate cookies (Next.js 15).
  */
 export async function getOrCreateWebSessionId(): Promise<string> {
   const jar = await cookies();
   const existing = jar.get(WEB_SESSION_COOKIE)?.value;
   if (isValidWebSessionId(existing)) return existing;
 
-  const id = generateWebSessionId();
-  jar.set(WEB_SESSION_COOKIE, id, {
-    httpOnly: false,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: WEB_SESSION_MAX_AGE_SEC,
-    secure: process.env.NODE_ENV === 'production',
-  });
-  return id;
+  const fromMiddleware = (await headers()).get(WEB_SESSION_REQUEST_HEADER);
+  if (isValidWebSessionId(fromMiddleware)) return fromMiddleware;
+
+  throw new Error(
+    'Missing web session: ensure consumer-web middleware applies qalago_web_session',
+  );
 }

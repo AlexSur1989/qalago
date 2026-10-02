@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-10-02 — CW.6A PASS — Web ads + analytics live closure QA
+
+- **Status:** **CW.6A PASS — WEB ADS AND ANALYTICS LIVE QA VERIFIED**. **CW.6 STATUS: CLOSED**. **CW.7 not started**. **F.4–F.8 remain CLOSED**.
+- **Starting HEAD:** **`d950f1a79273fb0b8a31095fdf0d4c6364b22056`** (CW.6 docs checkpoint).
+- **Checkpoint (commit):** *(this commit)* — CW.6A live QA fixes + closure docs.
+- **Summary:** **Live closure** on production Consumer Web (**`next build` + `next start` :3005**) against **`catalog-api` :3002**. Reversible local QA via existing **`a84-physical-ad-qa`** fixture (+ one-off **CATEGORY_BOOST** campaign); **cleaned** after QA. **Serve (`platform=WEB`)** non-empty for **HOME_VIP_BANNER**, **HOME_FEATURED**, **HOME_PROMOTIONS**, **CATEGORY_TOP**, **CATEGORY_BOOST** (Bar Code 51 → L2). **Browser QA:** VIP / featured / paid vs organic promotions / category top+boost; **RU «Реклама»** / **KK «Жарнама»** (locale wins over generic serve `displayLabel`); **HomeSectionConfig** disable **HOME_FEATURED** via Admin API → section omitted without rebuild (restored). **Mandatory analytics:** **AD_IMPRESSION** + **AD_CLICK** persisted (**platform=WEB**, placement/campaign/location); **VIEW_BUSINESS** + branch **`businessLocationId`**; contact taxonomy POST verified after fix. **Fixes (CW.6 defects):** (1) **`qalago_web_session`** issued in **middleware** (Next.js 15 forbids cookie mutation in RSC); (2) contact links must not send attribution fields on non-attribution events; (3) **KK** sponsored disclosure uses locale labels when serve label is generic. **Regression:** consumer-web **369/369**, **`check:ui-strings`**, **`build`** PASS. **Root `npm test`:** **`catalog-api`** fixture-DB specs may fail while a84 QA data present — restored after cleanup (not product regressions).
+- **Deferred:** Full **Admin Web UI** click-through for home sections (API parity verified); exhaustive **30-minute** impression dedupe manual wait (server semantics covered by existing backend tests); **SEARCH_PERFORMED** / full contact matrix re-run on every CI machine (live path verified for **CALL_CLICK** + search tracker wiring).
+- **Next:** **CW.7** — Promotions discovery page.
+
+---
+
 ## 2026-10-02 — CW.6 PASS — Web ads + analytics
 
 - **Status:** **CW.6 PASS — WEB ADS AND ANALYTICS COMPLETE**. **CW.7+ not started**. **F.4–F.8 remain CLOSED**.

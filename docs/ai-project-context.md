@@ -103,7 +103,8 @@
 | **CW.3** | **CLOSED — BACKEND-CONTROLLED HOME SYSTEM** (incl. **CW.3A** DB invariants + closure verification) |
 | **CW.4** | **CLOSED — DISCOVERY HOME** (incl. **CW.4A** closure verification) |
 | **CW.5** | **CLOSED — BUSINESS DETAIL COMPLETION** (+ **CW.5A** live browser closure verified **2026-10-02**) — **`public-consumer-web.md`** § **CW.5** |
-| **CW.6** | **CLOSED — WEB ADS + ANALYTICS** — **`public-consumer-web.md`** § **CW.6** |
+| **CW.6** | **CLOSED — WEB ADS + ANALYTICS (CW.6 + CW.6A live QA)** — **`public-consumer-web.md`** § **CW.6** |
+| **CW.6A** | **PASS — LIVE WEB ADS + ANALYTICS QA** — serve/impression/click/session/analytics verified; a84 fixture cleaned |
 | **CW (track)** | **ACTIVE** — **CW.1–CW.6 CLOSED** · **CW.7–CW.8 NOT STARTED** · F.4–F.8 **remain CLOSED** |
 | **Roadmap (product UI)** | **AOP = CLOSED** · **BIZ = CLOSED** · **UXA = CLOSED** · **CW ACTIVE** · Mobile UI/UX after CW · production/security/pre-VPS · **SCALE** later |
 | **Next** | **CW.7** — Promotions discovery page (**no UXA.14**; **KZ-C.2+** not started) |
@@ -211,7 +212,7 @@ QalaGo — городской маркетплейс/гид (MVP city: Uralsk; m
 
 **Architecture (CLOSED — preserve):** **F.4–F.8** — routing, locale SEO, legal migration, OG, deep-link well-known files. **Do not rebuild.**
 
-**Product track (ACTIVE):** **CW.1–CW.6 CLOSED** (through unified web ads + analytics). Contract: **`docs/architecture/public-consumer-web.md`** § **CW**. **CW.7 next** — city promotions discovery page.
+**Product track (ACTIVE):** **CW.1–CW.6 CLOSED** (implementation **CW.6** + live closure **CW.6A**). Contract: **`docs/architecture/public-consumer-web.md`** § **CW**. **CW.7 next** — city promotions discovery page.
 
 - **6.11F.3 PASS** — public SEO infrastructure (sitemap, robots, temporary business detail **noindex**, etc.).
 - **6.12A.9.3.4 PASS (physical QA finalized)** — Consumer Web discovery/detail physical context; **QA-001 CLOSED**.
