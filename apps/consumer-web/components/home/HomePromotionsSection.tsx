@@ -1,12 +1,9 @@
-import { TrackedPromotionLink } from '@/components/analytics/TrackedPromotionLink';
+import Link from 'next/link';
+import { OrganicPromotionCard } from '@/components/promotions/OrganicPromotionCard';
 import { PublicEmptyState } from '@/components/public/PublicState';
-import { PublicMediaImage, normalizePublicMediaSrc } from '@/components/public/PublicMediaImage';
 import type { CityPromotionPreviewDto } from '@/lib/promotions-api';
-import { canonicalBusinessPagePath } from '@/lib/business-page-paths';
 import type { AppLocale, UiLabels } from '@/lib/locale';
-import { getApiOrigin } from '@/lib/public-config';
-
-const API_ORIGIN = getApiOrigin();
+import { cityPromotionsPath } from '@/lib/routes';
 
 export function HomePromotionsSection({
   locale,
@@ -27,55 +24,24 @@ export function HomePromotionsSection({
         <h2 id="home-section-promotions-heading" className="home-section__title">
           {labels.homeSectionPromotions}
         </h2>
+        <Link className="home-section__cta" href={cityPromotionsPath(locale, citySlug)}>
+          {labels.homeAllPromotions} →
+        </Link>
       </div>
       {!items.length ? (
         showEmpty ? <PublicEmptyState message={labels.emptyHomePromotions} /> : null
       ) : (
         <ul className="home-promo-list">
-          {items.map((promo) => {
-            const href = canonicalBusinessPagePath(
-              locale,
-              citySlug,
-              promo.business.slug,
-              promo.contextLocationId ?? undefined,
-            );
-            const cover = normalizePublicMediaSrc(
-              promo.imageUrl ?? promo.business.coverImageUrl,
-              API_ORIGIN,
-            );
-            return (
-              <li key={promo.id}>
-                <TrackedPromotionLink
-                  href={href}
-                  className="home-promo-card"
-                  businessId={promo.business.id}
-                  promotionId={promo.id}
-                  businessLocationId={promo.contextLocationId}
-                >
-                  <div className="home-promo-card__media">
-                    {cover ? (
-                      <PublicMediaImage
-                        src={cover}
-                        alt=""
-                        width={80}
-                        height={80}
-                        sizes="80px"
-                      />
-                    ) : (
-                      <span className="home-promo-card__fallback" aria-hidden />
-                    )}
-                  </div>
-                  <div className="home-promo-card__body">
-                    <p className="home-promo-card__title">{promo.title}</p>
-                    <p className="home-promo-card__business">{promo.business.title}</p>
-                    {promo.discountText ? (
-                      <p className="home-promo-card__discount">{promo.discountText}</p>
-                    ) : null}
-                  </div>
-                </TrackedPromotionLink>
-              </li>
-            );
-          })}
+          {items.map((promo) => (
+            <li key={promo.id}>
+              <OrganicPromotionCard
+                locale={locale}
+                citySlug={citySlug}
+                promo={promo}
+                imageAlt=""
+              />
+            </li>
+          ))}
         </ul>
       )}
     </section>

@@ -65,13 +65,13 @@ describe('CW.4 discovery home', () => {
     expect(src).toContain('layoutIncludes(HomeSectionType.HOME_VIP_BANNER');
   });
 
-  it('promotions section has no link to reserved promotions route', () => {
+  it('promotions section links to city promotions discovery (CW.7)', () => {
     const src = readFileSync(
       join(APP_ROOT, 'components/home/HomePromotionsSection.tsx'),
       'utf8',
     );
-    expect(src).not.toMatch(/href=\{[^}]*\/promotions['"`]/);
-    expect(src).not.toMatch(/['"`]\/[^'"]*\/promotions['"`]/);
+    expect(src).toContain('cityPromotionsPath');
+    expect(src).toContain('homeAllPromotions');
   });
 
   it('home sections fetch uses no-store for admin-controlled layout', () => {

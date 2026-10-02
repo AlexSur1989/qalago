@@ -14,6 +14,8 @@ import {
   categorySeoTitle,
   cityCategoriesSeoDescription,
   cityCategoriesSeoTitle,
+  cityPromotionsSeoDescription,
+  cityPromotionsSeoTitle,
   citySeoDescription,
   citySeoTitle,
   searchSeoTitle,
@@ -98,6 +100,17 @@ export function metadataForCityCategories(
   const title = cityCategoriesSeoTitle(cityName, locale);
   const description = cityCategoriesSeoDescription(cityName, locale);
   return indexableOgBasics(title, description, locale, citySlug, ['categories']);
+}
+
+export function metadataForCityPromotions(
+  citySlug: string,
+  cityName: string,
+  locale: AppLocale,
+  page: number,
+): Metadata {
+  const title = cityPromotionsSeoTitle(cityName, locale);
+  const description = cityPromotionsSeoDescription(cityName, locale);
+  return indexableOgBasics(title, description, locale, citySlug, ['promotions'], page);
 }
 
 export function metadataForCategory(

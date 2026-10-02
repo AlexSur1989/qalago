@@ -1140,6 +1140,27 @@ body {
   font-size: var(--text-caption-size);
 }
 
+.home-promo-card__description {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-caption-size);
+  color: var(--muted, var(--color-text-secondary));
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.home-promo-card__period {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-caption-size);
+  color: var(--muted, var(--color-text-secondary));
+}
+
+.promotions-page__intro {
+  margin: 0 0 var(--space-6);
+  max-width: 42rem;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

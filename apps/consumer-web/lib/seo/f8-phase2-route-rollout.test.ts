@@ -7,6 +7,7 @@
  * | / | C redirect | layout rootSiteMetadata only (pre-redirect) | 308 → /{locale}/{city} |
  * | /[locale]/[citySlug] | A indexable | metadataForCity | RU/KK canonical |
  * | .../categories | A | metadataForCityCategories | |
+ * | .../promotions | A | metadataForCityPromotions | CW.7 organic discovery |
  * | .../[categorySlug] | A | metadataForCategory | |
  * | .../[subcategorySlug] | A | metadataForSubcategory | |
  * | .../business/[slug] | A | metadataForCanonicalBusiness | fallback only; no locationId in OG |
@@ -25,6 +26,7 @@ import {
   metadataForCategory,
   metadataForCity,
   metadataForCityCategories,
+  metadataForCityPromotions,
   metadataForHelpPage,
   metadataForLegalPage,
   metadataForSearch,
@@ -112,6 +114,13 @@ describe('F.8.2 route social preview rollout', () => {
     const m = metadataForCityCategories('uralsk', 'Уральск', 'ru');
     assertDefaultSocialPreview(m);
     expect(m.openGraph?.url).toBe(`${PRODUCTION_ORIGIN}/ru/uralsk/categories`);
+  });
+
+  it('4b. city promotions discovery (CW.7)', () => {
+    const m = metadataForCityPromotions('uralsk', 'Уральск', 'ru', 1);
+    assertDefaultSocialPreview(m);
+    expect(m.openGraph?.url).toBe(`${PRODUCTION_ORIGIN}/ru/uralsk/promotions`);
+    expect(m.alternates?.languages?.kk).toContain('/kk/uralsk/promotions');
   });
 
   it('5. category', () => {

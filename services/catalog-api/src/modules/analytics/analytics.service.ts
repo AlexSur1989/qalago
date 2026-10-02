@@ -234,10 +234,12 @@ export class AnalyticsService {
         businessLocationCityId,
         primaryBusinessLocationCityId,
       }),
-      ...(ATTRIBUTION_EVENT_TYPES.has(dto.type) && dto.trafficSource
+      ...((ATTRIBUTION_EVENT_TYPES.has(dto.type) || PROMOTION_EVENT_TYPES.has(dto.type)) &&
+      dto.trafficSource
         ? { trafficSource: dto.trafficSource }
         : {}),
-      ...(ATTRIBUTION_EVENT_TYPES.has(dto.type) && dto.discoverySurface
+      ...((ATTRIBUTION_EVENT_TYPES.has(dto.type) || PROMOTION_EVENT_TYPES.has(dto.type)) &&
+      dto.discoverySurface
         ? { discoverySurface: dto.discoverySurface }
         : {}),
       ...(normalizedSearchQuery ? { searchQuery: normalizedSearchQuery } : {}),
@@ -323,7 +325,9 @@ export class AnalyticsService {
       dto.audienceDistanceBucket != null ||
       dto.discoverySurface != null;
 
-    if (hasAttribution && !ATTRIBUTION_EVENT_TYPES.has(dto.type)) {
+    const allowsAttributionContext =
+      ATTRIBUTION_EVENT_TYPES.has(dto.type) || PROMOTION_EVENT_TYPES.has(dto.type);
+    if (hasAttribution && !allowsAttributionContext) {
       throw new BadRequestException(
         'trafficSource, discoverySurface, searchQuery and audienceDistanceBucket are only allowed for attribution events',
       );

@@ -96,6 +96,10 @@ export type UiLabels = {
   businessDescriptionTitle: string;
   workHoursWeekdays: readonly [string, string, string, string, string, string, string];
   homeSectionPromotions: string;
+  homeAllPromotions: string;
+  promotionsPageTitle: string;
+  promotionsPageIntro: string;
+  promotionsLoadError: string;
   homeSectionFeatured: string;
   categorySponsored: string;
   emptyHomePromotions: string;
@@ -174,6 +178,10 @@ export const UI_LABELS: Record<AppLocale, UiLabels> = {
     businessDescriptionTitle: 'Описание',
     workHoursWeekdays: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
     homeSectionPromotions: 'Акции',
+    homeAllPromotions: 'Все акции',
+    promotionsPageTitle: 'Акции',
+    promotionsPageIntro: 'Актуальные акции заведений в вашем городе.',
+    promotionsLoadError: 'Не удалось загрузить акции. Попробуйте обновить страницу позже.',
     homeSectionFeatured: 'Популярные места',
     categorySponsored: 'Рекламные места',
     emptyHomePromotions: 'Сейчас нет активных акций в этом городе.',
@@ -250,6 +258,10 @@ export const UI_LABELS: Record<AppLocale, UiLabels> = {
     businessDescriptionTitle: 'Сипаттама',
     workHoursWeekdays: ['Дс', 'Се', 'Ср', 'Бс', 'Жм', 'Сн', 'Жс'],
     homeSectionPromotions: 'Акциялар',
+    homeAllPromotions: 'Барлық акциялар',
+    promotionsPageTitle: 'Акциялар',
+    promotionsPageIntro: 'Қаладағы мекемелердің белсенді акциялары.',
+    promotionsLoadError: 'Акцияларды жүктеу сәтсіз аяқталды. Кейінірек қайталап көріңіз.',
     homeSectionFeatured: 'Танымал орындар',
     categorySponsored: 'Жарнамалық орындар',
     emptyHomePromotions: 'Бұл қалада белсенді акциялар жоқ.',

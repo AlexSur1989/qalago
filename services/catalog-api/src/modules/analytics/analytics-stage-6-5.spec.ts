@@ -106,6 +106,34 @@ describe('Stage 6.5 analytics foundation', () => {
     );
   });
 
+  it('accepts PROMOTION_VIEW with promotion list attribution (web)', async () => {
+    const { prisma, service } = createService();
+    prisma.business.findFirst.mockResolvedValue({ id: 'biz-1', cityId: 'city-1' });
+    prisma.promotion.findFirst.mockResolvedValue({ id: 'promo-1' });
+    prisma.analyticsEvent.findUnique.mockResolvedValue(null);
+    prisma.analyticsEvent.create.mockResolvedValue({ id: 'e-promo-web' });
+
+    await service.track({
+      businessId: 'biz-1',
+      type: AnalyticsEventType.PROMOTION_VIEW,
+      promotionId: 'promo-1',
+      trafficSource: BusinessTrafficSource.PROMOTIONS,
+      discoverySurface: 'PROMOTION_LIST',
+      platform: AnalyticsPlatform.WEB,
+      sessionId: 'b'.repeat(32),
+    });
+
+    expect(prisma.analyticsEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          type: AnalyticsEventType.PROMOTION_VIEW,
+          trafficSource: BusinessTrafficSource.PROMOTIONS,
+          discoverySurface: 'PROMOTION_LIST',
+        }),
+      }),
+    );
+  });
+
   it('requires cityId for SEARCH_PERFORMED', async () => {
     const { service } = createService();
 

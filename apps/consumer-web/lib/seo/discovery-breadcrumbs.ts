@@ -7,6 +7,7 @@ import {
   cityCategoriesPath,
   cityCategoryPath,
   cityHomePath,
+  cityPromotionsPath,
   citySubcategoryPath,
 } from '@/lib/routes';
 import type { BreadcrumbItem } from './json-ld';
@@ -27,6 +28,16 @@ export function breadcrumbsForCityCategories(city: CityDto, locale: PublicLocale
     { label: SITE_LABEL, href: cityHomePath(locale, city.slug) },
     { label: cityName, href: cityHomePath(locale, city.slug) },
     { label: labels.categories },
+  ];
+}
+
+export function breadcrumbsForCityPromotions(city: CityDto, locale: PublicLocale): BreadcrumbCrumb[] {
+  const labels = UI_LABELS[locale];
+  const cityName = cityDisplayName(city, locale);
+  return [
+    { label: SITE_LABEL, href: cityHomePath(locale, city.slug) },
+    { label: cityName, href: cityHomePath(locale, city.slug) },
+    { label: labels.promotionsPageTitle },
   ];
 }
 

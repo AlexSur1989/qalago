@@ -74,7 +74,9 @@ describe('F.2 discovery', () => {
 
   it('reserved segments block category resolution', () => {
     expect(isReservedCitySegment('categories')).toBe(true);
+    expect(isReservedCitySegment('promotions')).toBe(true);
     expect(findCategoryBySlug(categories, 'categories')).toBeUndefined();
+    expect(findCategoryBySlug(categories, 'promotions')).toBeUndefined();
     expect(findCategoryBySlug(categories, 'restaurants')?.id).toBe('cat-1');
   });
 

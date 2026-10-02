@@ -48,6 +48,10 @@ export function citySearchPath(locale: PublicLocale, citySlug: string, query?: s
   return `${base}?q=${encodeURIComponent(query.trim())}`;
 }
 
+export function cityPromotionsPath(locale: PublicLocale, citySlug: string): string {
+  return withPublicLocalePrefix(locale, `/${encodeURIComponent(citySlug)}/promotions`);
+}
+
 /** Extract city slug from pathname like /ru/uralsk/categories → uralsk */
 export function parseCitySlugFromPathname(pathname: string): string | null {
   const parts = pathname.split('/').filter(Boolean);

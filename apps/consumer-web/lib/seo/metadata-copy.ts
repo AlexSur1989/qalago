@@ -24,6 +24,18 @@ export function cityCategoriesSeoDescription(cityName: string, locale: AppLocale
     : `Все категории заведений и услуг в ${cityName} на QalaGo.`;
 }
 
+export function cityPromotionsSeoTitle(cityName: string, locale: AppLocale): string {
+  return locale === 'kk'
+    ? `Акциялар — ${cityName} | QalaGo`
+    : `Акции — ${cityName} | QalaGo`;
+}
+
+export function cityPromotionsSeoDescription(cityName: string, locale: AppLocale): string {
+  return locale === 'kk'
+    ? `${cityName} қаласындағы мекемелердің белсенді акциялары — QalaGo.`
+    : `Актуальные акции заведений в ${cityName} на QalaGo.`;
+}
+
 export function categorySeoTitle(
   categoryName: string,
   cityName: string,
