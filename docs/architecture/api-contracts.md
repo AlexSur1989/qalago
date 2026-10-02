@@ -330,6 +330,34 @@ Geocoding via OpenStreetMap Nominatim. Returns city suggestions with coordinates
 
 ---
 
+## Home sections (CW.3)
+
+Logical home feed section order/visibility — **not** ad campaign config or category data.
+
+### GET /home/sections (public)
+
+Query: `citySlug` (required), `platform` — `APP` | `WEB` | `ALL` filter target.
+
+Response: ordered array:
+
+```json
+[
+  { "type": "HOME_VIP_BANNER", "enabled": true, "position": 10 },
+  { "type": "CATEGORIES", "enabled": true, "position": 20 }
+]
+```
+
+**Resolution:** load global rows (`cityId` null) + city rows; **city overrides global per `sectionType`**; drop disabled; keep rows where `platform` is `ALL` or matches query; sort by `position`.
+
+### Admin
+
+- `GET /admin/home-sections` — `HOME_CONFIG_VIEW`; optional `citySlug` (effective merged view). Omit `citySlug` for global rows only (ADMIN/SUPER_ADMIN).
+- `PATCH /admin/home-sections` — `HOME_CONFIG_EDIT`; body `{ sectionType, citySlug?, enabled, position, platform }`. Omit `citySlug` for global row (ADMIN/SUPER_ADMIN only). CITY_ADMIN may set `citySlug` only within managed city scope.
+
+Section types: `HOME_VIP_BANNER`, `CATEGORIES`, `HOME_FEATURED`, `HOME_PROMOTIONS`, `NEARBY`.
+
+---
+
 ## Categories
 
 ### GET /categories

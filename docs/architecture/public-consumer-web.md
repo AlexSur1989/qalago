@@ -838,7 +838,7 @@ Consumer Web **CW STATUS: CLOSED** only when:
 |-------|------|---------|
 | **CW.1** | Product scope lock | **CLOSED** — Option B scope lock (docs) |
 | **CW.2** | Public UI foundation | **CLOSED** — see § **CW.2** below |
-| **CW.3** | Backend-controlled home system | Simple model/API + admin; shared logical config |
+| **CW.3** | Backend-controlled home system | **CLOSED** — see § **CW.3** below |
 | **CW.4** | Discovery home | Render home from configuration (categories, featured, promos, VIP, etc.) |
 | **CW.5** | Business detail completion | Hours, branch UX, contacts, reviews read-only polish, states |
 | **CW.6** | Web ads + analytics | Unified serve + event ingest on web surfaces |
@@ -861,6 +861,22 @@ Consumer Web **CW STATUS: CLOSED** only when:
 - **Labels:** extend **`UI_LABELS`** (RU/KK) for skip link and mobile menu — preserve KZ-C.1C locale cookie/routing semantics.
 
 **Explicitly out of CW.2:** home CMS sections, ads, analytics, **`/promotions`**, web auth, new backend fields.
+
+### CW.3 — Backend-controlled home system (IMPLEMENTED)
+
+**Model:** `HomeSectionConfig` — `sectionType`, `enabled`, `position`, `platform` (`APP` | `WEB` | `ALL`), optional `cityId` (null = global default). Unique `(cityId, sectionType)`.
+
+**Resolution (public `GET /home/sections`):** global rows + city rows → city overrides global per type → filter `enabled` → filter platform → sort by `position`.
+
+**Default global seed:** `HOME_VIP_BANNER` (10), `CATEGORIES` (20), `HOME_FEATURED` (30), `HOME_PROMOTIONS` (40), `NEARBY` (50); all `enabled`, `platform=ALL`.
+
+**Admin:** `GET/PATCH /admin/home-sections` — staff permissions `HOME_CONFIG_VIEW` / `HOME_CONFIG_EDIT`; ADMIN/SUPER_ADMIN global + any city; CITY_ADMIN city overrides only.
+
+**Ads separation:** section config controls **whether/where** a logical block appears; monetization serve controls **paid content** inside ad-backed blocks.
+
+**Mobile:** Flutter home order unchanged in CW.3; API ready for later client adoption.
+
+**Consumer Web:** `lib/home-sections-api.ts` fetch helper only — **CW.4** renders UI from config.
 
 ### Global continuity (after CW closes — not started now)
 
