@@ -6,6 +6,75 @@
 
 ---
 
+## 2026-10-03 — 6.14O.CLOSE — Mobile Owner Core Parity Closure
+
+- **Status:** **6.14O CORE PARITY CLOSED** (read-only verification + documentation). **Checkpoint (implementation):** `a1fafb7` — `feat(mobile-owner): core operational parity (6.14O.1–6.14O.5)`; **docs checkpoint:** pending `docs(owner)` commit.
+- **Summary:** Verified stages **6.14O.1 / 1A / 2 / 3 / 4 / 5** against repo + parity doc §15–§22. Targeted Flutter regression **65 PASS**. Confirmed **no** Prisma/migration/monetization-backend changes in 6.14O diff scope. Parity matrix: **P0 none**; core **P1 closed**; **P2** backlog (drawer locations link, media/gallery naming, analytics/help naming, optional monetization hub recent orders). Business Web = full backoffice; Mobile Owner = **companion operational parity** (not pixel identity).
+- **Deferred:** P2 polish only; **6.14O.6** not started.
+- **Next:** None for 6.14O series; do not push automatically.
+
+---
+
+## 2026-10-03 — 6.14O.5 — Mobile Owner Monetization Hub UX Parity
+
+- **Status:** **6.14O.5 Implemented** (Flutter owner monetization landing UX). **Checkpoint:** pending user commit (HEAD at stage start: `9574b9aba4468cfbf19395397b0747ea69b6e1a9`).
+- **Summary:** `/owner/promote` refactored into Business Web **6.13M.5**-aligned hub: **My Plan** summary (6.14O.2 data, PlanPayment pending) + **Advertising** (subject chooser, human product labels, packages disclaimer, campaign KPIs, ad-order pending). **`owner_monetization_hub.dart`** + RU/KK ARB. Parity doc §21; matrix **J** → core YES. No backend/schema/API changes.
+- **Tests:** `owner_monetization_hub_test.dart` **PASS**; scoped `flutter analyze` on touched owner monetization files.
+- **Deferred:** optional P2 hub polish (recent orders on landing); locations drawer link (P2).
+- **Next:** **6.14O.6** not started automatically.
+
+---
+
+## 2026-10-03 — 6.14O.4 — Mobile Review Report & Permission-Aware Dashboard
+
+- **Status:** **6.14O.4 Implemented** (Flutter owner reviews + dashboard RBAC). **Checkpoint:** pending user commit (HEAD at stage start: `9574b9aba4468cfbf19395397b0747ea69b6e1a9`).
+- **Summary:** Owner reviews: **report** via existing `POST /reports`, manage list `GET /reviews/manage/:businessId`, reply gated by `REVIEWS_REPLY`. Dashboard grid + summary cards + drawer settings/locations aligned with Business Web permissions via **`owner_dashboard_actions.dart`**. Parity doc §20 updated.
+- **Tests:** dashboard permissions + review report l10n + location nav tests **PASS**; no backend changes.
+- **Deferred:** monetization hub UX polish (P1); optional locations drawer link (P2).
+- **Next:** **6.14O.5** not started automatically.
+
+---
+
+## 2026-10-03 — 6.14O.1A — Mobile Owner Profile Null-Safety Hotfix
+
+- **Status:** **6.14O.1A Implemented** (Flutter parsing only). **Checkpoint:** pending user commit (HEAD at stage start: `9574b9aba4468cfbf19395397b0747ea69b6e1a9`).
+- **Summary:** Fixed **`BusinessModel.fromJson`** crash when `address` is null/omitted (owner promotion nested business + BL-normalized rows); hardened profile completion cover check and subcategory name fallbacks on **`/owner/edit/:id`**. Parity doc §15A.
+- **Tests:** `owner_profile_null_safety_test.dart` **4 PASS**; no backend/schema changes.
+- **Deferred:** unchanged **6.14O.x** backlog (6.14O.4+ not started).
+- **Next:** none (hotfix only).
+
+---
+
+## 2026-10-03 — 6.14O.3 — Mobile Branch-Scoped Menu & Promotions
+
+- **Status:** **6.14O.3 Implemented** (Flutter owner menu + promotions). **Checkpoint:** pending user commit (HEAD at stage start: `9574b9aba4468cfbf19395397b0747ea69b6e1a9`).
+- **Summary:** Shared **`BranchAvailabilitySelector`** (ALL/SELECTED) on owner menu item and promotion create/edit; payloads match backend DTO; edit preserves branch scope when only other fields change; uses **6.14O.1** location list; RU/KK ARB. Parity doc §19 updated.
+- **Tests:** branch availability unit + l10n tests **13 PASS**; backend branch-availability specs unchanged.
+- **Deferred:** **6.14O.4+** — review report, permission grid, monetization hub polish (agree before start).
+- **Next:** **6.14O.4** not started automatically.
+
+---
+
+## 2026-10-03 — 6.14O.2 — Mobile Production Plan Billing Parity
+
+- **Status:** **6.14O.2 Implemented** (Flutter owner plan screen + API client only). **Checkpoint:** pending user commit (HEAD at stage start: `9574b9aba4468cfbf19395397b0747ea69b6e1a9`).
+- **Summary:** `/owner/plan` uses production **`POST …/plan/purchases`** and **`GET …/plan/payments`**; pending PlanPayment UI; renew/upgrade/downgrade guards aligned with Business Web; payment history; pull-to-refresh; idempotency on purchase retry; mock checkout remains dev-flag only. Parity doc §18 + matrix/P0 updated.
+- **Tests:** `flutter test` plan suite **17 PASS**; catalog-api plan billing tests unchanged (no backend edits).
+- **Deferred:** **6.14O.3+** — branch-scoped menu/promotions, review report, permission grid (agree before start).
+- **Next:** **6.14O.3** not started automatically.
+
+---
+
+## 2026-10-03 — 6.14O.1 — Mobile BusinessLocation & Owner Profile Alignment
+
+- **Status:** **6.14O.1 Implemented** (Flutter owner plane only). **Checkpoint:** pending user commit (HEAD at stage start: `9574b9aba4468cfbf19395397b0747ea69b6e1a9`).
+- **Summary:** Mobile owner **Филиалы / Филиалдар** (`/owner/locations/:businessId`) with list/create/edit/delete/set-primary against existing catalog-api BusinessLocation routes; profile edit **identity-only** PATCH (no address/geo/hours/contacts on `PATCH /businesses/:id`); RU/KK ARB; payload/permission unit tests. Parity doc §15–17 updated.
+- **Tests:** `flutter test` owner location/profile tests **10 PASS**; backend unchanged (no new catalog-api tests required).
+- **Deferred:** **6.14O.2+** — production PlanPayment on mobile, branch-scoped menu/promotions, review report, full permission grid (agree before start).
+- **Next:** Product gate for **6.14O.2** (not started automatically).
+
+---
+
 ## 2026-10-03 — 6.13M.CLOSE — Monetization Refinement Series Closure
 
 - **Status:** **6.13M series CLOSED** (read-only verification + documentation; **no production code changes** in closure pass). **Checkpoint:** pending user commit of working tree at **`08a371fc5189ca494cb70c6f02dd250f23848be7`**.
@@ -19,7 +88,7 @@
 
 - **Status:** **6.13M.8 Implemented** (Consumer Web + Flutter presentation only). **Checkpoint:** pending user commit.
 - **Summary:** Unified consumer ad disclosure — RU **`Реклама`**, KK **`Жарнама`** — via **`consumerSponsoredLabel`** (Web) and **`consumerSponsoredDisclosure`/`commonAd`** (Flutter); all five active placements; organic cards/promotions unmarked; serve **`displayLabel`** no longer shown to consumers. Audit doc §13 updated.
-- **Tests:** consumer-web sponsored-disclosure **9** + cw6 **21** + i18n **16**; Flutter sponsored_disclosure **5**; consumer **`next build` PASS.
+- **Tests:** consumer-web sponsored-disclosure **9** + cw6 **21** + i18n **16**; Flutter sponsored_disclosure **5**; consumer **`next build` PASS**.
 - **Deferred:** 6.13M series closure commit / optional backend **`displayLabel`** locale pass.
 - **Next:** Agree 6.13M refinement closure or next targeted stage (not auto-started).
 
