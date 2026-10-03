@@ -4004,6 +4004,222 @@ abstract class AppLocalizations {
   /// **'Отзывы'**
   String get ownerMgmtReviews;
 
+  /// No description provided for @ownerReviewReportAction.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пожаловаться на отзыв'**
+  String get ownerReviewReportAction;
+
+  /// No description provided for @ownerReviewReportSubmit.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отправить жалобу'**
+  String get ownerReviewReportSubmit;
+
+  /// No description provided for @ownerReviewReportSent.
+  ///
+  /// In ru, this message translates to:
+  /// **'Жалоба отправлена'**
+  String get ownerReviewReportSent;
+
+  /// No description provided for @ownerReviewReportAlreadySubmitted.
+  ///
+  /// In ru, this message translates to:
+  /// **'Жалоба уже отправлена'**
+  String get ownerReviewReportAlreadySubmitted;
+
+  /// No description provided for @ownerLocationsTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Филиалы'**
+  String get ownerLocationsTitle;
+
+  /// No description provided for @ownerLocationAdd.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить филиал'**
+  String get ownerLocationAdd;
+
+  /// No description provided for @ownerLocationEdit.
+  ///
+  /// In ru, this message translates to:
+  /// **'Редактировать филиал'**
+  String get ownerLocationEdit;
+
+  /// No description provided for @ownerLocationDelete.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить'**
+  String get ownerLocationDelete;
+
+  /// No description provided for @ownerLocationSetPrimary.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сделать основным'**
+  String get ownerLocationSetPrimary;
+
+  /// No description provided for @ownerLocationPrimaryBadge.
+  ///
+  /// In ru, this message translates to:
+  /// **'Основной'**
+  String get ownerLocationPrimaryBadge;
+
+  /// No description provided for @ownerLocationCity.
+  ///
+  /// In ru, this message translates to:
+  /// **'Город'**
+  String get ownerLocationCity;
+
+  /// No description provided for @ownerLocationWhatsapp.
+  ///
+  /// In ru, this message translates to:
+  /// **'WhatsApp'**
+  String get ownerLocationWhatsapp;
+
+  /// No description provided for @ownerLocationInstagram.
+  ///
+  /// In ru, this message translates to:
+  /// **'Instagram'**
+  String get ownerLocationInstagram;
+
+  /// No description provided for @ownerLocationsEmptyTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Филиалы не добавлены'**
+  String get ownerLocationsEmptyTitle;
+
+  /// No description provided for @ownerLocationsEmptyBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавьте филиал с адресом, контактами и часами работы — так же, как в кабинете на сайте.'**
+  String get ownerLocationsEmptyBody;
+
+  /// No description provided for @ownerLocationsLegacyHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранённый адрес профиля (только для справки, пока нет филиала):'**
+  String get ownerLocationsLegacyHint;
+
+  /// No description provided for @ownerLocationsManageHintTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Адрес, контакты и часы работы'**
+  String get ownerLocationsManageHintTitle;
+
+  /// No description provided for @ownerLocationsManageHintBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Управляйте филиалами в разделе «Филиалы».'**
+  String get ownerLocationsManageHintBody;
+
+  /// No description provided for @ownerLocationSetPrimaryConfirmTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сделать этот филиал основным?'**
+  String get ownerLocationSetPrimaryConfirmTitle;
+
+  /// No description provided for @ownerLocationDeleteConfirmTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить филиал?'**
+  String get ownerLocationDeleteConfirmTitle;
+
+  /// No description provided for @ownerLocationPrimaryUpdated.
+  ///
+  /// In ru, this message translates to:
+  /// **'Основной филиал обновлён'**
+  String get ownerLocationPrimaryUpdated;
+
+  /// No description provided for @ownerLocationDeleted.
+  ///
+  /// In ru, this message translates to:
+  /// **'Филиал удалён'**
+  String get ownerLocationDeleted;
+
+  /// No description provided for @ownerLocationCreated.
+  ///
+  /// In ru, this message translates to:
+  /// **'Филиал добавлен'**
+  String get ownerLocationCreated;
+
+  /// No description provided for @ownerLocationSaved.
+  ///
+  /// In ru, this message translates to:
+  /// **'Филиал сохранён'**
+  String get ownerLocationSaved;
+
+  /// No description provided for @ownerLocationValidationCityAddress.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите город и укажите адрес'**
+  String get ownerLocationValidationCityAddress;
+
+  /// No description provided for @ownerLocationErrorLastDelete.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нельзя удалить последний филиал. Сначала добавьте другой или удалите заведение.'**
+  String get ownerLocationErrorLastDelete;
+
+  /// No description provided for @ownerLocationErrorPrimaryDelete.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нельзя удалить основной филиал. Сначала назначьте другой филиал основным.'**
+  String get ownerLocationErrorPrimaryDelete;
+
+  /// No description provided for @ownerRequiredBusinessTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Укажите название заведения'**
+  String get ownerRequiredBusinessTitle;
+
+  /// No description provided for @ownerBranchAvailabilityHeading.
+  ///
+  /// In ru, this message translates to:
+  /// **'Где доступно'**
+  String get ownerBranchAvailabilityHeading;
+
+  /// No description provided for @ownerBranchAvailabilityModeAll.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все филиалы'**
+  String get ownerBranchAvailabilityModeAll;
+
+  /// No description provided for @ownerBranchAvailabilityModeSelected.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выбранные филиалы'**
+  String get ownerBranchAvailabilityModeSelected;
+
+  /// No description provided for @ownerBranchAvailabilitySelectBranches.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите филиалы'**
+  String get ownerBranchAvailabilitySelectBranches;
+
+  /// No description provided for @ownerBranchAvailabilityNoBranches.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет филиалов'**
+  String get ownerBranchAvailabilityNoBranches;
+
+  /// No description provided for @ownerBranchAvailabilityAddBranchFirst.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сначала добавьте филиал'**
+  String get ownerBranchAvailabilityAddBranchFirst;
+
+  /// No description provided for @ownerBranchAvailabilitySelectAtLeastOne.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите хотя бы один филиал'**
+  String get ownerBranchAvailabilitySelectAtLeastOne;
+
+  /// No description provided for @ownerBranchAvailabilityMissingUnresolved.
+  ///
+  /// In ru, this message translates to:
+  /// **'Некоторые выбранные филиалы больше недоступны. Обновите выбор.'**
+  String get ownerBranchAvailabilityMissingUnresolved;
+
   /// No description provided for @ownerErrorWithDetails.
   ///
   /// In ru, this message translates to:
@@ -4315,6 +4531,54 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Реклама и продвижение'**
   String get ownerMonetizationTitle;
+
+  /// No description provided for @ownerMonetizationHubIntro.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тариф QalaGo — возможности заведения и скидка на рекламу. Рекламные размещения покупаются отдельно и не включаются в тариф автоматически.'**
+  String get ownerMonetizationHubIntro;
+
+  /// No description provided for @ownerMyPlanSectionTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Мой тариф'**
+  String get ownerMyPlanSectionTitle;
+
+  /// No description provided for @ownerAdvertisingSectionTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Реклама'**
+  String get ownerAdvertisingSectionTitle;
+
+  /// No description provided for @ownerPromoteWhatToPromote.
+  ///
+  /// In ru, this message translates to:
+  /// **'Что вы хотите продвинуть?'**
+  String get ownerPromoteWhatToPromote;
+
+  /// No description provided for @ownerPromoteSubjectBusiness.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заведение'**
+  String get ownerPromoteSubjectBusiness;
+
+  /// No description provided for @ownerPromoteSubjectPromotion.
+  ///
+  /// In ru, this message translates to:
+  /// **'Акцию'**
+  String get ownerPromoteSubjectPromotion;
+
+  /// No description provided for @ownerAdPackagesNotPlansSubtitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Рекламные пакеты — наборы размещений, не подписка на тариф QalaGo.'**
+  String get ownerAdPackagesNotPlansSubtitle;
+
+  /// No description provided for @ownerMonetizationAdOrdersPending.
+  ///
+  /// In ru, this message translates to:
+  /// **'Рекламных заказов ожидает оплаты: {count}'**
+  String ownerMonetizationAdOrdersPending(int count);
 
   /// No description provided for @ownerSelectBusinessFirst.
   ///
@@ -5815,6 +6079,168 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Покупка недоступна'**
   String get ownerPlanPurchaseUnavailable;
+
+  /// No description provided for @ownerPlanPendingPaymentTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ожидает подтверждения оплаты'**
+  String get ownerPlanPendingPaymentTitle;
+
+  /// No description provided for @ownerPlanPendingPaymentBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявка на тариф «{tier}» ({amount} ₸) отправлена. После подтверждения администратором тариф активируется.'**
+  String ownerPlanPendingPaymentBody(String tier, String amount);
+
+  /// No description provided for @ownerPlanPurchasePendingSuccess.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявка отправлена. Ожидайте подтверждения оплаты.'**
+  String get ownerPlanPurchasePendingSuccess;
+
+  /// No description provided for @ownerPlanPaymentHistoryTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'История оплат'**
+  String get ownerPlanPaymentHistoryTitle;
+
+  /// No description provided for @ownerPlanPaymentHistoryEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Платежей пока нет'**
+  String get ownerPlanPaymentHistoryEmpty;
+
+  /// No description provided for @ownerPlanPaymentAwaitingConfirmation.
+  ///
+  /// In ru, this message translates to:
+  /// **'ожидает подтверждения'**
+  String get ownerPlanPaymentAwaitingConfirmation;
+
+  /// No description provided for @ownerPlanPaymentStatusPending.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ожидает подтверждения'**
+  String get ownerPlanPaymentStatusPending;
+
+  /// No description provided for @ownerPlanPaymentStatusCompleted.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подтверждена'**
+  String get ownerPlanPaymentStatusCompleted;
+
+  /// No description provided for @ownerPlanPaymentStatusCancelled.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отменена'**
+  String get ownerPlanPaymentStatusCancelled;
+
+  /// No description provided for @ownerPlanPaymentStatusFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не выполнена'**
+  String get ownerPlanPaymentStatusFailed;
+
+  /// No description provided for @ownerPlanCurrentBadge.
+  ///
+  /// In ru, this message translates to:
+  /// **'Текущий тариф'**
+  String get ownerPlanCurrentBadge;
+
+  /// No description provided for @ownerPlanActiveUntil.
+  ///
+  /// In ru, this message translates to:
+  /// **'Действует до {date}'**
+  String ownerPlanActiveUntil(String date);
+
+  /// No description provided for @ownerPlanAdDiscount.
+  ///
+  /// In ru, this message translates to:
+  /// **'Скидка на рекламу: {percent}%'**
+  String ownerPlanAdDiscount(int percent);
+
+  /// No description provided for @ownerPlanSameTierRenewalHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Продлевает текущий тариф: срок добавляется к оставшимся дням подписки.'**
+  String get ownerPlanSameTierRenewalHint;
+
+  /// No description provided for @ownerPlanPurchaseChoose.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выбрать тариф'**
+  String get ownerPlanPurchaseChoose;
+
+  /// No description provided for @ownerPlanPurchaseRenew.
+  ///
+  /// In ru, this message translates to:
+  /// **'Продлить'**
+  String get ownerPlanPurchaseRenew;
+
+  /// No description provided for @ownerPlanPurchaseUpgrade.
+  ///
+  /// In ru, this message translates to:
+  /// **'Перейти'**
+  String get ownerPlanPurchaseUpgrade;
+
+  /// No description provided for @ownerPlanDowngradeNotAllowed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Понижение тарифа недоступно, пока действует текущий.'**
+  String get ownerPlanDowngradeNotAllowed;
+
+  /// No description provided for @ownerPlanOwnerOnlyPurchase.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оформление доступно только владельцу заведения.'**
+  String get ownerPlanOwnerOnlyPurchase;
+
+  /// No description provided for @ownerPlanMockSectionTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тестовая оплата'**
+  String get ownerPlanMockSectionTitle;
+
+  /// No description provided for @ownerPlanMockSectionBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оплата имитируется без списания. Платные тарифы активируются на 30 дней.'**
+  String get ownerPlanMockSectionBody;
+
+  /// No description provided for @ownerPlanMockCheckoutLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подключить (тест)'**
+  String get ownerPlanMockCheckoutLabel;
+
+  /// No description provided for @ownerPlanConnecting.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подключение…'**
+  String get ownerPlanConnecting;
+
+  /// No description provided for @ownerPlanVipAdsSeparate.
+  ///
+  /// In ru, this message translates to:
+  /// **'Рекламные размещения приобретаются отдельно.'**
+  String get ownerPlanVipAdsSeparate;
+
+  /// No description provided for @ownerPlanAdsSectionTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Реклама'**
+  String get ownerPlanAdsSectionTitle;
+
+  /// No description provided for @ownerPlanAdsSectionBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Рекламные размещения приобретаются отдельно. Скидка тарифа применяется к отдельным рекламным продуктам согласно условиям.'**
+  String get ownerPlanAdsSectionBody;
+
+  /// No description provided for @ownerPlanRefreshHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Потяните вниз, чтобы обновить статус после оплаты.'**
+  String get ownerPlanRefreshHint;
 
   /// No description provided for @ownerPlanGoToAds.
   ///

@@ -18,8 +18,8 @@ int ownerProfileCompletion(Map<String, dynamic> business) {
   }
   final workHours = business['workHours'];
   if (workHours is Map && workHours.isNotEmpty) filled++;
-  if (business['coverImageUrl'] != null &&
-      (business['coverImageUrl'] as String).isNotEmpty) {
+  final cover = business['coverImageUrl'];
+  if (cover is String && cover.trim().isNotEmpty) {
     filled++;
   }
   final total = fields.length + 2;

@@ -64,15 +64,19 @@ class SubcategoryModel {
     return nameRu;
   }
 
-  factory SubcategoryModel.fromJson(Map<String, dynamic> json) => SubcategoryModel(
-        id: json['id'] as String,
-        categoryId: json['categoryId'] as String,
-        slug: json['slug'] as String,
-        nameRu: json['nameRu'] as String,
-        nameKk: json['nameKk'] as String,
-        icon: json['icon'] as String? ?? json['iconUrl'] as String?,
-        sortOrder: json['sortOrder'] as int? ?? 0,
-      );
+  factory SubcategoryModel.fromJson(Map<String, dynamic> json) {
+    final nameRu = json['nameRu'] as String? ?? json['slug'] as String? ?? '';
+    final nameKk = json['nameKk'] as String? ?? nameRu;
+    return SubcategoryModel(
+      id: json['id'] as String,
+      categoryId: json['categoryId'] as String,
+      slug: json['slug'] as String,
+      nameRu: nameRu,
+      nameKk: nameKk,
+      icon: json['icon'] as String? ?? json['iconUrl'] as String?,
+      sortOrder: json['sortOrder'] as int? ?? 0,
+    );
+  }
 }
 
 class RecommendedBusiness {
@@ -134,7 +138,7 @@ class BusinessModel {
     contextLocationId: json['contextLocationId'] as String?,
     title: json['title'] as String,
     slug: json['slug'] as String,
-    address: json['address'] as String,
+    address: (json['address'] as String?)?.trim() ?? '',
     shortDesc: json['shortDesc'] as String?,
     latitude: parseJsonDouble(json['latitude']),
     longitude: parseJsonDouble(json['longitude']),
@@ -293,6 +297,7 @@ class PromotionModel {
     this.businessId,
     this.business,
     this.contextLocationId,
+    this.branchAvailability,
   });
 
   final String id;
@@ -308,6 +313,7 @@ class PromotionModel {
   final String? businessId;
   final BusinessModel? business;
   final String? contextLocationId;
+  final Map<String, dynamic>? branchAvailability;
 
   factory PromotionModel.fromJson(Map<String, dynamic> json) {
     final businessJson = json['business'] as Map<String, dynamic>?;
@@ -327,6 +333,7 @@ class PromotionModel {
           ? BusinessModel.fromJson(businessJson)
           : null,
       contextLocationId: json['contextLocationId'] as String?,
+      branchAvailability: json['branchAvailability'] as Map<String, dynamic>?,
     );
   }
 }

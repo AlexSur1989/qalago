@@ -40,6 +40,8 @@ import '../../features/owner/presentation/owner_menu_screen.dart';
 import '../../features/owner/presentation/owner_gallery_screen.dart';
 import '../../features/owner/presentation/owner_analytics_screen.dart';
 import '../../features/owner/presentation/owner_edit_business_screen.dart';
+import '../../features/owner/presentation/owner_locations_screen.dart';
+import '../../features/owner/presentation/owner_location_edit_screen.dart';
 import '../../features/owner/presentation/owner_promotions_screen.dart';
 import '../../features/owner/presentation/owner_plan_screen.dart';
 import '../../features/owner/presentation/owner_messages_screen.dart';
@@ -450,6 +452,33 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           businessId: state.pathParameters['businessId']!,
           businessTitle: state.uri.queryParameters['title'] ?? 'Заведение',
         ),
+      ),
+      GoRoute(
+        path: '/owner/locations/:businessId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => OwnerLocationsScreen(
+          businessId: state.pathParameters['businessId']!,
+          businessTitle: state.uri.queryParameters['title'] ?? 'Заведение',
+        ),
+        routes: [
+          GoRoute(
+            path: 'new',
+            parentNavigatorKey: _rootNavigatorKey,
+            builder: (context, state) => OwnerLocationEditScreen(
+              businessId: state.pathParameters['businessId']!,
+              businessTitle: state.uri.queryParameters['title'] ?? 'Заведение',
+            ),
+          ),
+          GoRoute(
+            path: ':locationId/edit',
+            parentNavigatorKey: _rootNavigatorKey,
+            builder: (context, state) => OwnerLocationEditScreen(
+              businessId: state.pathParameters['businessId']!,
+              businessTitle: state.uri.queryParameters['title'] ?? 'Заведение',
+              locationId: state.pathParameters['locationId'],
+            ),
+          ),
+        ],
       ),
       GoRoute(
         path: '/owner/menu/:businessId',

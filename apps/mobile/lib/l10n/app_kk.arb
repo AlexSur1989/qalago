@@ -750,6 +750,42 @@
   "ownerMgmtGallery": "Галерея",
   "ownerMgmtPromotions": "Акциялар",
   "ownerMgmtReviews": "Пікірлер",
+  "ownerReviewReportAction": "Пікірге шағымдану",
+  "ownerReviewReportSubmit": "Шағымды жіберу",
+  "ownerReviewReportSent": "Шағым жіберілді",
+  "ownerReviewReportAlreadySubmitted": "Шағым бұрын жіберілген",
+  "ownerLocationsTitle": "Филиалдар",
+  "ownerLocationAdd": "Филиал қосу",
+  "ownerLocationEdit": "Филиалды өңдеу",
+  "ownerLocationDelete": "Жою",
+  "ownerLocationSetPrimary": "Негізгі ету",
+  "ownerLocationPrimaryBadge": "Негізгі",
+  "ownerLocationCity": "Қала",
+  "ownerLocationWhatsapp": "WhatsApp",
+  "ownerLocationInstagram": "Instagram",
+  "ownerLocationsEmptyTitle": "Филиалдар қосылмаған",
+  "ownerLocationsEmptyBody": "Мекенжай, байланыс және жұмыс уақытын филиал ретінде қосыңыз — веб-кабинеттегідей.",
+  "ownerLocationsLegacyHint": "Профильдегі сақталған мекенжай (филиал болмағанша анықтама):",
+  "ownerLocationsManageHintTitle": "Мекенжай, байланыс және жұмыс уақыты",
+  "ownerLocationsManageHintBody": "«Филиалдар» бөлімінде басқарыңыз.",
+  "ownerLocationSetPrimaryConfirmTitle": "Бұл филиалды негізгі ету керек пе?",
+  "ownerLocationDeleteConfirmTitle": "Филиалды жою керек пе?",
+  "ownerLocationPrimaryUpdated": "Негізгі филиал жаңартылды",
+  "ownerLocationDeleted": "Филиал жойылды",
+  "ownerLocationCreated": "Филиал қосылды",
+  "ownerLocationSaved": "Филиал сақталды",
+  "ownerLocationValidationCityAddress": "Қала таңдап, мекенжайды көрсетіңіз",
+  "ownerLocationErrorLastDelete": "Соңғы филиалды жоюға болмайды. Алдымен басқасын қосыңыз немесе мекемені жойыңыз.",
+  "ownerLocationErrorPrimaryDelete": "Негізгі филиалды жоюға болмайды. Алдымен басқа филиалды негізгі етіңіз.",
+  "ownerRequiredBusinessTitle": "Мекеме атауын көрсетіңіз",
+  "ownerBranchAvailabilityHeading": "Қайда қолжетімді",
+  "ownerBranchAvailabilityModeAll": "Барлық филиалдар",
+  "ownerBranchAvailabilityModeSelected": "Таңдалған филиалдар",
+  "ownerBranchAvailabilitySelectBranches": "Филиалдарды таңдаңыз",
+  "ownerBranchAvailabilityNoBranches": "Филиалдар жоқ",
+  "ownerBranchAvailabilityAddBranchFirst": "Алдымен филиал қосыңыз",
+  "ownerBranchAvailabilitySelectAtLeastOne": "Кем дегенде бір филиал таңдаңыз",
+  "ownerBranchAvailabilityMissingUnresolved": "Кейбір таңдалған филиалдар енді қолжетімсіз. Таңдауды жаңартыңыз.",
   "ownerErrorWithDetails": "Қате: {details}",
   "ownerSaving": "Сақталуда…",
   "ownerSubmitting": "Жіберілуде…",
@@ -802,6 +838,21 @@
   "ownerPermissionsUpdated": "Рұқсаттар жаңартылды",
   "ownerManagerPermissionsTitle": "Менеджер рұқсаттары",
   "ownerMonetizationTitle": "Жарнама және насихат",
+  "ownerMonetizationHubIntro": "QalaGo тарифі — орын мүмкіндіктері және жарнама жеңілдігі. Жарнамалық орналастырулар бөлек сатып алынады және тарифке автоматты қосылмайды.",
+  "ownerMyPlanSectionTitle": "Менің тарифім",
+  "ownerAdvertisingSectionTitle": "Жарнама",
+  "ownerPromoteWhatToPromote": "Нені насихаттағыңыз келеді?",
+  "ownerPromoteSubjectBusiness": "Орын",
+  "ownerPromoteSubjectPromotion": "Акция",
+  "ownerAdPackagesNotPlansSubtitle": "Жарнама пакеттері — орналастыру жиынтықтары, QalaGo тарифіне жазылу емес.",
+  "ownerMonetizationAdOrdersPending": "Төлемді күтетін жарнама тапсырыстары: {count}",
+  "@ownerMonetizationAdOrdersPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "ownerSelectBusinessFirst": "Алдымен мекемені таңдаңыз",
   "ownerChoosePromotionMethod": "Насихат тәсілін таңдаңыз",
   "ownerPriceLoadFailed": "Бағалар алынбады. Қосылуды тексеріңіз.",
@@ -1441,6 +1492,33 @@
   "ownerMenuHideItem": "Жасыру",
   "ownerMenuShowItem": "Көрсету",
   "ownerPlanPurchaseUnavailable": "Сатып алу қолжетімсіз",
+  "ownerPlanPendingPaymentTitle": "Төлем растауы күтілуде",
+  "ownerPlanPendingPaymentBody": "«{tier}» тарифіне өтінім ({amount} ₸) жіберілді. Әкімші растағаннан кейін тариф белсенді болады.",
+  "ownerPlanPurchasePendingSuccess": "Өтінім жіберілді. Төлем растауын күтіңіз.",
+  "ownerPlanPaymentHistoryTitle": "Төлем тарихы",
+  "ownerPlanPaymentHistoryEmpty": "Төлемдер әлі жоқ",
+  "ownerPlanPaymentAwaitingConfirmation": "растау күтілуде",
+  "ownerPlanPaymentStatusPending": "Растау күтілуде",
+  "ownerPlanPaymentStatusCompleted": "Расталған",
+  "ownerPlanPaymentStatusCancelled": "Болдырылмаған",
+  "ownerPlanPaymentStatusFailed": "Орындалмаған",
+  "ownerPlanCurrentBadge": "Ағымдағы тариф",
+  "ownerPlanActiveUntil": "{date} дейін",
+  "ownerPlanAdDiscount": "Жарнама жеңілдігі: {percent}%",
+  "ownerPlanSameTierRenewalHint": "Ағымдағы тарифті ұзартады: мерзім қалған күндерге қосылады.",
+  "ownerPlanPurchaseChoose": "Тариф таңдау",
+  "ownerPlanPurchaseRenew": "Ұзарту",
+  "ownerPlanPurchaseUpgrade": "Ауысу",
+  "ownerPlanDowngradeNotAllowed": "Ағымдағы тариф белсенді кезде төмендеу мүмкін емес.",
+  "ownerPlanOwnerOnlyPurchase": "Ресімдеу тек мекеме иесіне қолжетімді.",
+  "ownerPlanMockSectionTitle": "Сынақ төлемі",
+  "ownerPlanMockSectionBody": "Төлем нақты емес. Ақылы тарифтер 30 күнге белсенді болады.",
+  "ownerPlanMockCheckoutLabel": "Қосу (сынақ)",
+  "ownerPlanConnecting": "Қосылуда…",
+  "ownerPlanVipAdsSeparate": "Жарнамалық орналастырулар бөлек сатып алынады.",
+  "ownerPlanAdsSectionTitle": "Жарнама",
+  "ownerPlanAdsSectionBody": "Жарнамалық орналастырулар бөлек сатып алынады. Тариф жеңілдігі жарнама өнімдеріне қолданылады.",
+  "ownerPlanRefreshHint": "Төлемнен кейін статусты жаңарту үшін төмен тартыңыз.",
   "ownerPlanGoToAds": "Жарнамаға өту",
   "@ownerInvitationForEmail": {
     "placeholders": {
@@ -1454,6 +1532,22 @@
       "title": {
         "type": "String"
       }
+    }
+  },
+  "@ownerPlanPendingPaymentBody": {
+    "placeholders": {
+      "tier": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "@ownerPlanActiveUntil": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "@ownerPlanAdDiscount": {
+    "placeholders": {
+      "percent": { "type": "int" }
     }
   },
   "ownerScheduledRange": "{start} — {end}",

@@ -2209,6 +2209,123 @@ class AppLocalizationsRu extends AppLocalizations {
   String get ownerMgmtReviews => 'Отзывы';
 
   @override
+  String get ownerReviewReportAction => 'Пожаловаться на отзыв';
+
+  @override
+  String get ownerReviewReportSubmit => 'Отправить жалобу';
+
+  @override
+  String get ownerReviewReportSent => 'Жалоба отправлена';
+
+  @override
+  String get ownerReviewReportAlreadySubmitted => 'Жалоба уже отправлена';
+
+  @override
+  String get ownerLocationsTitle => 'Филиалы';
+
+  @override
+  String get ownerLocationAdd => 'Добавить филиал';
+
+  @override
+  String get ownerLocationEdit => 'Редактировать филиал';
+
+  @override
+  String get ownerLocationDelete => 'Удалить';
+
+  @override
+  String get ownerLocationSetPrimary => 'Сделать основным';
+
+  @override
+  String get ownerLocationPrimaryBadge => 'Основной';
+
+  @override
+  String get ownerLocationCity => 'Город';
+
+  @override
+  String get ownerLocationWhatsapp => 'WhatsApp';
+
+  @override
+  String get ownerLocationInstagram => 'Instagram';
+
+  @override
+  String get ownerLocationsEmptyTitle => 'Филиалы не добавлены';
+
+  @override
+  String get ownerLocationsEmptyBody =>
+      'Добавьте филиал с адресом, контактами и часами работы — так же, как в кабинете на сайте.';
+
+  @override
+  String get ownerLocationsLegacyHint =>
+      'Сохранённый адрес профиля (только для справки, пока нет филиала):';
+
+  @override
+  String get ownerLocationsManageHintTitle => 'Адрес, контакты и часы работы';
+
+  @override
+  String get ownerLocationsManageHintBody =>
+      'Управляйте филиалами в разделе «Филиалы».';
+
+  @override
+  String get ownerLocationSetPrimaryConfirmTitle =>
+      'Сделать этот филиал основным?';
+
+  @override
+  String get ownerLocationDeleteConfirmTitle => 'Удалить филиал?';
+
+  @override
+  String get ownerLocationPrimaryUpdated => 'Основной филиал обновлён';
+
+  @override
+  String get ownerLocationDeleted => 'Филиал удалён';
+
+  @override
+  String get ownerLocationCreated => 'Филиал добавлен';
+
+  @override
+  String get ownerLocationSaved => 'Филиал сохранён';
+
+  @override
+  String get ownerLocationValidationCityAddress =>
+      'Выберите город и укажите адрес';
+
+  @override
+  String get ownerLocationErrorLastDelete =>
+      'Нельзя удалить последний филиал. Сначала добавьте другой или удалите заведение.';
+
+  @override
+  String get ownerLocationErrorPrimaryDelete =>
+      'Нельзя удалить основной филиал. Сначала назначьте другой филиал основным.';
+
+  @override
+  String get ownerRequiredBusinessTitle => 'Укажите название заведения';
+
+  @override
+  String get ownerBranchAvailabilityHeading => 'Где доступно';
+
+  @override
+  String get ownerBranchAvailabilityModeAll => 'Все филиалы';
+
+  @override
+  String get ownerBranchAvailabilityModeSelected => 'Выбранные филиалы';
+
+  @override
+  String get ownerBranchAvailabilitySelectBranches => 'Выберите филиалы';
+
+  @override
+  String get ownerBranchAvailabilityNoBranches => 'Нет филиалов';
+
+  @override
+  String get ownerBranchAvailabilityAddBranchFirst => 'Сначала добавьте филиал';
+
+  @override
+  String get ownerBranchAvailabilitySelectAtLeastOne =>
+      'Выберите хотя бы один филиал';
+
+  @override
+  String get ownerBranchAvailabilityMissingUnresolved =>
+      'Некоторые выбранные филиалы больше недоступны. Обновите выбор.';
+
+  @override
   String ownerErrorWithDetails(String details) {
     return 'Ошибка: $details';
   }
@@ -2380,6 +2497,34 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get ownerMonetizationTitle => 'Реклама и продвижение';
+
+  @override
+  String get ownerMonetizationHubIntro =>
+      'Тариф QalaGo — возможности заведения и скидка на рекламу. Рекламные размещения покупаются отдельно и не включаются в тариф автоматически.';
+
+  @override
+  String get ownerMyPlanSectionTitle => 'Мой тариф';
+
+  @override
+  String get ownerAdvertisingSectionTitle => 'Реклама';
+
+  @override
+  String get ownerPromoteWhatToPromote => 'Что вы хотите продвинуть?';
+
+  @override
+  String get ownerPromoteSubjectBusiness => 'Заведение';
+
+  @override
+  String get ownerPromoteSubjectPromotion => 'Акцию';
+
+  @override
+  String get ownerAdPackagesNotPlansSubtitle =>
+      'Рекламные пакеты — наборы размещений, не подписка на тариф QalaGo.';
+
+  @override
+  String ownerMonetizationAdOrdersPending(int count) {
+    return 'Рекламных заказов ожидает оплаты: $count';
+  }
 
   @override
   String get ownerSelectBusinessFirst => 'Сначала выберите заведение';
@@ -3234,6 +3379,101 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get ownerPlanPurchaseUnavailable => 'Покупка недоступна';
+
+  @override
+  String get ownerPlanPendingPaymentTitle => 'Ожидает подтверждения оплаты';
+
+  @override
+  String ownerPlanPendingPaymentBody(String tier, String amount) {
+    return 'Заявка на тариф «$tier» ($amount ₸) отправлена. После подтверждения администратором тариф активируется.';
+  }
+
+  @override
+  String get ownerPlanPurchasePendingSuccess =>
+      'Заявка отправлена. Ожидайте подтверждения оплаты.';
+
+  @override
+  String get ownerPlanPaymentHistoryTitle => 'История оплат';
+
+  @override
+  String get ownerPlanPaymentHistoryEmpty => 'Платежей пока нет';
+
+  @override
+  String get ownerPlanPaymentAwaitingConfirmation => 'ожидает подтверждения';
+
+  @override
+  String get ownerPlanPaymentStatusPending => 'Ожидает подтверждения';
+
+  @override
+  String get ownerPlanPaymentStatusCompleted => 'Подтверждена';
+
+  @override
+  String get ownerPlanPaymentStatusCancelled => 'Отменена';
+
+  @override
+  String get ownerPlanPaymentStatusFailed => 'Не выполнена';
+
+  @override
+  String get ownerPlanCurrentBadge => 'Текущий тариф';
+
+  @override
+  String ownerPlanActiveUntil(String date) {
+    return 'Действует до $date';
+  }
+
+  @override
+  String ownerPlanAdDiscount(int percent) {
+    return 'Скидка на рекламу: $percent%';
+  }
+
+  @override
+  String get ownerPlanSameTierRenewalHint =>
+      'Продлевает текущий тариф: срок добавляется к оставшимся дням подписки.';
+
+  @override
+  String get ownerPlanPurchaseChoose => 'Выбрать тариф';
+
+  @override
+  String get ownerPlanPurchaseRenew => 'Продлить';
+
+  @override
+  String get ownerPlanPurchaseUpgrade => 'Перейти';
+
+  @override
+  String get ownerPlanDowngradeNotAllowed =>
+      'Понижение тарифа недоступно, пока действует текущий.';
+
+  @override
+  String get ownerPlanOwnerOnlyPurchase =>
+      'Оформление доступно только владельцу заведения.';
+
+  @override
+  String get ownerPlanMockSectionTitle => 'Тестовая оплата';
+
+  @override
+  String get ownerPlanMockSectionBody =>
+      'Оплата имитируется без списания. Платные тарифы активируются на 30 дней.';
+
+  @override
+  String get ownerPlanMockCheckoutLabel => 'Подключить (тест)';
+
+  @override
+  String get ownerPlanConnecting => 'Подключение…';
+
+  @override
+  String get ownerPlanVipAdsSeparate =>
+      'Рекламные размещения приобретаются отдельно.';
+
+  @override
+  String get ownerPlanAdsSectionTitle => 'Реклама';
+
+  @override
+  String get ownerPlanAdsSectionBody =>
+      'Рекламные размещения приобретаются отдельно. Скидка тарифа применяется к отдельным рекламным продуктам согласно условиям.';
+
+  @override
+  String get ownerPlanRefreshHint =>
+      'Потяните вниз, чтобы обновить статус после оплаты.';
 
   @override
   String get ownerPlanGoToAds => 'Перейти к рекламе';

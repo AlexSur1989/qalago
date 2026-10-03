@@ -274,6 +274,64 @@ class CatalogRepository {
     return items.map(BusinessBranchLocation.fromJson).toList();
   }
 
+  Future<List<BusinessBranchLocation>> fetchOwnerBusinessLocations(String businessId) async {
+    final response = await _dio.get('/businesses/$businessId/locations');
+    final data = response.data as Map<String, dynamic>;
+    final items = (data['items'] as List<dynamic>? ?? [])
+        .cast<Map<String, dynamic>>();
+    return items.map(BusinessBranchLocation.fromJson).toList();
+  }
+
+  Future<Map<String, dynamic>> fetchOwnerBusinessLocation(
+    String businessId,
+    String locationId,
+  ) async {
+    final response = await _dio.get(
+      '/businesses/$businessId/locations/$locationId',
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> createOwnerBusinessLocation(
+    String businessId,
+    Map<String, dynamic> payload,
+  ) async {
+    final response = await _dio.post(
+      '/businesses/$businessId/locations',
+      data: payload,
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> updateOwnerBusinessLocation(
+    String businessId,
+    String locationId,
+    Map<String, dynamic> payload,
+  ) async {
+    final response = await _dio.patch(
+      '/businesses/$businessId/locations/$locationId',
+      data: payload,
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<void> deleteOwnerBusinessLocation(
+    String businessId,
+    String locationId,
+  ) async {
+    await _dio.delete('/businesses/$businessId/locations/$locationId');
+  }
+
+  Future<Map<String, dynamic>> setPrimaryOwnerBusinessLocation(
+    String businessId,
+    String locationId,
+  ) async {
+    final response = await _dio.post(
+      '/businesses/$businessId/locations/$locationId/set-primary',
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> fetchBusinessPublicPromotions(
     String businessId, {
     int page = 1,
@@ -722,6 +780,14 @@ class CatalogRepository {
     return page.items;
   }
 
+  /// Owner manage plane — includes moderation-hidden rows; requires REVIEWS_REPLY.
+  Future<List<ReviewModel>> fetchManageReviews(String businessId) async {
+    final response = await _dio.get('/reviews/manage/$businessId');
+    return (response.data as List<dynamic>)
+        .map((e) => ReviewModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
   Future<PaginatedReviews> fetchReviewsPage({
     required String businessId,
     int page = 1,
@@ -915,6 +981,31 @@ class CatalogRepository {
     final response = await _dio.post(
       '/businesses/$businessId/plan/mock-checkout',
       data: {'tier': tier},
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<List<Map<String, dynamic>>> fetchBusinessPlanPayments(
+    String businessId,
+  ) async {
+    final response = await _dio.get('/businesses/$businessId/plan/payments');
+    final data = response.data as Map<String, dynamic>;
+    return (data['items'] as List<dynamic>? ?? [])
+        .cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>> createPlanPurchase(
+    String businessId,
+    String tier, {
+    String? idempotencyKey,
+  }) async {
+    final body = <String, dynamic>{'tier': tier};
+    if (idempotencyKey != null && idempotencyKey.isNotEmpty) {
+      body['idempotencyKey'] = idempotencyKey;
+    }
+    final response = await _dio.post(
+      '/businesses/$businessId/plan/purchases',
+      data: body,
     );
     return response.data as Map<String, dynamic>;
   }

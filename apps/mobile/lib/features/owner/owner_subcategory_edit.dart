@@ -38,6 +38,32 @@ Map<String, dynamic> buildOwnerProfileFieldsPatch(Map<String, dynamic> profileFi
   return copy;
 }
 
+const _ownerBusinessIdentityKeys = {'title', 'shortDesc', 'description'};
+
+/// Business identity only — no branch address, geo, hours, or contacts (BusinessLocation API).
+Map<String, dynamic> buildOwnerBusinessIdentityPatch(Map<String, dynamic> fields) {
+  final identity = <String, dynamic>{};
+  for (final key in _ownerBusinessIdentityKeys) {
+    if (fields.containsKey(key)) identity[key] = fields[key];
+  }
+  return buildOwnerProfileFieldsPatch(identity);
+}
+
+bool ownerBusinessIdentityPatchExcludesBranchFields(Map<String, dynamic> patch) {
+  const forbidden = {
+    'address',
+    'latitude',
+    'longitude',
+    'locationSource',
+    'workHours',
+    'phone',
+    'whatsapp',
+    'instagram',
+    'website',
+  };
+  return patch.keys.every((k) => !forbidden.contains(k));
+}
+
 Map<String, dynamic> buildSubcategoryIdsPatch(List<String> selectedIds) {
   return {'subcategoryIds': List<String>.from(selectedIds)};
 }

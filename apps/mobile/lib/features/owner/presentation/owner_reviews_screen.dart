@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:qalago_mobile/core/locale/l10n_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/rbac/business_access.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../shared/navigation/navigation_utils.dart';
 import '../../../core/theme/app_theme.dart';
@@ -9,10 +10,12 @@ import '../../../shared/models/models.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../owner_review_actions.dart';
+import '../providers/owner_providers.dart';
 
 final ownerReviewsProvider =
     FutureProvider.family<List<ReviewModel>, String>((ref, businessId) async {
-  return ref.watch(catalogRepositoryProvider).fetchReviews(businessId);
+  return ref.watch(catalogRepositoryProvider).fetchManageReviews(businessId);
 });
 
 class OwnerReviewsScreen extends ConsumerStatefulWidget {
@@ -47,7 +50,20 @@ class _OwnerReviewsScreenState extends ConsumerState<OwnerReviewsScreen> {
     );
   }
 
+  bool get _canReply {
+    final access = ref.read(ownerBusinessAccessProvider(widget.businessId));
+    if (access == null) return false;
+    return hasPermission(access, BusinessPermission.reviewsReply);
+  }
+
+  bool get _canReport {
+    final access = ref.read(ownerBusinessAccessProvider(widget.businessId));
+    if (access == null) return false;
+    return hasPermission(access, BusinessPermission.reviewsReply);
+  }
+
   Future<void> _submitReply(ReviewModel review) async {
+    if (!_canReply) return;
     final text = _controllerFor(review).text.trim();
     if (text.isEmpty) return;
     try {
@@ -83,7 +99,9 @@ class _OwnerReviewsScreenState extends ConsumerState<OwnerReviewsScreen> {
           onRetry: () => ref.invalidate(ownerReviewsProvider(widget.businessId)),
         ),
         data: (reviews) {
-          final unanswered = reviews.where((r) => r.ownerReply == null || r.ownerReply!.isEmpty).length;
+          final unanswered = reviews
+              .where((r) => r.ownerReply == null || r.ownerReply!.isEmpty)
+              .length;
 
           if (reviews.isEmpty) {
             return Center(child: Text(context.l10n.ownerNoReviews));
@@ -121,13 +139,28 @@ class _OwnerReviewsScreenState extends ConsumerState<OwnerReviewsScreen> {
                             ),
                           ),
                           Text('${review.rating}★'),
+                          if (_canReport)
+                            PopupMenuButton<String>(
+                              onSelected: (value) {
+                                if (value == 'report') {
+                                  reportOwnerReview(context, ref, review);
+                                }
+                              },
+                              itemBuilder: (ctx) => [
+                                PopupMenuItem(
+                                  value: 'report',
+                                  child: Text(ctx.l10n.ownerReviewReportAction),
+                                ),
+                              ],
+                            ),
                         ],
                       ),
                       if (review.text != null && review.text!.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Text(review.text!),
                       ],
-                      if (review.ownerReply != null && review.ownerReply!.isNotEmpty) ...[
+                      if (review.ownerReply != null &&
+                          review.ownerReply!.isNotEmpty) ...[
                         const SizedBox(height: 12),
                         Container(
                           width: double.infinity,
@@ -136,27 +169,45 @@ class _OwnerReviewsScreenState extends ConsumerState<OwnerReviewsScreen> {
                             color: AppTheme.kzBlue.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text(context.l10n.ownerYourReply(review.ownerReply ?? '')),
+                          child: Text(
+                            context.l10n.ownerYourReply(review.ownerReply ?? ''),
+                          ),
                         ),
                       ],
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: controller,
-                        minLines: 2,
-                        maxLines: 4,
-                        decoration: InputDecoration(
-                          labelText: context.l10n.ownerReplyLabel,
-                          border: const OutlineInputBorder(),
+                      if (_canReply) ...[
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: controller,
+                          minLines: 2,
+                          maxLines: 4,
+                          decoration: InputDecoration(
+                            labelText: context.l10n.ownerReplyLabel,
+                            border: const OutlineInputBorder(),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: FilledButton(
-                          onPressed: () => _submitReply(review),
-                          child: Text(review.ownerReply == null ? context.l10n.ownerReplyAction : context.l10n.ownerUpdateReply),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: FilledButton(
+                            onPressed: () => _submitReply(review),
+                            child: Text(
+                              review.ownerReply == null
+                                  ? context.l10n.ownerReplyAction
+                                  : context.l10n.ownerUpdateReply,
+                            ),
+                          ),
                         ),
-                      ),
+                      ] else if (_canReport) ...[
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: TextButton(
+                            onPressed: () =>
+                                reportOwnerReview(context, ref, review),
+                            child: Text(context.l10n.ownerReviewReportAction),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),

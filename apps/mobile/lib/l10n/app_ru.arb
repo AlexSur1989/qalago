@@ -952,6 +952,42 @@
   "ownerMgmtGallery": "Галерея",
   "ownerMgmtPromotions": "Акции",
   "ownerMgmtReviews": "Отзывы",
+  "ownerReviewReportAction": "Пожаловаться на отзыв",
+  "ownerReviewReportSubmit": "Отправить жалобу",
+  "ownerReviewReportSent": "Жалоба отправлена",
+  "ownerReviewReportAlreadySubmitted": "Жалоба уже отправлена",
+  "ownerLocationsTitle": "Филиалы",
+  "ownerLocationAdd": "Добавить филиал",
+  "ownerLocationEdit": "Редактировать филиал",
+  "ownerLocationDelete": "Удалить",
+  "ownerLocationSetPrimary": "Сделать основным",
+  "ownerLocationPrimaryBadge": "Основной",
+  "ownerLocationCity": "Город",
+  "ownerLocationWhatsapp": "WhatsApp",
+  "ownerLocationInstagram": "Instagram",
+  "ownerLocationsEmptyTitle": "Филиалы не добавлены",
+  "ownerLocationsEmptyBody": "Добавьте филиал с адресом, контактами и часами работы — так же, как в кабинете на сайте.",
+  "ownerLocationsLegacyHint": "Сохранённый адрес профиля (только для справки, пока нет филиала):",
+  "ownerLocationsManageHintTitle": "Адрес, контакты и часы работы",
+  "ownerLocationsManageHintBody": "Управляйте филиалами в разделе «Филиалы».",
+  "ownerLocationSetPrimaryConfirmTitle": "Сделать этот филиал основным?",
+  "ownerLocationDeleteConfirmTitle": "Удалить филиал?",
+  "ownerLocationPrimaryUpdated": "Основной филиал обновлён",
+  "ownerLocationDeleted": "Филиал удалён",
+  "ownerLocationCreated": "Филиал добавлен",
+  "ownerLocationSaved": "Филиал сохранён",
+  "ownerLocationValidationCityAddress": "Выберите город и укажите адрес",
+  "ownerLocationErrorLastDelete": "Нельзя удалить последний филиал. Сначала добавьте другой или удалите заведение.",
+  "ownerLocationErrorPrimaryDelete": "Нельзя удалить основной филиал. Сначала назначьте другой филиал основным.",
+  "ownerRequiredBusinessTitle": "Укажите название заведения",
+  "ownerBranchAvailabilityHeading": "Где доступно",
+  "ownerBranchAvailabilityModeAll": "Все филиалы",
+  "ownerBranchAvailabilityModeSelected": "Выбранные филиалы",
+  "ownerBranchAvailabilitySelectBranches": "Выберите филиалы",
+  "ownerBranchAvailabilityNoBranches": "Нет филиалов",
+  "ownerBranchAvailabilityAddBranchFirst": "Сначала добавьте филиал",
+  "ownerBranchAvailabilitySelectAtLeastOne": "Выберите хотя бы один филиал",
+  "ownerBranchAvailabilityMissingUnresolved": "Некоторые выбранные филиалы больше недоступны. Обновите выбор.",
   "ownerErrorWithDetails": "Ошибка: {details}",
   "ownerSaving": "Сохранение…",
   "ownerSubmitting": "Отправка…",
@@ -1004,6 +1040,21 @@
   "ownerPermissionsUpdated": "Права обновлены",
   "ownerManagerPermissionsTitle": "Права менеджера",
   "ownerMonetizationTitle": "Реклама и продвижение",
+  "ownerMonetizationHubIntro": "Тариф QalaGo — возможности заведения и скидка на рекламу. Рекламные размещения покупаются отдельно и не включаются в тариф автоматически.",
+  "ownerMyPlanSectionTitle": "Мой тариф",
+  "ownerAdvertisingSectionTitle": "Реклама",
+  "ownerPromoteWhatToPromote": "Что вы хотите продвинуть?",
+  "ownerPromoteSubjectBusiness": "Заведение",
+  "ownerPromoteSubjectPromotion": "Акцию",
+  "ownerAdPackagesNotPlansSubtitle": "Рекламные пакеты — наборы размещений, не подписка на тариф QalaGo.",
+  "ownerMonetizationAdOrdersPending": "Рекламных заказов ожидает оплаты: {count}",
+  "@ownerMonetizationAdOrdersPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "ownerSelectBusinessFirst": "Сначала выберите заведение",
   "ownerChoosePromotionMethod": "Выберите способ продвижения",
   "ownerPriceLoadFailed": "Не удалось получить цены. Проверьте подключение.",
@@ -1643,6 +1694,33 @@
   "ownerMenuHideItem": "Скрыть",
   "ownerMenuShowItem": "Показать",
   "ownerPlanPurchaseUnavailable": "Покупка недоступна",
+  "ownerPlanPendingPaymentTitle": "Ожидает подтверждения оплаты",
+  "ownerPlanPendingPaymentBody": "Заявка на тариф «{tier}» ({amount} ₸) отправлена. После подтверждения администратором тариф активируется.",
+  "ownerPlanPurchasePendingSuccess": "Заявка отправлена. Ожидайте подтверждения оплаты.",
+  "ownerPlanPaymentHistoryTitle": "История оплат",
+  "ownerPlanPaymentHistoryEmpty": "Платежей пока нет",
+  "ownerPlanPaymentAwaitingConfirmation": "ожидает подтверждения",
+  "ownerPlanPaymentStatusPending": "Ожидает подтверждения",
+  "ownerPlanPaymentStatusCompleted": "Подтверждена",
+  "ownerPlanPaymentStatusCancelled": "Отменена",
+  "ownerPlanPaymentStatusFailed": "Не выполнена",
+  "ownerPlanCurrentBadge": "Текущий тариф",
+  "ownerPlanActiveUntil": "Действует до {date}",
+  "ownerPlanAdDiscount": "Скидка на рекламу: {percent}%",
+  "ownerPlanSameTierRenewalHint": "Продлевает текущий тариф: срок добавляется к оставшимся дням подписки.",
+  "ownerPlanPurchaseChoose": "Выбрать тариф",
+  "ownerPlanPurchaseRenew": "Продлить",
+  "ownerPlanPurchaseUpgrade": "Перейти",
+  "ownerPlanDowngradeNotAllowed": "Понижение тарифа недоступно, пока действует текущий.",
+  "ownerPlanOwnerOnlyPurchase": "Оформление доступно только владельцу заведения.",
+  "ownerPlanMockSectionTitle": "Тестовая оплата",
+  "ownerPlanMockSectionBody": "Оплата имитируется без списания. Платные тарифы активируются на 30 дней.",
+  "ownerPlanMockCheckoutLabel": "Подключить (тест)",
+  "ownerPlanConnecting": "Подключение…",
+  "ownerPlanVipAdsSeparate": "Рекламные размещения приобретаются отдельно.",
+  "ownerPlanAdsSectionTitle": "Реклама",
+  "ownerPlanAdsSectionBody": "Рекламные размещения приобретаются отдельно. Скидка тарифа применяется к отдельным рекламным продуктам согласно условиям.",
+  "ownerPlanRefreshHint": "Потяните вниз, чтобы обновить статус после оплаты.",
   "ownerPlanGoToAds": "Перейти к рекламе",
   "@ownerInvitationForEmail": {
     "placeholders": {
@@ -1656,6 +1734,22 @@
       "title": {
         "type": "String"
       }
+    }
+  },
+  "@ownerPlanPendingPaymentBody": {
+    "placeholders": {
+      "tier": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "@ownerPlanActiveUntil": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "@ownerPlanAdDiscount": {
+    "placeholders": {
+      "percent": { "type": "int" }
     }
   },
   "ownerScheduledRange": "{start} — {end}",

@@ -23,6 +23,8 @@ void onOwnerBusinessSelected(dynamic ref, String businessId) {
   ref.read(selectedOwnerBusinessIdProvider.notifier).select(businessId);
   invalidateOwnerMonetizationOnBusinessSwitch(ref, businessId);
   ref.invalidate(businessAnalyticsDashboardProvider);
+  ref.invalidate(businessPlanProvider(businessId));
+  ref.invalidate(businessPlanPaymentsProvider(businessId));
 }
 
 final ownerSelectedBusinessProvider = Provider<Map<String, dynamic>?>((ref) {
@@ -117,4 +119,9 @@ final businessPlanProvider =
 
 final plansCatalogProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   return ref.watch(catalogRepositoryProvider).fetchPlans();
+});
+
+final businessPlanPaymentsProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, String>((ref, businessId) async {
+  return ref.watch(catalogRepositoryProvider).fetchBusinessPlanPayments(businessId);
 });

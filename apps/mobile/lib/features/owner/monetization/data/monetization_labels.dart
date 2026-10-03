@@ -1,5 +1,6 @@
 import '../../../../l10n/app_localizations.dart';
 import '../../utils/owner_l10n.dart' as owner_l10n;
+import 'owner_monetization_hub.dart' as owner_monetization_hub;
 
 /// Canonical monetization product codes (backend identifiers unchanged).
 const monetizationProductCodes = {
@@ -11,10 +12,16 @@ const monetizationProductCodes = {
 };
 
 String productTitle(AppLocalizations l10n, String code) =>
-    owner_l10n.monetizationProductTitle(l10n, code);
+    owner_l10n.monetizationProductTitle(
+      l10n,
+      owner_monetization_hub.normalizeMonetizationProductCode(code),
+    );
 
 String productDescription(AppLocalizations l10n, String code) =>
-    owner_l10n.monetizationProductDescription(l10n, code);
+    owner_l10n.monetizationProductDescription(
+      l10n,
+      owner_monetization_hub.normalizeMonetizationProductCode(code),
+    );
 
 String productTopCategoryNote(AppLocalizations l10n) =>
     l10n.monetizationProductTopCategoryNote;

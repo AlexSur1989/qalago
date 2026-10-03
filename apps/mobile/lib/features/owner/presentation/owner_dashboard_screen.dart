@@ -11,6 +11,7 @@ import '../../../shared/models/models.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../owner_dashboard_actions.dart';
 import '../owner_utils.dart';
 import '../utils/owner_l10n.dart';
 import '../providers/owner_providers.dart';
@@ -115,6 +116,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
                     businessId: businessId,
                     encodedTitle: encodedTitle,
                     data: data,
+                    access: ref.watch(selectedBusinessAccessProvider),
                   ),
                 ),
               ],
@@ -167,12 +169,14 @@ class _DashboardContent extends StatelessWidget {
     required this.businessId,
     required this.encodedTitle,
     required this.data,
+    required this.access,
   });
 
   final Map<String, dynamic> business;
   final String businessId;
   final String encodedTitle;
   final Map<String, dynamic> data;
+  final BusinessAccess? access;
 
   @override
   Widget build(BuildContext context) {
@@ -194,16 +198,27 @@ class _DashboardContent extends StatelessWidget {
     final completion = ownerProfileCompletion(business);
     final totalActions = (summary7['total'] as num?)?.toInt() ?? 0;
     final views = byType7['VIEW_BUSINESS'] ?? 0;
+    final showAnalytics = canShowOwnerAnalyticsSummary(access);
+    final showProfileCard = canShowOwnerProfileDashboardCard(access);
+    final showPlanCard = canShowOwnerPlanDashboardCard(access);
+    final showPromotionsSummary = canShowOwnerPromotionsSummary(access);
+    final showMonetization = canShowOwnerMonetizationDashboardCard(access);
+    final overLimitNotice = entitlements['overLimitNotice'];
+    final overLimitNoticeText =
+        overLimitNotice is String ? overLimitNotice.trim() : '';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          '$views просмотров · $totalActions действий за 7 дней',
-          style: TextStyle(color: AppTheme.textMuted),
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
+        if (showAnalytics) ...[
+          Text(
+            '$views просмотров · $totalActions действий за 7 дней',
+            style: TextStyle(color: AppTheme.textMuted),
+          ),
+          const SizedBox(height: 16),
+        ],
+        if (showAnalytics)
+          SizedBox(
           height: 110,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
@@ -250,190 +265,216 @@ class _DashboardContent extends StatelessWidget {
             },
           ),
         ),
-        const SizedBox(height: 16),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(                context.l10n.ownerViewsChartTitle,
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 12),
-                if (!trendsAvailable)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(
-                      context.l10n.ownerTrendsLockedHint,
-                      style: TextStyle(color: AppTheme.textMuted, fontSize: 13),
-                    ),
-                  ),
-                OwnerViewsChart(items: trendItems),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(                context.l10n.ownerPlanUsageTitle,
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Фото: ${usage['photos'] ?? 0}${maxPhotos != null ? ' / $maxPhotos' : ''}'
-                  '${entitlements['photos']?['overLimit'] == true ? ' (опубл. ${entitlements['photos']?['published']})' : ''}'
-                  '\nТовары и услуги: ${usage['serviceItems'] ?? 0}${maxServiceItems != null ? ' / $maxServiceItems' : ''}'
-                  '\nАктивные акции: ${usage['activePromotions'] ?? 0} / ${limits['maxActivePromotions'] ?? 1}',
-                  style: TextStyle(color: AppTheme.textMuted),
-                ),
-                if (entitlements['overLimitNotice'] != null) ...[
-                  const SizedBox(height: 8),
+        if (showAnalytics) const SizedBox(height: 16),
+        if (showAnalytics)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    entitlements['overLimitNotice'] as String,
-                    style: TextStyle(color: AppSemanticColors.warning, fontSize: 13),
+                    context.l10n.ownerViewsChartTitle,
+                    style: TextStyle(fontWeight: FontWeight.w700),
                   ),
+                  const SizedBox(height: 12),
+                  if (!trendsAvailable)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        context.l10n.ownerTrendsLockedHint,
+                        style: TextStyle(color: AppTheme.textMuted, fontSize: 13),
+                      ),
+                    ),
+                  OwnerViewsChart(items: trendItems),
                 ],
-              ],
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _SideCard(
-                title: context.l10n.ownerProfileCard,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(context.l10n.ownerProfileCompletion(completion)),
-                    const SizedBox(height: 8),
-                    LinearProgressIndicator(value: completion / 100),
-                    const SizedBox(height: 10),
-                    OutlinedButton(
-                      onPressed: () => context.push(
-                        '/owner/edit/$businessId?title=$encodedTitle',
-                      ),
-                      child: Text(context.l10n.ownerFillProfile),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _SideCard(
-                title: context.l10n.ownerPlanTitle,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      catalog['nameRu'] as String? ?? 'Базовый',
-                      style: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 8),
-                    OutlinedButton(
-                      onPressed: () => context.push('/owner/plan'),
-                      child: Text(context.l10n.ownerUpgradePlan),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(                context.l10n.ownerActivePromotions,
-                      style: TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                    TextButton(
-                      onPressed: () => context.push(
-                        '/owner/promotions/$businessId?title=$encodedTitle',
-                      ),
-                      child: Text(context.l10n.commonAll),
-                    ),
-                  ],
-                ),
-                if (activePromotions.isEmpty)
-                  Text(context.l10n.ownerNoActivePromotions, style: TextStyle(color: AppTheme.textMuted))
-                else ...[
+        if (showAnalytics) const SizedBox(height: 12),
+        if (showPlanCard)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    feedHint,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppTheme.textMuted,
-                    ),
+                    context.l10n.ownerPlanUsageTitle,
+                    style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 8),
-                  ...activePromotions.take(3).map(
-                        (p) => ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(p.title),
-                          subtitle: Text(
-                            [
-                              if (p.discountText != null && p.discountText!.isNotEmpty)
-                                p.discountText!,
-                              ownerPromotionStatusLabelForModel(context.l10n, p),
-                            ].join(' · '),
+                  Text(
+                    'Фото: ${usage['photos'] ?? 0}${maxPhotos != null ? ' / $maxPhotos' : ''}'
+                    '${entitlements['photos']?['overLimit'] == true ? ' (опубл. ${entitlements['photos']?['published']})' : ''}'
+                    '\nТовары и услуги: ${usage['serviceItems'] ?? 0}${maxServiceItems != null ? ' / $maxServiceItems' : ''}'
+                    '\nАктивные акции: ${usage['activePromotions'] ?? 0} / ${limits['maxActivePromotions'] ?? 1}',
+                    style: TextStyle(color: AppTheme.textMuted),
+                  ),
+                  if (overLimitNoticeText.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      overLimitNoticeText,
+                      style: TextStyle(color: AppSemanticColors.warning, fontSize: 13),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        if (showPlanCard) const SizedBox(height: 12),
+        if (showProfileCard || showPlanCard)
+          Row(
+            children: [
+              if (showProfileCard)
+                Expanded(
+                  child: _SideCard(
+                    title: context.l10n.ownerProfileCard,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(context.l10n.ownerProfileCompletion(completion)),
+                        const SizedBox(height: 8),
+                        LinearProgressIndicator(value: completion / 100),
+                        const SizedBox(height: 10),
+                        OutlinedButton(
+                          onPressed: () => context.push(
+                            '/owner/edit/$businessId?title=$encodedTitle',
+                          ),
+                          child: Text(context.l10n.ownerFillProfile),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              if (showProfileCard && showPlanCard) const SizedBox(width: 10),
+              if (showPlanCard)
+                Expanded(
+                  child: _SideCard(
+                    title: context.l10n.ownerPlanTitle,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          catalog['nameRu'] as String? ?? 'Базовый',
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 8),
+                        OutlinedButton(
+                          onPressed: () => context.push('/owner/plan'),
+                          child: Text(context.l10n.ownerUpgradePlan),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        if (showProfileCard || showPlanCard) const SizedBox(height: 12),
+        if (showPromotionsSummary)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        context.l10n.ownerActivePromotions,
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      TextButton(
+                        onPressed: () => context.push(
+                          '/owner/promotions/$businessId?title=$encodedTitle',
+                        ),
+                        child: Text(context.l10n.commonAll),
+                      ),
+                    ],
+                  ),
+                  if (activePromotions.isEmpty)
+                    Text(
+                      context.l10n.ownerNoActivePromotions,
+                      style: TextStyle(color: AppTheme.textMuted),
+                    )
+                  else ...[
+                    Text(
+                      feedHint,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.textMuted,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ...activePromotions.take(3).map(
+                          (p) => ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(p.title),
+                            subtitle: Text(
+                              [
+                                if (p.discountText != null &&
+                                    p.discountText!.isNotEmpty)
+                                  p.discountText!,
+                                ownerPromotionStatusLabelForModel(
+                                  context.l10n,
+                                  p,
+                                ),
+                              ].join(' · '),
+                            ),
                           ),
                         ),
-                      ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 16),
-        Card(
-          color: AppTheme.kzBlue.withValues(alpha: 0.08),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(                context.l10n.ownerMonetizationTitle,
-                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  context.l10n.ownerPromoteCatalogSubtitle,
-                  style: TextStyle(color: AppTheme.textMuted),
-                ),
-                const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: () => context.push('/owner/promote'),
-                  child: Text(context.l10n.ownerOpenCatalog),
-                ),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: () => context.push('/owner/monetization/campaigns'),
-                  child: Text(context.l10n.ownerMyCampaigns),
-                ),
-              ],
+        if (showPromotionsSummary) const SizedBox(height: 16),
+        if (showMonetization)
+          Card(
+            color: AppTheme.kzBlue.withValues(alpha: 0.08),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.l10n.ownerMonetizationTitle,
+                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    context.l10n.ownerPromoteCatalogSubtitle,
+                    style: TextStyle(color: AppTheme.textMuted),
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton(
+                    onPressed: () => context.push('/owner/promote'),
+                    child: Text(context.l10n.ownerOpenCatalog),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () =>
+                        context.push('/owner/monetization/campaigns'),
+                    child: Text(context.l10n.ownerMyCampaigns),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 16),
-        Text(                context.l10n.ownerManagementSection,
-          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-        ),
-        const SizedBox(height: 10),
-        _ManagementGrid(businessId: businessId, encodedTitle: encodedTitle),
+        if (showMonetization) const SizedBox(height: 16),
+        if (visibleOwnerDashboardActions(access).isNotEmpty) ...[
+          Text(
+            context.l10n.ownerManagementSection,
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+          ),
+          const SizedBox(height: 10),
+          _ManagementGrid(
+            businessId: businessId,
+            encodedTitle: encodedTitle,
+            access: access,
+          ),
+        ],
         const SizedBox(height: 12),
         OutlinedButton.icon(
           onPressed: () => openBusiness(
@@ -473,28 +514,20 @@ class _SideCard extends StatelessWidget {
   }
 }
 
-class _ManagementGrid extends ConsumerWidget {
+class _ManagementGrid extends StatelessWidget {
   const _ManagementGrid({
     required this.businessId,
     required this.encodedTitle,
+    required this.access,
   });
 
   final String businessId;
   final String encodedTitle;
+  final BusinessAccess? access;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final access = ref.watch(selectedBusinessAccessProvider);
-    final items = [
-      (Icons.storefront_outlined, context.l10n.ownerMgmtMyBusiness, '/owner/edit/$businessId?title=$encodedTitle'),
-      (Icons.restaurant_menu, context.l10n.ownerPermissionCatalogEdit, '/owner/menu/$businessId?title=$encodedTitle'),
-      (Icons.photo_library_outlined, context.l10n.ownerGallery, '/owner/gallery/$businessId?title=$encodedTitle'),
-      (Icons.local_offer_outlined, context.l10n.ownerMgmtPromotions, '/owner/promotions/$businessId?title=$encodedTitle'),
-      (Icons.star_outline, context.l10n.ownerMgmtReviews, '/owner/reviews/$businessId?title=$encodedTitle'),
-      (Icons.bar_chart_outlined, context.l10n.ownerAnalyticsTitle, '/owner/analytics/$businessId?title=$encodedTitle'),
-      if (access != null && isOwner(access))
-        (Icons.groups_outlined, context.l10n.ownerNavTeam, '/owner/team'),
-    ];
+  Widget build(BuildContext context) {
+    final items = visibleOwnerDashboardActions(access);
 
     return GridView.count(
       crossAxisCount: 3,
@@ -505,8 +538,14 @@ class _ManagementGrid extends ConsumerWidget {
       childAspectRatio: 1.05,
       children: items
           .map(
-            (item) => OutlinedButton(
-              onPressed: () => context.push(item.$3),
+            (def) => OutlinedButton(
+              onPressed: () => context.push(
+                ownerDashboardActionRoute(
+                  def.action,
+                  businessId: businessId,
+                  encodedTitle: encodedTitle,
+                ),
+              ),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.all(8),
                 alignment: Alignment.center,
@@ -514,10 +553,10 @@ class _ManagementGrid extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(item.$1, color: AppTheme.kzBlue),
+                  Icon(def.icon, color: AppTheme.kzBlue),
                   const SizedBox(height: 6),
                   Text(
-                    item.$2,
+                    ownerDashboardActionLabel(context.l10n, def.action),
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 12),
                   ),

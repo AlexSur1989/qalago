@@ -11,8 +11,12 @@ import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../owner_utils.dart';
+import '../owner_branch_availability.dart';
 import '../utils/owner_l10n.dart';
 import '../providers/owner_providers.dart';
+import '../providers/owner_locations_provider.dart';
+import '../../../core/rbac/business_access.dart';
+import 'widgets/branch_availability_selector.dart';
 
 final ownerPromotionsProvider =
     FutureProvider.family<List<PromotionModel>, String>((ref, businessId) async {
@@ -66,6 +70,14 @@ class OwnerPromotionsScreen extends ConsumerWidget {
     final descKkController =
         TextEditingController(text: existing?.descriptionKk ?? '');
     var status = existing?.status ?? 'ACTIVE';
+    final initialBranchDto = branchAvailabilityToDto(
+      branchAvailabilityFromJson(existing?.branchAvailability),
+    );
+    var branchState = branchAvailabilityFromJson(existing?.branchAvailability);
+    String? branchError;
+    final access = ref.read(ownerBusinessAccessProvider(businessId));
+    final canEditPromotions = access != null &&
+        hasPermission(access, BusinessPermission.promotionsEdit);
 
     final saved = await showDialog<bool>(
       context: context,
@@ -125,6 +137,17 @@ class OwnerPromotionsScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
+                BranchAvailabilitySelector(
+                  businessId: businessId,
+                  value: branchState,
+                  readOnly: !canEditPromotions,
+                  validationError: branchError,
+                  onChanged: (next) => setState(() {
+                    branchState = next;
+                    branchError = null;
+                  }),
+                ),
               ],
             ),
           ),
@@ -134,7 +157,33 @@ class OwnerPromotionsScreen extends ConsumerWidget {
               child: Text(context.l10n.commonCancel),
             ),
             FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
+              onPressed: canEditPromotions
+                  ? () async {
+                      final nextDto = branchAvailabilityToDto(branchState);
+                      final branchChanged = branchAvailabilityChanged(
+                        initialBranchDto,
+                        nextDto,
+                      );
+                      if (existing == null || branchChanged) {
+                        final locations = await ref
+                            .read(ownerBusinessLocationsProvider(businessId).future);
+                        final reason = validateBranchAvailabilitySubmit(
+                          branchState,
+                          locations.map((l) => l.id).toList(),
+                        );
+                        if (reason != BranchAvailabilityValidationReason.ok) {
+                          setState(() {
+                            branchError = branchAvailabilityValidationMessage(
+                              context.l10n,
+                              reason,
+                            );
+                          });
+                          return;
+                        }
+                      }
+                      if (ctx.mounted) Navigator.pop(ctx, true);
+                    }
+                  : null,
               child: Text(existing == null ? context.l10n.ownerCreate : context.l10n.commonSave),
             ),
           ],
@@ -161,11 +210,18 @@ class OwnerPromotionsScreen extends ConsumerWidget {
       payload['descriptionKk'] = descKkController.text.trim();
     }
 
+    final mutation = buildPromotionMutationPayload(
+      fields: payload,
+      isCreate: existing == null,
+      initialBranchDto: initialBranchDto,
+      branchState: branchState,
+    );
+
     try {
       if (existing == null) {
-        await repo.createPromotion({'businessId': businessId, ...payload});
+        await repo.createPromotion({'businessId': businessId, ...mutation});
       } else {
-        await repo.updatePromotion(existing.id, payload);
+        await repo.updatePromotion(existing.id, mutation);
       }
       _invalidate(ref);
       if (context.mounted) {

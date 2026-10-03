@@ -1,4 +1,5 @@
 import '../../../core/rbac/business_access.dart';
+import '../owner_plan_ui.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/models.dart';
 import '../../business_onboarding/utils/onboarding_l10n.dart';
@@ -192,22 +193,23 @@ String summarizePermissions(AppLocalizations l10n, List<String> apiValues, {int 
 
 String monetizationProductTitle(AppLocalizations l10n, String code) {
   return switch (code) {
-    'BOOST' => l10n.monetizationProductBoost,
-    'TOP_CATEGORY' => l10n.monetizationProductTopCategory,
+    'BOOST' || 'CATEGORY_BOOST' => l10n.monetizationProductBoost,
+    'TOP_CATEGORY' || 'CATEGORY_TOP' => l10n.monetizationProductTopCategory,
     'PROMOTED_PROMOTION' => l10n.monetizationProductPromotedPromotion,
-    'FEATURED_BUSINESS' => l10n.monetizationProductFeaturedBusiness,
-    'VIP_BANNER' => l10n.monetizationProductVipBanner,
+    'FEATURED_BUSINESS' || 'HOME_FEATURED' => l10n.monetizationProductFeaturedBusiness,
+    'VIP_BANNER' || 'HOME_VIP_BANNER' => l10n.monetizationProductVipBanner,
     _ => code,
   };
 }
 
 String monetizationProductDescription(AppLocalizations l10n, String code) {
   return switch (code) {
-    'BOOST' => l10n.monetizationProductBoostDesc,
-    'TOP_CATEGORY' => l10n.monetizationProductTopCategoryDesc,
+    'BOOST' || 'CATEGORY_BOOST' => l10n.monetizationProductBoostDesc,
+    'TOP_CATEGORY' || 'CATEGORY_TOP' => l10n.monetizationProductTopCategoryDesc,
     'PROMOTED_PROMOTION' => l10n.monetizationProductPromotedPromotionDesc,
-    'FEATURED_BUSINESS' => l10n.monetizationProductFeaturedBusinessDesc,
-    'VIP_BANNER' => l10n.monetizationProductVipBannerDesc,
+    'FEATURED_BUSINESS' || 'HOME_FEATURED' =>
+      l10n.monetizationProductFeaturedBusinessDesc,
+    'VIP_BANNER' || 'HOME_VIP_BANNER' => l10n.monetizationProductVipBannerDesc,
     _ => l10n.monetizationProductDefaultDesc,
   };
 }
@@ -326,4 +328,25 @@ String _daysLabel(AppLocalizations l10n, int days) {
   if (mod10 == 1) return l10n.ownerDayUnitOne;
   if (mod10 >= 2 && mod10 <= 4) return l10n.ownerDayUnitFew;
   return l10n.ownerDayUnitMany;
+}
+
+String ownerPlanPaymentStatusLabel(AppLocalizations l10n, String status) {
+  return switch (status) {
+    'PENDING' => l10n.ownerPlanPaymentStatusPending,
+    'COMPLETED' => l10n.ownerPlanPaymentStatusCompleted,
+    'CANCELLED' => l10n.ownerPlanPaymentStatusCancelled,
+    'FAILED' => l10n.ownerPlanPaymentStatusFailed,
+    _ => status,
+  };
+}
+
+String ownerPlanPurchaseActionLabel(
+  AppLocalizations l10n,
+  PlanPurchaseActionKind kind,
+) {
+  return switch (kind) {
+    PlanPurchaseActionKind.renew => l10n.ownerPlanPurchaseRenew,
+    PlanPurchaseActionKind.upgrade => l10n.ownerPlanPurchaseUpgrade,
+    PlanPurchaseActionKind.choose => l10n.ownerPlanPurchaseChoose,
+  };
 }

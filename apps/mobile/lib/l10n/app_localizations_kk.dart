@@ -2201,6 +2201,124 @@ class AppLocalizationsKk extends AppLocalizations {
   String get ownerMgmtReviews => 'Пікірлер';
 
   @override
+  String get ownerReviewReportAction => 'Пікірге шағымдану';
+
+  @override
+  String get ownerReviewReportSubmit => 'Шағымды жіберу';
+
+  @override
+  String get ownerReviewReportSent => 'Шағым жіберілді';
+
+  @override
+  String get ownerReviewReportAlreadySubmitted => 'Шағым бұрын жіберілген';
+
+  @override
+  String get ownerLocationsTitle => 'Филиалдар';
+
+  @override
+  String get ownerLocationAdd => 'Филиал қосу';
+
+  @override
+  String get ownerLocationEdit => 'Филиалды өңдеу';
+
+  @override
+  String get ownerLocationDelete => 'Жою';
+
+  @override
+  String get ownerLocationSetPrimary => 'Негізгі ету';
+
+  @override
+  String get ownerLocationPrimaryBadge => 'Негізгі';
+
+  @override
+  String get ownerLocationCity => 'Қала';
+
+  @override
+  String get ownerLocationWhatsapp => 'WhatsApp';
+
+  @override
+  String get ownerLocationInstagram => 'Instagram';
+
+  @override
+  String get ownerLocationsEmptyTitle => 'Филиалдар қосылмаған';
+
+  @override
+  String get ownerLocationsEmptyBody =>
+      'Мекенжай, байланыс және жұмыс уақытын филиал ретінде қосыңыз — веб-кабинеттегідей.';
+
+  @override
+  String get ownerLocationsLegacyHint =>
+      'Профильдегі сақталған мекенжай (филиал болмағанша анықтама):';
+
+  @override
+  String get ownerLocationsManageHintTitle =>
+      'Мекенжай, байланыс және жұмыс уақыты';
+
+  @override
+  String get ownerLocationsManageHintBody =>
+      '«Филиалдар» бөлімінде басқарыңыз.';
+
+  @override
+  String get ownerLocationSetPrimaryConfirmTitle =>
+      'Бұл филиалды негізгі ету керек пе?';
+
+  @override
+  String get ownerLocationDeleteConfirmTitle => 'Филиалды жою керек пе?';
+
+  @override
+  String get ownerLocationPrimaryUpdated => 'Негізгі филиал жаңартылды';
+
+  @override
+  String get ownerLocationDeleted => 'Филиал жойылды';
+
+  @override
+  String get ownerLocationCreated => 'Филиал қосылды';
+
+  @override
+  String get ownerLocationSaved => 'Филиал сақталды';
+
+  @override
+  String get ownerLocationValidationCityAddress =>
+      'Қала таңдап, мекенжайды көрсетіңіз';
+
+  @override
+  String get ownerLocationErrorLastDelete =>
+      'Соңғы филиалды жоюға болмайды. Алдымен басқасын қосыңыз немесе мекемені жойыңыз.';
+
+  @override
+  String get ownerLocationErrorPrimaryDelete =>
+      'Негізгі филиалды жоюға болмайды. Алдымен басқа филиалды негізгі етіңіз.';
+
+  @override
+  String get ownerRequiredBusinessTitle => 'Мекеме атауын көрсетіңіз';
+
+  @override
+  String get ownerBranchAvailabilityHeading => 'Қайда қолжетімді';
+
+  @override
+  String get ownerBranchAvailabilityModeAll => 'Барлық филиалдар';
+
+  @override
+  String get ownerBranchAvailabilityModeSelected => 'Таңдалған филиалдар';
+
+  @override
+  String get ownerBranchAvailabilitySelectBranches => 'Филиалдарды таңдаңыз';
+
+  @override
+  String get ownerBranchAvailabilityNoBranches => 'Филиалдар жоқ';
+
+  @override
+  String get ownerBranchAvailabilityAddBranchFirst => 'Алдымен филиал қосыңыз';
+
+  @override
+  String get ownerBranchAvailabilitySelectAtLeastOne =>
+      'Кем дегенде бір филиал таңдаңыз';
+
+  @override
+  String get ownerBranchAvailabilityMissingUnresolved =>
+      'Кейбір таңдалған филиалдар енді қолжетімсіз. Таңдауды жаңартыңыз.';
+
+  @override
   String ownerErrorWithDetails(String details) {
     return 'Қате: $details';
   }
@@ -2373,6 +2491,34 @@ class AppLocalizationsKk extends AppLocalizations {
 
   @override
   String get ownerMonetizationTitle => 'Жарнама және насихат';
+
+  @override
+  String get ownerMonetizationHubIntro =>
+      'QalaGo тарифі — орын мүмкіндіктері және жарнама жеңілдігі. Жарнамалық орналастырулар бөлек сатып алынады және тарифке автоматты қосылмайды.';
+
+  @override
+  String get ownerMyPlanSectionTitle => 'Менің тарифім';
+
+  @override
+  String get ownerAdvertisingSectionTitle => 'Жарнама';
+
+  @override
+  String get ownerPromoteWhatToPromote => 'Нені насихаттағыңыз келеді?';
+
+  @override
+  String get ownerPromoteSubjectBusiness => 'Орын';
+
+  @override
+  String get ownerPromoteSubjectPromotion => 'Акция';
+
+  @override
+  String get ownerAdPackagesNotPlansSubtitle =>
+      'Жарнама пакеттері — орналастыру жиынтықтары, QalaGo тарифіне жазылу емес.';
+
+  @override
+  String ownerMonetizationAdOrdersPending(int count) {
+    return 'Төлемді күтетін жарнама тапсырыстары: $count';
+  }
 
   @override
   String get ownerSelectBusinessFirst => 'Алдымен мекемені таңдаңыз';
@@ -3222,6 +3368,101 @@ class AppLocalizationsKk extends AppLocalizations {
 
   @override
   String get ownerPlanPurchaseUnavailable => 'Сатып алу қолжетімсіз';
+
+  @override
+  String get ownerPlanPendingPaymentTitle => 'Төлем растауы күтілуде';
+
+  @override
+  String ownerPlanPendingPaymentBody(String tier, String amount) {
+    return '«$tier» тарифіне өтінім ($amount ₸) жіберілді. Әкімші растағаннан кейін тариф белсенді болады.';
+  }
+
+  @override
+  String get ownerPlanPurchasePendingSuccess =>
+      'Өтінім жіберілді. Төлем растауын күтіңіз.';
+
+  @override
+  String get ownerPlanPaymentHistoryTitle => 'Төлем тарихы';
+
+  @override
+  String get ownerPlanPaymentHistoryEmpty => 'Төлемдер әлі жоқ';
+
+  @override
+  String get ownerPlanPaymentAwaitingConfirmation => 'растау күтілуде';
+
+  @override
+  String get ownerPlanPaymentStatusPending => 'Растау күтілуде';
+
+  @override
+  String get ownerPlanPaymentStatusCompleted => 'Расталған';
+
+  @override
+  String get ownerPlanPaymentStatusCancelled => 'Болдырылмаған';
+
+  @override
+  String get ownerPlanPaymentStatusFailed => 'Орындалмаған';
+
+  @override
+  String get ownerPlanCurrentBadge => 'Ағымдағы тариф';
+
+  @override
+  String ownerPlanActiveUntil(String date) {
+    return '$date дейін';
+  }
+
+  @override
+  String ownerPlanAdDiscount(int percent) {
+    return 'Жарнама жеңілдігі: $percent%';
+  }
+
+  @override
+  String get ownerPlanSameTierRenewalHint =>
+      'Ағымдағы тарифті ұзартады: мерзім қалған күндерге қосылады.';
+
+  @override
+  String get ownerPlanPurchaseChoose => 'Тариф таңдау';
+
+  @override
+  String get ownerPlanPurchaseRenew => 'Ұзарту';
+
+  @override
+  String get ownerPlanPurchaseUpgrade => 'Ауысу';
+
+  @override
+  String get ownerPlanDowngradeNotAllowed =>
+      'Ағымдағы тариф белсенді кезде төмендеу мүмкін емес.';
+
+  @override
+  String get ownerPlanOwnerOnlyPurchase =>
+      'Ресімдеу тек мекеме иесіне қолжетімді.';
+
+  @override
+  String get ownerPlanMockSectionTitle => 'Сынақ төлемі';
+
+  @override
+  String get ownerPlanMockSectionBody =>
+      'Төлем нақты емес. Ақылы тарифтер 30 күнге белсенді болады.';
+
+  @override
+  String get ownerPlanMockCheckoutLabel => 'Қосу (сынақ)';
+
+  @override
+  String get ownerPlanConnecting => 'Қосылуда…';
+
+  @override
+  String get ownerPlanVipAdsSeparate =>
+      'Жарнамалық орналастырулар бөлек сатып алынады.';
+
+  @override
+  String get ownerPlanAdsSectionTitle => 'Жарнама';
+
+  @override
+  String get ownerPlanAdsSectionBody =>
+      'Жарнамалық орналастырулар бөлек сатып алынады. Тариф жеңілдігі жарнама өнімдеріне қолданылады.';
+
+  @override
+  String get ownerPlanRefreshHint =>
+      'Төлемнен кейін статусты жаңарту үшін төмен тартыңыз.';
 
   @override
   String get ownerPlanGoToAds => 'Жарнамаға өту';

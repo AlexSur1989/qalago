@@ -11,9 +11,13 @@ import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../owner_menu_utils.dart';
+import '../owner_branch_availability.dart';
 import '../providers/owner_menu_provider.dart';
 import '../providers/owner_providers.dart';
+import '../providers/owner_locations_provider.dart';
+import 'widgets/branch_availability_selector.dart';
 import 'widgets/service_menu_widgets.dart';
+import '../../../core/rbac/business_access.dart';
 
 class OwnerMenuScreen extends ConsumerStatefulWidget {
   const OwnerMenuScreen({
@@ -258,6 +262,14 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
         TextEditingController(text: existing?['price']?.toString() ?? '');
     String? selectedGroupId =
         itemSectionId(existing ?? {}) ?? defaultGroupId;
+    final initialBranchDto = branchAvailabilityToDto(
+      branchAvailabilityFromJson(existing?['branchAvailability']),
+    );
+    var branchState = branchAvailabilityFromJson(existing?['branchAvailability']);
+    String? branchError;
+    final access = ref.read(ownerBusinessAccessProvider(widget.businessId));
+    final canEditCatalog = access != null &&
+        hasPermission(access, BusinessPermission.catalogEdit);
 
     final ok = await showDialog<bool>(
       context: context,
@@ -310,12 +322,52 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
                   ),
                   maxLines: 2,
                 ),
+                const SizedBox(height: 16),
+                BranchAvailabilitySelector(
+                  businessId: widget.businessId,
+                  value: branchState,
+                  readOnly: !canEditCatalog,
+                  validationError: branchError,
+                  onChanged: (next) => setState(() {
+                    branchState = next;
+                    branchError = null;
+                  }),
+                ),
               ],
             ),
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.l10n.commonCancel)),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(context.l10n.commonSave)),
+            FilledButton(
+              onPressed: canEditCatalog
+                  ? () async {
+                      final nextDto = branchAvailabilityToDto(branchState);
+                      final branchChanged = branchAvailabilityChanged(
+                        initialBranchDto,
+                        nextDto,
+                      );
+                      if (existing == null || branchChanged) {
+                        final locations = await ref
+                            .read(ownerBusinessLocationsProvider(widget.businessId).future);
+                        final reason = validateBranchAvailabilitySubmit(
+                          branchState,
+                          locations.map((l) => l.id).toList(),
+                        );
+                        if (reason != BranchAvailabilityValidationReason.ok) {
+                          setState(() {
+                            branchError = branchAvailabilityValidationMessage(
+                              context.l10n,
+                              reason,
+                            );
+                          });
+                          return;
+                        }
+                      }
+                      if (ctx.mounted) Navigator.pop(ctx, true);
+                    }
+                  : null,
+              child: Text(context.l10n.commonSave),
+            ),
           ],
         ),
       ),
@@ -341,10 +393,17 @@ class _OwnerMenuScreenState extends ConsumerState<OwnerMenuScreen> {
       payload['descriptionKk'] = descKkController.text.trim();
     }
 
+    final mutation = buildMenuItemMutationPayload(
+      fields: payload,
+      isCreate: existing == null,
+      initialBranchDto: initialBranchDto,
+      branchState: branchState,
+    );
+
     if (existing == null) {
-      await repo.createServiceItem({'businessId': widget.businessId, ...payload});
+      await repo.createServiceItem({'businessId': widget.businessId, ...mutation});
     } else {
-      await repo.updateServiceItem(existing['id'] as String, payload);
+      await repo.updateServiceItem(existing['id'] as String, mutation);
     }
     _invalidateMenu();
   }

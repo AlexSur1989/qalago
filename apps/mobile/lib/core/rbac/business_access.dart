@@ -99,21 +99,57 @@ enum OwnerNavItem {
   settings,
   help,
   editProfile,
+  locations,
   menu,
   gallery,
   promotions,
   reviews,
 }
 
-const _ownerNavPermissionRequirements = <OwnerNavItem, BusinessPermission>{
-  OwnerNavItem.analytics: BusinessPermission.analyticsView,
-  OwnerNavItem.promote: BusinessPermission.adsManage,
-  OwnerNavItem.plan: BusinessPermission.paymentsView,
-  OwnerNavItem.editProfile: BusinessPermission.businessProfileEdit,
-  OwnerNavItem.menu: BusinessPermission.catalogEdit,
-  OwnerNavItem.gallery: BusinessPermission.photosEdit,
-  OwnerNavItem.promotions: BusinessPermission.promotionsEdit,
-  OwnerNavItem.reviews: BusinessPermission.reviewsReply,
+class OwnerNavRequirement {
+  const OwnerNavRequirement({
+    this.anyOf = const [],
+    this.ownerOnly = false,
+  });
+
+  final List<BusinessPermission> anyOf;
+  final bool ownerOnly;
+}
+
+const _ownerNavRequirements = <OwnerNavItem, OwnerNavRequirement>{
+  OwnerNavItem.analytics: OwnerNavRequirement(
+    anyOf: [BusinessPermission.analyticsView],
+  ),
+  OwnerNavItem.promote: OwnerNavRequirement(
+    anyOf: [BusinessPermission.adsManage],
+  ),
+  OwnerNavItem.plan: OwnerNavRequirement(
+    anyOf: [BusinessPermission.paymentsView],
+  ),
+  OwnerNavItem.settings: OwnerNavRequirement(
+    anyOf: [BusinessPermission.businessProfileEdit],
+  ),
+  OwnerNavItem.editProfile: OwnerNavRequirement(
+    anyOf: [BusinessPermission.businessProfileEdit],
+  ),
+  OwnerNavItem.locations: OwnerNavRequirement(
+    anyOf: [
+      BusinessPermission.businessProfileEdit,
+      BusinessPermission.businessHoursEdit,
+    ],
+  ),
+  OwnerNavItem.menu: OwnerNavRequirement(
+    anyOf: [BusinessPermission.catalogEdit],
+  ),
+  OwnerNavItem.gallery: OwnerNavRequirement(
+    anyOf: [BusinessPermission.photosEdit],
+  ),
+  OwnerNavItem.promotions: OwnerNavRequirement(
+    anyOf: [BusinessPermission.promotionsEdit],
+  ),
+  OwnerNavItem.reviews: OwnerNavRequirement(
+    anyOf: [BusinessPermission.reviewsReply],
+  ),
 };
 
 List<BusinessPermission> normalizeBusinessPermissions(
@@ -137,18 +173,33 @@ bool hasPermission(BusinessAccess access, BusinessPermission permission) {
   return normalized.contains(permission);
 }
 
+bool hasAnyPermission(
+  BusinessAccess access,
+  Iterable<BusinessPermission> permissions,
+) {
+  if (isOwner(access)) return true;
+  for (final permission in permissions) {
+    if (hasPermission(access, permission)) return true;
+  }
+  return false;
+}
+
 bool canAccessBusinessCabinet(String? userRole, List<MyBusinessEntry> entries) {
   if (canManageBusinessCabinet(userRole)) return true;
   return entries.isNotEmpty;
 }
 
+bool canAccessOwnerNavItem(BusinessAccess access, OwnerNavItem item) {
+  if (item == OwnerNavItem.team) return isOwner(access);
+  final requirement = _ownerNavRequirements[item];
+  if (requirement == null) return true;
+  if (requirement.ownerOnly) return isOwner(access);
+  if (requirement.anyOf.isEmpty) return true;
+  return hasAnyPermission(access, requirement.anyOf);
+}
+
 List<OwnerNavItem> filterOwnerNavByPermission(BusinessAccess access) {
-  return OwnerNavItem.values.where((item) {
-    if (item == OwnerNavItem.team) {
-      return isOwner(access);
-    }
-    final required = _ownerNavPermissionRequirements[item];
-    if (required == null) return true;
-    return hasPermission(access, required);
-  }).toList();
+  return OwnerNavItem.values
+      .where((item) => canAccessOwnerNavItem(access, item))
+      .toList();
 }
