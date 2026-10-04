@@ -44,6 +44,8 @@ import {
   RejectBusinessApplicationDto,
   UpdateBusinessApplicationDto,
 } from './dto/business-application.dto';
+import { LegalLocale } from '@prisma/client';
+import { LegalService } from '../safety/legal.service';
 
 const applicationInclude = {
   city: { select: { id: true, slug: true, nameRu: true, launchStatus: true } },
@@ -67,6 +69,7 @@ export class BusinessApplicationsService {
     private readonly notifications: NotificationsService,
     private readonly rateLimit: OnboardingRateLimitService,
     private readonly primaryLocation: BusinessPrimaryLocationService,
+    private readonly legal: LegalService,
   ) {}
 
   async createDraft(user: AuthUser, dto: CreateBusinessApplicationDto) {
@@ -172,8 +175,10 @@ export class BusinessApplicationsService {
     });
   }
 
-  async submit(user: AuthUser, id: string) {
+  async submit(user: AuthUser, id: string, legalLocale: LegalLocale = LegalLocale.RU) {
     this.rateLimit.assertApplicationSubmit(user.id);
+
+    await this.legal.assertBusinessApplicationLegal(user.id, legalLocale);
 
     const application = await this.getOwn(user, id);
     if (application.status !== BusinessApplicationStatus.DRAFT) {

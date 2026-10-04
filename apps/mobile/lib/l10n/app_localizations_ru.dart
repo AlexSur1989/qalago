@@ -1259,6 +1259,40 @@ class AppLocalizationsRu extends AppLocalizations {
       'Текст документов открывается на сайте QalaGo; версия проверяется сервером.';
 
   @override
+  String get contextualLegalPlanCheckbox =>
+      'Я принимаю условия Публичной оферты на оказание платных услуг QalaGo';
+
+  @override
+  String get contextualLegalAdCheckbox =>
+      'Я принимаю Публичную оферту и Правила размещения рекламы и подтверждаю параметры рекламной кампании, указанные в интерфейсе';
+
+  @override
+  String get contextualLegalBusinessTermsCheckbox =>
+      'Я принимаю Условия использования QalaGo для бизнеса';
+
+  @override
+  String get contextualLegalConfirmRequired =>
+      'Подтвердите принятие документов, чтобы продолжить';
+
+  @override
+  String get contextualLegalVersionStale =>
+      'Документы обновлены. Ознакомьтесь и примите актуальные версии';
+
+  @override
+  String get contextualLegalUnavailable =>
+      'Юридические документы временно недоступны. Попробуйте позже';
+
+  @override
+  String get contextualLegalLinkOffer => 'Публичная оферта';
+
+  @override
+  String get contextualLegalLinkAdvertisingRules =>
+      'Правила размещения рекламы';
+
+  @override
+  String get contextualLegalLinkBusinessTerms => 'Условия для бизнеса';
+
+  @override
   String get releaseUpdateAvailable => 'Доступно обновление';
 
   @override

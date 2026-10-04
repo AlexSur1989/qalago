@@ -2,13 +2,14 @@ import { Global, Module } from '@nestjs/common';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { CommonAccessModule } from '../../common/common-access.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { SafetyModule } from '../safety/safety.module';
 import { PlansAdminController } from './plans-admin.controller';
 import { PlansController } from './plans.controller';
 import { PlansService } from './plans.service';
 
 @Global()
 @Module({
-  imports: [NotificationsModule, CommonAccessModule],
+  imports: [NotificationsModule, CommonAccessModule, SafetyModule],
   controllers: [PlansController, PlansAdminController],
   providers: [PlansService, PlanLimitsService],
   exports: [PlansService, PlanLimitsService],

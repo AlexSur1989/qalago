@@ -3,14 +3,15 @@ import { ReactNode } from 'react';
 import { getServerLocale } from '@/lib/locale-server';
 import { LEGAL_UI, legalPageHeading } from '@/lib/legal-ui';
 import { getConsumerWebOrigin } from '@/lib/seo/canonical';
-import { publicLegalPath, type PublicLegalRootSegment } from '@/lib/legal-paths';
+import { publicLegalPath, type ExtendedLegalRootSegment } from '@/lib/legal-paths';
 
 type LegalPageLayoutProps = {
-  page: PublicLegalRootSegment;
+  page: ExtendedLegalRootSegment;
   lastUpdated: string;
   documentVersion?: string;
   children: ReactNode;
   draftNotice?: boolean;
+  headingOverride?: string;
 };
 
 export async function LegalPageLayout({
@@ -19,10 +20,11 @@ export async function LegalPageLayout({
   documentVersion,
   children,
   draftNotice = true,
+  headingOverride,
 }: LegalPageLayoutProps) {
   const locale = await getServerLocale();
   const ui = LEGAL_UI[locale];
-  const title = legalPageHeading(locale, page);
+  const title = headingOverride ?? legalPageHeading(locale, page);
   const origin = getConsumerWebOrigin();
   const sampleProductionUrl = `${origin}${publicLegalPath('privacy')}`;
 

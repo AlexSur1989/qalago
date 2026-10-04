@@ -10,6 +10,8 @@ import '../utils/onboarding_errors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../location/business_location_value.dart';
 import '../../location/widgets/business_address_location_field.dart';
+import '../../legal/legal_contextual_errors.dart';
+import '../../legal/widgets/contextual_legal_section.dart';
 
 class BusinessApplyScreen extends ConsumerStatefulWidget {
   const BusinessApplyScreen({super.key, this.applicationId});
@@ -31,6 +33,7 @@ class _BusinessApplyScreenState extends ConsumerState<BusinessApplyScreen> {
   String _status = 'DRAFT';
   String? _rejectionReason;
   bool _loading = false;
+  final _applyLegalKey = GlobalKey<ContextualLegalSectionState>();
 
   @override
   void initState() {
@@ -134,6 +137,10 @@ class _BusinessApplyScreenState extends ConsumerState<BusinessApplyScreen> {
             ),
             const SizedBox(height: 24),
             if (!_readOnly) ...[
+              ContextualLegalSection(
+                key: _applyLegalKey,
+                contextKey: 'BUSINESS_APPLICATION',
+              ),
               OutlinedButton(
                 onPressed: _loading ? null : _saveDraft,
                 child: Text(_loading ? l10n.onboardingSaving : l10n.onboardingSaveDraft),
@@ -214,6 +221,8 @@ class _BusinessApplyScreenState extends ConsumerState<BusinessApplyScreen> {
       } else {
         await repo.updateApplication(_draftId!, _payload());
       }
+      final legalOk = await _applyLegalKey.currentState?.ensureAccepted() ?? true;
+      if (!legalOk) return;
       await repo.submitApplication(_draftId!);
       ref.invalidate(myApplicationsProvider);
       if (mounted) {
@@ -224,8 +233,17 @@ class _BusinessApplyScreenState extends ConsumerState<BusinessApplyScreen> {
       }
     } catch (e) {
       if (mounted) {
+        if (e.toString().contains('LEGAL_')) {
+          await _applyLegalKey.currentState?.refresh();
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(mapOnboardingError(l10n, e))),
+          SnackBar(
+            content: Text(
+              e.toString().contains('LEGAL_')
+                  ? mapContextualLegalError(l10n, e)
+                  : mapOnboardingError(l10n, e),
+            ),
+          ),
         );
       }
     } finally {

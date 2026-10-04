@@ -1,8 +1,13 @@
 /**
- * Canonical published platform legal versions (KZ-C.2).
- * Consumer Web F.7 bodies and backend LegalDocument seed must stay aligned with these values.
- * Does not imply counsel approval — see docs/legal-review-required.md.
+ * Canonical platform legal metadata (KZ-C.2 / 6.15L.2).
+ * Content version tracks docs/legal pack; PUBLISHED status is set in DB only after validation.
  */
+import {
+  LEGAL_DOCUMENT_PUBLIC_PATHS,
+  LEGAL_PACK_CONTENT_VERSION,
+  type LegalDocumentTypeSlug,
+} from './legal-requirements-manifest';
+
 export const MANDATORY_PLATFORM_LEGAL_DOCUMENT_TYPES = [
   'TERMS_OF_SERVICE',
   'PRIVACY_POLICY',
@@ -13,7 +18,7 @@ export type MandatoryPlatformLegalDocumentType =
 
 export type PublishedLegalVersionMeta = {
   version: string;
-  effectiveDate: string;
+  effectiveDate: string | null;
   publicPath: '/terms' | '/privacy';
 };
 
@@ -22,13 +27,13 @@ export const PUBLISHED_PLATFORM_LEGAL_VERSIONS: Record<
   PublishedLegalVersionMeta
 > = {
   TERMS_OF_SERVICE: {
-    version: '2026-09-10',
-    effectiveDate: '2026-09-10',
+    version: LEGAL_PACK_CONTENT_VERSION,
+    effectiveDate: null,
     publicPath: '/terms',
   },
   PRIVACY_POLICY: {
-    version: '2026-09-10',
-    effectiveDate: '2026-09-10',
+    version: LEGAL_PACK_CONTENT_VERSION,
+    effectiveDate: null,
     publicPath: '/privacy',
   },
 };
@@ -38,3 +43,9 @@ export function mandatoryLegalPublicPath(
 ): '/terms' | '/privacy' {
   return PUBLISHED_PLATFORM_LEGAL_VERSIONS[type].publicPath;
 }
+
+export function legalPublicPathForType(type: LegalDocumentTypeSlug): string | null {
+  return LEGAL_DOCUMENT_PUBLIC_PATHS[type];
+}
+
+export { LEGAL_PACK_CONTENT_VERSION };

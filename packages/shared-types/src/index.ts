@@ -262,10 +262,26 @@ export {
 export {
   MANDATORY_PLATFORM_LEGAL_DOCUMENT_TYPES,
   PUBLISHED_PLATFORM_LEGAL_VERSIONS,
+  LEGAL_PACK_CONTENT_VERSION,
   mandatoryLegalPublicPath,
+  legalPublicPathForType,
   type MandatoryPlatformLegalDocumentType,
   type PublishedLegalVersionMeta,
 } from './legal-published-manifest';
+
+export {
+  ALL_LEGAL_DOCUMENT_TYPES,
+  LEGAL_COOKIES_PUBLIC_PATH,
+  LEGAL_DOCUMENT_PUBLIC_PATHS,
+  DEFAULT_PERSONAL_DATA_CONSENT_MANDATORY,
+  platformAccessDocumentTypes,
+  checkoutPlanDocumentTypes,
+  checkoutAdDocumentTypes,
+  businessApplicationDocumentTypes,
+  type LegalDocumentTypeSlug,
+  type LegalPublicPath,
+  type LegalRequirementContext,
+} from './legal-requirements-manifest';
 
 export {
   StaffPermission,

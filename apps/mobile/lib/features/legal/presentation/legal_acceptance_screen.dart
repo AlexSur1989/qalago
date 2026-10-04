@@ -92,6 +92,18 @@ class _LegalAcceptanceScreenState extends ConsumerState<LegalAcceptanceScreen> {
                     style: const TextStyle(fontSize: 16, height: 1.45),
                   ),
                   const SizedBox(height: 16),
+                  ...state.pending.map(
+                    (doc) => ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(doc.type, style: const TextStyle(fontSize: 14)),
+                      trailing: doc.publicUrl != null
+                          ? IconButton(
+                              icon: const Icon(Icons.open_in_new, size: 20),
+                              onPressed: () => openLegalUrl(doc.publicUrl!),
+                            )
+                          : null,
+                    ),
+                  ),
                   LegalLinksSection(showAccountDeletion: false),
                   const SizedBox(height: 16),
                   CheckboxListTile(

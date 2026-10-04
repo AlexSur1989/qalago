@@ -15,11 +15,20 @@ import {
   UserRole,
 } from '@prisma/client';
 import {
+  DEFAULT_PERSONAL_DATA_CONSENT_MANDATORY,
   MANDATORY_PLATFORM_LEGAL_DOCUMENT_TYPES,
   PUBLISHED_PLATFORM_LEGAL_VERSIONS,
+  businessApplicationDocumentTypes,
+  checkoutAdDocumentTypes,
+  checkoutPlanDocumentTypes,
+  legalPublicPathForType,
   mandatoryLegalPublicPath,
+  platformAccessDocumentTypes,
+  type LegalDocumentTypeSlug,
+  type LegalRequirementContext,
   isStaffRole,
 } from '@qalago/shared-types';
+import { validateLegalDocumentContentForPublish } from './legal-publication.validation';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { isGlobalAdmin } from '../../common/utils/system-access.util';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -43,13 +52,39 @@ export class LegalService {
   }
 
   publicLegalUrl(type: LegalDocumentType): string | null {
-    if (!MANDATORY_ACCEPTANCE_LEGAL_TYPES.includes(type)) {
+    if (MANDATORY_ACCEPTANCE_LEGAL_TYPES.includes(type)) {
+      const path = mandatoryLegalPublicPath(
+        type as (typeof MANDATORY_PLATFORM_LEGAL_DOCUMENT_TYPES)[number],
+      );
+      return `${this.consumerWebOrigin()}${path}`;
+    }
+    const path = legalPublicPathForType(type as LegalDocumentTypeSlug);
+    if (!path) {
       return null;
     }
-    const path = mandatoryLegalPublicPath(
-      type as (typeof MANDATORY_PLATFORM_LEGAL_DOCUMENT_TYPES)[number],
-    );
     return `${this.consumerWebOrigin()}${path}`;
+  }
+
+  personalDataConsentMandatory(): boolean {
+    if (process.env.LEGAL_REQUIRE_PERSONAL_DATA_CONSENT === 'true') {
+      return true;
+    }
+    if (process.env.LEGAL_REQUIRE_PERSONAL_DATA_CONSENT === 'false') {
+      return false;
+    }
+    return DEFAULT_PERSONAL_DATA_CONSENT_MANDATORY;
+  }
+
+  enforceCheckoutLegal(): boolean {
+    return process.env.LEGAL_ENFORCE_CHECKOUT === 'true';
+  }
+
+  platformAccessTypesForRole(role: UserRole): LegalDocumentType[] {
+    const businessOwner = role === UserRole.BUSINESS;
+    return platformAccessDocumentTypes({
+      businessOwner,
+      personalDataConsentMandatory: this.personalDataConsentMandatory(),
+    }) as LegalDocumentType[];
   }
 
   async getPublishedDocument(type: LegalDocumentType, locale: LegalLocale) {
@@ -101,9 +136,9 @@ export class LegalService {
     };
   }
 
-  async listCurrentMandatoryDocuments(locale: LegalLocale) {
+  async listCurrentDocumentsForTypes(locale: LegalLocale, types: LegalDocumentType[]) {
     const documents: Array<ReturnType<LegalService['toPublishedDto']>> = [];
-    for (const type of MANDATORY_ACCEPTANCE_LEGAL_TYPES) {
+    for (const type of types) {
       const doc = await this.findPublishedDocument(type, locale);
       if (doc) {
         documents.push(this.toPublishedDto(doc));
@@ -112,8 +147,22 @@ export class LegalService {
     return documents;
   }
 
-  async getLegalCurrent(locale: LegalLocale, userId?: string) {
-    const required = await this.listCurrentMandatoryDocuments(locale);
+  async listCurrentMandatoryDocuments(locale: LegalLocale) {
+    return this.listCurrentDocumentsForTypes(locale, [...MANDATORY_ACCEPTANCE_LEGAL_TYPES]);
+  }
+
+  async getLegalCurrent(locale: LegalLocale, userId?: string, role?: UserRole) {
+    let accessTypes = this.platformAccessTypesForRole(role ?? UserRole.USER);
+    if (userId && !role) {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { role: true },
+      });
+      if (user) {
+        accessTypes = this.platformAccessTypesForRole(user.role);
+      }
+    }
+    const required = await this.listCurrentDocumentsForTypes(locale, accessTypes);
     const base = {
       locale,
       requiredDocuments: required.map((d) => ({
@@ -135,7 +184,7 @@ export class LegalService {
       };
     }
 
-    const pending = await this.listPendingMandatoryAcceptance(userId, locale);
+    const pending = await this.listPendingForTypes(userId, locale, accessTypes);
     const pendingIds = new Set(pending.map((p) => p.documentId));
     return {
       ...base,
@@ -151,6 +200,85 @@ export class LegalService {
     };
   }
 
+  documentTypesForContext(context: LegalRequirementContext): LegalDocumentType[] {
+    switch (context) {
+      case 'PLAN_PURCHASE':
+        return checkoutPlanDocumentTypes() as LegalDocumentType[];
+      case 'AD_PURCHASE':
+        return checkoutAdDocumentTypes() as LegalDocumentType[];
+      case 'BUSINESS_APPLICATION':
+        return businessApplicationDocumentTypes() as LegalDocumentType[];
+      default:
+        throw new BadRequestException({
+          message: 'Unsupported legal requirement context',
+          code: SafetyErrorCode.LEGAL_DOCUMENT_NOT_FOUND,
+        });
+    }
+  }
+
+  private assertAcceptanceSourceForContext(
+    context: LegalRequirementContext,
+    source: LegalAcceptanceSource,
+  ) {
+    if (context === 'BUSINESS_APPLICATION') {
+      if (source !== LegalAcceptanceSource.BUSINESS_APPLICATION) {
+        throw new BadRequestException({
+          message: 'Invalid acceptance source for business application legal context',
+          code: SafetyErrorCode.LEGAL_VERSION_STALE,
+        });
+      }
+      return;
+    }
+    if (context === 'PLAN_PURCHASE' || context === 'AD_PURCHASE') {
+      if (source !== LegalAcceptanceSource.CHECKOUT) {
+        throw new BadRequestException({
+          message: 'Invalid acceptance source for checkout legal context',
+          code: SafetyErrorCode.LEGAL_VERSION_STALE,
+        });
+      }
+    }
+  }
+
+  async getLegalRequired(
+    userId: string,
+    locale: LegalLocale,
+    context: LegalRequirementContext,
+  ) {
+    const types = this.documentTypesForContext(context);
+    const required = await this.listCurrentDocumentsForTypes(locale, types);
+    const pending = await this.listPendingForTypes(userId, locale, types);
+    const pendingIds = new Set(pending.map((p) => p.documentId));
+    const enforcementActive =
+      context === 'BUSINESS_APPLICATION'
+        ? required.length > 0
+        : this.enforceCheckoutLegal();
+    return {
+      context,
+      locale,
+      enforcementActive,
+      allRequiredPublished: required.length === types.length,
+      requiredDocuments: required.map((d) => ({
+        documentId: d.id,
+        type: d.type,
+        version: d.version,
+        title: d.title,
+        effectiveAt: d.effectiveAt,
+        publicUrl: d.publicUrl,
+        requiresReacceptance: d.requiresReacceptance,
+      })),
+      documents: required.map((d) => ({
+        documentId: d.id,
+        type: d.type,
+        version: d.version,
+        title: d.title,
+        publicUrl: d.publicUrl,
+        acceptedCurrentVersion: !pendingIds.has(d.id),
+      })),
+      acceptanceRequired: pending.length > 0,
+      pendingAcceptance: pending,
+    };
+  }
+
   /** Consumer mobile/business users; staff roles skip mandatory platform Terms gate. */
   userRequiresMandatoryLegalAcceptance(role: UserRole): boolean {
     if (isStaffRole(role)) {
@@ -159,13 +287,30 @@ export class LegalService {
     return role === UserRole.USER || role === UserRole.BUSINESS;
   }
 
-  async hasAcceptedAllMandatory(userId: string, locale: LegalLocale): Promise<boolean> {
-    const pending = await this.listPendingMandatoryAcceptance(userId, locale);
+  async hasAcceptedAllMandatory(
+    userId: string,
+    locale: LegalLocale,
+    types: LegalDocumentType[],
+  ): Promise<boolean> {
+    const pending = await this.listPendingForTypes(userId, locale, types);
     return pending.length === 0;
   }
 
   async listPendingMandatoryAcceptance(userId: string, locale: LegalLocale) {
-    const required = await this.listCurrentMandatoryDocuments(locale);
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+    const types = this.platformAccessTypesForRole(user?.role ?? UserRole.USER);
+    return this.listPendingForTypes(userId, locale, types);
+  }
+
+  async listPendingForTypes(
+    userId: string,
+    locale: LegalLocale,
+    types: LegalDocumentType[],
+  ) {
+    const required = await this.listCurrentDocumentsForTypes(locale, types);
     if (!required.length) {
       return [];
     }
@@ -290,9 +435,16 @@ export class LegalService {
       acceptanceSource: LegalAcceptanceSource;
       locale: LegalLocale;
       items: Array<{ documentId: string; documentVersion: string }>;
+      context?: LegalRequirementContext;
     },
   ) {
-    const pending = await this.listPendingMandatoryAcceptance(user.id, input.locale);
+    const types = input.context
+      ? this.documentTypesForContext(input.context)
+      : this.platformAccessTypesForRole(user.role);
+    if (input.context) {
+      this.assertAcceptanceSourceForContext(input.context, input.acceptanceSource);
+    }
+    const pending = await this.listPendingForTypes(user.id, input.locale, types);
     if (!pending.length) {
       return { accepted: [] as unknown[], alreadySatisfied: true };
     }
@@ -326,9 +478,82 @@ export class LegalService {
     return { accepted, alreadySatisfied: false };
   }
 
+  async assertCheckoutLegalAcceptance(
+    userId: string,
+    locale: LegalLocale,
+    flow: 'PLAN_PURCHASE' | 'AD_PURCHASE',
+  ) {
+    if (!this.enforceCheckoutLegal()) {
+      return;
+    }
+    const types =
+      flow === 'PLAN_PURCHASE'
+        ? (checkoutPlanDocumentTypes() as LegalDocumentType[])
+        : (checkoutAdDocumentTypes() as LegalDocumentType[]);
+
+    for (const type of types) {
+      const published = await this.findPublishedDocument(type, locale);
+      if (!published) {
+        throw new ForbiddenException({
+          message: 'Required legal document is not published',
+          code: SafetyErrorCode.LEGAL_DOCUMENT_NOT_PUBLISHED,
+          documentType: type,
+        });
+      }
+    }
+
+    const pending = await this.listPendingForTypes(userId, locale, types);
+    if (pending.length) {
+      throw new ForbiddenException({
+        message: 'Legal acceptance required before checkout',
+        code: SafetyErrorCode.LEGAL_ACCEPTANCE_REQUIRED,
+        pendingAcceptance: pending,
+      });
+    }
+  }
+
+  async assertBusinessApplicationLegal(userId: string, locale: LegalLocale) {
+    const types = businessApplicationDocumentTypes() as LegalDocumentType[];
+    const published = await this.listCurrentDocumentsForTypes(locale, types);
+    if (!published.length) {
+      return;
+    }
+    const pending = await this.listPendingForTypes(userId, locale, types);
+    if (pending.length) {
+      throw new ForbiddenException({
+        message: 'Business terms acceptance required',
+        code: SafetyErrorCode.LEGAL_ACCEPTANCE_REQUIRED,
+        pendingAcceptance: pending,
+      });
+    }
+  }
+
   async publishDocument(actor: AuthUser, documentId: string) {
     if (actor.role !== 'SUPER_ADMIN') {
       throw new ForbiddenException('Only SUPER_ADMIN may publish legal documents');
+    }
+    const existing = await this.prisma.legalDocument.findUnique({
+      where: { id: documentId },
+    });
+    if (!existing) {
+      throw new NotFoundException({
+        message: 'Document not found',
+        code: SafetyErrorCode.LEGAL_DOCUMENT_NOT_FOUND,
+      });
+    }
+    if (!existing.version?.trim()) {
+      throw new BadRequestException({
+        message: 'Legal document version is required',
+        code: SafetyErrorCode.LEGAL_DOCUMENT_NOT_FOUND,
+      });
+    }
+    const validation = validateLegalDocumentContentForPublish(existing.content);
+    if (!validation.ok) {
+      throw new BadRequestException({
+        message: 'Legal document cannot be published',
+        code: SafetyErrorCode.LEGAL_DOCUMENT_NOT_FOUND,
+        reasons: validation.reasons,
+      });
     }
     const doc = await this.prisma.legalDocument.update({
       where: { id: documentId },

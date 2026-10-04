@@ -3,11 +3,16 @@
 import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { MonetizationOrder, MonetizationQuote, ownerApi } from '@/lib/api';
 import { QuoteCard } from '@/components/monetization/quote-card';
 import { useMonetizationContext } from '@/components/monetization/monetization-shell';
 import { formatKzt, parseApiError, productLabel } from '@/lib/monetization-utils';
+import {
+  ContextualLegalAcceptance,
+  type ContextualLegalAcceptanceHandle,
+} from '@/components/legal/contextual-legal-acceptance';
+import { parseContextualLegalError } from '@/lib/contextual-legal';
 
 export default function MonetizationCheckoutPage() {
   const locale = useLocale();
@@ -40,6 +45,7 @@ function CheckoutContent() {
   const [submitting, setSubmitting] = useState(false);
   const [order, setOrder] = useState<MonetizationOrder | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const checkoutLegalRef = useRef<ContextualLegalAcceptanceHandle>(null);
 
   const fetchQuote = useCallback(async () => {
     if (!productCode && !packageCode) return;
@@ -81,6 +87,10 @@ function CheckoutContent() {
     setSubmitting(true);
     setError(null);
     try {
+      const legalOk = (await checkoutLegalRef.current?.ensureAccepted()) ?? true;
+      if (!legalOk) {
+        return;
+      }
       let created: MonetizationOrder;
       if (packageCode) {
         const body: Record<string, unknown> = {
@@ -108,7 +118,13 @@ function CheckoutContent() {
       }
       setOrder(created);
     } catch (err) {
-      setError(parseApiError(locale, err));
+      const raw = err instanceof Error ? err.message : String(err);
+      if (raw.includes('LEGAL_')) {
+        await checkoutLegalRef.current?.refresh();
+        setError(parseContextualLegalError(locale, err));
+      } else {
+        setError(parseApiError(locale, err));
+      }
     } finally {
       setSubmitting(false);
     }
@@ -183,6 +199,12 @@ function CheckoutContent() {
             {ui.text_checkoutCreateOrder1}
             {ui.text_checkoutCreateOrder2}
           </p>
+          <ContextualLegalAcceptance
+            ref={checkoutLegalRef}
+            token={token}
+            locale={locale}
+            context="AD_PURCHASE"
+          />
           <button
             type="button"
             className="btn btn-primary"

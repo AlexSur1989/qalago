@@ -28,6 +28,7 @@ describe('KZ-C.2 Legal acceptance', () => {
       update: jest.Mock;
     };
     legalAcceptance: { findMany: jest.Mock; findFirst: jest.Mock; create: jest.Mock };
+    user: { findUnique: jest.Mock };
   };
   let service: LegalService;
 
@@ -81,6 +82,9 @@ describe('KZ-C.2 Legal acceptance', () => {
           ...data,
           acceptedAt: new Date(),
         })),
+      },
+      user: {
+        findUnique: jest.fn().mockResolvedValue({ role: UserRole.USER }),
       },
     };
     service = new LegalService(prisma as never, { record: jest.fn() } as never, mockConfig());

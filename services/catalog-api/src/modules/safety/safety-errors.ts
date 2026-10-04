@@ -10,6 +10,7 @@ export const SafetyErrorCode = {
   LEGAL_ACCEPTANCE_REQUIRED: 'LEGAL_ACCEPTANCE_REQUIRED',
   LEGAL_VERSION_STALE: 'LEGAL_VERSION_STALE',
   LEGAL_DOCUMENT_NOT_FOUND: 'LEGAL_DOCUMENT_NOT_FOUND',
+  LEGAL_DOCUMENT_NOT_PUBLISHED: 'LEGAL_DOCUMENT_NOT_PUBLISHED',
 } as const;
 
 export type SafetyErrorCode = (typeof SafetyErrorCode)[keyof typeof SafetyErrorCode];

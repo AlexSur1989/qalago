@@ -26,6 +26,10 @@ export function legalDocumentTypeLabel(type: string): string {
       return 'Условия для бизнеса';
     case 'ADVERTISING_TERMS':
       return 'Рекламные условия';
+    case 'PERSONAL_DATA_CONSENT':
+      return 'Согласие на обработку ПД';
+    case 'PUBLIC_OFFER':
+      return 'Публичная оферта';
     default:
       return type;
   }

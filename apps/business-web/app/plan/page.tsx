@@ -2,7 +2,7 @@
 
 import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BusinessPlanStatus,
   PlanCatalogRow,
@@ -28,6 +28,11 @@ import type { AppLocale, UiLabels } from '@/lib/locale';
 import { planAnalytics360Label } from '@/lib/presentation';
 import { BackofficeProgress, BackofficeSummaryCard } from '@qalago/brand/dashboards';
 import { BackofficeLoadingState } from '@qalago/brand/states';
+import {
+  ContextualLegalAcceptance,
+  type ContextualLegalAcceptanceHandle,
+} from '@/components/legal/contextual-legal-acceptance';
+import { parseContextualLegalError } from '@/lib/contextual-legal';
 import {
   planCurrentTierTitle,
   planFeatureAdDiscountLine,
@@ -97,6 +102,7 @@ export default function PlanPage() {
   const [checkoutTier, setCheckoutTier] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const planLegalRef = useRef<ContextualLegalAcceptanceHandle>(null);
 
   const canView = canViewPayments(access);
   const canManage = isOwner(access);
@@ -145,12 +151,22 @@ export default function PlanPage() {
         setPlanStatus(result.plan);
         setMessage(result.message);
       } else {
+        const legalOk = (await planLegalRef.current?.ensureAccepted()) ?? true;
+        if (!legalOk) {
+          return;
+        }
         await ownerApi.createPlanPurchase(token, planStatus.businessId, tier);
         setMessage(ui.ownerPlanPurchasePendingSuccess);
       }
       await load();
     } catch (err) {
-      setError(parseApiError(locale, err));
+      const raw = err instanceof Error ? err.message : String(err);
+      if (raw.includes('LEGAL_')) {
+        await planLegalRef.current?.refresh();
+        setError(parseContextualLegalError(locale, err));
+      } else {
+        setError(parseApiError(locale, err));
+      }
     } finally {
       setCheckoutTier(null);
     }
@@ -303,6 +319,15 @@ export default function PlanPage() {
           )}
         </section>
       )}
+
+      {token && canManage ? (
+        <ContextualLegalAcceptance
+          ref={planLegalRef}
+          token={token}
+          locale={locale}
+          context="PLAN_PURCHASE"
+        />
+      ) : null}
 
       <div className="plan-grid">
         {catalog.map((plan) => {

@@ -16,6 +16,8 @@ import '../owner_plan_errors.dart';
 import '../owner_plan_ui.dart';
 import '../providers/owner_providers.dart';
 import '../utils/owner_l10n.dart';
+import '../../legal/legal_contextual_errors.dart';
+import '../../legal/widgets/contextual_legal_section.dart';
 import 'widgets/owner_scaffold.dart';
 
 String _catalogTierName(
@@ -42,6 +44,7 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
   String? _checkoutTier;
   String? _bannerMessage;
   final _purchaseAttempt = PlanPurchaseAttemptTracker();
+  final _planLegalKey = GlobalKey<ContextualLegalSectionState>();
 
   String _formatPrice(int price) {
     if (price == 0) return '0 ₸';
@@ -93,6 +96,8 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
         _purchaseAttempt.clear();
         setState(() => _bannerMessage = result['message'] as String?);
       } else {
+        final legalOk = await _planLegalKey.currentState?.ensureAccepted() ?? true;
+        if (!legalOk) return;
         final idempotencyKey = _purchaseAttempt.begin(businessId, tier);
         await repo.createPlanPurchase(
           businessId,
@@ -112,8 +117,17 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
       }
     } catch (e) {
       if (mounted) {
+        if (e.toString().contains('LEGAL_')) {
+          await _planLegalKey.currentState?.refresh();
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(mapOwnerPlanPurchaseError(l10n, e))),
+          SnackBar(
+            content: Text(
+              e.toString().contains('LEGAL_')
+                  ? mapContextualLegalError(l10n, e)
+                  : mapOwnerPlanPurchaseError(l10n, e),
+            ),
+          ),
         );
       }
     } finally {
@@ -219,6 +233,11 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
+                    if (canManagePlan)
+                      ContextualLegalSection(
+                        key: _planLegalKey,
+                        contextKey: 'PLAN_PURCHASE',
+                      ),
                     ...catalog.map((plan) {
                       final tier = BusinessModel.normalizePlanTier(plan['tier'] as String?);
                       final isCurrent = effectiveTier == tier;

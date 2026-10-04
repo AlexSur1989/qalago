@@ -1418,7 +1418,34 @@ export type LegalCurrentResponse = {
   pendingAcceptance: LegalPendingDocument[];
 };
 
+export type LegalRequirementContext = 'PLAN_PURCHASE' | 'AD_PURCHASE' | 'BUSINESS_APPLICATION';
+
+export type LegalRequiredResponse = {
+  context: LegalRequirementContext;
+  locale: 'RU' | 'KK';
+  enforcementActive: boolean;
+  allRequiredPublished: boolean;
+  acceptanceRequired: boolean;
+  pendingAcceptance: LegalPendingDocument[];
+  requiredDocuments: LegalPendingDocument[];
+};
+
 export const legalApi = {
+  async fetchRequired(
+    accessToken: string,
+    context: LegalRequirementContext,
+    locale: 'RU' | 'KK' = 'RU',
+  ): Promise<LegalRequiredResponse> {
+    const res = await fetch(
+      `${API_BASE}/legal/required?context=${encodeURIComponent(context)}&locale=${locale}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+    );
+    if (!res.ok) {
+      throw new Error(await res.text());
+    }
+    return res.json() as Promise<LegalRequiredResponse>;
+  },
+
   async fetchCurrent(accessToken: string, locale: 'RU' | 'KK' = 'RU'): Promise<LegalCurrentResponse> {
     const res = await fetch(`${API_BASE}/legal/current?locale=${locale}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -1433,7 +1460,12 @@ export const legalApi = {
     accessToken: string,
     pending: LegalPendingDocument[],
     locale: 'RU' | 'KK' = 'RU',
+    options?: {
+      context?: LegalRequirementContext;
+      acceptanceSource?: 'LOGIN' | 'CHECKOUT' | 'BUSINESS_APPLICATION';
+    },
   ): Promise<void> {
+    const acceptanceSource = options?.acceptanceSource ?? 'LOGIN';
     const res = await fetch(`${API_BASE}/legal/me/accept-required`, {
       method: 'POST',
       headers: {
@@ -1441,8 +1473,9 @@ export const legalApi = {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        acceptanceSource: 'LOGIN',
+        acceptanceSource,
         locale,
+        ...(options?.context ? { context: options.context } : {}),
         items: pending.map((p) => ({
           documentId: p.documentId,
           documentVersion: p.version,

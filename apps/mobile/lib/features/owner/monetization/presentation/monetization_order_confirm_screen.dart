@@ -13,6 +13,8 @@ import '../data/monetization_labels.dart';
 import '../data/monetization_models.dart';
 import '../providers/monetization_providers.dart';
 import '../widgets/monetization_widgets.dart';
+import '../../../legal/legal_contextual_errors.dart';
+import '../../../legal/widgets/contextual_legal_section.dart';
 
 class MonetizationOrderConfirmScreen extends ConsumerStatefulWidget {
   const MonetizationOrderConfirmScreen({super.key, required this.extra});
@@ -28,6 +30,7 @@ class _MonetizationOrderConfirmScreenState
     extends ConsumerState<MonetizationOrderConfirmScreen> {
   bool _submitting = false;
   String? _error;
+  final _checkoutLegalKey = GlobalKey<ContextualLegalSectionState>();
 
   MonetizationQuote get _quote => widget.extra['quote'] as MonetizationQuote;
 
@@ -96,6 +99,10 @@ class _MonetizationOrderConfirmScreenState
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ],
+          ContextualLegalSection(
+            key: _checkoutLegalKey,
+            contextKey: 'AD_PURCHASE',
+          ),
           const SizedBox(height: 24),
           FilledButton(
             onPressed: _submitting ? null : _submitOrder,
@@ -138,6 +145,8 @@ class _MonetizationOrderConfirmScreenState
     });
 
     try {
+      final legalOk = await _checkoutLegalKey.currentState?.ensureAccepted() ?? true;
+      if (!legalOk) return;
       final catalog = ref.read(catalogRepositoryProvider);
       final packageCode = widget.extra['packageCode'] as String?;
       final Map<String, dynamic> body;
@@ -177,8 +186,13 @@ class _MonetizationOrderConfirmScreenState
       ref.invalidate(ownerMonetizationOrdersProvider(businessId));
       if (!mounted) return;
       context.go('/owner/monetization/orders/${order.id}');
-    } catch (_) {
-      setState(() => _error = context.l10n.ownerOrderCreateFailed);
+    } catch (e) {
+      if (e.toString().contains('LEGAL_')) {
+        await _checkoutLegalKey.currentState?.refresh();
+        setState(() => _error = mapContextualLegalError(context.l10n, e));
+      } else {
+        setState(() => _error = context.l10n.ownerOrderCreateFailed);
+      }
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

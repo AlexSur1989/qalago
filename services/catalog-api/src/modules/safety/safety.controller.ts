@@ -12,6 +12,7 @@ import {
   CreateDataRightsRequestDto,
   CreateReportDto,
   LegalCurrentQueryDto,
+  LegalRequiredQueryDto,
   PublicLegalQueryDto,
   SubmitAppealDto,
 } from './dto/safety.dto';
@@ -51,6 +52,13 @@ export class SafetyController {
   getMyLegalStatus(@CurrentUser() user: AuthUser, @Query() query: LegalCurrentQueryDto) {
     const locale = query.locale ?? LegalLocale.RU;
     return this.legal.getUserLegalStatus(user.id, locale);
+  }
+
+  @SkipLegalAcceptance()
+  @Get('legal/required')
+  getLegalRequired(@CurrentUser() user: AuthUser, @Query() query: LegalRequiredQueryDto) {
+    const locale = query.locale ?? LegalLocale.RU;
+    return this.legal.getLegalRequired(user.id, locale, query.context);
   }
 
   @SkipLegalAcceptance()

@@ -2318,6 +2318,60 @@ abstract class AppLocalizations {
   /// **'Текст документов открывается на сайте QalaGo; версия проверяется сервером.'**
   String get legalAcceptanceVersionNote;
 
+  /// No description provided for @contextualLegalPlanCheckbox.
+  ///
+  /// In ru, this message translates to:
+  /// **'Я принимаю условия Публичной оферты на оказание платных услуг QalaGo'**
+  String get contextualLegalPlanCheckbox;
+
+  /// No description provided for @contextualLegalAdCheckbox.
+  ///
+  /// In ru, this message translates to:
+  /// **'Я принимаю Публичную оферту и Правила размещения рекламы и подтверждаю параметры рекламной кампании, указанные в интерфейсе'**
+  String get contextualLegalAdCheckbox;
+
+  /// No description provided for @contextualLegalBusinessTermsCheckbox.
+  ///
+  /// In ru, this message translates to:
+  /// **'Я принимаю Условия использования QalaGo для бизнеса'**
+  String get contextualLegalBusinessTermsCheckbox;
+
+  /// No description provided for @contextualLegalConfirmRequired.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подтвердите принятие документов, чтобы продолжить'**
+  String get contextualLegalConfirmRequired;
+
+  /// No description provided for @contextualLegalVersionStale.
+  ///
+  /// In ru, this message translates to:
+  /// **'Документы обновлены. Ознакомьтесь и примите актуальные версии'**
+  String get contextualLegalVersionStale;
+
+  /// No description provided for @contextualLegalUnavailable.
+  ///
+  /// In ru, this message translates to:
+  /// **'Юридические документы временно недоступны. Попробуйте позже'**
+  String get contextualLegalUnavailable;
+
+  /// No description provided for @contextualLegalLinkOffer.
+  ///
+  /// In ru, this message translates to:
+  /// **'Публичная оферта'**
+  String get contextualLegalLinkOffer;
+
+  /// No description provided for @contextualLegalLinkAdvertisingRules.
+  ///
+  /// In ru, this message translates to:
+  /// **'Правила размещения рекламы'**
+  String get contextualLegalLinkAdvertisingRules;
+
+  /// No description provided for @contextualLegalLinkBusinessTerms.
+  ///
+  /// In ru, this message translates to:
+  /// **'Условия для бизнеса'**
+  String get contextualLegalLinkBusinessTerms;
+
   /// No description provided for @releaseUpdateAvailable.
   ///
   /// In ru, this message translates to:

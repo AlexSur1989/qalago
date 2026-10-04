@@ -1,10 +1,7 @@
 import type { AppLocale } from './locale';
-import type { PublicLegalRootSegment } from './legal-paths';
+import type { ExtendedLegalRootSegment } from './legal-paths';
 
-/**
- * QalaGo-owned legal page chrome (RU/KK). Legal **body** copy remains Russian until
- * counsel-approved Kazakh (or bilingual) text exists — not machine-translated in F.7.
- */
+/** @deprecated 6.15L.2 — bodies load from docs/legal per UI locale (ru/kk). */
 export const LEGAL_BODY_SOURCE_LOCALE = 'ru' as const;
 
 export type LegalUiLabels = {
@@ -67,7 +64,26 @@ export const LEGAL_UI: Record<AppLocale, LegalUiLabels> = {
   },
 };
 
-export function legalPageHeading(locale: AppLocale, page: PublicLegalRootSegment): string {
+const EXTENDED_HEADINGS: Record<AppLocale, Partial<Record<ExtendedLegalRootSegment, string>>> = {
+  ru: {
+    community: 'Правила контента, отзывов и модерации QalaGo',
+    'personal-data-consent': 'Согласие на сбор и обработку персональных данных',
+    'business-terms': 'Условия использования QalaGo для бизнеса',
+    offer: 'Публичная оферта на оказание платных услуг QalaGo',
+    'advertising-rules': 'Правила размещения рекламы в QalaGo',
+    cookies: 'Политика использования Cookie и аналитики QalaGo',
+  },
+  kk: {
+    community: 'QalaGo-да контентті, пікірлерді жариялау және модерациялау қағидалары',
+    'personal-data-consent': 'Дербес деректерді жинауға және өңдеуге келісім',
+    'business-terms': 'QalaGo-ны бизнес үшін пайдалану шарттары',
+    offer: 'QalaGo ақылы қызметтерін көрсетуге арналған жария оферта',
+    'advertising-rules': 'QalaGo-да жарнама орналастыру қағидалары',
+    cookies: 'QalaGo Cookie файлдары мен аналитиканы пайдалану саясаты',
+  },
+};
+
+export function legalPageHeading(locale: AppLocale, page: ExtendedLegalRootSegment): string {
   const ui = LEGAL_UI[locale];
   switch (page) {
     case 'privacy':
@@ -76,6 +92,8 @@ export function legalPageHeading(locale: AppLocale, page: PublicLegalRootSegment
       return ui.termsPageHeading;
     case 'account-deletion':
       return ui.accountDeletionPageHeading;
+    default:
+      return EXTENDED_HEADINGS[locale][page] ?? page;
   }
 }
 

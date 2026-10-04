@@ -2,7 +2,7 @@
 
 import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
-import { FormEvent, Suspense, useEffect, useState } from 'react';
+import { FormEvent, Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CategoryRow, CityRow, ownerApi } from '@/lib/api';
 import { OnboardingShell } from '@/components/onboarding-shell';
@@ -15,6 +15,11 @@ import {
   type BusinessLocationState,
 } from '@/components/business-location/business-location-field';
 import { backofficeConfirm } from '@qalago/brand/confirm';
+import {
+  ContextualLegalAcceptance,
+  type ContextualLegalAcceptanceHandle,
+} from '@/components/legal/contextual-legal-acceptance';
+import { parseContextualLegalError } from '@/lib/contextual-legal';
 
 export default function OnboardingApplyPage() {
   const locale = useLocale();
@@ -49,6 +54,7 @@ function OnboardingApplyContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const applyLegalRef = useRef<ContextualLegalAcceptanceHandle>(null);
 
   useEffect(() => {
     ownerApi.listCategories().then((items) => {
@@ -156,11 +162,21 @@ function OnboardingApplyContent() {
     setSuccess(null);
     try {
       await saveDraft();
+      const legalOk = (await applyLegalRef.current?.ensureAccepted()) ?? true;
+      if (!legalOk) {
+        return;
+      }
       const app = await ownerApi.submitApplication(token, draftId);
       setStatus(app.status);
       setSuccess(ui.____6df43a);
     } catch (err: unknown) {
-      setError(mapOnboardingError(locale, String(err)));
+      const raw = String(err);
+      if (raw.includes('LEGAL_')) {
+        await applyLegalRef.current?.refresh();
+        setError(parseContextualLegalError(locale, err));
+      } else {
+        setError(mapOnboardingError(locale, raw));
+      }
     } finally {
       setLoading(false);
     }
@@ -229,6 +245,15 @@ function OnboardingApplyContent() {
         </label>
         <label>{ui.__62b685}<textarea value={shortDesc} onChange={(e) => setShortDesc(e.target.value)} rows={3} disabled={readOnly} />
         </label>
+
+        {!readOnly && token ? (
+          <ContextualLegalAcceptance
+            ref={applyLegalRef}
+            token={token}
+            locale={locale}
+            context="BUSINESS_APPLICATION"
+          />
+        ) : null}
 
         {!readOnly && (
           <>

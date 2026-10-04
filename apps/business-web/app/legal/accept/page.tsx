@@ -98,15 +98,21 @@ export default function LegalAcceptPage() {
             ? 'Жалғастыру үшін ағымдағы шарттар мен құпиялылық саясатын растаңыз.'
             : 'Чтобы продолжить, подтвердите актуальные Условия и Политику конфиденциальности.'}
         </p>
-        <p>
-          <Link href={publicLegalUrl('/terms')} target="_blank" rel="noopener noreferrer">
-            {locale === 'kk' ? 'Пайдалану шарттары' : 'Условия использования'}
-          </Link>
-          {' · '}
-          <Link href={publicLegalUrl('/privacy')} target="_blank" rel="noopener noreferrer">
-            {locale === 'kk' ? 'Құпиялылық саясаты' : 'Политика конфиденциальности'}
-          </Link>
-        </p>
+        <ul>
+          {pending.map((doc) => (
+            <li key={doc.documentId}>
+              {doc.publicUrl ? (
+                <Link href={doc.publicUrl} target="_blank" rel="noopener noreferrer">
+                  {doc.type} (v{doc.version})
+                </Link>
+              ) : (
+                <span>
+                  {doc.type} (v{doc.version})
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
         <label>
           <input
             type="checkbox"

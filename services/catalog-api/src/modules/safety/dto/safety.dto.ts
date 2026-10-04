@@ -15,6 +15,7 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsEnum,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -52,6 +53,15 @@ export class AcceptLegalItemDto {
   documentVersion!: string;
 }
 
+export const CONTEXTUAL_LEGAL_REQUIREMENT_CONTEXTS = [
+  'PLAN_PURCHASE',
+  'AD_PURCHASE',
+  'BUSINESS_APPLICATION',
+] as const;
+
+export type ContextualLegalRequirementContext =
+  (typeof CONTEXTUAL_LEGAL_REQUIREMENT_CONTEXTS)[number];
+
 export class AcceptRequiredLegalDto {
   @IsEnum(LegalAcceptanceSource)
   acceptanceSource!: LegalAcceptanceSource;
@@ -63,9 +73,22 @@ export class AcceptRequiredLegalDto {
   @ValidateNested({ each: true })
   @Type(() => AcceptLegalItemDto)
   items!: AcceptLegalItemDto[];
+
+  @IsOptional()
+  @IsIn([...CONTEXTUAL_LEGAL_REQUIREMENT_CONTEXTS])
+  context?: ContextualLegalRequirementContext;
 }
 
 export class LegalCurrentQueryDto {
+  @IsOptional()
+  @IsEnum(LegalLocale)
+  locale?: LegalLocale;
+}
+
+export class LegalRequiredQueryDto {
+  @IsIn([...CONTEXTUAL_LEGAL_REQUIREMENT_CONTEXTS])
+  context!: ContextualLegalRequirementContext;
+
   @IsOptional()
   @IsEnum(LegalLocale)
   locale?: LegalLocale;

@@ -3,9 +3,17 @@ export const PUBLIC_LEGAL_ROOT_SEGMENTS = [
   'privacy',
   'terms',
   'account-deletion',
+  'community',
+  'personal-data-consent',
+  'business-terms',
+  'offer',
+  'advertising-rules',
+  'cookies',
 ] as const;
 
-export type PublicLegalRootSegment = (typeof PUBLIC_LEGAL_ROOT_SEGMENTS)[number];
+export type PublicLegalRootSegment = 'privacy' | 'terms' | 'account-deletion';
+
+export type ExtendedLegalRootSegment = (typeof PUBLIC_LEGAL_ROOT_SEGMENTS)[number];
 
 /** Public consumer help (locale-neutral). */
 export const PUBLIC_HELP_ROOT_SEGMENT = 'help' as const;
@@ -41,6 +49,6 @@ export function publicHelpPath(): string {
   return `/${PUBLIC_HELP_ROOT_SEGMENT}`;
 }
 
-export function publicLegalPath(segment: PublicLegalRootSegment): string {
+export function publicLegalPath(segment: ExtendedLegalRootSegment): string {
   return `/${segment}`;
 }

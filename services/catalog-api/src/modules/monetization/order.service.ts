@@ -5,6 +5,7 @@ import {
   MonetizationProductType,
   OrderStatus,
   PaymentProvider,
+  LegalLocale,
   PaymentStatus,
   Prisma,
 } from '@prisma/client';
@@ -51,6 +52,7 @@ import {
   resolveCampaignMarketCityId,
   resolvePersistedOrderItemMarketCityId,
 } from './utils/campaign-market-city.util';
+import { LegalService } from '../safety/legal.service';
 
 type PricedOrderLine = {
   productId: string;
@@ -82,9 +84,15 @@ export class OrderService {
     private readonly inventoryReservation: InventoryReservationService,
     private readonly staffPolicy: StaffPolicyService,
     private readonly cityScope: CityScopeService,
+    private readonly legal: LegalService,
   ) {}
 
-  async createOrder(user: AuthUser, dto: CreateOrderDto) {
+  async createOrder(
+    user: AuthUser,
+    dto: CreateOrderDto,
+    legalLocale: LegalLocale = LegalLocale.RU,
+  ) {
+    await this.legal.assertCheckoutLegalAcceptance(user.id, legalLocale, 'AD_PURCHASE');
     const business = await this.access.assertCanManageBusiness(user, dto.businessId);
 
     if (dto.packageCode) {

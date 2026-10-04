@@ -4,6 +4,12 @@ export const CONSUMER_WEB_MIGRATED_LEGAL_PATHS = [
   '/privacy',
   '/terms',
   '/account-deletion',
+  '/community',
+  '/personal-data-consent',
+  '/business-terms',
+  '/offer',
+  '/advertising-rules',
+  '/cookies',
 ] as const;
 
 export type ConsumerWebMigratedLegalPath = (typeof CONSUMER_WEB_MIGRATED_LEGAL_PATHS)[number];

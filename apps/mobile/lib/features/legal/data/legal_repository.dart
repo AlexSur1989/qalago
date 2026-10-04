@@ -23,6 +23,29 @@ class LegalPendingDocument {
   }
 }
 
+class LegalRequiredState {
+  LegalRequiredState({
+    required this.context,
+    required this.acceptanceRequired,
+    required this.pending,
+  });
+
+  final String context;
+  final bool acceptanceRequired;
+  final List<LegalPendingDocument> pending;
+
+  factory LegalRequiredState.fromJson(Map<String, dynamic> json) {
+    final pendingRaw = json['pendingAcceptance'] as List<dynamic>? ?? const [];
+    return LegalRequiredState(
+      context: json['context'] as String? ?? '',
+      acceptanceRequired: json['acceptanceRequired'] as bool? ?? false,
+      pending: pendingRaw
+          .map((e) => LegalPendingDocument.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
 class LegalCurrentState {
   LegalCurrentState({
     required this.acceptanceRequired,
@@ -64,16 +87,32 @@ class LegalRepository {
         .then((r) => LegalCurrentState.fromJson(r.data!));
   }
 
+  Future<LegalRequiredState> fetchRequired({
+    required String context,
+    required String localeCode,
+  }) {
+    final apiLocale = localeCode.startsWith('kk') ? 'KK' : 'RU';
+    return _dio
+        .get<Map<String, dynamic>>(
+          '/legal/required',
+          queryParameters: {'context': context, 'locale': apiLocale},
+        )
+        .then((r) => LegalRequiredState.fromJson(r.data!));
+  }
+
   Future<void> acceptRequired({
     required String localeCode,
     required List<LegalPendingDocument> pending,
+    String acceptanceSource = 'LOGIN',
+    String? context,
   }) async {
     final apiLocale = localeCode.startsWith('kk') ? 'KK' : 'RU';
     await _dio.post(
       '/legal/me/accept-required',
       data: {
-        'acceptanceSource': 'LOGIN',
+        'acceptanceSource': acceptanceSource,
         'locale': apiLocale,
+        if (context != null) 'context': context,
         'items': pending
             .map(
               (p) => {
@@ -83,6 +122,21 @@ class LegalRepository {
             )
             .toList(),
       },
+    );
+  }
+
+  Future<void> acceptContextual({
+    required String context,
+    required String localeCode,
+    required List<LegalPendingDocument> pending,
+  }) {
+    final source =
+        context == 'BUSINESS_APPLICATION' ? 'BUSINESS_APPLICATION' : 'CHECKOUT';
+    return acceptRequired(
+      localeCode: localeCode,
+      pending: pending,
+      acceptanceSource: source,
+      context: context,
     );
   }
 }

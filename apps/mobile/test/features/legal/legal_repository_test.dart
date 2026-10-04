@@ -21,4 +21,22 @@ void main() {
       expect(state.pending.single.version, '2026-09-10');
     });
   });
+
+  group('LegalRequiredState', () {
+    test('parses contextual required payload', () {
+      final state = LegalRequiredState.fromJson({
+        'context': 'PLAN_PURCHASE',
+        'acceptanceRequired': true,
+        'pendingAcceptance': [
+          {
+            'documentId': 'offer-1',
+            'type': 'PUBLIC_OFFER',
+            'version': '2026-10-03-v1',
+          },
+        ],
+      });
+      expect(state.context, 'PLAN_PURCHASE');
+      expect(state.pending.single.type, 'PUBLIC_OFFER');
+    });
+  });
 }

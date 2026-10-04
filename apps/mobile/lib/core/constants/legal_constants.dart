@@ -15,4 +15,10 @@ class LegalConstants {
   static String get privacyUrl => '$publicBaseUrl/privacy';
   static String get termsUrl => '$publicBaseUrl/terms';
   static String get accountDeletionUrl => '$publicBaseUrl/account-deletion';
+  static String get communityUrl => '$publicBaseUrl/community';
+  static String get personalDataConsentUrl => '$publicBaseUrl/personal-data-consent';
+  static String get businessTermsUrl => '$publicBaseUrl/business-terms';
+  static String get publicOfferUrl => '$publicBaseUrl/offer';
+  static String get advertisingRulesUrl => '$publicBaseUrl/advertising-rules';
+  static String get cookiesUrl => '$publicBaseUrl/cookies';
 }

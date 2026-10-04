@@ -1258,6 +1258,40 @@ class AppLocalizationsKk extends AppLocalizations {
       'Құжат мәтіні QalaGo сайтында ашылады; нұсқаны сервер тексереді.';
 
   @override
+  String get contextualLegalPlanCheckbox =>
+      'Мен QalaGo ақылы қызметтерін көрсетуге арналған жария офертаның шарттарын қабылдаймын';
+
+  @override
+  String get contextualLegalAdCheckbox =>
+      'Мен Жария офертаны және Жарнама орналастыру қағидаларын қабылдаймын және интерфейсте көрсетілген науқан параметрлерін растаймын';
+
+  @override
+  String get contextualLegalBusinessTermsCheckbox =>
+      'Мен QalaGo-ны бизнес үшін пайдалану шарттарын қабылдаймын';
+
+  @override
+  String get contextualLegalConfirmRequired =>
+      'Жалғастыру үшін құжаттарды қабылдауды растаңыз';
+
+  @override
+  String get contextualLegalVersionStale =>
+      'Құжаттар жаңартылды. Өзекті нұсқалармен танысып, қабылдаңыз';
+
+  @override
+  String get contextualLegalUnavailable =>
+      'Құқықтық құжаттар уақытша қолжетімсіз. Кейінірек көріңіз';
+
+  @override
+  String get contextualLegalLinkOffer => 'Жария оферта';
+
+  @override
+  String get contextualLegalLinkAdvertisingRules =>
+      'Жарнама орналастыру қағидалары';
+
+  @override
+  String get contextualLegalLinkBusinessTerms => 'Бизнес шарттары';
+
+  @override
   String get releaseUpdateAvailable => 'Жаңарту қолжетімді';
 
   @override

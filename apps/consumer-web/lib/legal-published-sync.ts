@@ -14,7 +14,7 @@ const SEGMENT_BY_TYPE: Record<MandatoryPlatformLegalDocumentType, PublicLegalRoo
 
 export function publishedLegalMetaForPage(page: PublicLegalRootSegment): {
   version: string;
-  effectiveDate: string;
+  effectiveDate: string | null;
 } | null {
   for (const type of MANDATORY_PLATFORM_LEGAL_DOCUMENT_TYPES) {
     if (SEGMENT_BY_TYPE[type] === page) {

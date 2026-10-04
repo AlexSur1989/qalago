@@ -5,12 +5,12 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { LegalLocale } from '@prisma/client';
 import { AuthUser } from '../types/jwt-payload.type';
 import { SKIP_LEGAL_ACCEPTANCE_KEY } from '../decorators/skip-legal-acceptance.decorator';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { LegalService } from '../../modules/safety/legal.service';
 import { SafetyErrorCode } from '../../modules/safety/safety-errors';
+import { resolveLegalLocaleFromRequest } from '../utils/legal-locale.util';
 
 @Injectable()
 export class LegalAcceptanceGuard implements CanActivate {
@@ -33,7 +33,7 @@ export class LegalAcceptanceGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    const request = context.switchToHttp().getRequest<{ user?: AuthUser }>();
+    const request = context.switchToHttp().getRequest<{ user?: AuthUser; headers?: Record<string, string | string[] | undefined> }>();
     const user = request.user;
     if (!user) {
       return true;
@@ -43,13 +43,14 @@ export class LegalAcceptanceGuard implements CanActivate {
       return true;
     }
 
-    const locale = LegalLocale.RU;
-    const requiredPublished = await this.legal.listCurrentMandatoryDocuments(locale);
+    const locale = resolveLegalLocaleFromRequest(request);
+    const types = this.legal.platformAccessTypesForRole(user.role);
+    const requiredPublished = await this.legal.listCurrentDocumentsForTypes(locale, types);
     if (!requiredPublished.length) {
       return true;
     }
 
-    const ok = await this.legal.hasAcceptedAllMandatory(user.id, locale);
+    const ok = await this.legal.hasAcceptedAllMandatory(user.id, locale, types);
     if (ok) {
       return true;
     }
