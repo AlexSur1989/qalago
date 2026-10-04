@@ -1,0 +1,59 @@
+﻿> **Production candidate — NOT PUBLISHED**
+>
+> **Version:** 2026-10-03-production-candidate-1
+> **Status:** PRODUCTION CANDIDATE — NOT PUBLISHED — LEGAL REVIEW REQUIRED
+> **Effective date:** NOT SET
+> **Source baseline:** 2026-10-03-draft-1 (6.15L.1)
+> **Do not publish** until operator placeholders resolved, counsel approval recorded, and admin publish workflow completed.
+
+# Политика использования Cookie и аналитики QalaGo
+
+**RU title:** Политика использования Cookie и аналитики QalaGo
+**KK title:** QalaGo Cookie файлдары мен аналитиканы пайдалану саясаты
+**Version (candidate):** 2026-10-03-production-candidate-1
+**Effective date:** NOT SET
+**Status:** PRODUCTION CANDIDATE — NOT PUBLISHED — LEGAL REVIEW REQUIRED
+**Последнее обновление:** 2026-10-03
+
+**Оператор:** [OPERATOR_LEGAL_NAME], [PRIVACY_EMAIL]
+
+---
+
+## 1. Область
+
+Документ описывает **фактическое** использование cookie и аналитики на **Consumer Web** и согласованные события рекламы/аналитики в клиентах. **Cookie-banner в продукте не реализован** на дату аудита — требование согласия — **LEGAL REVIEW REQUIRED**.
+
+## 2. Cookie `qalago_web_session`
+
+| Параметр | Значение |
+|----------|----------|
+| Имя | `qalago_web_session` |
+| Назначение | анонимный идентификатор сессии браузера для корреляции рекламных/аналитических событий на сайте |
+| Формат | 32 символа hex |
+| Срок | до **30 суток** (`WEB_SESSION_MAX_AGE_SEC`) |
+| Связь с аккаунтом | **не** идентифицирует зарегистрированного пользователя по умолчанию |
+| Установка | middleware Consumer Web |
+
+## 3. Аналитика и реклама
+
+3.1. События монетизации (например AD_IMPRESSION, AD_CLICK) могут отправляться с `sessionId` / web session.
+
+3.2. `AnalyticsEvent` в backend **не хранит userId** в текущей модели инвентаря — агрегированная/сессионная аналитика.
+
+3.3. **Google Analytics / Yandex Metrica** в репозитории **не обнаружены** как подключённые скрипты на дату аудита. При подключении — обновить настоящую Политику и механизм согласия.
+
+## 4. Essential vs optional
+
+- **qalago_web_session:** необходим для текущей рекламной корреляции на веб — классификация «строго необходимый» vs «аналитический» — **LEGAL REVIEW REQUIRED** под закон РК и практику cookie.
+
+## 5. Управление
+
+Пользователь может удалить cookie в браузере; это может сбросить сессию и повлиять на частотные лимиты рекламы.
+
+## 6. Хранение событий
+
+Срок хранения событий на сервере — см. [Политику конфиденциальности](privacy-policy.ru.md) (**LEGAL REVIEW REQUIRED** для срока).
+
+## 7. Изменения
+
+Публикация новой версии на [WEBSITE]/cookies (маршрут `/cookies` на Consumer Web (техническая инфраструктура 6.15L.2; публикация текста — отдельно)).

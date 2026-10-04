@@ -6,6 +6,15 @@
 
 ---
 
+## 2026-10-05 — 6.15L.3 — Production legal readiness preparation
+
+- **Status:** **6.15L.3 Implemented (readiness documentation only)** — **NOT PRODUCTION LEGAL READY**. **Checkpoint:** pending user commit.
+- **Summary:** Operator placeholder inventory; operator fact sheet (all UNKNOWN); processor register factual audit; retention/refund/minors/cookie/complaint decision records; 16 RU/KK production **candidates** (not published); publication blockers; activation + staging QA plans; Prisma EPERM predeploy note; optional refund-placeholder validation test. **No** publish, **no** enforcement flags, **no** schema changes.
+- **Deferred:** Operator details, counsel approval, refund clause, publish pairs, staging physical QA, production rollout.
+- **Next:** Operator completes fact sheet → counsel finalizes RU/KK → staging publish + QA per `docs/legal/production/activation-plan.md`. **6.15L.4+ not started automatically.**
+
+---
+
 ## 2026-10-05 — 6.15L.2A — Checkout and business onboarding legal acceptance UX
 
 - **Status:** **6.15L.2A Implemented** (contextual client gates; drafts still **DRAFT**; enforcement env-gated). **Checkpoint (implementation):** `45005f3`.
