@@ -12,6 +12,16 @@ describe('6.15L.2 legal publication', () => {
     expect(result.ok).toBe(false);
   });
 
+  it('blocks publish when refund policy placeholder remains in Public Offer', () => {
+    const result = validateLegalDocumentContentForPublish(
+      'Returns: [REFUND_POLICY — LEGAL REVIEW REQUIRED]',
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.reasons.join(' ')).toContain('UNRESOLVED_PLACEHOLDERS');
+    }
+  });
+
   it('allows publish for placeholder-free stub in tests', () => {
     const result = validateLegalDocumentContentForPublish('Approved counsel text.');
     expect(result.ok).toBe(true);
