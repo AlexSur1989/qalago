@@ -6,6 +6,15 @@
 
 ---
 
+## 2026-10-03 — 6.15L.1 — Draft Kazakhstan legal document pack
+
+- **Status:** **6.15L.1 Implemented (documentation only)** — DRAFT pack, **NOT YET EFFECTIVE**, counsel review required. **Checkpoint:** pending user commit (no auto-commit).
+- **Summary:** Added RU/KK draft legal texts under `docs/legal/public/` and `docs/legal/business/` (Privacy, Terms, PD Consent, Business Terms, Public Offer, Advertising Rules, Community, Cookies); internal operator drafts; UI acceptance copy; manifest draft; `operator-details-required.md`, `legal-basis-2026-10-03.md`, `6.15L-legal-pack.md`. Aligned with 6.15L.0 audit and repo data inventory (review reports implemented; VIP plan ≠ HOME_VIP_BANNER; manual payments). **No** Prisma/app/monetization/acceptance wiring changes.
+- **Deferred:** Publication, seed sync, new routes, checkout acceptance — **6.15L.2**.
+- **Next:** **6.15L.2 — Legal Publication, Versioning & Acceptance Implementation** (not started automatically).
+
+---
+
 ## 2026-10-03 — 6.14O.CLOSE — Mobile Owner Core Parity Closure
 
 - **Status:** **6.14O CORE PARITY CLOSED** (read-only verification + documentation). **Checkpoint (implementation):** `a1fafb7` — `feat(mobile-owner): core operational parity (6.14O.1–6.14O.5)`; **docs checkpoint:** pending `docs(owner)` commit.
