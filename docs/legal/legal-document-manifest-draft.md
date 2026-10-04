@@ -1,6 +1,6 @@
 # Legal document manifest (draft)
 
-**Version pack:** 2026-10-03-draft-1  
+**Version pack:** 2026-10-03-draft-1
 **Status:** DRAFT — not wired to Prisma seed in 6.15L.1
 
 | type (enum if exists) | slug/route (proposed) | RU file | KK file | version | mandatory | audience | acceptance source | persistence | reaccept on version | publication |

@@ -1,7 +1,7 @@
 # UI copy — юридическое принятие документов
 
-**Версия:** 2026-10-03-draft-1  
-**Статус:** DRAFT — LEGAL REVIEW REQUIRED  
+**Версия:** 2026-10-03-draft-1
+**Статус:** DRAFT — LEGAL REVIEW REQUIRED
 **Примечание:** полные тексты — в `docs/legal/public/` и `docs/legal/business/`. Здесь только краткие подписи для чекбоксов и кнопок (stage 6.15L.2+).
 
 ---

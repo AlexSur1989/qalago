@@ -1,7 +1,7 @@
 # Перечень необходимых и достаточных персональных данных
 
-**Статус:** DRAFT — LEGAL REVIEW REQUIRED  
-**Версия:** 2026-10-03-draft-1  
+**Статус:** DRAFT — LEGAL REVIEW REQUIRED
+**Версия:** 2026-10-03-draft-1
 **Источник:** `docs/privacy-data-inventory.md`, `schema.prisma`
 
 Counsel должен сопоставить перечень с действующими правилами РК на 2026-10-03.

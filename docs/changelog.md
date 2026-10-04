@@ -6,9 +6,27 @@
 
 ---
 
+## 2026-10-05 — 6.15L.2A — Checkout and business onboarding legal acceptance UX
+
+- **Status:** **6.15L.2A Implemented** (contextual client gates; drafts still **DRAFT**; enforcement env-gated). **Checkpoint (implementation):** `45005f3`.
+- **Summary:** `GET /legal/required` + contextual `accept-required` with `CHECKOUT` / `BUSINESS_APPLICATION` sources; Business Web plan/monetization checkout/onboarding apply + Mobile owner plan/ad confirm/business apply show RU/KK acceptance with Consumer Web legal links; error recovery for stale/unpublished codes. **No** schema/migration/monetization semantic changes.
+- **Deferred:** Counsel publish, operator placeholders, production `LEGAL_ENFORCE_CHECKOUT` enablement — unchanged from 6.15L.2.
+- **Next:** **6.15L.3** not started automatically.
+
+---
+
+## 2026-10-04 — 6.15L.2 — Legal publication, versioning and acceptance infrastructure
+
+- **Status:** **6.15L.2 Implemented** (technical infrastructure; drafts remain **LEGAL REVIEW REQUIRED**). **Checkpoint (implementation):** `45005f3`.
+- **Summary:** Extended `LegalDocumentType` (`PERSONAL_DATA_CONSENT`, `PUBLIC_OFFER`); centralized requirements manifest; draft seed from `docs/legal`; publication placeholder validation; locale-aware `LegalAcceptanceGuard`; checkout/business-application legal preconditions (env-gated); Consumer Web RU/KK pages from legal pack (`/community`, `/offer`, etc.); Business/Mobile accept UX lists pending docs. **No** cookie banner, age gate, refund engine, or counsel approval.
+- **Deferred:** Production publish, operator placeholders, `LEGAL_ENFORCE_CHECKOUT` production enablement, optional PD consent flag.
+- **Next:** **6.15L.3** not started automatically.
+
+---
+
 ## 2026-10-03 — 6.15L.1 — Draft Kazakhstan legal document pack
 
-- **Status:** **6.15L.1 Implemented (documentation only)** — DRAFT pack, **NOT YET EFFECTIVE**, counsel review required. **Checkpoint:** pending user commit (no auto-commit).
+- **Status:** **6.15L.1 Implemented (documentation only)** — DRAFT pack, **NOT YET EFFECTIVE**, counsel review required. **Checkpoint:** `de2ee33`.
 - **Summary:** Added RU/KK draft legal texts under `docs/legal/public/` and `docs/legal/business/` (Privacy, Terms, PD Consent, Business Terms, Public Offer, Advertising Rules, Community, Cookies); internal operator drafts; UI acceptance copy; manifest draft; `operator-details-required.md`, `legal-basis-2026-10-03.md`, `6.15L-legal-pack.md`. Aligned with 6.15L.0 audit and repo data inventory (review reports implemented; VIP plan ≠ HOME_VIP_BANNER; manual payments). **No** Prisma/app/monetization/acceptance wiring changes.
 - **Deferred:** Publication, seed sync, new routes, checkout acceptance — **6.15L.2**.
 - **Next:** **6.15L.2 — Legal Publication, Versioning & Acceptance Implementation** (not started automatically).

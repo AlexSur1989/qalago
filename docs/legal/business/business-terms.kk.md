@@ -1,11 +1,11 @@
 # QalaGo-ны бизнес үшін пайдалану шарттары
 
-**RU title:** Условия использования QalaGo для бизнеса  
-**KK title:** QalaGo-ны бизнес үшін пайдалану шарттары  
-**Нұсқа:** 2026-10-03-draft-1  
-**Күшіне ену күні:** NOT YET EFFECTIVE  
-**Мәртебе:** DRAFT — LEGAL REVIEW REQUIRED  
-**Соңғы жаңарту:** 2026-10-03  
+**RU title:** Условия использования QalaGo для бизнеса
+**KK title:** QalaGo-ны бизнес үшін пайдалану шарттары
+**Нұсқа:** 2026-10-03-draft-1
+**Күшіне ену күні:** NOT YET EFFECTIVE
+**Мәртебе:** DRAFT — LEGAL REVIEW REQUIRED
+**Соңғы жаңарту:** 2026-10-03
 
 **Оператор:** [OPERATOR_LEGAL_NAME], БСН [BIN], [SUPPORT_EMAIL]
 

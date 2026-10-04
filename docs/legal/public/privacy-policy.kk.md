@@ -1,11 +1,11 @@
 # QalaGo құпиялылық саясаты
 
-**RU title:** Политика конфиденциальности QalaGo  
-**KK title:** QalaGo құпиялылық саясаты  
-**Нұсқа:** 2026-10-03-draft-1  
-**Күшіне ену күні:** NOT YET EFFECTIVE  
-**Мәртебе:** DRAFT — LEGAL REVIEW REQUIRED  
-**Соңғы жаңарту:** 2026-10-03  
+**RU title:** Политика конфиденциальности QalaGo
+**KK title:** QalaGo құпиялылық саясаты
+**Нұсқа:** 2026-10-03-draft-1
+**Күшіне ену күні:** NOT YET EFFECTIVE
+**Мәртебе:** DRAFT — LEGAL REVIEW REQUIRED
+**Соңғы жаңарту:** 2026-10-03
 
 ---
 
@@ -15,14 +15,14 @@
 
 ## 2. Дербес деректер операторы
 
-**Оператор:** [OPERATOR_LEGAL_NAME]  
-**БСН:** [BIN]  
-**Заңды мекенжай:** [LEGAL_ADDRESS]  
-**Пошта мекенжайы:** [POSTAL_ADDRESS]  
-**Веб-сайт:** [WEBSITE]  
-**Дербес деректер бойынша байланыс:** [PRIVACY_EMAIL]  
-**Қолдау:** [SUPPORT_EMAIL]  
-**Телефон (бар болса):** [PHONE]  
+**Оператор:** [OPERATOR_LEGAL_NAME]
+**БСН:** [BIN]
+**Заңды мекенжай:** [LEGAL_ADDRESS]
+**Пошта мекенжайы:** [POSTAL_ADDRESS]
+**Веб-сайт:** [WEBSITE]
+**Дербес деректер бойынша байланыс:** [PRIVACY_EMAIL]
+**Қолдау:** [SUPPORT_EMAIL]
+**Телефон (бар болса):** [PHONE]
 **Тіркеу / хабарлау (қажет болса):** [REGISTRATION_DETAILS_IF_REQUIRED] — **LEGAL REVIEW REQUIRED**
 
 ## 3. Қолдану аясы

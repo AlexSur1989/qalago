@@ -1,7 +1,7 @@
 # Реестр обработчиков / третьих лиц
 
-**Статус:** DRAFT — LEGAL REVIEW REQUIRED  
-**Версия:** 2026-10-03-draft-1  
+**Статус:** DRAFT — LEGAL REVIEW REQUIRED
+**Версия:** 2026-10-03-draft-1
 **Источник:** repo config, `docs/privacy-data-inventory.md`
 
 | Provider | Role | Data | Purpose | Region | Cross-border | Agreement/DPA | Subprocessor | Security review | Legal review | Production enabled |

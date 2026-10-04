@@ -1,11 +1,11 @@
 # QalaGo пайдаланушы келісімі
 
-**RU title:** Пользовательское соглашение QalaGo  
-**KK title:** QalaGo пайдаланушы келісімі  
-**Нұсқа:** 2026-10-03-draft-1  
-**Күшіне ену күні:** NOT YET EFFECTIVE  
-**Мәртебе:** DRAFT — LEGAL REVIEW REQUIRED  
-**Соңғы жаңарту:** 2026-10-03  
+**RU title:** Пользовательское соглашение QalaGo
+**KK title:** QalaGo пайдаланушы келісімі
+**Нұсқа:** 2026-10-03-draft-1
+**Күшіне ену күні:** NOT YET EFFECTIVE
+**Мәртебе:** DRAFT — LEGAL REVIEW REQUIRED
+**Соңғы жаңарту:** 2026-10-03
 
 ---
 

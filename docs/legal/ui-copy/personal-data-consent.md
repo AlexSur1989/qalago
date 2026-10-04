@@ -1,7 +1,7 @@
 # UI copy — согласие на обработку персональных данных
 
-**Версия:** 2026-10-03-draft-1  
-**Статус:** DRAFT — LEGAL REVIEW REQUIRED  
+**Версия:** 2026-10-03-draft-1
+**Статус:** DRAFT — LEGAL REVIEW REQUIRED
 
 **Решение о UI:** обязательность **отдельного** чекбокса согласия на ПД — **LEGAL REVIEW REQUIRED** (см. `personal-data-consent.*.md`). Ниже — черновик, если counsel потребует отдельный инструмент помимо связки Terms + Privacy.
 

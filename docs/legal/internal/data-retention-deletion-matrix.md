@@ -1,6 +1,6 @@
 # Матрица хранения и удаления данных
 
-**Статус:** DRAFT — LEGAL REVIEW REQUIRED  
+**Статус:** DRAFT — LEGAL REVIEW REQUIRED
 **Версия:** 2026-10-03-draft-1
 
 Легенда: **IMPLEMENTED** = текущее поведение кода; **TARGET LEGAL** = целевой срок после counsel (не реализован автоматически).

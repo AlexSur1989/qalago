@@ -1,11 +1,11 @@
 # QalaGo Cookie файлдары мен аналитиканы пайдалану саясаты
 
-**RU title:** Политика использования Cookie и аналитики QalaGo  
-**KK title:** QalaGo Cookie файлдары мен аналитиканы пайдалану саясаты  
-**Нұсқа:** 2026-10-03-draft-1  
-**Күшіне ену күні:** NOT YET EFFECTIVE  
-**Мәртебе:** DRAFT — LEGAL REVIEW REQUIRED  
-**Соңғы жаңарту:** 2026-10-03  
+**RU title:** Политика использования Cookie и аналитики QalaGo
+**KK title:** QalaGo Cookie файлдары мен аналитиканы пайдалану саясаты
+**Нұсқа:** 2026-10-03-draft-1
+**Күшіне ену күні:** NOT YET EFFECTIVE
+**Мәртебе:** DRAFT — LEGAL REVIEW REQUIRED
+**Соңғы жаңарту:** 2026-10-03
 
 **Оператор:** [OPERATOR_LEGAL_NAME], [PRIVACY_EMAIL]
 

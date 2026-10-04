@@ -1,11 +1,11 @@
 # Правила размещения рекламы в QalaGo
 
-**RU title:** Правила размещения рекламы в QalaGo  
-**KK title:** QalaGo-да жарнама орналастыру қағидалары  
-**Версия:** 2026-10-03-draft-1  
-**Дата вступления в силу:** NOT YET EFFECTIVE  
-**Статус:** DRAFT — LEGAL REVIEW REQUIRED  
-**Последнее обновление:** 2026-10-03  
+**RU title:** Правила размещения рекламы в QalaGo
+**KK title:** QalaGo-да жарнама орналастыру қағидалары
+**Версия:** 2026-10-03-draft-1
+**Дата вступления в силу:** NOT YET EFFECTIVE
+**Статус:** DRAFT — LEGAL REVIEW REQUIRED
+**Последнее обновление:** 2026-10-03
 
 **Оператор:** [OPERATOR_LEGAL_NAME], [SUPPORT_EMAIL]
 
