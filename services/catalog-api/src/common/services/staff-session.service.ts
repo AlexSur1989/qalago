@@ -8,7 +8,10 @@ import { isStaffRole } from '../utils/staff-access.util';
 export class StaffSessionService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async assertStaffSessionActive(sessionId: string | undefined, userId: string): Promise<void> {
+  async assertStaffSessionActive(
+    sessionId: string | undefined,
+    userId: string,
+  ): Promise<{ mfaEnrollOnly: boolean }> {
     if (!sessionId) {
       throw staffUnauthorized(
         StaffAuthErrorCode.STAFF_SESSION_REVOKED,
@@ -17,7 +20,7 @@ export class StaffSessionService {
     }
     const session = await this.prisma.authSession.findFirst({
       where: { id: sessionId, userId },
-      select: { revokedAt: true, expiresAt: true },
+      select: { revokedAt: true, expiresAt: true, mfaEnrollOnly: true },
     });
     if (!session || session.revokedAt || session.expiresAt <= new Date()) {
       throw staffUnauthorized(
@@ -25,6 +28,7 @@ export class StaffSessionService {
         'Staff session revoked or expired',
       );
     }
+    return { mfaEnrollOnly: session.mfaEnrollOnly };
   }
 
   async assertStaffAccessActive(userId: string, role: UserRole): Promise<UserRole> {

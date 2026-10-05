@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { Public } from '../../common/decorators/public.decorator';
+import { AllowMfaEnrollment } from '../../common/decorators/allow-mfa-enrollment.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { StaffMfaSelfRoute } from '../../common/decorators/require-staff-permission.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
@@ -19,18 +20,21 @@ export class StaffMfaController {
 
   @StaffMfaSelfRoute()
   @Get('status')
+  @AllowMfaEnrollment()
   status(@CurrentUser() user: AuthUser) {
     return this.mfa.getPublicStatus(user);
   }
 
   @StaffMfaSelfRoute()
   @Post('enroll/start')
+  @AllowMfaEnrollment()
   enrollStart(@CurrentUser() user: AuthUser) {
     return this.mfa.enrollStart(user);
   }
 
   @StaffMfaSelfRoute()
   @Post('enroll/verify')
+  @AllowMfaEnrollment()
   enrollVerify(
     @CurrentUser() user: AuthUser,
     @Body() dto: StaffMfaEnrollVerifyDto,

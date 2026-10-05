@@ -12,7 +12,8 @@ import { AuthUser, JwtPayload } from '../types/jwt-payload.type';
 import { PrismaService } from '../../prisma/prisma.service';
 import { isStaffRole } from '../utils/staff-access.util';
 import { StaffSessionService } from '../services/staff-session.service';
-import { staffUnauthorized, StaffAuthErrorCode } from '../errors/staff-auth.errors';
+import { staffForbidden, StaffAuthErrorCode } from '../errors/staff-auth.errors';
+import { ALLOW_MFA_ENROLLMENT_KEY } from '../decorators/allow-mfa-enrollment.decorator';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -22,7 +23,7 @@ export class JwtAuthGuard implements CanActivate {
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
     private readonly staffSession: StaffSessionService,
-  ) {}
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
@@ -37,6 +38,7 @@ export class JwtAuthGuard implements CanActivate {
 
     if (isPublic) {
       await this.tryAttachUser(request);
+      if (request.user?.mfaEnrollOnly) delete request.user;
       return true;
     }
 
@@ -46,6 +48,11 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     await this.attachUserFromToken(request, authHeader.slice(7));
+    if (request.user?.mfaEnrollOnly && !this.reflector.getAllAndOverride<boolean>(
+      ALLOW_MFA_ENROLLMENT_KEY, [context.getHandler(), context.getClass()],
+    )) {
+      throw staffForbidden(StaffAuthErrorCode.MFA_REQUIRED, 'Complete MFA enrollment');
+    }
     return true;
   }
 
@@ -78,9 +85,11 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     let effectiveRole = dbUser.role;
+    let mfaEnrollOnly = payload.mfaEnrollOnly === true;
     if (isStaffRole(dbUser.role)) {
       effectiveRole = await this.staffSession.assertStaffAccessActive(dbUser.id, dbUser.role);
-      await this.staffSession.assertStaffSessionActive(payload.sid, dbUser.id);
+      const session = await this.staffSession.assertStaffSessionActive(payload.sid, dbUser.id);
+      mfaEnrollOnly = mfaEnrollOnly || session.mfaEnrollOnly;
     }
 
     request.user = {
@@ -91,7 +100,7 @@ export class JwtAuthGuard implements CanActivate {
       sid: payload.sid,
       authAt: payload.authAt,
       stepUpAt: payload.stepUpAt,
-      mfaEnrollOnly: payload.mfaEnrollOnly === true,
+      mfaEnrollOnly,
     };
   }
 }

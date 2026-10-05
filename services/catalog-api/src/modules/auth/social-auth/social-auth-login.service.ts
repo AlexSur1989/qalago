@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthProvider, Prisma, User, UserRole } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AuthIdentityService } from '../auth-identity.service';
-import { AuthSessionService } from '../auth-session.service';
+import { AuthService } from '../auth.service';
 import { SocialLoginClaims } from './social-auth.types';
 
 const userSelect = {
@@ -40,7 +40,7 @@ export class SocialAuthLoginService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly authIdentity: AuthIdentityService,
-    private readonly authSession: AuthSessionService,
+    private readonly auth: AuthService,
   ) {}
 
   async completeSocialLogin(input: CompleteSocialLoginInput) {
@@ -58,12 +58,12 @@ export class SocialAuthLoginService {
 
     if (existingIdentity) {
       const user = await this.resolveActiveUserFromIdentity(existingIdentity, claims);
-      const session = await this.authSession.issueQalaGoSession(user);
+      const session = await this.auth.completePrimaryLogin(user, { staffMfaSupported: false });
       return { ...session, user: this.toAuthUser(session.user) };
     }
 
     const user = await this.createSocialUser(provider, claims, input.initialName ?? null);
-    const session = await this.authSession.issueQalaGoSession(user);
+    const session = await this.auth.completePrimaryLogin(user, { staffMfaSupported: false });
     return { ...session, user: this.toAuthUser(session.user) };
   }
 

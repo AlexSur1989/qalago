@@ -119,7 +119,31 @@ Browser refresh tokens are **HttpOnly cookies** on each Next.js origin. **Not** 
 
 Legacy shared cookie `qalago_refresh` (`Path=/api/auth`) is **cleared on login/refresh/logout** and **never read**. Admin and Business sessions are independent (separate cookies, separate logout). **One re-login per app** may be required after deploy.
 
-Catalog API **`AuthSession`** rotation/replay/`logout-all` semantics unchanged.
+### Auth/session hardening (2026-10-06)
+
+- `AuthSession.mfaEnrollOnly` persists enrollment restriction. Refresh preserves it;
+  neither refresh nor step-up can complete enrollment. Only successful TOTP enrollment
+  clears the current session's restriction. JWT validation also checks persisted state.
+- OTP/dev and social primary identities share the same staff access/MFA policy.
+  Consumer Google/Apple endpoints return `403 MFA_REQUIRED` without issuing tokens
+  when staff MFA verification or enrollment is required: these clients do not implement
+  staff MFA UX. Complete staff login in Admin Web; no MFA bypass through social login.
+- Restricted sessions may read `/auth/me`, `/users/me`, MFA status, start/verify
+  enrollment and log out. All other authenticated routes return `403 MFA_REQUIRED`,
+  including routes without staff permission annotations. On public routes a restricted
+  bearer is treated as a guest, never as an authenticated privileged actor.
+- Rotation consumes the old session and creates its successor in one transaction.
+  Session mutations serialize on the user's database row. A replay returns `401`
+  and revokes the refresh family (including a concurrently issued successor).
+  Logout revokes the family even when given its already rotated token.
+  Revoking an individual staff session also revokes its refresh family.
+- Clients must coalesce refresh requests and retry each original request at most once.
+  Parallel refresh from independent browser tabs may require login again under strict
+  replay policy; there is no grace period accepting an already consumed token.
+- Deployment requires the additive session migration and Prisma client generation
+  before starting the new API. Existing staff sessions are revoked by the migration;
+  their historical MFA assurance is unknown. Stop old API processes during transition.
+  No change to refresh response fields or Admin/Business cookie namespaces.
 
 ### GET /auth/me
 
@@ -1694,7 +1718,7 @@ See `docs/security/staff-mfa.md`. Login may return `{ mfaRequired, mfaChallengeT
 | `STAFF_SELF_ROLE_CHANGE_FORBIDDEN` | Self role/scope change blocked |
 | `STEP_UP_REQUIRED` | Recent OTP step-up required |
 | `STAFF_SESSION_REVOKED` | JWT session binding invalid/revoked |
-| `MFA_REQUIRED` | Reserved (MFA not implemented) |
+| `MFA_REQUIRED` | Complete staff MFA through a supported flow; restricted session cannot perform this operation |
 
 Access tokens for staff include claim `sid` (AuthSession id) for immediate revocation after disable.
 

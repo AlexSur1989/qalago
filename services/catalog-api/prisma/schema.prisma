@@ -508,6 +508,7 @@ model AuthSession {
   expiresAt     DateTime
   revokedAt     DateTime?
   lastUsedAt    DateTime?
+  mfaEnrollOnly Boolean   @default(false)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

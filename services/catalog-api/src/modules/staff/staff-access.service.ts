@@ -22,6 +22,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { AuthSessionService } from '../auth/auth-session.service';
+import { lockAuthSessions } from '../../common/utils/auth-session-lock.util';
 import {
   CreateStaffAccessDto,
   SetStaffCityScopesDto,
@@ -413,9 +414,12 @@ export class StaffAccessService {
       where: { id: sessionId, userId },
     });
     if (!session) throw new NotFoundException('Session not found');
-    await this.prisma.authSession.update({
-      where: { id: sessionId },
-      data: { revokedAt: new Date() },
+    await this.prisma.$transaction(async (tx) => {
+      await lockAuthSessions(tx, userId);
+      await tx.authSession.updateMany({
+        where: { userId, familyId: session.familyId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
     });
     await this.auditLog.record({
       actor,

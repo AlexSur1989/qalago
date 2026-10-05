@@ -1,9 +1,9 @@
-import { UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { AuthProvider, UserRole } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AuthIdentityService } from '../auth-identity.service';
 import { SocialAuthLoginService } from './social-auth-login.service';
-import { AuthSessionService } from '../auth-session.service';
+import { AuthService } from '../auth.service';
 
 describe('SocialAuthLoginService', () => {
   let service: SocialAuthLoginService;
@@ -11,7 +11,7 @@ describe('SocialAuthLoginService', () => {
     $transaction: jest.Mock;
     user: { create: jest.Mock; findUnique: jest.Mock; findFirst: jest.Mock };
   };
-  let authSession: { issueQalaGoSession: jest.Mock };
+  let authSession: { completePrimaryLogin: jest.Mock };
   let authIdentity: {
     isTombstoned: jest.Mock;
     findIdentityWithUser: jest.Mock;
@@ -25,7 +25,7 @@ describe('SocialAuthLoginService', () => {
       user: { create: jest.fn(), findUnique: jest.fn(), findFirst: jest.fn() },
     };
     authSession = {
-      issueQalaGoSession: jest.fn().mockImplementation(async (user) => ({
+      completePrimaryLogin: jest.fn().mockImplementation(async (user) => ({
         accessToken: 'qalago-jwt',
         refreshToken: 'refresh',
         user,
@@ -41,7 +41,7 @@ describe('SocialAuthLoginService', () => {
     service = new SocialAuthLoginService(
       prisma as unknown as PrismaService,
       authIdentity as unknown as AuthIdentityService,
-      authSession as unknown as AuthSessionService,
+      authSession as unknown as AuthService,
     );
   });
 
@@ -69,7 +69,7 @@ describe('SocialAuthLoginService', () => {
       initialName: 'Google User',
     });
 
-    expect(result.accessToken).toBe('qalago-jwt');
+    expect(result).toMatchObject({ accessToken: 'qalago-jwt' });
     expect(result.user).toEqual(createdUser);
     expect(authIdentity.createIdentity).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -287,6 +287,15 @@ describe('SocialAuthLoginService', () => {
     });
 
     expect(result.user.id).toBe('u-raced');
+  });
+
+  it.each([AuthProvider.GOOGLE, AuthProvider.APPLE])('enforces staff MFA policy for %s', async provider => {
+    const user = { id: 'staff', role: UserRole.SUPER_ADMIN, phone: null, email: null, name: null, isActive: true };
+    authIdentity.findIdentityWithUser.mockResolvedValue({ id: 'identity', user });
+    authSession.completePrimaryLogin.mockRejectedValue(new ForbiddenException({ code: 'MFA_REQUIRED' }));
+    await expect(service.completeSocialLogin({ provider, claims: { providerUserId: 'staff-sub' } }))
+      .rejects.toMatchObject({ response: { code: 'MFA_REQUIRED' } });
+    expect(authSession.completePrimaryLogin).toHaveBeenCalledWith(user, { staffMfaSupported: false });
   });
 
   it('does not search users by email for auto-link', async () => {

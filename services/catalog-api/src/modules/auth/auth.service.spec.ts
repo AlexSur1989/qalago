@@ -369,6 +369,36 @@ describe('AuthService', () => {
     });
   });
 
+  describe('shared primary-login MFA policy', () => {
+    const staff = { id: 'staff', phone: null, email: null, name: null, role: UserRole.SUPER_ADMIN };
+    it.each(['mfa_verify', 'enroll_required'])('fails closed on consumer social login requiring %s', async kind => {
+      staffMfaPolicy.loginDecision.mockReturnValue({ kind });
+      await expect(service.completePrimaryLogin(staff, { staffMfaSupported: false })).rejects.toMatchObject({
+        response: { code: 'MFA_REQUIRED' },
+      });
+      expect(authSession.issueQalaGoSession).not.toHaveBeenCalled();
+      expect(staffMfaChallenge.issueLoginChallenge).not.toHaveBeenCalled();
+    });
+    it('returns challenge without issuing a session when MFA is enabled', async () => {
+      staffMfa.isMfaEnabled.mockResolvedValue(true);
+      staffMfaPolicy.loginDecision.mockReturnValue({ kind: 'mfa_verify' });
+      staffMfaChallenge.issueLoginChallenge.mockResolvedValue('challenge');
+      const result = await service.completePrimaryLogin(staff);
+      expect(result).toMatchObject({ mfaRequired: true, mfaChallengeToken: 'challenge' });
+      expect(authSession.issueQalaGoSession).not.toHaveBeenCalled();
+    });
+    it('issues only enrollment-limited sessions when enrollment is mandatory', async () => {
+      staffMfaPolicy.loginDecision.mockReturnValue({ kind: 'enroll_required' });
+      expect(await service.completePrimaryLogin(staff)).toMatchObject({ enrollmentRequired: true });
+      expect(authSession.issueQalaGoSession).toHaveBeenCalledWith(staff, { mfaEnrollOnly: true });
+    });
+    it('rejects disabled staff before issuing a session', async () => {
+      staffSession.assertStaffAccessActive.mockRejectedValue(new UnauthorizedException());
+      await expect(service.completePrimaryLogin(staff)).rejects.toBeInstanceOf(UnauthorizedException);
+      expect(authSession.issueQalaGoSession).not.toHaveBeenCalled();
+    });
+  });
+
   describe('verifyCode security', () => {
     it('rejects invalid OTP without leaking account existence', async () => {
       prisma.otpCode.findFirst.mockResolvedValue(null);

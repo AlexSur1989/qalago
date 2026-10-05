@@ -13,7 +13,7 @@ import { OtpRateLimitService } from '../../common/services/otp-rate-limit.servic
 import { AccountType, resolveAccountRole } from './auth-role.util';
 import { normalizeKazakhstanPhone } from './auth-phone.util';
 import { DevLoginDto, SendCodeDto, StaffStepUpDto, VerifyCodeDto } from './dto/auth.dto';
-import { AuthSessionService } from './auth-session.service';
+import { AuthSessionService, SessionUser } from './auth-session.service';
 import { isProductionNodeEnv } from '../../common/utils/production-config.util';
 import { AuthUser, JwtPayload } from '../../common/types/jwt-payload.type';
 import { StaffStepUpService } from '../../common/services/staff-step-up.service';
@@ -184,6 +184,11 @@ export class AuthService {
       await this.businessMembershipService.claimPendingInvitations(user.id, phone);
     }
 
+    return this.completePrimaryLogin(user);
+  }
+
+  /** Shared policy after any verified primary identity (OTP, Google or Apple). */
+  async completePrimaryLogin(user: SessionUser, options?: { staffMfaSupported: boolean }) {
     if (isStaffRole(user.role)) {
       await this.staffSession.assertStaffAccessActive(user.id, user.role);
       const mfaEnabled = await this.staffMfa.isMfaEnabled(user.id);
@@ -191,6 +196,9 @@ export class AuthService {
         role: user.role,
         mfaEnabled,
       });
+      if (decision.kind !== 'full' && options?.staffMfaSupported === false) {
+        throw staffForbidden(StaffAuthErrorCode.MFA_REQUIRED, 'Use the staff portal to complete MFA');
+      }
       if (decision.kind === 'mfa_verify') {
         return {
           mfaRequired: true,
@@ -208,12 +216,7 @@ export class AuthService {
   }
 
   async refresh(refreshToken: string, userAgent?: string) {
-    try {
-      return await this.authSession.refreshSession(refreshToken, { userAgent });
-    } catch (error) {
-      await this.authSession.handlePossibleReplay(refreshToken);
-      throw error;
-    }
+    return this.authSession.refreshSession(refreshToken, { userAgent });
   }
 
   async logout(refreshToken: string | undefined) {

@@ -29,6 +29,7 @@ import { staffForbidden, StaffAuthErrorCode } from '../../common/errors/staff-au
 import { StaffMfaChallengeService } from './staff-mfa-challenge.service';
 import { StaffMfaPolicyService } from './staff-mfa-policy.service';
 import { StaffMfaEnrollVerifyDto, StaffMfaVerifyLoginDto } from './dto/staff-mfa.dto';
+import { lockAuthSessions } from '../../common/utils/auth-session-lock.util';
 
 authenticator.options = { window: 1 };
 
@@ -201,6 +202,23 @@ export class StaffMfaService {
     const secretEncrypted = encryptStaffMfaSecret(secret, this.getEncryptionKey());
     const now = new Date();
     const recovery = await this.prisma.$transaction(async (tx) => {
+      await lockAuthSessions(tx, actor.id);
+      const pending = await tx.staffMfaCredential.findUnique({ where: { userId: actor.id } });
+      if (pending?.pendingSecretEncrypted !== cred.pendingSecretEncrypted ||
+          !pending.pendingExpiresAt || pending.pendingExpiresAt <= new Date()) {
+        throw new BadRequestException('Enrollment changed or expired — start again');
+      }
+      if (!actor.sid) throw new UnauthorizedException('Session required');
+      const promoted = await tx.authSession.updateMany({
+        where: { id: actor.sid, userId: actor.id, revokedAt: null, expiresAt: { gt: now } },
+        data: { mfaEnrollOnly: false },
+      });
+      if (promoted.count !== 1) throw new UnauthorizedException('Session revoked or expired');
+      // Other pre-enrollment sessions must authenticate again; enrollment is not global assurance.
+      await tx.authSession.updateMany({
+        where: { userId: actor.id, id: { not: actor.sid }, mfaEnrollOnly: true, revokedAt: null },
+        data: { revokedAt: now },
+      });
       const updated = await tx.staffMfaCredential.update({
         where: { userId: actor.id },
         data: {

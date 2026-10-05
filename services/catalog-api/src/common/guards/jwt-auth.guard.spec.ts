@@ -1,9 +1,11 @@
-import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { ExecutionContext, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserRole } from '@prisma/client';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { ALLOW_MFA_ENROLLMENT_KEY } from '../decorators/allow-mfa-enrollment.decorator';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 describe('JwtAuthGuard', () => {
   let guard: JwtAuthGuard;
@@ -96,5 +98,48 @@ describe('JwtAuthGuard', () => {
     const ctx = context('Bearer bad');
     await expect(guard.canActivate(ctx)).resolves.toBe(true);
     expect(ctx.request.user).toBeUndefined();
+  });
+
+  function restrictedStaff() {
+    prisma.user.findUnique.mockResolvedValue({ id: 'u1', role: UserRole.SUPER_ADMIN, isActive: true });
+    staffSession.assertStaffAccessActive.mockResolvedValue(UserRole.SUPER_ADMIN);
+    staffSession.assertStaffSessionActive.mockResolvedValue({ mfaEnrollOnly: true });
+    // Even an old JWT missing the restriction cannot override the database.
+    jwt.verifyAsync.mockResolvedValue({ sub: 'u1', sid: 's1' });
+  }
+
+  it('blocks persisted limited session on an unannotated authenticated route', async () => {
+    restrictedStaff();
+    await expect(guard.canActivate(context('Bearer jwt'))).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('allows only explicitly marked enrollment/bootstrap routes', async () => {
+    restrictedStaff();
+    reflector.getAllAndOverride.mockImplementation(key => key === ALLOW_MFA_ENROLLMENT_KEY);
+    const ctx = context('Bearer jwt');
+    await expect(guard.canActivate(ctx)).resolves.toBe(true);
+    expect(ctx.request.user).toMatchObject({ mfaEnrollOnly: true });
+  });
+
+  it('treats limited bearer as guest on a public route', async () => {
+    restrictedStaff();
+    reflector.getAllAndOverride.mockImplementation(key => key === IS_PUBLIC_KEY);
+    const ctx = context('Bearer jwt');
+    await expect(guard.canActivate(ctx)).resolves.toBe(true);
+    expect(ctx.request.user).toBeUndefined();
+  });
+
+  it('keeps old limited JWT restricted after persisted promotion', async () => {
+    restrictedStaff();
+    staffSession.assertStaffSessionActive.mockResolvedValue({ mfaEnrollOnly: false });
+    jwt.verifyAsync.mockResolvedValue({ sub: 'u1', sid: 's1', mfaEnrollOnly: true });
+    await expect(guard.canActivate(context('Bearer jwt'))).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('rejects revoked staff session before allowing enrollment', async () => {
+    restrictedStaff();
+    reflector.getAllAndOverride.mockImplementation(key => key === ALLOW_MFA_ENROLLMENT_KEY);
+    staffSession.assertStaffSessionActive.mockRejectedValue(new UnauthorizedException());
+    await expect(guard.canActivate(context('Bearer jwt'))).rejects.toBeInstanceOf(UnauthorizedException);
   });
 });

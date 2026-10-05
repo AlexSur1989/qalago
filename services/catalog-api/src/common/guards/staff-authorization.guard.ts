@@ -12,6 +12,7 @@ import { AuthUser, JwtPayload } from '../types/jwt-payload.type';
 import { StaffPolicyService } from '../services/staff-policy.service';
 import { StaffStepUpService } from '../services/staff-step-up.service';
 import { isStaffRole, staffRoleHasPermission } from '../utils/staff-access.util';
+import { ALLOW_MFA_ENROLLMENT_KEY } from '../decorators/allow-mfa-enrollment.decorator';
 
 @Injectable()
 export class StaffAuthorizationGuard implements CanActivate {
@@ -19,7 +20,7 @@ export class StaffAuthorizationGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly policy: StaffPolicyService,
     private readonly stepUp: StaffStepUpService,
-  ) {}
+  ) { }
 
   canActivate(context: ExecutionContext): boolean {
     const adminStaffRoute = this.reflector.getAllAndOverride<boolean>(ADMIN_STAFF_ROUTE_KEY, [
@@ -39,12 +40,17 @@ export class StaffAuthorizationGuard implements CanActivate {
       context.getClass(),
     ]);
 
+    const request = context.switchToHttp().getRequest<{ user?: AuthUser & JwtPayload }>();
+    const user = request.user;
+    if (user?.mfaEnrollOnly && !this.reflector.getAllAndOverride<boolean>(
+      ALLOW_MFA_ENROLLMENT_KEY, [context.getHandler(), context.getClass()],
+    )) {
+      throw staffForbidden(StaffAuthErrorCode.MFA_REQUIRED, 'Complete MFA enrollment');
+    }
     if (!adminStaffRoute && !permissions?.length && !needsStepUp && !mfaSelfRoute) {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<{ user?: AuthUser & JwtPayload }>();
-    const user = request.user;
     if (!user) {
       throw staffForbidden(StaffAuthErrorCode.STAFF_ACCESS_REQUIRED, 'Authentication required');
     }
@@ -54,13 +60,6 @@ export class StaffAuthorizationGuard implements CanActivate {
         throw staffForbidden(StaffAuthErrorCode.STAFF_ACCESS_REQUIRED, 'Staff access required');
       }
       return true;
-    }
-
-    if (user.mfaEnrollOnly) {
-      throw staffForbidden(
-        StaffAuthErrorCode.MFA_REQUIRED,
-        'Complete MFA enrollment before accessing admin features',
-      );
     }
 
     if (adminStaffRoute || permissions?.length) {

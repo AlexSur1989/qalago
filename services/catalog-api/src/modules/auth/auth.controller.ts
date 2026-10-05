@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { Public } from '../../common/decorators/public.decorator';
+import { AllowMfaEnrollment } from '../../common/decorators/allow-mfa-enrollment.decorator';
 import { SkipLegalAcceptance } from '../../common/decorators/skip-legal-acceptance.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
@@ -117,6 +118,7 @@ export class AuthController {
   }
 
   @Post('logout-all')
+  @AllowMfaEnrollment()
   async logoutAll(@CurrentUser() user: AuthUser | undefined) {
     if (!user) {
       throw new NotFoundException();
@@ -125,6 +127,7 @@ export class AuthController {
   }
 
   @Get('me')
+  @AllowMfaEnrollment()
   async me(@CurrentUser() user: AuthUser | undefined) {
     if (!user) {
       throw new NotFoundException('User not found');
