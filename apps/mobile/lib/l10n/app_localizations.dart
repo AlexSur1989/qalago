@@ -6201,9 +6201,15 @@ abstract class AppLocalizations {
   String get ownerPlanCurrentBadge;
 
   /// No description provided for @ownerPlanLaunchAccessBadge.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бесплатный доступ на период запуска'**
   String get ownerPlanLaunchAccessBadge;
 
   /// No description provided for @ownerMonetizationDisabled.
+  ///
+  /// In ru, this message translates to:
+  /// **'Монетизация временно недоступна.'**
   String get ownerMonetizationDisabled;
 
   /// No description provided for @ownerPlanActiveUntil.

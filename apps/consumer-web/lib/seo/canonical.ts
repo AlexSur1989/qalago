@@ -5,7 +5,7 @@
 import {
   publicHelpPath,
   publicLegalPath,
-  type PublicLegalRootSegment,
+  type ExtendedLegalRootSegment,
 } from '../legal-paths';
 import {
   DEFAULT_PUBLIC_LOCALE,
@@ -150,7 +150,7 @@ export function localizedIndexableSitemapUrls(options: IndexablePathOptions): st
 }
 
 /** F.7 — locale-neutral legal pages; no /ru|kk/ prefix. */
-export function canonicalForLegalPage(segment: PublicLegalRootSegment): string {
+export function canonicalForLegalPage(segment: ExtendedLegalRootSegment): string {
   return `${getConsumerWebOrigin()}${publicLegalPath(segment)}`;
 }
 

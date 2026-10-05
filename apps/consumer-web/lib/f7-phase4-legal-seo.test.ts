@@ -61,22 +61,27 @@ describe('F.7 Phase 4 legal SEO and localization', () => {
     expect(legalPageHeading('ru', 'privacy')).toBe('Политика конфиденциальности');
     expect(legalPageHeading('kk', 'privacy')).toBe('Құпиялылық саясаты');
     expect(LEGAL_BODY_SOURCE_LOCALE).toBe('ru');
-    const privacyBody = readFileSync(
+    const privacyPage = readFileSync(
       join(process.cwd(), 'app/privacy/page.tsx'),
       'utf8',
     );
-    expect(privacyBody).toContain('Настоящая Политика описывает');
-    expect(privacyBody).not.toMatch(/translate|machineTranslate|i18n\.t\(/);
+    expect(privacyPage).toContain('LegalPackPage');
+    expect(privacyPage).toContain('packKey="privacy-policy"');
+    const packPage = readFileSync(
+      join(process.cwd(), 'components/LegalPackPage.tsx'),
+      'utf8',
+    );
+    expect(packPage).not.toMatch(/machineTranslate|i18n\.t\(/);
   });
 
   it('sitemap includes each legal URL once without locale prefix', () => {
     vi.stubEnv('NEXT_PUBLIC_QALAGO_PUBLIC_BASE_URL', 'https://qalago.kz');
     const legal = buildLegalSitemapEntries();
-    expect(legal.map((e) => e.url)).toEqual([
-      'https://qalago.kz/privacy',
-      'https://qalago.kz/terms',
-      'https://qalago.kz/account-deletion',
-    ]);
+    expect(legal.map((e) => e.url)).toEqual(
+      PUBLIC_LEGAL_ROOT_SEGMENTS.map(
+        (segment) => `https://qalago.kz/${segment}`,
+      ),
+    );
     const merged = mergeDiscoveryAndLegalSitemapEntries(
       buildDiscoverySitemapEntries({
         cities: [{ id: 'c1', slug: 'aktobe', nameRu: 'Актобе', nameKk: 'Ақтөбе' }],

@@ -45,7 +45,7 @@ Do **not** copy statutory texts into the repository.
 |-------|------|--------|
 | **KZ-C.0** | Compliance contract lock | **THIS STAGE** — docs only |
 | **KZ-C.1** | Kazakh-first + localization baseline | Flutter + web defaults; preserve F.5/F.7 |
-| **KZ-C.2** | Legal documents + versioned acceptance integration | **6.15L.2:** infra implemented (draft pack, acceptance matrix, routes); counsel publish + operator details still **P0** |
+| **KZ-C.2** | Legal documents + versioned acceptance integration | KK/RU content process + client/API binding |
 | **KZ-C.3** | Personal-data lifecycle / rights / public DTO hardening | Deletion, push tokens, `ownerId`, export |
 | **KZ-C.4** | Advertising compliance | Labels, transparency, retention class |
 | **KZ-C.5** | UGC / moderation / complaint production readiness | Flags, KK operational support |

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import type { PublicLegalRootSegment } from '@/lib/legal-paths';
+import type { ExtendedLegalRootSegment } from '@/lib/legal-paths';
 import { HELP_UI } from '@/lib/help-ui';
 import { legalPageMetadataCopy } from '@/lib/legal-ui';
 import {
@@ -240,7 +240,7 @@ export function metadataForHelpPage(locale: AppLocale): Metadata {
 }
 
 export function metadataForLegalPage(
-  page: PublicLegalRootSegment,
+  page: ExtendedLegalRootSegment,
   locale: AppLocale,
 ): Metadata {
   const { title, description } = legalPageMetadataCopy(locale, page);

@@ -19,8 +19,18 @@ function resolve(pathname: string, cookie?: string) {
 }
 
 describe('F.7 Phase 1 legal routes', () => {
-  it('defines three canonical root segments', () => {
-    expect(PUBLIC_LEGAL_ROOT_SEGMENTS).toEqual(['privacy', 'terms', 'account-deletion']);
+  it('defines locale-neutral public legal root segments (F.7 + 6.15L extended)', () => {
+    expect(PUBLIC_LEGAL_ROOT_SEGMENTS).toEqual([
+      'privacy',
+      'terms',
+      'account-deletion',
+      'community',
+      'personal-data-consent',
+      'business-terms',
+      'offer',
+      'advertising-rules',
+      'cookies',
+    ]);
   });
 
   it('route page files exist under app/', () => {

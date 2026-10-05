@@ -99,7 +99,7 @@ export function legalPageHeading(locale: AppLocale, page: ExtendedLegalRootSegme
 
 export function legalPageMetadataCopy(
   locale: AppLocale,
-  page: PublicLegalRootSegment,
+  page: ExtendedLegalRootSegment,
 ): { title: string; description: string } {
   const ui = LEGAL_UI[locale];
   switch (page) {
@@ -112,5 +112,9 @@ export function legalPageMetadataCopy(
         title: ui.accountDeletionPageTitle,
         description: ui.accountDeletionPageDescription,
       };
+    default: {
+      const heading = EXTENDED_HEADINGS[locale][page] ?? page;
+      return { title: `${heading} — QalaGo`, description: heading };
+    }
   }
 }

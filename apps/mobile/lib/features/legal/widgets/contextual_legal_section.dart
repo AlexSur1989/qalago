@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/legal_constants.dart';
 import '../../../core/locale/app_locale_provider.dart';
 import '../../../core/locale/l10n_extension.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/legal_repository.dart';
 import '../legal_contextual_errors.dart';
