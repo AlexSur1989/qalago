@@ -6,6 +6,24 @@
 
 ---
 
+## 2026-10-05 — 6.16U.1A — Upload ownership and security test closure
+
+- **Status:** **6.16U.1A Implemented** — **Checkpoint:** `3f1e0b7` (feat(media)); architecture doc in this docs commit.
+- **Summary:** Signed single-use `uploadToken` receipt binds canonical uploads to uploader + business/platform context; cross-tenant attach blocked (UPLOAD-013); clients pass receipt on attach and media writes; extended security tests. **No** schema/migration.
+- **Deferred:** Persistent MediaObject registry; 6.16U.2 storage privacy.
+- **Next:** Physical QA; 6.16U.2 when approved.
+
+---
+
+## 2026-10-05 — 6.16U.1 — Media upload security hardening
+
+- **Status:** **6.16U.1 Implemented** — **Checkpoint:** `3f1e0b7`.
+- **Summary:** Unified sharp WebP pipeline (JPEG/PNG/WebP in; GIF/SVG rejected); trusted `/uploads/{uuid}.webp` write validation; attach verifies local file; businessId/uploadContext on uploads; reference-aware blob delete; avatar cleanup on account delete; Consumer Web tighter image hosts + legacy external fallback; `X-Content-Type-Options: nosniff` on static uploads. **No** schema/migration, **no** existing file/URL mutation.
+- **Deferred:** S3, MediaObject, scheduled orphan GC, malware scanning.
+- **Next:** 6.16U.1A ownership closure (same release train).
+
+---
+
 ## 2026-10-05 — 6.15L.4 — Operator facts and counsel handoff preparation
 
 - **Status:** **6.15L.4 Implemented (handoff documentation only)** — **NOT PRODUCTION LEGAL READY**. **Checkpoint:** `6e0b1fe` — operator and counsel handoff pack.
