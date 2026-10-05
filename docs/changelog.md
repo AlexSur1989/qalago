@@ -9,7 +9,7 @@
 ## 2026-10-06 — Local remediation Stage 12 — release gate smoke + Jest harness (PS.kz prep)
 
 - **Status:** **Verified (local)** — tag **`ps-kz-prep-2026-10-06`** on harness commit below.
-- **Checkpoint:** after **`409005c`** remediation chain; Stage 12 commit records SHA.
+- **Checkpoint:** **`4c71778`**; tag **`ps-kz-prep-2026-10-06`**; chain from **`409005c`**.
 - **Summary:** **HTTP smoke 4/4 PASS** (`_stage8-ci-smoke.mjs`, Stage 6 soft-pass for Node Windows exit noise). **consumer 463/463**. **catalog-api Jest **230/241** suites (was 220). **11** suites remain (home-config invariant, location backfill, order/adversarial, account-deletion, etc.). **Deploy SHA:** use tag or latest commit on `master`.
 - **Deferred:** 11 catalog-api suites; unstaged mobile branding WIP; VPS Persona A.
 - **Next:** VPS cutover per **`docs/infra/ps-kz-vps-runbook.md`** or finish remaining Jest.
