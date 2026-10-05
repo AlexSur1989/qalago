@@ -478,6 +478,10 @@ describe('OrderService', () => {
           status: PaymentStatus.PENDING,
         }),
       }),
+    /* order-svc-ctor-tail */
+
+    { assertPurchasesAllowed: jest.fn() } as never,
+
     );
     expect(result.payments?.[0]?.status).toBe(PaymentStatus.PENDING);
   });

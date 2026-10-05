@@ -57,6 +57,8 @@ describe('Stage 6.7QA — category discovery adversarial', () => {
       subDeps.subcategories,
       asReviewAggregationService(createReviewAggregationFromPrisma(prisma as never)),
       {} as never,
+      { get: jest.fn() } as never,
+      {} as never,
     );
   }
 

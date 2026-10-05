@@ -415,6 +415,8 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
           aggregateForBusinessIds: jest.fn().mockResolvedValue(new Map()),
         } as never,
         {} as never,
+        { get: jest.fn() } as never,
+        {} as never,
       );
 
       const result = await businessesService.findOne('b1');

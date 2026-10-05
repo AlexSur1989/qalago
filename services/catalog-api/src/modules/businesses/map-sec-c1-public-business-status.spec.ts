@@ -79,6 +79,8 @@ describe('MAP-SEC.C1 — public business visibility', () => {
         subDeps.subcategories,
         {} as never,
         {} as never,
+        { get: jest.fn() } as never,
+        {} as never,
       );
       return { service, prisma };
     }
@@ -133,6 +135,8 @@ describe('MAP-SEC.C1 — public business visibility', () => {
         subDeps.businessSubcategories,
         subDeps.subcategories,
         {} as never,
+        {} as never,
+        { get: jest.fn() } as never,
         {} as never,
       );
       await expect(service.findOne('pending-id')).rejects.toBeInstanceOf(NotFoundException);

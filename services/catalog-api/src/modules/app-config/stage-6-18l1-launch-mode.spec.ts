@@ -189,6 +189,10 @@ describe('6.18L.1 Launch mode', () => {
         {} as never,
         {} as never,
         monetizationMode as never,
+      /* order-svc-ctor-tail */
+
+      { assertPurchasesAllowed: jest.fn() } as never,
+
       );
       await expect(
         service.createOrder({ id: 'u1', sub: 'u1', role: 'BUSINESS' } as never, {

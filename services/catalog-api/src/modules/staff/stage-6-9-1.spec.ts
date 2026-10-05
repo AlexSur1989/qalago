@@ -154,6 +154,10 @@ describe('Stage 6.9.1 Staff RBAC', () => {
         {} as never,
         staffPolicy,
         { buildAdminBusinessScopeWhere: jest.fn() } as never,
+      /* order-svc-ctor-tail */
+
+      { assertPurchasesAllowed: jest.fn() } as never,
+
       );
       await expect(
         service.confirmManualPayment(user('s1', UserRole.SALES_MANAGER), 'pay-1'),

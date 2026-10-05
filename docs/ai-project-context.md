@@ -84,7 +84,8 @@ error; consumer **9** home/legal-route vitest drift. **`scripts/dev/_stage8-ci-s
 → **`qalago_stage10_restore`** (**57** finished migrations); Cluster C restored from HEAD;
 consumer vitest **463/463**; Docker staging N/A on operator Windows.
 **Stage 11 (2026-10-06) PARTIAL:** business contextual legal wired (**7/7**); catalog-api **220/241** Jest suites; consumer **463/463**; commits **`e6f1ecf`** → **`dd0684c`**.
-**Next agreed stage:** **Stage 12** — finish catalog-api harness or VPS Persona A on release SHA.
+**Stage 12 (2026-10-06) VERIFIED:** HTTP smoke **4/4**; catalog-api **230/241** Jest; tag **`ps-kz-prep-2026-10-06`**.
+**Next agreed stage:** **VPS Persona A** on tag SHA or close remaining **11** Jest suites.
 
 | Field | Value |
 |-------|--------|
