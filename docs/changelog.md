@@ -6,9 +6,18 @@
 
 ---
 
+## 2026-10-05 — 6.15L.4 — Operator facts and counsel handoff preparation
+
+- **Status:** **6.15L.4 Implemented (handoff documentation only)** — **NOT PRODUCTION LEGAL READY**. **Checkpoint:** pending user commit.
+- **Summary:** Operator information request; placeholder substitution matrix (16 production candidates); counsel question register (COUNSEL-001…014); counsel review pack; document checklist; legal decision map; processor evidence request; retention/commercial sheets; final versioning plan; handoff manifest; internal approval matrix; counsel return template; readiness gate (`PARTIALLY READY FOR COUNSEL HANDOFF`). **No** publish, **no** flags, **no** product/schema changes.
+- **Deferred:** Operator facts, counsel return, 6.15L.5 publication, staging QA, production rollout.
+- **Next:** Operator completes fact sheet + sends manifest to counsel → counsel return → **6.15L.5** per `docs/legal/handoff/final-versioning-plan.md` (not started automatically).
+
+---
+
 ## 2026-10-05 — 6.15L.3 — Production legal readiness preparation
 
-- **Status:** **6.15L.3 Implemented (readiness documentation only)** — **NOT PRODUCTION LEGAL READY**. **Checkpoint:** pending user commit.
+- **Status:** **6.15L.3 Implemented (readiness documentation only)** — **NOT PRODUCTION LEGAL READY**. **Checkpoint:** `7d781b8` (readiness pack), `80ff87e` (publication blocker test).
 - **Summary:** Operator placeholder inventory; operator fact sheet (all UNKNOWN); processor register factual audit; retention/refund/minors/cookie/complaint decision records; 16 RU/KK production **candidates** (not published); publication blockers; activation + staging QA plans; Prisma EPERM predeploy note; optional refund-placeholder validation test. **No** publish, **no** enforcement flags, **no** schema changes.
 - **Deferred:** Operator details, counsel approval, refund clause, publish pairs, staging physical QA, production rollout.
 - **Next:** Operator completes fact sheet → counsel finalizes RU/KK → staging publish + QA per `docs/legal/production/activation-plan.md`. **6.15L.4+ not started automatically.**
