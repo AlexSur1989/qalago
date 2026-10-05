@@ -8,7 +8,7 @@
 
 ## 2026-10-05 — 6.15L.4 — Operator facts and counsel handoff preparation
 
-- **Status:** **6.15L.4 Implemented (handoff documentation only)** — **NOT PRODUCTION LEGAL READY**. **Checkpoint:** pending user commit.
+- **Status:** **6.15L.4 Implemented (handoff documentation only)** — **NOT PRODUCTION LEGAL READY**. **Checkpoint:** `6e0b1fe` — operator and counsel handoff pack.
 - **Summary:** Operator information request; placeholder substitution matrix (16 production candidates); counsel question register (COUNSEL-001…014); counsel review pack; document checklist; legal decision map; processor evidence request; retention/commercial sheets; final versioning plan; handoff manifest; internal approval matrix; counsel return template; readiness gate (`PARTIALLY READY FOR COUNSEL HANDOFF`). **No** publish, **no** flags, **no** product/schema changes.
 - **Deferred:** Operator facts, counsel return, 6.15L.5 publication, staging QA, production rollout.
 - **Next:** Operator completes fact sheet + sends manifest to counsel → counsel return → **6.15L.5** per `docs/legal/handoff/final-versioning-plan.md` (not started automatically).
