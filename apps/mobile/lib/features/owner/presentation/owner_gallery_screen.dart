@@ -60,10 +60,16 @@ class OwnerGalleryScreen extends ConsumerWidget {
     final repo = ref.read(catalogRepositoryProvider);
     try {
       final bytes = await file.readAsBytes();
-      final url = await repo.uploadImage(file.path, bytes, file.name);
+      final uploaded = await repo.uploadImage(
+        file.path,
+        bytes,
+        file.name,
+        businessId: businessId,
+      );
       await repo.attachBusinessImage(
         businessId: businessId,
-        imageUrl: url,
+        imageUrl: uploaded.url,
+        uploadToken: uploaded.uploadToken,
         asCover: asCover,
       );
       _invalidate(ref);

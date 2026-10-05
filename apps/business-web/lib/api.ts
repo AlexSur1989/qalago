@@ -649,6 +649,7 @@ export type CreateMonetizationCreativePayload = {
   businessId: string;
   type?: string;
   imageUrl?: string;
+  uploadToken?: string;
   title: string;
   description?: string;
   buttonText?: string;
@@ -1074,8 +1075,12 @@ export const ownerApi = {
   deleteMenuItem: (token: string, id: string) =>
     api<void>(`/service-items/${id}`, { method: 'DELETE', token }),
 
-  uploadImage: (token: string, file: File) =>
-    uploadApi<{ url: string }>('/uploads', token, file),
+  uploadImage: (token: string, file: File, businessId: string) =>
+    uploadApi<{ url: string; uploadToken: string }>(
+      `/uploads?businessId=${encodeURIComponent(businessId)}`,
+      token,
+      file,
+    ),
 
   listBusinessImages: (
     token: string,
@@ -1094,13 +1099,14 @@ export const ownerApi = {
     token: string,
     businessId: string,
     imageUrl: string,
-    options?: { asCover?: boolean; locationId?: string },
+    options?: { asCover?: boolean; locationId?: string; uploadToken?: string },
   ) =>
     api<BusinessImageRow>(`/uploads/business/${businessId}`, {
       method: 'POST',
       token,
       body: JSON.stringify({
         imageUrl,
+        ...(options?.uploadToken ? { uploadToken: options.uploadToken } : {}),
         ...(options?.asCover ? { asCover: true } : {}),
         ...(options?.locationId ? { locationId: options.locationId } : {}),
       }),

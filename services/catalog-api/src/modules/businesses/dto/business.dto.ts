@@ -226,6 +226,10 @@ export class UpdateBusinessDto {
   coverImageUrl?: string;
 
   @IsOptional()
+  @IsString()
+  uploadToken?: string;
+
+  @IsOptional()
   @IsObject()
   workHours?: Record<string, string>;
 

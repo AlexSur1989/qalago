@@ -110,6 +110,8 @@ describe('VIP creative lifecycle', () => {
       provisioning as never,
       auditLog as never,
       { create: jest.fn() } as never,
+      { get: jest.fn().mockReturnValue('./uploads') } as never,
+      { createReceipt: jest.fn(), assertValidReceipt: jest.fn() } as never,
     );
 
     beforeEach(() => {
@@ -167,6 +169,8 @@ describe('VIP creative lifecycle', () => {
       provisioning as never,
       auditLog as never,
       { create: jest.fn() } as never,
+      { get: jest.fn().mockReturnValue('./uploads') } as never,
+      { createReceipt: jest.fn(), assertValidReceipt: jest.fn() } as never,
     );
 
     beforeEach(() => {

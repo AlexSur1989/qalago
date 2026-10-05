@@ -43,6 +43,7 @@ function VipCreativeContent() {
   );
   const [targetUrl, setTargetUrl] = useState('');
   const [imageUrl, setImageUrl] = useState<string | null>(business.coverImageUrl ?? null);
+  const [imageUploadToken, setImageUploadToken] = useState<string | undefined>();
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,8 +62,9 @@ function VipCreativeContent() {
     setUploading(true);
     setError(null);
     try {
-      const result = await ownerApi.uploadImage(token, file);
+      const result = await ownerApi.uploadImage(token, file, business.id);
       setImageUrl(result.url);
+      setImageUploadToken(result.uploadToken);
     } catch (err) {
       setError(parseApiError(locale, err));
     } finally {
@@ -83,6 +85,7 @@ function VipCreativeContent() {
         businessId: business.id,
         type: 'BANNER',
         imageUrl: imageUrl ?? undefined,
+        ...(imageUploadToken ? { uploadToken: imageUploadToken } : {}),
         title: title.trim(),
         description: description.trim() || undefined,
         buttonText: buttonText.trim() || undefined,

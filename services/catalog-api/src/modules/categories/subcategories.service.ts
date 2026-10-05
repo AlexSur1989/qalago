@@ -11,12 +11,18 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { CreateSubcategoryDto, UpdateSubcategoryDto } from './dto/subcategory.dto';
 import { presentSubcategory } from './category-presenter.util';
+import { ConfigService } from '@nestjs/config';
+import { validateOwnedMediaUrlWrite } from '../../common/media-upload/media-upload-write.util';
+import { UploadReceiptService } from '../../common/media-upload/upload-receipt.service';
+import { PLATFORM_CATALOG_UPLOAD_CONTEXT } from '../../common/media-upload/upload-context.constants';
 
 @Injectable()
 export class SubcategoriesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly config: ConfigService,
+    private readonly uploadReceipts: UploadReceiptService,
   ) {}
 
   async listPublicByCategory(categoryId: string) {
@@ -55,6 +61,16 @@ export class SubcategoriesService {
 
   async create(user: AuthUser, dto: CreateSubcategoryDto) {
     this.assertTaxonomyAdmin(user);
+    if (dto.icon) {
+      validateOwnedMediaUrlWrite(
+        this.config,
+        this.uploadReceipts,
+        user,
+        dto.icon,
+        dto.uploadToken,
+        { kind: 'platform', uploadContext: PLATFORM_CATALOG_UPLOAD_CONTEXT },
+      );
+    }
     const category = await this.prisma.category.findUnique({ where: { id: dto.categoryId } });
     if (!category) {
       throw new NotFoundException('Category not found');
@@ -92,9 +108,20 @@ export class SubcategoriesService {
     if (!existing) {
       throw new NotFoundException('Subcategory not found');
     }
+    if (dto.icon !== undefined && dto.icon !== '') {
+      validateOwnedMediaUrlWrite(
+        this.config,
+        this.uploadReceipts,
+        user,
+        dto.icon,
+        dto.uploadToken,
+        { kind: 'platform', uploadContext: PLATFORM_CATALOG_UPLOAD_CONTEXT },
+      );
+    }
+    const { uploadToken: _t, ...patch } = dto;
     return this.prisma.subcategory.update({
       where: { id },
-      data: dto,
+      data: patch,
     });
   }
 

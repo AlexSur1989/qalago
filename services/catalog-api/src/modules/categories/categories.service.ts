@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AuditAction, AuditResourceType, UserRole } from '@prisma/client';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { AuthUser } from '../../common/types/jwt-payload.type';
@@ -8,6 +9,9 @@ import { changedFieldsFromDto } from '../audit-log/audit-log.util';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
 import { presentCategory } from './category-presenter.util';
 import { normalizeCategoryNames } from './category-normalize.util';
+import { validateOwnedMediaUrlWrite } from '../../common/media-upload/media-upload-write.util';
+import { UploadReceiptService } from '../../common/media-upload/upload-receipt.service';
+import { PLATFORM_CATALOG_UPLOAD_CONTEXT } from '../../common/media-upload/upload-context.constants';
 
 type CategoryRecord = {
   id: string;
@@ -33,6 +37,8 @@ export class CategoriesService {
     private readonly prisma: PrismaService,
     private readonly cityScope: CityScopeService,
     private readonly auditLog: AuditLogService,
+    private readonly config: ConfigService,
+    private readonly uploadReceipts: UploadReceiptService,
   ) {}
 
   async findAll(params?: { citySlug?: string }) {
@@ -158,10 +164,21 @@ export class CategoriesService {
   }
 
   async create(actor: AuthUser, dto: CreateCategoryDto) {
+    if (dto.icon) {
+      validateOwnedMediaUrlWrite(
+        this.config,
+        this.uploadReceipts,
+        actor,
+        dto.icon,
+        dto.uploadToken,
+        { kind: 'platform', uploadContext: PLATFORM_CATALOG_UPLOAD_CONTEXT },
+      );
+    }
+    const { uploadToken: _t, ...createData } = dto;
     const names = normalizeCategoryNames(dto);
     const category = await this.prisma.category.create({
       data: {
-        ...dto,
+        ...createData,
         ...names,
       },
     });
@@ -177,15 +194,26 @@ export class CategoriesService {
 
   async update(actor: AuthUser, id: string, dto: UpdateCategoryDto) {
     await this.ensureExists(id);
+    if (dto.icon !== undefined && dto.icon !== '') {
+      validateOwnedMediaUrlWrite(
+        this.config,
+        this.uploadReceipts,
+        actor,
+        dto.icon,
+        dto.uploadToken,
+        { kind: 'platform', uploadContext: PLATFORM_CATALOG_UPLOAD_CONTEXT },
+      );
+    }
     const existing = await this.prisma.category.findUniqueOrThrow({ where: { id } });
     const names = normalizeCategoryNames({
       title: dto.title ?? dto.nameRu ?? existing.title,
       nameRu: dto.nameRu ?? dto.title ?? existing.nameRu,
       nameKk: dto.nameKk ?? existing.nameKk,
     });
+    const { uploadToken: _t, ...patch } = dto;
     const updated = await this.prisma.category.update({
       where: { id },
-      data: { ...dto, ...names },
+      data: { ...patch, ...names },
     });
     await this.auditLog.record({
       actor,

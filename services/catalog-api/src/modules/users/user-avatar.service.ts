@@ -7,6 +7,8 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { RateLimitStoreService } from '../../common/services/rate-limit-store.service';
 import { RateLimitPolicy } from '../../common/services/rate-limit-policy';
 import { normalizeUserAvatar } from '../../common/utils/avatar-image.util';
+import { MediaUploadErrorCode, mediaUploadBadRequest } from '../../common/media-upload/media-upload.errors';
+import { tryDeleteLocalUploadIfUnreferenced } from '../../common/media-upload/media-url-reference.util';
 
 @Injectable()
 export class UserAvatarService {
@@ -34,7 +36,10 @@ export class UserAvatarService {
       await this.rateLimits.assertAllowed(key, 10, windowMs);
       await this.rateLimits.recordHit(key, windowMs);
     } catch {
-      throw new BadRequestException('Avatar upload quota exceeded');
+      throw mediaUploadBadRequest(
+        MediaUploadErrorCode.UPLOAD_LIMIT_REACHED,
+        'Avatar upload quota exceeded',
+      );
     }
 
     const user = await this.prisma.user.findUnique({
@@ -79,8 +84,8 @@ export class UserAvatarService {
       throw e;
     }
 
-    if (previousUrl?.startsWith('/uploads/')) {
-      this.tryDeleteUploadFile(previousUrl);
+    if (previousUrl) {
+      await tryDeleteLocalUploadIfUnreferenced(this.prisma, this.getUploadDir(), previousUrl);
     }
 
     return { avatarUrl };
@@ -99,22 +104,9 @@ export class UserAvatarService {
       where: { id: userId },
       data: { avatarUrl: null },
     });
-    if (previousUrl?.startsWith('/uploads/')) {
-      this.tryDeleteUploadFile(previousUrl);
+    if (previousUrl) {
+      await tryDeleteLocalUploadIfUnreferenced(this.prisma, this.getUploadDir(), previousUrl);
     }
     return { success: true };
-  }
-
-  private tryDeleteUploadFile(url: string) {
-    const base = url.replace(/^\/uploads\//, '');
-    if (base.includes('..') || base.includes('/') || base.includes('\\')) {
-      return;
-    }
-    const filepath = join(this.getUploadDir(), base);
-    try {
-      unlinkSync(filepath);
-    } catch {
-      /* orphan cleanup deferred */
-    }
   }
 }

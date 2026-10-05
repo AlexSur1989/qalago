@@ -4,6 +4,11 @@ export class AttachBusinessImageDto {
   @IsString()
   imageUrl!: string;
 
+  /** Required for new canonical WebP uploads (from POST /uploads response). */
+  @IsOptional()
+  @IsString()
+  uploadToken?: string;
+
   @IsOptional()
   asCover?: boolean;
 

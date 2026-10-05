@@ -2,6 +2,7 @@ import { CategoriesService } from './categories.service';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
+import { createTestUploadReceiptService } from '../../test-utils/mock-upload-receipt';
 
 describe('CategoriesService', () => {
   const prisma = {
@@ -24,7 +25,13 @@ describe('CategoriesService', () => {
     resolveCityId: jest.fn().mockResolvedValue('city-1'),
   } as unknown as CityScopeService;
 
-  const service = new CategoriesService(prisma, cityScope, asAuditLogService(createMockAuditLog()));
+  const service = new CategoriesService(
+    prisma,
+    cityScope,
+    asAuditLogService(createMockAuditLog()),
+    { get: jest.fn().mockReturnValue('./uploads') } as never,
+    createTestUploadReceiptService(),
+  );
 
   beforeEach(() => {
     jest.clearAllMocks();

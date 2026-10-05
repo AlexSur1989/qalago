@@ -72,6 +72,8 @@ describe('Stage 6.12A.7.8.2 — branch availability management', () => {
       menuAccess,
       planLimits,
       asAuditLogService(createMockAuditLog()),
+      { get: jest.fn().mockReturnValue('./uploads') } as never,
+      { createReceipt: jest.fn(), assertValidReceipt: jest.fn() } as never,
     );
   }
 

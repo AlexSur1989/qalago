@@ -48,6 +48,10 @@ export class CreateServiceItemDto {
   imageUrl?: string;
 
   @IsOptional()
+  @IsString()
+  uploadToken?: string;
+
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
   sortOrder?: number;
@@ -90,6 +94,10 @@ export class UpdateServiceItemDto {
   @IsOptional()
   @IsString()
   imageUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  uploadToken?: string;
 
   @IsOptional()
   @Transform(({ value }) => value === true || value === 'true')

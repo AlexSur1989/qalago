@@ -207,14 +207,17 @@ export const adminApi = {  sendCode: (phone: string) =>
     const base = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3002/api/v1';
     const form = new FormData();
     form.append('file', file);
-    const res = await fetch(`${base}/uploads`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: form,
-    });
+    const res = await fetch(
+      `${base}/uploads?uploadContext=platform-catalog`,
+      {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      },
+    );
     const text = await res.text();
     if (!res.ok) throw new Error(text || res.statusText);
-    return JSON.parse(text) as { url: string };
+    return JSON.parse(text) as { url: string; uploadToken: string };
   },
 
   deleteCategory: (token: string, id: string) =>

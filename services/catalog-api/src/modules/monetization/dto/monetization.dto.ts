@@ -195,6 +195,10 @@ export class CreateCreativeDto {
   @IsString()
   imageUrl?: string;
 
+  @IsOptional()
+  @IsString()
+  uploadToken?: string;
+
   @IsString()
   @Length(2, 200)
   title!: string;
@@ -228,6 +232,10 @@ export class UpdateCreativeDto {
   @IsOptional()
   @IsString()
   imageUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  uploadToken?: string;
 
   @IsOptional()
   @IsString()

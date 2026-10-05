@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   AdModerationStatus,
   AuditAction,
@@ -22,6 +23,8 @@ import {
 } from './errors/monetization.errors';
 import { MonetizationAccessService } from './monetization-access.service';
 import { assertCreativeSubmittable } from './utils/creative-submit.util';
+import { validateOwnedMediaUrlWrite } from '../../common/media-upload/media-upload-write.util';
+import { UploadReceiptService } from '../../common/media-upload/upload-receipt.service';
 
 @Injectable()
 export class CreativeService {
@@ -31,10 +34,22 @@ export class CreativeService {
     private readonly provisioning: CampaignProvisioningService,
     private readonly auditLog: AuditLogService,
     private readonly notifications: NotificationsService,
+    private readonly config: ConfigService,
+    private readonly uploadReceipts: UploadReceiptService,
   ) {}
 
   async create(user: AuthUser, dto: CreateCreativeDto) {
     await this.access.assertCanManageBusiness(user, dto.businessId);
+    if (dto.imageUrl) {
+      validateOwnedMediaUrlWrite(
+        this.config,
+        this.uploadReceipts,
+        user,
+        dto.imageUrl,
+        dto.uploadToken,
+        { kind: 'business', businessId: dto.businessId },
+      );
+    }
 
     const creative = await this.prisma.adCreative.create({
       data: {
@@ -175,10 +190,22 @@ export class CreativeService {
       );
     }
 
+    if (dto.imageUrl !== undefined && dto.imageUrl !== '') {
+      validateOwnedMediaUrlWrite(
+        this.config,
+        this.uploadReceipts,
+        user,
+        dto.imageUrl,
+        dto.uploadToken,
+        { kind: 'business', businessId: creative.businessId },
+      );
+    }
+
+    const { uploadToken: _uploadToken, ...patch } = dto;
     const updated = await this.prisma.adCreative.update({
       where: { id },
       data: {
-        ...dto,
+        ...patch,
         moderationStatus: AdModerationStatus.DRAFT,
         moderationComment: null,
       },

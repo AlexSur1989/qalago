@@ -12,6 +12,7 @@ import { OtpRateLimitService } from './services/otp-rate-limit.service';
 import { MfaRateLimitService } from './services/mfa-rate-limit.service';
 import { SocialAuthRateLimitService } from './services/social-auth-rate-limit.service';
 import { RateLimitStoreService } from './services/rate-limit-store.service';
+import { UploadReceiptService } from './media-upload/upload-receipt.service';
 import { ReviewAggregationService } from './services/review-aggregation.service';
 import { BusinessPrimaryLocationService } from './services/business-primary-location.service';
 import { AuditLogModule } from '../modules/audit-log/audit-log.module';
@@ -33,6 +34,7 @@ import { AuditLogModule } from '../modules/audit-log/audit-log.module';
     MfaRateLimitService,
     SocialAuthRateLimitService,
     RateLimitStoreService,
+    UploadReceiptService,
     ReviewAggregationService,
     BusinessPrimaryLocationService,
   ],
@@ -50,6 +52,7 @@ import { AuditLogModule } from '../modules/audit-log/audit-log.module';
     MfaRateLimitService,
     SocialAuthRateLimitService,
     RateLimitStoreService,
+    UploadReceiptService,
     ReviewAggregationService,
     BusinessPrimaryLocationService,
   ],

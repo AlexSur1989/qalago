@@ -38,6 +38,10 @@ export class CreateCategoryDto {
   icon?: string;
 
   @IsOptional()
+  @IsString()
+  uploadToken?: string;
+
+  @IsOptional()
   @IsInt()
   @Min(0)
   sortOrder?: number;
@@ -71,6 +75,10 @@ export class UpdateCategoryDto {
   @IsOptional()
   @IsString()
   icon?: string;
+
+  @IsOptional()
+  @IsString()
+  uploadToken?: string;
 
   @IsOptional()
   @IsInt()

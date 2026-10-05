@@ -30,6 +30,7 @@ class _VipCreativeScreenState extends ConsumerState<VipCreativeScreen> {
   final _descriptionController = TextEditingController();
   final _buttonController = TextEditingController();
   String? _imageUrl;
+  String? _imageUploadToken;
   bool _uploading = false;
   bool _saving = false;
   String? _error;
@@ -68,8 +69,17 @@ class _VipCreativeScreenState extends ConsumerState<VipCreativeScreen> {
       if (file == null) return;
       final bytes = await file.readAsBytes();
       final catalog = ref.read(catalogRepositoryProvider);
-      final url = await catalog.uploadImage(file.path, bytes, file.name);
-      setState(() => _imageUrl = url);
+      final businessId = widget.checkoutExtra['businessId'] as String;
+      final uploaded = await catalog.uploadImage(
+        file.path,
+        bytes,
+        file.name,
+        businessId: businessId,
+      );
+      setState(() {
+        _imageUrl = uploaded.url;
+        _imageUploadToken = uploaded.uploadToken;
+      });
     } catch (_) {
       setState(() => _error = context.l10n.ownerVipImageLoadFailed);
     } finally {
@@ -122,6 +132,7 @@ class _VipCreativeScreenState extends ConsumerState<VipCreativeScreen> {
         'type': 'BANNER',
         'title': title,
         if (_imageUrl != null) 'imageUrl': _imageUrl,
+        if (_imageUploadToken != null) 'uploadToken': _imageUploadToken,
         if (_descriptionController.text.trim().isNotEmpty)
           'description': _descriptionController.text.trim(),
         if (_buttonController.text.trim().isNotEmpty)

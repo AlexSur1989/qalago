@@ -31,6 +31,10 @@ export class CreateSubcategoryDto {
   icon?: string;
 
   @IsOptional()
+  @IsString()
+  uploadToken?: string;
+
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(0)
@@ -51,6 +55,10 @@ export class UpdateSubcategoryDto {
   @IsOptional()
   @IsString()
   icon?: string;
+
+  @IsOptional()
+  @IsString()
+  uploadToken?: string;
 
   @IsOptional()
   @Type(() => Number)

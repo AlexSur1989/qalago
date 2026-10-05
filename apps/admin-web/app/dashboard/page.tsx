@@ -355,8 +355,8 @@ export default function DashboardPage() {
 
   async function updateCategoryIcon(category: CategoryRow, file: File) {
     if (!token) return;
-    const { url } = await adminApi.uploadCategoryIcon(token, file);
-    await adminApi.updateCategory(token, category.id, { icon: url });
+    const { url, uploadToken } = await adminApi.uploadCategoryIcon(token, file);
+    await adminApi.updateCategory(token, category.id, { icon: url, uploadToken });
     setCategories(await adminApi.listCategoriesAdmin(token, citySlug));
   }
 
@@ -368,8 +368,8 @@ export default function DashboardPage() {
 
   async function updateSubcategoryIcon(sub: SubcategoryAdminRow, file: File) {
     if (!token || !selectedCategoryId) return;
-    const { url } = await adminApi.uploadCategoryIcon(token, file);
-    await adminApi.updateSubcategoryAdmin(token, sub.id, { icon: url });
+    const { url, uploadToken } = await adminApi.uploadCategoryIcon(token, file);
+    await adminApi.updateSubcategoryAdmin(token, sub.id, { icon: url, uploadToken });
     setSubcategories(await adminApi.listSubcategoriesAdmin(token, selectedCategoryId));
   }
 

@@ -52,6 +52,11 @@ import { HomeConfigModule } from './modules/home-config/home-config.module';
         {
           rootPath: join(process.cwd(), config.get<string>('app.uploadDir', './uploads')),
           serveRoot: '/uploads',
+          serveStaticOptions: {
+            setHeaders: (res) => {
+              res.setHeader('X-Content-Type-Options', 'nosniff');
+            },
+          },
         },
       ],
     }),

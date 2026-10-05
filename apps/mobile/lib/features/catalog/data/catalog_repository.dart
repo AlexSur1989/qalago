@@ -871,30 +871,41 @@ class CatalogRepository {
     await _dio.delete('/promotions/$id');
   }
 
-  Future<String> uploadImage(
+  Future<({String url, String uploadToken})> uploadImage(
     String filePath,
     List<int> bytes,
-    String filename,
-  ) async {
+    String filename, {
+    required String businessId,
+  }) async {
     final formData = FormData.fromMap({
       'file': MultipartFile.fromBytes(bytes, filename: filename),
     });
     final response = await _dio.post(
       '/uploads',
+      queryParameters: {'businessId': businessId},
       data: formData,
       options: Options(contentType: 'multipart/form-data'),
     );
-    return (response.data as Map<String, dynamic>)['url'] as String;
+    final data = response.data as Map<String, dynamic>;
+    return (
+      url: data['url'] as String,
+      uploadToken: data['uploadToken'] as String,
+    );
   }
 
   Future<void> attachBusinessImage({
     required String businessId,
     required String imageUrl,
+    required String uploadToken,
     bool asCover = true,
   }) async {
     await _dio.post(
       '/uploads/business/$businessId',
-      data: {'imageUrl': imageUrl, 'asCover': asCover},
+      data: {
+        'imageUrl': imageUrl,
+        'uploadToken': uploadToken,
+        'asCover': asCover,
+      },
     );
   }
 

@@ -46,6 +46,8 @@ describe('ServiceItemsService — multilingual PATCH (Stage 6.10B.6)', () => {
       menuAccess,
       planLimits,
       asAuditLogService(auditLog),
+      { get: jest.fn().mockReturnValue('./uploads') } as never,
+      { createReceipt: jest.fn(), assertValidReceipt: jest.fn() } as never,
     );
     return { service, update, menuAccess };
   }

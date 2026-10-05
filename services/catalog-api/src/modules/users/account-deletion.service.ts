@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   BusinessApplicationStatus,
   BusinessMembershipRole,
@@ -17,6 +18,7 @@ import { AuthSessionService } from '../auth/auth-session.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { AuditAction, AuditResourceType } from '@prisma/client';
 import { SafetyErrorCode } from '../safety/safety-errors';
+import { tryDeleteLocalUploadIfUnreferenced } from '../../common/media-upload/media-url-reference.util';
 export type AccountDeletionResult = {
   success: true;
   message: string;
@@ -29,6 +31,7 @@ export class AccountDeletionService {
     private readonly authIdentity: AuthIdentityService,
     private readonly authSession: AuthSessionService,
     private readonly auditLog: AuditLogService,
+    private readonly config: ConfigService,
   ) {}
 
   async deleteOwnAccount(userId: string): Promise<AccountDeletionResult> {
@@ -39,6 +42,7 @@ export class AccountDeletionService {
         phone: true,
         isActive: true,
         role: true,
+        avatarUrl: true,
       },
     });
     if (!user) {
@@ -135,6 +139,12 @@ export class AccountDeletionService {
       targetUserId: userId,
       metadata: { role: user.role },
     });
+
+    const previousAvatar = user.avatarUrl;
+    if (previousAvatar) {
+      const uploadDir = this.config.get<string>('app.uploadDir', './uploads');
+      await tryDeleteLocalUploadIfUnreferenced(this.prisma, uploadDir, previousAvatar);
+    }
 
     return {
       success: true,

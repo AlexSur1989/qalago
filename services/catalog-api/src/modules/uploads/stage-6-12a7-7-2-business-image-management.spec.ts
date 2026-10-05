@@ -1,4 +1,7 @@
 import { randomBytes } from 'crypto';
+import { mkdtempSync, writeFileSync, rmSync } from 'fs';
+import { join } from 'path';
+import { tmpdir } from 'os';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaClient, UserRole } from '@prisma/client';
 import { asBusinessAccessService, createMockBusinessAccess } from '../../test-utils/mock-business-access';
@@ -9,6 +12,24 @@ import {
   createMockReviewAggregation,
 } from '../../test-utils/mock-review-aggregation';
 import { UploadsService } from './uploads.service';
+import { createTestUploadReceiptService } from '../../test-utils/mock-upload-receipt';
+import { AuthUser } from '../../common/types/jwt-payload.type';
+
+/** Canonical local upload paths (6.16U.1 attach requires UUID + on-disk file). */
+const UPLOAD_FIXTURE = {
+  shared: '/uploads/550e8400-e29b-41d4-a716-446655440001.webp',
+  branch: '/uploads/550e8400-e29b-41d4-a716-446655440002.webp',
+  bad: '/uploads/550e8400-e29b-41d4-a716-446655440099.webp',
+  cover: '/uploads/550e8400-e29b-41d4-a716-446655440003.webp',
+  bonly: '/uploads/550e8400-e29b-41d4-a716-446655440004.webp',
+  coverA: '/uploads/550e8400-e29b-41d4-a716-446655440005.webp',
+  branchOnly: '/uploads/550e8400-e29b-41d4-a716-446655440006.webp',
+  sharedB: '/uploads/550e8400-e29b-41d4-a716-446655440007.webp',
+  x: '/uploads/550e8400-e29b-41d4-a716-446655440008.webp',
+  listShared: '/uploads/550e8400-e29b-41d4-a716-446655440009.webp',
+  listBranch: '/uploads/550e8400-e29b-41d4-a716-44665544000a.webp',
+  keep: '/uploads/550e8400-e29b-41d4-a716-44665544000b.webp',
+} as const;
 
 describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () => {
   const prisma = new PrismaClient();
@@ -16,8 +37,32 @@ describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () =>
   let skip = false;
   let cityId = '';
   let categoryId = '';
+  let uploadDir = '';
+  const receiptService = createTestUploadReceiptService();
+
+  function receiptFor(user: AuthUser, businessId: string, url: string) {
+    return receiptService.createReceipt(user, url, { kind: 'business', businessId });
+  }
+
+  async function attachWithReceipt(
+    svc: UploadsService,
+    user: AuthUser,
+    businessId: string,
+    url: string,
+    options: { asCover?: boolean; locationId?: string } = {},
+  ) {
+    return svc.attachToBusiness(user, businessId, url, {
+      ...options,
+      uploadToken: receiptFor(user, businessId, url),
+    });
+  }
 
   beforeAll(async () => {
+    uploadDir = mkdtempSync(join(tmpdir(), 'qalago-a772-upload-'));
+    for (const url of Object.values(UPLOAD_FIXTURE)) {
+      const name = url.replace(/^\/uploads\//, '');
+      writeFileSync(join(uploadDir, name), 'webp-fixture');
+    }
     try {
       await prisma.$connect();
       const city = await prisma.city.findFirst({ where: { slug: 'uralsk' }, select: { id: true } });
@@ -34,13 +79,14 @@ describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () =>
 
   afterAll(async () => {
     await prisma.$disconnect();
+    if (uploadDir) rmSync(uploadDir, { recursive: true, force: true });
   });
 
   function buildUploadsService(
     businessAccess = createMockBusinessAccess({ ownerId: FIXTURE_OWNER_ID }),
   ) {
     return new UploadsService(
-      { get: jest.fn().mockReturnValue('./uploads') } as never,
+      { get: jest.fn().mockReturnValue(uploadDir) } as never,
       prisma as never,
       { assertCanAddPhoto: jest.fn().mockResolvedValue(undefined) } as never,
       asBusinessAccessService(businessAccess),
@@ -49,6 +95,7 @@ describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () =>
         assertAllowed: jest.fn().mockResolvedValue(undefined),
         recordHit: jest.fn().mockResolvedValue(undefined),
       } as never,
+      receiptService,
     );
   }
 
@@ -112,7 +159,7 @@ describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () =>
   it('A — attach shared → locationId null', async () => {
     await withBusinessFixture(async ({ businessId, user }) => {
       const svc = buildUploadsService();
-      const row = await svc.attachToBusiness(user, businessId, '/uploads/shared.jpg');
+      const row = await attachWithReceipt(svc, user, businessId, UPLOAD_FIXTURE.shared);
       expect(row.locationId).toBeNull();
     });
   });
@@ -120,7 +167,7 @@ describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () =>
   it('B — attach own branch → locationId stored', async () => {
     await withBusinessFixture(async ({ businessId, branchId, user }) => {
       const svc = buildUploadsService();
-      const row = await svc.attachToBusiness(user, businessId, '/uploads/branch.jpg', {
+      const row = await attachWithReceipt(svc, user, businessId, UPLOAD_FIXTURE.branch, {
         locationId: branchId,
       });
       expect(row.locationId).toBe(branchId);
@@ -131,7 +178,7 @@ describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () =>
     await withBusinessFixture(async ({ businessId, otherBranchId, user }) => {
       const svc = buildUploadsService();
       await expect(
-        svc.attachToBusiness(user, businessId, '/uploads/bad.jpg', {
+        attachWithReceipt(svc, user, businessId, UPLOAD_FIXTURE.bad, {
           locationId: otherBranchId,
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
@@ -142,7 +189,7 @@ describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () =>
     await withBusinessFixture(async ({ businessId, user }) => {
       const svc = buildUploadsService();
       await expect(
-        svc.attachToBusiness(user, businessId, '/uploads/bad.jpg', {
+        attachWithReceipt(svc, user, businessId, UPLOAD_FIXTURE.bad, {
           locationId: 'does-not-exist',
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
@@ -153,7 +200,7 @@ describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () =>
     await withBusinessFixture(async ({ businessId, branchId, user }) => {
       const svc = buildUploadsService();
       await expect(
-        svc.attachToBusiness(user, businessId, '/uploads/bad.jpg', {
+        attachWithReceipt(svc, user, businessId, UPLOAD_FIXTURE.bad, {
           locationId: branchId,
           asCover: true,
         }),
@@ -164,19 +211,19 @@ describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () =>
   it('F — shared + asCover=true → sets Business.coverImageUrl', async () => {
     await withBusinessFixture(async ({ businessId, user }) => {
       const svc = buildUploadsService();
-      await svc.attachToBusiness(user, businessId, '/uploads/cover.jpg', { asCover: true });
+      await attachWithReceipt(svc, user, businessId, UPLOAD_FIXTURE.cover, { asCover: true });
       const business = await prisma.business.findUnique({
         where: { id: businessId },
         select: { coverImageUrl: true },
       });
-      expect(business?.coverImageUrl).toBe('/uploads/cover.jpg');
+      expect(business?.coverImageUrl).toBe(UPLOAD_FIXTURE.cover);
     });
   });
 
   it('G — set-cover branch image → rejected', async () => {
     await withBusinessFixture(async ({ businessId, branchId, user }) => {
       const svc = buildUploadsService();
-      const branch = await svc.attachToBusiness(user, businessId, '/uploads/bonly.jpg', {
+      const branch = await attachWithReceipt(svc, user, businessId, UPLOAD_FIXTURE.bonly, {
         locationId: branchId,
       });
       await expect(svc.setBusinessCover(user, businessId, branch.id)).rejects.toBeInstanceOf(
@@ -188,20 +235,20 @@ describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () =>
   it('H — delete brand cover → replacement shared only', async () => {
     await withBusinessFixture(async ({ businessId, branchId, user }) => {
       const svc = buildUploadsService();
-      const cover = await svc.attachToBusiness(user, businessId, '/uploads/cover-a.jpg', {
+      const cover = await attachWithReceipt(svc, user, businessId, UPLOAD_FIXTURE.coverA, {
         asCover: true,
       });
-      await svc.attachToBusiness(user, businessId, '/uploads/branch-only.jpg', {
+      await attachWithReceipt(svc, user, businessId, UPLOAD_FIXTURE.branchOnly, {
         locationId: branchId,
       });
-      const shared2 = await svc.attachToBusiness(user, businessId, '/uploads/shared-b.jpg');
+      const shared2 = await attachWithReceipt(svc, user, businessId, UPLOAD_FIXTURE.sharedB);
       await svc.deleteBusinessImage(user, businessId, cover.id);
       const business = await prisma.business.findUnique({
         where: { id: businessId },
         select: { coverImageUrl: true },
       });
-      expect(business?.coverImageUrl).toBe('/uploads/shared-b.jpg');
-      expect(business?.coverImageUrl).not.toBe('/uploads/branch-only.jpg');
+      expect(business?.coverImageUrl).toBe(UPLOAD_FIXTURE.sharedB);
+      expect(business?.coverImageUrl).not.toBe(UPLOAD_FIXTURE.branchOnly);
     });
   });
 
@@ -214,7 +261,7 @@ describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () =>
         svc.attachToBusiness(
           { id: 'x', sub: 'x', role: UserRole.BUSINESS, phone: '+1' },
           businessId,
-          '/uploads/x.jpg',
+          UPLOAD_FIXTURE.x,
         ),
       ).rejects.toBeInstanceOf(ForbiddenException);
     });
@@ -223,15 +270,15 @@ describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () =>
   it('management list — all / brand / branch filters', async () => {
     await withBusinessFixture(async ({ businessId, branchId, user }) => {
       const svc = buildUploadsService();
-      await svc.attachToBusiness(user, businessId, '/uploads/list-shared.jpg');
-      await svc.attachToBusiness(user, businessId, '/uploads/list-branch.jpg', {
+      await attachWithReceipt(svc, user, businessId, UPLOAD_FIXTURE.listShared);
+      await attachWithReceipt(svc, user, businessId, UPLOAD_FIXTURE.listBranch, {
         locationId: branchId,
       });
       const all = await svc.listBusinessImages(user, businessId, { scope: 'all' });
       expect(all.length).toBeGreaterThanOrEqual(2);
       const brand = await svc.listBusinessImages(user, businessId, { scope: 'brand' });
       expect(brand.every((r) => r.locationId == null)).toBe(true);
-      expect(brand.some((r) => r.imageUrl === '/uploads/list-shared.jpg')).toBe(true);
+      expect(brand.some((r) => r.imageUrl === UPLOAD_FIXTURE.listShared)).toBe(true);
       const branch = await svc.listBusinessImages(user, businessId, { locationId: branchId });
       expect(branch.every((r) => r.locationId === branchId)).toBe(true);
       await expect(
@@ -243,7 +290,7 @@ describe('Stage 6.12A.7.7.2 — business image scope + public moderation', () =>
   it('M — cross-business delete rejected', async () => {
     await withBusinessFixture(async ({ businessId, otherBusinessId, user }) => {
       const svc = buildUploadsService();
-      const image = await svc.attachToBusiness(user, businessId, '/uploads/keep.jpg');
+      const image = await attachWithReceipt(svc, user, businessId, UPLOAD_FIXTURE.keep);
       await expect(
         svc.deleteBusinessImage(user, otherBusinessId, image.id),
       ).rejects.toBeInstanceOf(NotFoundException);

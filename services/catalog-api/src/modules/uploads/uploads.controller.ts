@@ -38,8 +38,9 @@ export class UploadsController {
     @CurrentUser() user: AuthUser,
     @UploadedFile() file: Express.Multer.File,
     @Query('businessId') businessId?: string,
+    @Query('uploadContext') uploadContext?: string,
   ) {
-    return this.uploadsService.saveFileForUser(user, file, businessId);
+    return this.uploadsService.saveFileForUser(user, file, { businessId, uploadContext });
   }
 
   @Post('business/:businessId')
@@ -51,6 +52,7 @@ export class UploadsController {
     return this.uploadsService.attachToBusiness(user, businessId, dto.imageUrl, {
       asCover: dto.asCover ?? false,
       locationId: dto.locationId,
+      uploadToken: dto.uploadToken,
     });
   }
 

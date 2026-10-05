@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AuditAction, AuditResourceType, ServiceItem } from '@prisma/client';
 import { PlanLimitsService } from '../../common/services/plan-limits.service';
 import { sortCatalogItems } from '../../common/utils/catalog-sort.util';
@@ -18,6 +19,8 @@ import {
 } from './dto/service-item.dto';
 import { normalizeOptionalLocaleText } from '../../common/localized-content';
 import { MenuAccessService } from './menu-access.service';
+import { validateOwnedMediaUrlWrite } from '../../common/media-upload/media-upload-write.util';
+import { UploadReceiptService } from '../../common/media-upload/upload-receipt.service';
 
 type ManageServiceItem = ServiceItem & {
   branchAvailability: ReturnType<typeof encodeBranchAvailabilityFromLocationIds>;
@@ -30,6 +33,8 @@ export class ServiceItemsService {
     private readonly menuAccess: MenuAccessService,
     private readonly planLimits: PlanLimitsService,
     private readonly auditLog: AuditLogService,
+    private readonly config: ConfigService,
+    private readonly uploadReceipts: UploadReceiptService,
   ) {}
 
   async findByBusiness(query: ListServiceItemsQueryDto) {
@@ -63,7 +68,17 @@ export class ServiceItemsService {
     if (dto.groupId) {
       await this.menuAccess.assertGroupForBusiness(dto.groupId, dto.businessId);
     }
-    const { branchAvailability, ...itemFields } = dto;
+    const { branchAvailability, uploadToken, ...itemFields } = dto;
+    if (itemFields.imageUrl) {
+      validateOwnedMediaUrlWrite(
+        this.config,
+        this.uploadReceipts,
+        user,
+        itemFields.imageUrl,
+        uploadToken,
+        { kind: 'business', businessId: dto.businessId },
+      );
+    }
 
     const item = await this.prisma.$transaction(async (tx) => {
       const created = await tx.serviceItem.create({
@@ -111,11 +126,23 @@ export class ServiceItemsService {
     const { groupId, title, titleKk, description, descriptionKk, branchAvailability, ...rest } =
       dto;
 
+    const { uploadToken, ...restWithoutToken } = rest;
+    if (restWithoutToken.imageUrl !== undefined && restWithoutToken.imageUrl !== '') {
+      validateOwnedMediaUrlWrite(
+        this.config,
+        this.uploadReceipts,
+        user,
+        restWithoutToken.imageUrl,
+        uploadToken,
+        { kind: 'business', businessId: item.businessId },
+      );
+    }
+
     const updated = await this.prisma.$transaction(async (tx) => {
       const row = await tx.serviceItem.update({
         where: { id },
         data: {
-          ...rest,
+          ...restWithoutToken,
           ...(title !== undefined ? { title: title.trim() } : {}),
           ...(titleKk !== undefined ? { titleKk: normalizeOptionalLocaleText(titleKk) } : {}),
           ...(description !== undefined

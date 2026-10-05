@@ -138,13 +138,14 @@ export default function BusinessMediaPage() {
     setError(null);
     const scopeAtUpload = selectedScope;
     try {
-      const { url } = await ownerApi.uploadImage(token, file);
+      const { url, uploadToken } = await ownerApi.uploadImage(token, file, businessId);
       const asCover =
         isBrandMediaScope(scopeAtUpload) && images.length === 0 && canSetBusinessCover(scopeAtUpload);
       const body = buildAttachBusinessImageBody(url, scopeAtUpload, asCover);
       await ownerApi.attachBusinessImage(token, businessId, body.imageUrl, {
         asCover: body.asCover,
         locationId: body.locationId,
+        uploadToken,
       });
       await load(token, scopeAtUpload);
       e.target.value = '';

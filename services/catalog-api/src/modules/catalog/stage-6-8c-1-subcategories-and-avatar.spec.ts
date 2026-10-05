@@ -68,7 +68,12 @@ describe('Stage 6.8C.1 — subcategories and user avatar', () => {
 
   describe('SubcategoriesService auth (A,C)', () => {
     it('C: CITY_ADMIN cannot create taxonomy', async () => {
-      const service = new SubcategoriesService({} as never, {} as never);
+      const service = new SubcategoriesService(
+        {} as never,
+        {} as never,
+        { get: jest.fn().mockReturnValue('./uploads') } as never,
+        { createReceipt: jest.fn(), assertValidReceipt: jest.fn() } as never,
+      );
       await expect(
         service.create(
           { id: 'u', sub: 'u', role: UserRole.CITY_ADMIN, phone: '+1' },

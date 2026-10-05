@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { BusinessStatus, AuditAction, AuditResourceType, BusinessMembershipRole, BusinessMembershipStatus, Prisma, UserRole } from '@prisma/client';
 import { CityScopeService } from '../../common/services/city-scope.service';
 import { BusinessAccessService } from '../../common/services/business-access.service';
@@ -49,6 +50,9 @@ import {
   type BusinessSearchRelevanceRow,
 } from '../../common/utils/business-catalog-search-relevance.util';
 import { resolveBusinessAuditCityId } from '../../common/utils/business-context-city.util';
+import { validateOwnedMediaUrlWrite } from '../../common/media-upload/media-upload-write.util';
+import { UploadReceiptService } from '../../common/media-upload/upload-receipt.service';
+import { tryDeleteLocalUploadIfUnreferenced } from '../../common/media-upload/media-url-reference.util';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { isGlobalAdmin } from '../../common/utils/system-access.util';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -167,6 +171,8 @@ export class BusinessesService {
     private readonly subcategories: SubcategoriesService,
     private readonly reviewAggregation: ReviewAggregationService,
     private readonly primaryLocation: BusinessPrimaryLocationService,
+    private readonly config: ConfigService,
+    private readonly uploadReceipts: UploadReceiptService,
   ) {}
 
   /**
@@ -1374,8 +1380,27 @@ export class BusinessesService {
     const access = await this.businessAccess.resolveAccess(user, id);
     const changedKeys = changedFieldsFromDto(dto as Record<string, unknown>);
 
-    const { subcategoryIds, address, latitude: dtoLatitude, longitude: dtoLongitude, locationSource, ...businessLevelPatch } =
-      dto;
+    if (dto.coverImageUrl !== undefined && dto.coverImageUrl !== '') {
+      validateOwnedMediaUrlWrite(
+        this.config,
+        this.uploadReceipts,
+        user,
+        dto.coverImageUrl,
+        dto.uploadToken,
+        { kind: 'business', businessId: id },
+      );
+    }
+    const previousCoverUrl = business.coverImageUrl;
+
+    const {
+      subcategoryIds,
+      address,
+      latitude: dtoLatitude,
+      longitude: dtoLongitude,
+      locationSource,
+      uploadToken: _uploadToken,
+      ...businessLevelPatch
+    } = dto;
 
     const touchesPrimaryPhysical = patchTouchesPrimaryPhysicalFields(changedKeys);
     const syncContactsToPrimary = patchTouchesBusinessToPrimaryContactSync(changedKeys);
@@ -1499,6 +1524,15 @@ export class BusinessesService {
         membershipRole,
         metadata: { changedFields: hoursChanged },
       });
+    }
+
+    if (
+      dto.coverImageUrl !== undefined &&
+      previousCoverUrl &&
+      previousCoverUrl !== dto.coverImageUrl
+    ) {
+      const uploadDir = this.config.get<string>('app.uploadDir', './uploads');
+      await tryDeleteLocalUploadIfUnreferenced(this.prisma, uploadDir, previousCoverUrl);
     }
 
     return updated;

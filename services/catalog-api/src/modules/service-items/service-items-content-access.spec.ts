@@ -55,6 +55,8 @@ describe('ServiceItemsService — content access & plan limits (BIZ.5)', () => {
       menuAccess,
       planLimits,
       asAuditLogService(createMockAuditLog()),
+      { get: jest.fn().mockReturnValue('./uploads') } as never,
+      { createReceipt: jest.fn(), assertValidReceipt: jest.fn() } as never,
     );
     return { service, menuAccess, planLimits, create, findUnique, prisma };
   }
