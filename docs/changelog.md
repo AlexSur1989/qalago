@@ -9,7 +9,7 @@
 ## 2026-10-06 — Local remediation Stage 11 — CI harness + business legal wiring (PS.kz prep)
 
 - **Status:** **Partial / verified locally** — focused commits follow; not full catalog-api Jest green.
-- **Checkpoint:** `2db4684` (ps-kz-prep harness commit); auth `e6f1ecf`, legal `d42324e`, clients `512b54b`.
+- **Checkpoint:** `dd0684c` (ps-kz-prep harness); auth `e6f1ecf`, legal `d42324e`, clients `512b54b`.
 - **Summary:** **Business-web:** contextual **`PLAN_PURCHASE`** / **`AD_PURCHASE`** on plan + monetization checkout (**7/7** contextual vitest). **catalog-api Jest:** constructor mock harness patch (**220/241** suites vs **206/241** Stage 8); **consumer 463/463** retained. **Deferred:** ~**21** catalog-api spec suites (BusinessesService tail variants, OrderService, integration specs); `infra/local-backups` not committed.
 - **Next:** **Stage 12** — remaining Jest harness or **release branch** + VPS Persona A per runbook.
 

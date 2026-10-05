@@ -83,7 +83,7 @@ error; consumer **9** home/legal-route vitest drift. **`scripts/dev/_stage8-ci-s
 **Stage 10 (2026-10-06) VERIFIED:** backup/restore rehearsal **`scripts/dev/_stage10-backup-rehearsal.mjs`**
 → **`qalago_stage10_restore`** (**57** finished migrations); Cluster C restored from HEAD;
 consumer vitest **463/463**; Docker staging N/A on operator Windows.
-**Stage 11 (2026-10-06) PARTIAL:** business contextual legal wired (**7/7**); catalog-api **220/241** Jest suites; consumer **463/463**; focused commits in progress.
+**Stage 11 (2026-10-06) PARTIAL:** business contextual legal wired (**7/7**); catalog-api **220/241** Jest suites; consumer **463/463**; commits **`e6f1ecf`** → **`dd0684c`**.
 **Next agreed stage:** **Stage 12** — finish catalog-api harness or VPS Persona A on release SHA.
 
 | Field | Value |
