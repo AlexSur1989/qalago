@@ -93,9 +93,10 @@ export default function MonetizationSettingsPage() {
   async function onSelect(next: MonetizationMode) {
     if (!token || saving || next === mode) return;
     const label = MODE_OPTIONS.find((o) => o.value === next);
+    if (!label) return;
     const ok = await backofficeConfirm({
-      title: localeKk ? label?.titleKk : label?.titleRu,
-      description: localeKk ? label?.bodyKk : label?.bodyRu,
+      title: localeKk ? label.titleKk : label.titleRu,
+      description: localeKk ? label.bodyKk : label.bodyRu,
       consequence: `${confirmConsequence(next)} Изменение применяется сразу для приложений и Business Web.`,
       variant: next === MonetizationMode.NORMAL ? 'danger' : 'warning',
       confirmLabel: 'Сохранить',

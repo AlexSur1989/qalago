@@ -265,7 +265,14 @@ export const adminApi = {  sendCode: (phone: string) =>
   updateSubcategoryAdmin: (
     token: string,
     id: string,
-    data: Partial<{ nameRu: string; nameKk: string; icon: string | null; sortOrder: number; isActive: boolean }>,
+    data: Partial<{
+      nameRu: string;
+      nameKk: string;
+      icon: string | null;
+      sortOrder: number;
+      isActive: boolean;
+      uploadToken?: string;
+    }>,
   ) =>
     api<SubcategoryAdminRow>(`/admin/subcategories/${encodeURIComponent(id)}`, {
       method: 'PATCH',

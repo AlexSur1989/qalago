@@ -7,8 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../constants/app_constants.dart';
 import '../storage/auth_storage.dart';
+import 'auth_refresh_interceptor.dart';
 
-/// Incremented when API returns 401 — [authSessionGuardProvider] clears auth state.
+/// Invalidated storage generation — [authSessionGuardProvider] clears matching auth state.
 final sessionExpiredProvider = StateProvider<int>((ref) => 0);
 
 final authStorageProvider = Provider<AuthStorage>(
@@ -32,65 +33,44 @@ final dioProvider = Provider<Dio>((ref) {
     ),
   );
 
+  final refreshClient = Dio(
+    BaseOptions(
+      baseUrl: AppConstants.baseUrl,
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
+      sendTimeout: const Duration(seconds: 15),
+      headers: {'Content-Type': 'application/json'},
+    ),
+  );
+  ref.onDispose(() {
+    refreshClient.close(force: true);
+    dio.close(force: true);
+  });
+  dio.interceptors.add(
+    AuthRefreshInterceptor(
+      dio,
+      refreshClient,
+      ref.read(authStorageProvider),
+      (generation) =>
+          ref.read(sessionExpiredProvider.notifier).state = generation,
+    ),
+  );
   dio.interceptors.add(
     InterceptorsWrapper(
       onRequest: (options, handler) async {
-        final token = await ref.read(authStorageProvider).readToken();
-        if (token != null && token.isNotEmpty) {
-          options.headers['Authorization'] = 'Bearer $token';
-        }
         if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
           try {
             final info = await PackageInfo.fromPlatform();
             options.headers['X-QalaGo-App-Version'] = info.version;
             options.headers['X-QalaGo-Build-Number'] = info.buildNumber;
-            options.headers['X-QalaGo-Platform'] =
-                Platform.isIOS ? 'IOS' : 'ANDROID';
+            options.headers['X-QalaGo-Platform'] = Platform.isIOS
+                ? 'IOS'
+                : 'ANDROID';
           } catch (_) {
             // Non-fatal metadata.
           }
         }
         handler.next(options);
-      },
-      onError: (error, handler) async {
-        final status = error.response?.statusCode;
-        final path = error.requestOptions.path;
-        if (status == 401 && !path.contains('/auth/refresh')) {
-          final storage = ref.read(authStorageProvider);
-          final refresh = await storage.readRefreshToken();
-          if (refresh != null && refresh.isNotEmpty) {
-            try {
-              final refreshClient = Dio(
-                BaseOptions(
-                  baseUrl: AppConstants.baseUrl,
-                  headers: {'Content-Type': 'application/json'},
-                ),
-              );
-              final response = await refreshClient.post(
-                '/auth/refresh',
-                data: {'refreshToken': refresh},
-              );
-              final data = response.data as Map<String, dynamic>;
-              final rotated = (
-                token: data['accessToken'] as String,
-                refreshToken: data['refreshToken'] as String,
-              );
-              await storage.saveToken(rotated.token);
-              await storage.saveRefreshToken(rotated.refreshToken);
-              final req = error.requestOptions;
-              req.headers['Authorization'] = 'Bearer ${rotated.token}';
-              final clone = await dio.fetch(req);
-              return handler.resolve(clone);
-            } catch (_) {
-              await storage.clear();
-              ref.read(sessionExpiredProvider.notifier).state++;
-            }
-          } else {
-            await storage.clear();
-            ref.read(sessionExpiredProvider.notifier).state++;
-          }
-        }
-        handler.next(error);
       },
     ),
   );

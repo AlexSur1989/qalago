@@ -103,7 +103,7 @@ final cityChangeInvalidatorProvider = Provider<void>((ref) {
 final authSessionGuardProvider = Provider<void>((ref) {
   ref.listen<int>(sessionExpiredProvider, (previous, next) {
     if (previous == null || next == previous) return;
-    ref.read(authProvider.notifier).handleUnauthorized();
+    ref.read(authProvider.notifier).handleUnauthorized(expectedGeneration: next);
   });
 });
 
@@ -387,10 +387,7 @@ class AuthNotifier extends Notifier<AuthState> {
     UserModel user, {
     String? refreshToken,
   }) async {
-    await _storage.saveToken(token);
-    if (refreshToken != null && refreshToken.isNotEmpty) {
-      await _storage.saveRefreshToken(refreshToken);
-    }
+    await _storage.saveSession(token, refreshToken);
     state = AuthState(user: user, isAuthenticated: true);
     await _syncSessionCityToProfile(user);
   }
@@ -402,13 +399,13 @@ class AuthNotifier extends Notifier<AuthState> {
       // Best-effort push revoke before session ends.
     }
     final refresh = await _storage.readRefreshToken();
+    await _storage.clear();
+    clearSession();
     try {
       await _repo.logoutSession(refresh);
     } catch (_) {
       // Best-effort server revocation.
     }
-    await _storage.clear();
-    clearSession();
   }
 
   Future<void> deleteAccount() async {
@@ -422,7 +419,11 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  Future<void> handleUnauthorized() async {
+  Future<void> handleUnauthorized({int? expectedGeneration}) async {
+    if (expectedGeneration != null) {
+      if (_storage.generation == expectedGeneration) clearSession();
+      return;
+    }
     await _storage.clear();
     clearSession();
   }

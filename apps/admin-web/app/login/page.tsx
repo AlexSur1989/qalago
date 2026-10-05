@@ -127,8 +127,16 @@ function LoginPageContent() {
       if (!res.ok) throw new Error(await res.text());
       const data = (await res.json()) as { accessToken: string; user: AuthUser };
       await finishLogin(data.accessToken, data.user);
-    } catch (err) {
-      setError(String(err));
+    } catch {
+      // The server consumes the challenge before checking MFA. A failed or
+      // interrupted request must restart primary login, never reuse that challenge.
+      setMfaChallengeToken(null);
+      setMfaTotp('');
+      setRecoveryCode('');
+      setUseRecovery(false);
+      setCode('');
+      setDebugCode(null);
+      setError('Не удалось подтвердить двухфакторную защиту. Запросите новый код входа и повторите вход.');
     } finally {
       setLoading(false);
     }
