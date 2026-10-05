@@ -46,6 +46,9 @@ describe('Owner-plane security regression (BIZ.8)', () => {
         asBusinessAccessService(businessAccess),
         asAuditLogService(createMockAuditLog()),
         config,
+        { resolveAdminCityId: jest.fn(), assertCityInAdminScope: jest.fn() } as never,
+        { assertPermission: jest.fn() } as never,
+        { assertPurchasesAllowed: jest.fn() } as never,
       );
       await expect(
         service.mockCheckout(

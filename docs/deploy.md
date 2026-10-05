@@ -1,5 +1,9 @@
 # Deploy — QalaGo (MVP)
 
+**PS.kz first VPS:** step-by-step runbook + launch gates —  
+**[docs/infra/ps-kz-vps-runbook.md](./infra/ps-kz-vps-runbook.md)** and  
+**[docs/infra/external-launch-checklist.md](./infra/external-launch-checklist.md)** (2026-10-06 remediation Stage 9).
+
 ## Prerequisites
 
 - VPS with Docker + Docker Compose (Ubuntu 22.04+)

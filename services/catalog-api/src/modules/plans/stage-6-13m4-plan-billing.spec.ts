@@ -92,6 +92,7 @@ describe('6.13M.4 — plan billing foundation', () => {
       config,
       cityScope as unknown as CityScopeService,
       staffPolicy as unknown as StaffPolicyService,
+      { assertPurchasesAllowed: jest.fn() } as never,
     );
 
     return { service, prisma, tx, planLimits, notifications };
@@ -121,6 +122,7 @@ describe('6.13M.4 — plan billing foundation', () => {
       config,
       cityScope as unknown as CityScopeService,
       staffPolicy as unknown as StaffPolicyService,
+      { assertPurchasesAllowed: jest.fn() } as never,
     );
 
     await svc.mockCheckout(owner, 'b1', BusinessPlanTier.PREMIUM);

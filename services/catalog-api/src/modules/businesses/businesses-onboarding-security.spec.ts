@@ -51,6 +51,9 @@ describe('BusinessesService — onboarding security (Stage 5N.5)', () => {
       subDeps.subcategories,
       {} as never,
       primaryLocation as never,
+      /* businesses-svc-ctor-tail */
+      { get: jest.fn() } as never,
+      {} as never,
     );
 
     return { service, tx };

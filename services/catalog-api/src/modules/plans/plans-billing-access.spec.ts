@@ -70,6 +70,7 @@ describe('PlansService billing access (BIZ.7)', () => {
       config,
       { resolveAdminCityId: jest.fn(), assertCityInAdminScope: jest.fn() } as never,
       { assertPermission: jest.fn() } as never,
+      { assertPurchasesAllowed: jest.fn() } as never,
     );
 
     return { service, businessAccess, prisma };

@@ -503,6 +503,9 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
         asBusinessAccessService(createMockBusinessAccess()),
         asAuditLogService(createMockAuditLog()),
         config,
+        { resolveAdminCityId: jest.fn(), assertCityInAdminScope: jest.fn() } as never,
+        { assertPermission: jest.fn() } as never,
+        { assertPurchasesAllowed: jest.fn() } as never,
       );
 
       await plansService.setBusinessTier('b1', BusinessPlanTier.BASIC, {

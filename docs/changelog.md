@@ -6,18 +6,247 @@
 
 ---
 
+## 2026-10-06 — Local remediation Stage 11 — CI harness + business legal wiring (PS.kz prep)
+
+- **Status:** **Partial / verified locally** — focused commits follow; not full catalog-api Jest green.
+- **Checkpoint:** `2db4684` (ps-kz-prep harness commit); auth `e6f1ecf`, legal `d42324e`, clients `512b54b`.
+- **Summary:** **Business-web:** contextual **`PLAN_PURCHASE`** / **`AD_PURCHASE`** on plan + monetization checkout (**7/7** contextual vitest). **catalog-api Jest:** constructor mock harness patch (**220/241** suites vs **206/241** Stage 8); **consumer 463/463** retained. **Deferred:** ~**21** catalog-api spec suites (BusinessesService tail variants, OrderService, integration specs); `infra/local-backups` not committed.
+- **Next:** **Stage 12** — remaining Jest harness or **release branch** + VPS Persona A per runbook.
+
+---
+
+## 2026-10-06 — Local remediation Stage 10 — backup rehearsal + Cluster C CI (PS.kz prep)
+
+- **Status:** **Verified (local)** — no Docker staging on Windows host; no commit requested.
+- **Checkpoint:** HEAD `cedfd984a0cd29c0b898dd80bfe21822e8d2aa6b`; Cluster B auth/MFA WIP unchanged.
+- **Summary:** **Persona A rehearsal:** `node scripts/dev/_stage10-backup-rehearsal.mjs` — `pg_dump` **`qalago_dev`** → restore **`qalago_stage10_restore`** (postgres admin + grants for **`qalago`**) — **57** finished `_prisma_migrations` rows (matches dev; **6** unfinished rows same as source). **Cluster C:** restored home/ads paths from HEAD (`home-sections-api`, layout, sponsored labels, mobile `HomeSectionType`). **Consumer vitest:** **463/463 PASS** after F.7 test updates (9 public legal segments + `LegalPackPage` privacy wiring). **Flutter analyze:** no **errors** on home slice (Cluster C parse test fixed via HEAD restore).
+- **Verification:** full `apps/consumer-web` vitest run; backup script end-to-end PASS.
+- **Deferred:** `npm run staging:up` (Docker not installed locally); catalog-api full Jest; business-web **2** contextual vitest; `before-auth.dump` restore on main DB; VPS deploy.
+- **Next:** **Stage 11** — catalog-api Jest harness / business contextual vitest triage or operator VPS provisioning per runbook.
+
+---
+
+## 2026-10-06 — Local remediation Stage 9 — VPS runbook + external launch checklist (PS.kz prep)
+
+- **Status:** **Agreed / documented** — no VPS provisioned, no production deploy, no commit requested.
+- **Checkpoint:** HEAD `cedfd984a0cd29c0b898dd80bfe21822e8d2aa6b`; working tree includes Stage 8 admin fixes.
+- **Summary:** Authored **`docs/infra/ps-kz-vps-runbook.md`** — PS.kz-oriented path: env contract, firewall, Docker prod compose, **Persona A/B** DB ([database-bootstrap.md](./infra/database-bootstrap.md)), bootstrap SUPER_ADMIN, web build env, post-deploy smoke (Google Play launch script, LAUNCH purchase denial), rollback. Authored **`docs/infra/external-launch-checklist.md`** — consolidates remediation Stages 1–9 status, PROD.2 env, DB, monetization, security, legal, Play, ops sign-off. Linked from **`docs/deploy.md`**. Synced **`database-bootstrap.md`** — `qalago_dev` **57/57** migrations.
+- **Verification:** Read-only doc review against existing PROD.2, 6.8A, 6.18L, 6.19A.1, Stage 8 CI matrix.
+- **Deferred:** Actual PS.kz purchase; PostGIS on provider; TLS automation; PROD.3 S3; Stage 8 CI full green.
+- **Next:** **Stage 10** — pre-VPS rehearsal (staging compose + backup restore drill on operator machine) or Cluster C home/ads test reconciliation — agree with operator.
+
+---
+
+## 2026-10-06 — Local remediation Stage 8 — E2E / CI slice (PS.kz prep)
+
+- **Status:** **Verified (local CI parity)** — minimal admin fixes for CI jobs; Cluster C home/ads tests still red; no commit.
+- **Checkpoint:** working tree; HEAD baseline `cedfd984a0cd29c0b898dd80bfe21822e8d2aa6b`.
+- **Summary:** Mirrored **`.github/workflows/ci.yml`** locally. **Builds PASS:** `@qalago/shared-types`, **catalog-api** (`nest build`), **consumer-web**, **business-web**, **admin-web** (fixes: `updateSubcategoryAdmin` **`uploadToken?`**, monetization settings confirm **title** guard), **ai-core**, **ai-orchestrator**. **Tests:** catalog-api **206/241** suites, **1415/1416** tests (**35** suite compile/harness drift, **1** assertion fail); consumer-web **454/463** + **`check:ui-strings` PASS**; business-web **370/374**; **ai-core PASS**. **Flutter analyze:** **1 error** (`HomeSectionType` test — Cluster C). **HTTP smoke** (`scripts/dev/_stage8-ci-smoke.mjs`): health **200**, Stage 4 auth QA **14/14**, Google Play launch script **PASS**; Stage 6 script **5/5** (Node Windows exit-code noise after success — treat as PASS). **Prisma generate:** **EPERM** if API holds engine lock (build still OK).
+- **CI gap vs green:** catalog-api full Jest, consumer **9** vitest (home/ads/legal-route expectations), business **4** vitest, Flutter home-section test — **not merge-ready** on full matrix; **all production web builds now PASS** on current tree.
+- **Deferred:** Repair `BusinessesService`/home-section test harness; consumer F.7 tests expecting 3 legal segments vs 9 post-restore; Stage 9 VPS/infra hardening doc.
+- **Next:** **Stage 9** — VPS / deploy runbook + external launch checklist (PS.kz prep).
+
+| CI job (workflow) | Local Stage 8 |
+|-------------------|---------------|
+| catalog-api build | **PASS** |
+| catalog-api test | **FAIL** (35 suites / 1 test) |
+| consumer-web test + check:ui-strings + build | **FAIL/PASS/PASS** (9 tests) |
+| business-web build | **PASS** |
+| admin-web build | **PASS** |
+| flutter-analyze | **FAIL** (1 error, Cluster C) |
+| ai-orchestrator + ai-core | **PASS** |
+| HTTP remediation smoke | **PASS** (auth + launch gate) |
+
+---
+
+## 2026-10-06 — Local remediation Stage 7.1 — Path R legal restore + DB migration (PS.kz prep)
+
+- **Status:** **Implemented / verified locally** (user-approved Path R + **`qalago_dev`** legal migration).
+- **Checkpoint:** HEAD baseline `cedfd984a0cd29c0b898dd80bfe21822e8d2aa6b` for Cluster A restore; working tree retains auth Cluster B + small SEO/mobile fixes; no commit requested.
+- **Summary:** Restored **Cluster A** paths from HEAD (safety/legal API, schema legal enums, consumer/business/mobile legal clients, shared-types legal manifest). Re-applied **`AuthSession.mfaEnrollOnly`** on schema after restore (HEAD lacked field; DB already had column). Applied **`20261004120000_stage_6_15l2_legal_document_types`** via **`migrate deploy`** as **`qalago`** — **57/57** migrations; enum now includes **`PERSONAL_DATA_CONSENT`**, **`PUBLIC_OFFER`**. **`npm run build -w @qalago/shared-types`** + **`prisma generate`**. **Legal Jest 18/18 PASS**. **Consumer `next build` PASS** (minimal fixes: `legal-ui`/`page-metadata`/`canonical` extended segment types; missing `PublicLegalRootSegment` import). **Business `next build` PASS** (Stage 6). **Flutter legal slice analyze:** no errors after ARB restore + `gen-l10n` + `AppLocalizations` import. **Business `contextual-legal.test.ts`:** **5/7 PASS**, **2 FAIL** (plan/ad page wiring assertions — UI test drift, not API restore).
+- **Verification:** `node scripts/dev/_stage7-legal-db-check.mjs` (7 enum labels + migration row); `migrate status` up to date.
+- **Deferred:** Fix 2 business-web vitest wiring tests; admin `uploadToken` DTO (Stage 3); home/ads Cluster C; production legal document **publish** rows for new types if absent in DB.
+- **Next:** **Stage 8** — E2E / broader build matrix per PS.kz prep plan.
+
+---
+
+## 2026-10-06 — Local remediation Stage 7 — Legal / 6.19A.1 reconciliation audit (PS.kz prep)
+
+- **Status:** **Verified (read-only audit)** — **no** Cluster A restore, **no** `qalago_dev` legal migration in this stage.
+- **Checkpoint:** HEAD `cedfd984a0cd29c0b898dd80bfe21822e8d2aa6b`; decision doc **`docs/architecture/6.19a1-legal-reconciliation.md`**.
+- **Summary:** Forensic three-way sync **HEAD vs working tree vs `qalago_dev`**. **Cluster A** = partial **6.15L rollback** (~14 legal-touched paths): working tree **removes** `PUBLIC_OFFER` / `PERSONAL_DATA_CONSENT` from **`schema.prisma`** and guts **`LegalService`** / contextual endpoints while **HEAD** and unchanged consumers (**`LegalPackPage`**, **`contextual-legal-acceptance`**) still require **ExtendedLegalRootSegment** / **LegalRequirementContext**. **DB** enum matches **pre-migration** state (5 values); **pending** folder **`20261004120000_stage_6_15l2_legal_document_types`** (additive enum only). **`packages/shared-types`** legal manifest partially reverted vs HEAD. **Jest:** `stage-6-15l2-legal` + `stage-6-15l2a-contextual-legal` **fail to compile** on working tree. **Recommended path R:** restore Cluster A from HEAD + apply pending legal migration (postgres if needed) **without** touching auth Cluster B — checklist in architecture doc.
+- **Verification:** `node scripts/dev/_stage7-legal-db-check.mjs`; `npx prisma migrate status` (1 pending legal); `git diff HEAD` inventory in doc.
+- **Deferred:** **Path R implementation** (requires explicit user OK for DB migrate); Path W full rollback; legal content publish for new types.
+- **Next:** **Stage 7.1 / 8** — implement **Path R** after confirmation, then E2E/CI slice per PS.kz prep plan.
+
+| Layer | vs HEAD 6.15L |
+|-------|----------------|
+| `schema.prisma` enum | **Rollback** (2 members removed in diff) |
+| `LegalService` / safety API | **Rollback** (contextual API removed) |
+| Consumer `legal-paths` | **Rollback** (9 → 3 public segments) |
+| Business `api.ts` legal client | **Rollback** (`fetchRequired` removed) |
+| PostgreSQL enum | **Pre-migration** (matches old 5 values) |
+| Pending migration | **Not applied** |
+
+---
+
+## 2026-10-06 — Local remediation Stage 6 — Monetization / launch-mode gates (PS.kz prep)
+
+- **Status:** **Verified (scoped)** on local **`qalago_dev`** + running API — purchase attempts blocked under current **LAUNCH** flags; minimal test harness fix; no commit.
+- **Checkpoint:** HEAD `cedfd984a0cd29c0b898dd80bfe21822e8d2aa6b`; **`stage-6-7b-purchase-integrity.spec.ts`** — `OrderService` mocks + `createMockMonetizationModeService`.
+- **Summary:** Jest **59** tests across **8** monetization/launch suites (**PASS**), including **6.18L** launch-mode + closure (**22**), purchase integrity, package inventory, pricing, monetization-access. **HTTP (API on `qalago_dev`):** `GET /app-config` + `/platform-features` — **`monetizationMode=LAUNCH`**, purchases off, **`launchAccessActive=true`**, **`configRevision=23`**. **`node scripts/check-google-play-launch-mode.mjs http://localhost:3002/api/v1`** → **PASS**. Admin **`GET /admin/platform-features/google-play-launch-check`** → **`pass:true`**. Live gates: **`POST /monetization/orders`** and **`POST …/plan/purchases`** → **403** **`MONETIZATION_DISABLED`**. Harness **`scripts/dev/_stage6-monetization-qa.mjs`** (**5/5**). **Note:** dev API must use **`qalago_dev`** (unset stray **`DATABASE_URL`**); local mode is **LAUNCH** (Play-ready), not **NORMAL** — flip via Admin → Monetization when testing purchases.
+- **Deferred:** Business/Mobile UI launch-mode matrix (Stage 3 build blockers); adversarial purchase spec compile drift; revert/toggle mode for NORMAL purchase smoke when needed.
+- **Next:** **Stage 7** — legal / 6.19A.1 reconciliation track (per PS.kz prep plan).
+
+| Check | Result |
+|-------|--------|
+| Launch-mode + purchase Jest (8 suites) | **PASS** (59) |
+| Google Play launch script | **PASS** (LAUNCH) |
+| Admin google-play-launch-check | **PASS** |
+| Ad order create (HTTP) | **403 MONETIZATION_DISABLED** |
+| Plan purchase create (HTTP) | **403 MONETIZATION_DISABLED** |
+| `_stage6-monetization-qa.mjs` | **PASS** (5/5) |
+
+---
+
+## 2026-10-06 — Local remediation Stage 5 — BOLA / uploads / security regression (PS.kz prep)
+
+- **Status:** **Verified (read-only gate + minimal test harness fix)** — no auth/schema/production config changes; **`qalago_dev` not migrated**.
+- **Checkpoint:** HEAD `cedfd984a0cd29c0b898dd80bfe21822e8d2aa6b`; working tree: **`owner-plane-security-regression.spec.ts`** mock aligned to `PlansService` constructor (9 deps).
+- **Summary:** Re-ran catalog-api **BOLA / upload / ownership** automated suites and Business Web **`owner-plane-security.test.ts`**. **PASS:** `owner-plane-security-regression` (**4**), `stage-6-16u1a-upload-ownership` + `stage-6-16u1-media-upload-security`, `stage-6-8b-local-security`, `ownership-claims.service`, `business-location-security`, `uploads.service` + `business-image-scope` (**26**), **`lib/owner-plane-security.test.ts` (4)**. **FAIL (compile/harness drift, not new product defects):** `businesses-membership`, `businesses-onboarding-security`, `stage-6-7qa-purchase-adversarial` — `BusinessesService` / billing mocks missing post-A.9 constructor args (same class as Stage 3 full Jest matrix). Business Web full vitest **6 failures** — **legal WIP** (`contextual-legal.test.ts`) + i18n guard noise; **out of Stage 5 scope**. **`npm audit`:** **50** vulns (**36 high**) — multer/Nest chain, Prisma/deepmerge-ts; **no blind `audit fix --force`** (per 6.8A).
+- **Read-only contract:** Upload ownership model unchanged — **`docs/security/media-upload-architecture.md`** (receipt/`uploadToken`, cross-tenant attach denial covered by **6.16U.1A** specs). IDOR pattern: membership/`BusinessAccessService` + domain `*-content-access` specs; systematic controller audit still deploy checklist debt (6.8A).
+- **Deferred:** Repair stale **`BusinessesService`** test fixtures (membership/onboarding/adversarial); dependency upgrades with Nest/multer compatibility matrix; live HTTP IDOR fuzz on local seed; Stage 6 monetization QA.
+- **Next:** **Stage 6** — monetization / launch-mode / purchase gates on local stack (per PS.kz prep plan).
+
+| Area | Result |
+|------|--------|
+| Owner-plane umbrella (BIZ.8) | **PASS** (4) |
+| Upload security + ownership (6.16U) | **PASS** (37+) |
+| Location / uploads unit specs | **PASS** (26) |
+| Ownership claims | **PASS** |
+| 6.8B local security spec | **PASS** |
+| Business Web owner-plane vitest | **PASS** (4) |
+| Membership / onboarding / purchase adversarial specs | **FAIL** (harness compile) |
+| `npm audit` | **FAIL** gate (50 vulns; triage deferred) |
+
+---
+
+## 2026-10-06 — Local remediation Stage 4 — Auth/session physical QA (PS.kz prep)
+
+- **Status:** **Verified (scoped)** on **`qalago_dev`** — session rows mutated by QA scripts/browser; no schema/migration changes; no commit.
+- **Checkpoint:** HEAD `cedfd984a0cd29c0b898dd80bfe21822e8d2aa6b`; working tree unchanged except docs + dev QA scripts.
+- **Summary:** Restarted local **catalog-api** with explicit **`qalago_dev`** (see pitfall below). HTTP harness **`scripts/dev/_stage4-auth-qa.mjs`**: **14/14 PASS** — dev-login (admin + consumer), `/users/me`, refresh rotation (**201**), replay rejection, consumer logout + refresh denial, staff **logout-all**, invalid MFA challenge rejection. **Browser:** Admin **`/login` → Platform Admin dev-login → `/dashboard` PASS** (fresh Admin dev on :3001 after killing stale process). **`+77000000005` MFA `enabled=false`** on this DB — enrollment/TOTP/recovery/two-tab/F5 MFA matrix **not re-run** here (covered in Stage 2 isolated QA); defer MFA-on fixture re-seed if full local replay needed.
+- **Operational finding:** Stale shell **`DATABASE_URL`** (Stage 2 isolated DB) caused API **500** on login despite **`mfaEnrollOnly` present on `qalago_dev`**. Documented in **`docs/infra/database-bootstrap.md`** § local dev pitfall.
+- **Verification:** `node scripts/dev/_stage4-db-check.mjs` — `qalago_dev`, column **true**, auth migration **20261006120000** applied; **1 pending legal** unchanged.
+- **Deferred:** Flutter/mobile device login QA; Business Web staff session; MFA enabled admin physical matrix on **`qalago_dev`**; two-tab refresh race in browser; Stage 5+ remediation track.
+- **Next:** **Stage 5** per PS.kz prep plan (security/BOLA/uploads — confirm scope with user) or **6.19A.1** legal reconciliation before web builds.
+
+| Check | Result |
+|-------|--------|
+| API → `qalago_dev` dev-login | **PASS** (after URL fix) |
+| Refresh / replay / logout-all | **PASS** |
+| Consumer logout + refresh deny | **PASS** |
+| Admin browser dev-login → dashboard | **PASS** |
+| MFA TOTP/enrollment on local admin | **UNVERIFIED** (`enabled=false`) |
+| Mobile physical auth | **UNVERIFIED** (not run) |
+
+---
+
+## 2026-10-06 — Local remediation Stage 3 — Builds, types & contract drift (PS.kz prep)
+
+- **Status:** **Verified (read-only gate)** — no product fixes; working tree unchanged; **`qalago_dev` not modified**.
+- **Checkpoint:** HEAD `cedfd984a0cd29c0b898dd80bfe21822e8d2aa6b`; no commit requested.
+- **Summary:** Ran monorepo build/test matrix on dirty tree mixing **auth remediation**, **legal rollback WIP**, and **home/ads WIP**. **Release blockers** are client/type drift (legal + admin upload DTO), not auth compile after `prisma generate`. Auth track: **`nest build` PASS**, auth-focused Jest **45/45 PASS**, Flutter **`auth_refresh_interceptor_test.dart` 12/12 PASS**. Packages: **`shared-types`**, **`ai-orchestrator`**, **`notification-presentation`** build **PASS** (dirty `dist/` + `tsc` config). **All three Next apps `next build` FAIL** — consumer: missing `ExtendedLegalRootSegment` export vs `LegalPackPage.tsx`; business: missing `LegalRequirementContext` in `@/lib/api`; admin: `updateSubcategoryAdmin` payload type omits `uploadToken` while dashboard passes it. **Flutter analyze:** **11 errors** (contextual legal l10n/constants vs partial rollback; `HomeSectionType.parseAndNormalizeHomeSections` test drift). **catalog-api full Jest:** **FAIL** — **40/241** suites (compile/DI: widespread `BusinessesService` / `PlansService` constructor mocks missing deps such as `cityScope`; **5** assertion failures); **201** suites / **1380** tests still pass — treat as **dirty-tree harness drift**, not isolated auth regression. **consumer-web vitest:** **45/49** files pass, **11** tests fail (legal/home paths). Root **`npm run lint`:** **FAIL** — `eslint` not on PATH for `@qalago/catalog-api` in this shell (environment **UNVERIFIED** vs CI).
+- **API / schema contract (read-only):** Working `schema.prisma` remains **mixed** (auth `mfaEnrollOnly` present; legal enum values removed in diff vs HEAD + pending `20261004120000_stage_6_15l2_legal_document_types`). Backend legal stage specs **`stage-6-15l2-legal`** / **`stage-6-15l2a-contextual-legal`** fail to compile in full run — consistent with legal WIP rollback cluster (6.19A.1).
+- **Deferred:** Reconcile legal cluster before web/mobile production builds; align admin subcategory PATCH type with upload flow; repair or quarantine stale Jest module graphs on Windows (`prisma generate` **EPERM** if API holds `query_engine-windows.dll.node` lock); full **`npm run lint`** in CI-like env; Android release build; systematic OpenAPI/DTO vs `@qalago/shared-types` diff (not exhaustive this stage).
+- **Next:** **Stage 4** (auth/MFA physical + session QA on local stack) per remediation plan; agree **6.19A.1** legal direction before **`qalago_dev`** legal migration or production branch.
+
+| Surface | Result |
+|---------|--------|
+| `@qalago/shared-types` build | **PASS** |
+| `@qalago/ai-orchestrator` build | **PASS** |
+| `@qalago/notification-presentation` build | **PASS** |
+| `@qalago/catalog-api` `nest build` | **PASS** (after client generate) |
+| `@qalago/catalog-api` Jest (full) | **FAIL** (40 suites compile/DI; 5 tests) |
+| `@qalago/catalog-api` Jest (auth subset) | **PASS** (45 tests) |
+| `@qalago/admin-web` `next build` | **FAIL** (`uploadToken` type) |
+| `@qalago/business-web` `next build` | **FAIL** (`LegalRequirementContext`) |
+| `@qalago/consumer-web` `next build` | **FAIL** (`ExtendedLegalRootSegment`) |
+| `@qalago/consumer-web` vitest | **FAIL** (11 tests / 4 files) |
+| `apps/mobile` analyze | **FAIL** (11 errors; many infos/warnings) |
+| `apps/mobile` auth refresh tests | **PASS** (12 tests) |
+| Root `npm run lint` | **FAIL** (local eslint PATH) |
+
+---
+
+## 2026-10-06 — Local remediation Stage 2 — Migrations & DB recovery (isolated DBs)
+
+- **Status:** **Verified on isolated PostgreSQL only** — **`qalago_dev` not modified** by Stage 2 deploy tests.
+- **Checkpoint:** working tree; HEAD `cedfd984a0cd29c0b898dd80bfe21822e8d2aa6b`; no commit requested.
+- **Summary:** Reproduced empty-DB **`migrate deploy` → P3018 / 42704** on `AnalyticsEventType` (first migration). Documented greenfield bootstrap (**PostGIS → `db push` at release tag → selective SQL / resolve**) in **`docs/infra/database-bootstrap.md`**. Restored **`pg_dump`/`pg_restore`** rehearsal: fresh dump from dev → `qalago_stage2_restore` (postgres restore + grants); pending **legal** migration applied successfully as **postgres** after clearing a failed attempt (`migrate resolve --rolled-back`). Restored DB then **`migrate status` up to date** (57 folders); **`mfaEnrollOnly`** and legal enum values present. Demonstrated **`mark-migrations-applied.mjs` danger**: resolve-all after HEAD `db push` marks auth applied while **`mfaEnrollOnly` column absent**.
+- **Verification:** Scenario A fail captured; Scenario B restore + legal deploy PASS on `qalago_stage2_restore`; greenfield `db push` PASS after PostGIS on `qalago_stage2_greenfield`.
+- **Deferred:** `0_baseline` migration for chain-from-empty without `db push`; apply legal to **`qalago_dev`** (operator agreement, use postgres if enum owner); rehearse **`before-auth.dump`**; main DB enum ownership hardening for app role.
+- **Next:** Stage 3 closed — see entry above; agree before touching **`qalago_dev`** legal migration.
+
+---
+
+## 2026-10-06 — Local remediation Stage 1 — Current-state audit (PS.kz prep)
+
+- **Status:** **Verified (read-only audit)** — no product fixes in this stage; documentation sync only.
+- **Checkpoint:** working tree; git HEAD `cedfd984a0cd29c0b898dd80bfe21822e8d2aa6b` (unchanged); no commit requested.
+- **Summary:** Reconciled docs, git, local DB, and running dev stack. Separated **auth/MFA remediation track** (≈25 modified + 4 untracked backend/mobile/admin files + untracked `20261006120000_auth_session_mfa_restriction` migration folder) from **unrelated legal/home/ads WIP** (≈30+ files; partial 6.15L rollback — see 6.19A.1 forensics). Confirmed auth SQL **already applied** to local `qalago_dev` (do not re-apply). `schema.prisma` in working tree is **mixed**: includes `AuthSession.mfaEnrollOnly` (matches DB) but also removes `PERSONAL_DATA_CONSENT` / `PUBLIC_OFFER` enum values (conflicts with pending legal migration and HEAD code).
+- **Verification:** `npx prisma migrate status` — **56 applied**, **1 pending** (`20261004120000_stage_6_15l2_legal_document_types`); **57** migration folders on disk (auth folder applied + registered). API `GET /health` **200**; Admin `/login` **200**; `POST /auth/dev-login` + `GET /users/me` for local ADMIN **+77000000005** **200**. Backup path documented and gitignored; **restore not rehearsed**.
+- **Confirmed deployment blocker:** empty DB `prisma migrate deploy` still fails at **`20260905120000_monetization_campaign_architecture`** (P3018 / PostgreSQL 42704 — `AnalyticsEventType` absent); historical `db push` baseline not represented in migration chain (`prisma/MIGRATIONS.md`).
+- **Deferred:** Stage 2 migration baseline + legal drift decision; Stages 3–13; commit/push; VPS; do **not** run bulk `migrate deploy` on main DB without agreed strategy.
+- **Next:** **Stage 2** — migration/bootstrap design and isolated DB proofs only (empty DB + backup restore), then agree before main DB legal migration.
+
+---
+
+## 2026-10-06 — Local login recovery — approved auth migration application
+
+- **Status:** **Implemented / verified locally**; no full release claim.
+- **Checkpoint:** working tree; HEAD `cedfd984a0cd29c0b898dd80bfe21822e8d2aa6b`, no commit requested.
+- **Summary:** with explicit approval, stopped catalog-api, created custom-format backup `services/catalog-api/backups/auth-migration-20261006-1791230992864/before-auth.dump` (ignored, 783239 bytes; archive list validated), applied exact auth migration SQL transactionally and registered it with Prisma `migrate resolve --applied`. Added MFA restriction column; revoked 106 historical staff sessions. Regenerated Prisma Client and restarted API in watch mode. No account/role/MFA-policy changes; legal migration untouched.
+- **Verification:** 56 applied migrations; auth checksum matches; legal still pending. API compilation: 0 errors; health 200; Admin BFF dev login for existing local ADMIN and authenticated `/users/me`: 200; verification session logout: 200. Backup restoration not rehearsed.
+- **Deferred:** clean-database baseline, legal drift, remaining device/reset/two-tab QA and deployment release gates.
+- **Next:** user can log in again at `http://localhost:3001/login`; further remediation stages remain separate.
+
+---
+
+## 2026-10-06 — Local remediation Stage 2 — Auth/session hardening
+
+- **Status:** **Implemented in working tree; scoped automated and isolated browser/API verification passed. Target DB application and remaining device/reset/two-tab QA pending.**
+- **Checkpoint:** no implementation commit requested; baseline `cedfd984a0cd29c0b898dd80bfe21822e8d2aa6b`.
+- **Summary:** closes Stage 1 read-only findings (MFA refresh restriction loss, unannotated-route bypass, concurrent refresh). Persisted enrollment restriction + explicit allowlist; transactional rotation/replay/family revocation serialized by user row; enrollment promotes only the verified session. Google/Apple now share primary staff policy and fail closed when consumer clients cannot complete staff MFA. Flutter coalesces refresh, bounds retries, preserves credentials on transient errors and prevents late refresh from overwriting logout/new login.
+- **Verification:** catalog-api production TypeScript check; **97 backend tests** across 11 targeted suites; **15 Admin/Business auth tests**; **17 Flutter tests** + scoped analyzer clean. Dedicated disposable **PostgreSQL 18**: migration preserves consumer sessions/revokes historical staff, MFA survives refresh, 8 rounds concurrent replay, transaction rollback, 8 rounds logout/refresh race, logout-all race. Test instance stopped. No application DB writes or external service calls.
+- **Deferred:** apply `20261006120000_auth_session_mfa_restriction` after pending-migration review (existing legal drift remains); regenerate client on target; browser/device MFA and session QA; full migration chain/full monorepo release checks. Strict replay may log out independent tabs racing refresh; social staff MFA UX remains Admin Web-only. Existing unrelated local changes preserved.
+- **Next:** agree test-environment migration application + physical auth QA; then planned builds/API-client consistency stage. VPS and other remediation stages not started.
+
+### Stage 2 follow-up — isolated browser/API and migration gate
+
+- **Status:** **Scoped browser/API QA verified; Admin MFA retry fix implemented and browser-verified. Deployment gate blocked.**
+- **Checkpoint:** working tree, no commit; HEAD remains `cedfd984a0cd29c0b898dd80bfe21822e8d2aa6b`.
+- **Summary:** separate PostgreSQL/full AppModule/Admin Web instance verified limited enrollment through F5, wrong/valid enrollment TOTP, recovery-code display, dashboard/F5, logout and next-login MFA challenge. HTTP verified enrollment allowlist, forbidden mutations/step-up/disable/recovery, persisted restriction after refresh, logout-all and unaffected consumer profile writes. Fixed login UI dead end after failed MFA: consumed challenge is discarded and primary login restarted with a clear message. Existing server single-use semantics retained.
+- **Verification:** 15 Admin auth/enrollment unit tests passed again; changed login page compiled in the isolated Next dev instance and browser regression passed. Local application DB checked read-only: 55 applied checksums match, no unfinished migrations, legal/auth migrations pending. Fresh `migrate deploy` failed at first migration with P3018 / PostgreSQL 42704 (`AnalyticsEventType` missing); no baseline is present. QA schema generated separately from current schema without auth column, then actual auth migration applied successfully. No main DB changes, real SMS/push, payments or Git writes.
+- **Deferred:** reviewed migration baseline/bootstrap strategy, legal drift resolution, main DB application, MFA admin reset/two-tab/device QA and full release builds. Raw MFA-enrollment/OTP errors remain a UI polish debt. Schema-generated QA is not migration-chain PASS.
+- **Additional QA:** after the retry fix, new OTP → fresh MFA challenge → recovery-code login succeeded in the browser. Reusing that recovery code was denied over HTTP; fresh valid TOTP login succeeded. OTP cooldown returned 429 as expected.
+- **Cleanup:** isolated API, Admin Web and PostgreSQL stopped; no listeners remain on test ports 3101/3102/55439. Focused `git diff --check` passed.
+- **Next:** planned builds/API-client consistency; agree deployment-baseline repair before VPS rehearsal. Other implementation stages not started.
+
+---
+
 ## 2026-10-05 — 6.18L.1A — Launch mode route and release gate closure
 
-- **Status:** **6.18L.1A Implemented** — docs checkpoint (see commit below).
+- **Status:** **6.18L.1A Implemented** — **Checkpoint:** `a008567`.
 - **Summary:** Direct URL / deep-link purchase UX gated on Business Web (packages detail, VIP creative, shared unavailable panel) and Mobile (product, package, confirm, VIP creative); Google Play launch check via `scripts/check-google-play-launch-mode.mjs` + `GET admin/platform-features/google-play-launch-check`; SUPER_ADMIN mode-change confirmations clarified; docs route matrix. **No** schema/migration.
 - **Deferred:** Full widget/E2E matrix; operator must run launch script against target API before Play upload.
-- **Next:** Safe focused commit of 6.18L.1 + 6.18L.1A; physical QA on deep links.
+- **Next:** Physical QA on deep links; run Google Play launch script before public release.
 
 ---
 
 ## 2026-10-05 — 6.18L.1 — Launch mode and monetization kill switch
 
-- **Status:** **6.18L.1 Implemented** (working tree; commit pending operator request).
+- **Status:** **6.18L.1 Implemented** — **Checkpoint:** `3c41920`.
 - **Summary:** Backend **MonetizationMode** (NORMAL / LAUNCH / DISABLED) from global feature flags; centralized **MonetizationModeService** and **PlanLimitsService** launch merge (MAX with paid tier); fail-closed plan/ad purchase guards (`MONETIZATION_DISABLED`); **app-config** + **platform-features** + SUPER_ADMIN Settings → Monetization; Mobile/Business Web purchase hiding and launch UX; docs `docs/monetization/6.18L-launch-mode.md`. **No** schema/migration; **no** mutation of `planTier` / `planExpiresAt` or fake payments.
 - **Deferred:** Full monorepo test matrix; physical QA across all checkout/legal paths; default prod flag flip to LAUNCH at release gate.
 - **Next:** Focused QA per 6.18L.1 test list; set LAUNCH for Google Play first release when approved.

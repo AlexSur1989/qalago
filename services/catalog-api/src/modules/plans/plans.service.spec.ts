@@ -73,6 +73,7 @@ describe('PlansService — subscription vs paid visibility (Stage 4C.1)', () => 
       config,
       { resolveAdminCityId: jest.fn(), assertCityInAdminScope: jest.fn() } as never,
       { assertPermission: jest.fn() } as never,
+      { assertPurchasesAllowed: jest.fn() } as never,
     );
     return { service, tx, prisma };
   }

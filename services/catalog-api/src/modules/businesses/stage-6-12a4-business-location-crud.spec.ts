@@ -82,6 +82,10 @@ describe('Stage 6.12A.4 — BusinessLocation management API', () => {
       subDeps.subcategories,
       {} as never,
       primaryLocation,
+
+      /* businesses-svc-ctor-tail */
+      { get: jest.fn() } as never,
+      {} as never,
     );
   }
 

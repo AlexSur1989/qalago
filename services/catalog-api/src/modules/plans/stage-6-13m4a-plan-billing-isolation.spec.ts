@@ -68,6 +68,7 @@ describe('6.13M.4A — plan billing isolation & access', () => {
       { get: jest.fn() } as unknown as ConfigService,
       { resolveAdminCityId: jest.fn(), assertCityInAdminScope: jest.fn() } as unknown as CityScopeService,
       { assertPermission: jest.fn() } as unknown as StaffPolicyService,
+      { assertPurchasesAllowed: jest.fn() } as never,
     );
     return { service, prisma, businessAccess };
   }
@@ -193,6 +194,7 @@ describe('6.13M.4A — plan billing isolation & access', () => {
       createMockInventoryReservationService(),
       { assertPermission: jest.fn() } as never,
       { buildAdminBusinessScopeWhere: jest.fn() } as never,
+      { assertPurchasesAllowed: jest.fn() } as never,
     );
 
     await orderService.confirmManualPayment(admin, 'pay-ad-1');

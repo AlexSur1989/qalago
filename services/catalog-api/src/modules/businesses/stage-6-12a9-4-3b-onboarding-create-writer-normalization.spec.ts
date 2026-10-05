@@ -92,6 +92,10 @@ describe('Stage 6.12A.9.4.3B — onboarding/create writer normalization', () => 
       subDeps.subcategories,
       {} as never,
       primaryLocation,
+
+      /* businesses-svc-ctor-tail */
+      { get: jest.fn() } as never,
+      {} as never,
     );
   }
 

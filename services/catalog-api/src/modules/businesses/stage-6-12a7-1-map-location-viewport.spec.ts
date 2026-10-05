@@ -88,6 +88,10 @@ describe('Stage 6.12A.7.1 — map forMap viewport (BusinessLocation grain)', () 
       subDeps.subcategories,
       {} as never,
       primaryLocation,
+
+      /* businesses-svc-ctor-tail */
+      { get: jest.fn() } as never,
+      {} as never,
     );
   }
 

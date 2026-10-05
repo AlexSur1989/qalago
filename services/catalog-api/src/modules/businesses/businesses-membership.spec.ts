@@ -75,6 +75,9 @@ describe('BusinessesService — membership foundation (Stage 5M.1)', () => {
       subDeps.subcategories,
       {} as never,
       primaryLocation as never,
+      /* businesses-svc-ctor-tail */
+      { get: jest.fn() } as never,
+      {} as never,
     );
 
     return { service, prisma, tx, membership, primaryLocation };

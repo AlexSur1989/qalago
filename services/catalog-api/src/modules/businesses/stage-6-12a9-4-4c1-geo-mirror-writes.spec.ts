@@ -78,6 +78,10 @@ describe('Stage 6.12A.9.4.4C1 — stop Business geo mirror writes', () => {
       subDeps.subcategories,
       {} as never,
       primaryLocation,
+
+      /* businesses-svc-ctor-tail */
+      { get: jest.fn() } as never,
+      {} as never,
     );
   }
 

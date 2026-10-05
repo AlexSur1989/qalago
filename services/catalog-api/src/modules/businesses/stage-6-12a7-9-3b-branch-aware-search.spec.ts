@@ -78,6 +78,10 @@ describe('Stage 6.12A.7.9.3B — branch-aware search', () => {
       subDeps.subcategories,
       {} as never,
       primaryLocation,
+
+      /* businesses-svc-ctor-tail */
+      { get: jest.fn() } as never,
+      {} as never,
     );
   }
 

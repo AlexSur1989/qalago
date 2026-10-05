@@ -2,7 +2,7 @@
 
 import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BusinessPlanStatus,
   PlanCatalogRow,
@@ -29,6 +29,10 @@ import { BusinessSectionAccessDenied } from '@/components/business-section-acces
 import { BUSINESS_ROUTE_ACCESS, useBusinessRouteGate } from '@/lib/use-business-route-gate';
 import type { AppLocale, UiLabels } from '@/lib/locale';
 import { planAnalytics360Label } from '@/lib/presentation';
+import {
+  ContextualLegalAcceptance,
+  type ContextualLegalAcceptanceHandle,
+} from '@/components/legal/contextual-legal-acceptance';
 import { BackofficeProgress, BackofficeSummaryCard } from '@qalago/brand/dashboards';
 import { BackofficeLoadingState } from '@qalago/brand/states';
 import {
@@ -102,6 +106,7 @@ export default function PlanPage() {
   const [checkoutTier, setCheckoutTier] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const planLegalRef = useRef<ContextualLegalAcceptanceHandle>(null);
 
   const canView = canViewPayments(access);
   const canManage = isOwner(access);
@@ -146,6 +151,8 @@ export default function PlanPage() {
     setError(null);
     setMessage(null);
     try {
+      const legalOk = (await planLegalRef.current?.ensureAccepted()) ?? true;
+      if (!legalOk) return;
       if (businessWebMockPlanCheckoutEnabled) {
         const result = await ownerApi.mockPlanCheckout(token, planStatus.businessId, tier);
         setPlanStatus(result.plan);
@@ -157,6 +164,7 @@ export default function PlanPage() {
       await load();
     } catch (err) {
       setError(parseApiError(locale, err));
+      await planLegalRef.current?.refresh();
     } finally {
       setCheckoutTier(null);
     }
@@ -322,6 +330,17 @@ export default function PlanPage() {
           )}
         </section>
       )}
+
+      {canManage && canPurchasePlans && token ? (
+        <section className="form-card" style={{ marginBottom: 16, maxWidth: 720 }}>
+          <ContextualLegalAcceptance
+            ref={planLegalRef}
+            token={token}
+            locale={locale}
+            context="PLAN_PURCHASE"
+          />
+        </section>
+      ) : null}
 
       <div className="plan-grid">
         {catalog.map((plan) => {

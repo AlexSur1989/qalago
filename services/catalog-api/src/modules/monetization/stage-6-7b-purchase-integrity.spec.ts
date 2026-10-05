@@ -22,6 +22,7 @@ import {
   createMockStaffPolicyService,
   createMockPackageSnapshotService,
 } from './test-utils/mock-order-deps-6-7c';
+import { createMockMonetizationModeService } from '../../test-utils/mock-monetization-mode';
 import {
   buildProductPurchaseIntent,
   orderMatchesPurchaseIntent,
@@ -241,7 +242,8 @@ describe('Stage 6.7B — purchase integrity core', () => {
       createMockPackageSnapshotService(),
       createMockInventoryReservationService(),
       createMockStaffPolicyService() as never,
-      { buildAdminBusinessScopeWhere: jest.fn() } as never,
+      { buildAdminBusinessScopeWhere: jest.fn(), resolveAdminCityId: jest.fn() } as never,
+      createMockMonetizationModeService() as never,
     );
 
     const user = { id: 'user-1', role: UserRole.BUSINESS, phone: '+7700', sub: 'user-1' };

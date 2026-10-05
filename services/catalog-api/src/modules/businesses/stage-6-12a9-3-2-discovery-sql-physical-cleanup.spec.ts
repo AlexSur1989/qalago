@@ -86,6 +86,10 @@ describe('Stage 6.12A.9.3.2 — discovery SQL physical read cleanup', () => {
       subDeps.subcategories,
       {} as never,
       primaryLocation,
+
+      /* businesses-svc-ctor-tail */
+      { get: jest.fn() } as never,
+      {} as never,
     );
   }
 

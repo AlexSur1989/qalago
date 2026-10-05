@@ -122,6 +122,9 @@ describe('Stage F.4 Phase 1 — public slug + city detail', () => {
       subDeps.subcategories,
       asReviewAggregationService(createMockReviewAggregation()),
       new BusinessPrimaryLocationService(),
+      /* businesses-svc-ctor-tail */
+      { get: jest.fn() } as never,
+      {} as never,
     );
 
     const moduleFixture: TestingModule = await Test.createTestingModule({

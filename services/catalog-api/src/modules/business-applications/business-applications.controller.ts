@@ -1,6 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Req } from '@nestjs/common';
-import { Request } from 'express';
-import { resolveLegalLocaleFromRequest } from '../../common/utils/legal-locale.util';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthUser } from '../../common/types/jwt-payload.type';
 import { BusinessApplicationsService } from './business-applications.service';
@@ -38,8 +36,8 @@ export class BusinessApplicationsController {
   }
 
   @Post(':id/submit')
-  submit(@CurrentUser() user: AuthUser, @Param('id') id: string, @Req() req: Request) {
-    return this.service.submit(user, id, resolveLegalLocaleFromRequest(req));
+  submit(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.service.submit(user, id);
   }
 
   @Post(':id/cancel')

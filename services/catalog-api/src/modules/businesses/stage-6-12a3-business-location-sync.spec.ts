@@ -65,6 +65,10 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
       subDeps.subcategories,
       {} as never,
       primaryLocation,
+
+      /* businesses-svc-ctor-tail */
+      { get: jest.fn() } as never,
+      {} as never,
     );
   }
 
@@ -94,6 +98,10 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
           createMockSubcategoryDeps().subcategories,
           {} as never,
           primaryLocation,
+
+      /* businesses-svc-ctor-tail */
+      { get: jest.fn() } as never,
+      {} as never,
         );
 
         const business = await localSvc.create(admin, {

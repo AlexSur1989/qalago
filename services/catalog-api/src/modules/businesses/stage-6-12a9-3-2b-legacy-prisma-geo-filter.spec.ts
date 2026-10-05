@@ -77,6 +77,10 @@ describe('Stage 6.12A.9.3.2b — legacy Prisma geo filter cleanup', () => {
       subDeps.subcategories,
       {} as never,
       primaryLocation,
+
+      /* businesses-svc-ctor-tail */
+      { get: jest.fn() } as never,
+      {} as never,
     );
   }
 

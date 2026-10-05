@@ -6,6 +6,86 @@
 
 ## Current stage (handoff snapshot)
 
+**2026-10-06 remediation track takes precedence over historical Next entries below.**
+User agreed a staged local-first repair plan before PS.kz deployment (VPS PS.kz
+not purchased; no Mac/iOS build; no ИП/ТОО facts in repo).
+**Stage 1 (2026-10-06) VERIFIED:** read-only current-state audit — git HEAD
+`cedfd98`, local DB 56 migrations applied, legal migration pending, auth
+migration applied (do not re-run). Working tree mixes auth remediation with
+unrelated legal/home/ads WIP; do not treat as single commit. Initial Stage 1
+( pre-auth-apply ) had reconfirmed MFA refresh escalation, unannotated-route
+bypass and refresh races at baseline `cedfd984a0cd29c0b898dd80bfe21822e8d2aa6b`.
+Stage 2 auth/session implementation is in the working tree (no commit): persisted
+MFA restriction, central allowlist, transactional rotation/revocation, shared staff
+policy for social login, Flutter single-flight/bounded retry/session-generation safety.
+Automated verification: backend targeted tests, PostgreSQL 18 isolated transaction
+and migration checks, Admin/Business auth tests, Flutter targeted tests and scoped
+analyzer. See changelog for counts. **Auth migration now applied to the local application
+DB with explicit user approval and a backup; not a full release PASS.**
+Follow-up isolated browser/API QA verified mandatory enrollment, restricted F5,
+valid enrollment/full-access F5, logout and protected-route denial after refresh.
+Fixed Admin login getting stuck after an invalid MFA code: consumed challenges now
+return to primary login with cleared codes and a retry instruction.
+Deployment blocker confirmed: clean `migrate deploy` fails in the first migration
+(P3018 / missing AnalyticsEventType); historical db-push baseline is absent.
+Application DB initially had 55 applied migrations. After approved local login repair:
+56 applied, auth migration checksum verified; legal migration remains pending.
+Custom-format backup: `services/catalog-api/backups/auth-migration-20261006-1791230992864/before-auth.dump`
+(ignored; archive inventory verified, restoration not rehearsed). Exact auth SQL applied
+transactionally, then registered via `migrate resolve --applied`; 106 historical staff
+sessions revoked. Prisma Client regenerated; API restarted, compilation clean.
+Admin BFF dev login and authenticated profile both returned 200; verification session
+logged out. Accounts/data retained; no role or MFA policy changes.
+**Stage 2 (2026-10-06) VERIFIED (isolated DBs):** empty `migrate deploy` fails at
+first migration (no `AnalyticsEventType` baseline). Runbook:
+**`docs/infra/database-bootstrap.md`**. Restore drill: new `pg_dump` →
+`qalago_stage2_restore` + legal migration as **postgres** → 57/57 applied;
+`mfaEnrollOnly` + legal enums OK. Greenfield: PostGIS + HEAD `db push`; do **not**
+resolve-all without matching SQL (auth column gap demonstrated). Helper:
+`services/catalog-api/scripts/dev/mark-migrations-applied.mjs` (isolated only).
+**`qalago_dev`:** **57/57** migrations (legal applied Stage 7.1); auth migration applied — **do
+not re-apply**; use postgres on other hosts if enum deploy lacks ownership.
+
+**Stage 3 (2026-10-06) VERIFIED (read-only gate):** builds/tests on dirty tree —
+catalog-api **`nest build` PASS**; auth Jest subset + Flutter refresh tests **PASS**;
+shared packages build **PASS**; **all three Next `next build` FAIL** (legal path/types
++ admin `uploadToken` DTO); Flutter **11 analyze errors** (legal/home WIP); full
+catalog-api Jest **40/241** suite compile/DI failures (harness drift, not auth-only);
+consumer vitest **11** failing tests. Details: **`docs/changelog.md`** Stage 3 table.
+**Stage 4 (2026-10-06) VERIFIED (scoped):** **`qalago_dev`** HTTP auth QA **14/14 PASS**
+(`scripts/dev/_stage4-auth-qa.mjs`); Admin browser dev-login → dashboard **PASS**. Local
+admin seed **MFA off** — full MFA physical matrix **UNVERIFIED** this stage (Stage 2
+isolated QA remains reference). **Pitfall:** shell `DATABASE_URL` override can point API
+at Stage 2 isolated DB → false “missing mfaEnrollOnly”; see **`docs/infra/database-bootstrap.md`**.
+**Stage 5 (2026-10-06) VERIFIED (scoped):** BOLA/upload security Jest + Business Web
+owner-plane **PASS**; **`owner-plane-security-regression.spec.ts`** harness fix for
+`PlansService` deps. **FAIL (harness):** membership/onboarding/purchase-adversarial
+spec compile drift. **`npm audit` 50 vulns** — triage deferred. Details: changelog Stage 5 table.
+Pending: true baseline migration; Stages 11–13; catalog-api Jest harness;
+business contextual vitest (2);
+stale `BusinessesService` test mocks; MFA-on local replay; mobile device QA; rehearse
+`before-auth.dump`. No VPS, real payments, SMS/push or commits performed.
+Local monetization mode **LAUNCH** (Play gate PASS; purchases blocked).
+**Stage 6 (2026-10-06) VERIFIED (scoped):** local **`qalago_dev`** in **LAUNCH** —
+Google Play launch script + admin check **PASS**; HTTP ad/plan purchase **403
+MONETIZATION_DISABLED**; monetization Jest **59** + launch specs **22 PASS**;
+`scripts/dev/_stage6-monetization-qa.mjs`. **`stage-6-7b`** harness fix.
+**Stage 7 / 7.1 (2026-10-06) IMPLEMENTED:** **Path R** — Cluster A restored from **cedfd98**,
+**`mfaEnrollOnly`** kept on schema, legal migration applied on **`qalago_dev`** (**57/57**),
+legal Jest **18/18**, consumer + business **next build PASS**, Flutter legal analyze clean.
+**6.19A.1** doc updated. Residual: **2** business contextual vitest wiring failures; admin
+uploadToken; Cluster C home/ads.
+**Stage 8 (2026-10-06) VERIFIED:** local **CI parity** — all **Next production builds PASS**
+(incl. admin uploadToken + monetization confirm guard); catalog-api Jest **206/241**
+suites; consumer **454/463** + ui-strings OK; HTTP smoke **PASS**; Flutter **1** Cluster C
+error; consumer **9** home/legal-route vitest drift. **`scripts/dev/_stage8-ci-smoke.mjs`**.
+**Stage 9 (2026-10-06) AGREED/DOCUMENTED:** **`docs/infra/ps-kz-vps-runbook.md`**, **`docs/infra/external-launch-checklist.md`**; linked from **`docs/deploy.md`**. No VPS deploy.
+**Stage 10 (2026-10-06) VERIFIED:** backup/restore rehearsal **`scripts/dev/_stage10-backup-rehearsal.mjs`**
+→ **`qalago_stage10_restore`** (**57** finished migrations); Cluster C restored from HEAD;
+consumer vitest **463/463**; Docker staging N/A on operator Windows.
+**Stage 11 (2026-10-06) PARTIAL:** business contextual legal wired (**7/7**); catalog-api **220/241** Jest suites; consumer **463/463**; focused commits in progress.
+**Next agreed stage:** **Stage 12** — finish catalog-api harness or VPS Persona A on release SHA.
+
 | Field | Value |
 |-------|--------|
 | **Kazakhstan compliance** | **KZ-C.0 PASS — COMPLIANCE CONTRACT LOCKED** — **`docs/architecture/kazakhstan-compliance-contract.md`** (docs only; **not** legal approval / **not** production compliant). Audit baseline **`9b6b55a…`**. |
@@ -113,7 +193,7 @@
 | **KZ-C.3** | **CLOSED — PUBLIC DTO PRIVACY HARDENING** — explicit guest mappers; no public `ownerId` / review `userId` / plan fields; promotions nested business summary hardened |
 | **PROD.0** | **PASS — READ-ONLY PRODUCTION SAFETY AUDIT** — no product diff; baseline **`03f1021`** |
 | **PROD.2** | **CLOSED — PRODUCTION ENVIRONMENT CONTRACT** — templates, `QALAGO_ENV` profiles, strict validation, docs **`docs/infra/production-environment.md`** |
-| **Next** | **PROD.3** (object storage) — **agree before start**; **PROD.1 VPS not started** |
+| **Next** | Local remediation track above; auth DB application/physical QA pending, builds/API consistency next after agreement. **PROD.1 VPS not started**; object storage deferred. |
 
 **F.4 (closed):** Canonical **`/{citySlug}/business/{businessSlug}`** (+ optional **`?locationId=`**); slug API **`GET /businesses/by-slug/:businessSlug?citySlug=`**; legacy **`/businesses/{id}`** → permanent redirect; SEO canonical/sitemap exclude query; multi-city one URL per city membership — contracts in **`future-extensibility-contracts.md`** § Contract 1 + **`public-consumer-web.md`**.
 
