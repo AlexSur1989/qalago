@@ -17,6 +17,8 @@ import '../data/monetization_labels.dart';
 import '../data/monetization_models.dart';
 import '../providers/monetization_providers.dart';
 import '../widgets/monetization_widgets.dart';
+import '../widgets/monetization_purchase_unavailable.dart';
+import '../../../../core/release/app_config_provider.dart';
 
 class PromotePackageScreen extends ConsumerStatefulWidget {
   const PromotePackageScreen({super.key, required this.packageCode});
@@ -96,6 +98,15 @@ class _PromotePackageScreenState extends ConsumerState<PromotePackageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final canPurchaseAds = ref.watch(canPurchaseAdsProvider);
+    if (!canPurchaseAds) {
+      return OwnerScaffold(
+        title: context.l10n.ownerPackageTitle,
+        body: MonetizationPurchasesUnavailableBody(
+          onViewCampaigns: () => context.push('/owner/monetization/campaigns'),
+        ),
+      );
+    }
     final packagesAsync = ref.watch(monetizationPackagesProvider);
     return OwnerScaffold(
       title: context.l10n.ownerPackageTitle,

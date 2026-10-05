@@ -17,6 +17,7 @@ import '../utils/owner_l10n.dart';
 import '../providers/owner_providers.dart';
 import 'widgets/owner_scaffold.dart';
 import 'widgets/owner_views_chart.dart';
+import '../../../core/release/app_config_provider.dart';
 
 const _kpiKeys = [
   'VIEW_BUSINESS',
@@ -117,6 +118,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
                     encodedTitle: encodedTitle,
                     data: data,
                     access: ref.watch(selectedBusinessAccessProvider),
+                    canPurchaseAds: ref.watch(canPurchaseAdsProvider),
                   ),
                 ),
               ],
@@ -170,6 +172,7 @@ class _DashboardContent extends StatelessWidget {
     required this.encodedTitle,
     required this.data,
     required this.access,
+    required this.canPurchaseAds,
   });
 
   final Map<String, dynamic> business;
@@ -177,6 +180,7 @@ class _DashboardContent extends StatelessWidget {
   final String encodedTitle;
   final Map<String, dynamic> data;
   final BusinessAccess? access;
+  final bool canPurchaseAds;
 
   @override
   Widget build(BuildContext context) {
@@ -448,11 +452,12 @@ class _DashboardContent extends StatelessWidget {
                     style: TextStyle(color: AppTheme.textMuted),
                   ),
                   const SizedBox(height: 12),
-                  FilledButton(
-                    onPressed: () => context.push('/owner/promote'),
-                    child: Text(context.l10n.ownerOpenCatalog),
-                  ),
-                  const SizedBox(height: 8),
+                  if (canPurchaseAds)
+                    FilledButton(
+                      onPressed: () => context.push('/owner/promote'),
+                      child: Text(context.l10n.ownerOpenCatalog),
+                    ),
+                  if (canPurchaseAds) const SizedBox(height: 8),
                   TextButton(
                     onPressed: () =>
                         context.push('/owner/monetization/campaigns'),

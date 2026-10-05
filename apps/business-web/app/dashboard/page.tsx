@@ -22,6 +22,7 @@ import { buildPlanUsageSummary } from '@/lib/owner-utils';
 import { campaignStatusLabel, monetizationStatusClass } from '@/lib/monetization-utils';
 import { useBusinessAccess } from '@/lib/use-business-access';
 import { BusinessShell } from '@/components/business-shell';
+import { usePlatformFeatures } from '@/components/platform-features-provider';
 import { BackofficeEmptyState, BackofficeErrorState, BackofficeLoadingState } from '@qalago/brand/states';
 import { dashboardDateUntilWord } from '@/lib/owner-visual-copy';
 import {
@@ -44,6 +45,7 @@ const idle = <T,>(): LoadState<T> => ({ loading: false, data: null, error: null 
 export default function DashboardPage() {
   const locale = useLocale();
   const ui = useUi();
+  const { canPurchaseAds } = usePlatformFeatures();
 
   const { token, user, ready, logout, business, access, businesses } = useBusinessAccess();
 
@@ -259,9 +261,15 @@ export default function DashboardPage() {
             <Link href={`/business/${business.id}/promotions`} className="btn">
               {ui.__a4ce5c}
             </Link>
-            <Link href="/monetization" className="btn btn-primary">
-              {ui.__591eff}
-            </Link>
+            {canPurchaseAds ? (
+              <Link href="/monetization" className="btn btn-primary">
+                {ui.__591eff}
+              </Link>
+            ) : (
+              <Link href="/monetization/campaigns" className="btn">
+                {ui.__f71231}
+              </Link>
+            )}
           </section>
 
           <div className="dashboard-grid">

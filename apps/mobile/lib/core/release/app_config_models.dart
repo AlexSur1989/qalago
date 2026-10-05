@@ -10,6 +10,10 @@ class AppConfigSnapshot {
     this.storeUrl,
     required this.featureFlags,
     required this.fetchedAt,
+    this.monetizationMode = 'DISABLED',
+    this.canPurchasePlans = false,
+    this.canPurchaseAds = false,
+    this.launchAccessActive = false,
   });
 
   final int configRevision;
@@ -20,6 +24,10 @@ class AppConfigSnapshot {
   final String? storeUrl;
   final Map<String, bool> featureFlags;
   final DateTime fetchedAt;
+  final String monetizationMode;
+  final bool canPurchasePlans;
+  final bool canPurchaseAds;
+  final bool launchAccessActive;
 
   factory AppConfigSnapshot.fromJson(Map<String, dynamic> json, ClientUpdateMode updateMode) {
     final maintenance = json['maintenance'] as Map<String, dynamic>? ?? {};
@@ -33,6 +41,10 @@ class AppConfigSnapshot {
       storeUrl: json['storeUrl'] as String?,
       featureFlags: flags.map((k, v) => MapEntry(k, v == true)),
       fetchedAt: DateTime.now(),
+      monetizationMode: json['monetizationMode'] as String? ?? 'DISABLED',
+      canPurchasePlans: json['canPurchasePlans'] as bool? ?? false,
+      canPurchaseAds: json['canPurchaseAds'] as bool? ?? false,
+      launchAccessActive: json['launchAccessActive'] as bool? ?? false,
     );
   }
 

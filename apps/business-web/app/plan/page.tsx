@@ -2,7 +2,7 @@
 
 import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   BusinessPlanStatus,
   PlanCatalogRow,
@@ -22,17 +22,15 @@ import {
   planPurchaseActionKind,
 } from '@/lib/plan-owner-ui';
 import { BusinessShell } from '@/components/business-shell';
+import { MonetizationModeBanner } from '@/components/monetization-mode-banner';
+import { usePlatformFeatures } from '@/components/platform-features-provider';
+import { launchAccessBadge } from '@/lib/platform-monetization-ui';
 import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
 import { BUSINESS_ROUTE_ACCESS, useBusinessRouteGate } from '@/lib/use-business-route-gate';
 import type { AppLocale, UiLabels } from '@/lib/locale';
 import { planAnalytics360Label } from '@/lib/presentation';
 import { BackofficeProgress, BackofficeSummaryCard } from '@qalago/brand/dashboards';
 import { BackofficeLoadingState } from '@qalago/brand/states';
-import {
-  ContextualLegalAcceptance,
-  type ContextualLegalAcceptanceHandle,
-} from '@/components/legal/contextual-legal-acceptance';
-import { parseContextualLegalError } from '@/lib/contextual-legal';
 import {
   planCurrentTierTitle,
   planFeatureAdDiscountLine,
@@ -84,6 +82,8 @@ function analyticsLevelLabel(locale: AppLocale, ui: UiLabels, tier: string): str
 export default function PlanPage() {
   const locale = useLocale();
   const ui = useUi();
+  const { canPurchasePlans, canPurchaseAds, launchAccessActive: platformLaunch } =
+    usePlatformFeatures();
 
   const {
     token,
@@ -102,7 +102,6 @@ export default function PlanPage() {
   const [checkoutTier, setCheckoutTier] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const planLegalRef = useRef<ContextualLegalAcceptanceHandle>(null);
 
   const canView = canViewPayments(access);
   const canManage = isOwner(access);
@@ -139,6 +138,7 @@ export default function PlanPage() {
 
   async function onCheckout(tier: string) {
     if (!token || !planStatus || !canManage) return;
+    if (!canPurchasePlans) return;
     if (tier === 'FREE') return;
     if (hasPendingPayment) return;
     if (!canOfferPlanPurchase(effectiveTier, tier, hasPendingPayment)) return;
@@ -151,22 +151,12 @@ export default function PlanPage() {
         setPlanStatus(result.plan);
         setMessage(result.message);
       } else {
-        const legalOk = (await planLegalRef.current?.ensureAccepted()) ?? true;
-        if (!legalOk) {
-          return;
-        }
         await ownerApi.createPlanPurchase(token, planStatus.businessId, tier);
         setMessage(ui.ownerPlanPurchasePendingSuccess);
       }
       await load();
     } catch (err) {
-      const raw = err instanceof Error ? err.message : String(err);
-      if (raw.includes('LEGAL_')) {
-        await planLegalRef.current?.refresh();
-        setError(parseContextualLegalError(locale, err));
-      } else {
-        setError(parseApiError(locale, err));
-      }
+      setError(parseApiError(locale, err));
     } finally {
       setCheckoutTier(null);
     }
@@ -177,6 +167,8 @@ export default function PlanPage() {
   const effectiveTier = planStatus?.effectiveTier ?? 'FREE';
   const pendingPayment = findPendingPlanPayment(payments);
   const hasPendingPayment = pendingPayment != null;
+  const launchAccessActive =
+    planStatus?.launchAccessActive ?? platformLaunch;
 
   return (
     <BusinessShell
@@ -198,10 +190,16 @@ export default function PlanPage() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Link href="/monetization" className="btn">{ui.ownerNavPromote}</Link>
+          {canPurchaseAds ? (
+            <Link href="/monetization" className="btn">{ui.ownerNavPromote}</Link>
+          ) : (
+            <Link href="/monetization/campaigns" className="btn btn-ghost">{ui.__f71231}</Link>
+          )}
           <Link href="/dashboard" className="btn btn-ghost">{ui.__65f9d8}</Link>
         </div>
       </header>
+
+      <MonetizationModeBanner />
 
       {loading ? <BackofficeLoadingState density="section" label={ui.__c63d55} /> : null}
       {error && <div className="alert alert-error">{error}</div>}
@@ -234,6 +232,11 @@ export default function PlanPage() {
           title={planCurrentTierTitle(locale, planStatus.catalog.nameRu)}
           className="form-card"
         >
+          {launchAccessActive ? (
+            <p style={{ margin: '0 0 12px', color: 'var(--primary)', fontWeight: 600 }}>
+              {launchAccessBadge(locale)}
+            </p>
+          ) : null}
           <BackofficeProgress
             label={planQuotaPhotosLabel(locale)}
             value={planStatus.usage.photos}
@@ -320,19 +323,12 @@ export default function PlanPage() {
         </section>
       )}
 
-      {token && canManage ? (
-        <ContextualLegalAcceptance
-          ref={planLegalRef}
-          token={token}
-          locale={locale}
-          context="PLAN_PURCHASE"
-        />
-      ) : null}
-
       <div className="plan-grid">
         {catalog.map((plan) => {
           const isCurrent = effectiveTier === plan.tier;
-          const canPurchase = canOfferPlanPurchase(effectiveTier, plan.tier, hasPendingPayment);
+          const canPurchase =
+            canPurchasePlans &&
+            canOfferPlanPurchase(effectiveTier, plan.tier, hasPendingPayment);
           const actionKind = planPurchaseActionKind(effectiveTier, plan.tier);
           const lowerPaid = isLowerPaidPlanTier(plan.tier, effectiveTier);
           const sameTierRenew = isSameTierRenewal(plan.tier, effectiveTier);
@@ -384,6 +380,10 @@ export default function PlanPage() {
                 <button type="button" className="btn btn-ghost" disabled>{ui.text_ab6cb7}</button>
               ) : isCurrent && plan.tier === 'FREE' ? (
                 <button type="button" className="btn btn-ghost" disabled>{ui.text_318150}</button>
+              ) : !canPurchasePlans ? (
+                <button type="button" className="btn btn-ghost" disabled>
+                  {ui.text_ab6cb7}
+                </button>
               ) : (
                 <button
                   type="button"

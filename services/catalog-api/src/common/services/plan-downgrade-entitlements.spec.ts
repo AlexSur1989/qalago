@@ -14,6 +14,7 @@ import { CityScopeService } from '../services/city-scope.service';
 import { createMockBusinessAccess, asBusinessAccessService } from '../../test-utils/mock-business-access';
 import { createMockAuditLog, asAuditLogService } from '../../test-utils/mock-audit-log';
 import { createMockSubcategoryDeps } from '../../test-utils/mock-subcategory-deps';
+import { createMockMonetizationModeService } from '../../test-utils/mock-monetization-mode';
 
 describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
   const now = new Date('2026-09-06T12:00:00Z');
@@ -30,6 +31,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
         ...teamCountMocks,
       } as unknown as PrismaService,
       { create: jest.fn() } as never,
+      createMockMonetizationModeService() as never,
     );
 
     it('1–2. PREMIUM 40 photos → BASIC: 40 preserved, public 20, owner context shows 40/20', async () => {
@@ -57,7 +59,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
         },
         ...teamCountMocks,
       } as unknown as PrismaService;
-      const limitsService = new PlanLimitsService(prisma, { create: jest.fn() } as never);
+      const limitsService = new PlanLimitsService(prisma, { create: jest.fn() } as never, createMockMonetizationModeService() as never);
       const ctx = await limitsService.getBusinessPlanContext('b1');
       expect(ctx.usage.photos).toBe(40);
       expect(ctx.entitlements.photos.published).toBe(20);
@@ -78,7 +80,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
         },
         ...teamCountMocks,
       } as unknown as PrismaService;
-      const limitsService = new PlanLimitsService(prisma, { create: jest.fn() } as never);
+      const limitsService = new PlanLimitsService(prisma, { create: jest.fn() } as never, createMockMonetizationModeService() as never);
       await expect(limitsService.assertCanAddPhoto('b1')).rejects.toThrow(
         /не более 20 фото/,
       );
@@ -103,6 +105,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
         ...teamCountMocks,
       } as unknown as PrismaService,
       { create: jest.fn() } as never,
+      createMockMonetizationModeService() as never,
     );
 
     it('6–7. 80 items preserved, public 50 on BASIC', async () => {
@@ -139,7 +142,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
         },
         ...teamCountMocks,
       } as unknown as PrismaService;
-      const limitsService = new PlanLimitsService(prisma, { create: jest.fn() } as never);
+      const limitsService = new PlanLimitsService(prisma, { create: jest.fn() } as never, createMockMonetizationModeService() as never);
       const ctx = await limitsService.getBusinessPlanContext('b1');
       expect(ctx.usage.serviceItems).toBe(80);
       expect(ctx.entitlements.serviceItems.published).toBe(50);
@@ -159,7 +162,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
         },
         ...teamCountMocks,
       } as unknown as PrismaService;
-      const limitsService = new PlanLimitsService(prisma, { create: jest.fn() } as never);
+      const limitsService = new PlanLimitsService(prisma, { create: jest.fn() } as never, createMockMonetizationModeService() as never);
       await expect(limitsService.assertCanAddServiceItem('b1')).rejects.toThrow(
         /не более 50/,
       );
@@ -207,7 +210,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
       } as unknown as PrismaService;
 
       const notifications = { create: jest.fn().mockResolvedValue({ id: 'n1' }) };
-      const limitsService = new PlanLimitsService(prisma, notifications as never);
+      const limitsService = new PlanLimitsService(prisma, notifications as never, createMockMonetizationModeService() as never);
 
       await limitsService.syncExpiredPlan('b1');
 
@@ -231,6 +234,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
           ...teamCountMocks,
         } as never,
         { create: jest.fn() } as never,
+        createMockMonetizationModeService() as never,
       );
 
       const promos = [
@@ -277,7 +281,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
       } as unknown as PrismaService;
 
       const cityScope = { resolveCityId: jest.fn() } as unknown as CityScopeService;
-      const limitsService = new PlanLimitsService(prisma, { create: jest.fn() } as never);
+      const limitsService = new PlanLimitsService(prisma, { create: jest.fn() } as never, createMockMonetizationModeService() as never);
       const promotionsService = new PromotionsService(
         prisma,
         cityScope,
@@ -362,7 +366,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
         ...teamCountMocks,
       } as unknown as PrismaService;
 
-      const planLimits = new PlanLimitsService(prisma, { create: jest.fn() } as never);
+      const planLimits = new PlanLimitsService(prisma, { create: jest.fn() } as never, createMockMonetizationModeService() as never);
       const publicContent = {
         getGalleryPreview: jest.fn().mockResolvedValue({
           items: images.slice(0, 6),
@@ -440,7 +444,7 @@ describe('Stage 4C.1 — downgrade / expiry entitlements', () => {
         ...teamCountMocks,
       } as unknown as PrismaService;
 
-      const limitsService = new PlanLimitsService(prisma, { create: jest.fn() } as never);
+      const limitsService = new PlanLimitsService(prisma, { create: jest.fn() } as never, createMockMonetizationModeService() as never);
       const capped = await limitsService.capAnalyticsDays('b1', 365);
       expect(capped).toBe(30);
       expect(analyticsCount).not.toHaveBeenCalled();

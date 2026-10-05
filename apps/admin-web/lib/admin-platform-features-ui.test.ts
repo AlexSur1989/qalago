@@ -32,4 +32,18 @@ describe('admin platform features UI (BIZ.9 HOTFIX 5B)', () => {
     expect(catalogPanel).toContain('adminBusinessTeamEnabled');
     expect(catalogPanel).not.toContain('platform-features');
   });
+
+  it('settings nav exposes monetization mode for SUPER_ADMIN (6.18L.1)', () => {
+    const monetizationPage = readFileSync(
+      join(process.cwd(), 'app/settings/monetization/page.tsx'),
+      'utf8',
+    );
+    expect(settingsSubnav).toContain('/settings/monetization');
+    expect(monetizationPage).toContain('isSuperAdminRole');
+    expect(monetizationPage).toContain('patchAdminPlatformFeatures');
+    expect(monetizationPage).toContain('monetizationMode');
+    expect(monetizationPage).toContain('MonetizationMode.LAUNCH');
+    expect(monetizationPage).toContain('confirmConsequence');
+    expect(monetizationPage).toContain('MonetizationMode.NORMAL');
+  });
 });

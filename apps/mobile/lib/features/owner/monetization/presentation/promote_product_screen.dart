@@ -17,6 +17,8 @@ import '../data/monetization_labels.dart';
 import '../data/monetization_models.dart';
 import '../providers/monetization_providers.dart';
 import '../widgets/monetization_widgets.dart';
+import '../widgets/monetization_purchase_unavailable.dart';
+import '../../../../core/release/app_config_provider.dart';
 
 class PromoteProductScreen extends ConsumerStatefulWidget {
   const PromoteProductScreen({super.key, required this.productCode});
@@ -62,6 +64,16 @@ class _PromoteProductScreenState extends ConsumerState<PromoteProductScreen> {
     );
 
   final title = productTitle(context.l10n, widget.productCode);
+    final canPurchaseAds = ref.watch(canPurchaseAdsProvider);
+
+    if (!canPurchaseAds) {
+      return OwnerScaffold(
+        title: title,
+        body: MonetizationPurchasesUnavailableBody(
+          onViewCampaigns: () => context.push('/owner/monetization/campaigns'),
+        ),
+      );
+    }
 
     return OwnerScaffold(
       title: title,

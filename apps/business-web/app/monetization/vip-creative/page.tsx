@@ -9,6 +9,8 @@ import { VipBannerPreview } from '@/components/monetization/vip-banner-preview';
 import { useMonetizationContext } from '@/components/monetization/monetization-shell';
 import { vipModerationPlacementNotice } from '@/lib/owner-utils';
 import { parseApiError } from '@/lib/monetization-utils';
+import { usePlatformFeatures } from '@/components/platform-features-provider';
+import { PurchasesUnavailablePanel } from '@/components/monetization/purchases-unavailable-panel';
 
 export default function VipCreativePage() {
   const locale = useLocale();
@@ -27,6 +29,7 @@ function VipCreativeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { token, business } = useMonetizationContext();
+  const { canPurchaseAds, ready: platformReady } = usePlatformFeatures();
 
   const productCode = searchParams.get('productCode');
   const packageCode = searchParams.get('packageCode');
@@ -54,6 +57,12 @@ function VipCreativeContent() {
         {ui.____20b773}{' '}
         <Link href="/monetization/products">{ui.___bad998}</Link>
       </div>
+    );
+  }
+
+  if (platformReady && !canPurchaseAds) {
+    return (
+      <PurchasesUnavailablePanel backHref="/monetization/campaigns" backLabel={ui.__f71231} />
     );
   }
 

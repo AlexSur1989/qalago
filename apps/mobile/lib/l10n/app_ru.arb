@@ -1714,6 +1714,8 @@
   "ownerPlanPaymentStatusCancelled": "Отменена",
   "ownerPlanPaymentStatusFailed": "Не выполнена",
   "ownerPlanCurrentBadge": "Текущий тариф",
+  "ownerPlanLaunchAccessBadge": "Бесплатный доступ на период запуска",
+  "ownerMonetizationDisabled": "Монетизация временно недоступна.",
   "ownerPlanActiveUntil": "Действует до {date}",
   "ownerPlanAdDiscount": "Скидка на рекламу: {percent}%",
   "ownerPlanSameTierRenewalHint": "Продлевает текущий тариф: срок добавляется к оставшимся дням подписки.",

@@ -3,16 +3,13 @@
 import { useLocale, useUi } from '@/components/locale-provider';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { MonetizationOrder, MonetizationQuote, ownerApi } from '@/lib/api';
 import { QuoteCard } from '@/components/monetization/quote-card';
 import { useMonetizationContext } from '@/components/monetization/monetization-shell';
 import { formatKzt, parseApiError, productLabel } from '@/lib/monetization-utils';
-import {
-  ContextualLegalAcceptance,
-  type ContextualLegalAcceptanceHandle,
-} from '@/components/legal/contextual-legal-acceptance';
-import { parseContextualLegalError } from '@/lib/contextual-legal';
+import { usePlatformFeatures } from '@/components/platform-features-provider';
+import { monetizationPurchasesDisabledNotice } from '@/lib/platform-monetization-ui';
 
 export default function MonetizationCheckoutPage() {
   const locale = useLocale();
@@ -30,6 +27,7 @@ function CheckoutContent() {
   const ui = useUi();
   const searchParams = useSearchParams();
   const { token, business } = useMonetizationContext();
+  const { canPurchaseAds } = usePlatformFeatures();
 
   const productCode = searchParams.get('productCode');
   const packageCode = searchParams.get('packageCode');
@@ -45,9 +43,9 @@ function CheckoutContent() {
   const [submitting, setSubmitting] = useState(false);
   const [order, setOrder] = useState<MonetizationOrder | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const checkoutLegalRef = useRef<ContextualLegalAcceptanceHandle>(null);
 
   const fetchQuote = useCallback(async () => {
+    if (!canPurchaseAds) return;
     if (!productCode && !packageCode) return;
     setQuoteLoading(true);
     setQuoteError(null);
@@ -76,21 +74,29 @@ function CheckoutContent() {
     durationHours,
     desiredStartAt,
     promotionId,
+    canPurchaseAds,
   ]);
 
   useEffect(() => {
     fetchQuote().catch(() => undefined);
   }, [fetchQuote]);
 
+  if (!canPurchaseAds) {
+    return (
+      <section className="form-card" style={{ maxWidth: 640 }}>
+        <p style={{ margin: 0 }}>{monetizationPurchasesDisabledNotice(locale)}</p>
+        <Link href="/monetization" className="btn btn-ghost btn-sm" style={{ marginTop: 12 }}>
+          {ui.__41649d}
+        </Link>
+      </section>
+    );
+  }
+
   async function onSubmit() {
     if (!quote?.availability.available) return;
     setSubmitting(true);
     setError(null);
     try {
-      const legalOk = (await checkoutLegalRef.current?.ensureAccepted()) ?? true;
-      if (!legalOk) {
-        return;
-      }
       let created: MonetizationOrder;
       if (packageCode) {
         const body: Record<string, unknown> = {
@@ -118,13 +124,7 @@ function CheckoutContent() {
       }
       setOrder(created);
     } catch (err) {
-      const raw = err instanceof Error ? err.message : String(err);
-      if (raw.includes('LEGAL_')) {
-        await checkoutLegalRef.current?.refresh();
-        setError(parseContextualLegalError(locale, err));
-      } else {
-        setError(parseApiError(locale, err));
-      }
+      setError(parseApiError(locale, err));
     } finally {
       setSubmitting(false);
     }
@@ -199,12 +199,6 @@ function CheckoutContent() {
             {ui.text_checkoutCreateOrder1}
             {ui.text_checkoutCreateOrder2}
           </p>
-          <ContextualLegalAcceptance
-            ref={checkoutLegalRef}
-            token={token}
-            locale={locale}
-            context="AD_PURCHASE"
-          />
           <button
             type="button"
             className="btn btn-primary"

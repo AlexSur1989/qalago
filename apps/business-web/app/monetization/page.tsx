@@ -36,12 +36,15 @@ import {
   planValidUntilPrefix,
 } from '@/lib/owner-visual-copy';
 import { findPendingPlanPayment, planCatalogDisplayName } from '@/lib/plan-owner-ui';
+import { usePlatformFeatures } from '@/components/platform-features-provider';
+import { launchAccessBadge } from '@/lib/platform-monetization-ui';
 
 export default function MonetizationOverviewPage() {
   const locale = useLocale();
   const ui = useUi();
 
   const { token, business, access } = useMonetizationContext();
+  const { canPurchaseAds, launchAccessActive } = usePlatformFeatures();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [planStatus, setPlanStatus] = useState<BusinessPlanStatus | null>(null);
@@ -108,7 +111,9 @@ export default function MonetizationOverviewPage() {
           <p className="page-header-meta">{business.title}</p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Link href="/monetization/products" className="btn">{ui.__55b89b}</Link>
+          {canPurchaseAds ? (
+            <Link href="/monetization/products" className="btn">{ui.__55b89b}</Link>
+          ) : null}
           <Link href="/plan" className="btn btn-ghost">{ui.ownerNavPlan}</Link>
         </div>
       </header>
@@ -137,6 +142,11 @@ export default function MonetizationOverviewPage() {
                   <span className={`tag tag-${pendingPayment ? 'warning' : 'success'}`} style={{ marginLeft: 8 }}>
                     {planStatusLabel}
                   </span>
+                  {(planStatus.launchAccessActive ?? launchAccessActive) ? (
+                    <span className="tag" style={{ marginLeft: 8 }}>
+                      {launchAccessBadge(locale)}
+                    </span>
+                  ) : null}
                 </p>
                 {planStatus.expiresAt && (
                   <p style={{ margin: '0 0 8px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
@@ -211,24 +221,28 @@ export default function MonetizationOverviewPage() {
                 <h2>{ui.__b05019}</h2>
               </div>
               <ul className="action-list">
-                <li className="action-item">
-                  <div className="action-icon">📣</div>
-                  <div className="action-text">
-                    <Link href="/monetization/products">
-                      <strong>{ui.__ebd04c}</strong>
-                    </Link>
-                    <span>{monetizationAdProductsHint(locale)}</span>
-                  </div>
-                </li>
-                <li className="action-item">
-                  <div className="action-icon">📦</div>
-                  <div className="action-text">
-                    <Link href="/monetization/packages">
-                      <strong>{ui.__13dad9}</strong>
-                    </Link>
-                    <span>{ui.___016439}</span>
-                  </div>
-                </li>
+                {canPurchaseAds ? (
+                  <>
+                    <li className="action-item">
+                      <div className="action-icon">📣</div>
+                      <div className="action-text">
+                        <Link href="/monetization/products">
+                          <strong>{ui.__ebd04c}</strong>
+                        </Link>
+                        <span>{monetizationAdProductsHint(locale)}</span>
+                      </div>
+                    </li>
+                    <li className="action-item">
+                      <div className="action-icon">📦</div>
+                      <div className="action-text">
+                        <Link href="/monetization/packages">
+                          <strong>{ui.__13dad9}</strong>
+                        </Link>
+                        <span>{ui.___016439}</span>
+                      </div>
+                    </li>
+                  </>
+                ) : null}
                 <li className="action-item">
                   <div className="action-icon">📊</div>
                   <div className="action-text">

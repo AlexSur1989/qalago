@@ -15,6 +15,7 @@ import '../../utils/owner_l10n.dart';
 import '../data/owner_monetization_hub.dart';
 import '../providers/monetization_providers.dart';
 import '../widgets/monetization_widgets.dart';
+import '../../../../core/release/app_config_provider.dart';
 
 class PromoteBusinessScreen extends ConsumerStatefulWidget {
   const PromoteBusinessScreen({super.key});
@@ -52,6 +53,9 @@ class _PromoteBusinessScreenState extends ConsumerState<PromoteBusinessScreen> {
     final access = ref.watch(selectedBusinessAccessProvider);
     final canViewPlan = canViewOwnerPlanOnMonetizationHub(access);
     final canAds = canManageOwnerAdvertising(access);
+    final canPurchaseAds = ref.watch(canPurchaseAdsProvider);
+    final canPurchasePlans = ref.watch(canPurchasePlansProvider);
+    final launchAccessActive = ref.watch(launchAccessActiveProvider);
 
     if (!canViewPlan && !canAds) {
       return OwnerScaffold(
@@ -136,6 +140,19 @@ class _PromoteBusinessScreenState extends ConsumerState<PromoteBusinessScreen> {
                               fontSize: 17,
                             ),
                           ),
+                          if ((planStatus['launchAccessActive'] as bool? ??
+                                  false) ||
+                              launchAccessActive) ...[
+                            const SizedBox(height: 6),
+                            Text(
+                              l10n.ownerPlanLaunchAccessBadge,
+                              style: TextStyle(
+                                color: AppTheme.kzBlue,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
                           if (expiresAt != null) ...[
                             const SizedBox(height: 4),
                             Text(
@@ -182,11 +199,13 @@ class _PromoteBusinessScreenState extends ConsumerState<PromoteBusinessScreen> {
                               style: const TextStyle(fontSize: 13),
                             ),
                           ],
-                          const SizedBox(height: 12),
-                          OutlinedButton(
-                            onPressed: () => context.push('/owner/plan'),
-                            child: Text(l10n.ownerUpgradePlan),
-                          ),
+                          if (canPurchasePlans) ...[
+                            const SizedBox(height: 12),
+                            OutlinedButton(
+                              onPressed: () => context.push('/owner/plan'),
+                              child: Text(l10n.ownerUpgradePlan),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -244,6 +263,14 @@ class _PromoteBusinessScreenState extends ConsumerState<PromoteBusinessScreen> {
                   );
                 },
               ),
+              if (!canPurchaseAds) ...[
+                const SizedBox(height: 12),
+                Text(
+                  l10n.ownerMonetizationDisabled,
+                  style: TextStyle(color: AppTheme.textMuted, fontSize: 14),
+                ),
+              ],
+              if (canPurchaseAds) ...[
               const SizedBox(height: 16),
               Text(
                 l10n.ownerPromoteWhatToPromote,
@@ -342,6 +369,7 @@ class _PromoteBusinessScreenState extends ConsumerState<PromoteBusinessScreen> {
                       .toList(),
                 ),
               ),
+              ],
               const SizedBox(height: 16),
               OutlinedButton.icon(
                 onPressed: () => context.push('/owner/monetization/campaigns'),

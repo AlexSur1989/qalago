@@ -22,7 +22,11 @@ describe('PlanLimitsService', () => {
     create: jest.fn(),
   } as unknown as import('../../modules/notifications/notifications.service').NotificationsService;
 
-  const service = new PlanLimitsService(prisma, notifications);
+  const monetizationMode = {
+    getMode: jest.fn().mockResolvedValue('NORMAL'),
+  };
+
+  const service = new PlanLimitsService(prisma, notifications, monetizationMode as never);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -100,7 +104,7 @@ describe('PlanLimitsService', () => {
       businessMembership: { count: jest.fn().mockResolvedValue(3) },
       businessInvitation: { count: jest.fn().mockResolvedValue(0) },
     } as unknown as PrismaService;
-    const teamService = new PlanLimitsService(teamPrisma, notifications);
+    const teamService = new PlanLimitsService(teamPrisma, notifications, monetizationMode as never);
 
     const ctx = await teamService.getBusinessPlanContext('b1');
     expect(ctx.team.activeManagers).toBe(3);

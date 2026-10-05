@@ -41,6 +41,15 @@ export function SettingsSubNav({ user }: SettingsSubNavProps) {
           Функции для бизнеса
         </Link>
       ) : null}
+      {superPlatform ? (
+        <Link
+          href="/settings/monetization"
+          className={`shell-section-subnav-item${pathname === '/settings/monetization' ? ' active' : ''}`}
+          aria-current={pathname === '/settings/monetization' ? 'page' : undefined}
+        >
+          Монетизация
+        </Link>
+      ) : null}
     </nav>
   );
 }

@@ -6,11 +6,8 @@ import {
   Patch,
   Post,
   Query,
-  Req,
   UseGuards,
 } from '@nestjs/common';
-import { Request } from 'express';
-import { resolveLegalLocaleFromRequest } from '../../common/utils/legal-locale.util';
 import { UserRole } from '@prisma/client';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -100,13 +97,8 @@ export class MonetizationController {
 
   @Roles(UserRole.BUSINESS, UserRole.ADMIN, UserRole.CITY_ADMIN)
   @Post('orders')
-  createOrder(
-    @CurrentUser() user: AuthUser,
-    @Body() dto: CreateOrderDto,
-    @Req() req: Request,
-  ) {
-    const legalLocale = resolveLegalLocaleFromRequest(req);
-    return this.orderService.createOrder(user, dto, legalLocale);
+  createOrder(@CurrentUser() user: AuthUser, @Body() dto: CreateOrderDto) {
+    return this.orderService.createOrder(user, dto);
   }
 
   @Roles(UserRole.BUSINESS, UserRole.ADMIN, UserRole.CITY_ADMIN)

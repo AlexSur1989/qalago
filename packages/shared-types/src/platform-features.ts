@@ -8,13 +8,20 @@ export type PlatformFeatures = {
   businessTeamEnabled: boolean;
 };
 
+import type { MonetizationMode } from './monetization-mode';
+
 export type PlatformFeaturesResponseDto = {
   platformFeatures: PlatformFeatures;
   configRevision: number;
+  monetizationMode: MonetizationMode;
+  canPurchasePlans: boolean;
+  canPurchaseAds: boolean;
+  launchAccessActive: boolean;
 };
 
 export type PatchPlatformFeaturesDto = {
   businessTeamEnabled?: boolean;
+  monetizationMode?: MonetizationMode;
 };
 
 export function isPlatformBusinessFeatureFlagKey(key: string): key is PlatformBusinessFeatureFlagKey {

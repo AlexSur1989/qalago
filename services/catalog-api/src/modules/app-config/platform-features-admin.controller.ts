@@ -28,4 +28,17 @@ export class PlatformFeaturesAdminController {
   patch(@CurrentUser() user: AuthUser, @Body() dto: PatchPlatformFeaturesBodyDto) {
     return this.admin.patch(user, dto);
   }
+
+  /** Read-only release QA: PASS when monetizationMode is LAUNCH with purchases disabled. */
+  @AdminStaffRoute()
+  @Get('google-play-launch-check')
+  googlePlayLaunchCheck(@CurrentUser() user: AuthUser) {
+    if (isSuperAdmin(user)) {
+      return this.admin.getGooglePlayLaunchCheck();
+    }
+    if (user.role === UserRole.ADMIN) {
+      return this.admin.getGooglePlayLaunchCheck();
+    }
+    throw new ForbiddenException();
+  }
 }

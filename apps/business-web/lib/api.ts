@@ -203,6 +203,7 @@ export type BusinessPlanStatus = {
   businessId: string;
   tier: string;
   effectiveTier: string;
+  launchAccessActive?: boolean;
   expiresAt: string | null;
   isFeatured: boolean;
   featuredSlot: number | null;

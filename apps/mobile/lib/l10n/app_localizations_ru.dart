@@ -3451,6 +3451,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get ownerPlanCurrentBadge => 'Текущий тариф';
 
   @override
+  String get ownerPlanLaunchAccessBadge => 'Бесплатный доступ на период запуска';
+
+  @override
+  String get ownerMonetizationDisabled => 'Монетизация временно недоступна.';
+
+  @override
   String ownerPlanActiveUntil(String date) {
     return 'Действует до $date';
   }

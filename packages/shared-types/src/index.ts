@@ -210,6 +210,22 @@ export {
   isPlatformBusinessFeatureFlagKey,
 } from './platform-features';
 
+export {
+  MonetizationMode,
+  MONETIZATION_PURCHASES_FLAG,
+  FREE_LAUNCH_ACCESS_FLAG,
+  MONETIZATION_MODE_FLAG_KEYS,
+  MONETIZATION_DISABLED_ERROR_CODE,
+  resolveMonetizationMode,
+  flagsForMonetizationMode,
+  isValidMonetizationModeCombination,
+  buildMonetizationModePublicDto,
+  evaluateGooglePlayLaunchMonetizationGate,
+  type GooglePlayLaunchMonetizationGateDto,
+  type MonetizationModePublicDto,
+  type MonetizationModeFlagKey,
+} from './monetization-mode';
+
 export type { SubcategoryPublicDto, SubcategoryAdminDto } from './subcategory';
 
 export {

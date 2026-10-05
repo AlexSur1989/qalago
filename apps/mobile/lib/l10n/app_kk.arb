@@ -1512,6 +1512,8 @@
   "ownerPlanPaymentStatusCancelled": "Болдырылмаған",
   "ownerPlanPaymentStatusFailed": "Орындалмаған",
   "ownerPlanCurrentBadge": "Ағымдағы тариф",
+  "ownerPlanLaunchAccessBadge": "Іске қосу кезеңіне тегін қол жеткізу",
+  "ownerMonetizationDisabled": "Монетизация уақытша қолжетімсіз.",
   "ownerPlanActiveUntil": "{date} дейін",
   "ownerPlanAdDiscount": "Жарнама жеңілдігі: {percent}%",
   "ownerPlanSameTierRenewalHint": "Ағымдағы тарифті ұзартады: мерзім қалған күндерге қосылады.",

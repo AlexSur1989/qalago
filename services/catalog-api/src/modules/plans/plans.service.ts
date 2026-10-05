@@ -14,7 +14,6 @@ import {
   NotificationTargetType,
   NotificationType,
   PaymentProvider,
-  LegalLocale,
   PlanPaymentStatus,
   Prisma,
   UserRole,
@@ -41,7 +40,7 @@ import {
   planConflict,
   planNotFound,
 } from './plans.errors';
-import { LegalService } from '../safety/legal.service';
+import { MonetizationModeService } from '../app-config/monetization-mode.service';
 
 const PAID_PERIOD_DAYS = 30;
 
@@ -72,7 +71,7 @@ export class PlansService {
     private readonly config: ConfigService,
     private readonly cityScope: CityScopeService,
     private readonly staffPolicy: StaffPolicyService,
-    private readonly legal: LegalService,
+    private readonly monetizationMode: MonetizationModeService,
   ) {}
 
   listCatalog() {
@@ -141,10 +140,9 @@ export class PlansService {
     businessId: string,
     tier: BusinessPlanTier,
     idempotencyKey?: string | null,
-    legalLocale: LegalLocale = LegalLocale.RU,
   ) {
+    await this.monetizationMode.assertPurchasesAllowed();
     await this.assertCanManage(user, businessId);
-    await this.legal.assertCheckoutLegalAcceptance(user.id, legalLocale, 'PLAN_PURCHASE');
     this.assertPurchasableTier(tier);
     await this.assertNoActiveDowngradePurchase(businessId, tier);
 
@@ -209,6 +207,7 @@ export class PlansService {
       throw new NotFoundException();
     }
 
+    await this.monetizationMode.assertPurchasesAllowed();
     await this.assertCanManage(user, businessId);
     const access = await this.businessAccess.resolveAccess(user, businessId);
     const auditCityId = await resolveBusinessPrimaryCityId(this.prisma, businessId);

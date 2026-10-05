@@ -1,3 +1,5 @@
+import type { MonetizationMode } from './monetization-mode';
+
 export enum AppPlatform {
   ANDROID = 'ANDROID',
   IOS = 'IOS',
@@ -32,6 +34,8 @@ export const FEATURE_FLAG_KEYS = [
   'legalCenterEnabled',
   'reportingEnabled',
   'dataRightsEnabled',
+  'monetizationPurchasesEnabled',
+  'freeLaunchAccessEnabled',
 ] as const;
 
 export type FeatureFlagKey = (typeof FEATURE_FLAG_KEYS)[number];
@@ -62,6 +66,10 @@ export interface AppConfigResponseDto {
   };
   featureFlags: Record<string, boolean>;
   cityLaunchStatus?: 'LIVE' | 'COMING_SOON' | null;
+  monetizationMode: MonetizationMode;
+  canPurchasePlans: boolean;
+  canPurchaseAds: boolean;
+  launchAccessActive: boolean;
 }
 
 export interface ServiceVersionDto {

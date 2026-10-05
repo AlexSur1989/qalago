@@ -21,6 +21,7 @@ export type PurchaseConflictReasonType =
   (typeof PurchaseConflictReason)[keyof typeof PurchaseConflictReason];
 
 export const MonetizationErrorCode = {
+  MONETIZATION_DISABLED: 'MONETIZATION_DISABLED',
   PRODUCT_NOT_FOUND: 'PRODUCT_NOT_FOUND',
   PRODUCT_NOT_AVAILABLE: 'PRODUCT_NOT_AVAILABLE',
   PRICE_NOT_FOUND: 'PRICE_NOT_FOUND',

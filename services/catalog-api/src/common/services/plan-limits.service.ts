@@ -27,6 +27,12 @@ import {
   getPlanDisplayMetadata,
   PlanDisplayMetadata,
 } from '../utils/plan-display.util';
+import { MonetizationMode } from '@qalago/shared-types';
+import { MonetizationModeService } from '../../modules/app-config/monetization-mode.service';
+import {
+  getLaunchPlanLimits,
+  mergePlanLimitsMax,
+} from '../utils/launch-plan-limits.util';
 
 export type AnalyticsTier = 'BASIC' | 'EXTENDED' | 'FULL' | 'ANALYTICS_360';
 export type SupportPriority = 'STANDARD' | 'PRIORITY' | 'HIGHEST';
@@ -189,6 +195,7 @@ export class PlanLimitsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly monetizationMode: MonetizationModeService,
   ) {}
 
   getCatalog(): PlanCatalogItem[] {
@@ -310,8 +317,14 @@ export class PlanLimitsService {
     }
 
     const effectiveTier = this.resolveEffectiveTier(business);
-    const limits = this.getLimits(effectiveTier);
+    const mode = await this.monetizationMode.getMode();
+    const actualLimits = this.getLimits(effectiveTier);
+    const limits =
+      mode === MonetizationMode.LAUNCH
+        ? mergePlanLimitsMax(actualLimits, getLaunchPlanLimits())
+        : actualLimits;
     const catalogItem = this.getCatalogItem(effectiveTier);
+    const launchAccessActive = mode === MonetizationMode.LAUNCH;
 
     const totals = {
       photos: business._count.images,
@@ -331,6 +344,7 @@ export class PlanLimitsService {
       businessId,
       tier: business.planTier,
       effectiveTier,
+      launchAccessActive,
       expiresAt: business.planExpiresAt,
       isFeatured: business.isFeatured,
       featuredSlot: business.featuredSlot,

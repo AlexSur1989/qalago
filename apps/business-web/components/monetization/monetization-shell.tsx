@@ -7,6 +7,7 @@ import { BusinessShell } from '@/components/business-shell';
 import { MonetizationSubNav } from '@/components/monetization/monetization-subnav';
 import { BusinessSectionAccessDenied } from '@/components/business-section-access-denied';
 import { BUSINESS_ROUTE_ACCESS, useBusinessRouteGate } from '@/lib/use-business-route-gate';
+import { MonetizationModeBanner } from '@/components/monetization-mode-banner';
 
 type MonetizationContextValue = {
   token: string;
@@ -76,6 +77,7 @@ export function MonetizationShell({ children }: MonetizationShellProps) {
       ) : (
         <MonetizationContext.Provider value={{ token, business, businesses, access }}>
           <MonetizationSubNav />
+          <MonetizationModeBanner />
           {children}
         </MonetizationContext.Provider>
       )}

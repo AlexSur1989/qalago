@@ -15,9 +15,8 @@ import '../../auth/providers/auth_provider.dart';
 import '../owner_plan_errors.dart';
 import '../owner_plan_ui.dart';
 import '../providers/owner_providers.dart';
+import '../../../core/release/app_config_provider.dart';
 import '../utils/owner_l10n.dart';
-import '../../legal/legal_contextual_errors.dart';
-import '../../legal/widgets/contextual_legal_section.dart';
 import 'widgets/owner_scaffold.dart';
 
 String _catalogTierName(
@@ -44,7 +43,6 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
   String? _checkoutTier;
   String? _bannerMessage;
   final _purchaseAttempt = PlanPurchaseAttemptTracker();
-  final _planLegalKey = GlobalKey<ContextualLegalSectionState>();
 
   String _formatPrice(int price) {
     if (price == 0) return '0 ₸';
@@ -96,8 +94,6 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
         _purchaseAttempt.clear();
         setState(() => _bannerMessage = result['message'] as String?);
       } else {
-        final legalOk = await _planLegalKey.currentState?.ensureAccepted() ?? true;
-        if (!legalOk) return;
         final idempotencyKey = _purchaseAttempt.begin(businessId, tier);
         await repo.createPlanPurchase(
           businessId,
@@ -117,17 +113,8 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
       }
     } catch (e) {
       if (mounted) {
-        if (e.toString().contains('LEGAL_')) {
-          await _planLegalKey.currentState?.refresh();
-        }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              e.toString().contains('LEGAL_')
-                  ? mapContextualLegalError(l10n, e)
-                  : mapOwnerPlanPurchaseError(l10n, e),
-            ),
-          ),
+          SnackBar(content: Text(mapOwnerPlanPurchaseError(l10n, e))),
         );
       }
     } finally {
@@ -192,6 +179,11 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
               );
               final pending = findPendingPlanPayment(payments);
               final hasPending = pending != null;
+              final purchasesEnabled = ref.watch(canPurchasePlansProvider);
+              final adsPurchaseEnabled = ref.watch(canPurchaseAdsProvider);
+              final launchAccessActive =
+                  (planStatus['launchAccessActive'] as bool?) ??
+                  ref.watch(launchAccessActiveProvider);
 
               return RefreshIndicator(
                 onRefresh: () => _refresh(businessId),
@@ -221,23 +213,20 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                     _CurrentPlanCard(
                       planStatus: planStatus,
                       formatDate: _formatDate,
+                      launchAccessActive: launchAccessActive == true,
                     ),
                     const SizedBox(height: 12),
-                    Card(
-                      child: ListTile(
-                        leading: const Icon(Icons.campaign_outlined, color: AppTheme.kzBlue),
-                        title: Text(l10n.ownerMonetizationTitle),
-                        subtitle: Text(l10n.ownerPlanPromoteSubtitle),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () => context.push('/owner/promote'),
+                    if (adsPurchaseEnabled)
+                      Card(
+                        child: ListTile(
+                          leading: const Icon(Icons.campaign_outlined, color: AppTheme.kzBlue),
+                          title: Text(l10n.ownerMonetizationTitle),
+                          subtitle: Text(l10n.ownerPlanPromoteSubtitle),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => context.push('/owner/promote'),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    if (canManagePlan)
-                      ContextualLegalSection(
-                        key: _planLegalKey,
-                        contextKey: 'PLAN_PURCHASE',
-                      ),
+                    if (adsPurchaseEnabled) const SizedBox(height: 12),
                     ...catalog.map((plan) {
                       final tier = BusinessModel.normalizePlanTier(plan['tier'] as String?);
                       final isCurrent = effectiveTier == tier;
@@ -245,11 +234,12 @@ class _OwnerPlanScreenState extends ConsumerState<OwnerPlanScreen> {
                       final periodDays = plan['periodDays'] as int?;
                       final features = (plan['features'] as List<dynamic>? ?? [])
                           .cast<String>();
-                      final canPurchase = canOfferPlanPurchase(
-                        effectiveTier: effectiveTier,
-                        targetTier: tier,
-                        hasPendingPayment: hasPending,
-                      );
+                      final canPurchase = purchasesEnabled &&
+                          canOfferPlanPurchase(
+                            effectiveTier: effectiveTier,
+                            targetTier: tier,
+                            hasPendingPayment: hasPending,
+                          );
                       final actionKind = planPurchaseActionKind(effectiveTier, tier);
                       final lowerPaid = isLowerPaidPlanTier(tier, effectiveTier);
                       final sameTierRenew = isSameTierRenewal(tier, effectiveTier);
@@ -489,10 +479,12 @@ class _CurrentPlanCard extends StatelessWidget {
   const _CurrentPlanCard({
     required this.planStatus,
     required this.formatDate,
+    this.launchAccessActive = false,
   });
 
   final Map<String, dynamic> planStatus;
   final String Function(DateTime) formatDate;
+  final bool launchAccessActive;
 
   @override
   Widget build(BuildContext context) {
@@ -522,6 +514,14 @@ class _CurrentPlanCard extends StatelessWidget {
               ),
               style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
             ),
+            if (launchAccessActive)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  l10n.ownerPlanLaunchAccessBadge,
+                  style: TextStyle(color: AppTheme.kzBlue, fontWeight: FontWeight.w600),
+                ),
+              ),
             const SizedBox(height: 8),
             Text(
               '${l10n.ownerPlanUsageTitle}: '

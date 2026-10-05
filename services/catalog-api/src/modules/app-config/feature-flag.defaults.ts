@@ -17,6 +17,8 @@ export const FEATURE_FLAG_SAFE_DEFAULTS: Record<FeatureFlagKey, boolean> = {
   legalCenterEnabled: false,
   reportingEnabled: false,
   dataRightsEnabled: false,
+  monetizationPurchasesEnabled: true,
+  freeLaunchAccessEnabled: false,
 };
 
 export const FEATURE_FLAG_SEED: Array<{
@@ -43,6 +45,16 @@ export const FEATURE_FLAG_SEED: Array<{
   { key: 'legalCenterEnabled', globalEnabled: false, description: 'Legal center UI (6.9)' },
   { key: 'reportingEnabled', globalEnabled: false, description: 'Content reporting (6.9)' },
   { key: 'dataRightsEnabled', globalEnabled: false, description: 'Data rights requests (6.9)' },
+  {
+    key: 'monetizationPurchasesEnabled',
+    globalEnabled: true,
+    description: 'Plan and ad purchase checkout (NORMAL when true)',
+  },
+  {
+    key: 'freeLaunchAccessEnabled',
+    globalEnabled: false,
+    description: 'Launch operational capability uplift when purchases disabled',
+  },
 ];
 
 /** Global Business Web product flags (not in mobile app-config resolver). */

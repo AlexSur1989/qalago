@@ -19,6 +19,8 @@ import {
   parseApiError,
   productLabel,
 } from '@/lib/monetization-utils';
+import { usePlatformFeatures } from '@/components/platform-features-provider';
+import { PurchasesUnavailablePanel } from '@/components/monetization/purchases-unavailable-panel';
 
 function toDateInputValue(date: Date): string {
   return date.toISOString().slice(0, 10);
@@ -32,6 +34,7 @@ export default function MonetizationPackageDetailPage() {
   const packageCode = params.code;
   const router = useRouter();
   const { token, business } = useMonetizationContext();
+  const { canPurchaseAds, ready: platformReady } = usePlatformFeatures();
 
   const [pkg, setPkg] = useState<MonetizationPackage | null>(null);
   const [promotions, setPromotions] = useState<PromotionRow[]>([]);
@@ -74,6 +77,7 @@ export default function MonetizationPackageDetailPage() {
   }, [token, business.id, packageCode]);
 
   const fetchQuote = useCallback(async () => {
+    if (!canPurchaseAds) return;
     if (!pkg) return;
     setQuoteLoading(true);
     setQuoteError(null);
@@ -92,7 +96,7 @@ export default function MonetizationPackageDetailPage() {
     } finally {
       setQuoteLoading(false);
     }
-  }, [token, business.id, pkg, desiredStartAt, needsPromotion, promotionId]);
+  }, [token, business.id, pkg, desiredStartAt, needsPromotion, promotionId, canPurchaseAds]);
 
   useEffect(() => {
     if (!pkg) return;
@@ -119,6 +123,20 @@ export default function MonetizationPackageDetailPage() {
   if (loading) return <p style={{ color: 'var(--text-muted)' }}>{ui.text_89d69a}</p>;
   if (error || !pkg) {
     return <div className="alert alert-error">{error ?? ui.___e1df5a}</div>;
+  }
+
+  if (platformReady && !canPurchaseAds) {
+    return (
+      <>
+        <header className="page-header">
+          <div>
+            <h1>{pkg.name}</h1>
+          </div>
+          <Link href="/monetization/packages" className="btn btn-ghost btn-sm">{ui.__5f059f}</Link>
+        </header>
+        <PurchasesUnavailablePanel backHref="/monetization/campaigns" backLabel={ui.__f71231} />
+      </>
+    );
   }
 
   return (

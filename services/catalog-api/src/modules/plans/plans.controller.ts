@@ -1,6 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
-import { Request } from 'express';
-import { resolveLegalLocaleFromRequest } from '../../common/utils/legal-locale.util';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -43,15 +41,12 @@ export class PlansController {
     @CurrentUser() user: AuthUser,
     @Param('businessId') businessId: string,
     @Body() dto: CreatePlanPurchaseDto,
-    @Req() req: Request,
   ) {
-    const legalLocale = resolveLegalLocaleFromRequest(req);
     return this.plansService.createPlanPurchase(
       user,
       businessId,
       dto.tier,
       dto.idempotencyKey,
-      legalLocale,
     );
   }
 

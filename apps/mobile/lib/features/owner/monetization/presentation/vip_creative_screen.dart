@@ -15,6 +15,8 @@ import '../../providers/owner_providers.dart';
 import '../data/monetization_labels.dart';
 import '../data/monetization_models.dart';
 import '../providers/monetization_providers.dart';
+import '../widgets/monetization_purchase_unavailable.dart';
+import '../../../../core/release/app_config_provider.dart';
 
 class VipCreativeScreen extends ConsumerStatefulWidget {
   const VipCreativeScreen({super.key, required this.checkoutExtra});
@@ -158,6 +160,14 @@ class _VipCreativeScreenState extends ConsumerState<VipCreativeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!ref.watch(canPurchaseAdsProvider)) {
+      return OwnerScaffold(
+        title: context.l10n.ownerVipBannerTitle,
+        body: MonetizationPurchasesUnavailableBody(
+          onViewCampaigns: () => context.push('/owner/monetization/campaigns'),
+        ),
+      );
+    }
     final businessId = widget.checkoutExtra['businessId'] as String? ?? '';
 
     return OwnerScaffold(

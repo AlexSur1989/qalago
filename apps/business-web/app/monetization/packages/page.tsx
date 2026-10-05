@@ -13,12 +13,15 @@ import {
   productLabel,
 } from '@/lib/monetization-utils';
 import { adPackagesNotSubscriptionPlans } from '@/lib/owner-visual-copy';
+import { usePlatformFeatures } from '@/components/platform-features-provider';
+import { monetizationPurchasesDisabledNotice } from '@/lib/platform-monetization-ui';
 
 export default function MonetizationPackagesPage() {
   const locale = useLocale();
   const ui = useUi();
 
   const { token } = useMonetizationContext();
+  const { canPurchaseAds } = usePlatformFeatures();
   const [packages, setPackages] = useState<MonetizationPackage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,14 +57,20 @@ export default function MonetizationPackagesPage() {
       </header>
 
       {error && <div className="alert alert-error">{error}</div>}
+      {!canPurchaseAds ? (
+        <section className="form-card" style={{ maxWidth: 640 }}>
+          <p style={{ margin: 0 }}>{monetizationPurchasesDisabledNotice(locale)}</p>
+        </section>
+      ) : null}
       {loading && <p style={{ color: 'var(--text-muted)' }}>{ui.__798c20}</p>}
 
-      {!loading && packages.length === 0 && (
+      {canPurchaseAds && !loading && packages.length === 0 && (
         <section className="form-card">
           <p style={{ color: 'var(--text-muted)' }}>{ui.___e99e5d}</p>
         </section>
       )}
 
+      {canPurchaseAds ? (
       <div className="catalog-grid">
         {packages.map((pkg) => (
           <section key={pkg.code} className="form-card catalog-card">
@@ -91,6 +100,7 @@ export default function MonetizationPackagesPage() {
           </section>
         ))}
       </div>
+      ) : null}
     </>
   );
 }

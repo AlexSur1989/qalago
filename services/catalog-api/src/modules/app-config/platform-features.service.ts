@@ -7,10 +7,14 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { PLATFORM_BUSINESS_FEATURE_SAFE_DEFAULTS } from './feature-flag.defaults';
 import { BusinessTeamDisabledException } from './business-team-disabled.exception';
+import { MonetizationModeService } from './monetization-mode.service';
 
 @Injectable()
 export class PlatformFeaturesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly monetizationMode: MonetizationModeService,
+  ) {}
 
   async getConfigRevision(): Promise<number> {
     const settings = await this.prisma.appReleaseSettings.findUnique({
@@ -29,13 +33,18 @@ export class PlatformFeaturesService {
   }
 
   async getPlatformFeatures(): Promise<PlatformFeaturesResponseDto> {
-    const [businessTeamEnabled, configRevision] = await Promise.all([
+    const [businessTeamEnabled, configRevision, monetization] = await Promise.all([
       this.readGlobalFlag('businessTeamEnabled'),
       this.getConfigRevision(),
+      this.monetizationMode.getPublicDto(),
     ]);
     return {
       platformFeatures: { businessTeamEnabled },
       configRevision,
+      monetizationMode: monetization.monetizationMode,
+      canPurchasePlans: monetization.canPurchasePlans,
+      canPurchaseAds: monetization.canPurchaseAds,
+      launchAccessActive: monetization.launchAccessActive,
     };
   }
 

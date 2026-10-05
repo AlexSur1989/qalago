@@ -6200,6 +6200,12 @@ abstract class AppLocalizations {
   /// **'Текущий тариф'**
   String get ownerPlanCurrentBadge;
 
+  /// No description provided for @ownerPlanLaunchAccessBadge.
+  String get ownerPlanLaunchAccessBadge;
+
+  /// No description provided for @ownerMonetizationDisabled.
+  String get ownerMonetizationDisabled;
+
   /// No description provided for @ownerPlanActiveUntil.
   ///
   /// In ru, this message translates to:

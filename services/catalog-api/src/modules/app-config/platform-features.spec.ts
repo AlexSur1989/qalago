@@ -11,18 +11,35 @@ describe('PlatformFeaturesService (BIZ.9 HOTFIX 5B)', () => {
       featureFlagDefinition: { findUnique: jest.fn().mockResolvedValue(null) },
       appReleaseSettings: { findUnique: jest.fn().mockResolvedValue({ configRevision: 3 }) },
     };
-    const service = new PlatformFeaturesService(prisma as never);
+    const monetizationMode = {
+      getPublicDto: jest.fn().mockResolvedValue({
+        monetizationMode: 'NORMAL',
+        canPurchasePlans: true,
+        canPurchaseAds: true,
+        launchAccessActive: false,
+      }),
+    };
+    const service = new PlatformFeaturesService(prisma as never, monetizationMode as never);
     await expect(service.isBusinessTeamEnabled()).resolves.toBe(false);
     const dto = await service.getPlatformFeatures();
     expect(dto.platformFeatures.businessTeamEnabled).toBe(false);
     expect(dto.configRevision).toBe(3);
+    expect(dto.canPurchasePlans).toBe(true);
   });
 
   it('assertBusinessTeamEnabled throws BUSINESS_TEAM_DISABLED', async () => {
     const prisma = {
       featureFlagDefinition: { findUnique: jest.fn().mockResolvedValue({ globalEnabled: false }) },
     };
-    const service = new PlatformFeaturesService(prisma as never);
+    const monetizationMode = {
+      getPublicDto: jest.fn().mockResolvedValue({
+        monetizationMode: 'NORMAL',
+        canPurchasePlans: true,
+        canPurchaseAds: true,
+        launchAccessActive: false,
+      }),
+    };
+    const service = new PlatformFeaturesService(prisma as never, monetizationMode as never);
     await expect(service.assertBusinessTeamEnabled()).rejects.toMatchObject({
       response: { code: BUSINESS_TEAM_DISABLED_CODE },
     });
@@ -34,7 +51,12 @@ describe('PlatformFeaturesAdminService (BIZ.9 HOTFIX 5B)', () => {
   const admin = { id: 'a1', role: UserRole.ADMIN, sub: 'a1' };
 
   it('PATCH requires SUPER_ADMIN', async () => {
-    const adminService = new PlatformFeaturesAdminService({} as never, {} as never, {} as never);
+    const adminService = new PlatformFeaturesAdminService(
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
     await expect(
       adminService.patch(admin as never, { businessTeamEnabled: true }),
     ).rejects.toBeInstanceOf(ForbiddenException);

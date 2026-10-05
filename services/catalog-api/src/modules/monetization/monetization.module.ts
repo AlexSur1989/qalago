@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CityScopeService } from '../../common/services/city-scope.service';
+import { AppConfigModule } from '../app-config/app-config.module';
 import { PlansModule } from '../plans/plans.module';
-import { SafetyModule } from '../safety/safety.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { AdAnalyticsService } from './ad-analytics.service';
 import { AdEventsService } from './ad-events.service';
@@ -30,7 +30,7 @@ import { ProductPurchaseStateService } from './product-purchase-state.service';
 import { ProductPriceAdminService } from './product-price-admin.service';
 
 @Module({
-  imports: [PlansModule, NotificationsModule, SafetyModule, ScheduleModule.forRoot()],
+  imports: [PlansModule, AppConfigModule, NotificationsModule, ScheduleModule.forRoot()],
   controllers: [MonetizationController, MonetizationAdminController],
   providers: [
     MonetizationService,

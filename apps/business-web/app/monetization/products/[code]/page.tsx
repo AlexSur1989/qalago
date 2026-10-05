@@ -17,6 +17,8 @@ import {
   parseApiError,
   productLabel,
 } from '@/lib/monetization-utils';
+import { usePlatformFeatures } from '@/components/platform-features-provider';
+import { monetizationPurchasesDisabledNotice } from '@/lib/platform-monetization-ui';
 
 function toDateInputValue(date: Date): string {
   return date.toISOString().slice(0, 10);
@@ -30,6 +32,7 @@ export default function MonetizationProductDetailPage() {
   const productCode = params.code;
   const router = useRouter();
   const { token, business } = useMonetizationContext();
+  const { canPurchaseAds } = usePlatformFeatures();
 
   const [product, setProduct] = useState<MonetizationProduct | null>(null);
   const [promotions, setPromotions] = useState<PromotionRow[]>([]);
@@ -145,6 +148,17 @@ export default function MonetizationProductDetailPage() {
   if (loading) return <p style={{ color: 'var(--text-muted)' }}>{ui.text_89d69a}</p>;
   if (error || !product) {
     return <div className="alert alert-error">{error ?? ui.___f3511d}</div>;
+  }
+
+  if (!canPurchaseAds) {
+    return (
+      <section className="form-card" style={{ maxWidth: 640 }}>
+        <p style={{ margin: 0 }}>{monetizationPurchasesDisabledNotice(locale)}</p>
+        <Link href="/monetization/products" className="btn btn-ghost btn-sm" style={{ marginTop: 12 }}>
+          {ui.__2ea91d}
+        </Link>
+      </section>
+    );
   }
 
   return (

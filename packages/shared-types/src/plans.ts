@@ -59,6 +59,7 @@ export interface BusinessPlanStatusDto {
   businessId: string;
   tier: BusinessPlanTier;
   effectiveTier: BusinessPlanTier;
+  launchAccessActive?: boolean;
   expiresAt: string | null;
   isFeatured: boolean;
   featuredSlot: number | null;

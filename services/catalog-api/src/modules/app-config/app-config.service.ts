@@ -11,6 +11,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { resolveUpdateMode, assertReleaseVersionConfig } from '../../common/utils/update-mode.util';
 import { FEATURE_FLAG_SEED, PLATFORM_BUSINESS_FEATURE_SEED } from './feature-flag.defaults';
 import { FeatureFlagResolverService } from './feature-flag-resolver.service';
+import { MonetizationModeService } from './monetization-mode.service';
 
 export type AppConfigQuery = {
   platform?: AppPlatform;
@@ -25,6 +26,7 @@ export class AppConfigService implements OnModuleInit {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly featureFlags: FeatureFlagResolverService,
+    private readonly monetizationMode: MonetizationModeService,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -123,6 +125,8 @@ export class AppConfigService implements OnModuleInit {
       query,
     );
 
+    const monetization = await this.monetizationMode.getPublicDto();
+
     return {
       environment: this.getEnvironment(),
       configRevision: settings.configRevision,
@@ -135,6 +139,10 @@ export class AppConfigService implements OnModuleInit {
       mobile: { android, ios },
       featureFlags: platformFlags,
       cityLaunchStatus: city?.launchStatus ?? null,
+      monetizationMode: monetization.monetizationMode,
+      canPurchasePlans: monetization.canPurchasePlans,
+      canPurchaseAds: monetization.canPurchaseAds,
+      launchAccessActive: monetization.launchAccessActive,
     };
   }
 

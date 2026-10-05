@@ -3440,6 +3440,12 @@ class AppLocalizationsKk extends AppLocalizations {
   String get ownerPlanCurrentBadge => 'Ағымдағы тариф';
 
   @override
+  String get ownerPlanLaunchAccessBadge => 'Іске қосу кезеңіне тегін қол жеткізу';
+
+  @override
+  String get ownerMonetizationDisabled => 'Монетизация уақытша қолжетімсіз.';
+
+  @override
   String ownerPlanActiveUntil(String date) {
     return '$date дейін';
   }

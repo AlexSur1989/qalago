@@ -56,3 +56,19 @@ final subcategoriesEnabledProvider = Provider<bool>((ref) {
   final flags = ref.watch(featureFlagsProvider);
   return flags['subcategoriesEnabled'] == true;
 });
+
+final monetizationConfigProvider = Provider<AppConfigSnapshot?>((ref) {
+  return ref.watch(appReleaseGateProvider).valueOrNull?.config;
+});
+
+final canPurchasePlansProvider = Provider<bool>((ref) {
+  return ref.watch(monetizationConfigProvider)?.canPurchasePlans ?? false;
+});
+
+final canPurchaseAdsProvider = Provider<bool>((ref) {
+  return ref.watch(monetizationConfigProvider)?.canPurchaseAds ?? false;
+});
+
+final launchAccessActiveProvider = Provider<bool>((ref) {
+  return ref.watch(monetizationConfigProvider)?.launchAccessActive ?? false;
+});

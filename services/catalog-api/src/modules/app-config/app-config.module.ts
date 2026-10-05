@@ -11,6 +11,7 @@ import { PlatformFeaturesController } from './platform-features.controller';
 import { PlatformFeaturesAdminController } from './platform-features-admin.controller';
 import { PlatformFeaturesService } from './platform-features.service';
 import { PlatformFeaturesAdminService } from './platform-features-admin.service';
+import { MonetizationModeService } from './monetization-mode.service';
 
 @Module({
   imports: [AuditLogModule],
@@ -26,8 +27,9 @@ import { PlatformFeaturesAdminService } from './platform-features-admin.service'
     ReleaseAdminService,
     PlatformFeaturesService,
     PlatformFeaturesAdminService,
+    MonetizationModeService,
     { provide: APP_GUARD, useClass: MaintenanceGuard },
   ],
-  exports: [AppConfigService, PlatformFeaturesService],
+  exports: [AppConfigService, PlatformFeaturesService, MonetizationModeService],
 })
 export class AppConfigModule {}

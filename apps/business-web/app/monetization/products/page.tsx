@@ -28,6 +28,8 @@ import {
   filterProductsByPromoteSubject,
 } from '@/lib/monetization-owner-ui';
 import type { MonetizationPurchaseState } from '@/lib/api';
+import { usePlatformFeatures } from '@/components/platform-features-provider';
+import { monetizationPurchasesDisabledNotice } from '@/lib/platform-monetization-ui';
 
 function parseSubject(raw: string | null): MonetizationPromoteSubject | null {
   if (raw === 'business' || raw === 'promotion') return raw;
@@ -41,6 +43,7 @@ export default function MonetizationProductsPage() {
   const subject = parseSubject(searchParams.get('subject'));
 
   const { token, business } = useMonetizationContext();
+  const { canPurchaseAds } = usePlatformFeatures();
   const [products, setProducts] = useState<MonetizationProduct[]>([]);
   const [purchaseStates, setPurchaseStates] = useState<
     Record<string, MonetizationPurchaseState>
@@ -179,15 +182,25 @@ export default function MonetizationProductsPage() {
       </header>
 
       {error && <div className="alert alert-error">{error}</div>}
+      {!canPurchaseAds ? (
+        <section className="form-card" style={{ maxWidth: 640 }}>
+          <p style={{ margin: 0, color: 'var(--text-muted)' }}>
+            {monetizationPurchasesDisabledNotice(locale)}
+          </p>
+          <Link href="/monetization/campaigns" className="btn btn-ghost btn-sm" style={{ marginTop: 12 }}>
+            {ui.__f71231}
+          </Link>
+        </section>
+      ) : null}
       {loading && <p style={{ color: 'var(--text-muted)' }}>{ui.__c53959}</p>}
 
-      {!loading && products.length === 0 && (
+      {canPurchaseAds && !loading && products.length === 0 && (
         <section className="form-card">
           <p style={{ color: 'var(--text-muted)' }}>{ui.____187ccf}</p>
         </section>
       )}
 
-      {!loading && products.length > 0 && !subject && (
+      {canPurchaseAds && !loading && products.length > 0 && !subject && (
         <section className="form-card" style={{ maxWidth: 640 }}>
           <h2 style={{ marginTop: 0 }}>{promoteWhatTitle(locale)}</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -201,13 +214,13 @@ export default function MonetizationProductsPage() {
         </section>
       )}
 
-      {!loading && subject && visibleProducts.length === 0 && (
+      {canPurchaseAds && !loading && subject && visibleProducts.length === 0 && (
         <section className="form-card">
           <p style={{ color: 'var(--text-muted)' }}>{ui.____187ccf}</p>
         </section>
       )}
 
-      {!loading && subject && visibleProducts.length > 0 && renderProductGrid()}
+      {canPurchaseAds && !loading && subject && visibleProducts.length > 0 && renderProductGrid()}
     </>
   );
 }
