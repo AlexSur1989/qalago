@@ -6,6 +6,24 @@
 
 ---
 
+## 2026-10-05 — 6.18L.1A — Launch mode route and release gate closure
+
+- **Status:** **6.18L.1A Implemented** — docs checkpoint (see commit below).
+- **Summary:** Direct URL / deep-link purchase UX gated on Business Web (packages detail, VIP creative, shared unavailable panel) and Mobile (product, package, confirm, VIP creative); Google Play launch check via `scripts/check-google-play-launch-mode.mjs` + `GET admin/platform-features/google-play-launch-check`; SUPER_ADMIN mode-change confirmations clarified; docs route matrix. **No** schema/migration.
+- **Deferred:** Full widget/E2E matrix; operator must run launch script against target API before Play upload.
+- **Next:** Safe focused commit of 6.18L.1 + 6.18L.1A; physical QA on deep links.
+
+---
+
+## 2026-10-05 — 6.18L.1 — Launch mode and monetization kill switch
+
+- **Status:** **6.18L.1 Implemented** (working tree; commit pending operator request).
+- **Summary:** Backend **MonetizationMode** (NORMAL / LAUNCH / DISABLED) from global feature flags; centralized **MonetizationModeService** and **PlanLimitsService** launch merge (MAX with paid tier); fail-closed plan/ad purchase guards (`MONETIZATION_DISABLED`); **app-config** + **platform-features** + SUPER_ADMIN Settings → Monetization; Mobile/Business Web purchase hiding and launch UX; docs `docs/monetization/6.18L-launch-mode.md`. **No** schema/migration; **no** mutation of `planTier` / `planExpiresAt` or fake payments.
+- **Deferred:** Full monorepo test matrix; physical QA across all checkout/legal paths; default prod flag flip to LAUNCH at release gate.
+- **Next:** Focused QA per 6.18L.1 test list; set LAUNCH for Google Play first release when approved.
+
+---
+
 ## 2026-10-05 — 6.16U.1A — Upload ownership and security test closure
 
 - **Status:** **6.16U.1A Implemented** — **Checkpoint:** `3f1e0b7` (feat(media)); architecture doc in this docs commit.
