@@ -218,6 +218,7 @@ describe('Stage 4B.2 — VIP inventory reservation + order validation', () => {
       createMockInventoryReservationService(),
       createMockStaffPolicyService() as never,
       { buildAdminBusinessScopeWhere: jest.fn() } as never,
+      { assertPurchasesAllowed: jest.fn() } as never,
     );
 
     const user = { id: 'user-1', role: UserRole.BUSINESS, phone: '+7700', sub: 'user-1' };

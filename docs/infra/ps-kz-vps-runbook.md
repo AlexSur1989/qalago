@@ -21,9 +21,15 @@
 
 ## 1. Release artifact
 
-1. **Branch / tag:** deploy from a **clean** commit — not the mixed remediation WIP tree unless reconciled and CI-green (see [external-launch-checklist.md](./external-launch-checklist.md)).
-2. **Build matrix (minimum):** all four web `next build`, `catalog-api` `nest build`, Flutter release AAB (Android).
-3. **Monetization mode:** first public Android release expects **`LAUNCH`** on production API until Play billing is live — verify with `scripts/check-google-play-launch-mode.mjs` against **production** `GET /app-config`.
+1. **Branch / tag:** deploy from GitHub tag **`ps-kz-prep-2026-10-06`** (or `master` at **`ccb4e43`**+ after Stage 13). Example on VPS:
+   ```bash
+   git clone https://github.com/AlexSur1989/qalago.git /opt/qalago
+   cd /opt/qalago && git checkout ps-kz-prep-2026-10-06
+   ```
+   Local gate before cutover: `node scripts/dev/_stage8-ci-smoke.mjs` (API on `qalago_dev`); dump handoff: `node scripts/dev/_stage10-backup-rehearsal.mjs` (operator machine).
+2. **Do not** deploy from an unreconciled dirty tree (see [external-launch-checklist.md](./external-launch-checklist.md)).
+3. **Build matrix (minimum):** all four web `next build`, `catalog-api` `nest build`, Flutter release AAB (Android).
+4. **Monetization mode:** first public Android release expects **`LAUNCH`** on production API until Play billing is live — verify with `scripts/check-google-play-launch-mode.mjs` against **production** `GET /app-config`.
 
 ---
 

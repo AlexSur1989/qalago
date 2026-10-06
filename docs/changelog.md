@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-10-06 — Local remediation Stage 13 — pre-VPS operator gate (PS.kz prep)
+
+- **Status:** **Verified (local)** — GitHub already pushed; VPS provisioning is **external**.
+- **Checkpoint:** **`ccb4e43`** / tag **`ps-kz-prep-2026-10-06`**; Stage 13 commit records SHA.
+- **Summary:** **Production builds PASS** (shared-types, catalog-api nest, admin/business/consumer Next). **Post-push smoke 4/4** on running stack. **Jest **233/241** suites** after OrderService / BusinessesService tail fixes. Updated **`external-launch-checklist.md`** + **`ps-kz-vps-runbook.md`** §1 clone/checkout. **Handoff dump:** `services/catalog-api/backups/stage10-from-qalago_dev.dump` (regenerate before VPS).
+- **Deferred:** **8** catalog-api suites (cw3a invariant, account-deletion, app-config architecture, one order.service assertion); VPS + PROD.2 env; PostGIS on PS.kz **UNVERIFIED**.
+- **Next:** Operator provisions PS.kz → Persona A restore → §7 runbook smoke on production URLs.
+
+---
+
 ## 2026-10-06 — Local remediation Stage 12 — release gate smoke + Jest harness (PS.kz prep)
 
 - **Status:** **Verified (local)** — tag **`ps-kz-prep-2026-10-06`** on harness commit below.

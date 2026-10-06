@@ -117,6 +117,7 @@ describe('OrderService', () => {
     inventoryReservation,
     staffPolicy as never,
     cityScope as never,
+    { assertPurchasesAllowed: jest.fn().mockResolvedValue(undefined) } as never,
   );
 
   const user = { id: 'user-1', role: UserRole.BUSINESS, phone: '+7700', sub: 'user-1' };

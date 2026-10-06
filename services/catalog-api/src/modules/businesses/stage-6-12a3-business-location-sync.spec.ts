@@ -293,6 +293,8 @@ describe('Stage 6.12A.3 — primary location compatibility sync', () => {
       subDeps.subcategories,
       {} as never,
       brokenPrimary,
+      { get: jest.fn() } as never,
+      {} as never,
     );
 
     await expect(svc.update(business.id, owner, { phone: 'after-rollback' })).rejects.toThrow('sync failed');

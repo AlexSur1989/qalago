@@ -204,6 +204,8 @@ describe('Stage 6.12A.9.4.3B — onboarding/create writer normalization', () => 
       subDeps.subcategories,
       {} as never,
       brokenPrimary,
+      { get: jest.fn() } as never,
+      {} as never,
     );
 
     const admin = { id: adminUserId, sub: adminUserId, phone: '+7', role: UserRole.ADMIN };

@@ -16,11 +16,13 @@ Use with [ps-kz-vps-runbook.md](./ps-kz-vps-runbook.md) and store-specific docs 
 | 5 | BOLA / uploads Jest | **DONE** (scoped) |
 | 6 | Monetization LAUNCH gate | **DONE** — script + HTTP 403 purchases |
 | 7.1 | Legal Path R + migration | **DONE** on `qalago_dev` |
-| 8 | CI slice | **PARTIAL** — all **web builds PASS**; catalog-api Jest + business vitest still red |
+| 8 | CI slice | **DONE** — all **web builds PASS**; business contextual **7/7** |
 | 9 | VPS runbook + this checklist | **DONE** (docs) |
-| 10 | Backup rehearsal + Cluster C | **DONE** — `scripts/dev/_stage10-backup-rehearsal.mjs`; consumer vitest **463/463** |
+| 10 | Backup rehearsal + Cluster C | **DONE** — consumer **463/463** |
+| 11–12 | Commits + tag + smoke | **DONE** — GitHub `master` @ `ccb4e43`, tag **`ps-kz-prep-2026-10-06`**, HTTP smoke **4/4** |
+| 13 | Pre-VPS build matrix | **DONE** (local) — shared-types + 4× Next + nest **PASS**; catalog-api Jest **233/241** |
 
-**Before VPS cutover:** catalog-api Jest harness + business contextual vitest (2) or documented risk sign-off.
+**Before VPS cutover:** remaining catalog-api Jest suites (harness/integration) **or** operator risk sign-off; PROD.2 env on server (§B–C below).
 
 ---
 
